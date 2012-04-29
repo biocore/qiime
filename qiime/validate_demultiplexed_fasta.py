@@ -32,7 +32,7 @@ def get_mapping_details(mapping_fp):
     mapping_f = open(mapping_fp, "U")
     
     # Only using the id_map and the errors from parsing the mapping file.
-    headers, id_map, desc, run_description, errors, warnings = \
+    hds, mapping_data, run_description, errors, warnings = \
         process_id_map(mapping_f)
         
     mapping_f.close()
@@ -41,6 +41,18 @@ def get_mapping_details(mapping_fp):
     if errors:
         raise ValueError,('Error in mapping file, please validate '+\
          'mapping file with check_id_map.py')
+         
+    # create dict of dicts with SampleID:{each header:mapping data}
+    
+    id_map = {}
+    
+    for curr_data in mapping_data:
+        id_map[curr_data[0]] = {}
+        
+    
+    for header in range(len(hds)):
+        for curr_data in mapping_data:
+            id_map[curr_data[0]][hds[header]] = curr_data[header]
          
     sample_ids = id_map.keys()
     

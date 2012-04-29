@@ -1691,6 +1691,36 @@ class UclustOtuPickerTests(TestCase):
         # just checks that we have the expected group of each
         self.assertEqual(obs_otu_ids, exp_otu_ids)
         self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_default_params_suppress_sort(self):
+        """UclustOtuPicker.__call__ returns expected clusters default params"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        
+        exp_otu_ids = range(10)
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9']]
+        
+        app = UclustOtuPicker(params={'save_uc_files':False,
+                                      'suppress_sort':True})
+        obs = app(self.tmp_seq_filepath1)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
 
 
     def test_call_default_params_save_uc_file(self):
@@ -2084,7 +2114,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         # abundance sorting changes order 
         app = UclustReferenceOtuPicker(params={'Similarity':0.80,
                                       'enable_rev_strand_matching':False,
-                                      'suppress_sort':False,
+                                      'suppress_sort':True,
                                       'presort_by_abundance':True,
                                       'save_uc_files':False})
         obs = app(seqs_fp,ref_seqs_fp)
@@ -2315,7 +2345,8 @@ class UclustReferenceOtuPickerTests(TestCase):
         # rev strand matching disabled
         uc = UclustReferenceOtuPicker({'Similarity':0.8,
                                        'suppress_new_clusters':True,
-                                       'save_uc_files':False})
+                                       'save_uc_files':False,
+                                       'suppress_sort':True})
         ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
         obs = uc(self.seqs_to_temp_fasta(seqs),
                  ref_seqs_fp,
@@ -2415,7 +2446,8 @@ class UclustReferenceOtuPickerTests(TestCase):
         """
         
         uc = UclustReferenceOtuPicker({'save_uc_files':True,
-                                       'output_dir':self.temp_dir})
+                                       'output_dir':self.temp_dir,
+                                       'suppress_sort':True})
                                        
         obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
         exp = {'ref1':['uclust_test_seqs_0'],

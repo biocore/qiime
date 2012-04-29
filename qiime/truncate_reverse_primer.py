@@ -23,12 +23,24 @@ def get_rev_primer_seqs(mapping_fp):
     """ Parses mapping file to get dictionary of SampleID:Rev primer
     mapping_fp:  mapping filepath
     """
-    hds, id_map, dsp, run_description, errors, warnings = \
+    hds, mapping_data, run_description, errors, warnings = \
         process_id_map(mapping_fp)
         
     if errors:
         raise ValueError,('Errors were found with mapping file, '+\
          'please run check_id_map.py to identify problems.')
+         
+    # create dict of dicts with SampleID:{each header:mapping data}
+    
+    id_map = {}
+    
+    for curr_data in mapping_data:
+        id_map[curr_data[0]] = {}
+        
+    
+    for header in range(len(hds)):
+        for curr_data in mapping_data:
+            id_map[curr_data[0]][hds[header]] = curr_data[header]
     
     reverse_primers = {}
     

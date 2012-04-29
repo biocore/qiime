@@ -26,7 +26,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
     format_qiime_parameters, format_p_value_for_num_iters,
-    format_mapping_file,illumina_data_to_fastq, format_biom_table)
+    format_mapping_file,illumina_data_to_fastq, format_biom_table,
+    format_mapping_html_data)
 from biom.parse import parse_biom_table
 
 class TopLevelTests(TestCase):
@@ -50,6 +51,15 @@ class TopLevelTests(TestCase):
                                  ['s2','something3','something4'],
                                  ['s3','something5','something6']]
         self.biom1 = parse_biom_table(biom1.split('\n'))
+        
+        self.expected_formatted_html_no_errors_warnings =\
+         expected_formatted_html_no_errors_warnings
+        self.expected_formatted_html_errors =\
+         expected_formatted_html_errors
+        self.expected_formatted_html_warnings =\
+         expected_formatted_html_warnings
+        self.expected_formatted_html_data_nonloc_error =\
+         expected_formatted_html_data_nonloc_error
         
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -361,12 +371,234 @@ y\t5\t6\tsample y""")
         expected = """@M10_68:1:1:28680:29475#0/1\nAACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACGN\n+\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB""", 2
         
         self.assertEqual(illumina_data_to_fastq(in1),expected)
+        
+    def test_format_mapping_html_data(self):
+        """ Properly formats html string for mapping file errors/warnings """
+        
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'Description']
+        mapping_data = [['Sample1','AACCGGTT','ACATATT','Desc_1'],
+                        ['Sample2','CCAATTGG','ACATATT','Desc_2']
+                       ]
+        errors = []
+        warnings = []
+        
+        # no errors or warnings, shouldn't get any popup mouseover data
+        
+        actual_formatted_html_data = format_mapping_html_data(header,
+         mapping_data, errors, warnings)
+         
+        self.assertEqual(actual_formatted_html_data,
+         self.expected_formatted_html_no_errors_warnings)
+         
+    def test_format_mapping_html_data_errors(self):
+        """ Properly formats html string for mapping file errors/warnings """
+        
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'Description']
+        mapping_data = [['Sample1','AACCGGTT','ACATATT','Desc_1'],
+                        ['Sample2','CCAATTGG','ACATATT','Desc_2']
+                       ]
+        errors = ['problem1\t1,2']
+        warnings = []
+        
+        # Should create a an error popup in the right location
+        
+        actual_formatted_html_data = format_mapping_html_data(header,
+         mapping_data, errors, warnings)
+         
+        self.assertEqual(actual_formatted_html_data,
+         self.expected_formatted_html_errors)
+         
+    def test_format_mapping_html_data_warnings(self):
+        """ Properly formats html string for mapping file errors/warnings """
+        
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'Description']
+        mapping_data = [['Sample1','AACCGGTT','ACATATT','Desc_1'],
+                        ['Sample2','CCAATTGG','ACATATT','Desc_2']
+                       ]
+        errors = []
+        warnings = ['warning1\t2,2']
+        
+        # Should create a an warning popup in the right location
+        
+        actual_formatted_html_data = format_mapping_html_data(header,
+         mapping_data, errors, warnings)
+         
+         
+        self.assertEqual(actual_formatted_html_data,
+         self.expected_formatted_html_warnings)
 
+    def test_format_mapping_html_data_non_location_error(self):
+        """ Properly formats html string for mapping file errors/warnings """
+        
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'Description']
+        mapping_data = [['Sample1','AACCGGTT','ACATATT','Desc_1'],
+                        ['Sample2','CCAATTGG','ACATATT','Desc_2']
+                       ]
+        errors = ['error1\t-1,-1']
+        warnings = []
+        
+        # Should list errors with location -1,-1 outside of table
+        
+        actual_formatted_html_data = format_mapping_html_data(header,
+         mapping_data, errors, warnings)
+         
+        
+        self.assertEqual(actual_formatted_html_data,
+         self.expected_formatted_html_data_nonloc_error)
+         
 example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
 #this goes after headers
 #this too
 bsample\tv1_3\tv0_3\td1
 asample\taval\tanother\td2"""
+
+expected_formatted_html_no_errors_warnings = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>No errors or warnings detected.<br></h1><h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>Sample1</tt></th><th><tt>AACCGGTT</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_1</tt></th></tr><tr><th><tt>Sample2</tt></th><th><tt>CCAATTGG</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_2</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_formatted_html_errors = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>Sample1</tt></th><th><tt>AACCGGTT</tt></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('problem1<br>Location (SampleID,Header Field)<br>Sample1,LinkerPrimerSequence');" onmouseout="return nd();"><font color=white><tt>ACATATT</tt></a></th><th><tt>Desc_1</tt></th></tr><tr><th><tt>Sample2</tt></th><th><tt>CCAATTGG</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_2</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_formatted_html_warnings = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>Sample1</tt></th><th><tt>AACCGGTT</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_1</tt></th></tr><tr><th><tt>Sample2</tt></th><th><tt>CCAATTGG</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('warning1<br>Location (SampleID,Header Field)<br>Sample2,LinkerPrimerSequence');" onmouseout="return nd();"><font color=black><tt>ACATATT</tt></a></th><th><tt>Desc_2</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_formatted_html_data_nonloc_error = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr><td bgcolor="red"><font color="white">error1<font color="black"></td></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>Sample1</tt></th><th><tt>AACCGGTT</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_1</tt></th></tr><tr><th><tt>Sample2</tt></th><th><tt>CCAATTGG</tt></th><th><tt>ACATATT</tt></th><th><tt>Desc_2</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
 
 biom1 = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2", "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata": {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}}, {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9", "metadata": {}}], "format": "Biological Observation Matrix 0.9.0-dev", "data": [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0], [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0], [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0], [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0], [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0], [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0], [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0], [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null}, {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id": "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9", "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11", "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13", "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15", "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17", "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [9, 19], "format_url": "http://biom-format.org", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
 

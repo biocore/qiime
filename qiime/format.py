@@ -548,3 +548,166 @@ def format_biom_table(biom_table):
     """ Given a biom-format Table object, returns that Table as a BIOM string"""
     generated_by_str = "QIIME " + get_qiime_library_version()
     return biom_table.getBiomFormatJsonString(generated_by_str)
+    
+def format_mapping_html_data(header,
+                             mapping_data,
+                             errors,
+                             warnings):
+    """ Generates list of lines of html for displaying problems with metadata
+    
+    This function assumes that errors and warnings each are tab separated with
+    an index in the form of row,column where 0,0 is the SampleID position.  If
+    the position -1,-1 is given, this indicates that the error is something
+    missing entirely from the mapping file (eg., an added demultiplex field 
+    that does not exist).
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors, should contain indices 
+    warnings:  list of warnings, should contain indices
+    """
+    
+    html_lines = HTML_LINES_INIT
+    
+    if not errors and not warnings:
+        html_lines += "<h1>No errors or warnings detected.<br></h1>"
+    # Find errors/warnings that are not in particular cells
+    general_errors = ""
+    for curr_err in errors:
+        loc = curr_err.split('\t')[1].strip()
+        if loc == "-1,-1":
+            general_errors += '<td bgcolor="red"><font color="white">' +\
+             curr_err.split('\t')[0] + '<font color="black"></td>'
+    general_warnings = ""
+    for curr_warning in warnings:
+        loc = curr_warning.split('\t')[1].strip()
+        if loc == "-1,-1":
+            general_warnings += '<td bgcolor="yellow">' +\
+             curr_err.split('\t')[0] + "</td>"
+             
+
+    html_lines += HTML_LINES_MSG % ("+-%./ :,;_",
+     general_errors, general_warnings)
+    
+    # Check header fields, color and add popup messages if errors/warnings 
+    # are present
+    formatted_header = ""
+    for curr_field in range(len(header)):
+        all_errs_warnings = ""
+        curr_pos = "%s,%s" % (0, curr_field)
+        for curr_warning in warnings:
+            loc = curr_warning.split('\t')[1].strip()
+            if loc == curr_pos:
+                bg_color = "yellow"
+                font_color = "black"
+                all_errs_warnings += curr_warning.split('\t')[0] + "<br>"
+        
+        for curr_err in errors:
+            loc = curr_err.split('\t')[1].strip()
+            if loc == curr_pos:
+                bg_color = "red"
+                font_color = "white"
+                all_errs_warnings += curr_err.split('\t')[0] + "<br>"
+        if not all_errs_warnings:
+            formatted_header += "<th>%s</th>" % header[curr_field]
+        elif not header[curr_field]:
+            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings, font_color, "missing data")
+
+        else:
+            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings, font_color, header[curr_field])
+
+    html_lines += HTML_LINES_HEADER % formatted_header
+    
+    formatted_data = ""
+    correction_ix = 1
+    
+    for curr_row in range(len(mapping_data)):
+        formatted_data += "<tr>"
+        for curr_cell in range(len(mapping_data[curr_row])):
+            all_errs_warnings = ""
+            append_location = False
+            curr_pos = "%s,%s" % (curr_row + correction_ix, curr_cell)
+            for curr_warning in warnings:
+                loc = curr_warning.split('\t')[1].strip()
+                if loc == curr_pos:
+                    append_location = True
+                    bg_color = "yellow"
+                    font_color = "black"
+                    all_errs_warnings += curr_warning.split('\t')[0] + "<br>"
+                    
+            for curr_err in errors:
+                loc = curr_err.split('\t')[1].strip()
+                if loc == curr_pos:
+                    append_location = True
+                    bg_color = "red"
+                    font_color = "white"
+                    all_errs_warnings += curr_err.split('\t')[0] + "<br>"
+            if append_location:
+                if len(mapping_data[curr_row][0]) == 0:
+                    sample_id_name = "missing sample id"
+                else:
+                    sample_id_name = mapping_data[curr_row][0]
+                try:
+                    header_location = header[curr_cell]
+                except IndexError:
+                    header_location = "no header"
+                location_desc = "Location (SampleID,Header Field)<br>%s,%s" %\
+                 (sample_id_name, header_location)
+            if not all_errs_warnings:
+                formatted_data += "<th><tt>%s</tt></th>" %\
+                 mapping_data[curr_row][curr_cell]
+            elif len(mapping_data[curr_row][curr_cell].replace('\n', '')) == 0:
+                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings + location_desc, font_color, "missing data")
+            else:
+                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings + location_desc, font_color, mapping_data[curr_row][curr_cell])
+
+    
+        formatted_data += "</tr>"
+    html_lines += HTML_LINES_DATA % formatted_data
+    
+    return html_lines
+    
+HTML_LINES_INIT = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> """
+
+HTML_LINES_MSG = """<h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>%s</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr>%s%s</tr></table><br>"""
+
+
+HTML_LINES_HEADER = """
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+%s
+</tr>
+"""
+
+HTML_LINES_DATA = """
+<tr>
+%s
+</tr>
+</table>
+
+</body>
+</html>"""
+
+

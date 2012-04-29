@@ -1,1370 +1,989 @@
 #!/usr/bin/env python
+from __future__ import division
 
 """Parse mapping file, checking for a number of undesirable characteristics.
 
 Specifically, we check that:
-    - the filename does not contain spaces (warn + rewrite if it does)
-    - there is an overall run description at the start (warn + add if missing)
-    - there is a SampleID field and, if barcoded, a BarcodeSequence field
-      (warn + correct reasonable variants of both)
-    - there are not duplicate header fields (error)
-    - there are not duplicate near-unique but not exactly unique values 
-      within each column (warning)
-    - If there is a ReversePrimer field, all of the cells in the column contain
-      valid IUPAC DNA characters and all cells have data.
+    - The BarcodeSequence, LinkerPrimerSequences, and ReversePrimer fields 
+       have valid IUPAC DNA characters, and BarcodeSequence characters
+       are non-degenerate (error)
+    - The SampleID, BarcodeSequence, LinkerPrimerSequence, and Description
+       headers are present. (error)
+    - There are not duplicate header fields (error)
+    - There are not duplicate barcodes (error)
+    - Barcodes are of the same length.  Suppressed when 
+       variable_len_barcode flag is passed (warning)
+    - The headers do not contain invalid characters (alphanumeric and 
+       underscore only) (warning)
+    - The data fields do not contain invalid characters (alphanumeric, 
+       underscore, space, and +-%./:,; characters) (warning)
+    - SampleID fields are MIENS compliant (only alphanumeric
+      and . characters) (warning)
+    - There are no duplicates when the primer and variable length 
+       barcodes are appended (error)
+    - There are no duplicates when barcodes and added demultiplex
+       fields (-j option) are combined (error)
+    - Data fields are not found beyond the Description column (warning)
 
-Overall strategy:
-    - maintain list of errors and warnings (initially empty).
-    - for each check in the following classes:
-      - check_name
-      - check_run_description
-      - check_col_headers
-      - check_cols
-    - run the check f(data) -> msg
-    - collect the messages, assigning to error or warning
-    - return errors and warnings
+Errors and warnings will be appended to an initially empty list and returned.
 
-Returns both errors and warnings as lists of formatted strings: should not
-raise exceptions itself under normal circumstances (e.g. if file is
-mis-formatted).
+A log file will be created containing a list of all errors and warnings
+detected.  Header errors can preclude the generation of errors or warnings
+in data cells.
+ 
+A _corrected_mapping.txt file will be created in the output directory with
+these characters replaced with the char_replace parameter character.  If *any*
+other warnings or errors are detected, the _corrected_mapping.txt file will 
+contain a message that the _corrected file to this effect, and will 
+reference the log and html file for the user to correct the problems manually.
 
-SampleID column is required - must contain unique values. 
-BarcodeSequence field required (if is barcoded) and must contain unique values
-
-It is somewhat inefficient to read in the whole table, but on the other hand
-if reading in the mapping file is the bottleneck the downstream analysis is
-likely to prove somewhat challenging as well...
 """
 
-__author__ = "Rob Knight"
+__author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "William Walters"
-__email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
+__email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-from collections import defaultdict
-from string import strip, letters, digits, strip, translate
-from os.path import basename, isdir
-from os import makedirs
-from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
-    trans_all)
-from numpy import array
+from collections import Counter, defaultdict
+from string import letters, digits
+from os.path import basename, join
+from operator import itemgetter
+from copy import deepcopy
+from shutil import copyfile
+
+from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
-from qiime.format import format_map_file
-from optparse import OptionParser
-from cogent.seqsim.sequence_generators import IUPAC_DNA
+from qiime.format import format_mapping_html_data
 
-
-DESC_KEY = "Description"
-SAMPLE_ID_KEY = "SampleID"
-BARCODE_KEY = "BarcodeSequence"
-LINKER_PRIMER_KEY = "LinkerPrimerSequence"
-NEGATIVE_CONTROL_KEY = "NegativeControl"
-
-
-
-STANDARD_FIELD_TYPES = {SAMPLE_ID_KEY:'uid', BARCODE_KEY:'uid', \
-      LINKER_PRIMER_KEY:'uid',NEGATIVE_CONTROL_KEY:['Yes','No']}
-
-# Header category most restrictive
-ALLOWED_CHARS_HEADER = '_' + digits + letters
-# Metadata should be fairly restricted as well
-EXTRA_DESC_CHARS = "+-%./ :,;"
-#EXTRA_COMMENT_CHARS =  ''
-ALLOWED_DESC_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
-# Comment line(s) following header should not be used for parsing data
-# Should allow more characters.
-ALLOWED_SUBCAT_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
-# SampleID names very restricted to be MIENS compliant
-ALLOWED_SAMPLEID_CHARS = "." + digits + letters
-
-ALLOWED_PRIMER_CHARS = "," + "ATCGRYMKWSBDHVN"
-
-def find_diff_length(items):
-    """Return items that differ in length from the first, with indices.
+def check_mapping_file(mapping_fp,
+                       output_dir=".",
+                       has_barcodes=True,
+                       char_replace="_",
+                       verbose=True,
+                       variable_len_barcodes=False,
+                       disable_primer_check=False,
+                       added_demultiplex_field=None):
+    """ Main program function for checking mapping file
     
-    (also returns length of current item and of first item, and the items).
-    Useful for identifying element in a list that is wrong length, e.g. in
-    a table where all the rows are supposed to have the same number of fields.
-
-    Returns [] if there was no problem (note: if None is the element with a
-    diff length, you'll get a TypeError when you try to calculate its length
-    rather than returning it as a value, so the apparent conflict here
-    doesn't actually exist in practice).
-    """
-    result = []
-    orig_len = None
-    for i, item in enumerate(items):
-        if orig_len is None:
-            orig_len = len(item)
-            orig_item = item
-        else:
-            if len(item) != orig_len:
-                result.append([i, item, len(item), orig_item, orig_len])
-    return result
-
-class CharFilter(object):
-    """Checks string for allowed chars.
+    Checks mapping file for errors, warnings, writes log file, html file, 
+    and corrected mapping file.
     
-    Returns cleaned result. Other methods return error message etc."""
-
-    def __init__(self, chars, name=None, invert_charset=False,strip_f=strip,
-        default_char=None):
-
-        """Returns new CharFilter object."""
-        self.Chars = chars
-        self.Name = name
-        self.Invert = invert_charset
-        if invert_charset:
-            if default_char:
-                trans_table = trans_all(chars, default_char)
-                self.Filter = lambda s: s.translate(trans_table)
-            else:
-                self.Filter = exclude_chars(chars)
-        else:
-            if default_char:
-                trans_table = trans_except(chars, default_char)
-                self.Filter = lambda s: s.translate(trans_table)
-            else:
-                self.Filter = keep_chars(chars)
-        self.stripF = strip_f
-
-    def __call__(self, input):
-        """Returns cleaned version of input."""
-        return self.Filter(self.stripF(input))
-
-    def badChars(self, input):
-        """Returns set of bad chars in input (empty if OK)."""
-        orig = self.stripF(input)
-        new = self(orig)
-        return set(orig) - set(new)
-
-    def errMsg(self, input):
-        """Generates error message from input ('' if OK)."""
-        bad = self.badChars(input)
-        if bad:
-            return "Filter '%s' found bad chars '%s' in input '%s'" % \
-                    (str(self.Name), ','.join(sorted(bad)), input)
-        else:
-            return ''
-
-    def resultAndError(self, input):
-        """Convenience wrapper: returns result and error message."""
-        return self(input), self.errMsg(input)
-        
-header_filter = CharFilter(ALLOWED_CHARS_HEADER, "Header Filter", 
-    default_char='')
-descr_filter = CharFilter(ALLOWED_DESC_CHARS, "Description Filter", 
-    default_char='_')
-subcat_filter = CharFilter(ALLOWED_SUBCAT_CHARS, "Subcat Filter", 
-    default_char='_')
-sample_id_filter = CharFilter(ALLOWED_SAMPLEID_CHARS, "SampleID Filter",
-    default_char='.')
-primer_filter = CharFilter(ALLOWED_PRIMER_CHARS, "Primer Filter",
-    default_char='')
-
-class DupChecker(object):
-    """Checks set of objects for duplicates in canonical representation.
+    mapping_fp:  path to metadata mapping file
+    output_dir:  output directory for log, html, corrected mapping file.
+    has_barcodes:  If True, will test for perform barcodes test (presence,
+     uniqueness, valid IUPAC DNA chars).
+    char_replace:  Character used to replace invalid characters in data 
+     fields.  SampleIDs always use periods to be MIENS compliant.
+    verbose: If True, a message about warnings and/or errors will be printed
+     to stdout.
+    variable_len_barcodes:  If True, suppresses warnings about barcodes of
+     varying length.
+    disable_primer_check:  If True, disables tests for valid primer sequences.
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique."""
+     
     
-    Returns dict of {collision:[originals]}, empty if input OK.
-    """
+    header, mapping_data, run_description, errors, warnings =\
+     process_id_map(open(mapping_fp, 'U'), disable_primer_check,
+     has_barcodes, char_replace, variable_len_barcodes,
+     added_demultiplex_field)
 
-    def __init__(self, canonical_f=None, name=None, allow_exact_dup=False,\
-     raw_data=None, added_demultiplex_field=None):
-        """Returns new DupChecker, will use canonical_f for test."""
-        self.CanonicalF = canonical_f
-        self.Name = name
-        self.AllowExactDup = allow_exact_dup
-        self.Raw_Data=raw_data
-        self.added_demultiplex_field=added_demultiplex_field
-        # Need to allow exact duplicates for linker-primer sequences
-        if self.Name=="LinkerPrimerSequence":
-            self.AllowExactDup = True
+    formatted_html = format_mapping_html_data(header, mapping_data,
+     errors, warnings)
+     
+    output_html = join(output_dir +\
+     basename(mapping_fp).replace('.txt', '') + ".html")
 
-    def __call__(self, input):
-        """Checks input for non-uniqueness."""
-        
-        # Need to combine barcodes and added demultiplex field to test 
-        # for uniqueness.
-        if self.Name=="BarcodeSequence" and self.added_demultiplex_field:
-            column_index = 1
-            try:
-                added_column_index =\
-                 self.Raw_Data[0].index(self.added_demultiplex_field)
-            except ValueError:
-                raise ValueError,('Specified added_demultiplex_field %s ' %\
-                 self.added_demultiplex_field + 'not found in mapping file.')
-
-            result = defaultdict(list)
-            
-            row_correction = 1
-            
-            for i in range(len(input)):
-                result[input[i]].append("%s,%s" %\
-                 (input[i],
-                 self.Raw_Data[i + row_correction][added_column_index]))
-                 
-
-
-        
-        else:
-            result = defaultdict(list)
-            if self.CanonicalF:
-                for i in input:
-                    result[self.CanonicalF(i)].append(i)
-            else:
-                for i in input:
-                    result[i].append(i)
-                
-        
-        
-        
-
-        bad_pairs = []
-        
-        
-        for k, v in result.items():
-            
-            if self.Name=="BarcodeSequence" and self.added_demultiplex_field:
-                v_to_test = v
-                
-            if self.AllowExactDup:
-                v_to_test = set(v)
-            else:
-                v_to_test = v
-
-            if not self.added_demultiplex_field:
-                if len(v_to_test) > 1:
-                    
-                    bad_pairs.append((k, v))
-            else:
-                if len(v_to_test) != len(set(v_to_test)):
-                    bad_pairs.append((k, v))
-
-
-        
-        return dict(bad_pairs)
-
-    def errMsg(self, input, field_name=None):
-        """Generates error message from input ('' if OK)."""
-        bad = sorted(self(input).items())
-
-        if bad:
-            # Record column index for row, column locations
-            if self.Raw_Data and field_name:
-                column_index = self.Raw_Data[0].index(field_name)
-            elif self.Name=="BarcodeSequence" and not \
-             self.added_demultiplex_field:
-                column_index = 1
-            elif self.Name=="BarcodeSequence" and self.added_demultiplex_field:
-                column_index = 1
-                added_column_index =\
-                 self.Raw_Data[0].index(self.added_demultiplex_field)
-            else:
-                column_index = None
-
-            
-
-            res = "DupChecker '%s' found the following possible duplicates" \
-                % str(self.Name) +". If these metadata should have the same "+\
-                "name, please correct."
-            if field_name:
-                res += " Found in field %s" % field_name
-            res += ':\n'
-            res += "Group\tOriginal names\n"
-            for k, v in sorted(bad):
-                res += '%s\t%s\n' % (k, ', '.join(map(str,v)))
-            # Get the row indices of bad data
-            row_indices = []
-            index_counter = 0
-            bad_data = []
-            for bad_d in bad:
-                # Pull out barcodes if problems with uniqueness using added
-                # demultiplex
-                if self.added_demultiplex_field:
-                    bad_data = [curr_bad[0] for curr_bad in bad]
-                else:
-                    bad_data += bad_d[1]
-                
-            for row_datum in input:
-                if row_datum in bad_data:
-                    row_indices.append(index_counter)
-                index_counter += 1
-            
-
-            # Only append data if raw_data passed
-            if column_index:
-                # Append row, column indices messages
-                res += "Row, column for all possible duplicate descriptions:\n"
-                for row in row_indices:
-                    res += "Location (row, column):\t%d,%d\n" %\
-                     (row, column_index)
-                    if self.added_demultiplex_field:
-                        res += "Location (row, column):\t%d,%d\n" %\
-                         (row, added_column_index)
-                
-
-            return res
-        else:
-            return ''
-
-    def dupIndices(self, input):
-        """Checks input for non-uniqueness, returning indices of collisions."""
-        result = defaultdict(list)
-        if self.CanonicalF:
-            for i, item in enumerate(input):
-                result[self.CanonicalF(item)].append(i)
-        else:
-            for i, item in enumerate(input):
-                result[item].append(i)
-
-        bad_pairs = []
-        for k, v in result.items():
-            if self.AllowExactDup:
-                v_to_test = set([input[i] for i in v])
-            else:
-                v_to_test = v
-            if len(v_to_test) > 1:
-                bad_pairs.append((k, v))
-        return dict(bad_pairs)
-
-
-def lowercase_whitespace_underscore(s):
-    """Returns s lowercase and stripped of whitespace and underscores"""
-    return s.lower().strip().replace('_','').replace(' ','',).replace('\t','')
-
-lwu = lowercase_whitespace_underscore
-
-class SameChecker(object):
-    """Checks that set of objects is same in canonical representation.
+    html_f = open(output_html, "w")
+    html_f.write(formatted_html)
     
-    Returns list of index, input, f(input), first, f(first); empty if input OK.
-    """
-
-    def __init__(self, canonical_f=None, name=None):
-        """Returns new SameChecker, will use canonical_f for test."""
-        self.CanonicalF = canonical_f
-        self.Name = name
-
-    def __call__(self, input):
-        """Checks input for uniqueness."""
-        overall_result = []
-        orig_val = None
-        first_val = None
-        for i, val in enumerate(input):
-            if self.CanonicalF:
-                res = self.CanonicalF(val)
-            else:
-                res = val
-            if not i:
-                first_res = res
-                first_val = val
-            elif res != first_res:
-                overall_result.append([i, val, res, first_val, first_res])
-        return overall_result
-
-    def errMsg(self, input, field_name=None):
-        """Generates error message from input ('' if OK)."""
-        bad = self(input)
-        if bad:
-            res = "SameChecker '%s' " % str(self.Name) +\
-                "found the following values different from the first" \
-                
-            if field_name:
-                res += "in field %s" % field_name
-            res += ':\n'
-            res += "Index\tVal\tf(Val)\tFirst\tf(First)\n"
-            for i in bad:
-                res += '\t'.join(map(str,i))+'\n'
-            return res
+    #get QIIME directory
+    qiime_dir=get_qiime_project_dir()
+    
+    # Write javascript file necessary for mouseover tooltips.
+    # move javascript file to javascript output directory
+    copyfile(join(qiime_dir,'qiime','support_files',\
+     'js/overlib.js'), join(output_dir,'overlib.js'))
+    
+    corrected_mapping_data = correct_mapping_data(mapping_data,
+     header, char_replace)
+    
+    output_corrected_fp = join(output_dir +\
+     basename(mapping_fp).replace('.txt', '') + "_corrected.txt")
+     
+    write_corrected_mapping(output_corrected_fp, header, run_description, 
+     corrected_mapping_data)
+     
+    output_log_fp = join(output_dir +\
+     basename(mapping_fp).replace('.txt', '') + ".log")
+     
+    write_log_file(output_log_fp, errors, warnings)
+     
+    if verbose:
+        if errors or warnings:
+            print "Errors and/or warnings detected in mapping file.  Please "+\
+             "check the log and html file for details."
         else:
-            return ''
+            print "No errors or warnings were found in mapping file."
+    
 
-def run_checks(data, checks, problems, all_mapping_data=None,
-               added_demultiplex_field=None):
-    """Runs checks on data, reports issues in problems and returns clean data.
-
-    checks should be list of (check_f, type) tuples.
-
-    WARNING: checks are performed only once, so if a later check _introduces_
-    a problem you would have seen in an earlier check you won't see it.
+def process_id_map(mapping_f,
+                   disable_primer_check=False,
+                   has_barcodes=True,
+                   char_replace="_",
+                   variable_len_barcodes=False,
+                   added_demultiplex_field=None):
+    """ Reads mapping file, returns data, warnings, and errors
+    
+    mapping_f:  list of lines (open metadata mapping file object)
+    has_barcodes:  If True, will test for perform barcodes test (presence,
+     uniqueness, valid IUPAC DNA chars).
+    char_replace:  Character used to replace invalid characters in data 
+     fields.  SampleIDs always use periods to be MIENS compliant.
+    variable_len_barcodes:  If True, suppresses warnings about barcodes of
+     varying length.
+    disable_primer_check:  If True, disables tests for valid primer sequences.
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique.
+    
     """
     
-    for check, type_ in checks:
-        data, problem = check(data, raw_data=all_mapping_data,
-         added_demultiplex_field=added_demultiplex_field)
-        if problem:
-            problems[type_].append(problem)
-    return data
-
-def filename_has_space(fname, raw_data=None, added_demultiplex_field=None):
-    """Returns message if filename contains space character"""
-    if ' ' in fname:
-        return fname.replace(' ','_'), \
-            "Filename may not contain spaces. "+\
-            "Please re-upload without spaces, e.g. %s -> %s." \
-            % (fname, fname.replace(' ', '_'))
-    return fname, ''
-
-RUN_DESCRIPTION_DEFAULT = "No run description supplied."
-
-def run_description_missing(desc, default_value=RUN_DESCRIPTION_DEFAULT):
-    """Returns message if run description missing"""
-    if not desc:
-        return default_value, \
-            "Run description was not supplied, using default value."
-    return desc, ''
-
-def adapt_dupchecker(f, name, field_name=None):
-    """Returns function that adapts DupChecker to API for checkers."""
-    dup_checker = DupChecker(f, name)
-    def inner_f(data, field_name=field_name, raw_data=None,
-                added_demultiplex_field=None):
-        """returns f(data) -> (clean_data, error_msg)"""
-        return data, dup_checker.errMsg(data, field_name=field_name)
-    return inner_f
-
-raw_dup_checker = adapt_dupchecker(lambda x:x, 'Duplicate checker')
-space_dup_checker = adapt_dupchecker(lwu, 
-    'Duplicate checker including whitespace and capitalization')
-space_dup_checker_header = adapt_dupchecker(lwu, 
-    'Duplicate checker including whitespace and capitalization', 'Header')
-
-#checks for valid headers
-def sampleid_missing(fields, field_name=SAMPLE_ID_KEY, raw_data=None,
-                     added_demultiplex_field=None):
-    """Returns error message if sample id field doesn't start with #"""
-
-
-    try:
-        if fields[0].strip() == "#" + field_name:
-            return fields, ''
-    except (TypeError, IndexError):
-        pass
-    return fields, 'SampleID field must start with #SampleID: '+\
-    'please ensure that this is not a binary (e.g. Excel) file.' +\
-    ' and that the %s field is first.  Found %s' %\
-     (SAMPLE_ID_KEY,fields[0].strip())
-
-def blank_header(fields, raw_data=None, added_demultiplex_field=None):
-    """Returns error message if any header is empty"""
-    stripped_fields = map(strip, fields)
-    if '' in stripped_fields:
-        return fields, 'Found an empty or all whitespace header. ' +\
-            'Please check the input file for missing headers or ' +\
-            'headers consisting only of forbidden characters.'
-    else:
-        return fields, ''
-
-def bad_char_in_header(fields, raw_data=None, added_demultiplex_field=None):
-    """Returns error message if bad char in header"""
-    bad_chars = []
-    filtered_fields=[]
-    for f in fields:
-        filtered, bad = header_filter.resultAndError(f)
-        if bad and f != "#SampleID":
-            bad_chars.append([f, bad])
-        filtered_fields.append(filtered)
-    if bad_chars:
-        return filtered_fields, "Found bad characters in these headers:\n" +\
-            '\n'.join(["%s\t%s" % (bad, f) for bad, f in bad_chars])
-    return fields, ''
-
-def barcode_missing(fields, raw_data=None, added_demultiplex_field=None):
-    """Returns error message if second field is not barcode field"""
-    if len(fields) < 2:
-        return fields, \
-            'Second field should be barcode field but got < 2 fields.  '+\
-            'Correct header errors before attempting to address warnings.'
-    elif fields[1] == BARCODE_KEY:
-        return fields, ''
-    else:
-        return fields, "Second field should be barcode field:" + \
-            " expected %s but got %s." % (BARCODE_KEY, fields[1]) +\
-            "  Correct header errors before attempting to address warnings."
-            
-def linker_primer_missing(fields, raw_data=None, added_demultiplex_field=None):
-    """Returns error message if third field is not linker_primer field"""
-    if len(fields) < 3:
-        return fields, \
-            'Third field should be linker_primer field but got < 3 fields.  '+\
-            'Correct header errors before attempting to address warnings.'
-    elif fields[2] == LINKER_PRIMER_KEY or fields[1]== LINKER_PRIMER_KEY:
-        return fields, ''
-    else:
-        return fields, "Third field should be linker_primer field:" + \
-            " expected %s but got %s." % (LINKER_PRIMER_KEY, fields[2]) +\
-            " Correct header errors before attempting to address warnings."
-
-def description_missing(fields, raw_data=None, added_demultiplex_field=None):
-    """Returns error message if last field is not description field"""
-    if fields[-1] == DESC_KEY:
-        return fields, ''
-    else:
-        return fields + [DESC_KEY], "Last field should be description field:"+\
-            " expected %s but got %s." % (DESC_KEY, fields[-1]) +\
-            "  Correct header errors before attempting to fix warnings."
-            
-
-def pad_rows(table):
-    """Ensures that table has missing fields padded with empty string."""
-    num_cols = len(table[0])
-    result = []
-    for row in table:
-        if len(row) == num_cols:
-            result.append(row)
-        elif len(row) > num_cols:
-            result.append(row[:num_cols])
-        else: #must be too short
-            result.append(row + ['']*(num_cols-len(row)))
-    return result
+    errors = []
+    warnings = []
     
-
-def wrap_arrays(sample_descriptions, data):
-    """Wraps sample descriptions and data into appropriate dicts.
-
-    Assumptions:
-    - first field in sample_descriptions is 'Description'
-    - sample_descriptions exist for each row
-    - first row in data is the header
-    - first col in data is the sample id
-    - descriptions already removed from the data matrix by this point
+    mapping_data, header, comments = parse_mapping_file(mapping_f,
+     suppress_stripping=True)
     
-    Results:
-    - header (= first row as list of strings)
-    - sample_desc (= dict of {sample_id: description} for each sample)
-    - data (= dict of {sample_id:{field_name:val}} for each sample/field)
-    """
-    sample_descriptions = list(sample_descriptions)[1:]
-    header = list(data[0, 1:])  #remove first field = SampleID
-    body = data[1:]
-    sample_ids = body[:,0]
-    body = body[:,1:]
-    if len(sample_ids) != len(sample_descriptions):
-        raise ValueError, "Didn't get same number of sample ids and "+\
-         "descriptions!"
-    sample_desc = dict(zip(sample_ids, sample_descriptions))
-    data_as_dict = {}
-    for sample_id, fields in zip(sample_ids, body):
-        data_as_dict[sample_id] = dict(zip(header, fields))
-    return header, sample_desc, data_as_dict
+    sample_id_ix = 0
+    # Get index of last field of header
+    desc_ix = len(header) - 1
+    bc_ix = 1
+    linker_primer_ix = 2
+     
+    # Find errors/warnings in header fields
+    errors, warnings = check_header(header, errors,
+     warnings, sample_id_ix, desc_ix, bc_ix, linker_primer_ix,
+     added_demultiplex_field)
+     
+    # Find errors/warnings in data fields, get corrected form with invalid
+    # characters replaced
+    errors, warnings = check_data_fields(header, mapping_data,
+     errors, warnings, disable_primer_check, has_barcodes, char_replace,
+     variable_len_barcodes, added_demultiplex_field)
+    
+    return header, mapping_data, comments, errors, warnings
+    
+############  Being data field checking functions
 
-def check_vals_by_type(vals, type_):
-    """Checks each val can be converted to type, returns index if fails.
-    """
-    result = []
-    for i, v in enumerate(vals):
-        try:
-            type_(v)
-        except (TypeError, ValueError):
-            result.append(i)
-    return result
-
-def check_vals_by_contains(vals, contains):
-    """Checks each val is in contains, returns index if fails."""
-    result = []
-    for i, v in enumerate(vals):
-        try:
-            if v not in contains:
-                result.append(i)
-        except (KeyError, ValueError, TypeError):
-            result.append(i)
-    return result
-
-def check_field_types((data, field_types), raw_data=None,
+def check_data_fields(header,
+                      mapping_data,
+                      errors,
+                      warnings,
+                      disable_primer_check=False,
+                      has_barcodes=True,
+                      char_replace="_",
+                      variable_len_barcodes=False,
                       added_demultiplex_field=None):
-    """Checks that field types match data"""
-    errors = []
-    col_headers = list(data[0])
-    body = data[1:]
-    for col, type_ in field_types.items():
-        bad_indices = []
-        if col in col_headers:
-            index = col_headers.index(col)
-            vals = body[:,index]
-            if isinstance(type_, type):
-                bad_indices = check_vals_by_type(vals, type_)
-                for i in bad_indices:
-                    errors.append(
-                    "Could not convert %s (sample id %s, col %s) to right type"
-                        % (vals[i], body[i,0], col))
-            elif type_ == 'uid':
-                dup_checker = DupChecker(name=col,\
-                 added_demultiplex_field=added_demultiplex_field,
-                 raw_data=raw_data)
-                err_msg = dup_checker.errMsg(vals)
-                if err_msg:
-                    errors.append(err_msg)
-            else:
-                bad_indices = check_vals_by_contains(vals, type_)
-                for i in bad_indices:
-                    errors.append(
-                "Could not find %s (sample id %s, col %s) in allowed vals %s"%
-                    (vals[i], body[i,0], col, type_))
-    return (data, field_types), '\n'.join(errors)
-
-def check_same_length((data, field_types),col_name=BARCODE_KEY, raw_data=None,
- added_demultiplex_field=None):
-    """Checks field lengths, reporting mismatch: assumes column present."""
-    col_headers = list(data[0])
-    errors = []
+    """ Handles all functions for valid data fields
     
-    
-    if col_name not in col_headers:
-        errors.append(("The required field %s is missing from the mapping file"
-            % col_name))
-    else:
-        col_index = col_headers.index(col_name)
-        result = find_diff_length(data[1:,col_index])
-        for index, item, len_item, orig_item, len_orig_item in result:
-            errors.append(("In field %s, item %s (sample id %s) "+
-            "differs in length from first item %s (%s and %s).") %
-            (col_name,item,data[index+1,0],orig_item,len_item,len_orig_item)+\
-            "Location (row, column):\t%d,1" % index)
-    return (data, field_types), '\n'.join(errors)
-
-
-'''def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
-    raw_data=None):
-    """ Checks Sample IDs for MEINS compliance, only alphanumeric and . chars
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    warnings:  list of warnings
+    has_barcodes:  If True, will test for perform barcodes test (presence,
+     uniqueness, valid IUPAC DNA chars).
+    char_replace:  Character used to replace invalid characters in data 
+     fields.  SampleIDs always use periods to be MIENS compliant.
+    variable_len_barcodes:  If True, suppresses warnings about barcodes of
+     varying length.
+    disable_primer_check:  If True, disables tests for valid primer sequences.
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique.
     """
-    problems = []
-    headers, body = data[0], data[1:]
 
-    for i, row in enumerate(body):
-        for j, val in enumerate(row):
-            new_val, e = filter_f.resultAndError(val)
-            if e:
-                row[j] = new_val
-                problems.append(
-            "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
-             (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
-             "\t%d,%d" % (i,j))
-    return (data, field_types), '\n'.join(problems)'''
-
-def check_bad_chars((data, field_types), filter_f=descr_filter,
-    filter_sample_id=sample_id_filter, raw_data=None,
-    added_demultiplex_field=None):
-    """Checks all fields for bad chars, removing and warning."""
-    problems = []
-    headers, body = data[0], data[1:]
     
-    sample_id_index = 0
-    linker_primer_index = 2
-
-    for i, row in enumerate(body):
-        for j, val in enumerate(row):
-            if j==sample_id_index:
-                continue
-                #new_val, e = filter_sample_id.resultAndError(val)
-            elif j == linker_primer_index:
-                continue
-            else:
-                new_val, e = filter_f.resultAndError(val)
-            if e:
-                row[j] = new_val
-                problems.append(
-            "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
-             (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
-             "\t%d,%d" % (i,j))
-    return (data, field_types), '\n'.join(problems)
+    # Check for valid IUPAC DNA characters in barcode, primer, and reverse
+    # primer fields.  Separate check for barcodes and primers, because primer
+    # pools separated by commas are allowed, only single barcode allowed.
+    # Even if primer check disabled, may still have situation where reverse
+    # primers are used, so still do check
+    errors = check_dna_chars_primers(header, mapping_data, errors,
+     disable_primer_check)
+     
+    # Skip barcode presence/valid DNA char checks if not barcoded
+    if has_barcodes:
+        errors = check_dna_chars_bcs(header, mapping_data, errors,
+         has_barcodes)
+         
+    # Check that barcodes all have the same length if not variable length
+    if not variable_len_barcodes and has_barcodes:
+        warnings = check_bcs_lengths(header, mapping_data, warnings)
+        
+    # Check for duplicate barcodes/added demultiplexing fields
+    errors = check_bc_duplicates(header, mapping_data, errors, has_barcodes,
+     variable_len_barcodes, added_demultiplex_field)
+     
+    # Check for duplicate SampleIDs
+    errors = check_sampleid_duplicates(header, mapping_data, errors)
     
-def check_bad_chars_sampleids((data, field_types), filter_f=descr_filter,
-    filter_sample_id=sample_id_filter, raw_data=None,
-    added_demultiplex_field=None):
-    """Checks all fields for bad chars, removing and warning."""
-    problems = []
-    headers, body = data[0], data[1:]
+    # Check for invalid characters
+    warnings = check_chars_data_fields(header, mapping_data, warnings)
     
-    sample_id_index = 0
-    linker_primer_index = 2
-
-    for i, row in enumerate(body):
-        for j, val in enumerate(row):
-            if j==sample_id_index:
-                new_val, e = filter_sample_id.resultAndError(val)
-            else:
-                continue
-            '''elif j == linker_primer_index:
-                continue
-            else:
-                new_val, e = filter_f.resultAndError(val)'''
-            if e:
-                row[j] = new_val
-                problems.append(
-            "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
-             (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
-             "\t%d,%d" % (i,j))
-    return (data, field_types), '\n'.join(problems)
-
-def check_mixed_caps((data, field_types), dup_f=lwu, 
-    dup_name='Caps and Whitespace', allow_exact_dup=True, raw_data=None,
-    added_demultiplex_field=None):
-    """Checks all fields for mixed caps, warning."""
+    # Check for data fields after Description column
+    warnings = check_fields_past_bounds(header, mapping_data, warnings)
     
-    dup_checker = DupChecker(dup_f, dup_name, allow_exact_dup,\
-     raw_data)
-    problems = []
-    headers, body = data[0], data[1:]
-    for i, col in enumerate(body.T):
-        errmsg = dup_checker.errMsg(col, field_name=headers[i])
-        if errmsg:
-            problems.append(errmsg)
-    return (data, field_types), '\n'.join(problems)
-
-def check_missing_descriptions((sample_descriptions, sample_ids, 
-    run_description), column_index=None, raw_data=None,
-    added_demultiplex_field=None):
-    """Returns warnings for sample ids with missing descriptions."""
-    missing = []
-    for i, desc in enumerate(sample_descriptions):
-        if not desc.strip():
-            missing.append(i)
-    if missing:
-        err =  "These sample ids lack descriptions (replaced with "+\
-         "'missing_description'): %s" %\
-         ','.join(sorted([sample_ids[i] for i in missing]))
-        for i in missing:
-            sample_descriptions[i] = 'missing_description'
-    else:
-        err = ''
-    return (sample_descriptions, sample_ids, run_description), err
-
-def check_missing_sampleIDs(sample_ids, problems):
-    """Returns warnings for missing sample IDs"""
-
-    # sample IDs will always be in the first column (0)
-    column = 0
+    return errors, warnings
     
-    row = 0
+def check_fields_past_bounds(header,
+                             mapping_data,
+                             warnings):
+    """ Checks for fields after Description header, adds to warnings
     
-    for sample_ID in sample_ids:
-        # skip header
-        if sample_ID == "#SampleID":
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    warnings:  list of warnings
+    """
+    
+    desc_field = "Description"
+    correction = 1
+    
+    try:
+        desc_field_ix = header.index(desc_field)
+    except ValueError:
+        # Skip if Description field not present, already get header error
+        return warnings
+        
+    for curr_row in range(len(mapping_data)):
+        for curr_col in range(len(mapping_data[curr_row])):
+            if curr_col > desc_field_ix:
+                warnings.append('Data field '+\
+                 '%s found after Description column\t%d,%d' %\
+                 (mapping_data[curr_row][curr_col].replace('\n',''),
+                 curr_row + correction, curr_col))
+                 
+    return warnings
+    
+def check_chars_data_fields(header,
+                            mapping_data,
+                            warnings):
+    """ Checks for valid SampleID (MIENS) and other data field characters
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    warnings:  list of warnings
+    """
+    
+    allowed_data_field_chars = "+-%./ :,;_" + digits + letters
+    allowed_sampleid_chars = "." + digits + letters
+    correction = 1
+    
+    sample_id_field = "SampleID"
+    fields_to_skip = ["BarcodeSequence", "LinkerPrimerSequence",
+     "ReversePrimer"]
+     
+    for curr_field in range(len(header)):
+        if header[curr_field] in fields_to_skip:
             continue
-        if not sample_ID.strip():
-            problems['warning'].append('Missing Sample ID.  ' +\
-             'Location (row, column):\t%d,%d' % (row, column))
-        row += 1
-            
-
-    return problems
-
-def check_duplicate_descriptions((sample_descriptions, sample_ids,
-    run_description), raw_data=None, added_demultiplex_field=None):
-    """Returns warnings for duplicate descriptions"""
-    
-    d = DupChecker()
-    dup_indices = d.dupIndices(sample_descriptions)
-    problems = []
-    for k, v in dup_indices.items():
-        problems.append("%s: %s" % (','.join([sample_ids[i] for i in v]), k))
-    #if there were any problems, insert a useful header
-    if problems:
-        problems.insert(0, 
-            "These sample ids have duplicate descriptions (unique " +\
-            "descriptions can help troubleshoot issues with metadata):")
-    #Insert a list of (rows,columns) locations for later error correction
-    #Get column index for Description column
-    if raw_data:
-        column_index = len(raw_data[0]) - 1
-    #Get list of the row indices of duplications
-    row_indices = []
-    for dups in dup_indices.values():
-        row_indices += dups
-
-    #If there are problems, append list of rows,columns in the standard way
-    if problems:
-        problems.append("Row, column for all duplicate descriptions:")
-        for row in row_indices:
-            # Row requires a correction to start at zero
-            problems.append("Location (row, column):\t%d,%d" % \
-             (row-1, column_index))
-
-
-    return (sample_descriptions, sample_ids, run_description), \
-        '\n'.join(problems)
-        
-def check_duplicate_sample_ids((sample_descriptions, sample_ids,
-    run_description), raw_data=None, added_demultiplex_field=None):
-    """Returns warnings for duplicate sample_ids"""
-    
-
-    d = DupChecker(raw_data=raw_data,
-     added_demultiplex_field=added_demultiplex_field)
-    dup_indices = d.dupIndices(sample_ids)
-    problems = []
-    for k, v in dup_indices.items():
-        problems.append("%s: %s" % (','.join([sample_ids[i] for i in v]), k))
-    #if there were any problems, insert a useful header
-    if problems:
-        problems.insert(0, 
-            "These sample ids have duplicate ids:")
-    # Column_index for sample_ids is always 0
-    column_index = 0
-    #Get list of the row indices of duplications
-    row_indices = []
-    for dups in dup_indices.values():
-        row_indices += dups
-
-    #If there are problems, append list of rows,columns in the standard way
-    if problems:
-        problems.append("Row, column for all duplicate ids:")
-        for row in row_indices:
-            # Row requires a correction to start at zero
-            problems.append("Location (row, column):\t%d,%d" % \
-             (row-1, column_index))
-
-
-    return (sample_descriptions, sample_ids, run_description), \
-        '\n'.join(problems)
-        
-def check_reverse_primers(reverse_primers, problems, col_headers):
-    """ Checks for valid IUPAC DNA characters in ReversePrimers field """
-    
-    reverse_primer_index = col_headers.index("ReversePrimer")
-    
-    for row in range(len(reverse_primers)):
-        for base in reverse_primers[row]:
-           try:
-               IUPAC_DNA[base]
-           except KeyError:
-               # The primers are always located in the third column
-               problems['warning'].append('reverse primer %s ' % reverse_primers[row] +\
-                'has invalid characters.  Location (row, column):\t' +\
-                '%d,%d' % (row, reverse_primer_index))
-        if len(reverse_primers[row])==0:
-            problems['warning'].append('Missing reverse primer.  ' +\
-             'Location (row, column):\t%d,%d' % (row, reverse_primer_index))
-
-    return problems
-    
-    
-        
-def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
- disable_primer_check=False, added_demultiplex_field=None):
-    """Returns warnings for primers/barcodes that have invalid characters 
-    
-    The check_primers_barcodes function only tests for valid IUPAC DNA
-    characters and for the presence of a primer or barcode.  No testing
-    for valid Golay/Hamming barcodes or duplicates are performed in this
-    function."""
-    
-    
-
-    
-    for row in range(len(primers)):
-        
-        # Split primers in case pooled primers were passed
-        curr_primers = primers[row].split(',')
-        
-        for curr_primer in curr_primers:
-            
-
-            for base in curr_primer:
-                try:
-                    IUPAC_DNA[base]
-                except KeyError:
-                    # The primers are always located in the third column
-                    problems['warning'].append('The primer %s ' % primers[row] +\
-                    'has invalid characters.  Location (row, column):\t' +\
-                    '%d,2' % row)
-        if len(primers[row])==0 and not disable_primer_check:
-            problems['warning'].append('Missing primer.  ' +\
-             'Location (row, column):\t%d,2' % row)
-    
-    if is_barcoded:
-        for row in range(len(barcodes)):
-            curr_barcode = barcodes[row]
-            if added_demultiplex_field:
-                curr_barcode = curr_barcode.split(',')[0]
-            for base in curr_barcode:
-                try:
-                    IUPAC_DNA[base]
-                except KeyError:
-                    # The barcodes are always located in the second column
-                    problems['warning'].append('The barcode %s ' % barcodes[row] +\
-                     'has invalid characters.  Location (row, column):\t' +\
-                     '%d,1' % row)
-            if len(barcodes[row])==0:
-                problems['warning'].append('Missing barcode. '+\
-                'Location (row, column):\t%d,1' % row)
-
-    return problems
-
-def check_description_chars((sample_descriptions, sample_ids, run_description),\
- filter_f=descr_filter, raw_data=None, added_demultiplex_field=None):
-    """Returns warnings for descriptions with bad chars, replacing them."""
-    new_descr = map(filter_f, sample_descriptions)
-    errors = []
-
-    # Store descriptions that have changed to find indices
-    changed_desc_indices = []
-    # Use a counter to record row indices of bad chars
-    row_index = 0
-    for id_, old, new in zip(sample_ids, sample_descriptions, new_descr):
-        if old != new:
-            errors.append("%s: changed '%s' to '%s'" % (id_, old, new))
-            changed_desc_indices.append(row_index)
-        row_index += 1
-    if errors:
-        errors.insert(0, \
-         "These sample ids have bad characters in their descriptions:")
-            
-    #Insert a list of (rows,columns) locations for later error correction
-    #Get column index for Description column
-    column_index = len(raw_data[0]) - 1
-
-
-    #If there are errors, append list of rows,columns in the standard way
-    if errors:
-        errors.append("Row, column for all descriptions with bad characters:")
-        for row in changed_desc_indices:
-            # Row requires a correction to start at zero
-            errors.append("Location (row, column):\t%d,%d" % \
-             (row-1, column_index))
-
-    
-    
-    return (new_descr, sample_ids, run_description), '\n'.join(errors)
-
-def get_sample_description_column(data):
-    """ Returns column of sample_description, used for indexing errors """
-    
-    # Test to ensure that column referenced is the sample_description
-    '''if not(data[0][-1]=='Description'):
-        raise ValueError,('Incorrect mapping data passed.  Final column '+\
-        'should be "Description"')
-    else:
-        # Return len of column corrected by -1 for proper indexing
-        return (len(data[0])-1) '''
-    
-    return (len(data[0])-1)
-
-
-# Commenting out the global lists of functions, causes issues with unit 
-# testing.  Moved to local variables in functions
-'''STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]'''
-# Removed run description checks, no longer using to fill in missing desc.
-''' STANDARD_RUN_DESCRIPTION_CHECKS = [(run_description_missing, 'warning'), 
-    (descr_filter.resultAndError, 'warning')] '''
-'''STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
-    (check_missing_descriptions, 'warning'),
-    (check_duplicate_sample_ids, 'warning'),
-    (check_description_chars, 'warning'),
-    ]
-STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
-    (bad_char_in_header, 'error'),
-    (space_dup_checker_header, 'error'), 
-    (blank_header, 'error'),
-    (description_missing, 'error'),
-    ]'''
-''' BARCODE_COL_HEADER_CHECKS = [(barcode_missing, 'error')]'''
-'''STANDARD_COL_CHECKS = [
-        (check_field_types, 'error'),
-        (check_bad_chars, 'warning'),
-        (check_mixed_caps, 'warning'),
-        ]
-
-        
-
-BARCODE_COL_CHECKS = [(check_same_length, 'warning')]'''
-''' PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')] '''
-
-def get_primers_barcodes(data, is_barcoded, disable_primer_check,
-                         added_demultiplex_field=None):
-    """ Returns list of primers, barcodes from mapping file """
-    
-    primers=[]
-    barcodes=[]
-    
-    header_index = 0
-    
-    if not is_barcoded and disable_primer_check:
-        return primers, barcodes
-    # Convert DNA characters to uppercase, as IUPAC_DNA dictionary only
-    # contains uppercase characters
-    for sample in data:
-        if sample[1]=="BarcodeSequence":
-            continue
-        if not is_barcoded:
-            if sample[1]== "LinkerPrimerSequence":
-                continue
-        if is_barcoded and not disable_primer_check and \
-         not added_demultiplex_field:
-            barcodes.append(sample[1].upper())
-            primers.append(sample[2].upper())
-            
-        elif is_barcoded and not disable_primer_check and \
-         added_demultiplex_field:
-            
-            try:
-                added_demultiplex_index =\
-                 list(data[header_index]).index(added_demultiplex_field)
-            except ValueError:
-                raise ValueError,('Specified demultiplex -j option '+\
-                 '%s not found in mapping file header.' %\
-                 added_demultiplex_field)
-                 
-                 
-            barcodes.append(sample[1].upper() + "," +\
-             sample[added_demultiplex_index])
-            primers.append(sample[2].upper())
-            
-        elif not is_barcoded and not disable_primer_check:
-            primers.append(sample[2].upper())
-            
-        elif is_barcoded and disable_primer_check and \
-         not added_demultiplex_field:
-            barcodes.append(sample[1].upper())
-            
-        elif is_barcoded and disable_primer_check and added_demultiplex_field:
-            
-            try:
-                added_demultiplex_index =\
-                 list(data[header_index]).index(added_demultiplex_field)
-            except ValueError:
-                raise ValueError,('Specified demultiplex -j option '+\
-                 '%s not found in mapping file header.' %\
-                 added_demultiplex_field)
-                 
-                 
-            barcodes.append(sample[1].upper() + "," +\
-             sample[added_demultiplex_index])
-    
-    
-    return primers, barcodes
-    
-def get_reverse_primers(data, col_headers):
-    """ Returns list of reverse primers if column is present """
-    
-    if "ReversePrimer" in col_headers:
-        rev_primer_index = col_headers.index("ReversePrimer")
-        reverse_primers = []
-        for row in data:
-            # skip inclusion of the header
-            if row[rev_primer_index]=="ReversePrimer":
-                continue
-            reverse_primers.append(row[rev_primer_index])
-    else:
-        reverse_primers = False
-  
-    return reverse_primers
-    
-def check_dup_var_barcodes_primers(primers, barcodes, problems,
-                                   disable_primer_check=False):
-    """ Checks that no duplicate seqs occur when barcodes/primers appended """
-    
-    # Get list of concatenated barcodes + primers
-    concat_barcodes_primers = []
-    
-    for primer, barcode in map(None, primers, barcodes):
-        if not disable_primer_check:
-            concat_barcodes_primers.append(barcode+primer)
+        if header[curr_field] == sample_id_field:
+            valid_chars = allowed_sampleid_chars
         else:
-            concat_barcodes_primers.append(barcode)
+            valid_chars = allowed_data_field_chars
+        for curr_data in range(len(mapping_data)):
+            # Need to skip newline characters
+            curr_cell = mapping_data[curr_data][curr_field].replace('\n', '')
+            for curr_char in curr_cell:
+                if curr_char not in valid_chars:
+                    warnings.append("Invalid characters found in %s\t%d,%d" %\
+                     (mapping_data[curr_data][curr_field].replace('\n', ''),
+                     curr_data + correction, curr_field))
+                    break
+    
+    return warnings
     
     
+def check_dna_chars_primers(header,
+                            mapping_data,
+                            errors,
+                            disable_primer_check=False
+                            ):
+    """ Checks for valid DNA characters in primer fields
     
-    for seq_index in range(len(concat_barcodes_primers)):
-        # Check for any duplicates, append warning to problems
-        if concat_barcodes_primers.count(concat_barcodes_primers[seq_index])>1:
-            problems['warning'].append('The barcode + primer sequence '+\
-            '"%s"' % concat_barcodes_primers[seq_index] + ' has '+\
-             'duplicate results.  Location (row, column):\t' +\
-             '%d,1' % seq_index)
+    Also flags empty fields as errors unless flags are passed to suppress
+    barcode or primer checks.
     
-    return problems
-    
-
-def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
-    char_replace="_", var_len_barcodes = False, added_demultiplex_field=None):
-    """ Parse ID mapping file.
-   
-    Returns the following:
-
-    headers: list of header values
-    id_map: {sample_id:{header:value}}
-    description_map: {sample_id:description}
-    run_description: run description as a string
-    errors: list of error messages generated
-    warnings: list of warning messages generated
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    disable_primer_check:  If True, disables tests for valid primer sequences.
     """
     
-    STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]
-    STANDARD_COL_CHECKS = [
-        (check_field_types, 'error'),
-        (check_bad_chars_sampleids, 'error'),
-        (check_bad_chars, 'warning'),
-        (check_mixed_caps, 'warning'),
-        ]
-
-    BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
+    valid_dna_chars = "ACBDGHKMNSRTWVY,"
     
-    STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
-    (check_missing_descriptions, 'warning'),
-    (check_duplicate_sample_ids, 'error'),
-    (check_duplicate_descriptions, 'warning'),
-    (check_description_chars, 'warning'),
-    ]
-    STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
-    (bad_char_in_header, 'error'),
-    (space_dup_checker_header, 'error'), 
-    (blank_header, 'error'),
-    (description_missing, 'error'),
-    ]
-
-    BARCODE_COL_HEADER_CHECKS = [(barcode_missing, 'error')]
-
-    PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')]
+    # Detect fields directly, in case user does not have fields in proper
+    # order in the mapping file (this will generate error separately)
+    header_fields_to_check = ["ReversePrimer"]
+    if not disable_primer_check:
+        header_fields_to_check.append("LinkerPrimerSequence")
+     
+    check_indices = []
     
-    col_checks=STANDARD_COL_CHECKS
-    filename_checks=STANDARD_FILENAME_CHECKS
-    sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS
-    col_header_checks=STANDARD_COL_HEADER_CHECKS
-    field_types=STANDARD_FIELD_TYPES
+    for curr_field in range(len(header)):
+        if header[curr_field] in header_fields_to_check:
+            check_indices.append(curr_field)
     
-    problems = defaultdict(list)
-    errors, warnings = [], []
-    col_headers, id_map, description_map, run_description = \
-        None, None, None, None
-
-    #check infile name
-    infile_name = basename(infile.name)
-    run_checks(infile_name, filename_checks, problems)
+    # Correction factor for header being the first line
+    correction_ix = 1 
+    # Check for missing data
+    for curr_data in range(len(mapping_data)):
+        for curr_ix in check_indices:
+            if len(mapping_data[curr_data][curr_ix]) == 0:
+                errors.append("Missing expected DNA sequence\t%d,%d" %\
+                 (curr_data + correction_ix, curr_ix))
     
-    #read data
+    # Check for non-DNA characters     
+    for curr_data in range(len(mapping_data)):
+        for curr_ix in check_indices:
+            for curr_nt in mapping_data[curr_data][curr_ix]:
+                if curr_nt not in valid_dna_chars:
+                    errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
+                     (mapping_data[curr_data][curr_ix],
+                      curr_data + correction_ix, curr_ix))
+                    continue
+    
+    return errors
+    
+def check_dna_chars_bcs(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True):
+    """ Checks for valid DNA characters in barcode field
+    
+    Also flags empty fields as errors unless flags are passed to suppress
+    barcode or primer checks.
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    has_barcodes:  If True, will test for perform barcodes test (presence,
+     uniqueness, valid IUPAC DNA chars).
+    """
+    
+    valid_dna_chars = "ACTG"
+    
+    # Detect fields directly, in case user does not have fields in proper
+    # order in the mapping file (this will generate error separately)
+    header_fields_to_check = []
+    if has_barcodes:
+        header_fields_to_check.append("BarcodeSequence")
+     
+    check_indices = []
+    
+    for curr_field in range(len(header)):
+        if header[curr_field] in header_fields_to_check:
+            check_indices.append(curr_field)
+    
+    # Correction factor for header being the first line
+    correction_ix = 1 
+    # Check for missing data
+    for curr_data in range(len(mapping_data)):
+        for curr_ix in check_indices:
+            if len(mapping_data[curr_data][curr_ix]) == 0:
+                errors.append("Missing expected DNA sequence\t%d,%d" %\
+                 (curr_data + correction_ix, curr_ix))
+                continue
+            for curr_nt in mapping_data[curr_data][curr_ix]:
+                if curr_nt not in valid_dna_chars:
+                    errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
+                     (mapping_data[curr_data][curr_ix],
+                     curr_data + correction_ix, curr_ix))
+                    continue
+    
+    return errors
+    
+def check_bcs_lengths(header,
+                      mapping_data,
+                      warnings):
+    """ Adds warnings if barcodes have different lengths
+    
+    As this is mostly intended to find typos in barcodes, this will find the
+    mode of the barcode lengths, and flag barcodes that are different from
+    this.
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    warnings:  list of warnings
+    """
+    
+    len_counts = defaultdict(int)
+    
+    header_field_to_check = "BarcodeSequence"
+    
+    # Skip if not field BarcodeSequence 
     try:
-        data, headers, run_description = parse_mapping_file(infile, \
-        suppress_stripping=True)
-
-        headers[0] = "#" + headers[0]
-        col_headers = headers
-        data.insert(0, headers)
-        if run_description:
-            for n in range(len(run_description)):
-                run_description[n] = run_description[n].replace('\n','')
-        # Need to replace newline characters in data
-        for row in range(len(data)):
-            for column in range(len(data[row])):
-                data[row][column] = data[row][column].replace("\n","")
-    except (TypeError, ValueError), e:
-        problems['error'].append(
-            "Couldn't read map file '%s': failed with error message %s" 
-            % (infile_name, e))
-        #Note: this error is fatal so we have to bail out if we get it
-        return col_headers, id_map, description_map, run_description, errors, \
-            warnings
-            
-    # Test headers/data for appropriate lengths, if mapping file is not
-    # properly tab delineated, will have short lengths
-    if len(headers)<4:
-        raise ValueError, ('Headers format incorrect, '+\
-         'please ensure that mapping file headers are tab delineated.')
-    for datum in data:
-        if len(datum)<4:
-            raise ValueError, ('Mapping data incorrect, '+\
-             'please ensure that data are tab delineated in mapping file.')
+        check_ix = header.index(header_field_to_check)
+    except ValueError:
+        return warnings
     
-    # Save raw data for referencing source 'cells' in log file.
-    raw_data = data
+    for curr_data in range(len(mapping_data)):
+        len_counts[len(mapping_data[curr_data][check_ix])] += 1
     
-    #check col values
-    data = array(pad_rows(data))
+    # length of the mode
+    expected_bc_len = max(len_counts.iteritems(), key=itemgetter(1))[0]
     
-
-    #add barcode checks if needed
-    if is_barcoded:
-        col_header_checks.extend(BARCODE_COL_HEADER_CHECKS)
-        if not var_len_barcodes and not added_demultiplex_field:
-            col_checks.extend(BARCODE_COL_CHECKS)
-            
-            
-    if not disable_primer_check:
-        col_header_checks.extend(PRIMER_COL_CHECKS)
-
+    correction_ix = 1
+    for curr_data in range(len(mapping_data)):
+        if len(mapping_data[curr_data][check_ix]) != expected_bc_len:
+            warnings.append('Barcode %s differs than length %d\t%d,%d' %\
+             (mapping_data[curr_data][check_ix], expected_bc_len,
+             curr_data + correction_ix, check_ix))
+    
+    return warnings
+    
+def check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field=None):
+    """ Checks for barcode and other demultiplexing duplicates
+    
+    Default check is for unique barcodes.  A potential tricky situation to 
+    handle is variable length barcodes, than when combined with the 5' end of
+    a primer sequence, are indistinguishable, and these are tested for as well.
+    Finally, combinations of barcode sequences and added_demultiplex_field 
+    values are tested to ensure that combinations of these values are unique.
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    has_barcodes:  If True, will test for perform barcodes test (presence,
+     uniqueness, valid IUPAC DNA chars).
+    variable_len_barcodes:  If True, suppresses warnings about barcodes of
+     varying length.
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique.
+    """
+    
+    if (has_barcodes and not variable_len_barcodes 
+     and not added_demultiplex_field):
+        errors = check_fixed_len_bcs_dups(header, mapping_data, errors)
+    if (has_barcodes and variable_len_barcodes
+     and not added_demultiplex_field):
+        errors = check_variable_len_bcs_dups(header, mapping_data, errors)
+    if added_demultiplex_field:
+        errors = check_added_demultiplex_dups(header, mapping_data, errors,
+         has_barcodes, added_demultiplex_field) 
+    
+    return errors
+    
+def check_fixed_len_bcs_dups(header,
+                             mapping_data,
+                             errors):
+    """ Checks barcodes of same length for duplicates, adds to errors if found
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    """
+    
+    header_field_to_check = "BarcodeSequence"
+    
+    # Skip if no field BarcodeSequence 
+    try:
+        check_ix = header.index(header_field_to_check)
+    except ValueError:
+        return errors
         
+    barcodes = []
     
-    #check col headers
-    col_headers = run_checks(col_headers, col_header_checks, problems, raw_data)
-
-
-    #check col values
-    data = array(pad_rows(data))
+    correction = 1
     
-
-    sample_description_column = get_sample_description_column(data)
+    for curr_data in mapping_data:
+        barcodes.append(curr_data[check_ix])
     
-    #Note: last field should be description if default checks are applied, so
-    #need to remove. However, we are not making any assumptions here, so if the
-    #last col isn't a description we will add one.
-    #here, data and description both include the column headers.
-    if col_headers[-1] == DESC_KEY:
-        data, sample_descriptions = data[:,:-1], data[:,-1]
+    dups = duplicates_indices(barcodes)
+    
+    for curr_dup in dups:
+        for curr_loc in dups[curr_dup]:
+            errors.append('Duplicate barcode %s found.\t%d,%d' %\
+             (curr_dup, curr_loc + correction, check_ix))
+    
+    return errors
+    
+def check_variable_len_bcs_dups(header,
+                                mapping_data,
+                                errors):
+    """ Checks variable length barcodes plus sections of primers for dups
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    """
+    
+    header_field_to_check = "BarcodeSequence"
+    
+    # Skip if no field BarcodeSequence 
+    try:
+        check_ix = header.index(header_field_to_check)
+    except ValueError:
+        return errors
+        
+    linker_primer_field = "LinkerPrimerSequence"
+    
+    try:
+        linker_primer_ix = header.index(linker_primer_field)
+        no_primers = False
+    except ValueError:
+        no_primers = True
+    
+    barcodes = []
+    bc_lens = []
+    
+    correction = 1
+    
+    for curr_data in mapping_data:
+        barcodes.append(curr_data[check_ix])
+        bc_lens.append(len(curr_data[check_ix]))
+    
+    # Get max length of barcodes to determine how many primer bases to slice
+    barcode_max_len = max(bc_lens)
+    
+    # Have to do second pass to append correct number of nucleotides to 
+    # check for duplicates between barcodes and primer sequences
+    
+    bcs_added_nts = []
+    for curr_data in mapping_data:
+        if no_primers:
+            bcs_added_nts.append(curr_data[check_ix])
+        else:
+            adjusted_len = barcode_max_len - len(curr_data[check_ix])
+            bcs_added_nts.append(curr_data[check_ix] +\
+             curr_data[linker_primer_ix][0:adjusted_len])
+
+    dups = duplicates_indices(bcs_added_nts)
+    
+    for curr_dup in dups:
+        for curr_loc in dups[curr_dup]:
+            if no_primers:
+             errors.append('Duplicate barcode %s found.\t%d,%d' %\
+              (curr_dup, curr_loc + correction, check_ix))
+            else:
+             errors.append('Duplicate barcode and primer fragment sequence '+\
+              '%s found.\t%d,%d' % (curr_dup, curr_loc + correction, check_ix))
+    
+    return errors
+    
+def check_added_demultiplex_dups(header,
+                                 mapping_data,
+                                 errors,
+                                 has_barcodes=True,
+                                 added_demultiplex_field=None):
+    """ Checks that all barcodes and added demultiplex fields are unique
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    has_barcodes:  True if barcode fields are to be used.
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique.
+    """
+    
+    # Treat as variable length to test combinations of barcodes and the
+    # added demultiplex field (should return the same result for the barcode
+    # component)
+    correction = 1
+    
+    header_field_to_check = "BarcodeSequence"
+    bc_found = False
+    
+    # Skip if no field BarcodeSequence 
+    if has_barcodes:
+        try:
+            bc_ix = header.index(header_field_to_check)
+            bc_found = True
+        except ValueError:
+            pass
+        
+    linker_primer_field = "LinkerPrimerSequence"
+    
+    try:
+        linker_primer_ix = header.index(linker_primer_field)
+        no_primers = False
+    except ValueError:
+        no_primers = True
+        
+    try:
+        added_demultiplex_ix = header.index(added_demultiplex_field)
+    except ValueError:
+        # Skip out at this point, header check will have error for missing
+        # field
+        return errors
+    
+    barcodes = []
+    bc_lens = []
+    bcs_added_field = []
+    
+    if has_barcodes and bc_found:
+        for curr_data in mapping_data:
+            barcodes.append(curr_data[bc_ix])
+            bc_lens.append(len(curr_data[bc_ix]))
+    
+        # Get max length of barcodes to determine how many primer bases to slice
+        barcode_max_len = max(bc_lens)
+    
+        # Have to do second pass to append correct number of nucleotides to 
+        # check for duplicates between barcodes and primer sequences
+    
+        
+        for curr_data in mapping_data:
+            if no_primers:
+                bcs_added_field.append(curr_data[bc_ix] +\
+                 curr_data[added_demultiplex_ix])
+            else:
+                adjusted_len = barcode_max_len - len(curr_data[bc_ix])
+                bcs_added_field.append(curr_data[bc_ix] +\
+                 curr_data[linker_primer_ix][0:adjusted_len] +\
+                 curr_data[added_demultiplex_ix])
     else:
-        data, sample_descriptions = data, array([DESC_KEY] + ['']*(len(data)-1))
-
-    data, field_types = run_checks((data, field_types), col_checks, problems, \
-     raw_data, added_demultiplex_field)
-    sample_ids = data[:,0]
-
-
-
-    #check sample descriptions
-    sample_descriptions, sample_ids, run_description = \
-    run_checks((sample_descriptions, sample_ids,run_description, \
-     ), sample_description_checks, problems, raw_data)
-     
-
+        for curr_data in mapping_data:
+            bcs_added_field.append(curr_data[added_demultiplex_ix])
     
-    #check primers,barcodes for valid IUPAC DNA characters
-    primers, barcodes = get_primers_barcodes(data, is_barcoded, \
-     disable_primer_check, added_demultiplex_field)
-     
-     
 
-    problems = check_primers_barcodes(primers, barcodes, problems, \
-     is_barcoded, disable_primer_check, added_demultiplex_field)
-         
-    if not disable_primer_check:
-        reverse_primers = get_reverse_primers(data, col_headers)
-        if reverse_primers:
-            problems = check_reverse_primers(reverse_primers, \
-             problems, col_headers)
-     
-    if var_len_barcodes:
-        problems = check_dup_var_barcodes_primers(primers, barcodes, problems,
-         disable_primer_check)
+    dups = duplicates_indices(bcs_added_field)
+
+    for curr_dup in dups:
+        if has_barcodes and bc_found:
+            for curr_loc in dups[curr_dup]:
+                errors.append('Duplicate barcode and added demultiplex field '+\
+                  '%s found.\t%d,%d' % (curr_dup, curr_loc + correction, bc_ix))
+        else:
+            for curr_loc in dups[curr_dup]:
+                errors.append('Duplicate added demultiplex field '+\
+                 '%s found.\t%d,%d' % (curr_dup, curr_loc + correction,
+                 added_demultiplex_ix))
+              
+    return errors
+    
+def check_sampleid_duplicates(header,
+                              mapping_data,
+                              errors):
+    """ Flags duplicate, missing SampleIDs as errors
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    errors:  list of errors
+    """
+    
+    sample_id_field = "SampleID"
+    correction = 1
+    
+    try:
+        sample_id_ix = header.index(sample_id_field)
+    except ValueError:
+        # Skip out at this point, header check will have error for missing
+        # field
+        return errors
+        
+    sample_ids = []
+    
+    # Need to save locations of missing IDs so they aren't flagged twice
+    missing_sample_ids = []
+    
+    for curr_data in range(len(mapping_data)):
+        if len(mapping_data[curr_data][sample_id_ix]) == 0:
+            errors.append('Missing SampleID.\t%d,%d' %\
+             (curr_data + correction, sample_id_ix))
+            missing_sample_ids.append(curr_data + correction)
+        sample_ids.append(mapping_data[curr_data][sample_id_ix])
+        
+    dups = duplicates_indices(sample_ids)
+    
+    for curr_dup in dups:
+        for curr_loc in dups[curr_dup]:
+            if (curr_loc + correction) not in missing_sample_ids:
+                errors.append('Duplicate SampleID %s found.\t%d,%d' %\
+                 (curr_dup, curr_loc + correction, sample_id_ix))
+              
+    return errors
         
     
-    #check for missing sample_IDs
-    problems = check_missing_sampleIDs(sample_ids, problems)
+    
+############  End data field checking functions
 
-    #return formatted output
-    headers, description_map, id_map = wrap_arrays(sample_descriptions, data)
-    errors = problems['error']
-    warnings = problems['warning']
-    
-    
-    return headers, id_map, description_map, run_description, errors, warnings
+############  Begin header field checking functions
 
-def write_corrected_file(headers, id_map, description_map, run_description, \
-output_filepath, chars_replaced=False):
-    """ Writes corrected mapping file with illegal characters replaced """
+def check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix,
+                 desc_ix,
+                 bc_ix,
+                 linker_primer_ix,
+                 added_demultiplex_field=None):
+    """ Checks header for valid characters, unique and required fields
     
-    outf = open(output_filepath, 'w')
+    header:  list of header strings
+    errors:  list of errors
+    warnings:  list of warnings
+    sample_id_ix:  index of SampleID in header
+    desc_ix: index of Description in header
+    bc_ix:  index of BarcodeSequence in header
+    linker_primer_ix:  index of LinkerPrimerSequence in header
+    added_demultiplex_field:  If specified, references a field in the mapping
+     file to use for demultiplexing.  These are to be read from fasta labels
+     during the actual demultiplexing step.  All combinations of barcodes,
+     primers, and the added_demultiplex_field must be unique.
+    """
     
-    if chars_replaced:
-        outfile_data=format_map_file(headers, id_map, DESC_KEY, SAMPLE_ID_KEY,\
-         description_map, run_description)
-    else:
-        outfile_data="# No invalid characters were found and replaced.\n"+\
-        "# Note that non-IUPAC DNA characters found in primer or barcode\n"+\
-        "# sequences are not replaced but will be listed in the .log file." 
+    # Check for duplicates, append to errors if found
+    errors = check_header_dups(header, errors)
+    
+    # Check for valid characters
+    warnings = check_header_chars(header, warnings)
+    
+    # Check for required header fields
+    errors = check_header_required_fields(header, errors, sample_id_ix,
+     desc_ix, bc_ix, linker_primer_ix, added_demultiplex_field)
+    
+    return errors, warnings
+    
+def check_header_dups(header,
+                      errors):
+    """ Checks for duplicates in headers, appends to errors if found
+    
+    header:  list of header strings
+    errors:  list of errors
+    """
+    
+    for curr_elem in range(len(header)):
+        if header.count(header[curr_elem]) != 1:
+            errors.append('%s found in header %d times.  ' %\
+             (header[curr_elem], header.count(header[curr_elem])) +\
+             'Header fields must be unique.\t%d,%d' % (0, curr_elem))
+    
+    return errors
+    
+def check_header_chars(header,
+                       warnings,
+                       allowed_chars_header = '_' + digits + letters):
+    """ Checks for valid characters in headers, appends to warnings
+    
+    header:  list of header strings
+    warnings:  list of warnings
+    """
+    
+    for curr_elem in range(len(header)):
+        for curr_char in header[curr_elem]:
+            if curr_char not in allowed_chars_header:
+                warnings.append('Found invalid character in %s ' %\
+                 header[curr_elem] + 'header field.\t%d,%d' % (0,curr_elem))
+                break
+                 
+    return warnings
+    
+def check_header_required_fields(header,
+                                 errors,
+                                 sample_id_ix,
+                                 desc_ix,
+                                 bc_ix,
+                                 linker_primer_ix,
+                                 added_demultiplex_field=None):
+    """ Checks for required header fields, appends to errors if not found
+    
+    header:  list of header strings
+    errors:  list of errors
+    sample_id_ix:  index of SampleID in header
+    desc_ix: index of Description in header
+    bc_ix:  index of BarcodeSequence in header
+    linker_primer_ix:  index of LinkerPrimerSequence in header
+    """
+    
+    header_checks = {
+     sample_id_ix: "SampleID",
+     desc_ix: "Description",
+     bc_ix: "BarcodeSequence",
+     linker_primer_ix: "LinkerPrimerSequence"
+     }
+    
+    for curr_check in header_checks:
+        if (header[curr_check] != header_checks[curr_check] and\
+         header_checks[curr_check] == "Description"):
+            errors.append('Found header field %s, last field should be %s' %\
+             (header[curr_check], header_checks[curr_check]) +\
+             '\t%d,%d' % (0, curr_check))
+        elif (header[curr_check] != header_checks[curr_check] and\
+         header_checks[curr_check] != "Description"):
+            errors.append('Found header field %s, expected field %s' %\
+             (header[curr_check], header_checks[curr_check]) +\
+             '\t%d,%d' % (0, curr_check))
+             
+    if added_demultiplex_field:
+        if added_demultiplex_field not in header:
+            errors.append('Missing added demultiplex field %s\t%d,%d' %\
+             (added_demultiplex_field, -1, -1))
+    
+    return errors
+    
+#######   End header field checking functions
+
+#######   Misc functions
+
+def correct_mapping_data(mapping_data,
+                         header,
+                         char_replace="_"):
+    """ Replaces invalid characters in mapping data
+    
+    mapping_data:  list of lists of raw metadata mapping file data
+    header:  list of header strings
+    char_replace:  Character used to replace invalid characters in data 
+     fields.  SampleIDs always use periods to be MIENS compliant.
+    """
+    
+    corrected_data = deepcopy(mapping_data)
+    
+    valid_sample_id_chars = letters + digits + "."
+    valid_data_field_chars = letters + digits + "+-%./ :,;_"
+    
+    sample_id_char_replace = "."
+    
+    sample_id_field = "SampleID"
+    fields_to_skip = ["BarcodeSequence", "LinkerPrimerSequence",
+     "ReversePrimer"]
      
-    for data in outfile_data:
-        outf.write(data)
+    try:
+        sample_id_ix = header.index(sample_id_field)
+    except ValueError:
+        sample_id_ix = -1
+    
+    fields_to_skip_ixs = []    
+    for curr_field in fields_to_skip:
+        try:
+            fields_to_skip_ixs.append(header.index(curr_field))
+        except ValueError:
+            continue
+            
+    for curr_row in range(len(mapping_data)):
+        for curr_col in range(len(mapping_data[curr_row])):
+            if curr_col in fields_to_skip_ixs:
+                continue
+            elif (sample_id_ix != -1) and (curr_col == sample_id_ix):
+                curr_replacement = sample_id_char_replace
+                curr_valid_chars = valid_sample_id_chars
+            else:
+                curr_replacement = char_replace
+                curr_valid_chars = valid_data_field_chars
+            
+            curr_corrected_field = ""
+            for curr_char in mapping_data[curr_row][curr_col].replace('\n',''):
+                if curr_char not in curr_valid_chars:
+                    curr_corrected_field += curr_replacement
+                else:
+                    curr_corrected_field += curr_char
+                    
+            corrected_data[curr_row][curr_col] = curr_corrected_field
+            
+    return corrected_data
+
+
+def get_duplicates(fields):
+    """ Returns duplicates out of a list
+    
+    Modified from stackoverflow.com example duplicate detection code
+    http://stackoverflow.com/a/5420328
+    
+    fields:  list of elements to check for duplicates
+    """
+    cnt= Counter(fields)
+    return [key for key in cnt.keys() if cnt[key]> 1]
+
+def duplicates_indices(fields):
+    """ Gets dictionary of duplicates:locations in a list
+    
+    Modified from stackoverflow.com example duplicate detection code
+    http://stackoverflow.com/a/5420328
+    
+    fields:  list of elements to check for duplicates
+    """
+    dup, ind = get_duplicates(fields), defaultdict(list)
+    for i, v in enumerate(fields):
+        if v in dup: ind[v].append(i)
+    return ind
+    
+def write_corrected_mapping(output_corrected_fp,
+                            header,
+                            run_description, 
+                            corrected_mapping_data):
+    """ Writes corrected mapping file with invalid characters replaced
+    
+    output_corrected_fp:  Filepath to write corrected mapping file to.
+    header:  list of strings of header data
+    run_description:  Comment lines, written after header.
+    corrected_mapping_data:  list of lists of corrected mapping data.
+    """
+    
+    out_f = open(output_corrected_fp, "w")
+    
+    out_f.write("#" + "\t".join(header).replace('\n', '') + "\n")
+    
+    for curr_comment in run_description:
+        out_f.write("#" + curr_comment.replace('\n', '') + "\n")
         
-    return
+    for curr_data in corrected_mapping_data:
+        out_f.write("\t".join(curr_data).replace('\n', '') + "\n")
+        
+def write_log_file(output_log_fp,
+                   errors,
+                   warnings):
+    """ Writes log file with details of errors, warnings in mapping file.
     
-def test_for_replacement_chars(warnings, errors):
-    """ Checks for replacement character warnings, returns true if so """
+    output_log_fp:  output filepath for log file.
+    errors:  list of errors
+    warnings:  list of warnings
+    """
     
+    out_f = open(output_log_fp, "w")
     
-    for warning in warnings:
-        if warning.startswith("Removed ") or \
-         warning.startswith("These sample ids have bad characters") or \
-         warning.startswith("These sample ids lack descriptions (replaced "):
-            return True
+    if not errors and not warnings:
+        out_f.write("No errors or warnings found in mapping file.")
+        return
+        
+    out_f.write("# Errors and warnings are written as a tab separated "+\
+     "columns, with the first column showing the error or warning, and the "+\
+     "second column contains the location of the error or warning, written "+\
+     "as row,column, where 0,0 is the top left header item (SampleID).  "+\
+     "Problems not specific to a particular data cell will be listed as "+\
+     "having 'no location'.\n")
+    out_f.write("Errors -----------------------------\n")
     for error in errors:
-        if error.startswith("Removed ") or \
-         error.startswith("These sample ids have bad characters") or \
-         error.startswith("These sample ids lack descriptions (replaced "):
-            return True
-    
-    return False
-    
-def write_logfile(errors, warnings, log_filepath, mapping_filepath):
-    """ Writes errors/warnings or lack thereof to log filepath """
-    
-    try:
-        log_f = open(log_filepath,"w")
-    except IOError:
-        # Attempt to create log file name based on mapping file name
-        log_filepath += mapping_filepath.replace(".txt",".log")
-        log_f = open(log_filepath,"w")
-    
-    if not (errors or warnings):
-        log_f.write("No errors or warnings for mapping file %s" % \
-         mapping_filepath)
-    else:
-        log_f.write("#Listed locations of errors/warnings in row/column "+\
-        "format have an index that is \n#in reference to the beginning of "+\
-        "the sample IDs and metadata.\n#Location (0,0) is the first SampleID "+\
-        "in a given data set.")
-         
-    if errors:
-        log_f.write('\nERRORS-------------------\n')
-        for ix, f in enumerate(errors):
-            log_f.write("%d: %s\n" % (ix, f))
-    if warnings:
-        log_f.write('\nWARNINGS -------------------\n')
-        for ix, f in enumerate(warnings):
-            log_f.write("%d: %s\n" % (ix, f))
-            
-    return log_filepath
-
-
-def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
- verbose, var_len_barcodes, disable_primer_check, added_demultiplex_field=None):
-    """ Central program function for checking mapping file """
-
-    
-    headers, id_map, description_map, run_description, errors, warnings = \
-     process_id_map(open(infile_name, 'U'), disable_primer_check,
-     has_barcodes, char_replace,\
-     var_len_barcodes, added_demultiplex_field)
+        if error.split('\t')[1] == "-1,-1":
+            curr_err = error.split('\t')[0] + "\tno location"
+        else:
+            curr_err = error
+        out_f.write(curr_err + "\n")
+    out_f.write("Warnings ---------------------------\n")
+    for warning in warnings:
+        if warning.split('\t')[1] == "-1,-1":
+            curr_warning = warning.split('\t')[0] + "\tno location"
+        else:
+            curr_warning = warning
+        out_f.write(curr_warning + "\n")
      
 
-    chars_replaced = test_for_replacement_chars(warnings, errors)
 
-    
-    mapping_root_name = infile_name.split("/")[-1].replace(".txt","")
-    
-    if not output_dir.endswith("/"):
-        output_dir += "/"
-    try:
-        if not isdir(output_dir):
-            makedirs(output_dir)
-    except IOError:
-        raise IOError,('Unable to create output directory %s ' % output_dir)
-    try:
-        corrected_output_filepath = output_dir + mapping_root_name + \
-         '_corrected.txt'
-        outf = open(corrected_output_filepath, 'w')
-        outf.close()
-    except IOError:
-        raise IOError, ('Unable to create corrected output file %s ' %\
-         corrected_output_filepath)
-    try:
-        log_filepath = output_dir + mapping_root_name + '.log'
-        outf = open(log_filepath, 'w')
-        outf.close()
-    except IOError:
-        raise IOError, ('Unable to create log file %s ' % log_filepath)
-            
-    write_corrected_file(headers, id_map, description_map, run_description,\
-     corrected_output_filepath, chars_replaced)
-         
-    log_filepath = write_logfile(errors, warnings, log_filepath, infile_name)
-    
-    if verbose and (errors or warnings):
-        print('Errors and/or warnings occurred, see log file %s' % log_filepath)
-    if verbose and not(errors or warnings):
-        print('No errors or warnings for mapfile %s' % infile_name)
 
 
     

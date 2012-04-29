@@ -273,16 +273,27 @@ def check_map(infile, disable_primer_check, barcode_type="golay_12",
     else:
         var_len_barcodes = False
     
-    
-    hds, id_map, dsp, run_description, errors, warnings = \
-        process_id_map(infile, is_barcoded=has_barcodes, \
+    # hds, id_map, dsp, run_description, errors, warnings
+    hds, mapping_data, run_description, errors, warnings= \
+        process_id_map(infile, has_barcodes=has_barcodes, \
         disable_primer_check=disable_primer_check,
         added_demultiplex_field=added_demultiplex_field,
-        var_len_barcodes=var_len_barcodes)
+        variable_len_barcodes=var_len_barcodes)
         
     if errors:
         raise ValueError,('Errors were found with mapping file, '+\
          'please run check_id_map.py to identify problems.')
+
+         
+    id_map = {}
+    
+    for curr_data in mapping_data:
+        id_map[curr_data[0]] = {}
+        
+    
+    for header in range(len(hds)):
+        for curr_data in mapping_data:
+            id_map[curr_data[0]][hds[header]] = curr_data[header]
     
     barcode_to_sample_id = {}
     

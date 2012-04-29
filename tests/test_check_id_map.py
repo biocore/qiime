@@ -1,864 +1,1508 @@
 #!/usr/bin/env python
-#file test_check_id_map.py
 
-__author__ = "Rob Knight"
+__author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "William Walters"
-__email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
+__email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-
+from os.path import isdir, isfile, exists, join, basename
+from shutil import rmtree
 from collections import defaultdict
-from numpy import array
-from string import strip
+
 from cogent.util.unit_test import TestCase, main
-from StringIO import StringIO
-from qiime.check_id_map import (find_diff_length, CharFilter, lwu, 
-    DupChecker, SameChecker, 
-    run_checks, filename_has_space, run_description_missing, adapt_dupchecker,
-    sampleid_missing, blank_header, bad_char_in_header, pad_rows, 
-    barcode_missing, description_missing, wrap_arrays,
-    check_vals_by_type, check_vals_by_contains, check_field_types,
-    check_same_length, check_bad_chars, check_mixed_caps,
-    check_missing_descriptions, check_duplicate_descriptions,
-    check_description_chars, process_id_map, get_primers_barcodes,
-    check_primers_barcodes, check_missing_sampleIDs,
-    check_dup_var_barcodes_primers, get_reverse_primers, check_reverse_primers,
-    linker_primer_missing, check_bad_chars_sampleids
-    )
+from cogent.util.misc import remove_files, get_random_directory_name
 
+from qiime.util import create_dir, get_tmp_filename
+from qiime.check_id_map import (check_mapping_file, process_id_map,
+ check_data_fields, check_fields_past_bounds, check_chars_data_fields,
+ check_dna_chars_primers, check_dna_chars_bcs, check_bcs_lengths,
+ check_bc_duplicates, check_fixed_len_bcs_dups, check_variable_len_bcs_dups,
+ check_added_demultiplex_dups, check_sampleid_duplicates, check_header,
+ check_header_dups, check_header_chars, check_header_required_fields,
+ correct_mapping_data, duplicates_indices)
 
-
-class TopLevelTests(TestCase):
-    """Tests of top-level functions"""
-    def test_find_diff_length(self):
-        """find_diff_length should find wrong length item"""
-        fdl = find_diff_length
-        self.assertEqual(fdl(['a','b','c']), [])
-        self.assertEqual(fdl(['a','b','ccc','d']), [[2, 'ccc',3,'a',1]])
-
-    def test_lwu(self):
-        """lwu should case-convert, strip whitespace/underscores"""
-        x = '  aBc_D e Fg\t g'
-        self.assertEqual(lwu(x), 'abcdefgg')
-        self.assertEqual(lwu('abc'), 'abc')
-        self.assertEqual(lwu(''), '')
-
-    def test_run_checks(self):
-        """run_checks should run a series of checks on data"""
-        def bad_if_upper(x, raw_data=None, added_demultiplex_field=None):
-            if x.upper() == x:
-                return x.lower(), 'X is uppercase'
-            else:
-                return x, ''
-        def bad_if_short(x, raw_data=None, added_demultiplex_field=None):
-            if len(x) < 10:
-                return x+'-----', 'X is short'
-            else:
-                return x, ''
-        def bad_if_lower(x, raw_data=None, added_demultiplex_field=None):
-            if x.lower() == x:
-                return x, 'X is lowercase'
-            else:
-                return x, ''
-
-        checks = [(bad_if_lower, 'warning'), 
-            (bad_if_upper, 'error'),
-            (bad_if_short, 'error'), 
-            ]
+class CheckIdMapTests(TestCase):
+    def setUp(self):
+        # create the temporary input files that will be used
         
-        problems = defaultdict(list)
-        result = run_checks('ABC', checks, problems,
-         added_demultiplex_field=None)
-        self.assertEqual(problems, {'error':['X is uppercase', 'X is short']})
-        self.assertEqual(result, 'abc-----')
-
-    def test_filename_has_space(self):
-        """filename_has_space should complain if space in filename"""
-        self.assertEqual(filename_has_space('x.txt'), ('x.txt',''))
-        self.assertEqual(filename_has_space('x .txt'), ('x_.txt', 
-            'Filename may not contain spaces. '+ \
-            'Please re-upload without spaces, e.g. x .txt -> x_.txt.'))
-
-    def test_run_description_missing(self):
-        """run_description_missing should complain if no run description"""
-        self.assertEqual(run_description_missing('x'), ('x', ''))
-        self.assertEqual(run_description_missing(''), 
-            ('No run description supplied.',  \
-             'Run description was not supplied, using default value.'))
-
-    def test_adapt_dupchecker(self):
-        """adapt_dupchecker should adapt DupChecker to correct API"""
-        raw_dup_checker = adapt_dupchecker(lambda x:x, 'DupCheck')
-        self.assertEqual(raw_dup_checker(['x','y']), (['x','y'],''))
-        self.assertEqual(raw_dup_checker(['x','x']), (['x','x'], \
-            "DupChecker 'DupCheck' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nx\tx, x\n"))
-
-    def test_sampleid_missing(self):
-        """sampleid_missing should complain if sampleid missing"""
-        self.assertEqual(sampleid_missing(['#SampleID', 'x','y']),\
-            (['#SampleID', 'x','y'],''))
-        res = sampleid_missing(['x','y','z'])
-        self.assertEqual(res[1][:10], 'SampleID f')
-
-    def test_blank_header(self):
-        """blank_header should complain if whitespace fields in header"""
-        self.assertEqual(blank_header(['x','y','z']), (['x','y','z'],''))
-        self.assertEqual(blank_header(['x',' ', 'z']), (['x',' ','z'], \
-            'Found an empty or all whitespace header. Please check the input '+\
-            'file for missing headers or headers consisting only of '+\
-            'forbidden characters.'))
-
-    def test_bad_char_in_header(self):
-        """bad_char_in_header should complain if bad char in header"""
-        self.assertEqual(bad_char_in_header(['x','y','z']), (['x','y','z'], ''))
-        header, msg = bad_char_in_header(['x','\\','z'])
-        self.assertNotEqual(msg, '')
+        self._files_to_remove = []
         
-        header, msg = bad_char_in_header(['x','#','z'])
-        self.assertNotEqual(msg, '')
-
-    def test_pad_rows(self):
-        """pad_rows should produce correct table"""
-        good_table = [['a','b'],['c','d']]
-        bad_too_long = [['a','b'],['c','d','e']]
-        bad_too_short = [['a','b'],['c']]
-        self.assertEqual(pad_rows(good_table), good_table)
-        self.assertEqual(pad_rows(bad_too_long),good_table)
-        self.assertEqual(pad_rows(bad_too_short), [['a','b'],['c','']])
-
-
-    def test_barcode_missing(self):
-        """barcode_missing should complain if barcode missing"""
-        fields = ['x','BarcodeSequence', 'y']
-        self.assertEqual(barcode_missing(fields), (fields, ''))
-        fields = ['x','y']
-        self.assertEqual(barcode_missing(fields), (fields, 
-        "Second field should be barcode field: "+
-        "expected BarcodeSequence but got y.  Correct header errors before attempting to address warnings."))
-        fields = ['x']
-        self.assertEqual(barcode_missing(fields), (fields,
-        "Second field should be barcode field but got < 2 fields.  Correct header errors before attempting to address warnings."))
+        # Input data
+        self.sample_correct_mapping_data = sample_correct_mapping_data
+        self.sample_errors_mapping_data = sample_errors_mapping_data
+        self.sample_warnings_mapping_data = sample_warnings_mapping_data
+        self.sample_errors_warnings_mapping_data =\
+         sample_errors_warnings_mapping_data
         
-    def test_linkerprimersequence_missing(self):
-        """ linker_primer_missing should test for presence of field """
-        fields = ['x', 'BarcodeSequence', 'LinkerPrimerSequence', 'y']
+        self.correct_mapping_fp = get_tmp_filename(\
+         prefix = 'correct_mapping_',
+         suffix = '.txt')
+        map_file = open(self.correct_mapping_fp, 'w')
+        map_file.write(self.sample_correct_mapping_data)
+        map_file.close()
         
+        self.errors_mapping_fp = get_tmp_filename(\
+         prefix = 'errors_mapping_',
+         suffix = '.txt')
+        map_file = open(self.errors_mapping_fp, 'w')
+        map_file.write(self.sample_errors_mapping_data)
+        map_file.close()
         
-        self.assertEqual(linker_primer_missing(fields), (fields, ''))
-        # Should return error if not named correctly.
-        fields = ['x', 'BarcodeSequence', 'LinkerPrimer', 'y']
-        self.assertEqual(linker_primer_missing(fields), (fields,
-         "Third field should be linker_primer field: expected LinkerPrimerSequence but got LinkerPrimer. Correct header errors before attempting to address warnings."))
+        self.warnings_mapping_fp = get_tmp_filename(\
+         prefix = 'warnings_mapping_',
+         suffix = '.txt')
+        map_file = open(self.warnings_mapping_fp, 'w')
+        map_file.write(self.sample_warnings_mapping_data)
+        map_file.close()
         
-
-    def test_description_missing(self):
-        """description_missing should complain if description missing"""
-        fields = ['x','Description']
-        self.assertEqual(description_missing(fields), (fields, ''))
-        fields = ['x','y']
-        self.assertEqual(description_missing(fields),\
-         (['x', 'y', 'Description'], \
-         'Last field should be description field: expected Description but got y.  Correct header errors before attempting to fix warnings.'))
-
-    def test_wrap_arrays(self):
-        """wrap_arrays should return correct headers and dict"""
-        good_data = array([
-            ['SampleID','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','No','x'],
-            ])
-        sample_descriptions = array(['Description', 'xtest', 'ytest'])
-        header, sample_desc, data_as_dict = wrap_arrays(
-            sample_descriptions, good_data)
-        self.assertEqual(header, ['bc', 'ph', 'ctl', 'x'])
-        self.assertEqual(sample_desc, {'x':'xtest', 'y':'ytest'})
-        self.assertEqual(data_as_dict, 
-            {'x':{'bc':'x','ph':'3','ctl':'Yes','x':'x'},
-             'y':{'bc':'y','ph':'4','ctl':'No','x':'x'},
-             })
-
-    def test_check_vals_by_type(self):
-        """check_vals_by_type should return indices that can't convert"""
-        good_vals = [1,'2',3.0]
-        bad_vals = [1, 'x', [3,4], 4, None]
-        self.assertEqual(check_vals_by_type(good_vals, int), [])
-        self.assertEqual(check_vals_by_type(bad_vals, int), [1,2,4])
-
-    def test_check_vals_by_contains(self):
-        """check_vals_by_contains should return indices not in supplied object"""
-        good_vals = ['a','b','a']
-        bad_vals = [None, 'x', 'a', 3]
-        self.assertEqual(check_vals_by_contains(good_vals, 'ab'), [])
-        self.assertEqual(check_vals_by_contains(bad_vals, 'ab'), [0,1,3])
-
-    def test_check_field_types(self):
-        """check_field_types should return string of errors for invalid fields"""
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','No','x'],
-            ])
-        self.assertEqual(check_field_types((good_data, field_types)), 
-                ((good_data, field_types),''))
-        bad_ctl = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','Nx','x'],
-            ])
-        self.assertEqual(check_field_types((bad_ctl, field_types)),
-            ((bad_ctl, field_types),
-            "Could not find Nx (sample id y, col ctl) in allowed vals "+
-            "['Yes', 'No']"))
-
-        bad_ph = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','x','Yes','x'],
-            ['y','y','4','No','x'],
-            ])
-        self.assertEqual(check_field_types((bad_ph, field_types)),
-            ((bad_ph, field_types),
-            "Could not convert x (sample id x, col ph) to right type"))
-
-        bad_bc = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','x','4','No','x'],
-            ])
-        self.assertEqual(check_field_types((bad_bc, field_types)),
-            ((bad_bc, field_types),
-                "DupChecker 'bc' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nx\tx, x\n"))
-
-    def test_check_lengths(self):
-        """check_lengths should return string of errors for invalid fields"""
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','No','x'],
-            ])
-        self.assertEqual(check_same_length((good_data, field_types), 'bc'), 
-                ((good_data, field_types),''))
-        bad_bc = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','yx','4','No','x'],
-            ])
-        self.assertEqual(check_same_length((bad_bc, field_types),'bc'),
-            ((bad_bc, field_types),
-            "In field bc, item yx (sample id y) differs in length from "+
-            "first item x (2 and 1).Location (row, column):\t1,1"))
-
-    def test_check_bad_chars(self):
-        """check_bad_chars should return string of errors for invalid fields"""
+        self.errors_warnings_mapping_fp = get_tmp_filename(\
+         prefix = 'errors_warnings_mapping_',
+         suffix = '.txt')
+        map_file = open(self.errors_warnings_mapping_fp, 'w')
+        map_file.write(self.sample_errors_warnings_mapping_data)
+        map_file.close()
         
-        # Additional good chars
-        # These include alphanumeric, underscore, space, and +-%./:,;
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3+ 3','Yes.Yes','x;y,t'],
-            ['y','y','4_-3','No%','x/z:'],
-            ])
-        self.assertEqual(check_bad_chars((good_data, field_types)), 
-                ((good_data, field_types),''))
-        bad_vals = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x!','3','Yes','x'],
-            ['y','y++','3 4','No&','x'],
-            ])
+        # Output data
+        self.expected_html_data_correct_input = expected_html_data_correct_input
+        self.expected_corrected_data_correct_input =\
+         expected_corrected_data_correct_input
+        self.expected_log_data_correct_input = expected_log_data_correct_input
         
-        self.assertEqual(check_bad_chars((bad_vals, field_types)),\
-         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y++', '3 4', 'No_', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell No& (now No_) in sample id y, col ctl. Location (row, column):\t1,3'))
+        self.expected_html_errors_output = expected_html_errors_output
+        self.expected_data_errors_corrected_output =\
+         expected_data_errors_corrected_output
+        self.expected_data_log_errors_output = expected_data_log_errors_output
+        self.expected_html_errors_suppressed_bcs =\
+         expected_html_errors_suppressed_bcs
+        self.expected_output_log_errors_bcs_suppressed =\
+         expected_output_log_errors_bcs_suppressed
          
-    def test_check_bad_chars_handles_primer_pool(self):
-        """ Should allow commas in primer field for primer pools """
+        self.expected_html_output_warnings = expected_html_output_warnings
+        self.expected_corrected_warnings_output =\
+         expected_corrected_warnings_output
+        self.expected_log_warnings_output =\
+         expected_log_warnings_output
+         
+        self.expected_html_errors_warnings_output =\
+         expected_html_errors_warnings_output
+        self.expected_corrected_data_errors_warnings =\
+         expected_corrected_data_errors_warnings
+        self.expected_log_errors_warnings_output =\
+         expected_log_errors_warnings_output
         
-        field_types = {'bc':'uid','LinkerPrimerSequence':float,
-         'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','LinkerPrimerSequence','ctl','x'],
-            ['x','x','ATTCG,AYCGA','Yes','x'],
-            ['y','y','ACSGGAYT','No','x'],
-            ])
-        self.assertEqual(check_bad_chars((good_data, field_types)), 
-                ((good_data, field_types),''))
-
-    def test_check_bad_chars_meins(self):
-        """ Should enforce MEINS compliance in SampleID column (first column)
-        """
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        meins_compliant_data = array([
-            ['#SampleID','Barcode','LinkerPrimerSequence','Treatment','Description'],
-            ['Sample.1','AATCT','CCGTA','Yes','x'],
-            ['TestSubject','ATCCT','CCGTA','No_placebo','x'],
-            ])
+        self.output_dir = get_random_directory_name(prefix = '/tmp/')
+        self.output_dir += '/'
+        
+        create_dir(self.output_dir)
+        
+        self._files_to_remove =\
+         [self.correct_mapping_fp, self.errors_mapping_fp,
+         self.warnings_mapping_fp, self.errors_warnings_mapping_fp]
+        
+    def tearDown(self):
+        if self._files_to_remove:
+            remove_files(self._files_to_remove)
+        if exists(self.output_dir):
+            rmtree(self.output_dir)
             
-        # Should not find errors with check_bad_chars, or 
-        # check_bad_chars_sampleids
-        self.assertEqual(check_bad_chars((meins_compliant_data, field_types)), 
-                ((meins_compliant_data, field_types),''))
-                
-        self.assertEqual(check_bad_chars_sampleids((meins_compliant_data, field_types)), 
-                ((meins_compliant_data, field_types),''))
-                
-        # Should find error with check_bad_chars_sampleids
-                
-        non_meins_compliant_data = array([
-            ['#SampleID','Barcode','LinkerPrimerSequence','Treatment','Description'],
-            ['Sample_1','AATCT','CCGTA','Yes','x'],
-            ['TestSubject','ATCCT','CCGTA','No','x'],
-            ])
+    def test_check_mapping_file_correct_file(self):
+        """ Gives proper files for valid mapping files """
         
-        self.assertEqual(check_bad_chars_sampleids((non_meins_compliant_data, field_types)),\
-        ((array([['#SampleID', 'Barcode', 'LinkerPrimerSequence', 'Treatment','Description'], ['Sample.1', 'AATCT', 'CCGTA', 'Yes', 'x'], ['TestSubject', 'ATCCT', 'CCGTA', 'No', 'x']], dtype='|S20'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell Sample_1 (now Sample.1) in sample id Sample.1, col #SampleID. Location (row, column):\t0,0'))
+        # Use valid data, default parameters
+        check_mapping_file(mapping_fp = self.correct_mapping_fp,
+                           output_dir = self.output_dir,
+                           verbose = False)
         
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
+        
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
+        
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
+        
+        self.assertEqual(html_data, self.expected_html_data_correct_input)
+        self.assertEqual(corrected_data,
+         self.expected_corrected_data_correct_input)
+        self.assertEqual(log_data, self.expected_log_data_correct_input)
+        
+        # With additional parameters added should not change results using
+        # same valid input data
+        check_mapping_file(mapping_fp = self.correct_mapping_fp,
+                           output_dir = self.output_dir,
+                           has_barcodes=False,
+                           char_replace="A",
+                           verbose=False,
+                           variable_len_barcodes=True,
+                           disable_primer_check=True,
+                           added_demultiplex_field=None)
+        
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.correct_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
+        
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
+        
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
+        
+        self.assertEqual(html_data, self.expected_html_data_correct_input)
+        self.assertEqual(corrected_data,
+         self.expected_corrected_data_correct_input)
+        self.assertEqual(log_data, self.expected_log_data_correct_input)
+
+   
+    def test_check_mapping_file_errors(self):
+        """ Gives proper files for errors in mapping files """
+        
+        # Use data with errors, default parameters
+        check_mapping_file(mapping_fp = self.errors_mapping_fp,
+                           output_dir = self.output_dir,
+                           verbose = False)
+        
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
+        
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
     
-    def test_check_mixed_caps(self):
-        """check_mixed_caps should return string of errors for invalid fields"""
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','No','x'],
-            ])
-        self.assertEqual(check_mixed_caps((good_data, field_types)), 
-                ((good_data, field_types),''))
-        bad_vals = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','Y','3','Yes','x'],
-            ['y','y','>','  yes_ ','x'],
-            ])
-        self.assertEqual(check_mixed_caps((bad_vals, field_types)),
-            ((bad_vals, field_types),
-            "DupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field bc:\nGroup\tOriginal names\ny\tY, y\n\nDupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field ctl:\nGroup\tOriginal names\nyes\tYes,   yes_ \n"
-        ))
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
         
-    def test_check_mixed_caps_extra_chars(self):
-        """check_mixed_caps should handle certain characters"""
+        self.assertEqual(html_data, self.expected_html_errors_output)
+        self.assertEqual(corrected_data,
+         self.expected_data_errors_corrected_output)
+        self.assertEqual(log_data, self.expected_data_log_errors_output)
         
-        # These include alphanumeric, underscore, space, and +-%./:,;
-        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
-        good_data = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','x','3+ ,;','Yes-','x:v'],
-            ['y','y','4%','No.No','x/z'],
-            ])
-        self.assertEqual(check_mixed_caps((good_data, field_types)), 
-                ((good_data, field_types),''))
-        bad_vals = array([
-            ['sample','bc','ph','ctl','x'],
-            ['x','Y','3','Yes','x'],
-            ['y','y','>','  yes_ ','x'],
-            ])
-        self.assertEqual(check_mixed_caps((bad_vals, field_types)),
-            ((bad_vals, field_types),
-            "DupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field bc:\nGroup\tOriginal names\ny\tY, y\n\nDupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field ctl:\nGroup\tOriginal names\nyes\tYes,   yes_ \n"
-        ))
-
-    def test_check_missing_descriptions(self):
-        """check_missing_descriptions should add run description and warn"""
-        cmd = check_missing_descriptions
-        good_sd = ['x','y','z']
-        bad_sd = ['x', ' ', '']
-        sample_ids = ['1','2','3']
-        rd = 'test'
-        self.assertEqual(cmd((good_sd, sample_ids, rd)), 
-            ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cmd((bad_sd, sample_ids, rd)),\
-         ((['x', 'missing_description', 'missing_description'], \
-         ['1', '2', '3'], 'test'), \
-         "These sample ids lack descriptions (replaced with 'missing_description'): 2,3"))
-
-
-    def test_check_duplicate_descriptions(self):
-        """check_duplicate_descriptions should warn about duplicates"""
-        cdd = check_duplicate_descriptions
-        good_sd = ['Description','x','y','z']
-        dup_sd = ['Description','x', 'y', 'x']
-        sample_ids = ['#SampleID','1','2','3']
-        raw_data_good = [['#SampleID','Description'],['1','x'],['2','y'],['3','z']]
-        raw_data_dup = [['#SampleID','Description'],['1','x'],['2','y'],['3','x']]
-        rd = 'test'
-        self.assertEqual(cdd((good_sd, sample_ids, rd),raw_data=raw_data_good), 
-            ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cdd((dup_sd, sample_ids, rd),raw_data=raw_data_dup), \
-         ((dup_sd, sample_ids, rd), 'These sample ids have duplicate descriptions (unique descriptions can help troubleshoot issues with metadata):\n1,3: x\nRow, column for all duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1'))
-        # ((bad_sd, sample_ids, rd) removed
-
-    def test_check_description_chars(self):
-        """check_description_chars should warn about bad chars"""
-        cdc = check_description_chars
-        good_sd = ['Description','x' , 'y' , 'z']
-        bad_sd = ['Description','<' , 'y' , 'x>']
-        sample_ids = ['#SampleID','1','2','3']
-        raw_data_good = [['#SampleID','Description'],['1','x'],['2','y'],\
-         ['3','z']]
-        raw_data_bad = [['#SampleID','Description'],['1','<'],['2','y'],\
-         ['3','x>']]
-        rd = 'test'
-        self.assertEqual(cdc((good_sd, sample_ids, rd), raw_data=raw_data_good), 
-            ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cdc((bad_sd, sample_ids, rd), raw_data=raw_data_bad),
-            ((['Description', '_', 'y', 'x_'], ['#SampleID', '1', '2', '3'], 'test'), "These sample ids have bad characters in their descriptions:\n1: changed '<' to '_'\n3: changed 'x>' to 'x_'\nRow, column for all descriptions with bad characters:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1"))
-
-    def test_process_id_map(self):
-        """process_id_map should return correct results on small test map"""
-        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
-#fake data
-x\tAA\tACGT\t3\tsample_x
-y\t"AC"\tACGT\t4\t"sample_y"
-z\tGG\tACGT\t5\tsample_z"""
-        f = StringIO(s)
-        f.name='test.xls'
-        headers, id_map, description_map, run_description, errors, warnings = \
-            process_id_map(f)
-
-        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
-         'X'])
-        self.assertEqual(id_map, {'y': {'X': '4', 'LinkerPrimerSequence': \
-         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', \
-         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
-        {'X': '5', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'GG'}})
-        self.assertEqual(description_map, {
-            'x':'sample_x',
-            'y':'sample_y',
-            'z':'sample_z',
-        })
-        self.assertEqual(run_description, ['fake data'])
-        self.assertEqual(errors, [])
-        self.assertEqual(warnings, [])
+    def test_check_mapping_file_errors_suppressed_bcs(self):
+        """ Should suppress errors about barcodes if bcs turned off """
         
-    def test_process_id_map_added_demultiplex(self):
-        """process_id_map handles added demultiplex fields"""
-        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
-#fake data
-x\tAA\tACGT\t3\tsample_x
-y\t"AC"\tACGT\t4\t"sample_y"
-z\tGG\tACGT\t5\tsample_z"""
-        f = StringIO(s)
-        f.name='test.xls'
+        # Should not flag bcs for errors with invalid characters
+        check_mapping_file(mapping_fp = self.errors_mapping_fp,
+                           output_dir = self.output_dir,
+                           has_barcodes=False,
+                           char_replace="A",
+                           verbose=False,
+                           variable_len_barcodes=True,
+                           disable_primer_check=True,
+                           added_demultiplex_field=None)
         
-        # Should raise error since demultiplex field not in mapping data.
-        self.assertRaises(ValueError, process_id_map, f, added_demultiplex_field = 'Not_A_Field')
-
-        """process_id_map should return correct results on small test map with
-         the combinations of barcodes and added demultiplex fields unique"""
-        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tJanus\tDescription
-#fake data
-x\tAA\tACGT\t3\tDown\tsample_x
-y\t"AC"\tACGT\t4\tDown\t"sample_y"
-z\tAA\tACGT\t5\tNotUp\tsample_z"""
-        f = StringIO(s)
-        f.name='test.xls'
-        headers, id_map, description_map, run_description, errors, warnings = \
-            process_id_map(f, added_demultiplex_field='Janus')
-
-        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
-         'X', 'Janus'])
-        self.assertEqual(id_map, {'y': {'X': '4', 'Janus':'Down', 'LinkerPrimerSequence': \
-         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', 'Janus':'Down', \
-         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
-        {'X': '5', 'Janus':'NotUp', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}})
-        self.assertEqual(description_map, {
-            'x':'sample_x',
-            'y':'sample_y',
-            'z':'sample_z',
-        })
-        self.assertEqual(run_description, ['fake data'])
-        self.assertEqual(errors, [])
-        self.assertEqual(warnings, [])
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.errors_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
         
-        # Should get warnings with non-unique combinations of barcodes and 
-        # added demultiplex.
-        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tJanus\tDescription
-#fake data
-x\tAA\tACGT\t3\tDown\tsample_x
-y\t"AC"\tACGT\t4\tDown\t"sample_y"
-z\tAA\tACGT\t5\tDown\tsample_z"""
-        f = StringIO(s)
-        f.name='test.xls'
-        headers, id_map, description_map, run_description, errors, warnings = \
-            process_id_map(f, added_demultiplex_field='Janus')
-
-        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
-         'X', 'Janus'])
-        self.assertEqual(id_map, {'y': {'X': '4', 'Janus':'Down', 'LinkerPrimerSequence': \
-         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', 'Janus':'Down', \
-         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
-        {'X': '5', 'Janus':'Down', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}})
-        self.assertEqual(description_map, {
-            'x':'sample_x',
-            'y':'sample_y',
-            'z':'sample_z',
-        })
-        self.assertEqual(run_description, ['fake data'])
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
         
-        expected_errors = ["DupChecker 'BarcodeSequence' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nAA\tAA,Down, AA,Down\nRow, column for all possible duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t0,4\nLocation (row, column):\t2,1\nLocation (row, column):\t2,4\n"]
-                
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
+        
+        self.assertEqual(html_data, self.expected_html_errors_suppressed_bcs)
+        self.assertEqual(corrected_data,
+         self.expected_data_errors_corrected_output)
+        self.assertEqual(log_data,
+         self.expected_output_log_errors_bcs_suppressed)
+        
+    def test_check_mapping_file_warnings(self):
+        """ Gives proper files for warnings in mapping files """
+        
+        check_mapping_file(mapping_fp = self.warnings_mapping_fp,
+                           output_dir = self.output_dir,
+                           verbose = False)
+        
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.warnings_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.warnings_mapping_fp).replace('.txt', '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.warnings_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
+        
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
+        
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
+        
+        self.assertEqual(html_data, self.expected_html_output_warnings)
+        self.assertEqual(corrected_data,
+         self.expected_corrected_warnings_output)
+        self.assertEqual(log_data, self.expected_log_warnings_output)
+        
+    def test_check_mapping_file_multiple_problems(self):
+        """ Gives proper files for combinations of errors/warnings """
+        
+        check_mapping_file(mapping_fp = self.errors_warnings_mapping_fp,
+                           output_dir = self.output_dir,
+                           added_demultiplex_field = "DoesNotExist",
+                           verbose = False)
+        
+        # Check existence of expected output files                 
+        output_html_fp = join(self.output_dir,
+         basename(self.errors_warnings_mapping_fp).replace('.txt', '.html'))
+        output_corrected_fp =\
+         join(self.output_dir,
+         basename(self.errors_warnings_mapping_fp).replace('.txt',
+         '_corrected.txt'))
+        output_log_fp =\
+         join(self.output_dir,
+         basename(self.errors_warnings_mapping_fp).replace('.txt', '.log'))
+        overlib_js_fp = join(self.output_dir, 'overlib.js')
+        
+        self.assertTrue(exists(output_html_fp))
+        self.assertTrue(exists(output_corrected_fp))
+        self.assertTrue(exists(output_log_fp))
+        self.assertTrue(exists(overlib_js_fp))
+        
+        # Check output data for expected results
+
+        html_data = "".join([line for line in open(output_html_fp, "U")])
+        corrected_data =\
+         "".join([line for line in open(output_corrected_fp, "U")])
+        log_data = "".join([line for line in open(output_log_fp, "U")])
+        
+        self.assertEqual(html_data, self.expected_html_errors_warnings_output)
+        self.assertEqual(corrected_data,
+         self.expected_corrected_data_errors_warnings)
+        self.assertEqual(log_data, self.expected_log_errors_warnings_output)
+        
+    def test_process_id_map_correct_data(self):
+        """ Returns expected results for correct mapping data """
+        
+        header, mapping_data, comments, errors, warnings =\
+         process_id_map(self.correct_mapping_fp)
+         
+        expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'ReversePrimer', 'Description']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_errors = []
+        expected_warnings = []
+         
+        self.assertEqual(header, expected_header)
+        self.assertEqual(mapping_data, expected_mapping_data)
+        self.assertEqual(comments, expected_comments)
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_process_id_map_errors(self):
+        """ Returns expected results for mapping data with errors """
+        
+        header, mapping_data, comments, errors, warnings =\
+         process_id_map(self.errors_mapping_fp)
+         
+        expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'ReversePrimer', 'NotDescription']
+        expected_mapping_data = [['PC.355', 'AGCACGAGCCxTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_errors = ['Found header field NotDescription, last field should be Description\t0,5', 'Invalid DNA sequence detected: AGCACGAGCCxTA\t1,1', 'Duplicate SampleID PC.355 found.\t1,0', 'Duplicate SampleID PC.355 found.\t2,0']
+        expected_warnings = ['Barcode AGCACGAGCCxTA differs than length 12\t1,1']
+         
+        self.assertEqual(header, expected_header)
+        self.assertEqual(mapping_data, expected_mapping_data)
+        self.assertEqual(comments, expected_comments)
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_process_id_map_warnings(self):
+        """ Returns expected results for mapping data with warnings """
+        
+        header, mapping_data, comments, errors, warnings =\
+         process_id_map(self.warnings_mapping_fp)
+         
+        expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatm-ent', 'ReversePrimer', 'Description']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC_355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Co&ntrol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'OutOfBounds\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_errors = []
+        expected_warnings = ['Found invalid character in Treatm-ent header field.\t0,3', 'Invalid characters found in PC_355\t2,0', 'Invalid characters found in Co&ntrol\t2,3', 'Data field OutOfBounds found after Description column\t2,6']
+         
+        self.assertEqual(header, expected_header)
+        self.assertEqual(mapping_data, expected_mapping_data)
+        self.assertEqual(comments, expected_comments)
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_process_id_map_multiple_problems(self):
+        """ Returns expected results for combinations of problems """
+        
+        header, mapping_data, comments, errors, warnings =\
+         process_id_map(self.errors_warnings_mapping_fp)
+         
+        expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'Treatment', 'Description']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Cont^^rol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC-355', 'AACTCGTCGATGN', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'outofbounds\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCxCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_errors = ['Treatment found in header 2 times.  Header fields must be unique.\t0,3', 'Treatment found in header 2 times.  Header fields must be unique.\t0,4', 'Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT\t3,2', 'Invalid DNA sequence detected: AACTCGTCGATGN\t2,1']
+        expected_warnings = ['Barcode AACTCGTCGATGN differs than length 12\t2,1', 'Invalid characters found in PC-355\t2,0', 'Invalid characters found in Cont^^rol\t1,3', 'Data field outofbounds found after Description column\t2,6']
+         
+        self.assertEqual(header, expected_header)
+        self.assertEqual(mapping_data, expected_mapping_data)
+        self.assertEqual(comments, expected_comments)
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_data_fields(self):
+        """ Overall data fields check returns expected results """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s1', 'ACGT', 'AAAA', 's1_data'],
+         ['s2', 'CGTA', 'AAAA', 's2_data']]
+        errors = []
+        warnings = []
+        
+        
+        errors, warnings = check_data_fields(header,
+         mapping_data, errors, warnings)
+         
+        expected_errors = []
+        expected_warnings = []
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_data_fields_errors_warnings(self):
+        """ Overall data fields check returns expected results """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s1', 'ACGT', 'AAAxA', 's1_data'],
+         ['s_2', 'CGTA', 'AAAA', 's2_data']]
+        errors = []
+        warnings = []
+        
+        
+        errors, warnings = check_data_fields(header,
+         mapping_data, errors, warnings)
+         
+        expected_errors = ['Invalid DNA sequence detected: AAAxA\t1,2']
+        expected_warnings = ['Invalid characters found in s_2\t2,0']
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+         
+
+    def test_check_fields_past_bounds(self):
+        """ Flags fields found past the Description column as warnings """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s1', 'ACGT', 'AAAA', 's1_data'],
+         ['s2', 'CGTA', 'AAAA', 's2_data', 'out_of_bounds']]
+        warnings = []
+        
+        warnings = check_fields_past_bounds(header, mapping_data, warnings)
+        
+        expected_warnings =\
+         ['Data field out_of_bounds found after Description column\t2,4']
+        
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_chars_data_fields(self):
+        """ Flags fields with invalid characters as warnings """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', 's2_data']]
+        warnings = []
+        
+        warnings = check_chars_data_fields(header, mapping_data, warnings)
+        
+        expected_warnings = ['Invalid characters found in s-1\t1,0',
+        'Invalid characters found in s1&data\t1,3']
+        
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_dna_chars_primers(self):
+        """ Flags primer fields with invalid characters as errors """
+        
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 's1&data'],
+         ['s2', 'CGTA', 'AAA1A', 's2_data']]
+        errors = []
+        
+        errors = check_dna_chars_primers(header, mapping_data, errors)
+        
+        expected_errors = ['Invalid DNA sequence detected: AAA1A\t2,2']
+        
         self.assertEqual(errors, expected_errors)
         
-        self.assertEqual(warnings, [])
-
+        # Should be able to suppress LinkerPrimerSequence check, won't 
+        # suppress ReversePrimer check
         
-    def test_get_primers_barcodes(self):
-        """ get_primers_barcodes should properly return primers, barcodes """
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'ReversePrimer', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 'ACGT', 's1&data'],
+         ['s2', 'CGTA', 'AAA1A', 'ACGTF', 's2_data']]
+        errors = []
         
-        expected_barcodes = ['ATCG','ATTA']
-        expected_primers = ['CCTT','CCTAT']
+        errors = check_dna_chars_primers(header, mapping_data, errors,
+         disable_primer_check=True)
         
-        mapping_data = \
-         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
-         ['PC.354','ATCG','CCTT','20061218'],
-         ['PC.356','ATTA','CCTAT','20061216']]
-         
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=True, disable_primer_check=False)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
+        expected_errors = ['Invalid DNA sequence detected: ACGTF\t2,3']
         
-        # Should return empty list if barcodes disabled
-        expected_barcodes = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=False, disable_primer_check=False)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-        # Should return empty list if primers disabled
-        expected_barcodes = ['ATCG','ATTA']
-        expected_primers = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=True, disable_primer_check=True)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-        # Both primers and barcodes should be empty lists if both disabled
-        expected_barcodes = []
-        expected_primers = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=False, disable_primer_check=True)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-    def test_get_primers_barcodes_added_demultiplex(self):
-        """ get_primers_barcodes handles added demultiplex option """
-        
-        expected_barcodes = ['ATCG,20061218', 'ATTA,20061216']
-        expected_primers = ['CCTT','CCTAT']
-        
-        mapping_data = \
-         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
-         ['PC.354','ATCG','CCTT','20061218'],
-         ['PC.356','ATTA','CCTAT','20061216']]
-         
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=True, disable_primer_check=False,
-         added_demultiplex_field='DOB')
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-        # Should return empty list if barcodes disabled
-        expected_barcodes = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=False, disable_primer_check=False)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-        # Should return empty list if primers disabled
-        expected_barcodes = ['ATCG','ATTA']
-        expected_primers = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=True, disable_primer_check=True)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-        # Both primers and barcodes should be empty lists if both disabled
-        expected_barcodes = []
-        expected_primers = []
-        
-        primers, barcodes = get_primers_barcodes(mapping_data, \
-         is_barcoded=False, disable_primer_check=True)
-         
-        self.assertEqual(barcodes, expected_barcodes)
-        self.assertEqual(primers, expected_primers)
-        
-    def test_get_reverse_primers(self):
-        """ get_reverse_primers should properly return primers or False """
-        
-        expected_primers = ['AATCG','AKTYR']
-        
-        mapping_data = \
-         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB',
-          'ReversePrimer'],
-          ['PC.354','ATCG','CCTT','20061218','AATCG'],
-          ['PC.356','ATTA','CCTAT','20061216','AKTYR']]
-          
-        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
-         'DOB','ReversePrimer']
-         
-        reverse_primers = get_reverse_primers(mapping_data, col_headers)
-        
-        self.assertEqual(reverse_primers, expected_primers)
-        
-        # If there is not a 'ReversePrimer' header, should return False
-        
-        expected_primers = False
-        
-        mapping_data = \
-         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
-          ['PC.354','ATCG','CCTT','20061218'],
-          ['PC.356','ATTA','CCTAT','20061216']]
-          
-        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
-         'DOB']
-        
-        reverse_primers = get_reverse_primers(mapping_data, col_headers)
-        
-        self.assertEqual(reverse_primers, expected_primers)
+        self.assertEqual(errors, expected_errors)
         
 
+    def test_check_dna_chars_bcs(self):
+        """ Flags barcode fields with invalid characters as errors """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 's1&data'],
+         ['s2', 'CGTA', 'AAA1A', 's2_data']]
+        errors = []
+        
+        errors = check_dna_chars_bcs(header, mapping_data, errors)
+        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find no errors
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'ReversePrimer', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 'ACGT', 's1&data'],
+         ['s2', 'C1GTA', 'AAA1A', 'ACGTF', 's2_data']]
+        errors = []
+        
+        errors = check_dna_chars_bcs(header, mapping_data, errors,
+         has_barcodes=False)
+        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find errors with has_barcodes=True
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'ReversePrimer', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 'ACGT', 's1&data'],
+         ['s2', 'CNGTA', 'AAA1A', 'ACGTF', 's2_data']]
+        errors = []
+        
+        errors = check_dna_chars_bcs(header, mapping_data, errors,
+         has_barcodes=True)
+        
+        expected_errors = ['Invalid DNA sequence detected: CNGTA\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bcs_lengths(self):
+        """ Flags barcodes of different lengths as warnings """
+        
+        # should not give any warnings for equal lengths
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 's1&data'],
+         ['s2', 'CGTA', 'AAA1A', 's2_data']]
+        warnings = []
+        
+        warnings = check_bcs_lengths(header, mapping_data, warnings)
+        
+        expected_warnings = []
+        
+        self.assertEqual(warnings, expected_warnings)
+        
+        # Should give warning for different lengths
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'ReversePrimer', 'Description']
+        mapping_data = [['s-1', 'ACGT', 'AARNCWSVDAA', 'ACGT', 's1&data'],
+         ['s2', 'C1GTA', 'AAA1A', 'ACGTF', 's2_data'],
+         ['s3', 'CGTA', 'AAAAA', 'ACGTF', 's3_data']]
+        warnings = []
+        
+        warnings = check_bcs_lengths(header, mapping_data, warnings)
+        
+        expected_warnings = ['Barcode C1GTA differs than length 4\t2,1']
+        
+        self.assertEqual(warnings, expected_warnings)
 
-class CharFilterTests(TestCase):
-    """Tests of CharFilter class"""
-    def test_init(self):
-        """CharFilter object should init and set properties right"""
-        c = CharFilter('abc')
-        self.assertEqual(c.Chars, 'abc')
-        self.assertEqual(c.Name, None)
-        self.assertEqual(c.Invert, False)
-        self.assertEqual(c.stripF, strip)
+        
+    def test_check_bc_duplicates_default_correct(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field=None)
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_default_dups(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field=None)
+        
+        expected_errors = ['Duplicate barcode ACGT found.\t1,1',
+        'Duplicate barcode ACGT found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_disable_bcs_dups(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=False,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field=None)
+        
+        # should not find dups with has_barcodes = False and no other checks
+        # performed         
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_var_len_no_dupes(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'TAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=True,
+                        added_demultiplex_field=None)
+                        
+        # combination of primer seq and barcodes to match largest barcode
+        # present is ACGTA and ACGTT, so should not get a duplicate hit.
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_var_len_dupes(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=True,
+                        added_demultiplex_field=None)
+        
+        # Barcode 1 is the largest, with 5 nts, is sequence ACGTA.  When the
+        # last base at 5' end of primer is added to barcode 2, there is a 
+        # duplicate, as this is also ACGTA.             
+        expected_errors = ['Duplicate barcode and primer fragment sequence ACGTA found.\t1,1', 'Duplicate barcode and primer fragment sequence ACGTA found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_added_demultiplex(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        # Should not find any duplicates
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should not find any duplicates with var length turned on.
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=True,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should not find errors when only looking at added field
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=False,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_bc_duplicates_added_demultiplex_finds_dups(self):
+        """ Handles duplicate checks of barcodes and added demultiplex data """
+        
+        # Should find duplicates
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'CGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '1', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = ['Duplicate barcode and added demultiplex field CGTA1 found.\t1,1', 'Duplicate barcode and added demultiplex field CGTA1 found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find duplicates with var length turned on
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'CGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTAA', 'AAAA', '1', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        variable_len_barcodes=True,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = ['Duplicate barcode and added demultiplex field CGTAA1 found.\t1,1', 'Duplicate barcode and added demultiplex field CGTAA1 found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find duplicates when just using added fields
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'CGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '1', 's2_data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=False,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = ['Duplicate added demultiplex field 1 found.\t1,3', 'Duplicate added demultiplex field 1 found.\t2,3']
+        
+        self.assertEqual(errors, expected_errors)
 
-    def test_call(self):
-        """CharFilter object should omit or keep desired chars"""
-        c = CharFilter('abc')
-        d = CharFilter('abc',invert_charset=True)
-        e = CharFilter('abc', default_char='#')
-        f = CharFilter('abc', invert_charset=True, default_char='#')
-        s = ('aceace')
-        self.assertEqual(c(s), 'acac')
-        self.assertEqual(d(s), 'ee')
-        self.assertEqual(e(s), 'ac#ac#')
-        self.assertEqual(f(s), '##e##e')
-        #should automatically strip whitespace
-        s2 = '   aceacef   '
-        self.assertEqual(c(s2), 'acac')
-        self.assertEqual(d(s2), 'eef')
-
-    def test_badChars(self):
-        """CharFilter badChars should report bad chars"""
-        c = CharFilter('abc')
-        d = CharFilter('abc',invert_charset=True)
-        #should automatically strip whitespace
-        s2 = '   aceacef   '
-        self.assertEqual(c.badChars(s2), set('ef'))
-        self.assertEqual(d.badChars(s2), set('ac'))
-
-    def test_errMsg(self):
-        """CharFilter errMsg should produce useful error message"""
-        c = CharFilter('abc')
-        d = CharFilter('abc', name='XYZ', invert_charset=True)
-        #should automatically strip whitespace
-        s2 = '  aceacef  '
-        self.assertEqual(c.errMsg(s2), 
-            "Filter 'None' found bad chars 'e,f' in input '  aceacef  '")
-        self.assertEqual(d.errMsg(s2),
-            "Filter 'XYZ' found bad chars 'a,c' in input '  aceacef  '")
-
-    def test_resultAndError(self):
-        """CharFilter resultAndError should return both result and error"""
-        c = CharFilter('abc')
-        s2 = '  aceacef  '
-        self.assertEqual(c.resultAndError(s2), (c(s2), c.errMsg(s2)))
-
-class DupCheckerTests(TestCase):
-    """DupChecker object should check duplicates correctly."""
-    def test_init(self):
-        """DupChecker init should occur without errors"""
-        d = DupChecker(lwu)
-        self.assertEqual(d.Name, None)
-        self.assertEqual(d.CanonicalF, lwu)
-
-    def test_call(self):
-        """DupChecker call should report dups"""
-        d = DupChecker(lwu)
-        self.assertEqual(d(['a','b','c']), {})
-        self.assertEqual(d(['a','a','b']), {'a':['a','a']})
-        self.assertEqual(d(['a','A','b']), {'a':['a','A']})
-        self.assertEqual(d(['AA','A_a','b']), {'aa':['AA','A_a']})
-        d2 = DupChecker()
-        self.assertEqual(d2(['a','b']),{})
-        self.assertEqual(d2(['a','A']),{})
-        self.assertEqual(d2(['a','a']),{'a':['a','a']})
-
-        d3 = DupChecker(lwu, allow_exact_dup=True)
-        self.assertEqual(d3(['a','b','c']), {})
-        self.assertEqual(d3(['a','a','b']), {})
-        self.assertEqual(d3(['a','A','b']), {'a':['a','A']})
-        self.assertEqual(d3(['AA','A_a','b']), {'aa':['AA','A_a']})
-
-
-    def test_errMsg(self):
-        """DupChecker errMsg should return useful error message"""
-        d = DupChecker(lwu, 'Test')
-        self.assertEqual(d.errMsg(['a','b','c']), '')
-        self.assertEqual(d.errMsg(['a','A','b']), 
-            "DupChecker 'Test' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\na\ta, A\n")
-
-    def test_dupIndices(self):
-        """DupChecker dupIndices should report dup indices"""
-        d = DupChecker(lwu)
-        self.assertEqual(d.dupIndices(['a','b','c']), {})
-        self.assertEqual(d.dupIndices(['a','a','b']), {'a':[0,1]})
-        self.assertEqual(d.dupIndices(['a','A','b']), {'a':[0,1]})
-        self.assertEqual(d.dupIndices(['AA','A_a','b']), {'aa':[0,1]})
-        d2 = DupChecker()
-        self.assertEqual(d2.dupIndices(['a','b']),{})
-        self.assertEqual(d2.dupIndices(['a','A']),{})
-        self.assertEqual(d2.dupIndices(['a','a']),{'a':[0,1]})
-
-        d3 = DupChecker(lwu, allow_exact_dup=True)
-        self.assertEqual(d3.dupIndices(['a','b','c']), {})
-        self.assertEqual(d3.dupIndices(['a','a','b']), {})
-        self.assertEqual(d3.dupIndices(['a','A','b']), {'a':[0,1]})
-        self.assertEqual(d3.dupIndices(['AA','A_a','b']), {'aa':[0,1]})
-
-
-class SameCheckerTests(TestCase):
-    """SameChecker object should enforce similarity constraints correctly."""
-    def test_init(self):
-        """SameChecker init should occur without errors"""
-        s = SameChecker(lwu)
-        self.assertEqual(s.Name, None)
-        self.assertEqual(s.CanonicalF, lwu)
-
-    def test_call(self):
-        """SameChecker call should report mismatches"""
-        s = SameChecker(lwu)
-        self.assertEqual(s(['a','A','A ']), [])
-        self.assertEqual(s(['A','a','B']), [[2,'B','b','A','a']])
-        s2 = SameChecker()
-        self.assertEqual(s2(['a','a']), [])
-        self.assertEqual(s2(['a','A']), [[1,'A','A','a','a']])
-
-    def test_errMsg(self):
-        """DupChecker errMsg should return useful error message"""
-        s = SameChecker(lwu, 'Test')
-        self.assertEqual(s.errMsg(['a','A','A ']), '')
-        self.assertEqual(s.errMsg(['a','A','B']), 
-            "SameChecker 'Test' found the following values different from the first:\nIndex\tVal\tf(Val)\tFirst\tf(First)\n2\tB\tb\ta\ta\n")
-
-    def test_check_primers_barcodes(self):
-        """ Should give warnings for invalid or missing primers/barcodes """
+    
+    def test_check_fixed_len_bcs_dups(self):
+        """ Properly detects duplicates of fixed length barcodes """
+        
+        # Should not find any duplicates
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_fixed_len_bcs_dups(header,
+                        mapping_data,
+                        errors)
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find duplicates
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'CGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_fixed_len_bcs_dups(header,
+                        mapping_data,
+                        errors)
+                        
+        expected_errors = ['Duplicate barcode CGTA found.\t1,1', 'Duplicate barcode CGTA found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_variable_len_bcs_dups(self):
+        """ Ensures that slices of barcodes + 5' primer fragments are unique """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'TAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_variable_len_bcs_dups(header,
+                        mapping_data,
+                        errors)
+                        
+        # combination of primer seq and barcodes to match largest barcode
+        # present is ACGTA and ACGTT, so should not get a duplicate hit.
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'ACGT', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_variable_len_bcs_dups(header,
+                        mapping_data,
+                        errors)
+        
+        # Barcode 1 is the largest, with 5 nts, is sequence ACGTA.  When the
+        # last base at 5' end of primer is added to barcode 2, there is a 
+        # duplicate, as this is also ACGTA.             
+        expected_errors = ['Duplicate barcode and primer fragment sequence ACGTA found.\t1,1', 'Duplicate barcode and primer fragment sequence ACGTA found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_added_demultiplex_dups(self):
+        """ Checks barcodes/added demultiplex field for unique combinations """
+        
+        # Should not find any duplicates
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_added_demultiplex_dups(header, mapping_data, errors,
+         has_barcodes=True, added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should not find any duplicates with var length turned on.
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_added_demultiplex_dups(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=True,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should not find errors when only looking at added field
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_added_demultiplex_dups(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=False,
+                        added_demultiplex_field='run_prefix')
+                        
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_sampleid_duplicates(self):
+        """ Checks that all SampleIDs are unique """
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s2', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_sampleid_duplicates(header, mapping_data, errors)
+        # Should not find duplicates
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data'],
+         ['s-1', 'CGTA', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_sampleid_duplicates(header, mapping_data, errors)
+        # Should find duplicates
+        expected_errors = ['Duplicate SampleID s-1 found.\t1,0', 'Duplicate SampleID s-1 found.\t2,0']
+        
+        self.assertEqual(errors, expected_errors)
         
         
-        problems = defaultdict(list)
-        barcodes_good = ['CACGC','CCACG','GGTTA']
-        # The linker sequence, usually two base pairs is considered to be
-        # part of the primer.
-        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
-        # Should append nothing to problems with valid barcodes, primers.
-        self.assertEqual(check_primers_barcodes(primers_good, barcodes_good, \
-         problems), defaultdict(list))
-        barcodes_bad = ['CAC1C','','GGAAT']
-        primers_bad = ['1GGATTCG','ATCCATCG','']
-        # Should create warnings about invalid characters and missing barcode
-        # and primer
-        self.assertEqual(check_primers_barcodes(primers_bad, barcodes_bad, \
-         problems),  defaultdict(list, {'warning': ['The primer 1GGATTCG has invalid characters.  Location (row, column):\t0,2', 'Missing primer.  Location (row, column):\t2,2', 'The barcode CAC1C has invalid characters.  Location (row, column):\t0,1', 'Missing barcode. Location (row, column):\t1,1']}))
-         
-        # Should not raise errors if barcodes missing and disabled
-        problems = defaultdict(list)
-        barcodes_absent = ['','','']
-        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
-        self.assertEqual(check_primers_barcodes(primers_good, barcodes_absent, \
-         problems, is_barcoded=False), defaultdict(list))
-         
-        # Should not raise errors if primers missing and disabled
-        problems = defaultdict(list)
-        barcodes_absent = ['CACGC','CCACG','GGTTA']
-        primers_good = ['','','']
-        self.assertEqual(check_primers_barcodes(primers_good, barcodes_absent, \
-         problems, is_barcoded=True, disable_primer_check=True),\
-         defaultdict(list))
-         
-    def test_check_reverse_primers(self):
-        """ Should give warnings for invalid or missing primers """
+    def test_check_header(self):
+        """ All header problems are detected """
         
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'Description']
+        errors = []
+        warnings = []
         
-        problems = defaultdict(list)
-        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
-        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
-         'DOB','ReversePrimer']
-        # Should append nothing to problems with valid primers.
-        self.assertEqual(check_reverse_primers(primers_good, problems, \
-         col_headers), defaultdict(list))
+        errors, warnings = check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix = 0,
+                 desc_ix = 3,
+                 bc_ix = 1,
+                 linker_primer_ix = 2,
+                 added_demultiplex_field=None)
+                 
+        expected_errors = []
+        expected_warnings = []
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_header_missing_fields(self):
+        """ All header problems are detected """
+        
+        # Default header, should not generate any errors/warnings
+        header = ['AAA', 'XXX', 'YYY',
+          'ZZZ']
+        errors = []
+        warnings = []
+        
+        errors, warnings = check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix = 0,
+                 desc_ix = 3,
+                 bc_ix = 1,
+                 linker_primer_ix = 2,
+                 added_demultiplex_field=None)
+                 
+        expected_errors = ['Found header field AAA, expected field SampleID\t0,0', 'Found header field XXX, expected field BarcodeSequence\t0,1', 'Found header field YYY, expected field LinkerPrimerSequence\t0,2', 'Found header field ZZZ, last field should be Description\t0,3']
+        expected_warnings = []
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_header_bad_chars(self):
+        """ All header problems are detected """
+        
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'AAA.^^2',
+          'Description']
+        errors = []
+        warnings = []
+        
+        errors, warnings = check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix = 0,
+                 desc_ix = 4,
+                 bc_ix = 1,
+                 linker_primer_ix = 2,
+                 added_demultiplex_field=None)
+                 
+        expected_errors = []
+        expected_warnings = ['Found invalid character in AAA.^^2 header field.\t0,3']
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_header_missing_added_demultiplex(self):
+        """ All header problems are detected """
+        
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        errors = []
+        warnings = []
+        
+        errors, warnings = check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix = 0,
+                 desc_ix = 4,
+                 bc_ix = 1,
+                 linker_primer_ix = 2,
+                 added_demultiplex_field='run_prefix')
+                 
+        expected_errors = []
+        expected_warnings = []
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+          'Description']
+        errors = []
+        warnings = []
+        
+        errors, warnings = check_header(header,
+                 errors,
+                 warnings,
+                 sample_id_ix = 0,
+                 desc_ix = 3,
+                 bc_ix = 1,
+                 linker_primer_ix = 2,
+                 added_demultiplex_field='run_prefix')
+                 
+        expected_errors = ['Missing added demultiplex field run_prefix\t-1,-1']
+        expected_warnings = []
+        
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
 
-        primers_bad = ['1GGATTCG','ATCCATCG','']
-        problems = defaultdict(list)
-        # Should create warnings about invalid characters and missing primer
         
-        self.assertEqual(check_reverse_primers(primers_bad, problems, \
-         col_headers),  defaultdict(list, {'warning': ['reverse primer 1GGATTCG has invalid characters.  Location (row, column):\t0,4', 'Missing reverse primer.  Location (row, column):\t2,4']}))
-         
-         
-    def test_check_missing_sampleIDs(self):
-        """ Should give warnings if missing sample IDs from given list """
+    def test_check_header_dups(self):
+        """ Flags header duplicates as errors """
         
-        problems = defaultdict(list)
-        sample_IDs_good = ['#SampleID','Sample_1','Sample_2']
-        # Should not create any warnings
-        self.assertEqual(check_missing_sampleIDs(sample_IDs_good, problems), \
-         defaultdict(list))
-        # Should raise errors for empty/whitespace sample ID list items
-        sample_IDs_bad = ['#SampleID','','Sample_2']
-        self.assertEqual(check_missing_sampleIDs(sample_IDs_bad, problems), \
-         defaultdict(list, {'warning': ['Missing Sample ID.  Location (row, column):\t0,0']}))
-        sample_IDs_bad = ['#SampleID','Sample_1','\t']
-        problems = defaultdict(list)
-        self.assertEqual(check_missing_sampleIDs(sample_IDs_bad, problems), \
-         defaultdict(list, {'warning': ['Missing Sample ID.  Location (row, column):\t1,0']}))
-         
-    def test_check_dup_var_barcodes_primers(self):
-        """ Should give warnings/location of duplicate barcode+primer seqs """
-       
-        test_barcodes = ['AATCGA' , 'TACCGT' , 'ATCCGTAT']
-        test_primers = ['CCGGAT' , 'CCGGAT' , 'CCGGAT']
-        problems = defaultdict(list)
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        errors = []
         
-        # Since there are no duplicates when the barcodes and primers are
-        # concatenated, there should be nothing added to problems
-              
-        self.assertEqual(check_dup_var_barcodes_primers(test_primers,\
-         test_barcodes, problems), defaultdict(list))
-         
-        test_barcodes = ['AATCGA' , 'AATCGAC' , 'ATCCGTAT']
-        test_primers = ['CCGGAT' , 'CGGAT' , 'CCGGAT']
+        errors = check_header_dups(header, errors)
+                 
+        expected_errors = []
         
-        # The first and second barcode+primers should be equal, should
-        # append a warning, give duplicate sequences, and location of problem
+        self.assertEqual(errors, expected_errors)
         
-        self.assertEqual(check_dup_var_barcodes_primers(test_primers,\
-         test_barcodes, problems), defaultdict(list,  {'warning': ['The barcode + primer sequence "AATCGACCGGAT" has duplicate results.  Location (row, column):\t0,1', 'The barcode + primer sequence "AATCGACCGGAT" has duplicate results.  Location (row, column):\t1,1']}))
-         
-         
-            
+        # Should give errors with dups
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix', 'run_prefix',
+          'Description']
+        errors = []
+        
+        errors = check_header_dups(header, errors)
+                 
+        expected_errors = ['run_prefix found in header 2 times.  Header fields must be unique.\t0,3', 'run_prefix found in header 2 times.  Header fields must be unique.\t0,4']
+        
+        self.assertEqual(errors, expected_errors)
+        
+    def test_check_header_chars(self):
+        """ Flags invalid characters in header as warnings """
+        
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_p-%efix',
+          'Description']
+        warnings = []
+        
+        warnings = check_header_chars(header, warnings)
+                 
+        expected_warnings = ['Found invalid character in run_p-%efix header field.\t0,3']
+        
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_check_header_required_fields(self):
+        """ Flags missing header fields as errors """
+        
+        # Default header, should not generate any errors/warnings
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        errors = []
+        
+        errors = check_header_required_fields(header,
+                                   errors,
+                                   sample_id_ix=0,
+                                   desc_ix=4,
+                                   bc_ix=1,
+                                   linker_primer_ix=2,
+                                   added_demultiplex_field='run_prefix')
+                 
+        expected_errors = []
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # Should find all as errors if not named correctly
+        header = ['AAA', 'BBB', 'CCC', 'DDD',
+          'EEE']
+        errors = []
+        
+        errors = check_header_required_fields(header,
+                                   errors,
+                                   sample_id_ix=0,
+                                   desc_ix=4,
+                                   bc_ix=1,
+                                   linker_primer_ix=2,
+                                   added_demultiplex_field='run_prefix')
+                 
+        expected_errors = ['Found header field AAA, expected field SampleID\t0,0', 'Found header field BBB, expected field BarcodeSequence\t0,1', 'Found header field CCC, expected field LinkerPrimerSequence\t0,2', 'Found header field EEE, last field should be Description\t0,4', 'Missing added demultiplex field run_prefix\t-1,-1']
+        
+        self.assertEqual(errors, expected_errors)
 
+   
+    def test_correct_mapping_data(self):
+        """ Properly replaces invalid characters in mapping data """
+        
+        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['AA_2', 'ACCAAGGACTT', 'ACGGATACCGAGx', '26^3', 'A-2'],
+                       ['AA.3', 'ACAGGATAAC', 'ARRACGGA', '12__', 'AA%3']]
+                       
+        corrected_data = correct_mapping_data(mapping_data, header)
+        
+        # Should replace SampleID invalid characters with periods, other 
+        # invalid characters with underscores, should not change DNA fields.
+        expected_corrected_data = [['AA.2', 'ACCAAGGACTT', 'ACGGATACCGAGx', '26_3', 'A-2'], ['AA.3', 'ACAGGATAAC', 'ARRACGGA', '12__', 'AA%3']]
+        
+        self.assertEqual(corrected_data, expected_corrected_data)
+                
+    def test_duplicates_indices(self):
+        """ Properly returns dict of duplicates and their indices """
+        
+        no_dups = ['1', '2', '3', '4']
+        
+        results = duplicates_indices(no_dups)
+        
+        expected_results = defaultdict(list)
+        
+        self.assertEqual(results, expected_results)
+        
+        dups = ['1', '2', '3', '4', '2']
+        
+        results = duplicates_indices(dups)
+        
+        expected_results = defaultdict(list)
+        expected_results['2'] = [1, 4]
+        
+        self.assertEqual(results, expected_results)
+
+# Input data
+sample_correct_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+        
+sample_errors_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	NotDescription
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.355	AGCACGAGCCxTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+    
+sample_warnings_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatm-ent	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC_355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Co&ntrol	ATGACCGATTRGACCAG	Control_mouse_I.D._355	OutOfBounds
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+ 
+sample_errors_warnings_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Treatment	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Cont^^rol	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC-355	AACTCGTCGATGN	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355	outofbounds
+PC.356	ACAGACCACTCA	YATGCTGCCTCxCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+
+# Expected output data
+expected_html_data_correct_input = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>No errors or warnings detected.<br></h1><h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th><tt>PC.355</tt></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
+</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_corrected_data_correct_input = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356
+"""
+
+expected_log_data_correct_input = """No errors or warnings found in mapping file."""
+
+expected_html_errors_output = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Found header field NotDescription, last field should be Description<br>');" onmouseout="return nd();"><font color=white>NotDescription</a></th>
+</tr>
+
+<tr>
+<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AGCACGAGCCxTA differs than length 12<br>Invalid DNA sequence detected: AGCACGAGCCxTA<br>Location (SampleID,Header Field)<br>PC.355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AGCACGAGCCxTA</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
+</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_data_errors_corrected_output = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	NotDescription
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.355	AGCACGAGCCxTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356
+"""
+
+expected_data_log_errors_output = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.
+Errors -----------------------------
+Found header field NotDescription, last field should be Description	0,5
+Invalid DNA sequence detected: AGCACGAGCCxTA	1,1
+Duplicate SampleID PC.355 found.	1,0
+Duplicate SampleID PC.355 found.	2,0
+Warnings ---------------------------
+Barcode AGCACGAGCCxTA differs than length 12	1,1
+"""
+
+expected_html_errors_suppressed_bcs = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Found header field NotDescription, last field should be Description<br>');" onmouseout="return nd();"><font color=white>NotDescription</a></th>
+</tr>
+
+<tr>
+<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AGCACGAGCCxTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
+</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_output_log_errors_bcs_suppressed = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.
+Errors -----------------------------
+Found header field NotDescription, last field should be Description	0,5
+Duplicate SampleID PC.355 found.	1,0
+Duplicate SampleID PC.355 found.	2,0
+Warnings ---------------------------
+"""
+
+expected_html_output_warnings = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Found invalid character in Treatm-ent header field.<br>');" onmouseout="return nd();"><font color=black>Treatm-ent</a></th><th>ReversePrimer</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC_355<br>Location (SampleID,Header Field)<br>PC_355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC_355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Co&ntrol<br>Location (SampleID,Header Field)<br>PC_355,Treatm-ent');" onmouseout="return nd();"><font color=black><tt>Co&ntrol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field OutOfBounds found after Description column<br>Location (SampleID,Header Field)<br>PC_355,no header');" onmouseout="return nd();"><font color=black><tt>OutOfBounds
+</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_corrected_warnings_output = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatm-ent	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	ATGACCGATTRGACCAG	Control_mouse_I.D._355	OutOfBounds
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356
+"""
+
+expected_log_warnings_output = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.
+Errors -----------------------------
+Warnings ---------------------------
+Found invalid character in Treatm-ent header field.	0,3
+Invalid characters found in PC_355	2,0
+Invalid characters found in Co&ntrol	2,3
+Data field OutOfBounds found after Description column	2,6
+"""
+
+expected_html_errors_warnings_output = """<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr><td bgcolor="red"><font color="white">Missing added demultiplex field DoesNotExist<font color="black"></td></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Treatment found in header 2 times.  Header fields must be unique.<br>');" onmouseout="return nd();"><font color=white>Treatment</a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Treatment found in header 2 times.  Header fields must be unique.<br>');" onmouseout="return nd();"><font color=white>Treatment</a></th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Cont^^rol<br>Location (SampleID,Header Field)<br>PC.354,Treatment');" onmouseout="return nd();"><font color=black><tt>Cont^^rol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC-355<br>Location (SampleID,Header Field)<br>PC-355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC-355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AACTCGTCGATGN differs than length 12<br>Invalid DNA sequence detected: AACTCGTCGATGN<br>Location (SampleID,Header Field)<br>PC-355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AACTCGTCGATGN</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field outofbounds found after Description column<br>Location (SampleID,Header Field)<br>PC-355,no header');" onmouseout="return nd();"><font color=black><tt>outofbounds
+</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT<br>Location (SampleID,Header Field)<br>PC.356,LinkerPrimerSequence');" onmouseout="return nd();"><font color=white><tt>YATGCTGCCTCxCCGTAGGAGT</tt></a></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>"""
+
+expected_corrected_data_errors_warnings = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Treatment	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Cont__rol	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATGN	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355	outofbounds
+PC.356	ACAGACCACTCA	YATGCTGCCTCxCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356
+"""
+
+expected_log_errors_warnings_output = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.
+Errors -----------------------------
+Treatment found in header 2 times.  Header fields must be unique.	0,3
+Treatment found in header 2 times.  Header fields must be unique.	0,4
+Missing added demultiplex field DoesNotExist	no location
+Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT	3,2
+Invalid DNA sequence detected: AACTCGTCGATGN	2,1
+Warnings ---------------------------
+Barcode AACTCGTCGATGN differs than length 12	2,1
+Invalid characters found in PC-355	2,0
+Invalid characters found in Cont^^rol	1,3
+Data field outofbounds found after Description column	2,6
+"""
 
 if __name__ =='__main__':
     main()
