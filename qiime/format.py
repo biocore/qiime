@@ -611,10 +611,10 @@ def format_mapping_html_data(header,
         if not all_errs_warnings:
             formatted_header += "<th>%s</th>" % header[curr_field]
         elif not header[curr_field]:
-            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings, font_color, "missing data")
+            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings.replace('"',''), font_color, "missing data")
 
         else:
-            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings, font_color, header[curr_field])
+            formatted_header += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s>%s</a></th>""" % (bg_color, all_errs_warnings.replace('"', ''), font_color, header[curr_field])
 
     html_lines += HTML_LINES_HEADER % formatted_header
     
@@ -657,9 +657,9 @@ def format_mapping_html_data(header,
                 formatted_data += "<th><tt>%s</tt></th>" %\
                  mapping_data[curr_row][curr_cell]
             elif len(mapping_data[curr_row][curr_cell].replace('\n', '')) == 0:
-                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings + location_desc, font_color, "missing data")
+                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings.replace('"', '').replace("'", "") + location_desc, font_color, "missing data")
             else:
-                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings + location_desc, font_color, mapping_data[curr_row][curr_cell])
+                formatted_data += """<th bgcolor=%s><a href="javascript:void(0);" onmouseover="return overlib('%s');" onmouseout="return nd();"><font color=%s><tt>%s</tt></a></th>""" % (bg_color, all_errs_warnings.replace('"', '').replace("'", "") + location_desc, font_color, mapping_data[curr_row][curr_cell])
 
     
         formatted_data += "</tr>"
