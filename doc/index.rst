@@ -41,9 +41,7 @@ New users should begin with the `QIIME installation guide <./install/install.htm
 
 Contact Us
 ===========
-The quickest way to get help with QIIME is to search or ask questions in the `QIIME Forum <http://groups.google.com/group/qiime-forum>`_. This is a public space for users to ask questions, search previous questions and answers, and share any tips they've found. The QIIME Developers moderate this forum, and we aim to respond to questions within one working day.
-
-If your question can't be posted in the public forum because you would need to share private data, contact `QIIME Support <qiime.help@colorado.edu>`_. We aim to respond to e-mail questions within three to five working days.
+The only way to get help with QIIME is to search or ask questions in the `QIIME Forum <http://groups.google.com/group/qiime-forum>`_. This is a public space for users to ask questions, search previous questions and answers, and share any tips they've found. The QIIME Developers moderate this forum, and we aim to respond to questions within one working day.
 
 Before requesting help with QIIME `review this discussion <http://groups.google.com/group/qiime-forum/browse_thread/thread/67e2ab4af75655ae>`_ to get information on what data to send to help us answer your question as quickly as possible.
 
