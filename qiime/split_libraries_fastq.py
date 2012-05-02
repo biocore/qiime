@@ -170,7 +170,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        store_unassigned=False,
                                        max_bad_run_length=0,
                                        phred_quality_threshold=2,
-                                       min_per_read_length=75,
+                                       min_per_read_length_fraction=0.75,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
                                        seq_max_N=0,
@@ -188,12 +188,14 @@ def process_fastq_single_end_read_file(fastq_read_f,
     
     seq_id = start_seq_id
     
-    # grab the first line and then seek back to the beginning of the file
+    # grab the first lines and then seek back to the beginning of the file
     try:
         fastq_read_f_line1 = fastq_read_f.readline()
+        fastq_read_f_line2 = fastq_read_f.readline()
         fastq_read_f.seek(0)
     except AttributeError:
         fastq_read_f_line1 = fastq_read_f[0]
+        fastq_read_f_line2 = fastq_read_f[1]
     
     post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
     if post_casava_v180:
@@ -217,6 +219,9 @@ def process_fastq_single_end_read_file(fastq_read_f,
         barcode_length = barcode_lengths.pop()
     else:
         barcode_length = None
+    
+    # compute the minimum read length as a fraction of the length of the input read
+    min_per_read_length = min_per_read_length_fraction * len(fastq_read_f_line2)
     
     # prep data for logging
     input_sequence_count = 0

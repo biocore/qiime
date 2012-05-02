@@ -143,7 +143,7 @@ class SplitLibrariesFastqTests(TestCase):
                                        store_unassigned=True,
                                        max_bad_run_length=1000,
                                        phred_quality_threshold=None,
-                                       min_per_read_length=0,
+                                       min_per_read_length_fraction=0.,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
                                        seq_max_N=1000,
@@ -161,7 +161,7 @@ class SplitLibrariesFastqTests(TestCase):
         actual = process_fastq_single_end_read_file(self.fastq1,
                                        self.barcode_fastq1,
                                        self.barcode_map1,
-                                       min_per_read_length=45)
+                                       min_per_read_length_fraction=0.45)
         actual = list(actual)
         expected = self.fastq1_expected_default
         self.assertEqual(len(actual),len(expected))
@@ -174,7 +174,7 @@ class SplitLibrariesFastqTests(TestCase):
         actual = process_fastq_single_end_read_file(self.fastq2,
                                        self.barcode_fastq2,
                                        self.barcode_map1,
-                                       min_per_read_length=45)
+                                       min_per_read_length_fraction=0.45)
         actual = list(actual)
         expected = self.fastq2_expected_default
         self.assertEqual(len(actual),len(expected))
@@ -188,7 +188,7 @@ class SplitLibrariesFastqTests(TestCase):
         list(process_fastq_single_end_read_file(self.fastq1,
                                self.barcode_fastq1,
                                self.barcode_map1,
-                               min_per_read_length=45,
+                               min_per_read_length_fraction=0.45,
                                log_f=log))
         self.assertTrue(log.s.startswith("Quality filter results"))
         
@@ -199,7 +199,7 @@ class SplitLibrariesFastqTests(TestCase):
         list(process_fastq_single_end_read_file(self.fastq1,
                                self.barcode_fastq1,
                                self.barcode_map1,
-                               min_per_read_length=45,
+                               min_per_read_length_fraction=0.45,
                                histogram_f=histogram))
         self.assertTrue(histogram.s.startswith("Length"))
             
@@ -271,7 +271,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -287,7 +287,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=True,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -320,7 +320,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -353,7 +353,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -371,7 +371,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=True,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -404,7 +404,7 @@ class SplitLibrariesFastqTests(TestCase):
                           store_unassigned=False,
                           max_bad_run_length=0,
                           phred_quality_threshold=2,
-                          min_per_read_length=75,
+                          min_per_read_length_fraction=0.75,
                           rev_comp=False,
                           rev_comp_barcode=False,
                           seq_max_N=0,
@@ -431,7 +431,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -446,7 +446,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
                                                     seq_max_N=0,
@@ -465,7 +465,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
                                                     seq_max_N=0,
@@ -495,7 +495,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -515,7 +515,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
                                                     phred_quality_threshold=2,
-                                                    min_per_read_length=75,
+                                                    min_per_read_length_fraction=0.75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
                                                     seq_max_N=0,
@@ -574,7 +574,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          quality,
                                          max_bad_run_length=0,
                                          last_bad_quality_char='B',
-                                         min_per_read_length=75,
+                                         min_per_read_length=0.75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
         self.assertEqual(actual,(0,
@@ -727,7 +727,7 @@ class SplitLibrariesFastqTests(TestCase):
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
          "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
         
-        # changing min_per_read_length rescues read
+        # changing min_per_read_length_fraction rescues read
         header = "990:2:4:11271:5323#1/1"
         sequence = \
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"

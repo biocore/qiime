@@ -66,11 +66,11 @@ script_info['optional_options'] = [
         'mapping file (sample ID will be "Unassigned") [default: %default]'),
      make_option('-r','--max_bad_run_length',type='int',\
         help='max number of consecutive low quality base calls allowed '+\
-        'before truncating a read [default: 1; the read is trucated at the '+\
-        'second low quality call]',default=1),\
-     make_option('-p','--min_per_read_length',type='int',\
+        'before truncating a read [default: %default]',default=3),\
+     make_option('-p','--min_per_read_length_fraction',type='float',\
         help='min number of consecutive high quality base calls to include '+\
-        'a read (per single end read) [default: %default]',default=75),\
+        'a read (per single end read) as a fraction of the input read length '+\
+        '[default: %default]',default=0.75),\
      make_option('-n','--sequence_max_n',type='int',\
         help='maximum number of N characters allowed in a sequence to retain it -- '
         'this is applied after quality trimming, and is total over combined paired '
@@ -124,8 +124,8 @@ def main():
     mapping_fps = opts.mapping_fps
     phred_quality_threshold = opts.phred_quality_threshold
     retain_unassigned_reads = opts.retain_unassigned_reads
+    min_per_read_length_fraction = opts.min_per_read_length_fraction
     max_bad_run_length = opts.max_bad_run_length
-    min_per_read_length = opts.min_per_read_length
     rev_comp = opts.rev_comp
     rev_comp_barcode = opts.rev_comp_barcode
     rev_comp_mapping_barcodes = opts.rev_comp_mapping_barcodes
@@ -138,6 +138,10 @@ def main():
     if opts.last_bad_quality_char != None:
         option_parser.error('--last_bad_quality_char is no longer supported. '
          'Use -q instead (see option help text by passing -h)')
+    
+    if not (0 <= min_per_read_length_fraction <= 1):
+        option_parser.error('--min_per_read_length_fraction must be between '
+         '0 and 1 (inclusive). You passed %1.5f' % min_per_read_length_fraction)
     
     barcode_type = opts.barcode_type
     max_barcode_errors = opts.max_barcode_errors
@@ -223,7 +227,7 @@ def main():
                store_unassigned=retain_unassigned_reads,
                max_bad_run_length=max_bad_run_length,
                phred_quality_threshold=phred_quality_threshold,
-               min_per_read_length=min_per_read_length,
+               min_per_read_length_fraction=min_per_read_length_fraction,
                rev_comp=rev_comp,
                rev_comp_barcode=rev_comp_barcode,
                seq_max_N=seq_max_N,
