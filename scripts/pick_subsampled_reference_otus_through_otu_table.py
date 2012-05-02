@@ -18,7 +18,7 @@ from qiime.util import (parse_command_line_parameters,
                         load_qiime_config,)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (validate_and_set_jobs_to_start, call_commands_serially,
-                            print_commands, no_status_updates)
+                            print_commands, no_status_updates, print_to_stdout)
 from qiime.pick_subsampled_reference_otus_through_otu_table import (
                         pick_subsampled_open_referenence_otus,
                         iterative_pick_subsampled_open_referenence_otus)
