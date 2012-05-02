@@ -387,6 +387,8 @@ def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', rms_axes=3, custom
 
 def run_ANOVA_trajetories(groups):
     """Run ANOVA on trajectories categories
+    
+       Added some lines to control for labels and make everything a list vs. list/sets
 
        Params: 
         groups, a dict of {trajectory_id: values}, where trajectory_id is
@@ -399,13 +401,14 @@ def run_ANOVA_trajetories(groups):
         This was taken from qiime/otu_category_significance.py:run_single_ANOVA
     """
     values = []
+    labels = []
     for trajectory in groups:
+        labels.append(trajectory)
         values.append(Numbers(groups[trajectory]))
             
     # This is copied from otu_category_significance.py
     try:
         dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
-        return group_means, prob
     except ValueError:
         #set the p-value to 'diff' if the variances are 0.0 (within rounding 
         #error) and the means are not all the same. If the means are all
@@ -421,7 +424,8 @@ def run_ANOVA_trajetories(groups):
             prob = 0.0
         else:
             prob = 1.0
-        return group_means, prob
+    
+    return labels, group_means, prob
         
 def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
     """Creates make output to display vectors (as a kinemage vectorlist).
@@ -1005,11 +1009,14 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         to_test[cat] = add_vectors['rms_output'][group][cat]['rms_vector']
                     else:
                         add_vectors['rms_output'][group][cat]['rms_result'] = nan
-            
-                group_means, prob = run_ANOVA_trajetories(to_test)
-                f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
-                    % (group, prob, group_means))
-            
+                
+                labels, group_means, prob = run_ANOVA_trajetories(to_test)
+                if (len(labels)==len(group_means)):
+                    f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
+                        % (group, prob, [(labels[i], group_means[i]) for i in range(len(labels))]))
+                else:
+                    f_rms.write('Grouped by %s: this value can not be used\n\n' % (group))
+                    
         f_rms.close()
     
     #Write kinemage file
