@@ -1,21 +1,24 @@
 .. _filtering_contamination_otus:
 
+===============================================================
+Filtering contaminant or category specific OTUs from OTU tables
+===============================================================
 
-Filtering category specific OTUs from OTU tables
-------------------------------------------------
+This tutorial explains how to use several QIIME scripts to filter all OTUs that belong to a particular category of samples. This would be used, for example, if you ran blank control samples and want to remove any OTUs observed in these samples as likely contamination.
 
-This tutorial explains how to use several scripts of QIIME to filter all OTUs that belong to a particular category of samples (example:  blank control samples, where any sequences detected might be contamination affecting all samples).
+To accomplish this task several scripts are used to first generate an OTU table of target OTUs to remove, then filter those OTUs from the original OTU table, and finally to perform a clean-up step to remove the control samples that would now have zero sequences associated with them.
 
-To accomplish this task, several scripts are used, to first generate an OTU table of target OTUs to remove, followed by filtering the original OTU table of these OTUs and a clean-up step to remove the samples with zero sequences associated with them.
-
-The sample OTU table and mapping file (generated from the QIIME tutorial data set) are available here:  <<<<< NEED URL >>>>> 
+The OTU table and mapping file (generated from the QIIME tutorial data set) are available `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/filtering_otus_tutorial_data.zip>`_.
 
 Once these files are downloaded and extracted, open a terminal and change to the directory of the extracted files to begin processing.
 
 Filtering out samples according to run
 ======================================
 
-In this case, we are going to assume that multiple runs are present in an OTU table.  As our example is removal of all OTUs from samples that should be blank control samples, we can assume that contamination will be limited to a single run.  If there are not multiple runs to separate, this step can be skipped.
+In this case, we are going to assume that multiple runs are present in an OTU table, and these are indicated in the ``Run_Number`` column in our mapping file.  As our example is removal of all OTUs from samples that should be blank control samples, we can assume that contamination will be limited to a single run, so we therefore want to begin by splitting the OTU table by the ``Run_Number`` field.  If there are not multiple runs to separate, this step can be skipped.
+
+Splitting the OTU table by run
+------------------------------
 
 The runs are identified in the Run_Number column of the example mapping file.
 
@@ -33,13 +36,13 @@ The runs are identified in the Run_Number column of the example mapping file.
 	* PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	2	Test_Sample	Fasting_mouse_I.D._635
 	* PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	2	Test_Sample	Fasting_mouse_I.D._636
 	
-To create an OTU table containing only samples from run 1, use the following command: ::
+To create per-run OTU tables containing, use the following command: ::
 
-	filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_run1.biom -m Sample_Mapping.txt -s 'Run_Number:1'
+	split_otu_table.py -i otu_table.biom -m map.txt -f Run_Number -o split_otu_tables/
 
 One can observe the initial sequences/sample in the run 1 OTU table: ::
 
-	per_library_stats.py -i otu_table_run1.biom 
+	per_library_stats.py -i split_otu_tables/otu_table_1.biom 
 
 .. note::
 
@@ -63,31 +66,34 @@ One can observe the initial sequences/sample in the run 1 OTU table: ::
 	*  PC.607: 149.0
 	*  PC.634: 150.0
 
+Filtering OTUs observed in the control blanks from the experimental samples
+---------------------------------------------------------------------------------------
 
+We will only examine run 1 in this example, but if you're working with multiple runs of data you would apply this step for each run. Note that if you don't have multiple runs, you would continue with ``otu_table.biom`` at this stage, rather than ``split_otu_tables/otu_table_1.biom``.
 
-We will only examine run 1 in this example.  Next create an OTU table with the just the blank control samples: ::
+Create an OTU table with the just the blank control samples: ::
 
-	filter_samples_from_otu_table.py -i otu_table_run1.biom -o otu_table_run1_blank_samples.biom -m Sample_Mapping.txt -s "Sample_Type:Control_Blank"
+	filter_samples_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_run1_blank_samples.biom -m map.txt -s "Sample_Type:Control_Blank"
 	
-Filter out OTU ids that have zero sequence counts, as we only want the OTUs with positive counts from the Control_Blank samples: ::
+Filter out OTU ids that have zero counts, as we only want the OTUs with positive counts from the Control_Blank samples::
 
 	filter_otus_from_otu_table.py -i otu_table_run1_blank_samples.biom -o filtered_otu_table_blank_samples.biom -n 1
 	
-Then create a tab separated version of this OTU table: ::
+Then create a tab separated version of this OTU table::
 
 	convert_biom.py -b -i filtered_otu_table_blank_samples.biom -o otus_to_remove.txt
 	
-filter out OTU ids from the run 1 OTU table that are present in the Control_Blank samples: ::
+Filter out OTU ids from the run 1 OTU table that were determined to be present in the Control_Blank samples::
 
-	filter_otus_from_otu_table.py -i otu_table_run1.biom -o otus_removed_run1.biom -e otus_to_remove.txt
+	filter_otus_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_1_minus_contaminants.biom -e otus_to_remove.txt
 	
-The otus_removed_run1.biom file now has two samples with zero sequences associated with it.  These can be removed to get a final OTU table: ::
+The otu_table_1_minus_contaminants.biom file now has two samples with zero sequences associated with it.  These can be removed to get a final OTU table: ::
 
-	filter_samples_from_otu_table.py -i otus_removed_run1.biom -o final_filtered_otu_table.biom -n 1
+	filter_samples_from_otu_table.py -i otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants.biom -n 1
 	
 The final OTU table sequences/sample summary can be displayed now, sans OTUs from the Control_Blank samples: ::
 
-	per_library_stats.py -i final_filtered_otu_table.biom
+	per_library_stats.py -i final_otu_table_1_minus_contaminants.biom
 
 .. note::
 
@@ -108,3 +114,6 @@ The final OTU table sequences/sample summary can be displayed now, sans OTUs fro
 	* Seqs/sample detail:
 	*  PC.607: 99.0
 	*  PC.634: 110.0
+
+
+.. note:: If you apply this process to multiple runs, and then want to reassemble the final OTU tables into a single OTU table, you can use the ``merge_otu_tables.py`` command.
