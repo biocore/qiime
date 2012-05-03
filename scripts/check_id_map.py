@@ -83,9 +83,9 @@ script_info['optional_options']= [\
     make_option('-o', '--output_dir',
         help='Required output directory for log file and corrected mapping '+\
         'file, log file, and html file. [default: %default]', default="./"),
-    make_option('--suppress_stdout',
-        help='Do not print any information to standard out [default: %default]', 
-        default=False,action='store_true'),
+    make_option('-v', '--verbose',
+        help='Enable printing information to standard out '+\
+        '[default: %default]', default=True,action='store_false'),
     make_option('-c', '--char_replace',
         help='Changes the default character used to replace invalid '+\
         'characters found in the mapping file.  Must be a valid character ('+\
@@ -125,7 +125,7 @@ def main():
     variable_len_barcodes = opts.variable_len_barcodes
     output_dir = opts.output_dir + "/"
     char_replace = opts.char_replace
-    verbose = not opts.suppress_stdout
+    verbose = opts.verbose
     disable_primer_check = opts.disable_primer_check
     added_demultiplex_field = opts.added_demultiplex_field
         
