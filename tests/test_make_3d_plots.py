@@ -260,11 +260,15 @@ class TopLevelTests(TestCase):
     def test_run_ANOVA_trajetories(self):
         """run_ANOVA_trajetories: should return the same value
         """
-        groups = dict(zip(self.coord_header,self.coords))
-        exp_result = ([-0.015677892000000002, -0.073287871666666657, -0.0057388123333333334], \
-                       0.80674568762274179)
-        
-        self.assertFloatEqual(run_ANOVA_trajetories(groups), exp_result)
+        data = dict(zip(self.coord_header,self.coords))
+        labels, groups_means, prob = run_ANOVA_trajetories(data)
+        exp_labels = ['Sample1', 'Sample3', 'Sample2']
+        exp_groups_means = [-0.015677892000000002, -0.073287871666666657, -0.0057388123333333334]
+        exp_prob = 0.80674568762274179
+                                     
+        self.assertEqual(labels, exp_labels)
+        self.assertFloatEqual(groups_means, exp_groups_means)
+        self.assertFloatEqual(prob, exp_prob)        
     
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
