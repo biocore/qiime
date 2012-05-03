@@ -59,6 +59,10 @@ script_info['optional_options'] = [
         default=False,
         action='store_true',
         help='store qual strings in .qual files [default: %default]'),
+     make_option("--store_demultiplexed_fastq",
+        default=False,
+        action='store_true',
+        help='write demultiplexed fastq files [default: %default]'),
      make_option("--retain_unassigned_reads",
         default=False,
         action='store_true',
@@ -134,6 +138,7 @@ def main():
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
     filter_bad_illumina_qual_digit = False #opts.filter_bad_illumina_qual_digit
     store_qual_scores = opts.store_qual_scores
+    store_demultiplexed_fastq = opts.store_demultiplexed_fastq
     
     if opts.last_bad_quality_char != None:
         option_parser.error('--last_bad_quality_char is no longer supported. '
@@ -162,16 +167,29 @@ def main():
     output_f = open(output_fp_temp,'w')
     qual_fp_temp = '%s/qual.fna.incomplete' % output_dir
     qual_fp = '%s/seqs.qual' % output_dir
+    output_fastq_fp_temp = '%s/seqs.fastq.incomplete' % output_dir
+    output_fastq_fp = '%s/seqs.fastq' % output_dir
     
     if store_qual_scores:
         qual_f = open(qual_fp_temp,'w')
         # define a qual writer whether we're storing
         # qual strings or not so we don't have to check
         # every time through the for loop below
-        def qual_writer(q):
-            qual_f.write('>%s\n%s\n' % (fasta_header,q))
+        def qual_writer(h,q):
+            qual_f.write('>%s\n%s\n' % (h,q))
     else:
         def qual_writer(q):
+            pass
+    
+    if store_demultiplexed_fastq:
+        output_fastq_f = open(output_fastq_fp_temp,'w')
+        # define a fastq writer whether we're storing
+        # qual strings or not so we don't have to check
+        # every time through the for loop below
+        def fastq_writer(h,s,q):
+            output_fastq_f.write('@%s\n%s\n+\n%s\n' % (h,s,q))
+    else:
+        def fastq_writer(h,s,q):
             pass
     
     log_fp = '%s/split_library_log.txt' % output_dir
@@ -239,16 +257,23 @@ def main():
                barcode_correction_fn=barcode_correction_fn,
                max_barcode_errors=max_barcode_errors):
             output_f.write('>%s\n%s\n' % (fasta_header,sequence))
-            qual_writer(quality)
+            qual_writer(fasta_header,quality)
+            fastq_writer(fasta_header,sequence,quality)
             
-        start_seq_id = seq_id + 1                                
+        start_seq_id = seq_id + 1
         log_f.write('\n---\n\n')
         
     output_f.close()
     rename(output_fp_temp,output_fp)
+    
+    # process the optional output files, as necessary
     if store_qual_scores:
         qual_f.close()
         rename(qual_fp_temp,qual_fp)
+    
+    if store_demultiplexed_fastq:
+        output_fastq_f.close()
+        rename(output_fastq_fp_temp,output_fastq_fp)
 
 if __name__ == "__main__":
     main()
