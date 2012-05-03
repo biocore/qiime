@@ -53,7 +53,9 @@ def main():
     qiime_scripts_dir = opts.qiime_scripts_dir
     working_dir = opts.working_dir
     verbose = opts.verbose
-    tests = opts.tests.split(',')
+    tests = opts.tests
+    if tests != None:
+        tests = tests.split(',')
     failure_log_fp = opts.failure_log_fp
 
     result_summary = run_script_usage_tests(
