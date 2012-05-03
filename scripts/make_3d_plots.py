@@ -74,6 +74,9 @@ script_info['optional_options']=[\
         'can be list by comma separating them without spaces. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [default=color by all]'),
+    make_option('-s', '--scaling_method',
+        help='Comma-separated list of scaling methods (i.e. scaled or' +\
+        ' unscaled) [default=%default]',default='unscaled'),
     make_option('-a', '--custom_axes',
         help='This is the category from the metadata mapping file to use as' +\
         ' a custom axis in the plot.  For instance, if there is a pH' +\
@@ -215,7 +218,20 @@ def main():
 
     prefs, data, background_color, label_color, ball_scale, arrow_colors= \
                             sample_color_prefs_and_map_data_from_options(opts)
-                
+    
+    
+    scaling_methods=opts.scaling_method.split(',')
+    plot_scaled=False
+    plot_unscaled=False
+    for i in scaling_methods:
+        if i.lower() == 'scaled':
+            plot_scaled=True
+        elif i.lower() == 'unscaled':
+            plot_unscaled=True
+            
+    if not (plot_scaled or plot_unscaled):
+        raise ValueError, 'You must choose a valid scaling method (scaled or unscaled)'
+    
     if opts.output_format == 'invue':
         # validating the number of points for interpolation
         if (opts.interpolation_points<0):
@@ -419,7 +435,8 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     if action:
         action(prefs,data,custom_axes,background_color,label_color,dir_path, \
                 data_file_path,filename,ellipsoid_prefs=ellipsoid_prefs, \
-                add_vectors=add_vectors)
+                add_vectors=add_vectors, plot_scaled=plot_scaled, \
+                plot_unscaled=plot_unscaled)
 
 
 if __name__ == "__main__":

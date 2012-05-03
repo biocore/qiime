@@ -1,5 +1,6 @@
 QIIME 1.4.0-dev
 ==================================
+* make_3d_plots.py added a new option "-s" which by default only outputs the unscaled points, whereas user can choose to show scaled, unscaled or both.
 * split_libraries_fastq.py default parameters updated based on evaluation of parameter settings on real and mock community data sets. A manuscript describing these results is currently in preparation. Briefly, the -p/--min_per_read_length parameter was modified to take a fraction of the full read length that is acceptable as the minimum, rather than an absolute (integer) length. Additionally the --max_bad_run_length default was changed from 1 to 3.
 * check_id_map.py code was completely redone to increase readability and ease of modification.  Now also creates html output to display locations of errors and warnings in the mapping file.
 * Altered default value of min_length in align_seqs.py and parallel_align_seqs_pynast.py. This was previously set to 150 based on 454 FLX data, but it is now computed as 75% of the median input sequence length. This will scale better across platforms and read length, and allow for more consistent handling in of data from different sources. The user can still pass --min_length with a specific value to override the default.

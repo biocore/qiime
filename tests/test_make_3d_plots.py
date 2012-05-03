@@ -76,10 +76,10 @@ class TopLevelTests(TestCase):
             shutil.rmtree(self._dir_to_clean_up)
 
     def test_make_3d_plots(self):
-        """make_3d_plots_invue: main script to create invue files"""
+        """make_3d_plots: main script to create kinemage and html file"""
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
                           self.mapping,self.prefs,self.background_color, \
-                          self.label_color)
+                          self.label_color,plot_scaled=True,plot_unscaled=True)
 
         self.assertEqual(obs_kin,exp_kin_full)
 
@@ -92,7 +92,8 @@ class TopLevelTests(TestCase):
         scale_custom_coords(custom_axes,coords) 
         obs_kin=make_3d_plots(self.coord_header,coords[1],self.pct_var, \
                           self.mapping2,self.prefs,self.background_color,\
-                          self.label_color,custom_axes=custom_axes)
+                          self.label_color,custom_axes=custom_axes, \
+                          plot_scaled=True,plot_unscaled=True)
         self.assertEqual(obs_kin, exp_kin_full_axes)
 
         # test with multiple 'colorby' columns to ensure sorting
@@ -103,13 +104,31 @@ class TopLevelTests(TestCase):
         newprefs['Day']['column']="Day"
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
                           self.mapping,newprefs,self.background_color, \
-                          self.label_color)
+                          self.label_color,plot_scaled=True,plot_unscaled=True)
         text = '\n'.join(obs_kin)
         
         self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
         
+        # test with unscaled only
+        obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
+                          self.mapping,newprefs,self.background_color, \
+                          self.label_color,plot_scaled=False,plot_unscaled=True)
+        text = '\n'.join(obs_kin)
+        
+        self.assertTrue(text.find('Day_unscaled')>0)
+        self.assertFalse(text.find('Day_scaled')>0)
+        
+        # test with scaled only
+        obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
+                          self.mapping,newprefs,self.background_color, \
+                          self.label_color,plot_scaled=True,plot_unscaled=False)
+        text = '\n'.join(obs_kin)
+        
+        self.assertFalse(text.find('Day_unscaled')>0)
+        self.assertTrue(text.find('Day_scaled')>0)
+        
     def test_make_3d_plots_invue(self):
-        """make_3d_plots: main script to create kinemage and html file"""
+        """make_3d_plots_invue: main script to create invue files"""
         data = {'map': [
                   ['SampleID', 'Treatment'], ['PC.354', 'Control'], ['PC.355', 'Control'], 
                   ['PC.607', 'Fast']], 

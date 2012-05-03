@@ -80,7 +80,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     ellipsoid_prefs=None, \
                     user_supplied_edges=False, ball_scale=1.0, \
                     arrow_colors={'line_color': 'white', 'head_color': 'red'},
-                    add_vectors=None):
+                    add_vectors=None,plot_scaled=False,plot_unscaled=True):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -142,24 +142,26 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
         data_colors=groups_and_colors[i][3]
         data_color_order=groups_and_colors[i][4]
         
-        result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,data_colors, \
-            taxa, custom_axes,name=labelname, \
-            scaled=False, edges=edges,
-            coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs, \
-            user_supplied_edges=user_supplied_edges, \
-            ball_scale=ball_scale, arrow_colors=arrow_colors, \
-            add_vectors=add_vectors))
-        result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,data_colors, \
-            taxa, custom_axes,name=labelname, \
-            scaled=True, edges=edges, \
-            coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs, \
-            user_supplied_edges=user_supplied_edges, \
-            ball_scale=ball_scale, arrow_colors=arrow_colors, \
-            add_vectors=add_vectors))
+        if plot_unscaled:
+            result.extend(make_mage_output(groups, colors, coord_header, coords, \
+                pct_var,background_color,label_color,data_colors, \
+                taxa, custom_axes,name=labelname, \
+                scaled=False, edges=edges,
+                coords_low=coords_low, coords_high=coords_high, \
+                ellipsoid_prefs=ellipsoid_prefs, \
+                user_supplied_edges=user_supplied_edges, \
+                ball_scale=ball_scale, arrow_colors=arrow_colors, \
+                add_vectors=add_vectors))
+        if plot_scaled:
+            result.extend(make_mage_output(groups, colors, coord_header, coords, \
+                pct_var,background_color,label_color,data_colors, \
+                taxa, custom_axes,name=labelname, \
+                scaled=True, edges=edges, \
+                coords_low=coords_low, coords_high=coords_high, \
+                ellipsoid_prefs=ellipsoid_prefs, \
+                user_supplied_edges=user_supplied_edges, \
+                ball_scale=ball_scale, arrow_colors=arrow_colors, \
+                add_vectors=add_vectors))
                 
     return result
 
@@ -959,7 +961,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         default_filename='out', ellipsoid_prefs=None, \
                         user_supplied_edges=False, ball_scale=1.0, \
                         arrow_colors={'line_color': 'white', 'head_color': 'red'}, \
-                        add_vectors=None):
+                        add_vectors=None,plot_scaled=False,plot_unscaled=True):
     """Make 3d plots according to coloring options in prefs."""
     
     if filename is None:
@@ -988,7 +990,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         ellipsoid_prefs=ellipsoid_prefs, \
                         user_supplied_edges=user_supplied_edges, \
                         ball_scale=ball_scale, arrow_colors=arrow_colors,
-                        add_vectors=add_vectors)
+                        add_vectors=add_vectors, plot_scaled=plot_scaled, \
+                        plot_unscaled=plot_unscaled)
     
     
     # Validating if we should add RMS values
