@@ -34,19 +34,19 @@ script_info={}
 script_info['brief_description']="""Parallel pick otus using uclust_ref"""
 script_info['script_description']="""This script works like the pick_otus.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Pick OTUs with uclust_ref by searching /home/qiime/inseqs.fasta against /home/qiime/refseqs.fasta and write the output to the /home/qiime/out/ directory.""","""%prog -i /home/qiime/inseqs.fasta -r /home/qiime/refseqs.fasta -o /home/qiime/out/"""))
+script_info['script_usage'].append(("""Example""","""Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with reference-based uclust and write the output to the $PWD/blast_otus/ directory. This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/ucref_otus/"""))
 script_info['output_description']="""The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an OTU identifier which is the reference sequence identifier, and the remaining fields correspond to sequence identifiers assigned to that OTU. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file."""
 
 script_info['required_options'] = [\
     make_option('-i','--input_fasta_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'input_fasta_fp'),
            
     make_option('-o','--output_dir',action='store',\
-           type='string',help='path to store output files'),
+           type='new_dirpath',help='path to store output files'),
           
     make_option('-r','--refseqs_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'reference collection')
 ]
 
@@ -90,7 +90,7 @@ script_info['optional_options'] = [\
                     " integers]")),
     #Define parallel-script-specific parameters
     make_option('-N','--pick_otus_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'scripts/pick_otus.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'pick_otus.py')),\
         

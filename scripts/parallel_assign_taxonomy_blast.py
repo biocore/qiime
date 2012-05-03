@@ -38,21 +38,21 @@ script_info['brief_description']="""Parallel taxonomy assignment using BLAST"""
 script_info['script_description']="""This script performs like the assign_taxonomy.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using BLAST with the id to taxonomy mapping file (-t) and reference sequence template file (-r), and write the results (-o) to /home/qiime_user/out/. BE SURE TO SPECIFY FULL PATHS!""","""%prog -O 5 -i /home/qiime_user/inseqs.fasta -t /home/qiime_user/at_id_to_taxonomy.txt -r /home/qiime_user/at_refseqs.fasta -o /home/qiime_user/out/"""))
+script_info['script_usage'].append(("""Example""","""Assign taxonomy to all sequences in the input file (-i) using BLAST with the id to taxonomy mapping file (-t) and reference sequences file (-r), and write the results (-o) to $PWD/blast_assigned_taxonomy/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/inseqs.fasta -t $PWD/id_to_tax.txt -r $PWD/refseqs.fasta -o $PWD/blast_assigned_taxonomy/"""))
 
 script_info['output_description']="""Mapping of sequence identifiers to taxonomy and quality scores."""
 
-script_info['required_options'] = [\
- make_option('-i','--input_fasta_fp',action='store',\
-           type='string',help='full path to '+\
-           'input_fasta_fp [REQUIRED]'),\
- make_option('-o','--output_dir',action='store',\
-           type='string',help='full path to store output files '+\
+script_info['required_options'] = [
+ make_option('-i','--input_fasta_fp',
+           type='existing_filepath',help='full path to '+\
+           'input_fasta_fp [REQUIRED]'),
+ make_option('-o','--output_dir',action='store',
+           type='new_dirpath',help='full path to store output files '+\
            '[REQUIRED]')
 ]
 
 script_info['optional_options'] = [\
- make_option('-r','--reference_seqs_fp',action='store',\
+ make_option('-r','--reference_seqs_fp',type='existing_filepath',\
         help='Ref seqs to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %s]' \
         % default_reference_seqs_fp,
@@ -68,7 +68,7 @@ script_info['optional_options'] = [\
            'blastmat file [default: %default]',\
            default=qiime_config['blastmat_dir']),\
  make_option('-N','--assign_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'scripts/assign_taxonomy.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'assign_taxonomy.py')),\
  options_lookup['jobs_to_start'],\
@@ -86,13 +86,13 @@ script_info['optional_options'] = [\
 if default_id_to_taxonomy_fp:
     script_info['optional_options'].append(\
      make_option('-t','--id_to_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
            default=default_id_to_taxonomy_fp))
 else:
     script_info['required_options'].append(\
      make_option('-t','--id_to_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'id_to_taxonomy mapping file [REQUIRED]'))
 
 script_info['version'] = __version__ 

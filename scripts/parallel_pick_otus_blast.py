@@ -34,15 +34,15 @@ script_info={}
 script_info['brief_description']="""Parallel pick otus using BLAST"""
 script_info['script_description']="""This script performs like the pick_otus.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Pick OTUs by blasting /home/qiime_user/inseqs.fasta against /home/qiime_user/refseqs.fasta and write the output to the /home/qiime_user/out/ directory.""","""%prog -i /home/qiime_user/inseqs.fasta -r /home/qiime_user/refseqs.fasta -o /home/qiime_user/out/"""))
+script_info['script_usage'].append(("""Example""","""Pick OTUs by blasting $PWD/inseqs.fasta against $PWD/refseqs.fasta and write the output to the $PWD/blast_otus/ directory. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/blast_otus/"""))
 script_info['output_description']="""The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file."""
 
 script_info['required_options'] = [\
     make_option('-i','--input_fasta_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'input_fasta_fp'),\
     make_option('-o','--output_dir',action='store',\
-           type='string',help='path to store output files')\
+           type='new_dirpath',help='path to store output files')\
 ]
 
 script_info['optional_options'] = [\
@@ -55,7 +55,7 @@ script_info['optional_options'] = [\
           'threshold [default: %default]',default=0.97),\
           
     make_option('-r','--refseqs_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'template alignment [default: %default]'),\
     
     make_option('-b','--blast_db',action='store',\
@@ -69,7 +69,7 @@ script_info['optional_options'] = [\
           
     #Define parallel-script-specific parameters
     make_option('-N','--pick_otus_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'scripts/pick_otus.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'pick_otus.py')),\
         

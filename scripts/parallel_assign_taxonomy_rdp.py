@@ -32,14 +32,14 @@ script_info={}
 script_info['brief_description']="""Parallel taxonomy assignment using RDP"""
 script_info['script_description']="""This script performs like the assign_taxonomy.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using the RDP classifier and write the results (-o) to /home/qiime_user/out/.""","""%prog -O 5 -i /home/qiime_user/inseqs.fasta -o /home/qiime_user/out/"""))
+script_info['script_usage'].append(("""Example""","""Assign taxonomy to all sequences in the input file (-i) using the RDP classifier and write the results (-o) to $PWD/rdp_assigned_taxonomy/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/inseqs.fasta -o $PWD/rdp_assigned_taxonomy/"""))
 script_info['output_description']="""Mapping of sequence identifiers to taxonomy and quality scores."""
 script_info['required_options'] = [\
  make_option('-i','--input_fasta_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'input_fasta_fp [REQUIRED]'),\
  make_option('-o','--output_dir',action='store',\
-           type='string',help='path to store output files '+\
+           type='new_dirpath',help='path to store output files '+\
            '[REQUIRED]'),\
 ]
 rdp_classifier_fp = getenv('RDP_JAR_PATH')
@@ -49,23 +49,23 @@ default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
 
 script_info['optional_options'] = [\
  make_option('--rdp_classifier_fp',action='store',\
-           type='string',help='full path to rdp classifier jar file '+\
+           type='existing_filepath',help='full path to rdp classifier jar file '+\
            '[default: %default]',\
            default=rdp_classifier_fp),\
  make_option('-c','--confidence',action='store',\
           type='float',help='Minimum confidence to'+\
           ' record an assignment [default: %default]',default=0.80),\
  make_option('-N','--assign_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'scripts/assign_taxonomy.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'assign_taxonomy.py')),\
  make_option('-t','--id_to_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
+           type='existing_filepath',help='full path to '+\
            'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
            default=default_id_to_taxonomy_fp),\
  make_option('-r','--reference_seqs_fp',action='store',\
            help='Ref seqs to rdp against. [default: %s]' % default_reference_seqs_fp,
-           default=default_reference_seqs_fp),\
+           default=default_reference_seqs_fp,type='existing_filepath'),\
  make_option('--rdp_max_memory', default=1000, type='int',
     help='Maximum memory allocation, in MB, for Java virtual machine when '
     'using the rdp method.  Increase for large training sets '

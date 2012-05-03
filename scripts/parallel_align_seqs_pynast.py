@@ -35,7 +35,7 @@ script_info={}
 script_info['brief_description']="""Parallel sequence alignment using PyNAST"""
 script_info['script_description']="""A wrapper for the align_seqs.py PyNAST option, intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Align the input file (-i) against /home/qiime_user/pynast_test_template.fasta (-t) via 5 (-O) independent jobs and write the output (-o) to /home/qiime_user/out/:""","""%prog -i /home/qiime_user/10_seq.fasta -O 5 -t /home/qiime_user/pynast_test_template.fasta -o /home/qiime_user/out/"""))
+script_info['script_usage'].append(("""Example""","""Align the input file (-i) against using PyNAST and write the output (-o) to $PWD/pynast_aligned_seqs/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/inseqs.fasta -o $PWD/pynast_aligned_seqs/"""))
 script_info['output_description']="""This results in a multiple sequence alignment (FASTA-formatted)."""
 
 script_info['required_options'] = [\
@@ -66,8 +66,8 @@ script_info['optional_options'] = [\
           type='float',help='Minimum percent '+\
           'sequence identity to closest blast hit to include sequence in'+\
           ' alignment [default: %default]',default=75.0),\
- make_option('-N','--align_seqs_fp',action='store',\
-           type='string',help='full path to '+\
+ make_option('-N','--align_seqs_fp',\
+           type='existing_filepath',help='full path to '+\
            'Qiime/scripts/align_seqs.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'align_seqs.py')),\
  options_lookup['jobs_to_start'],\

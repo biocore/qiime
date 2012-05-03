@@ -32,20 +32,19 @@ script_info={}
 script_info['brief_description']="""Parallel BLAST"""
 script_info['script_description']="""This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a blast database created from /home/qiime_user/1000_seq.fasta (-r). Store the results in /home/qiime_user/bla_out/ (-o).""","""%prog -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/1000_seq.fasta -O 3 -o /home/qiime_user/bla_out/"""))
+script_info['script_usage'].append(("""Example""","""BLAST $PWD/inseqs.fasta (-i) against a blast database created from $PWD/refseqs.fasta (-r). Store the results in $PWD/blast_out/ (-o). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta -o $PWD/blast_out/ -e 0.001"""))
 
-script_info['script_usage'].append(("""Example""","""BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a pre-existing BLAST database (-r). Store the results in /home/qiime_user/bla_out/ (-o).""","""%prog -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/blast_dbs/nt -O 3 -o /home/qiime_user/bla_out/ -D"""))
 
 script_info['output_description']=""" """
-script_info['required_options'] = [\
- make_option('-i','--infile_path',action='store',\
-          type='string',dest='infile_path',
-          help='Path of sequences to use as queries [REQUIRED]'),\
- make_option('-r','--refseqs_path',action='store',\
-          type='string',
+script_info['required_options'] = [
+ make_option('-i','--infile_path',action='store',
+          type='existing_filepath',dest='infile_path',
+          help='Path of sequences to use as queries [REQUIRED]'),
+ make_option('-r','--refseqs_path',action='store',
+          type='existing_filepath',
             help='Path to fasta sequences to search against or name of pre-formatted BLAST database' +\
             ' [REQUIRED]'),\
- make_option('-o', '--output_dir', \
+ make_option('-o', '--output_dir',type='new_dirpath',
         help='name of output directory for blast jobs [REQUIRED]')
 ]
 script_info['optional_options'] = [\
@@ -68,7 +67,7 @@ script_info['optional_options'] = [\
            type='string',help='full path to directory containing '+\
            'blastmat file [default: %default]',\
            default=qiime_config['blastmat_dir']),\
- make_option('-b','--blastall_fp',
+ make_option('-b','--blastall_fp',type='string',
         default=qiime_config['blastall_fp'],
         help='Path to blastall [default: %default]'),\
  options_lookup['jobs_to_start'],\
