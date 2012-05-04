@@ -178,7 +178,7 @@ def main():
         def qual_writer(h,q):
             qual_f.write('>%s\n%s\n' % (h,q))
     else:
-        def qual_writer(q):
+        def qual_writer(h,q):
             pass
     
     if store_demultiplexed_fastq:
