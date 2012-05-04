@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
-__author__ = "Jai Ram Rideout"
+__author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Greg Caporaso"]

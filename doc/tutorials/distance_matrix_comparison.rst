@@ -35,9 +35,9 @@ This command will create a new output directory named :file:`mantel_out`, which 
     # samples that were in both distance matrices. p-value contains the correct
     # number of significant digits.
     DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.00	999	two sided
+    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
 
-The Mantel `r` statistic of 0.75592 indicates that there is relatively strong positive correlation between the UniFrac and pH matrices. The p-value of 0.00 indicates that our results are statistically significant at an alpha of 0.05. We determined the p-value by specifying 999 permutations with the -n option. By default, the p-value is calculated using a two-tailed test, though this can be changed using the -t option.
+The Mantel `r` statistic of 0.75592 indicates that there is relatively strong positive correlation between the UniFrac and pH matrices. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. We determined the p-value by specifying 999 permutations with the -n option. By default, the p-value is calculated using a two-tailed test, though this can be changed using the -t option.
 
 This script also has a "batch" mode where you may specify more than two distance matrices as input. A separate Mantel test will be performed for each pair of distance matrices. Run the following command: ::
 
@@ -50,11 +50,11 @@ Again, open up :file:`mantel_out/mantel_results.txt` to see the results of the t
     # samples that were in both distance matrices. p-value contains the correct
     # number of significant digits.
     DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	unweighted_unifrac_dm_shuffled.txt	77	-0.01380	0.66	999	two sided
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.00	999	two sided
-    unweighted_unifrac_dm_shuffled.txt	PH_dm.txt	77	0.01960	0.56	999	two sided
+    unweighted_unifrac_dm.txt	unweighted_unifrac_dm_shuffled_1.txt	77	-0.01380	0.659	999	two sided
+    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
+    unweighted_unifrac_dm_shuffled_1.txt	PH_dm.txt	77	0.01960	0.559	999	two sided
 
-We specified three distance matrices in the previous command. Two of the distance matrices are the same and we added a third distance matrix called :file:`unweighted_unifrac_dm_shuffled.txt`. This distance matrix is the same as the original unweighted UniFrac distance matrix except its sample IDs are shuffled. This distance matrix is included to illustrate a negative control, i.e. one that should `not` be correlated with either of the other two distance matrices. The results file indicates that there isn't significant correlation between the original and shuffled UniFrac distance matrices because the Mantel `r` statistic is close to zero and the p-value is very large (0.66). The middle line in the results file is the same as our previous results (strong significant positive correlation). The last line indicates that the shuffled UniFrac and pH distance matrices are not significantly correlated.
+We specified three distance matrices in the previous command. Two of the distance matrices are the same and we added a third distance matrix called :file:`unweighted_unifrac_dm_shuffled.txt`. This distance matrix is the same as the original unweighted UniFrac distance matrix except its sample IDs are shuffled. This distance matrix is included to illustrate a negative control, i.e. one that should `not` be correlated with either of the other two distance matrices. The results file indicates that there isn't significant correlation between the original and shuffled UniFrac distance matrices because the Mantel `r` statistic is close to zero and the p-value is very large (0.659). The middle line in the results file is the same as our previous results (strong significant positive correlation). The last line indicates that the shuffled UniFrac and pH distance matrices are not significantly correlated.
 
 Partial Mantel Test
 -------------------
@@ -71,9 +71,9 @@ This command will create a new output directory named :file:`partial_mantel_out`
     # samples that were in both distance matrices. p-value contains the correct
     # number of significant digits.
     DM1	DM2	CDM	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	weighted_unifrac_dm.txt	PH_dm.txt	77	0.68183	0.00	999	greater
+    unweighted_unifrac_dm.txt	weighted_unifrac_dm.txt	PH_dm.txt	77	0.68183	0.001	999	greater
 
-The Mantel `r` statistic of 0.68183 indicates that there is relatively strong positive correlation between the unweighted and weighted UniFrac distance matrices while controlling for differences in pH. The p-value of 0.00 indicates that our results are statistically significant at an alpha of 0.05. As with the Mantel test (above), we can also specify more than two distance matrices as inputs, and separate partial Mantel tests will be performed for all pairs of input distance matrices, using the same control matrix for each test.
+The Mantel `r` statistic of 0.68183 indicates that there is relatively strong positive correlation between the unweighted and weighted UniFrac distance matrices while controlling for differences in pH. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. As with the Mantel test (above), we can also specify more than two distance matrices as inputs, and separate partial Mantel tests will be performed for all pairs of input distance matrices, using the same control matrix for each test.
 
 Mantel Correlogram
 ------------------
@@ -99,13 +99,13 @@ This command will create a new output directory named :file:`mantel_correlogram_
     # classes and not all samples could be included in the distance class, so
     # calculations were not performed.
     DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	999	0.185384615385	874	0.366968109081	0.00	0.01	greater
-                                    0.556153846154	830	0.303484182667	0.00	0.01	greater
-                                    0.926923076923	780	0.175832596202	0.00	0.01	greater
-                                    1.29769230769	706	0.0626170953492	0.00	0.01	greater
-                                    1.66846153846	616	-0.0228103590068	0.09	0.62	less
-                                    2.03923076923	572	-0.121409591684	0.00	0.01	less
-                                    2.41	458	-0.191866428719	0.00	0.01	less
+    unweighted_unifrac_dm.txt	PH_dm.txt	77	999	0.185384615385	874	0.366968109081	0.001	0.007	greater
+                                    0.556153846154	830	0.303484182667	0.001	0.007	greater
+                                    0.926923076923	780	0.175832596202	0.001	0.007	greater
+                                    1.29769230769	706	0.0626170953492	0.001	0.007	greater
+                                    1.66846153846	616	-0.0228103590068	0.095	0.665	less
+                                    2.03923076923	572	-0.121409591684	0.001	0.007	less
+                                    2.41	458	-0.191866428719	0.001	0.007	less
                                     2.78076923077	326	None	None	None	None
                                     3.15153846154	238	None	None	None	None
                                     3.52230769231	202	None	None	None	None
