@@ -28,8 +28,8 @@ from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
-    TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner, RtaxTaxonAssigner,
-    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, check_rdp_version
+    TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
+    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, guess_rdp_version
     )
 from sys import stderr
 
@@ -37,21 +37,13 @@ from sys import stderr
 class TopLevelFunctionTests(TestCase):
     """ """
 
-    def test_check_rdp_version(self):
+    def test_guess_rdp_version(self):
         """check_rdp_version functions as expected"""
-        self.assertTrue(\
-         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.jar","2.0"))
-        self.assertTrue(\
-         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.1.jar","2.0"))
-        self.assertTrue(\
-         check_rdp_version("/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar","2.2"))
+        rdp22_fp = "/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar"
+        self.assertEqual(guess_rdp_version(rdp22_fp), "rdp22")
 
-        self.assertFalse(\
-         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.jar","2.2"))
-        self.assertFalse(\
-         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.1.jar","2.2"))
-        self.assertFalse(\
-         check_rdp_version("/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar","2.0"))
+        rdp20_fp = "/Applications/rdp_classifier/rdp_classifier-2.0.jar"
+        self.assertRaises(ValueError, guess_rdp_version, rdp20_fp)
 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""
@@ -572,12 +564,9 @@ class RdpTaxonAssignerTests(TestCase):
         if '2.2' in jar_basename:
             self.app_class = RdpTaxonAssigner
             self.version = 2.2
-        elif '2.0' in jar_basename:
-            self.app_class = Rdp20TaxonAssigner
-            self.version = 2.0
         else:
             raise ApplicationError(
-                "RDP_JAR_PATH does not point to version 2.0 or 2.2 of the "
+                "RDP_JAR_PATH does not point to version 2.2 of the "
                 "RDP Classifier.")
         self.default_app = self.app_class({})
 
@@ -587,10 +576,7 @@ class RdpTaxonAssignerTests(TestCase):
     def test_init(self):
         """RdpTaxonAssigner.__init__ should set default attributes and params
         """
-        if self.version == 2.0:
-            self.assertEqual(self.default_app.Name, 'Rdp20TaxonAssigner')
-        else:
-            self.assertEqual(self.default_app.Name, 'RdpTaxonAssigner')
+        self.assertEqual(self.default_app.Name, 'RdpTaxonAssigner')
 
     def test_train_on_the_fly(self):
         """Training on-the-fly classifies reference sequence correctly with 100% certainty
@@ -600,10 +586,7 @@ class RdpTaxonAssignerTests(TestCase):
         input_seqs_file.write(test_seq_coll.toFasta())
         input_seqs_file.seek(0)
 
-        if self.version == 2.0:
-            exp_assignments = rdp20_trained_test1_expected_dict
-        else:
-            exp_assignments = rdp_trained_test1_expected_dict
+        exp_assignments = rdp_trained_test1_expected_dict
 
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
@@ -622,10 +605,7 @@ class RdpTaxonAssignerTests(TestCase):
         input_seqs_file.write(test_seq_coll.toFasta())
         input_seqs_file.seek(0)
 
-        if self.version == 2.0:
-            exp_assignments = rdp20_trained_test1_expected_dict
-        else:
-            exp_assignments = rdp_trained_test1_expected_dict
+        exp_assignments = rdp_trained_test1_expected_dict
 
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
@@ -654,10 +634,7 @@ class RdpTaxonAssignerTests(TestCase):
            This test may periodically fail, but should be rare.
 
         """
-        if self.version == 2.0:
-            exp_assignments = rdp20_test1_expected_dict
-        else:
-            exp_assignments = rdp_test1_expected_dict
+        exp_assignments = rdp_test1_expected_dict
         min_confidence = self.default_app.Params['Confidence']
 
         # Since there is some variation in the assignments, run
@@ -720,10 +697,7 @@ class RdpTaxonAssignerTests(TestCase):
             'Confidence': min_confidence,
             })
 
-        if self.version == 2.0:
-            expected = rdp20_trained_test2_expected_dict
-        else:
-            expected = rdp_trained_test2_expected_dict
+        expected = rdp_trained_test2_expected_dict
 
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
@@ -762,10 +736,7 @@ class RdpTaxonAssignerTests(TestCase):
            This test may periodically fail, but should be rare.
 
         """
-        if self.version == 2.0:
-            expected_lines = rdp20_test1_expected_lines
-        else:
-            expected_lines = rdp_test1_expected_lines
+        expected_lines = rdp_test1_expected_lines
 
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
@@ -961,48 +932,20 @@ rdp_test1_expected_dict = {
         'Archaea;Crenarchaeota;Thermoprotei', 0.88),
     }
 
-rdp20_test1_expected_dict = {
-    'X67228 some description': (
-        'Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;'
-        'Rhizobiaceae;Rhizobium', 0.95),
-    'EF503697': (
-        'Root;Archaea;Crenarchaeota;Thermoprotei', 0.88),
-    }
-
 rdp_test1_expected_lines = [\
  "\t".join(["X67228 some description",\
   "Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales",\
   "0.9"]),
  "\t".join(['EF503697','Archaea;Crenarchaeota;Thermoprotei','0.8'])]
 
-rdp20_test1_expected_lines = [
-    "\t".join([
-        "X67228 some description",
-        ("Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;"
-         "Rhizobiaceae;Rhizobium"),
-        "0.9"]),
-    "\t".join([
-        'EF503697','Root;Archaea;Crenarchaeota;Thermoprotei','0.8']),
-    ]
-
 rdp_trained_test1_expected_dict = {
     'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
     'EF503697': ('Bacteria;Proteobacteria', 0.93000000000000005),
     }
 
-rdp20_trained_test1_expected_dict = {
-    'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
-    'EF503697': ('Root;Bacteria;Proteobacteria', 0.93000000000000005),
-    }
-
 rdp_trained_test2_expected_dict = {
     'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria2;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
     'EF503697': ('Bacteria;Proteobacteria', 0.93000000000000005),
-    }
-
-rdp20_trained_test2_expected_dict = {
-    'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria2;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
-    'EF503697': ('Root;Bacteria;Proteobacteria', 0.93000000000000005),
     }
 
 rdp_id_to_taxonomy = \

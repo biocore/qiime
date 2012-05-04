@@ -25,7 +25,6 @@ from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from qiime.pycogent_backports import rdp_classifier
-from qiime.pycogent_backports import rdp_classifier20
 from qiime.pycogent_backports import rtax
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath
@@ -36,46 +35,21 @@ from qiime.util import FunctionWithParams, get_rdp_jarpath
 This module has the responsibility for taking a set of sequences and
 providing a taxon assignment for each sequence."""
 
-def check_rdp_version(rdp_jar_path,requested_version):
-    return requested_version in rdp_jar_path
-
-def error_on_bad_rdp_version(option_parser,assignment_method):
+def guess_rdp_version(rdp_jarpath=None):
+    if rdp_jarpath is None:
         rdp_jarpath = get_rdp_jarpath()
-        if rdp_jarpath == None:
-            option_parser.error("RDP classifier is not installed or "
-             "not accessible to QIIME. See install instructions here: "
-             "http://qiime.org/install/install.html#rdp-install")
-        elif assignment_method == 'rdp':
-            if not check_rdp_version(rdp_jarpath,"2.2"):
-                option_parser.error("Specified RDP version 2.2 (default), "
-                "but that version is not installed. Pass -m rdp20 for RDP "
-                "classifier versions 2.0 and 2.0.1.")
-        elif assignment_method == 'rdp20':
-            if not check_rdp_version(rdp_jarpath,"2.0"):
-                option_parser.error("Specified RDP version 2.0 (default), "
-                "but that version is not installed. Pass -m rdp for RDP "
-                "classifier versions 2.2.")
-        else:
-            # not possible to get here, but don't like if/elif without else
-            raise ValueError,\
-             "Unknown assignment method: %s" % assignment_method
-
-def guess_rdp_version():
-    rdp_jarpath = get_rdp_jarpath()
-    if rdp_jarpath == None:
-        raise ValueError, \
-         ("RDP classifier is not installed or "
-          "not accessible to QIIME. See install instructions here: "
-          "http://qiime.org/install/install.html#rdp-install")
+    if rdp_jarpath is None:
+        raise ValueError(
+            "RDP classifier is not installed or "
+            "not accessible to QIIME. See install instructions here: "
+            "http://qiime.org/install/install.html#rdp-install")
     elif "2.2" in rdp_jarpath:
         return "rdp22"
-    elif "2.0" in rdp_jarpath:
-        return "rdp20"
     else:
-        raise ValueError,\
-         ("Can't determine RDP version number. Only versions 2.0, 2.0.1,"
-          " and 2.2 are supported by QIIME. RDP jar path is:"
-          " %s" % rdp_jarpath)
+        raise ValueError(
+            "RDP classifier filename does not look like version 2.2.  Only "
+            "version 2.2 is supported by QIIME. RDP jar path is:"
+            " %s" % rdp_jarpath)
 
 
 class TaxonAssigner(FunctionWithParams):
@@ -595,19 +569,6 @@ class RdpTree(object):
         for subtree in subtrees:
             taxonomy_str += subtree.get_rdp_taxonomy()
         return taxonomy_str
-
-
-class Rdp20TaxonAssigner(RdpTaxonAssigner):
-    Name = "Rdp20TaxonAssigner"
-    Application = "RDP classfier, version 2.0"
-
-    @property
-    def _assign_fcn(self):
-        return rdp_classifier20.assign_taxonomy
-
-    @property
-    def _train_fcn(self):
-        return rdp_classifier20.train_rdp_classifier_and_assign_taxonomy
 
 
 _QIIME_RDP_TAXON_TAG = "_qiime_unique_taxon_tag_"

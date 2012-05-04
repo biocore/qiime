@@ -23,7 +23,6 @@ from qiime.assign_taxonomy import (
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'rdp22': RdpTaxonAssigner,
-    'rdp20': Rdp20TaxonAssigner,
     'rtax': RtaxTaxonAssigner,
 }
 
