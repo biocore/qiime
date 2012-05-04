@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 from __future__ import division
 
-__author__ = "Michael Dwan"
-__copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout",
-               "Andrew Cochran"]
+__author__ = "Jai Ram Rideout"
+__copyright__ = "Copyright 2012, The QIIME project"
+__credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
+               "Damien Coy", "Levi McCracken", "Andrew Cochran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
-__maintainer__ = "Michael Dwan"
-__email__ = "mdwan.tgen@gmail.com"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""

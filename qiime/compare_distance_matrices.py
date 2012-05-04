@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout", "Greg Caporaso"]
+__credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
+               "Damien Coy", "Levi McCracken", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jai Ram Rideout"

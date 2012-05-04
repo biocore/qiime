@@ -47,10 +47,10 @@ from numpy import array, asarray
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy"] 
+               "Levi McCracken", "Damien Coy"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
