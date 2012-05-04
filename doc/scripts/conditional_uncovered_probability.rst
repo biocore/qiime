@@ -28,15 +28,12 @@ We only provide these constants for some frequently used combinations. These are
 .. note::
 
 	
-	**[REQUIRED]**
+	**[OPTIONAL]**
 		
 	-i, `-`-input_path
 		Input OTU table filepath. [default: None]
 	-o, `-`-output_path
 		Output filepath to store the predictions. [default: None]
-	
-	**[OPTIONAL]**
-		
 	-r, `-`-look_ahead
 		Number of unobserved, new colors necessary for prediction. [default: 25]
 	-c, `-`-ci_type

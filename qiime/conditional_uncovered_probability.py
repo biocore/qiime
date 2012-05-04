@@ -33,10 +33,10 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.maths.stats.alpha_diversity import expand_counts, singles, doubles
 
-def cup(input_path, r, alpha, f, ci_type):
+def cup_driver(otu_table_handle, r, alpha, f, ci_type):
     """Compute variations of the conditional uncovered probability.
 
-    input_path: path to otu_table
+    otu_table_handle: handle to otu_table file
 
     r: Number of new colors that are required for the next prediction
     alpha: desired confidence level
@@ -55,7 +55,7 @@ def cup(input_path, r, alpha, f, ci_type):
           generic scheme such as alpha_diversity.py is using
     """ 
     #TODO: this needs to be adapted to the new biom format
-    (sample_ids, _, otu_table, lineages) = parse_otu_table(open(input_path))
+    (sample_ids, _, otu_table, lineages) = parse_otu_table(otu_table_handle)
 
     header = ['PE', 'Lower Bound', 'Upper Bound'] 
     result =[]

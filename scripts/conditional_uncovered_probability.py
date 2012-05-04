@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.conditional_uncovered_probability import cup
+from qiime.conditional_uncovered_probability import cup_driver
 import os
 
 #conditional_uncovered_probability.py
@@ -57,17 +57,16 @@ PC.124 0.001   0.000564      0.00564
 
 """
 
-script_info['required_options']=[
-    make_option('-i', '--input_path',
-                help='Input OTU table filepath. [default: %default]',
-                type='existing_path'),
- make_option('-o', '--output_path',
-             help='Output filepath to store the predictions. [default: %default]',
-             type='new_path'),
-]
+script_info['required_options']=[]
 
 CI_TYPES=['ULCL', 'ULCU', 'U', 'L']
 script_info['optional_options']=[\
+    make_option('-i', '--input_path',
+                help='Input OTU table filepath. [default: %default]',
+                type='existing_path'),
+    make_option('-o', '--output_path',
+             help='Output filepath to store the predictions. [default: %default]',
+             type='new_path'),
     make_option('-r', '--look_ahead',
                 help='Number of unobserved, new colors necessary for prediction.'
                 ' [default: %default]', default=25,
@@ -89,7 +88,7 @@ script_info['optional_options']=[\
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    almost_required_options = ['input_path','output_path']
+    almost_required_options = ['input_path', 'output_path']
     for option in almost_required_options:
         if getattr(opts,option) == None:
             option_parser.error('Required option --%s omitted.' % option)
@@ -99,8 +98,8 @@ def main():
           f = open(opts.output_path, 'w')
       except IOError:
           exit("ioerror, couldn't create output file") 
-      result = cup(opts.input_path, opts.look_ahead,
-                 opts.alpha, opts.f_ratio, opts.ci_type)
+      result = cup_driver(open(opts.input_path), opts.look_ahead,
+                          opts.alpha, opts.f_ratio, opts.ci_type)
       f.write(result+"\n")
       f.close()
     else:

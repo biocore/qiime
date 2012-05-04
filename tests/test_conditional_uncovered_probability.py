@@ -21,6 +21,33 @@ class CUPtests(TestCase):
     def setUp(self):
         """Set up shared variables"""
 
+
+    def test_cup_driver(self):
+        """cup_driver returns matrix with estimates"""
+
+        otu_table="""#
+#OTU ID\tS1\tS2
+1\t3\t4
+2\t2\t5
+3\t1\t2
+4\t0\t4
+5\t1\t0
+"""
+        # Not much testing here, just make sure we get back a (formatted) matrix with the right dimensions
+        observed = cup_driver(otu_table.split("\n"), r=4, alpha=0.95, f=10, ci_type="ULCL")
+        self.assertEqual(len(observed.split("\n")), 3)
+        self.assertEqual(len(observed.split("\n")[1].split('\t')), 4)
+
+
+        otu_table="""#
+#OTU ID\tS1
+1\t3
+"""
+        observed = cup_driver(otu_table.split("\n"), r=4, alpha=0.95, f=10, ci_type="ULCL")
+        expected="""\tPE\tLower Bound\tUpper Bound
+S1\tNaN\tNaN\tNaN"""
+        self.assertEqual(observed, expected)
+
     def test_lladser_point_estimates(self):
         """lladser_point_estimates calculates correct estimates"""
         
