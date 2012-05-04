@@ -60,7 +60,7 @@ def format_p_value_for_num_iters(p,num_iters):
         # this can be the last step of a long process, so we don't 
         # want to fail
         return "Too few iters to compute p-value (num_iters=%d)" % num_iters
-    decimal_places = int(log10(num_iters))
+    decimal_places = int(log10(num_iters+1))
     result = ('%1.'+'%df' % decimal_places) % p
     return result
 
