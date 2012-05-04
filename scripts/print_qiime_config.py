@@ -304,6 +304,8 @@ class Qiime_config(TestCase):
         stdout = proc.stdout.read()
         version_string = stdout.strip().split('Python')[-1].strip()
         try:
+            if version_string[-1]=='+':
+                version_string = version_string[:-1]
             version = tuple(map(int,version_string.split('.')))
             if len(version) == 2:
                 version = (version[0],version[1],0)
