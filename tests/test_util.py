@@ -1321,8 +1321,8 @@ class SubSampleFastaTests(TestCase):
          [line.strip() for line in open(self.output_filepath, "U")]
         
         self.assertEqual(actual_results, self.expected_lines_20_perc)
-
  
+
 class DistanceMatrixTests(TestCase):
     """Tests for the DistanceMatrix class."""
 
@@ -1372,24 +1372,24 @@ class DistanceMatrixTests(TestCase):
         """Test parsing empty dm file contents."""
         self.assertRaises(TypeError, DistanceMatrix.parseDistanceMatrix, [])
 
-    def test_getSize(self):
+    def test_Size(self):
         """Test returning of dm's size."""
-        self.assertEqual(self.single_ele_dm.getSize(), 1)
-        self.assertEqual(self.dm.getSize(), 3)
-        self.assertEqual(self.overview_dm.getSize(), 9)
+        self.assertEqual(self.single_ele_dm.Size, 1)
+        self.assertEqual(self.dm.Size, 3)
+        self.assertEqual(self.overview_dm.Size, 9)
 
-    def test_getMax(self):
+    def test_max(self):
         """Test returning of dm's maximum-valued element."""
-        self.assertEqual(self.single_ele_dm.getMax(), 0)
-        self.assertEqual(self.dm.getMax(), 6)
-        self.assertFloatEqual(self.overview_dm.getMax(), 0.8)
+        self.assertEqual(self.single_ele_dm.max(), 0)
+        self.assertEqual(self.dm.max(), 6)
+        self.assertFloatEqual(self.overview_dm.max(), 0.8)
 
-    def test_getDataMatrix(self):
+    def test_DataMatrix(self):
         """Test returning of dm's internal matrix of distances."""
-        self.assertEqual(self.single_ele_dm.getDataMatrix(), array([[0]]))
-        self.assertEqual(self.dm.getDataMatrix(),
+        self.assertEqual(self.single_ele_dm.DataMatrix, array([[0]]))
+        self.assertEqual(self.dm.DataMatrix,
             array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]))
-        self.assertFloatEqual(self.overview_dm.getDataMatrix(),
+        self.assertFloatEqual(self.overview_dm.DataMatrix,
             self.overview_dm._data)
 
     def test_flatten(self):
@@ -1555,18 +1555,18 @@ class DistanceMatrixTests(TestCase):
         del obs['date']
         self.assertFloatEqual(obs, exp)
 
-    def test_getSampleIds(self):
+    def test_SampleIds(self):
         """Test sample ID getter method."""
         exp =  ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 
                     'PC.607', 'PC.634', 'PC.635', 'PC.636']
-        obs = self.overview_dm.getSampleIds()
+        obs = self.overview_dm.SampleIds
         self.assertEqual(obs, exp)
 
         exp = ['s1', 's2', 's3']
-        obs = self.dm.getSampleIds()
+        obs = self.dm.SampleIds
         self.assertEqual(obs, exp)
 
-        obs = self.single_ele_dm.getSampleIds()
+        obs = self.single_ele_dm.SampleIds
         self.assertEqual(obs, ['s1'])
 
 
@@ -1626,29 +1626,21 @@ class MetadataMapTests(TestCase):
         self.assertRaises(QiimeParseError, MetadataMap.parseMetadataMap, [])
 
     def test_eq(self):
-        """Test whether two MetadataMap's are equal."""
+        """Test whether two MetadataMaps are equal."""
         self.assertTrue(self.empty_map == MetadataMap({}, []))
         self.assertTrue(self.overview_map == MetadataMap(
-            self.overview_map._metadata, self.overview_map._comments))
+            self.overview_map._metadata, self.overview_map.Comments))
 
     def test_ne(self):
-        """Test whether two MetadataMap's are not equal."""
+        """Test whether two MetadataMaps are not equal."""
         self.assertTrue(self.empty_map != MetadataMap({}, ["foo"]))
         self.assertTrue(self.overview_map != MetadataMap(
             self.overview_map._metadata, ["foo"]))
         self.assertTrue(self.overview_map != MetadataMap({},
-            self.overview_map._comments))
+            self.overview_map.Comments))
         self.assertTrue(self.overview_map != self.empty_map)
         self.assertTrue(self.overview_map != self.map_with_comments)
         self.assertTrue(self.overview_map != self.no_metadata)
-
-    def test_getComments(self):
-        """Test metadata map comments accessor."""
-        self.assertEqual(self.overview_map.getComments(), [])
-        exp = self.comment[1:]
-        self.assertEqual(self.map_with_comments.getComments(), [exp])
-        self.assertEqual(self.empty_map.getComments(), [])
-        self.assertEqual(self.no_metadata.getComments(), [])
 
     def test_getSampleMetadata(self):
         """Test metadata by sample ID accessor with valid sample IDs."""
@@ -1762,29 +1754,29 @@ class MetadataMapTests(TestCase):
         self.assertRaises(KeyError, self.no_metadata.getCategoryValue,
             'PC.354', None)
 
-    def test_getSampleIds(self):
-        """Test sample IDs getter."""
+    def test_SampleIds(self):
+        """Test sample IDs accessor."""
         exp = ["PC.354", "PC.355", "PC.356", "PC.481", "PC.593", "PC.607",
                "PC.634", "PC.635", "PC.636"]
-        obs = self.overview_map.getSampleIds()
+        obs = self.overview_map.SampleIds
         self.assertEqual(obs, exp)
 
-        obs = self.no_metadata.getSampleIds()
+        obs = self.no_metadata.SampleIds
         self.assertEqual(obs, exp)
 
-        obs = self.empty_map.getSampleIds()
+        obs = self.empty_map.SampleIds
         self.assertEqual(obs, [])
 
-    def test_getCategoryNames(self):
-        """Test category names getter."""
+    def test_CategoryNames(self):
+        """Test category names accessor."""
         exp = ["BarcodeSequence", "DOB", "Treatment"]
-        obs = self.overview_map.getCategoryNames()
+        obs = self.overview_map.CategoryNames
         self.assertEqual(obs, exp)
 
-        obs = self.no_metadata.getCategoryNames()
+        obs = self.no_metadata.CategoryNames
         self.assertEqual(obs, [])
 
-        obs = self.empty_map.getCategoryNames()
+        obs = self.empty_map.CategoryNames
         self.assertEqual(obs, [])
 
 

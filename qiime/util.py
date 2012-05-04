@@ -1352,7 +1352,11 @@ def summarize_otu_sizes_from_otu_map(otu_map_f):
 
 
 class DistanceMatrix(DenseTable):
-    """This class represents a QIIME distance matrix."""
+    """This class represents a QIIME distance matrix.
+    
+    Public attributes:
+        SampleIds - the list of sample ID strings (i.e. row/column headers)
+    """
 
     _biom_type = "Distance matrix"
 
@@ -1404,40 +1408,37 @@ class DistanceMatrix(DenseTable):
             raise ValueError("The input distance matrix must be square.")
         if self.SampleIds != self.ObservationIds:
             raise ValueError("The sample IDs must match the observation IDs.")
-
         self._size = data_matrix.shape[0]
 
-    def getSize(self):
-        """Returns the number of rows/columns in the matrix as an integer.
+    @property
+    def Size(self):
+        """Returns the size of the distance matrix (number of rows or columns).
 
-        Since all distance matrices are square, only a single number needs to
-        be returned.
+        This exists to explicitly make Size read-only by not having an
+        accompanying setter.
         """
         return self._size
 
-    def getMax(self):
+    @property
+    def DataMatrix(self):
+        """Returns the matrix of distances as a numpy array.
+        
+        The returned matrix is not a copy of the matrix stored in this object.
+        """
+        return asarray(self._data)
+
+    def max(self):
         """Returns the maximum value present in the distance matrix.
 
         Since distance matrices are guaranteed to be at least 1x1 in size, this
         method will always return a valid maximum.
         """
         max_val = self[0][0]
-        for row_idx in range(self.getSize()):
-            for col_idx in range(self.getSize()):
+        for row_idx in range(self.Size):
+            for col_idx in range(self.Size):
                 if self[row_idx][col_idx] > max_val:
                     max_val = self[row_idx][col_idx]
         return max_val
-
-    def getSampleIds(self):
-        """Returns the list of sample IDs associated with the matrix."""
-        return self.SampleIds
-
-    def getDataMatrix(self):
-        """Returns the matrix of distances as a numpy array.
-        
-        The returned matrix is not a copy of the matrix stored in this object.
-        """
-        return asarray(self._data)
 
     def flatten(self, lower=True):
         """Returns a list containing the flattened distance matrix.
@@ -1451,8 +1452,8 @@ class DistanceMatrix(DenseTable):
                 elements (including the diagonal) will be included
         """
         flattened = []
-        for col_num in range(self.getSize()):
-            for row_num in range(self.getSize()):
+        for col_num in range(self.Size):
+            for row_num in range(self.Size):
                 if lower:
                     if col_num < row_num:
                         flattened.append(self[row_num][col_num])
@@ -1462,7 +1463,12 @@ class DistanceMatrix(DenseTable):
 
 
 class MetadataMap():
-    """This class represents a QIIME metadata mapping file."""
+    """This class represents a QIIME metadata mapping file.
+    
+    Public attributes:
+        Comments - the comments associated with this metadata map (a list of
+            strings)
+    """
 
     @staticmethod
     def parseMetadataMap(lines):
@@ -1478,7 +1484,7 @@ class MetadataMap():
         """
         return MetadataMap(*parse_mapping_file_to_dict(lines))
 
-    def __init__(self, sample_metadata, comments):
+    def __init__(self, sample_metadata, Comments):
         """Instantiates a MetadataMap object.
 
         Arguments:
@@ -1487,12 +1493,12 @@ class MetadataMap():
                 sample ID, and the inner dict maps category name to category
                 value. This can be an empty dict altogether or the inner dict
                 can be empty
-            comments - the output of parse_mapping_file_to_dict(). It expects a
+            Comments - the output of parse_mapping_file_to_dict(). It expects a
                 list of strings for the comments in the mapping file. Can be an
                 empty list
         """
         self._metadata = sample_metadata
-        self._comments = comments
+        self.Comments = Comments
 
     def __eq__(self, other):
         """Test this instance for equality with another.
@@ -1515,36 +1521,28 @@ class MetadataMap():
         """
         return not self.__eq__(other)
 
-    def getComments(self):
-        """Returns the comments associated with this metadata map.
-
-        The comments are returned as a list of strings, or an empty list if
-        there are no comments.
-        """
-        return self._comments
-
-    def getSampleMetadata(self, sampleId):
+    def getSampleMetadata(self, sample_id):
         """Returns the metadata associated with a particular sample.
 
         The metadata will be returned as a dict mapping category name to
         category value.
 
         Arguments:
-            sampleId - the sample ID (string) to retrieve metadata for
+            sample_id - the sample ID (string) to retrieve metadata for
         """
-        return self._metadata[sampleId]
+        return self._metadata[sample_id]
 
-    def getCategoryValue(self, sampleId, category):
+    def getCategoryValue(self, sample_id, category):
         """Returns the category value associated with a sample's category.
 
         The returned category value will be a string.
 
         Arguments:
-            sampleId - the sample ID (string) to retrieve category information
+            sample_id - the sample ID (string) to retrieve category information
                 for
             category - the category name whose value will be returned
         """
-        return self._metadata[sampleId][category]
+        return self._metadata[sample_id][category]
 
     def getCategoryValues(self, sample_ids, category):
         """Returns all the values of a given category.
@@ -1558,18 +1556,20 @@ class MetadataMap():
         """
         return [self._metadata[sid][category] for sid in sample_ids]
 
-    def getSampleIds(self):
+    @property
+    def SampleIds(self):
         """Returns the IDs of all samples in the metadata map.
 
         The sample IDs are returned as a list of strings in alphabetical order.
         """
         return sorted(self._metadata.keys())
 
-    def getCategoryNames(self):
+    @property
+    def CategoryNames(self):
         """Returns the names of all categories in the metadata map.
 
         The category names are returned as a list of strings in alphabetical
         order.
         """
-        return sorted(self.getSampleMetadata(self.getSampleIds()[0]).keys()) \
-            if len(self.getSampleIds()) > 0 else []
+        return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
+            if len(self.SampleIds) > 0 else []
