@@ -12,17 +12,13 @@ __email__ = "mdwan.tgen@gmail.com"
 __status__ = "Development"
 
 from os import path
-
 from cogent.util.misc import create_dir
-
-from qiime.format import format_p_value_for_num_iters
 from qiime.parse import fields_to_dict, parse_distmat
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
-                        make_compatible_distance_matrices,
                         make_option)
-from qiime.stats import Mantel, MantelCorrelogram, PartialMantel
-from qiime.util import DistanceMatrix
+from qiime.compare_distance_matrices import (run_mantel_correlogram,
+                                             run_mantel_test)
 
 options_lookup = get_options_lookup()
 
@@ -158,134 +154,37 @@ def main():
     except:
         option_parser.error("Could not create or access output directory "
                             "specified with the -o option.")
-
-    sample_id_map_fp = opts.sample_id_map_fp
-    if sample_id_map_fp:
+    sample_id_map = None
+    if opts.sample_id_map_fp:
         sample_id_map = dict([(k, v[0]) \
-        for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
-    else:
-        sample_id_map = None
-
+        for k,v in fields_to_dict(open(opts.sample_id_map_fp, "U")).items()])
     input_dm_fps = opts.input_dms.split(',')
-    num_perms = opts.num_permutations
-    method = opts.method
+    distmats = [parse_distmat(open(dm_fp, 'U')) for dm_fp in input_dm_fps]
 
-    if method == 'mantel':
-        results_fp = 'mantel_results.txt'
-        comment = comment_mantel_pmantel
-        header = 'DM1\tDM2\tNumber of entries\tMantel r statistic\t' + \
-                 'p-value\tNumber of permutations\tTail type\n'
-    elif method == 'partial_mantel':
-        results_fp = 'partial_mantel_results.txt'
-        comment = comment_mantel_pmantel
-        header = 'DM1\tDM2\tCDM\tNumber of entries\tMantel r statistic\t' + \
-                 'p-value\tNumber of permutations\tTail type\n'
-    elif method == 'mantel_corr':
-        results_fp = 'mantel_correlogram_results.txt'
-        comment = comment_corr
-        header = 'DM1\tDM2\tNumber of entries\tNumber of permutations\t' + \
-                 'Class index\tNumber of distances\tMantel r statistic\t' + \
-                 'p-value\tp-value (Bonferroni corrected)\tTail type\n'
-
-    # Write the comment string and header.
-    output_f = open(path.join(opts.output_dir, results_fp), 'w')
-    output_f.write(comment + header)
-
-    # Loop over all pairs of dms.
-    for i, fp1 in enumerate(input_dm_fps):
-        for fp2 in input_dm_fps[i+1:]:
-            # Open the current pair of distance matrices and make them
-            # compatible by only keeping samples that match between them,
-            # and ordering them by the same sample IDs.
-            (dm1_labels, dm1_data), (dm2_labels, dm2_data) = \
-                make_compatible_distance_matrices(
-                    parse_distmat(open(fp1, 'U')),
-                    parse_distmat(open(fp2, 'U')),
-                    lookup=sample_id_map)
-            if method == 'partial_mantel':
-                if not opts.control_dm:
-                    option_parser.error("You must provide a control matrix "
-                            "when running the partial Mantel test.")
-
-                # We need to intersect three sets (three matrices).
-                (dm1_labels, dm1_data), (cdm_labels, cdm_data) = \
-                    make_compatible_distance_matrices((dm1_labels, dm1_data),
-                    parse_distmat(open(opts.control_dm, 'U')),
-                        lookup=sample_id_map)
-                (dm1_labels, dm1_data), (dm2_labels, dm2_data) = \
-                    make_compatible_distance_matrices((dm1_labels, dm1_data),
-                        (dm2_labels, dm2_data), lookup=sample_id_map)
-            if len(dm1_labels) < 3:
-                output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,
-                               fp2, len(dm1_labels)))
-                continue
-            # Create DistanceMatrix instances from our raw distance matrix
-            # variables.
-            dm1 = DistanceMatrix(dm1_data, dm1_labels, dm1_labels)
-            dm2 = DistanceMatrix(dm2_data, dm2_labels, dm2_labels)
-
-            # Create an instance of our correlation test and run it with the
-            # specified number of permutations.
-            if method == 'mantel':
-                results = Mantel(dm1, dm2, opts.tail_type)(num_perms)
-                p_str = format_p_value_for_num_iters(results['p_value'],
-                                                     num_perms)
-                output_f.write("%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" %
-                        (fp1, fp2, len(dm1_labels), results['r_value'], p_str,
-                         num_perms, opts.tail_type))
-            elif method == 'partial_mantel':
-                results = PartialMantel(dm1, dm2, DistanceMatrix(cdm_data,
-                                        cdm_labels, cdm_labels))(num_perms)
-                p_str = format_p_value_for_num_iters(results['mantel_p'],
-                                                     num_perms)
-                output_f.write("%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" %
-                        (fp1, fp2, opts.control_dm, len(dm1_labels),
-                         results['mantel_r'], p_str, num_perms, 'greater'))
-            elif method == 'mantel_corr':
-                results = MantelCorrelogram(dm1, dm2,
-                                            alpha=opts.alpha)(num_perms)
-                # Write the correlogram plot to a file.
-                dm1_name = path.basename(fp1)
-                dm2_name = path.basename(fp2)
-                fig_file_name = '_'.join((dm1_name, 'AND', dm2_name,
-                        'mantel_correlogram')) + '.' + opts.image_type
-                results['correlogram_plot'].savefig(path.join(opts.output_dir,
-                        fig_file_name), format=opts.image_type)
-
-                # Iterate over the results and write them to the text file.
-                first_time = True
-                for class_idx, num_dist, r, p, p_corr in \
-                        zip(results['class_index'], results['num_dist'],
-                            results['mantel_r'], results['mantel_p'],
-                            results['mantel_p_corr']):
-                    # Format results.
-                    p_str = None
-                    if p is not None:
-                        p_str = format_p_value_for_num_iters(p, num_perms)
-                    p_corr_str = None
-                    if p_corr is not None:
-                        p_corr_str = format_p_value_for_num_iters(p_corr,
-                                                                  num_perms)
-                    if r is None:
-                        tail_type = None
-                    elif r < 0:
-                        tail_type = 'less'
-                    else:
-                        tail_type = 'greater'
-
-                    if first_time:
-                        output_f.write(
-                            '%s\t%s\t%d\t%d\t%s\t%d\t%s\t%s\t%s\t%s\n'
-                                % (fp1, fp2, len(dm1_labels), num_perms,
-                                   class_idx, num_dist, r, p_str, p_corr_str,
-                                   tail_type))
-                        first_time = False
-                    else:
-                        output_f.write('\t\t\t\t%s\t%d\t%s\t%s\t%s\t%s\n'
-                                % (class_idx, num_dist, r, p_str, p_corr_str,
-                                   tail_type))
+    if opts.method == 'mantel':
+        output_f = open(path.join(opts.output_dir, 'mantel_results.txt'), 'w')
+        output_f.write(run_mantel_test('mantel', input_dm_fps, distmats,
+                       opts.num_permutations, opts.tail_type,
+                       comment_mantel_pmantel, sample_id_map=sample_id_map))
+    elif opts.method == 'partial_mantel':
+        output_f = open(path.join(opts.output_dir,
+                        'partial_mantel_results.txt'), 'w')
+        output_f.write(run_mantel_test('partial_mantel', input_dm_fps,
+                       distmats, opts.num_permutations, opts.tail_type,
+                       comment_mantel_pmantel, control_dm_fp=opts.control_dm,
+                       control_dm=parse_distmat(open(opts.control_dm, 'U')),
+                       sample_id_map=sample_id_map))
+    elif opts.method == 'mantel_corr':
+        output_f = open(path.join(opts.output_dir,
+                        'mantel_correlogram_results.txt'), 'w')
+        result_str, correlogram_fps, correlograms = run_mantel_correlogram(
+                input_dm_fps, distmats, opts.num_permutations, comment_corr,
+                opts.alpha, sample_id_map=sample_id_map)
+        output_f.write(result_str)
+        for corr_fp, corr in zip(correlogram_fps, correlograms):
+            corr.savefig(path.join(opts.output_dir, corr_fp + opts.image_type),
+                         format=opts.image_type)
     output_f.close()
-
 
 if __name__ == "__main__":
     main()
