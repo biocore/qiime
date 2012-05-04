@@ -15,6 +15,7 @@ from itertools import izip
 from qiime.conditional_uncovered_probability import *
 from cogent.maths.stats.alpha_diversity import diversity
 
+
 class CUPtests(TestCase):
     """Tests of top-level functions"""
 
@@ -33,8 +34,10 @@ class CUPtests(TestCase):
 4\t0\t4
 5\t1\t0
 """
+        # convert_biom using otu_table w/o leading #
+        bt_string = '{"rows": [{"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata": null}, {"id": "5", "metadata": null}], "format": "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0], [0, 1, 4.0], [1, 0, 2.0], [1, 1, 5.0], [2, 0, 1.0], [2, 1, 2.0], [3, 1, 4.0], [4, 0, 1.0]], "columns": [{"id": "S1", "metadata": null}, {"id": "S2", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape": [5, 2], "format_url": "http://biom-format.org", "date": "2012-05-04T09:28:28.247809", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
         # Not much testing here, just make sure we get back a (formatted) matrix with the right dimensions
-        observed = cup_driver(otu_table.split("\n"), r=4, alpha=0.95, f=10, ci_type="ULCL")
+        observed = cup_driver(bt_string, r=4, alpha=0.95, f=10, ci_type="ULCL")
         self.assertEqual(len(observed.split("\n")), 3)
         self.assertEqual(len(observed.split("\n")[1].split('\t')), 4)
 
@@ -43,7 +46,9 @@ class CUPtests(TestCase):
 #OTU ID\tS1
 1\t3
 """
-        observed = cup_driver(otu_table.split("\n"), r=4, alpha=0.95, f=10, ci_type="ULCL")
+        # convert_biom using otu_table w/o leading #
+        bt_string = '{"rows": [{"id": "1", "metadata": null}], "format": "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0]], "columns": [{"id": "S1", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape": [1, 1], "format_url": "http://biom-format.org", "date": "2012-05-04T09:36:57.500673", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
+        observed = cup_driver(bt_string, r=4, alpha=0.95, f=10, ci_type="ULCL")
         expected="""\tPE\tLower Bound\tUpper Bound
 S1\tNaN\tNaN\tNaN"""
         self.assertEqual(observed, expected)

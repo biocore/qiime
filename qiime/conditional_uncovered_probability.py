@@ -25,7 +25,7 @@ from numpy.random import gamma, random, shuffle
 from math import factorial
 from operator import mul
 
-from qiime.parse import parse_otu_table
+#from qiime.parse import parse_otu_table
 from biom.parse import parse_biom_table
 from qiime.format import format_matrix
 
@@ -33,7 +33,7 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.maths.stats.alpha_diversity import expand_counts, singles, doubles
 
-def cup_driver(otu_table_handle, r, alpha, f, ci_type):
+def cup_driver(biom_table_handle, r, alpha, f, ci_type):
     """Compute variations of the conditional uncovered probability.
 
     otu_table_handle: handle to otu_table file
@@ -55,7 +55,11 @@ def cup_driver(otu_table_handle, r, alpha, f, ci_type):
           generic scheme such as alpha_diversity.py is using
     """ 
     #TODO: this needs to be adapted to the new biom format
-    (sample_ids, _, otu_table, _) = parse_otu_table(otu_table_handle)
+    #(sample_ids, _, otu_table, _) = parse_otu_table(otu_table_handle)
+
+    bt = parse_biom_table(biom_table_handle)
+    sample_ids = bt.SampleIds
+    otu_table = array([bt.observationData(i) for i in bt.ObservationIds])
 
     header = ['PE', 'Lower Bound', 'Upper Bound'] 
     result =[]
