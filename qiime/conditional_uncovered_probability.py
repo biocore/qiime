@@ -55,7 +55,7 @@ def cup_driver(otu_table_handle, r, alpha, f, ci_type):
           generic scheme such as alpha_diversity.py is using
     """ 
     #TODO: this needs to be adapted to the new biom format
-    (sample_ids, _, otu_table, lineages) = parse_otu_table(otu_table_handle)
+    (sample_ids, _, otu_table, _) = parse_otu_table(otu_table_handle)
 
     header = ['PE', 'Lower Bound', 'Upper Bound'] 
     result =[]
