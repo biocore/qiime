@@ -111,11 +111,12 @@ script_info['optional_options'] = [
     # Standard Mantel specific, i.e., method == mantel
     make_option('-t','--tail_type',
         help='the type of tail test to perform when calculating the p-value. '
-        'Valid options: [two sided, less, greater] Two-sided is a two-tailed '
+        'Valid options: [two sided, less, greater] Two sided is a two-tailed '
         'test, while less tests for r statistics less than the observed r '
         'statistic, and greater tests for r statistics greater than the '
         'observed r statistic. Only applies when method is mantel [default: '
-        '%default]', default='two sided'),
+        '%default]', default='two sided', type='choice',
+        choices=['two sided', 'greater', 'less']),
     # Mantel Correlogram specific, i.e., method == mantel_corr
     make_option('-a', '--alpha',
         help='the value of alpha to use when denoting significance in the '
@@ -124,7 +125,7 @@ script_info['optional_options'] = [
     make_option('-g', '--image_type',
         help='the type of image to produce. Valid options: [png, svg, pdf]. '
         'Only applies when method is mantel_corr [default: %default]',
-        default='pdf', type="choice", choices=['pdf', 'png', 'svg']),
+        default='pdf', type='choice', choices=['pdf', 'png', 'svg']),
     # Partial Mantel specific, i.e., method == partial_mantel
     make_option('-c', '--control_dm',
         help='the control matrix. Only applies (and is *required*) when '
@@ -178,13 +179,13 @@ def main():
         results_fp = 'partial_mantel_results.txt'
         comment = comment_mantel_pmantel
         header = 'DM1\tDM2\tCDM\tNumber of entries\tMantel r statistic\t' + \
-                 'p-value\tNumber of permutations\n'
+                 'p-value\tNumber of permutations\tTail type\n'
     elif method == 'mantel_corr':
         results_fp = 'mantel_correlogram_results.txt'
         comment = comment_corr
         header = 'DM1\tDM2\tNumber of entries\tNumber of permutations\t' + \
                  'Class index\tNumber of distances\tMantel r statistic\t' + \
-                 'p-value\tp-value (Bonferroni corrected)\n'
+                 'p-value\tp-value (Bonferroni corrected)\tTail type\n'
 
     # Write the comment string and header.
     output_f = open(path.join(opts.output_dir, results_fp), 'w')
@@ -237,9 +238,9 @@ def main():
                                         cdm_labels, cdm_labels))(num_perms)
                 p_str = format_p_value_for_num_iters(results['mantel_p'],
                                                      num_perms)
-                output_f.write("%s\t%s\t%s\t%d\t%.5f\t%s\t%d\n" %
+                output_f.write("%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" %
                         (fp1, fp2, opts.control_dm, len(dm1_labels),
-                         results['mantel_r'], p_str, num_perms))
+                         results['mantel_r'], p_str, num_perms, 'greater'))
             elif method == 'mantel_corr':
                 results = MantelCorrelogram(dm1, dm2,
                                             alpha=opts.alpha)(num_perms)
@@ -257,6 +258,7 @@ def main():
                         zip(results['class_index'], results['num_dist'],
                             results['mantel_r'], results['mantel_p'],
                             results['mantel_p_corr']):
+                    # Format results.
                     p_str = None
                     if p is not None:
                         p_str = format_p_value_for_num_iters(p, num_perms)
@@ -264,14 +266,24 @@ def main():
                     if p_corr is not None:
                         p_corr_str = format_p_value_for_num_iters(p_corr,
                                                                   num_perms)
+                    if r is None:
+                        tail_type = None
+                    elif r < 0:
+                        tail_type = 'less'
+                    else:
+                        tail_type = 'greater'
+
                     if first_time:
-                        output_f.write('%s\t%s\t%d\t%d\t%s\t%d\t%s\t%s\t%s\n'
+                        output_f.write(
+                            '%s\t%s\t%d\t%d\t%s\t%d\t%s\t%s\t%s\t%s\n'
                                 % (fp1, fp2, len(dm1_labels), num_perms,
-                                   class_idx, num_dist, r, p_str, p_corr_str))
+                                   class_idx, num_dist, r, p_str, p_corr_str,
+                                   tail_type))
                         first_time = False
                     else:
-                        output_f.write('\t\t\t\t%s\t%d\t%s\t%s\t%s\n'
-                                % (class_idx, num_dist, r, p_str, p_corr_str))
+                        output_f.write('\t\t\t\t%s\t%d\t%s\t%s\t%s\t%s\n'
+                                % (class_idx, num_dist, r, p_str, p_corr_str,
+                                   tail_type))
     output_f.close()
 
 
