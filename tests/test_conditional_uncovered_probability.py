@@ -9,22 +9,31 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
 
+from os import remove
+
 from cogent.util.unit_test import TestCase, main
 
 from itertools import izip
 from qiime.conditional_uncovered_probability import *
+from qiime.util import get_tmp_filename
 from cogent.maths.stats.alpha_diversity import diversity
-
+from cogent.util.misc import remove_files
 
 class CUPtests(TestCase):
     """Tests of top-level functions"""
 
     def setUp(self):
         """Set up shared variables"""
+        self.tmp_file    = get_tmp_filename(tmp_dir = "./", suffix="test_single_file_cup.biom")
+        self.tmp_outfile = get_tmp_filename(tmp_dir = "./", suffix="test_single_file_cup.txt")
+        self.files_to_remove = []        
 
+    def tearDown(self):
+        """ Remove tmp files """
+        remove_files(self.files_to_remove)
 
-    def test_cup_driver(self):
-        """cup_driver returns matrix with estimates"""
+    def test_single_file_cup(self):
+        """single_file_cup returns matrix with estimates"""
 
         otu_table="""#
 #OTU ID\tS1\tS2
@@ -36,11 +45,19 @@ class CUPtests(TestCase):
 """
         # convert_biom using otu_table w/o leading #
         bt_string = '{"rows": [{"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata": null}, {"id": "5", "metadata": null}], "format": "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0], [0, 1, 4.0], [1, 0, 2.0], [1, 1, 5.0], [2, 0, 1.0], [2, 1, 2.0], [3, 1, 4.0], [4, 0, 1.0]], "columns": [{"id": "S1", "metadata": null}, {"id": "S2", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape": [5, 2], "format_url": "http://biom-format.org", "date": "2012-05-04T09:28:28.247809", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
-        # Not much testing here, just make sure we get back a (formatted) matrix with the right dimensions
-        observed = cup_driver(bt_string, r=4, alpha=0.95, f=10, ci_type="ULCL")
-        self.assertEqual(len(observed.split("\n")), 3)
-        self.assertEqual(len(observed.split("\n")[1].split('\t')), 4)
 
+        fh = open(self.tmp_file,"w")
+        fh.write(bt_string)
+        fh.close()
+        self.files_to_remove.append(self.tmp_file)
+        self.files_to_remove.append(self.tmp_outfile)
+
+        # Not much testing here, just make sure we get back a (formatted) matrix with the right dimensions
+        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci', self.tmp_outfile,
+                        r=4, alpha=0.95, f=10, ci_type="ULCL")
+        observed = open(self.tmp_outfile,"U").readlines()
+        self.assertEqual(len(observed), 3)
+        self.assertEqual(len(observed[1].split('\t')), 4)
 
         otu_table="""#
 #OTU ID\tS1
@@ -48,9 +65,16 @@ class CUPtests(TestCase):
 """
         # convert_biom using otu_table w/o leading #
         bt_string = '{"rows": [{"id": "1", "metadata": null}], "format": "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0]], "columns": [{"id": "S1", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape": [1, 1], "format_url": "http://biom-format.org", "date": "2012-05-04T09:36:57.500673", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
-        observed = cup_driver(bt_string, r=4, alpha=0.95, f=10, ci_type="ULCL")
-        expected="""\tPE\tLower Bound\tUpper Bound
-S1\tNaN\tNaN\tNaN"""
+
+        fh = open(self.tmp_file,"w")
+        fh.write(bt_string)
+        fh.close()
+
+        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci', self.tmp_outfile,
+                        r=4, alpha=0.95, f=10, ci_type="ULCL")
+        observed = open(self.tmp_outfile,"U").readlines()
+        expected=["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
+                  "S1\tNaN\tNaN\tNaN"]
         self.assertEqual(observed, expected)
 
     def test_lladser_point_estimates(self):
@@ -113,57 +137,57 @@ S1\tNaN\tNaN\tNaN"""
         tps = filter (lambda (a,b): a < 0.5 and 0.5 < b, observations)
         self.assertTrue(len(tps) >= alpha*reps ) #100%-95%
 
-    def test_lladser_ci(self):
-        """lladser_ci returns correct conf interval."""
+    def test_lladser_ci_from_r(self):
+        """lladser_ci_from_r returns correct conf interval."""
 
         f=10
         t=10
         r=4
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f)
         self.assertFloatEqual(obs_low, 0.0806026244)
         self.assertFloatEqual(obs_high, 0.806026244)
 
         r=20
         t=100
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f)
         self.assertFloatEqual(obs_low, 0.02787923964)
         self.assertFloatEqual(obs_high, 0.2787923964)
 
 
         # make sure we test with each possible alpha
         alpha=0.99
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f, alpha=alpha)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f, alpha=alpha)
         self.assertFloatEqual(obs_low, 0.03184536992)
         self.assertFloatEqual(obs_high, 0.3184536992)
 
         alpha=0.9
         r=3
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f, alpha=alpha)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f, alpha=alpha)
         self.assertFloatEqual(obs_low, 0.005635941995)
         self.assertFloatEqual(obs_high, 0.05635941995)
 
 
         # test other ci_types
         ci_type='ULCU'
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
         self.assertFloatEqual(obs_low, 0.01095834700)
         self.assertFloatEqual(obs_high, 0.1095834700)
 
         alpha=0.95
         t=10
         ci_type='U'
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
         self.assertFloatEqual(obs_low, 0)
         self.assertFloatEqual(obs_high, 0.6295793622)
 
         ci_type='L'
-        obs_low, obs_high = lladser_ci(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
+        obs_low, obs_high = lladser_ci_from_r(r=r, t=t, f=f, alpha=alpha, ci_type=ci_type)
         self.assertFloatEqual(obs_low, 0.0817691447)
         self.assertFloatEqual(obs_high, 1)
 
         #Requesting CI for not precomputed values raises Exception
         r=500
-        self.assertRaises(ValueError, lladser_ci, r=r, t=t, f=f,
+        self.assertRaises(ValueError, lladser_ci_from_r, r=r, t=t, f=f,
                           alpha=alpha, ci_type=ci_type)
 
     def test_esty_ci(self):

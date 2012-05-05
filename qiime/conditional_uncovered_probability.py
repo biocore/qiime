@@ -20,71 +20,23 @@ A lot of this might migrate into cogent at some point,
 e.g. robbins is already in there.
 
 """
+from sys import exit, stderr
 from numpy import array, sqrt
 from numpy.random import gamma, random, shuffle
 from math import factorial
 from operator import mul
+from collections import defaultdict
 
-#from qiime.parse import parse_otu_table
-from biom.parse import parse_biom_table
-from qiime.format import format_matrix
+from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
+
 from cogent.maths.stats.alpha_diversity import expand_counts, singles, doubles
+import cogent.maths.stats.alpha_diversity as alph 
 
-def cup_driver(biom_table_handle, r, alpha, f, ci_type):
-    """Compute variations of the conditional uncovered probability.
-
-    otu_table_handle: handle to otu_table file
-
-    r: Number of new colors that are required for the next prediction
-    alpha: desired confidence level
-    f: ratio between upper and lower bound
-    ci_type: type of confidence interval. One of:
-             ULCL: upper and lower bounds with conservative lower bound
-             ULCU: upper and lower woth conservative upper bound
-             U: Upper bound only, lower bound fixed to 0
-             L: Lower bound only, upper bound fixed to 1
-
-    Returns: formatted matrix of predictions
-
-    The opposite of uncovered probability is sometimes called coverage.
-
-    Note: Once we include more predictors, this functions should use a 
-          generic scheme such as alpha_diversity.py is using
-    """ 
-    #TODO: this needs to be adapted to the new biom format
-    #(sample_ids, _, otu_table, _) = parse_otu_table(otu_table_handle)
-
-    bt = parse_biom_table(biom_table_handle)
-    sample_ids = bt.SampleIds
-    otu_table = array([bt.observationData(i) for i in bt.ObservationIds])
-
-    header = ['PE', 'Lower Bound', 'Upper Bound'] 
-    result =[]
-    for i in range(len(sample_ids)):
-        # generate a random series of observations from the counts
-        counts = otu_table[:,i]
-        sample = expand_counts(counts)
-        shuffle(sample)
-
-        # then make predictions
-        p_estimates = list(lladser_point_estimates(sample, r))
-        bounds      = list(lladser_ci_series(sample, r, alpha, f, ci_type))
-        this_sample = ['NaN','NaN','NaN']
-        if(len(p_estimates) > 0):
-            this_sample[0] = p_estimates[-1][0] 
-        if(len(bounds) > 0):
-            low, high = bounds[-1]
-            this_sample[1] = low
-            this_sample[2] = high
-        result.append(this_sample)
-     
-    return format_matrix(result, sample_ids, header)
-
-def lladser_point_estimates(sample, r):
-    """Point estimator of the conditional uncovered probability
+def lladser_point_estimates(sample, r=10):
+    """Series of point estimates of the conditional uncovered probability
 
     sample: series of random observations  
     r: Number of new colors that are required for the next prediction
@@ -145,7 +97,7 @@ def get_interval_for_r_new_species(seq, r):
             raise StopIteration
         yield count, set(seen), cost, i
 
-def esty_ci(counts):
+def esty_ci(counts, **args):
     """Esty's CI for (1-m).
     
     counts: Vector of counts (NOT the sample)
@@ -179,7 +131,7 @@ def esty_ci(counts):
     return  n1/n + z*sqrt(W), n1/n - z*sqrt(W) 
 
 def starr_est(sample, m=1):
-    """The Starr estimator for the unseen mass.
+    """Series of Starr estimates for the unseen mass.
     
     sample: the series of observations
     m: Starr's lookahead
@@ -188,6 +140,10 @@ def starr_est(sample, m=1):
           Ann Stat 7: 644-652.
 
     Note: No test code, thus not hooked up to CLI yet.
+    TODO: If we ever only are interested in the last estimate,
+          we can speed up the code considerably
+
+    Returns: list of estimates for each position of sample
     """
     estimates = []
     counts = defaultdict(int)
@@ -226,14 +182,14 @@ def lladser_ci_series(seq, r, alpha=0.95, f=10, ci_type='ULCL'):
              U: Upper bound only, lower bound fixed to 0
              L: Lower bound only, upper bound fixed to 1
   
-    Returns: One CI prediction for each new color that is detected and where 
+    Returns: One CI prediction for each new color that is detected and where.
     """
 
     for count,seen,cost,i in get_interval_for_r_new_species(seq, r):
         t = gamma(count, 1)
-        yield lladser_ci(r, t, alpha, f, ci_type)
+        yield lladser_ci_from_r(r, t, alpha, f, ci_type)
 
-def lladser_ci(r, t, alpha=0.95, f=10, ci_type='ULCL'):
+def lladser_ci_from_r(r, t, alpha=0.95, f=10, ci_type='ULCL'):
     """Constructs r-color confidence intervals for the uncovered conditional prob.
 
     r: Number of new colors that are required for the next prediction
@@ -612,3 +568,121 @@ cb_99 = [
 cbs = {0.90: cb_90,
        0.95: cb_95,
        0.99: cb_99}
+
+
+# CLI driver adopted from alph_diversity.py
+# Fake common interface by shoving unused args into **args
+
+def starr(counts, r=1, **args):
+    """The Starr estimator for the unseen mass
+
+    Shorthand notation to be called as AlphaDiversityCalc
+    """
+    sample = expand_counts(counts)
+    shuffle(sample)
+
+    # misuse r param for starr lookahead
+    return starr_est(sample, m=r)[-1]
+    
+def lladser_pe(counts, r=10, **args):
+    """Single point estimate of the conditional uncovered probability
+
+    This function is just a wrapper around the full point estimator,
+    intended to be called fo a single best estimate on a complete sample. 
+    """
+    sample = expand_counts(counts)
+    shuffle(sample)
+    try:
+        pe = list(lladser_point_estimates(sample, r))[-1][0]
+    except IndexError:
+        pe = 'NaN'
+    return pe
+
+def lladser_ci(counts, r, alpha=0.95, f=10, ci_type='ULCL', **args):
+    """Single CI of the conditional uncovered probability
+
+    This function is just a wrapper around the full point estimator,
+    intended to be called for a single best estimate on a complete sample. 
+    """
+
+    sample = expand_counts(counts)
+    shuffle(sample)
+    try:
+        pe = list(lladser_ci_series(sample, r))[-1]
+    except IndexError:
+        pe = ('NaN','NaN')
+    return pe
+
+def robbins(counts, **argv):
+    return(alph.robbins(counts))
+
+esty_ci.return_names = ('esty_lower_bound', 'esty_upper_bound')
+lladser_ci.return_names = ('lladser_lower_bound', 'lladser_upper_bound')
+cup_metrics = [lladser_pe,
+               lladser_ci,
+               #starr, not yet needs tests
+               esty_ci,
+               robbins
+               ]
+
+def get_cup_metric(name):
+    """Gets metric by name from list in this module
+    """
+    for metric in cup_metrics:
+        if metric.__name__.lower() == name.lower():
+            return metric    
+    raise AttributeError
+
+def list_known_metrics():
+    """Show the names of available metrics."""
+    return [ metric.__name__ for metric in cup_metrics ]
+
+def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
+    """Compute variations of the conditional uncovered probability.
+
+    otufilepath: path to otu_table file
+    metrics: comma separated list of required metrics
+    outfilepath: path to output file
+
+    r: Number of new colors that are required for the next prediction
+    alpha: desired confidence level
+    f: ratio between upper and lower bound
+    ci_type: type of confidence interval. One of:
+             ULCL: upper and lower bounds with conservative lower bound
+             ULCU: upper and lower woth conservative upper bound
+             U: Upper bound only, lower bound fixed to 0
+             L: Lower bound only, upper bound fixed to 1
+
+    The opposite of uncovered probability is sometimes called coverage.
+    """
+    metrics_list = metrics.split(',')
+    calcs = []
+
+    params = {'r': r,
+              'alpha': alpha,
+              'f':f,
+              'ci_type':ci_type}
+                  
+    for metric in metrics_list:
+        try:
+            metric_f = get_cup_metric(metric)
+        except AttributeError:
+            stderr.write(
+                "Could not find metric %s.\n Known metrics are: %s\n" \
+                    % (metric, ', '.join(list_known_metrics())))
+            exit(1)
+            
+        c = AlphaDiversityCalc(metric_f, params=params)
+        calcs.append(c)
+    
+    all_calcs = AlphaDiversityCalcs(calcs)
+
+    try:
+        result = all_calcs(data_path=otu_filepath,
+            result_path=outfilepath, log_path=None)
+        if result:  #can send to stdout instead of file
+            print all_calcs.formatResult(result)
+    except IOError, e:
+        stderr.write("Failed because of missing files.\n")
+        stderr.write(str(e)+'\n')
+        exit(1)

@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.conditional_uncovered_probability import cup_driver
+from qiime.conditional_uncovered_probability import single_file_cup, list_known_metrics
 import os
 
 #conditional_uncovered_probability.py
@@ -83,10 +83,21 @@ script_info['optional_options']=[\
                 help='Upper to lower bound ratio for CI prediction.' +
                 ' [default: %default]', default=10.0,
                 type='float'),
+    make_option('-m', '--metrics', default='lladser_pe,lladser_ci',
+                help='CUP metric(s) to use. A comma-separated list should' +\
+                    ' be provided when multiple metrics are specified. [default: %default]'), 
+    make_option('-s', '--show_metrics', action='store_true', 
+                dest="show_metrics",
+                help='Show the available CUP metrics and exit.'),
 ]
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    if opts.show_metrics:
+        print("Known metrics are: %s\n" \
+              % (', '.join(list_known_metrics()),))
+        exit(0)
 
     almost_required_options = ['input_path', 'output_path']
     for option in almost_required_options:
@@ -98,10 +109,11 @@ def main():
           f = open(opts.output_path, 'w')
       except IOError:
           exit("ioerror, couldn't create output file") 
-      result = cup_driver(open(opts.input_path), opts.look_ahead,
-                          opts.alpha, opts.f_ratio, opts.ci_type)
-      f.write(result+"\n")
       f.close()
+      
+      single_file_cup(opts.input_path, opts.metrics, opts.output_path,
+                      opts.look_ahead, opts.alpha, opts.f_ratio, opts.ci_type)
+
     else:
       exit("io error, input path not valid. does it exist?")
 
