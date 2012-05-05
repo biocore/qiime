@@ -48,14 +48,14 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 from string import letters, digits
 from os.path import basename, join
 from operator import itemgetter
 from copy import deepcopy
 from shutil import copyfile
 
-from qiime.util import get_qiime_project_dir
+from qiime.util import get_qiime_project_dir, duplicates_indices
 from qiime.parse import parse_mapping_file
 from qiime.format import format_mapping_html_data
 
@@ -899,29 +899,7 @@ def correct_mapping_data(mapping_data,
     return corrected_data
 
 
-def get_duplicates(fields):
-    """ Returns duplicates out of a list
-    
-    Modified from stackoverflow.com example duplicate detection code
-    http://stackoverflow.com/a/5420328
-    
-    fields:  list of elements to check for duplicates
-    """
-    cnt= Counter(fields)
-    return [key for key in cnt.keys() if cnt[key]> 1]
 
-def duplicates_indices(fields):
-    """ Gets dictionary of duplicates:locations in a list
-    
-    Modified from stackoverflow.com example duplicate detection code
-    http://stackoverflow.com/a/5420328
-    
-    fields:  list of elements to check for duplicates
-    """
-    dup, ind = get_duplicates(fields), defaultdict(list)
-    for i, v in enumerate(fields):
-        if v in dup: ind[v].append(i)
-    return ind
     
 def write_corrected_mapping(output_corrected_fp,
                             header,

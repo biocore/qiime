@@ -23,7 +23,7 @@ from qiime.check_id_map import (check_mapping_file, process_id_map,
  check_bc_duplicates, check_fixed_len_bcs_dups, check_variable_len_bcs_dups,
  check_added_demultiplex_dups, check_sampleid_duplicates, check_header,
  check_header_dups, check_header_chars, check_header_required_fields,
- correct_mapping_data, duplicates_indices)
+ correct_mapping_data)
 
 class CheckIdMapTests(TestCase):
     def setUp(self):
@@ -1197,25 +1197,7 @@ class CheckIdMapTests(TestCase):
         
         self.assertEqual(corrected_data, expected_corrected_data)
                 
-    def test_duplicates_indices(self):
-        """ Properly returns dict of duplicates and their indices """
-        
-        no_dups = ['1', '2', '3', '4']
-        
-        results = duplicates_indices(no_dups)
-        
-        expected_results = defaultdict(list)
-        
-        self.assertEqual(results, expected_results)
-        
-        dups = ['1', '2', '3', '4', '2']
-        
-        results = duplicates_indices(dups)
-        
-        expected_results = defaultdict(list)
-        expected_results['2'] = [1, 4]
-        
-        self.assertEqual(results, expected_results)
+
 
 # Input data
 sample_correct_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	Description

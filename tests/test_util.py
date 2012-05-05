@@ -7,6 +7,7 @@ from os.path import split, abspath, dirname, exists, join
 from glob import glob
 from random import seed
 from StringIO import StringIO
+from collections import defaultdict
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
 
@@ -38,7 +39,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     iseq_to_qseq_fields,get_top_fastq_two_lines,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
-    get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap)
+    get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
+    duplicates_indices)
 
 import numpy
 from numpy import array, asarray
@@ -649,6 +651,26 @@ hhhhhh
 """]
         
         self.assertEqual(list(trim_fastq(self.fastq_barcodes,6)),expected)
+        
+    def test_duplicates_indices(self):
+        """ Properly returns dict of duplicates and their indices """
+        
+        no_dups = ['1', '2', '3', '4']
+        
+        results = duplicates_indices(no_dups)
+        
+        expected_results = defaultdict(list)
+        
+        self.assertEqual(results, expected_results)
+        
+        dups = ['1', '2', '3', '4', '2']
+        
+        results = duplicates_indices(dups)
+        
+        expected_results = defaultdict(list)
+        expected_results['2'] = [1, 4]
+        
+        self.assertEqual(results, expected_results)
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments

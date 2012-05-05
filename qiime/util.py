@@ -22,7 +22,7 @@ from StringIO import StringIO
 from os import getenv, makedirs
 from operator import itemgetter
 from os.path import abspath, exists, dirname, join, isdir
-from collections import defaultdict
+from collections import defaultdict, Counter
 import gzip
 import sys
 import os
@@ -1573,3 +1573,27 @@ class MetadataMap():
         """
         return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
             if len(self.SampleIds) > 0 else []
+            
+def get_duplicates(fields):
+    """ Returns duplicates out of a list
+    
+    Modified from stackoverflow.com example duplicate detection code
+    http://stackoverflow.com/a/5420328
+    
+    fields:  list of elements to check for duplicates
+    """
+    cnt= Counter(fields)
+    return [key for key in cnt.keys() if cnt[key]> 1]
+
+def duplicates_indices(fields):
+    """ Gets dictionary of duplicates:locations in a list
+    
+    Modified from stackoverflow.com example duplicate detection code
+    http://stackoverflow.com/a/5420328
+    
+    fields:  list of elements to check for duplicates
+    """
+    dup, ind = get_duplicates(fields), defaultdict(list)
+    for i, v in enumerate(fields):
+        if v in dup: ind[v].append(i)
+    return ind
