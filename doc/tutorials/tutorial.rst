@@ -195,31 +195,16 @@ Step 7. Make OTU Table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Using taxonomic assignments (step 3) and the OTU map (step 1) QIIME assembles a readable matrix of OTU abundance in each sample with meaningful taxonomic identifiers for each OTU.
 
-The result of this step is :file:`otu_table.txt`, which is located in the :file:`otus/` directory. The first few lines of :file:`otu_table.txt` are shown below (OTUs 1-9), where the first column contains the OTU number, the last column contains the taxonomic assignment for the OTU, and 9 columns between are for each of our 9 samples. The value of each *i,j* entry in the matrix is the number of times OTU *i* was found in the sequences for sample *j*.
-
-.. note ::
-
-   | #Full OTU Counts
-   | #OTU ID    PC.354  PC.355  PC.356  PC.481  PC.593  PC.607  PC.634  PC.635  PC.636  Consensus Lineage
-   | 0  0   0   0   0   0   0   0   1   0   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-   | 1  0   0   0   0   0   1   0   0   0   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-   | 2  0   0   0   0   0   0   0   0   1   Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Porphyromonadaceae;Parabacteroides
-   | 3  2   1   0   0   0   0   0   0   0   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-   | 4  1   0   0   0   0   0   0   0   0   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-   | 5  0   0   0   0   0   0   0   0   1   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-   | 6  0   0   0   0   0   0   0   1   0   Root;Bacteria;Actinobacteria;Actinobacteria
-   | 7  0   0   2   0   0   0   0   0   1   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-   | 8  1   1   0   2   4   0   0   0   0   Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-   | 9  0   0   2   0   0   0   0   0   0   Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
+The result of this step is :file:`otu_table.biom`, which is located in the :file:`otus/` directory. For more information about the OTU table format, which relies on the biom-format, please go here: `biom-format <http://biom-format.org/documentation/biom_format.html>`_
 
 
 .. _perlibrarystats:
 
 View statistics of the OTU table
 --------------------------------------------------------------------
-To view the number of sequence reads which were assigned to the otu table (otus/otu_table.txt), type::
+To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type::
 
-    per_library_stats.py -i otus/otu_table.txt
+    per_library_stats.py -i otus/otu_table.biom
 
 The output shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
 
@@ -255,7 +240,7 @@ Make OTU Heatmap
 --------------------------------------------------------------------
 The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is `make_otu_heatmap_html.py <../scripts/make_otu_heatmap_html.html>`_. Type::
 
-    make_otu_heatmap_html.py -i otus/otu_table.txt -o otus/OTU_Heatmap/
+    make_otu_heatmap_html.py -i otus/otu_table.biom -o otus/OTU_Heatmap/
 
 An html file is created in the directory :file:`otus/OTU_Heatmap/`. You can open this file with any web browser, and will be prompted to enter a value for "Filter by Counts per OTU". Only OTUs with total counts at or above this threshold will be displayed. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). Leave the filter value unchanged, and click the "Sample ID" button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.
 
@@ -278,7 +263,7 @@ Make OTU Network
 ----------------------------------------------
 An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command.::
 
-    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.txt -o otus/OTU_Network
+    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus/OTU_Network
 
 To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to the `Cytoscape Usage <../scripts/cytoscape_usage.html>`_.
 
@@ -295,7 +280,7 @@ __ assigntax_
 
 ::
 
-    summarize_taxa_through_plots.py -i otus/otu_table.txt -o wf_taxa_summary -m Fasting_Map.txt
+    summarize_taxa_through_plots.py -i otus/otu_table.biom -o wf_taxa_summary -m Fasting_Map.txt
 
 The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the phylum level table at: :file:`wf_taxa_summary/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
 
@@ -360,7 +345,7 @@ __ pickotusandrepseqs_
 
 ::
 
-    alpha_rarefaction.py -i otus/otu_table.txt -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre
+    alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre
 
 Descriptions of the steps involved in alpha_rarefaction.py follow:
 
@@ -437,7 +422,7 @@ Beta diversity represents the explicit comparison of microbial (or other) commun
 
 To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
 
-    beta_diversity_through_plots.py -i otus/otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146
+    beta_diversity_through_plots.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146
 
 Descriptions of the steps involved in `beta_diversity_through_plots.py` follow:
 
@@ -541,7 +526,7 @@ To run the analysis, type the following:
 
 ::
 
-    jackknifed_beta_diversity.py -i otus/otu_table.txt -t otus/rep_set.tre -m Fasting_Map.txt -o wf_jack -e 110
+    jackknifed_beta_diversity.py -i otus/otu_table.biom -t otus/rep_set.tre -m Fasting_Map.txt -o wf_jack -e 110
 
 .. _hiarchclust:
 
