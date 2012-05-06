@@ -24,11 +24,12 @@ create new statistical method implementations.
 from types import ListType
 
 from cogent.maths.stats.test import pearson, permute_2d
+from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (argsort, array, ceil, empty, finfo, log2, mean, ones, sqrt,
-                   tri, unique, zeros)
+from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
+                   ones, sqrt, tri, unique, zeros)
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 
@@ -674,6 +675,163 @@ class Permanova(CategoryStats):
         # Execute the formula.
         s_A = s_T - s_W
         return (s_A / (a-1)) / (s_W / (N-a))
+
+
+class BioEnv(CategoryStats):
+    """Class for the BioEnv statistical analysis."""
+
+    def __init__(self, dm, metadata_map, cats):
+        """Default constructor.
+
+        Arguments:
+            dm - the DistanceMatrix instance to run the analysis on
+            metadata_map - the MetadataMap instance to obtain category
+                information from
+            cats - list of category strings in the metadata map that will be
+                used to determine the combination that "best" explains the
+                variability in the data
+        """
+        super(BioEnv, self).__init__(metadata_map, [dm], cats, num_dms=1)
+
+    def __call__(self, num_perms=999):
+        """Runs the BioEnv analysis on a distance matrix using specified
+        metadata map categories.
+
+        num_perms is ignored, but maintained for a consistent interface with
+        the other statistical method classes.
+
+        Returns a dictionary which contains the resulting data. Keys:
+            method_name - name of the statistical method
+            num_vars - number of categories (variables)
+            vars - mapping of category names to indices
+            bioenv_rho_vals - spearman correlation statistics, one for each
+                combination of vars
+        """
+        res = super(BioEnv, self).__call__()
+        cats = self.Categories
+        dm = self.DistanceMatrices[0]
+        dm_flat = dm.flatten()
+        dm_flat_ranked = self._get_rank(dm_flat)
+
+        row_count = dm.Size
+        col_count = len(cats)
+        sum = 0
+        stats = [(-777777777, '') for c in range(col_count+1)]
+        for i in range(1, col_count+1):
+            combo = list(combinate([j for j in range(1,col_count+1)], i))
+
+            for c in range(len(combo)):
+                cat_mat = self._make_cat_mat(cats, combo[c])
+                cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
+                cat_dm_flat_ranked = self._get_rank(cat_dm.flatten())
+                r = self._spearman_correlation(dm_flat_ranked,
+                                               cat_dm_flat_ranked, ranked=True)
+                if r > stats[i-1][0]:
+                    stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
+
+        res['method_name'] = 'BioEnv'
+        res['num_vars'] = col_count
+        res['vars'] = ['%s = %d' % (name,val+1) for val,name in enumerate(cats)]
+        res['bioenv_rho_vals'] = stats[:-1]
+        return res
+
+    def _derive_euclidean_dm(self, cat_mat, dim):
+        """Returns an n x n, euclidean distance matrix, where n = len(cats)."""
+        dm_labels = self.DistanceMatrices[0].SampleIds
+        res_mat = []
+        for i in range(dim):
+            res_mat.append([0 for k in range(dim)])
+            for j in range(i):
+                res_mat[i][j] = self._vector_dist(cat_mat[i], cat_mat[j])
+                res_mat[j][i] = res_mat[i][j]
+
+        return DistanceMatrix(asarray(res_mat), dm_labels, dm_labels)
+
+    def _vector_dist(self, vec1, vec2):
+        """Calculates the Euclidean distance between two vectors."""
+        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in
+                            zip(vec1,vec2)]))
+
+    def _make_cat_mat(self, cats, combo):
+        """Returns a matrix with columns pulled from category values.
+
+        Returns a matrix with len(sample_ids) rows of columns pulled from
+        category values, the number of columns for each category is
+        determined by the current combination (combo).
+        """
+        dm = self.DistanceMatrices[0]
+        md_map = self.MetadataMap
+        res = []
+        for i in combo:
+            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i-1]))
+        return zip(*res)
+
+    def _get_rank(self, data):
+        """Ranks the elements of a list. Used in Spearman correlation."""
+        indices = range(len(data))
+        ranks = range(1,len(data)+1)
+        indices.sort(key=lambda index:data[index])
+        ranks.sort(key=lambda index:indices[index-1])
+        data_len = len(data)
+        i = 0
+        ties = 0
+        while i < data_len:
+            j = i + 1
+            val = data[indices[i]]
+            try:
+                val += 0
+            except TypeError:
+                raise(TypeError)
+
+            while j < data_len and data[indices[j]] == val:
+                j += 1
+            dup_ranks = j - i
+            val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
+            for k in range(i, i+dup_ranks):
+                ranks[indices[k]] = val
+            i += dup_ranks
+            ties += dup_ranks-1
+        return ranks, ties
+
+    def _spearman_correlation(self, vec1, vec2, ranked=False):
+        """Calculates the the Spearman distance of two vectors."""
+        try:
+            temp = len(vec1)
+        except ValueError:
+            raise(ValueError, 'First input vector is not a list.')
+        try:
+            temp = len(vec2)
+        except ValueError:
+            raise(ValueError, 'Second input vector is not a list.')
+        if len(vec1) == 0 or len(vec2) == 0:
+            raise(ValueError,
+                  'One or both input vectors has/have zero elements')
+        if len(vec1) != len(vec2):
+            raise(ValueError, 'Vector lengths must be equal')
+
+        if not ranked:
+            rank1, ties1 = self._get_rank(vec1)
+            rank2, ties2 = self._get_rank(vec2)
+        else:
+            rank1, ties1 = vec1
+            rank2, ties2 = vec2
+
+        if ties1 == 0 and ties2 == 0:
+            n = len(rank1)
+            sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
+            rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
+            return rho
+
+        avg = lambda x: sum(x)/len(x)
+
+        x_bar = avg(rank1)
+        y_bar = avg(rank2)
+
+        numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
+        denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
+                           sum([(y-y_bar)**2 for y in rank2]))
+        # Calculate rho.
+        return numerator/denominator
 
 
 class MantelCorrelogram(CorrelationStats):
