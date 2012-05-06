@@ -43,7 +43,7 @@ The steps performed by this script are: Summarize OTU by Category (optional, pas
 
 **Output:**
 
-The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity).
+The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/\*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity).
 
 
 **Plot taxa summaries for all samples:**

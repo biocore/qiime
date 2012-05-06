@@ -36,7 +36,7 @@ script_info['script_usage'].append(("""Plot taxa summaries on a categorical basi
 
 script_info['script_usage_output_to_remove'] = ['taxa_summary_by_treatment','taxa_summary']
 
-script_info['output_description']="""The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity)."""
+script_info['output_description']="""The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/\*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity)."""
 script_info['required_options']=[\
     make_option('-i','--otu_table_fp',type='existing_filepath',\
         help='the input otu table [REQUIRED]'),\

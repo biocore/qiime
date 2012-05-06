@@ -30,11 +30,13 @@ Specifically, it computes a point estimate and a confidence interval using two d
 
 The CI method requires precomputed constants that depend on the lookahead, the upper-to-lower bound ratio and the desired confidence.
 We only provide these constants for some frequently used combinations. These are (alpha:0.95, r=1..25)) for the the L and U interval types, and (alpha:0.9, 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked special cases:
- f=2 and r=50 and alpha=0.95
- f=2 and r=33 and alpha=0.95
- f=1.5 and r=100 and alpha=0.95
- f=1.5 and r=94 and alpha=0.95
- f=2.5 and r=19 and alpha=0.95
+
+f=2 and r=50 and alpha=0.95
+f=2 and r=33 and alpha=0.95
+f=1.5 and r=100 and alpha=0.95
+f=1.5 and r=94 and alpha=0.95
+f=2.5 and r=19 and alpha=0.95
+
 """
 
 script_info['script_usage']=[]
@@ -54,6 +56,7 @@ Example Output:
 ====== ======= ============= ================
 PC.354 0.111   0.0245        0.245
 PC.124 0.001   0.000564      0.00564
+====== ======= ============= ================
 
 """
 
