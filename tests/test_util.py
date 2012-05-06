@@ -2,11 +2,12 @@
 from __future__ import division
 #unit tests for util.py
 
-from os import rmdir
+from os import mkdir, rmdir
 from os.path import split, abspath, dirname, exists, join
 from glob import glob
 from random import seed
 from StringIO import StringIO
+from tempfile import mkdtemp
 from collections import defaultdict
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
@@ -40,7 +41,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
-    duplicates_indices)
+    RExecutor, duplicates_indices)
+from tests.test_stats import TestHelper
 
 import numpy
 from numpy import array, asarray
@@ -1800,6 +1802,44 @@ class MetadataMapTests(TestCase):
 
         obs = self.empty_map.CategoryNames
         self.assertEqual(obs, [])
+
+
+class RExecutorTests(TestHelper):
+    """Tests of the RExecutor class."""
+
+    def test_output(self):
+        """Test executing an arbitrary command."""
+        # Temporary input file
+        self.tmp_dm_filepath = get_tmp_filename(
+            prefix='R_test_distance_matrix_',
+            suffix='.txt'
+            )
+        seq_file = open(self.tmp_dm_filepath, 'w')
+
+        for line in self.overview_dm_str:
+            seq_file.write(line + "\n")
+        seq_file.close()
+
+        self.tmp_map_filepath = get_tmp_filename(prefix='R_test_map_',
+                suffix='.txt')
+        
+        seq_file = open(self.tmp_map_filepath, 'w')
+        for line in self.overview_map_str:
+            seq_file.write(line + "\n")
+        seq_file.close()
+        seq_file.close()
+
+        self.files_to_remove = \
+         [self.tmp_dm_filepath, self.tmp_map_filepath]
+   
+        # Prep input files in R format
+        output_dir = mkdtemp()
+        args = ["-d " + self.tmp_dm_filepath + " -m " +
+                self.tmp_map_filepath + " -c DOB -o " + output_dir]
+
+        mkdir(join(output_dir, 'rex_test'))
+        rex = RExecutor()
+        results = rex(args, "betadisper.r", output_dir)
 
 
 # Long strings of test data go here
