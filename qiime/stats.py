@@ -27,8 +27,8 @@ from cogent.maths.stats.test import pearson, permute_2d
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (argsort, array, ceil, empty, finfo, log2, mean, sqrt, tri,
-                   zeros)
+from numpy import (argsort, array, ceil, empty, finfo, log2, mean, ones, sqrt,
+                   tri, unique, zeros)
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 
@@ -526,6 +526,154 @@ class Anosim(CategoryStats):
         r_B = mean(adjusted_ranks[sorted_groups==0])
         divisor = num_samps * ((num_samps - 1) / 4)
         return (r_B - r_W) / divisor
+
+
+class Permanova(CategoryStats):
+    """Class for the PERMANOVA statistical method.
+
+    This is a non-parametric, permutation-based method to determine the
+    significance of sample grouping.
+
+    This code is heavily based on Andrew Cochran's original procedural version.
+    """
+
+    def __init__(self, mdmap, dm, cat, random_fn=permutation):
+        """Initializes an instance with the specified analysis parameters.
+
+        Arguments:
+            mdmap - the MetadataMap instance to obtain grouping info from
+            dm - the DistanceMatrix instance to obtain distances from
+            cat - the category string to group samples by (must be in the
+                metadata map)
+            num_perms - the number of permutations to use when calculating the
+                p-value. If zero, the p-value will not be calculated. Must be
+                greater than or equal to zero
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
+        """
+        super(Permanova, self).__init__(mdmap, [dm], [cat], num_dms=1,
+                                        random_fn=random_fn)
+
+    def __call__(self, num_perms=999):
+        """Runs PERMANOVA on the current distance matrix and sample grouping.
+
+        Returns a dict containing the results. The following keys are set:
+            method_name - name of the statistical method
+            f_value - the PERMANOVA F statistic computed by the test
+            p_value - the p-value computed by the test, or 'NA' if the number
+                of permutations was zero
+
+        Arguments:
+            num_perms - the number of permutations to use when calculating the
+                p-value
+        """
+        results = super(Permanova, self).__call__(num_perms)
+        category = self.Categories[0]
+        samples = self.DistanceMatrices[0].SampleIds
+
+        # Create the group map, which maps sample ID to category value (e.g.
+        # sample 1 to 'control' and sample 2 to 'fast').
+        group_map = {}
+        for samp_id in samples:
+            group_map[samp_id] = self.MetadataMap.getCategoryValue(
+                    samp_id, category)
+
+        # Calculate the F statistic with the grouping found in the current
+        # metadata map.
+        f_stat = self._permanova(group_map)
+
+        if num_perms > 0:
+            # Calculate the p-value based on the number of permutations.
+            perm_stats = []
+            for i in range(num_perms):
+                # Randomize grouping. We don't use values() in order to
+                # preserve ordering in case the user's random function doesn't
+                # change the order of the items in the list.
+                grouping_random = [group_map[sample] for sample in samples]
+                grouping_random = self.RandomFunction(grouping_random)
+                for j, sample in enumerate(samples):
+                    group_map[sample] = grouping_random[j]
+                perm_stats.append(self._permanova(group_map))
+            # Calculate the p-value.
+            p_value = (sum(perm_stats >= f_stat) + 1) / (num_perms + 1)
+        else:
+            p_value = 'NA'
+
+        results['method_name'] = 'PERMANOVA'
+        results['f_value'] = f_stat
+        results['p_value'] = p_value
+        return results
+
+    def _permanova(self, grouping):
+        """Computes PERMANOVA pseudo-F-statistic.
+
+        Arguments:
+            grouping - a python dict mapping sample ID to category value (e.g.
+                sample 1 to 'control' and sample 2 to 'fast'). This map must
+                contain a key for each sample ID in the current distance
+                matrix
+        """
+        samples = self.DistanceMatrices[0].SampleIds
+        dm = self.DistanceMatrices[0]
+        # Number of samples in each group.
+        unique_n = []
+        group_map = {}
+
+        # Extract the unique list of group labels.
+        gl_unique = unique(array(grouping.values()))
+
+        # Calculate number of groups and unique 'n's.
+        number_groups = len(gl_unique)
+        for i, i_string in enumerate(gl_unique):
+            group_map[i_string] = i
+            unique_n.append(grouping.values().count(i_string))
+
+        # Create grouping matrix.
+        grouping_matrix = -1 * ones((dm.Size, dm.Size))
+        for i, i_sample in enumerate(samples):
+            grouping_i = grouping[i_sample]
+            for j, j_sample in enumerate(samples):
+                if grouping_i == grouping[j_sample]:
+                    grouping_matrix[i][j] = group_map[grouping[i_sample]]
+
+        # Extract upper triangle.
+        distances = dm[tri(dm.Size) == 0]
+        groups = grouping_matrix[tri(len(grouping_matrix)) == 0]
+
+        # Compute F value.
+        return self._compute_f_value(distances, groups, dm.Size,
+                                     number_groups, unique_n)
+
+    def _compute_f_value(self, distances, groupings, number_samples,
+                         number_groups, unique_n):
+        """Performs the calculations for the F value.
+
+        Arguments:
+            distances - a list of the distances
+            groupings - a list associating the distances to their groups
+            number_samples - how many samples there are
+            number_groups - how many groups there are
+            unique_n - list containing how many samples are in each within
+                group
+        """
+        a = number_groups
+        N = number_samples
+
+        # Calculate s_T.
+        s_T = sum(distances * distances) / N
+
+        # Calculate s_W for each group, this accounts for different group
+        # sizes.
+        s_W = 0
+        for i in range(number_groups):
+            group_ix = groupings==i
+            diffs = distances[group_ix]
+            s_W = s_W + sum(diffs**2) / unique_n[i]
+
+        # Execute the formula.
+        s_A = s_T - s_W
+        return (s_A / (a-1)) / (s_W / (N-a))
 
 
 class MantelCorrelogram(CorrelationStats):
