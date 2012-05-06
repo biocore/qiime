@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -13,6 +14,7 @@ __status__ = "Development"
 """Contains tests for beta_metrics  functions."""
 import os.path
 import numpy
+import qiime.beta_metrics
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
@@ -163,7 +165,33 @@ class FunctionTests(TestCase):
         self.assertEqual(res[0,0], 0)
         self.assertEqual(res[0,3], 0.0)
         self.assertEqual(res[0,1], 1.0)
+
+    def test_dist_bray_curtis_magurran1(self):
+        """ zero values should return zero dist, or 1 with nonzero samples"""
+        res = qiime.beta_metrics.dist_bray_curtis_magurran(
+            numpy.array([[0,0,0],
+                        [0,0,0],
+                        [1,1,1],
+                        ]))
+        self.assertFloatEqual(res,numpy.array([
+                        [0,0,1],
+                        [0,0,1],
+                        [1,1,0],
+                        ]))
         
+
+    def test_dist_bray_curtis_magurran2(self):
+        """ should match hand-calculated values"""
+        res = qiime.beta_metrics.dist_bray_curtis_magurran(
+            numpy.array([[1,4,3],
+                        [1,3,5],
+                        [0,2,0],
+                        ]))
+        self.assertFloatEqual(res,numpy.array([
+                        [0,1-14/17,1-(.4)],
+                        [1-14/17,0,1-4/11],
+                        [1-.4,1-4/11,0],
+                        ]))
         
 #run tests if called from command line
 if __name__ == '__main__':
