@@ -21,23 +21,23 @@ Running the script
 
 To run supervised classification on the `QIIME tutorial <./tutorial.html>`_ data set, where the "Treatment" metadata column gives the class labels::
 
-	supervised_learning.py -i otu_table.txt -m Fasting_Map.txt -c Treatment -o ml -v
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v
 	
 All of the result files described above will be contained in the folder :file:`ml`. The `-v` flag causes verbose output, including a trace of the classifier's progress while it is running. This runs Random Forests with the default setting of 500 trees. For larger data sets, the expected generalization error may decrease slightly if more trees are used. You can run random forests with 1,000 trees with the following::
 
-	supervised_learning.py -i otu_table.txt -m Fasting_Map.txt -c Treatment -o ml -v --ntree 1000
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v --ntree 1000
 
 Both of these example build a single random forests classifier, and use "out-of-bag" predictions (that is, each tree in the forest makes predictions about samples that were absent from its bootstrapped set of samples) to estimate the generalization error. If you have a very small data set you may wish to perform leave-one-out cross validation, in which the class label for each sample is predicted using a separate random forests classifier trained on the other n-1 samples::
 
-	supervised_learning.py -i otu_table.txt -m Fasting_Map.txt -c Treatment -o ml -v -e loo
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e loo
 
 To obtain more robust estimates of the generalization error and feature importances (including standard deviations), you can run the script with 5-fold or 10-fold cross validation::
 
-	supervised_learning.py -i otu_table.txt -m Fasting_Map.txt -c Treatment -o ml -v -e cv5
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv5
 
 or ::
 
-	supervised_learning.py -i otu_table.txt -m Fasting_Map.txt -c Treatment -o ml -v -e cv10
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv10
 
 Cautions
 ---------

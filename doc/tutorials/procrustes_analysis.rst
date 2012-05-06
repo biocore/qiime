@@ -38,17 +38,17 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 ::
 	
-	per_library_stats.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.txt
+	per_library_stats.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
-	beta_diversity_through_plots.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.txt -e 239 -o ./illumina_ucrC/bdiv_even239/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Repeat the above steps on the 454 data::
 
 	pick_reference_otus_through_otu_table.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r /software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta -t /software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt -aO8 -p ./otu_params.txt
-	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.txt
-	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.txt -e 135 -o ./454_ucrC/bdiv_even135/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
+	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Perform Procrustes analysis::
 	

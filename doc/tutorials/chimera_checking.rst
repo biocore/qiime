@@ -20,6 +20,6 @@ Don't forget to pass the ``-n`` parameter to ``filter_fasta.py`` -- this tells `
 
 You'll also need to exclude the chimeric sequences at the ``make_otu_table.py`` step. To do that, you pass the chimeric sequence list to ``make_otu_table.py`` via the ``-e`` parameter::
 
-	make_otu_table.py -i otu_map.txt -o otu_table.txt -e chimeric_seqs.txt -t taxonomy.txt
+	make_otu_table.py -i otu_map.txt -o otu_table.biom -e chimeric_seqs.txt -t taxonomy.txt
 
 This will cause the chimeric sequences to be excluded from all downstream analysis that you'll be performing, as the OTU table is always the input provided (for example to beta diversity, alpha rarefaction, etc.).

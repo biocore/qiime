@@ -74,7 +74,7 @@ If BLAST is the preferred method of assignment, the generic taxonomic mapping fi
 
 Finally, an OTU table can be built which includes the taxonomic assignments (in this case we will use the RDP assignments): ::
 
-	make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t rdp_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.txt
+	make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t rdp_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.biom
 
 Separating OTU Tables According to Domain
 =========================================
@@ -83,7 +83,7 @@ It may be desirable to split the OTU table according to domain for mixed 16S/18S
 
 We will split the OTU table generated in the last step at the domain level, 2, by using the following command: ::
 
-	split_otu_table_by_taxonomy.py -i otu_table.txt -L 2 -o separated_otu_tables/
+	split_otu_table_by_taxonomy.py -i otu_table.biom -L 2 -o separated_otu_tables/
 
 The output directory, separated_otu_tables, will contain an OTU table for archaea, bacteria, and eukaryotes, which can be utilized in downstream QIIME analyses just as any OTU table.
 
