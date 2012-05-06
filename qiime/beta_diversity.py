@@ -35,7 +35,7 @@ from cogent.util.misc import unzip
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from qiime.util import get_tmp_filename
-import cogent.maths.distance_transform as distance_transform #avoid hard-coding metrics
+import qiime.pycogent_backports.distance_transform as distance_transform #avoid hard-coding metrics
 
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
 from qiime.format import format_distance_matrix
