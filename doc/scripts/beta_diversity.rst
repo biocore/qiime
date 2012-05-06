@@ -22,7 +22,7 @@ A number of metrics are currently supported, including unweighted and weighted U
 	**[OPTIONAL]**
 		
 	-i, `-`-input_path
-		Input OTU table filepath or input directory containing OTU tables for batch processing.
+		Input OTU table in biom format or input directory containing OTU tables in biom format for batch processing.
 	-r, `-`-rows
 		Compute for only these rows of the distance matrix. User should pass a list of sample names (e.g. "s1,s3") [default: None; full n x n matrix is generated]
 	-o, `-`-output_dir
@@ -42,28 +42,28 @@ A number of metrics are currently supported, including unweighted and weighted U
 Each file in the input directory should be an otu table, and the output of `beta_diversity.py <./beta_diversity.html>`_ is a folder containing text files, each a distance matrix between samples corresponding to an input otu table.
 
 
-**Single File Beta Diversity:**
+**Single File Beta Diversity (non-phylogenetic):**
 
-To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div.txt, use the following command:
+To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div/, use the following command:
 
 ::
 
-	beta_diversity.py -i otu_table.txt -m euclidean -o beta_div/
+	beta_diversity.py -i otu_table.biom -m euclidean -o beta_div
 
-Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.
+**Single File Beta Diversity (phylogenetic):**
 
 In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:
 
 ::
 
-	beta_diversity.py -i otu_table.txt -m weighted_unifrac -o beta_div/ -t repr_set.tre
+	beta_diversity.py -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre
 
-**Multiple File (batch) Beta Diversity:**
+**Multiple File (batch) Beta Diversity (phylogenetic):**
 
-To perform beta diversity on multiple OTU tables (resulting files from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:
+To perform beta diversity on multiple OTU tables (e.g., resulting files from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory (e.g. otu_tables/) as shown by the following command:
 
 ::
 
-	beta_diversity.py -i rarefaction_tables/ -m weighted_unifrac -o beta_div/ -t repr_set.tre
+	beta_diversity.py -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre
 
 

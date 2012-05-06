@@ -41,10 +41,10 @@
 
 
 
-Split otu_table.txt into per-study OTU tables, and store the results in ./per_study_otu_tables/
+Split otu_table.biom into per-study OTU tables, and store the results in ./per_study_otu_tables/
 
 ::
 
-	split_otu_table.py -i otu_table.txt -m mapping.txt -f Study -o per_study_otu_tables
+	split_otu_table.py -i otu_table.biom -m Fasting_Map.txt -f Treatment -o per_study_otu_tables
 
 

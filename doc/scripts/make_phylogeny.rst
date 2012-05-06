@@ -25,7 +25,7 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 	**[OPTIONAL]**
 		
 	-t, `-`-tree_method
-		Method for tree building. Valid choices are: clearcut, clustalw, raxml, fasttree_v1, fasttree, muscle [default: fasttree]
+		Method for tree building. Valid choices are: clearcut, clustalw, raxml, fasttree_v1, fasttree, raxml_v730, muscle [default: fasttree]
 	-o, `-`-result_fp
 		Path to store result file [default: <input_sequences_filename>.tre]
 	-l, `-`-log_fp

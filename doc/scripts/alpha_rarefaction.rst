@@ -8,16 +8,7 @@
 **Description:**
 
 
-The steps performed by this script are:
-
-1. Generate rarefied OTU tables;
-
-2. Compute alpha diversity metrics for each rarefied OTU table;
-
-3. Collate alpha diversity results;
-
-4. Generate alpha rarefaction plots.
-
+The steps performed by this script are: Generate rarefied OTU tables; compute alpha diversity metrics for each rarefied OTU table; collate alpha diversity results; and generate alpha rarefaction plots.
 
 
 **Usage:** :file:`alpha_rarefaction.py [options]`
@@ -55,18 +46,20 @@ The steps performed by this script are:
 	-e, `-`-max_rare_depth
 		The upper limit of rarefaction depths [default: median sequence/sample count]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
 
-The results of this script is a folder ("rare1/") containing rarefied otu tables, alpha-diversity for each otu table, a file containing the results from collating the alpha-diversity results and a folder containing the rarefaction plots.
+The primary interface for the results will be OUTPUT_DIR/alpha_rarefaction_plots/rarefaction_plots.html where OUTPUT_DIR is the value you specify with -o.  You can open this in a web browser for interactive alpha rarefaction plots.
 
 
 **Example:**
 
+Given an OTU table, a phylogenetic tree, a mapping file, and a max sample depth, compute alpha rarefaction plots for the PD, observed species and chao1 metrics. To specify alternative metrics pass a parameter file via -p. We generally recommend that the max depth specified here (-e) is the same as the even sampling depth provided to beta_diversity_through_plots (also -e). 
+
 ::
 
-	alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt
+	alpha_rarefaction.py -i otu_table.biom -o arare_max100/ -t rep_set.tre -m Fasting_Map.txt -e 100
 
 

@@ -38,6 +38,8 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" and "sdev". [default=IQR]
 	`-`-master_pcoa
 		Used only when plotting ellipsoids for jackknifed beta diversity  (i.e. using a directory of coord files instead of a single coord file). These coordinates will be the center of each ellipisoid. [default: None; arbitrarily chosen PC matrix will define the center point]
+	`-`-scree
+		Generate the scree plot [default: False]
 	-o, `-`-output_dir
 		Path to the output directory
 
@@ -72,6 +74,14 @@ If the user wants to color by specific mapping labels, they can use the followin
 ::
 
 	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'
+
+**Scree plot Usage:**
+
+A scree plot can tell you how many axes are likely to be important and help determine how many "real" underlying gradients there might be in your data as well as their relative "strength". If you want to generate a scree plot, use the following code.
+
+::
+
+	make_2d_plots.py -i beta_div_coords.txt --scree
 
 If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
 

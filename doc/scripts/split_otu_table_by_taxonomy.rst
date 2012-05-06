@@ -20,11 +20,18 @@
 	**[REQUIRED]**
 		
 	-i, `-`-input_fp
-		The input otu table
-	-L, `-`-level
-		The level to split on
+		The input otu table in BIOM format
 	-o, `-`-output_dir
 		The output directory
+	-L, `-`-level
+		The taxonomic level to split at
+	
+	**[OPTIONAL]**
+		
+	`-`-md_identifier
+		The relevant observation metadat key [default: taxonomy]
+	`-`-md_as_string
+		Metadata is included as string [default: metadata is included as list]
 
 
 **Output:**
@@ -32,10 +39,10 @@
 
 
 
-Split seqs_otu_table.txt into taxon-specific OTU tables based on the third level in the taxonomy, and write the taxon-specific OTU tables to ./L3/
+Split seqs_otu_table.biom into taxon-specific OTU tables based on the third level in the taxonomy, and write the taxon-specific OTU tables to ./L3/
 
 ::
 
-	split_otu_table_by_taxonomy.py -i seqs_otu_table.txt -L 3 -o ./L3/
+	split_otu_table_by_taxonomy.py -i otu_table.biom -L 3 -o ./L3/
 
 

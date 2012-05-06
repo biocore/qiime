@@ -133,7 +133,7 @@ def main():
         #This try block attempts to parse the dictionary and if the dictionary
         #is not present, then it will write that information to stdout
         try:
-            
+
             imported_brief_description=script.script_info['brief_description']
             imported_script_description=script.script_info['script_description']
 

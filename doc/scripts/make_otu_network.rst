@@ -27,10 +27,12 @@ In more technical language: OTUs and samples are designated as two types of node
 	
 	**[REQUIRED]**
 		
-	-m, `-`-mapping_file
+	-i, `-`-input_fp
+		Name of otu table file in biom format [REQUIRED]
+	-m, `-`-map_fname
 		Name of input map file [REQUIRED]
-	-i, `-`-input_file
-		Name of otu table file [REQUIRED]
+	-o, `-`-output_dir
+		Output directory for all analyses [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -40,8 +42,6 @@ In more technical language: OTUs and samples are designated as two types of node
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
 	-k, `-`-background_color
 		This is the background color to use in the plots. [default: None]
-	-o, `-`-output_dir
-		Output directory for all analyses [default: cwd]
 
 
 **Output:**
@@ -51,10 +51,10 @@ The result of `make_otu_network.py <./make_otu_network.html>`_ consists of a fol
 
 **Example:**
 
-Create network cytoscape and statistic files in a user-specified output directory. This example uses an OTU file "otus.txt" (-i) and the user-generated mapping file "input_map.txt" (-m), where the results are written to the "otu_network/" folder. By default this folder will be put into the current working, unless specified by the "-o" option.
+Create network cytoscape and statistic files in a user-specified output directory. This example uses an OTU table (-i) and the metadata mapping file (-m), and the results are written to the "otu_network/" folder.
 
 ::
 
-	make_otu_network.py -i otus.txt -m input_map.txt -o otu_network/
+	make_otu_network.py -i otu_table.biom -m Fasting_Map.txt -o otu_network
 
 

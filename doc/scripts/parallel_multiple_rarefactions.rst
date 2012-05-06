@@ -55,32 +55,32 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 
 
 **Output:**
 
-The result of `parallel_multiple_rarefactions.py <./parallel_multiple_rarefactions.html>`_ consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" for the iteration.
+The result of `parallel_multiple_rarefactions.py <./parallel_multiple_rarefactions.html>`_ consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.biom, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" for the iteration.
 
 
-**Example:**
+**OTU tables of different depths:**
 
-Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences in steps of 100 (-s) with 5 (-n) repetions per number of sequences, from /home/qiime_user/otu_table.txt (-i). Write the output files to the /home/qiime_user/rare directory (-o, will be created if it doesn't exist). The name of the output files will be of the form /home/qiime_user/rare/rarefaction_<num_seqs>_<reptition_number>.txt
-
-::
-
-	parallel_multiple_rarefactions.py -o /home/qiime_user/rare -m 100 -x 2000 -s 100 -n 5 -i /home/qiime_user/otu_table.txt
-
-**Example 2:**
-
-Build 8 rarefied otu tables each containing exactly 100 sequences per sample (even depth rarefaction).
+Build rarefied otu tables containing 10 (-m) to 140 (-x) sequences in steps of 10 (-s) with 2 (-n) repetions per number of sequences, from otu_table.biom (-i). Write the output files to the rarefied_otu_tables directory (-o, will be created if it doesn't exist). The name of the output files will be of the form rarefaction_<num_seqs>_<reptition_number>.biom. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_multiple_rarefactions.py -o /home/qiime_user/rare -m 100 -x 100 -s 100 -n 8 -i /home/qiime_user/otu_table.txt
+	parallel_multiple_rarefactions.py -o $PWD/rarefied_otu_tables/ -m 10 -x 140 -s 10 -n 2 -i $PWD/otu_table.biom
+
+**OTU tables of the same depth:**
+
+Build 8 rarefied otu tables each containing exactly 100 sequences per sample (even depth rarefaction). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
+
+::
+
+	parallel_multiple_rarefactions.py -o $PWD/even_otu_tables/ -m 100 -x 100 -n 8 -i $PWD/otu_table.biom
 
 

@@ -27,19 +27,19 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	`-`-rdp_classifier_fp
-		Full path to rdp classifier jar file [default: /software/rdp_classifier/rdp_classifier-2.2.jar]
+		Full path to rdp classifier jar file [default: /Users/jistombaugh/Dropbox/software/bin/rdp_classifier/rdp_classifier-2.2.jar]
 	-c, `-`-confidence
 		Minimum confidence to record an assignment [default: 0.8]
 	-N, `-`-assign_taxonomy_fp
 		Full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /software/greengenes_tax_rdp_train.txt]
+		Full path to id_to_taxonomy mapping file [default: None]
 	-r, `-`-reference_seqs_fp
-		Ref seqs to rdp against. [default: /software/gg_97_otus_4feb2011.fasta]
+		Ref seqs to rdp against. [default: None]
 	`-`-rdp_max_memory
 		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1000]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -55,7 +55,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
@@ -67,10 +67,10 @@ Mapping of sequence identifiers to taxonomy and quality scores.
 
 **Example:**
 
-Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using the RDP classifier and write the results (-o) to /home/qiime_user/out/.
+Assign taxonomy to all sequences in the input file (-i) using the RDP classifier and write the results (-o) to $PWD/rdp_assigned_taxonomy/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_assign_taxonomy_rdp.py -O 5 -i /home/qiime_user/inseqs.fasta -o /home/qiime_user/out/
+	parallel_assign_taxonomy_rdp.py -i $PWD/inseqs.fasta -o $PWD/rdp_assigned_taxonomy/
 
 

@@ -32,10 +32,10 @@ The result of this script is an OTU table.
 
 **Example:**
 
-Convert a sample_mapping.txt file into an OTU table (e.g. otu_table.txt): 
+Convert a UniFrac sample mapping (environment) file into a biom-formatted OTU table: 
 
 ::
 
-	convert_unifrac_sample_mapping_to_otu_table.py -i sample_mapping.txt -o otu_table.txt
+	convert_unifrac_sample_mapping_to_otu_table.py -i otu_table.sample_mapping.txt -o otu_table.biom
 
 

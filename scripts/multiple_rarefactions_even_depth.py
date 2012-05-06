@@ -23,7 +23,7 @@ script_info['script_description']="""To perform bootstrap, jackknife, and rarefa
 
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Example:""","""subsample otu_table.txt at 100 seqs/sample (-d) 10 times (-n) and write results to files (e.g., rarefaction_400_0.biom) in 'rarefied_otu_tables/' (-o).""","""%prog -i otu_table.biom -o rarefied_otu_tables/ -d 100 -n 10"""))
+script_info['script_usage'].append(("""Example:""","""subsample otu_table.biom at 100 seqs/sample (-d) 10 times (-n) and write results to files (e.g., rarefaction_400_0.biom) in 'rarefied_otu_tables/' (-o).""","""%prog -i otu_table.biom -o rarefied_otu_tables/ -d 100 -n 10"""))
 
 script_info['output_description']="""The results of this script consist of n subsampled OTU tables, written to the directory specified by -o. The file has the same otu table format as the input otu_table.biom. Note: if the output files would be empty, no files are written."""
 

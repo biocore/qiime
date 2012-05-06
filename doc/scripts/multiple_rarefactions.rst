@@ -42,19 +42,15 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 
 **Output:**
 
-The result of `multiple_rarefactions.py <./multiple_rarefactions.html>`_ consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" the iteration.
+The result of `multiple_rarefactions.py <./multiple_rarefactions.html>`_ consists of a number of biom files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.biom, and are named in the following way: rarefaction_100_0.biom, where "100" corresponds to the sequences per sample and "0" the iteration.
 
 
-**Examples:**
+**Generate rarefied OTU tables:**
 
-An example of this script, where the user sets the minimum ("-m") and maximum ("-x") number of sequences per sample to 100 and 1200, respectively, while using steps ("-s") of 100, performing 2 iterations at each sampling depth ("-n"), and outputting the results to the directory "rarefaction_tables/" is shown by the following command:
+Generate rarefied OTU tables beginning with 10 (-m) sequences/sample through 140 (-x) sequences per sample in steps of of 10 (-s), performing 2 iterations at each sampling depth (-n). All resulting OTU tables will be written to 'rarefied_otu_tables' (-o). Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table.
 
 ::
 
-	multiple_rarefactions.py -i otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/
-
-As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.
-
-Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you must manually add those samples to the resulting otu tables
+	multiple_rarefactions.py -i otu_table.biom -m 10 -x 140 -s 10 -n 2 -o rarefied_otu_tables/
 
 

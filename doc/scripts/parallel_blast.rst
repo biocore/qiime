@@ -22,7 +22,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-i, `-`-infile_path
 		Path of sequences to use as queries [REQUIRED]
 	-r, `-`-refseqs_path
-		Path to fasta sequences to search against [REQUIRED]
+		Path to fasta sequences to search against or name of pre-formatted BLAST database [REQUIRED]
 	-o, `-`-output_dir
 		Name of output directory for blast jobs [REQUIRED]
 	
@@ -39,11 +39,11 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-D, `-`-suppress_format_blastdb
 		Supress format of blastdb [default: False]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /software/blast-2.2.22/data]
+		Full path to directory containing blastmat file [default: /Users/jistombaugh/Dropbox/software/bin/blast-2.2.22/data]
 	-b, `-`-blastall_fp
 		Path to blastall [default: blastall]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -59,7 +59,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
@@ -71,10 +71,10 @@ This script for performing blast while making use of multicore/multiprocessor en
 
 **Example:**
 
-BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a blast database created from /home/qiime_user/1000_seq.fasta (-r). Store the results in /home/qiime_user/bla_out/ (-o).
+BLAST $PWD/inseqs.fasta (-i) against a blast database created from $PWD/refseqs.fasta (-r). Store the results in $PWD/blast_out/ (-o). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_blast.py -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/1000_seq.fasta -O 3 -o /home/qiime_user/bla_out/
+	parallel_blast.py -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta -o $PWD/blast_out/ -e 0.001
 
 

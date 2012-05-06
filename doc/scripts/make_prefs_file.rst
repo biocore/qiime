@@ -27,7 +27,7 @@ This script generates a preferences (prefs) file, which can be passed to `make_d
 	**[OPTIONAL]**
 		
 	-b, `-`-mapping_headers_to_use
-		Mapping fields touse in prefs file [default: ALL]
+		Mapping fields to use in prefs file [default: ALL]
 	-k, `-`-background_color
 		This is the backgroundcolor to  use in the plots. [default: black]
 	-d, `-`-monte_carlo_dists

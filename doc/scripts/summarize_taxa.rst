@@ -2,7 +2,7 @@
 
 .. index:: summarize_taxa.py
 
-*summarize_taxa.py* -- Summarize Taxa
+*summarize_taxa.py* -- Summarize taxa and store results in a new table or appended to an existing mapping file.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -28,6 +28,10 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 		Taxonomic level to summarize by. [default: 2,3,4,5,6]
 	-m, `-`-mapping
 		Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is  useful for coloring PCoA plots by taxon abundance or to  perform statistical tests of taxon/mapping associations.
+	`-`-md_identifier
+		The relevant observation metadat key [default: taxonomy]
+	`-`-md_as_string
+		Metadata is included as string [default: metadata is included as list]
 	-d, `-`-delimiter
 		Delimitor separating taxonomy levels. [default: ;]
 	-r, `-`-relative_abundance
@@ -52,22 +56,18 @@ There are two possible output formats depending on whether or not a mapping file
 
 **Examples:**
 
-The following command can be used to summarize taxa based on the Class, where the default parameters are used (no mapping file, delimiter for RDP ("-d ;") and output relative abundance) and the results are written to the directory "Class":
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting taxa tables to the directory "./tax" 
 
 ::
 
-	summarize_taxa.py -i otu_table.txt -L 4 -o ./Class
+	summarize_taxa.py -i otu_table.biom -o ./tax
 
-Optionally the user can have the relative abundances added to the user-generated mapping file, by using the following command:
+**Examples:**
 
-::
-
-	summarize_taxa.py -i otu_table.txt -L 4 -m Mapping_file.txt
-
-Alternatively, the user may want to output the raw counts of each lineage within a sample, which can be used in the next step for making area, bar and pie charts, by using the following command:
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting mapping files to the directory "./tax" 
 
 ::
 
-	summarize_taxa.py -i otu_table.txt -L 4 -a
+	summarize_taxa.py -i otu_table.biom -o tax_mapping/ -m Fasting_Map.txt
 
 

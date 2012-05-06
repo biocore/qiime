@@ -20,7 +20,7 @@ This script computes from an OTU table a matrix with the number of shared phylot
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		Path to the input OTU table or a directory containing (only) OTU tables
+		Path to the input OTU table in biom format or a directory containing OTU tables
 	-o, `-`-output_fp
 		The output filepath
 	
@@ -28,8 +28,6 @@ This script computes from an OTU table a matrix with the number of shared phylot
 		
 	-r, `-`-reference_sample
 		Name of reference sample to which all pairs of samples should be compared [default: None]
-	-f, `-`-force_overwrite
-		Overwrite output_fp if already exists [default: None]
 
 
 **Output:**
@@ -37,13 +35,13 @@ This script computes from an OTU table a matrix with the number of shared phylot
 
 
 
-**Single file example:**
+**Single example:**
 
-Compute shared OTUs on one OTU table
+Compute shared OTUs on one OTU table for all samples
 
 ::
 
-	shared_phylotypes.py -i otu_table.txt -o shared_otus.txt
+	shared_phylotypes.py -i otu_table.biom -o shared_otus.txt
 
 **Reference sample example:**
 
@@ -51,7 +49,7 @@ Compute shared OTUs with respect to a reference sample. Computes shared OTUs bet
 
 ::
 
-	shared_phylotypes.py -i otu_table.txt -o shared_otus.txt -r Sample_X
+	shared_phylotypes.py -i otu_table.biom -o shared_otus_PC.636.txt -r PC.636
 
 **Batch mode example:**
 
@@ -59,6 +57,6 @@ Compute shared OTUs for a set of OTU tables, e.g. from running `multiple_rarefac
 
 ::
 
-	shared_phylotypes.py -i rarefaction_out/ -o rarefied_shared_otus/
+	shared_phylotypes.py -i rarefied_otu_tables/ -o shared_otus/
 
 

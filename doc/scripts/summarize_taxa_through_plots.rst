@@ -8,15 +8,7 @@
 **Description:**
 
 
-The steps performed by this script are:
-
-1. Summarize OTU by Category
-
-2. Summarize Taxonomy
-
-3. Plot Taxonomy Summary
-
-
+The steps performed by this script are: Summarize OTU by Category (optional, pass -c); Summarize Taxonomy; and Plot Taxonomy Summary
 
 
 **Usage:** :file:`summarize_taxa_through_plots.py [options]`
@@ -45,23 +37,27 @@ The steps performed by this script are:
 		Print the commands but don't call them -- useful for debugging [default: False]
 	-c, `-`-mapping_category
 		Summarize OTU table using this category. [default: None]
+	-s, `-`-sort
+		Sort the OTU Table [default: False]
 
 
 **Output:**
 
-The results of this script is a folder ("wf_taxa_sum/") containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table.
+The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity).
 
 
-**Examples:**
-
-::
-
-	summarize_taxa_through_plots.py -o wf_taxa_sum -i otu_table.txt -m inseqs1_mapping.txt -p custom_parameters.txt
-
-Alternatively, the user can supply a mapping_category, where the OTU is summarized based on a mapping category:
+**Plot taxa summaries for all samples:**
 
 ::
 
-	summarize_taxa_through_plots.py -o wf_taxa_sum -i otu_table.txt -m inseqs1_mapping.txt -p custom_parameters.txt -c Treatment
+	summarize_taxa_through_plots.py -o taxa_summary -i otu_table.biom -m Fasting_Map.txt
+
+**Plot taxa summaries on a categorical basis:**
+
+Alternatively, the user can supply a mapping_category, where the OTU is summarized based on a sample metadata category:
+
+::
+
+	summarize_taxa_through_plots.py -o taxa_summary_by_treatment -i otu_table.biom -m Fasting_Map.txt -c Treatment
 
 

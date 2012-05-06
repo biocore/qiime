@@ -21,22 +21,22 @@ WARNING: The jnlp file relies on an absolute path, if you move the .tep file, th
 	
 	**[REQUIRED]**
 		
-	-i, `-`-otu_file
-		Path to read otu table
-	-m, `-`-mapping_file
-		Path to read mapping file
-	-t, `-`-tree_file
-		Path to read tree
+	-i, `-`-otu_table_fp
+		Path to otu table in biom format
+	-m, `-`-mapping_fp
+		Path to mapping file
+	-t, `-`-tree_fp
+		Path to tree
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_dir
+	-o, `-`-out_fp
 		The output directory [default: None]
-	-p, `-`-prefs_file_dir
+	-p, `-`-prefs_file_fp
 		Path to prefs file
-	-w, `-`-web
+	-w, `-`-web_flag
 		Web codebase jnlp flag [default: False]
-	-u, `-`-url_path
+	-u, `-`-url
 		Url path
 
 
@@ -51,6 +51,6 @@ Create .tep file and .jnlp file:
 
 ::
 
-	make_tep.py -i otu_table.txt -m mapping_file.txt -t otus.tre -o my_data
+	make_tep.py -i otu_table.biom -m Fasting_Map.txt -t rep_set.tre
 
 

@@ -36,10 +36,10 @@
 an otu table, samples are named: 'original_sample_0, original_sample_1 ...'
 
 
-Make 3 related sample for each sample in in_otu_table.txt.
+Make 3 related sample for each sample in otu_table.biom.
 
 ::
 
-	simsam.py -i in_otu_table.txt -t rep_set.tre -o out_otu_table.txt -d .001 -n 3
+	simsam.py -i otu_table.biom -t rep_set.tre -o otu_table.simsam.biom -d .001 -n 3
 
 

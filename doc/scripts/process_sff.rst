@@ -25,6 +25,8 @@ This script converts a directory of sff files into FASTA, QUAL and flowgram file
 	
 	**[OPTIONAL]**
 		
+	`-`-no_trim
+		Do not trim sequence/qual (requires --use_sfftools option) [default: False]
 	-f, `-`-make_flowgram
 		Generate a flowgram file. [default: False]
 	-t, `-`-convert_to_FLX

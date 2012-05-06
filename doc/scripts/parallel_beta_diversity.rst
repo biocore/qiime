@@ -47,11 +47,11 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-f, `-`-full_tree
 		By default, each job removes calls _fast_unifrac_setup to remove unused parts of the tree. pass -f if you already have a minimal tree, and this script will run faster
 
@@ -61,12 +61,12 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 The output of %prog is a folder containing text files, each a distance matrix between samples.
 
 
-**Example:**
+**Apply beta_diversity.py in parallel:**
 
-Apply the dist_unweighted_unifrac and the dist_weighted_unifrac metrics (-m) to all otu tables in /home/qiime_user/rare/ (-i) and write the resulting output files to /home/qiime_user/out/ (-o, will be created if it doesn't exist). Use the tree file /home/qiime_user/rep_set.tre (-t) when necessary.
+Apply the unweighted_unifrac and weighted_unifrac metrics (modify with -m) to all otu tables in rarefied_otu_tables (-i) and write the resulting output files to bdiv/ (-o, will be created if it doesn't exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_beta_diversity.py -i /home/qiime_user/rare/ -o /home/qiime_user/out -m dist_unweighted_unifrac,dist_weighted_unifrac -t /home/qiime_user/rep_set.tre
+	parallel_beta_diversity.py -i $PWD/rarefied_otu_tables/ -o $PWD/bdiv/ -t $PWD/rep_set.tre
 
 

@@ -54,7 +54,7 @@ script_info['script_usage'].append(("ANOVA","""Perform an ANOVA on otu_table.bio
 script_info['script_usage'].append(("ANOVA on mutliple OTU tables","""Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o multiple_anova.txt"""))
 
 # do we have good input data for this? 
-# script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""%prog -i otu_table.txt -m Mapping_file.txt -s g_test -c Treatment -t 0.16"""))
+# script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""%prog -i otu_table.biom -m Mapping_file.txt -s g_test -c Treatment -t 0.16"""))
 
 script_info['output_description']="""The G test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:
 

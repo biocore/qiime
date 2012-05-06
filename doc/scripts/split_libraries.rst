@@ -46,7 +46,7 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	-B, `-`-keep-barcode
 		Do not remove barcode from sequences
 	-a, `-`-max-ambig
-		Maximum number of ambiguous bases [default: 0]
+		Maximum number of ambiguous bases [default: 6]
 	-H, `-`-max-homopolymer
 		Maximum length of homopolymer run [default: 6]
 	-M, `-`-max-primer-mismatch
@@ -79,6 +79,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Disables minimum and maximum sequence length filtering, and instead calculates the median sequence length and filters the sequences based upon the number of median absolute deviations specified by this parameter.  Any sequences with lengths outside the number of deviations will be removed. [default: None]
 	-j, `-`-added_demultiplex_field
 		Use -j to add a field to use in the mapping file as an additional demultiplexing option to the barcode.  All combinations of barcodes and the values in these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column headerr "run_prefix".  [default: None]
+	-x, `-`-truncate_ambi_bases
+		Enable to truncate at the first "N" character encountered in the sequences.  This will disable testing for ambiguous bases (-a option) [default: False]
 
 
 **Output:**

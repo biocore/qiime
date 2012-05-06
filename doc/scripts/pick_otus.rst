@@ -115,7 +115,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-g, `-`-minsize
 		Minimum cluster size for size filtering with OTUpipe. [default: 4]
 	-a, `-`-abundance_skew
-		Abundance skew setting for de novo chimera detection with OTUpipe. [default: 2]
+		Abundance skew setting for de novo chimera detection with OTUpipe. [default: 2.0]
 	-f, `-`-db_filepath
 		Reference database of fasta sequences for reference based chimera detection with OTUpipe. [default: None]
 	`-`-perc_id_blast
@@ -128,6 +128,8 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Perform cluster size filtering in OTUpipe.  [default: True]
 	`-`-remove_usearch_logs
 		Disable creation of logs when usearch is called.  Up to nine logs are created, depending on filtering steps enabled.  [default: False]
+	`-`-derep_fullseq
+		Dereplication of full sequences, instead of subsequences. Faster than the default --derep_subseqs in usearch. [default: False]
 	-F, `-`-non_chimeras_retention
 		Selects subsets of sequences detected as non-chimeras to retain after de novo and refernece based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
 

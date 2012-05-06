@@ -38,15 +38,15 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 
 **Output:**
 
-The results of this script consist of n subsampled OTU tables, written to the directory specified by -o. The file has the same otu table format as the input otu_table.txt. note: if the output files would be empty, no files are written
+The results of this script consist of n subsampled OTU tables, written to the directory specified by -o. The file has the same otu table format as the input otu_table.biom. Note: if the output files would be empty, no files are written.
 
 
 **Example:**
 
-subsample otu_table.txt at 400 seqs/sample (-d), 100 times (-n), write results to files (i.e. rarefaction_400_17.txt)
+subsample otu_table.biom at 100 seqs/sample (-d) 10 times (-n) and write results to files (e.g., rarefaction_400_0.biom) in 'rarefied_otu_tables/' (-o).
 
 ::
 
-	multiple_rarefactions_even_depth.py -i otu_table.txt -o rarefaction_tables -d 400 -n 100
+	multiple_rarefactions_even_depth.py -i otu_table.biom -o rarefied_otu_tables/ -d 100 -n 10
 
 

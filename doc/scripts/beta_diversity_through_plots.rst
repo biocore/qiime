@@ -2,7 +2,7 @@
 
 .. index:: beta_diversity_through_plots.py
 
-*beta_diversity_through_plots.py* -- A workflow script for computing beta diversity distance matrices and the corresponding 3D plots
+*beta_diversity_through_plots.py* -- A workflow script for computing beta diversity distance matrices and generating PCoA plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -50,31 +50,20 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 	`-`-suppress_3d_plots
 		Do not generate 3D plots [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
 
-This script results in a distance matrix (from `beta_diversity.py <./beta_diversity.html>`_), a principal coordinates file (from `principal_coordinates.py <./principal_coordinates.html>`_), a preferences file (from `make_prefs_file.py <./make_prefs_file.html>`_) and  folder containing the resulting 3d PCoA plots (as an html from `make_3d_plots.py <./make_3d_plots.html>`_).
+This script results in a distance matrix (from `beta_diversity.py <./beta_diversity.html>`_), a principal coordinates file (from `principal_coordinates.py <./principal_coordinates.html>`_), a preferences file (from `make_prefs_file.py <./make_prefs_file.html>`_) and folders containing the resulting PCoA plots (accessible through html files).
 
 
 **Example:**
 
-The following steps are performed by the command below:
-
-1. Compute a beta diversity distance matrix;
-
-2. Peform a principle coordinates analysis on the result of Step 1;
-
-3. Generate a 3D prefs file for optimized coloring of continuous variables;
-
-4. Generate a 3D plot for all mapping fields with colors optimized for continuous data;
-
-5. Generate a 3D plot for all mapping fields with colors optimized for discrete data.
-
+Given an OTU table, a phylogenetic tree, an even sampling depth, and a mapping file, perform the following steps: 1. Randomly subsample otu_table.biom to even number of sequences per sample (100 in this case); 2. Compute a weighted and unweighted unifrac distance matrcies (can add additional metrics by passing a parameters file via -p); 3. Peform a principle coordinates analysis on the result of Step 2; 4. Generate a 2D and 3D plots for all mapping fields.
 
 ::
 
-	beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt
+	beta_diversity_through_plots.py -i otu_table.biom -o bdiv_even100/ -t rep_set.tre -m Fasting_Map.txt -e 100
 
 

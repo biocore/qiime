@@ -75,6 +75,8 @@ steps will be called with mpirun, not qiime's `start_parallel_jobs_torque.py <./
 		Omit perseus from ampliconnoise workflow
 	`-`-platform
 		Sequencing technology, options are 'titanium','flx'. [default: flx]
+	`-`-truncate_len
+		Specify a truncation length for ampliconnoise.  Note that is this is not specified, the truncate length is chosen by the --platform option (220 for FLX, 400 for Titanium) [default: None]
 
 
 **Output:**

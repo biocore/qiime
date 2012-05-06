@@ -31,13 +31,13 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-d, `-`-blast_db
 		Database to blast against [default: created on-the-fly from template_alignment]
 	-e, `-`-min_length
-		Minimum sequence length to include in alignment [default: 150]
+		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
 	-p, `-`-min_percent_id
 		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 75.0]
 	-N, `-`-align_seqs_fp
 		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`align_seqs.py <./align_seqs.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -53,11 +53,11 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-t, `-`-template_fp
-		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
+		Filepath for template against [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
 
 
 **Output:**
@@ -67,10 +67,10 @@ This results in a multiple sequence alignment (FASTA-formatted).
 
 **Example:**
 
-Align the input file (-i) against /home/qiime_user/pynast_test_template.fasta (-t) via 5 (-O) independent jobs and write the output (-o) to /home/qiime_user/out/:
+Align the input file (-i) against using PyNAST and write the output (-o) to $PWD/pynast_aligned_seqs/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_align_seqs_pynast.py -i /home/qiime_user/10_seq.fasta -O 5 -t /home/qiime_user/pynast_test_template.fasta -o /home/qiime_user/out/
+	parallel_align_seqs_pynast.py -i $PWD/inseqs.fasta -o $PWD/pynast_aligned_seqs/
 
 

@@ -55,7 +55,7 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	-N, `-`-pick_otus_fp
 		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -71,7 +71,7 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
+		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
@@ -83,10 +83,10 @@ The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .tx
 
 **Example:**
 
-Pick OTUs with uclust_ref by searching /home/qiime/inseqs.fasta against /home/qiime/refseqs.fasta and write the output to the /home/qiime/out/ directory.
+Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with reference-based uclust and write the output to the $PWD/blast_otus/ directory. This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_pick_otus_uclust_ref.py -i /home/qiime/inseqs.fasta -r /home/qiime/refseqs.fasta -o /home/qiime/out/
+	parallel_pick_otus_uclust_ref.py -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/ucref_otus/
 
 

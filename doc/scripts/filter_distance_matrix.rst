@@ -49,11 +49,11 @@ Filter samples ids listed in sample_id_list.txt from dm.txt
 
 	filter_distance_matrix.py -i dm.txt -o dm_out.txt --sample_id_fp sample_id_list.txt
 
-Filter samples ids in otu_table.txt from dm.txt
+Filter samples ids in otu_table.biom from dm.txt
 
 ::
 
-	filter_distance_matrix.py -i dm.txt -o dm_out.txt -t otu_table.txt
+	filter_distance_matrix.py -i dm.txt -o dm_out.txt -t otu_table.biom
 
 Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run "`filter_by_metadata.py <./filter_by_metadata.html>`_ -h" for additional information on how metadata filtering can be specified.)
 

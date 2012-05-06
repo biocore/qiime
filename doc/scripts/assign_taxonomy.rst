@@ -9,7 +9,7 @@
 
 Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). 
+Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). 
 
 
 **Usage:** :file:`assign_taxonomy.py [options]`
@@ -27,13 +27,19 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 	**[OPTIONAL]**
 		
 	-t, `-`-id_to_taxonomy_fp
-		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: /software/greengenes_tax_rdp_train.txt; REQUIRED when method is blast]
+		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: None; REQUIRED when method is blast]
 	-r, `-`-reference_seqs_fp
-		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: /software/gg_97_otus_4feb2011.fasta; REQUIRED if -b is not provided when method is blast]
+		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: None; REQUIRED if -b is not provided when method is blast]
 	-p, `-`-training_data_properties_fp
 		Path to ".properties" file in pre-compiled training data for the RDP Classifier.  This option is overridden by the -t and -r options. [default: None]
+	`-`-read_1_seqs_fp
+		Path to fasta file containing the first read from paired-end sequencing, prior to OTU clustering (used for RTAX only).[default: None]
+	`-`-read_2_seqs_fp
+		Path to fasta file containing a second read from paired-end sequencing, prior to OTU clustering (used for RTAX only).[default: None]
+	`-`-single_ok
+		When classifying paired ends, allow fallback to single-ended classification when the mate pair is lacking (used for RTAX only).[default: False]
 	-m, `-`-assignment_method
-		Taxon assignment method, either blast, rdp [default:rdp]
+		Taxon assignment method, either blast, rdp, or rtax [default:rdp]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence
@@ -97,5 +103,16 @@ Alternatively, the user could change the minimum confidence score ("-c"), using 
 
 Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly. Due to limitations in the generation of a training set, each provided assignment must contain exactly 6 taxa in the following order: domain (level=2), phylum (level=3), class (level=4), order (5), family (level=6), and genus (level=7). Additionally, each genus name must be unique, due to the internal algorithm used by the RDP Classifier.
 
+
+**Sample Assignment with RTAX:**
+
+
+Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
+
+To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:
+
+::
+
+	assign_taxonomy.py repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r ref_seq_set.fna -t id_to_taxonomy.txt
 
 

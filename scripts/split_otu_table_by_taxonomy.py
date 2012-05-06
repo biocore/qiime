@@ -23,7 +23,7 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","Split seqs_otu_table.txt into taxon-specific OTU tables based on the third level in the taxonomy, and write the taxon-specific OTU tables to ./L3/","%prog -i otu_table.biom -L 3 -o ./L3/")]
+script_info['script_usage'] = [("","Split seqs_otu_table.biom into taxon-specific OTU tables based on the third level in the taxonomy, and write the taxon-specific OTU tables to ./L3/","%prog -i otu_table.biom -L 3 -o ./L3/")]
 script_info['output_description']= ""
 
 script_info['required_options'] = [

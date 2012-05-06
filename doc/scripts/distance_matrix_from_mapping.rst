@@ -25,8 +25,11 @@ As this is a univariate procedure only one metric is supported: d = c-b.
 		Mapping filepath.
 	-c, `-`-column
 		String containing the name of the column in the mapping file, e.g. 'DOB'
+	
+	**[OPTIONAL]**
+		
 	-o, `-`-output_dir
-		Output directory. One will be created if it doesn't exist.
+		Output directory. One will be created if it doesn't exist. [default=map_distance_matrix]
 
 
 **Output:**

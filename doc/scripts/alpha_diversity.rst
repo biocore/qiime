@@ -53,27 +53,29 @@ PC.636 0.925   3.78882       16.0
 
 
 
-**Single File Alpha Diversity Example:**
+**Single File Alpha Diversity Example (non-phylogenetic):**
 
 To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to "alpha_div.txt", you can use the following command:
 
 ::
 
-	alpha_diversity.py -i otu_table.txt -m chao1 -o alpha_div.txt
+	alpha_diversity.py -i otu_table.biom -m chao1 -o adiv_chao1.txt
 
-Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.
+**Single File Alpha Diversity Example (phylogenetic):**
 
 In the case that you would like to perform alpha diversity using a phylogenetic metric (e.g. PD_whole_tree), you can use the following command:
 
 ::
 
-	alpha_diversity.py -i otu_table.txt -m PD_whole_tree -o alpha_div.txt -t repr_set.tre
+	alpha_diversity.py -i otu_table.biom -m PD_whole_tree -o adiv_pd.txt -t rep_set.tre
+
+**Single File Alpha Diversity Example with multiple metrics:**
 
 You can use the following idiom to run multiple metrics at once (comma-separated):
 
 ::
 
-	alpha_diversity.py -i otu_table.txt -m chao1,PD_whole_tree -o alpha_div.txt -t repr_set.tre
+	alpha_diversity.py -i otu_table.biom -m chao1,PD_whole_tree -o adiv_chao1_pd.txt -t rep_set.tre
 
 **Multiple File (batch) Alpha Diversity:**
 
@@ -81,6 +83,6 @@ To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables res
 
 ::
 
-	alpha_diversity.py -i rarefaction_tables/ -m chao1,PD_whole_tree -o alpha_div_chao1_PD/ -t repr_set.tre
+	alpha_diversity.py -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre
 
 

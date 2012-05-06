@@ -36,6 +36,6 @@ You need to pass a TRFLP text, the script will remove not wanted chars sample an
 
 ::
 
-	trflp_file_to_otu_table.py -i trflp_file.txt -o otu_table/
+	trflp_file_to_otu_table.py -i trflp_in.txt -o otu_table.biom
 
 

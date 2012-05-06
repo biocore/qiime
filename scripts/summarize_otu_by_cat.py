@@ -26,7 +26,7 @@ script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.biom on the 'Treatment' column in Fasting_Map.txt and write the resulting OTU table to otu_table_by_treatment.txt""","""%prog -c otu_table.biom -i Fasting_Map.txt -m Treatment -o otu_table_by_treatment.biom"""))
 
-script_info['script_usage'].append(("""""",""" Combine two categories and collapse otu_table.txt on the 'Sex' and 'Age' columns in map.txt and write the resulting OTU table to otu_table_by_sex_and_age.txt""","""%prog -c otu_table.biom -i Fasting_Map.txt -m 'Treatment&&DOB' -o otu_table_by_treatment_and_dob.biom"""))
+script_info['script_usage'].append(("""""",""" Combine two categories and collapse otu_table.biom on the 'Sex' and 'Age' columns in map.txt and write the resulting OTU table to otu_table_by_sex_and_age.txt""","""%prog -c otu_table.biom -i Fasting_Map.txt -m 'Treatment&&DOB' -o otu_table_by_treatment_and_dob.biom"""))
 
 script_info['output_description']= """"""
 script_info['required_options']=[\

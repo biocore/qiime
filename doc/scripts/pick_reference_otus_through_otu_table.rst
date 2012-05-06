@@ -39,7 +39,7 @@ This script picks OTUs using a reference-based method and constructs an OTU tabl
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
@@ -47,16 +47,16 @@ This script picks OTUs using a reference-based method and constructs an OTU tabl
 
 
 
-Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs.
+Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	pick_reference_otus_through_otu_table.py -i inseqs.fasta -r refseqs.fasta -o out -p qiime_parameters.txt -t taxa.txt
+	pick_reference_otus_through_otu_table.py -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_w_tax/ -t $PWD/taxa.txt
 
-Pick OTUs and create an OTU table against a reference set of OTUs without adding taxonomy assignments.
+Pick OTUs and create an OTU table against a reference set of OTUs without adding taxonomy assignments. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	pick_reference_otus_through_otu_table.py -i inseqs.fasta -r refseqs.fasta -o out -p qiime_parameters.txt
+	pick_reference_otus_through_otu_table.py -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus/
 
 

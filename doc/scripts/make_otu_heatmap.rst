@@ -57,30 +57,30 @@ Using default values:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.txt
+	make_otu_heatmap.py -i otu_table.biom
 
 Different output directory (i.e., "otu_heatmap"):
 
 ::
 
-	make_otu_heatmap.py -i otu_table.txt -o otu_heatmap
+	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap
 
 Sort the heatmap columns by the order in a mapping file, as follows:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt
+	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt
 
 Sort the heatmap columns by Sample ID's and the heatmap rows by the order of tips in the tree, you can supply a tree as follows:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt
+	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t tree_file.txt
 
 Group the heatmap columns by metadata category (e.g., GENDER), then cluster within each group:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt -c 'GENDER'
+	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c 'GENDER'
 
 

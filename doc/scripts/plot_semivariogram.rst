@@ -23,24 +23,8 @@ Fits a spatial autocorrelation model between two matrices and plots the result. 
 		Path to distance matrix to be displayed in the x axis
 	-y, `-`-input_path_y
 		Path to distance matrix to be displayed in the y axis
-	-m, `-`-model
-		Model to be fitted to the data. Valid choices are:nugget, exponential, gaussian, periodic, linear. [default: exponential]
 	-o, `-`-output_path
 		Output path. directory for batch processing, filename for single file operation
-	-X, `-`-x_label
-		Label for the x axis [default: Distance Dissimilarity (m)]
-	-Y, `-`-y_label
-		Label for the y axis [default: Community Dissimilarity]
-	-t, `-`-fig_title
-		Title of the plot [default: Semivariogram]
-	`-`-dot_color
-		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: wo]
-	`-`-line_color
-		Line color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: blue]
-	`-`-dot_alpha
-		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
-	`-`-line_alpha
-		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
 	
 	**[OPTIONAL]**
 		
@@ -56,6 +40,26 @@ Fits a spatial autocorrelation model between two matrices and plots the result. 
 		Y axis max limit [default: auto]
 	`-`-y_min
 		Y axis min limit [default: auto]
+	-X, `-`-x_label
+		Label for the x axis [default: Distance Dissimilarity (m)]
+	-Y, `-`-y_label
+		Label for the y axis [default: Community Dissimilarity]
+	-t, `-`-fig_title
+		Title of the plot [default: Semivariogram]
+	`-`-dot_color
+		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: white]
+	`-`-dot_marker
+		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: o]
+	`-`-line_color
+		Line color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: blue]
+	`-`-dot_alpha
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
+	`-`-line_alpha
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
+	-m, `-`-model
+		Model to be fitted to the data. Valid choices are:nugget, exponential, gaussian, periodic, linear. [default: exponential]
+	-p, `-`-print_model
+		Print in the title of the plot the function of the fit. [default: False]
 
 
 **Output:**

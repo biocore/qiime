@@ -24,7 +24,7 @@ script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Example:""","""subsample otu_table.biom (-i) at 100 seqs/sample (-d), write results to otu_table_even100.txt (-o).""","""%prog -i otu_table.biom -o otu_table_even100.biom -d 100"""))
 
-script_info['output_description']="""The results of single_rarefaction.py consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written"""
+script_info['output_description']="""The results of single_rarefaction.py consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.biom. note: if the output file would be empty, no file is written"""
 
 
 script_info['required_options']=[

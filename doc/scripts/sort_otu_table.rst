@@ -20,7 +20,7 @@
 	**[REQUIRED]**
 		
 	-i, `-`-input_otu_table
-		Input OTU table filepath.
+		Input OTU table filepath in BIOM format.
 	-o, `-`-output_fp
 		Output OTU table filepath.
 	
@@ -43,12 +43,12 @@ sort samples by the age field in the mapping file
 
 ::
 
-	sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -m map.txt -s Age
+	sort_otu_table.py -i otu_table.biom -o dob_sorted_otu_table.biom -m Fasting_Map.txt -s DOB
 
 sort samples based on order in a file where each line starts with a sample id
 
 ::
 
-	sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -l sorted_sample_id_list.txt
+	sort_otu_table.py -i otu_table.biom -o sorted_otu_table.biom -l sample_id_list.txt
 
 

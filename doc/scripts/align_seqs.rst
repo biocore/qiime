@@ -33,7 +33,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
+		Filepath for template against [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
@@ -45,7 +45,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	-o, `-`-output_dir
 		Path to store result file [default: <ALIGNMENT_METHOD>_aligned]
 	-e, `-`-min_length
-		Minimum sequence length to include in alignment [default: 150]
+		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
 	-p, `-`-min_percent_id
 		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 0.75]
 

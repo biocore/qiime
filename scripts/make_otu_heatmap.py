@@ -39,11 +39,11 @@ script_info={}
 script_info['brief_description']="""Make heatmap of OTU table"""
 script_info['script_description']="""Once an OTU table has been generated, it can be visualized using a heatmap. In these heatmaps each row corresponds to an OTU, and each column corresponds to a sample. The higher the relative abundance of an OTU in a sample, the more intense the color at the corresponsing position in the heatmap. By default, the OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the samples (columns) will be presented in the order in which they appear in the OTU table. Alternatively, the user may pass in a tree to sort the OTUs (rows) or samples (columns), or both. For samples, the user may also pass in a mapping file. If the user passes in a mapping file and a metadata category, samples (columns in the heatmap) will be grouped by category value and subsequently clustered within each group."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""Using default values:""","""%prog -i otu_table.txt"""))
-script_info['script_usage'].append(("","""Different output directory (i.e., "otu_heatmap"):""","""%prog -i otu_table.txt -o otu_heatmap"""))
-script_info['script_usage'].append(("","""Sort the heatmap columns by the order in a mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
-script_info['script_usage'].append(("","""Sort the heatmap columns by Sample ID's and the heatmap rows by the order of tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
-script_info['script_usage'].append(("","""Group the heatmap columns by metadata category (e.g., GENDER), then cluster within each group:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -c 'GENDER'"""))
+script_info['script_usage'].append(("""Examples:""","""Using default values:""","""%prog -i otu_table.biom"""))
+script_info['script_usage'].append(("","""Different output directory (i.e., "otu_heatmap"):""","""%prog -i otu_table.biom -o otu_heatmap"""))
+script_info['script_usage'].append(("","""Sort the heatmap columns by the order in a mapping file, as follows:""","""%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt"""))
+script_info['script_usage'].append(("","""Sort the heatmap columns by Sample ID's and the heatmap rows by the order of tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
+script_info['script_usage'].append(("","""Group the heatmap columns by metadata category (e.g., GENDER), then cluster within each group:""","""%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c 'GENDER'"""))
 script_info['output_description']="""The heatmap image is located in the specified output directory. It is formatted as a PDF file."""
 script_info['required_options']=[\
  options_lookup['otu_table_as_primary_input']

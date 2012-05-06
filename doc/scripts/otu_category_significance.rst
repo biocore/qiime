@@ -7,9 +7,9 @@
 
 **Description:**
 
-The script `otu_category_significance.py <./otu_category_significance.html>`_ tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, Pearson correlation, or a paired T test to find OTUs whose members are differentially represented across experimental treatments or measured variables.
+The script `otu_category_significance.py <./otu_category_significance.html>`_ tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses ANOVA, the G test of independence, Pearson correlation, or a paired t-test to find OTUs that are differentially represented across experimental treatments or measured variables.
 
-The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA or G test of Independence.
+The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA, G test of Independence, or correlation.
 
 The statistical test to be run is designated with the -s option, and includes the following options:
 
@@ -24,7 +24,7 @@ The tests also include options for longitudinal data (i.e. datasets in which mul
 
 Pearson correlation (longitudinal_correlation): determines whether OTU relative abundance is correlated with a continuous variable in the category mapping file while accounting for an experimental design where multiple samples are collected from the same individual or site. Uses the change in relative abundance for each sample from the reference sample (e.g. timepoint zero in a timeseries analysis) rather than the absolute relative abundances in the correlation (e.g. if the relative abundance before the treatment was 0.2, and after the treatment was 0.4, the new values for the OTU relative abundance will be 0.0 for the before sample, and 0.2 for the after, thus indicating that the OTU went up in response to the treatment.)
 
-Paired T-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.
+Paired t-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.
 
 With the exception of longitudinal correlation and paired_T, this script can be performed on a directory of OTU tables (for example, the output of `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), in addition to on a single OTU table. If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately. It is generally a good practice to rarefy the OTU table (e.g. with `single_rarefaction.py <./single_rarefaction.html>`_) prior to running these significance tests in order to avoid artifacts/biases from unequal sample sizes.
 
@@ -40,7 +40,7 @@ With the exception of longitudinal correlation and paired_T, this script can be 
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		Path to the otu table, or to a directory containing OTU tables
+		Path to the otu table in biom format, or to a directory containing OTU tables
 	-m, `-`-category_mapping_fp
 		Path to category mapping file
 	
@@ -49,9 +49,9 @@ With the exception of longitudinal correlation and paired_T, this script can be 
 	-c, `-`-category
 		Name of the category over which to run the analysis
 	-s, `-`-test
-		The type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of Independence.      ANOVA: determines whether OTU abundance is associated with a category.      correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.     longitudinal_correlation: determine whether OTU relative abundance is correlated with a continuous variable in the category mapping file in longitudinal study designs such as with timeseries data.     paired_T: determine whether OTU relative abundance goes up or down in response to a treatment.
+		The type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of Independence.      ANOVA: determines whether OTU abundance is associated with a category.      correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.     longitudinal_correlation: determine whether OTU relative abundance is correlated with a continuous variable in the category mapping file in longitudinal study designs such as with timeseries data.     paired_T: determine whether OTU relative abundance goes up or down in response to a treatment. [default: ANOVA]
 	-o, `-`-output_fp
-		Path to output file. otu_category_significance_results.txt by default
+		Path to output file. [default: otu_category_significance_results.txt]
 	-f, `-`-filter
 		Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. For longitudinal options, is the number of samples from the individuals/sites that were not ignored because of the OTU not being observed in any of the samples from that individual/site. As an example, if 5 samples per individual were collected over a timeseries that was being evaluated with longitudinal_correlation, a value of 10 would indicate that the OTU would have to have been detected in at least 2 individuals. The default value=10.
 	-t, `-`-threshold
@@ -64,6 +64,8 @@ With the exception of longitudinal correlation and paired_T, this script can be 
 		Name of the column in the category mapping file that designates which sample is from which individual.
 	-b, `-`-converted_otu_table_output_fp
 		The test options longitudinal_correlation and paired_T convert the original OTU table into one in which samples that are ignored because they are never observed in an individual are replaced with the ignore number 999999999 and the OTU counts are the change in relative abundance compared to the designated reference sample. If a filepath is given with the -b option this converted OTU table will be saved to this path.
+	`-`-relative_abundance
+		Some of the statistical tests, such as Pearson correlation and ANOVA, convert the OTU counts to relative abundances prior to performing the calculations. This parameter can be set if a user wishes to disable this step. (e.g. if an OTU table has already been converted to relative abundances.)
 
 
 **Output:**
@@ -112,36 +114,28 @@ The paired_T results are output as tab delimited text that can be examined in Ex
 
 
 
-**Example 1:**
+**G-test:**
 
-If the user would like to perform a G test on their OTU table using default parameters, while testing the category "Sex", they can run the following command:
-
-::
-
-	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex
-
-**Example 2:**
-
-If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:
+Perform a G test on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
 
 ::
 
-	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16
+	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -f 4 -o single_g_test.txt
 
-**Example 3:**
+**ANOVA:**
 
-Alternatively, the user could run an ANOVA test on the same data by using the following command:
-
-::
-
-	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex
-
-**Example 4:**
-
-If the user would like to perform an ANOVA on an entire directory of rarefied  OTU tables using default parameters, while testing the category "Sex", they can run the following command:
+Perform an ANOVA on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
 
 ::
 
-	otu_category_significance.py -i otu_table_dir -m Mapping_file.txt -s g_test -c Sex
+	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o single_anova.txt
+
+**ANOVA on mutliple OTU tables:**
+
+Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
+
+::
+
+	otu_category_significance.py -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o multiple_anova.txt
 
 

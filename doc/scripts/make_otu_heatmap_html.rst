@@ -7,7 +7,7 @@
 
 **Description:**
 
-Once the OTU table has been generated, the user can create an interactive OTU heatmap. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap.
+Create an interactive OTU heatmap from an OTU table. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap.
 
 
 **Usage:** :file:`make_otu_heatmap_html.py [options]`
@@ -21,11 +21,11 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 		
 	-i, `-`-otu_table_fp
 		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+	-o, `-`-output_dir
+		Path to the output directory
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_dir
-		Path to the output directory
 	-n, `-`-num_otu_hits
 		Only include OTUs with at least this many sequences. [default: 5]
 	-t, `-`-tree
@@ -42,39 +42,39 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 
 **Output:**
 
-The interactive heatmap is located in a randomly generated folder where the name of the folder starts with "otu_table". The resulting folder contains the interactive heatmap (html file) along with a javascript library folder. This web application has been tested in Mozilla Firefox and Safari. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster.
+The interactive heatmap is located in OUTPUT_DIR/otu_table.html where OUTPUT_DIR is specified as -o. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster than Firefox (as of this writing).
 
 
-**Examples:**
+**Generate an OTU heatmap:**
 
 By using the default values ("-n 5), you can then use the code as follows:
 
 ::
 
-	make_otu_heatmap_html.py -i otu_table.txt
+	make_otu_heatmap_html.py -i otu_table.biom -o heatmap/
 
-If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10), you can use the following code:
+**Generate a filtered OTU heatmap:**
 
-::
-
-	make_otu_heatmap_html.py -i otu_table.txt -n 10
-
-If you would like to specify a different output directory (i.e., "otu_heatmap"), you can use the following code:
+If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10):
 
 ::
 
-	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap
+	make_otu_heatmap_html.py -i otu_table.biom -n 10 -o heatmap_mc10/
 
-If you would like to sort the heatmap by Sample ID's then you should supply the mapping file, as follows:
+**Generate a sample-sorted OTU heatmap:**
 
-::
-
-	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt
-
-If you would like to sort the heatmap by Sample ID's and the tips in the tree, you can supply a tree as follows:
+If you would like to sort the heatmap by Sample IDs then you should supply the mapping file, as follows:
 
 ::
 
-	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt
+	make_otu_heatmap_html.py -i otu_table.biom -o heatmap_sample_sorted -m Fasting_Map.txt
+
+**Generate a sample and OTU-sorted OTU heatmap:**
+
+If you would like to sort the heatmap by Sample IDs and the tips in the tree, you can supply a tree as follows:
+
+::
+
+	make_otu_heatmap_html.py -i otu_table.biom -o heatmap_sample_otu_sorted -m Fasting_Map.txt -t rep_set.tre
 
 

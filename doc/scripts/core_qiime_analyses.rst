@@ -47,7 +47,7 @@ This script plugs several QIIME steps together to form a basic full data analysi
 	`-`-suppress_split_libraries
 		Skip demultiplexing/quality filtering (i.e. split_libraries). This assumes that sequence identifiers are in post-split_libraries format (i.e., sampleID_seqID) [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
@@ -55,16 +55,16 @@ This script plugs several QIIME steps together to form a basic full data analysi
 
 
 
-Run serial analysis using default parameters, and guess the even sampling depth (no -e provided)
+Run serial analysis using a custom parameters file (-p), and guess the even sampling depth (no -e provided). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	core_qiime_analyses.py -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -m Fasting_Map.txt -c Treatment,DOB
+	core_qiime_analyses.py -i $PWD/Fasting_Example.fna -q $PWD/Fasting_Example.qual -o $PWD/FastingStudy_w_sl -m $PWD/Fasting_Map.txt -c BarcodeSequence -p $PWD/params.txt
 
-Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.
+Run serial analysis using a custom parameters file (-p), and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	core_qiime_analyses.py -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB
+	core_qiime_analyses.py -i $PWD/seqs.fna -o $PWD/FastingStudy -m $PWD/Fasting_Map.txt -c BarcodeSequence --suppress_split_libraries -p $PWD/params.txt
 
 

@@ -43,7 +43,7 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
@@ -53,30 +53,12 @@ This scripts results in several distance matrices (from `beta_diversity.py <./be
 
 **Example:**
 
-These steps are performed by the following command:
-
-1. Compute beta diversity distance matrix from otu table (and tree, if applicable)
-
-2. Build rarefied OTU tables;
-
-3. Build UPGMA tree from full distance matrix;
-
-4. Compute distance matrics for rarefied OTU tables; 
-
-5. Build UPGMA trees from rarefied OTU table distance matrices;
-
-5.5 Build a consensus tree from the rarefied UPGMA trees
-
-6. Compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes.
-
-7. Perform principal coordinates analysis on distance matrices generated from rarefied OTU tables.
-
-8. Generate 2D and 3D PCoA plots with jackknifed support.
+These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
 
 
 
 ::
 
-	jackknifed_beta_diversity.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v -m mapping_file.txt
+	jackknifed_beta_diversity.py -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre
 
 

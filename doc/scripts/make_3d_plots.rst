@@ -28,6 +28,8 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		
 	-b, `-`-colorby
 		Comma-separated list categories metadata categories (column headers) to color by in the plots. The categories must match the name of a column header in the mapping file exactly. Multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces. [default=color by all]
+	-s, `-`-scaling_method
+		Comma-separated list of scaling methods (i.e. scaled or unscaled) [default=unscaled]
 	-a, `-`-custom_axes
 		This is the category from the metadata mapping file to use as a custom axis in the plot.  For instance, if there is a pH category and you would like to see the samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data. Note: if there is any non-numeric data in the column, it will not be plotted [default: None]
 	-p, `-`-prefs_path
@@ -60,6 +62,8 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		Create vectors based on a column of the mapping file. This.parameter accepts up to 2 columns: (1) create the vectors, (2) sort them. If you wanted to group by Species and order by SampleID you will pass --add_vectors=Species but if you wanted to group by Species but order by DOB you will pass --add_vectors=Species,DOB; this is useful when you use --custom_axes param [default: None]
 	`-`-rms_algorithm
 		The algorithm to calculate the RMS, either avg or trajectory; both algorithms use all the dimensions and weights them using their percentange explained; return the norm of the created vectors; and their  confidence using ANOVA. The vectors are created as follows: for avg it calculates the average at each timepoint (averaging within a group), then calculates the norm of each point; for trajectory  calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: None]
+	`-`-rms_axes
+		The number of axes to account while doing the RMS calculations. We suggest using 3 because those are the ones being displayed in the plots but you could use any number between 1 and number of samples - 1. To use all of them pass 0. [default: 3]
 	`-`-rms_path
 		Name of the file to save the root mean square (RMS) of the vectors grouped by the column used with the --add_vectors function. Note that this option only works with --add_vectors. The file is going to be created inside the output_dir and its name will start with "RMS". [default: RMS_output.txt]
 	-o, `-`-output_dir

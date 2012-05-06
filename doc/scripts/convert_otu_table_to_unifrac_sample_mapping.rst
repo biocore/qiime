@@ -32,10 +32,10 @@ The result of this script is a sample mapping file for the UniFrac web interface
 
 **Example:**
 
-Convert an OTU table (e.g. otu_table.txt) to a unifrac sample mapping (environment) file: 
+Convert a biom-formatted OTU table to a unifrac sample mapping (environment) file: 
 
 ::
 
-	convert_otu_table_to_unifrac_sample_mapping.py -i otu_table.txt -o sample_mapping.txt
+	convert_otu_table_to_unifrac_sample_mapping.py -i otu_table.biom -o otu_table.sample_mapping.txt
 
 

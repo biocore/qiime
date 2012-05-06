@@ -38,17 +38,15 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 
 **Output:**
 
-The results of `single_rarefaction.py <./single_rarefaction.html>`_ consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written
+The results of `single_rarefaction.py <./single_rarefaction.html>`_ consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.biom. note: if the output file would be empty, no file is written
 
 
 **Example:**
 
-subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. rarefaction_400_17.txt) 
+subsample otu_table.biom (-i) at 100 seqs/sample (-d), write results to otu_table_even100.txt (-o).
 
 ::
 
-	single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400
-
-(naming convention rarefaction_400_17.txt implies that the depth is 400 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))
+	single_rarefaction.py -i otu_table.biom -o otu_table_even100.biom -d 100
 
 

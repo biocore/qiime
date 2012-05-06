@@ -20,11 +20,11 @@ The tests are conducted on each pair of samples present in the input otu table. 
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		Input otu table
+		Input otu table in biom format
 	-o, `-`-output_path
 		Output results path
 	-s, `-`-significance_test
-		Significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', or 'p-test'
+		Significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', 'weighted_normalized_unifrac', or 'p-test'
 	-t, `-`-tree_path
 		Path to newick tree file
 	
@@ -32,6 +32,8 @@ The tests are conducted on each pair of samples present in the input otu table. 
 		
 	-n, `-`-num_iters
 		Number of monte carlo randomizations [default: 100]
+	-k, `-`-type_of_test
+		Type of significance test to perform, options are 'all_together', 'each_pair' or 'each_sample'. [default: each_pair]
 
 
 **Output:**
@@ -45,6 +47,6 @@ Perform 100 randomizations of sample/sequence assignments, and record the probab
 
 ::
 
-	beta_significance.py -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt
+	beta_significance.py -i otu_table.biom -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt
 
 

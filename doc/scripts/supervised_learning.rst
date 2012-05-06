@@ -63,27 +63,18 @@ Outputs a ranking of features (e.g. OTUs) by importance, an estimation of the ge
 
 ::
 
-	supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml
-
-**Simple example, filter OTU table first:**
-
-::
-
-	
- single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
- filter_otu_table.py -i otu_table_rarefied200.txt -s 10
- supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml
 
 **Running with 10-fold cross-validation for improved estimates of generalization error and feature importances:**
 
 ::
 
-	supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml -e cv10
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_cv10 -e cv10
 
 **Running with 1,000 trees for improved generalization error:**
 
 ::
 
-	supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml --ntree 1000
+	supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_ntree1000 --ntree 1000
 
 

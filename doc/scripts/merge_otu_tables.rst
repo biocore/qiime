@@ -9,7 +9,7 @@
 
 This script merges two or more OTU tables into a single OTU table. This is useful, for example, when you've created several reference-based OTU tables for different analyses and need to combine them for a larger analysis. 
 
-Requirements: This process requires that the sample IDs are distinct across the different OTU tables. It is also very important that your OTUs are consistent across across the different OTU tables. For example, you cannot safely merge OTU tables from two independent de novo OTU picking runs. Finally, either all or none of the OTU tables can contain taxonomic information: you can't merge some OTU tables with taxonomic data and some without taxonomic data.
+Requirements: It is also very important that your OTUs are consistent across across the different OTU tables. For example, you cannot safely merge OTU tables from two independent de novo OTU picking runs. Finally, either all or none of the OTU tables can contain taxonomic information: you can't merge some OTU tables with taxonomic data and some without taxonomic data.
 
 
 **Usage:** :file:`merge_otu_tables.py [options]`
@@ -22,7 +22,7 @@ Requirements: This process requires that the sample IDs are distinct across the 
 	**[REQUIRED]**
 		
 	-i, `-`-input_fps
-		The otu tables (comma-separated)
+		The otu tables in biom format (comma-separated)
 	-o, `-`-output_fp
 		The output otu table filepath
 
@@ -36,6 +36,6 @@ Merge two OTU tables into a single OTU table
 
 ::
 
-	merge_otu_tables.py -i otu_table1.txt,otu_table2.txt -o merged_otu_table.txt
+	merge_otu_tables.py -i otu_table1.biom,otu_table2.biom -o merged_otu_table.biom
 
 
