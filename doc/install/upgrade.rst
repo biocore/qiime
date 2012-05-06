@@ -15,7 +15,7 @@ If you want to use the repository version of QIIME in any Linux box, follow thes
         wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
         tar zxvf app-deploy-qiime-1.4.0.tgz
         cd app-deploy-qiime-1.4.0
-        python app-deploy.py /software/ -f etc/qiime_1.4.0_repository.conf
+        python app-deploy.py /software/ -f etc/qiime_1.4.0_repository.conf --force-remove-failed-dirs
         
 Note that you can replace the installation folder (/software/) for any other path in your system.
         
@@ -35,7 +35,7 @@ Close it, open a new one and run:
         wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
         tar zxvf app-deploy-qiime-1.4.0.tgz
         cd app-deploy-qiime-1.4.0
-        python app-deploy.py /software/ -f etc/qiime_1.4.0.conf
+        python app-deploy.py /software/ -f etc/qiime_1.4.0.conf --force-remove-failed-dirs
 
 1.3.0 to 1.4.0 (general)
 ------------------------
