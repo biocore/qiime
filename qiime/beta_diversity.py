@@ -27,23 +27,21 @@ The output is a sample x sample matrix of distances, incl. row/col headers.
     is expected to be a tab.
 """
 
-from numpy import asarray
 from StringIO import StringIO
 from sys import exit, stderr
 import os.path
-from cogent.util.misc import unzip
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from qiime.util import get_tmp_filename
-import cogent.maths.distance_transform as distance_transform #avoid hard-coding metrics
-
-from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
-from qiime.format import format_distance_matrix
-import qiime.beta_metrics
-
-from qiime.parse import parse_newick, PhyloNode
+from numpy import asarray
+import cogent.maths.distance_transform as distance_transform
+from cogent.util.misc import unzip
 from biom.parse import parse_biom_table
-from qiime.format import format_matrix
+from biom.table import DenseTable
+from qiime.util import (FunctionWithParams, TreeMissingError, 
+                        OtuMissingError, get_tmp_filename)
+from qiime.format import format_matrix, format_distance_matrix
+from qiime.parse import parse_newick, PhyloNode
+import qiime.beta_metrics
 
 def get_nonphylogenetic_metric(name):
     """Gets metric by name from distance_transform.
@@ -167,7 +165,10 @@ class BetaDiversityCalc(FunctionWithParams):
             tree = None
         
         otu_table = parse_biom_table(open(data_path,'U'))
-        otumtx = asarray([v for v in otu_table.iterSampleData()])
+        if isinstance(otu_table, DenseTable):
+            otumtx = otu_table._data.T
+        else:
+            otumtx = asarray([v for v in otu_table.iterSampleData()])
         
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
@@ -195,12 +196,12 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
      rowids (comma separated str)
     """
     otu_table = parse_biom_table(open(input_path,'U'))
-    otumtx = asarray([v for v in otu_table.iterSampleData()])
-    #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
-    #otumtx, samids = unzip(data)
-    #otumtx = asarray(otumtx)
-    #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
-    
+
+    if isinstance(otu_table, DenseTable):
+        otumtx = otu_table._data.T
+    else:
+        otumtx = asarray([v for v in otu_table.iterSampleData()])
+
     if tree_path:
         tree = parse_newick(open(tree_path, 'U'), 
                             PhyloNode)
@@ -296,14 +297,9 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
 		rowids -- comma seperated string
     """ 
     if isinstance(otu_table, DenseTable):
-        otumtx = otu_table._data
+        otumtx = otu_table._data.T
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
-    
-    #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
-    #otumtx, samids = unzip(data)
-    #otumtx = asarray(otumtx)
-    #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
     
     if tr:
         tree = tr
