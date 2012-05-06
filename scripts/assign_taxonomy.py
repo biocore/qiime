@@ -17,8 +17,7 @@ from qiime.util import make_option, get_rdp_jarpath, load_qiime_config
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
-    BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner, RtaxTaxonAssigner,
-    guess_rdp_version)
+    BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner, guess_rdp_version)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
