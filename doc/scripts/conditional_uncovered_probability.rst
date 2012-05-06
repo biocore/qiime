@@ -3,7 +3,7 @@
 .. index:: conditional_uncovered_probability.py
 
 *conditional_uncovered_probability.py* -- Calculate the conditional uncovered probability on each sample in an otu table.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
@@ -11,8 +11,7 @@ This script calculates the conditional uncovered probability for each sample in 
 
 Specifically, it computes a point estimate and a confidence interval using two different methods. Thus it can happen that the PE is actually outside of the CI. 
 
-The CI method requires precomputed constants that depend on the lookahead, the upper-to-lower bound ratio and the desired confidence.
-We only provide these constants for some frequently used combinations. These are (alpha:0.95, r=1..25)) for the the L and U interval types, and (alpha:0.9, 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked special cases:
+The CI method requires precomputed constants that depend on the lookahead, the upper-to-lower bound ratio and the desired confidence. We only provide these constants for some frequently used combinations. These are (alpha:0.95, r=1..25) for the the L and U interval types, and (alpha:0.9, 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked special cases:
  f=2 and r=50 and alpha=0.95
  f=2 and r=33 and alpha=0.95
  f=1.5 and r=100 and alpha=0.95
@@ -50,13 +49,12 @@ The resulting file(s) is a tab-delimited text file, where the columns correspond
 
 Example Output:
 
-====== ======= ============= ================
-\      PE      Lower Bound   Upper Bound
-====== ======= ============= ================
-PC.354 0.111   0.0245        0.245
-PC.124 0.001   0.000564      0.00564
-
-
+====== ===== =========== ===========
+\      PE    Lower Bound Upper Bound
+====== ===== =========== ===========
+PC.354 0.111 0.0245      0.245
+PC.124 0.001 0.000564    0.00564
+====== ===== =========== ===========
 
 
 **Default case:**
