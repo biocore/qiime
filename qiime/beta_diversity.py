@@ -294,8 +294,11 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
 		tr -- a phylonode cogent tree object if needed by the chosen beta
 					diversity metric
 		rowids -- comma seperated string
-    """  
-    otumtx = asarray([v for v in otu_table.iterSampleData()])
+    """ 
+    if isinstance(otu_table, DenseTable):
+        otumtx = otu_table._data
+    else:
+        otumtx = asarray([v for v in otu_table.iterSampleData()])
     
     #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
     #otumtx, samids = unzip(data)
