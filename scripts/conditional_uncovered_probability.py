@@ -39,11 +39,11 @@ We only provide these constants for some frequently used combinations. These are
 
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Default case:""","""To calculate the cond. uncovered probability with the default values, you can use the following command: ""","""%prog -i otu_table.txt -o cup.txt"""))
+script_info['script_usage'].append(("""Default case:""","""To calculate the cond. uncovered probability with the default values, you can use the following command: ""","""%prog -i otu_table.biom -o cup.txt"""))
 
-script_info['script_usage'].append(("""Change lookahead:""","""To change the accuracy of the prediction change the lookahead value. Larger values of r lead to more precise predictions, but might be unfeasable for small samples. For deeply sequenced samples, try increasing r to 50: ""","""%prog -i otu_table.txt -o cup.txt -r 50"""))
+script_info['script_usage'].append(("""Change lookahead:""","""To change the accuracy of the prediction change the lookahead value. Larger values of r lead to more precise predictions, but might be unfeasable for small samples. For deeply sequenced samples, try increasing r to 50: ""","""%prog -i otu_table.biom -o cup_r50.txt -r 50"""))
 
-script_info['script_usage'].append(("""Change the interval type:""","""To change the confidence interval type to a lower bound prediction, while the upper bound is set to 1 use: ""","""%prog -i otu_table.txt -o cup.txt -c L"""))
+script_info['script_usage'].append(("""Change the interval type:""","""To change the confidence interval type to a lower bound prediction, while the upper bound is set to 1 use: ""","""%prog -i otu_table.biom -o cup_lower_bound.txt -c L"""))
 
 script_info['output_description']="""The resulting file(s) is a tab-delimited text file, where the columns correspond to estimates of the cond. uncovered probability and the rows correspond to samples. The output file is compatible with the alpha_diversity output files and thus could be tied into the rarefaction workflow.
 
