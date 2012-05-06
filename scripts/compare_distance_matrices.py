@@ -92,9 +92,9 @@ script_info['required_options'] = [
         '[mantel, partial_mantel, mantel_corr]',
         type='choice',
         choices=['mantel', 'partial_mantel', 'mantel_corr']),
-     make_option('-i','--input_dms',
+    make_option('-i','--input_dms',
         help='the input distance matrices, comma-separated'),
-     options_lookup['output_dir']
+    options_lookup['output_dir']
 ]
 script_info['optional_options'] = [
     # All methods use these

@@ -545,11 +545,6 @@ class PermanovaTests(TestHelper):
                             "sam3\t5\t3\t0\t3",
                             "sam4\t4\t2\t3\t0"]
 
-        f = open('dm1.txt', 'w')
-        for line in self.distmtx_str:
-            f.write(line+'\n')
-        f.close()
-
         self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
         self.distmtx_samples = self.distmtx.SampleIds
 
@@ -562,11 +557,6 @@ class PermanovaTests(TestHelper):
                 self.distmtx_tie_str)
         self.distmtx_tie_samples = self.distmtx_tie.SampleIds
 
-        f = open('dm2.txt', 'w')
-        for line in self.distmtx_tie_str:
-            f.write(line+'\n')
-        f.close()
-
         self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
                                     "sam1\t0\t3\t7\t2\t1",
                                     "sam2\t3\t0\t5\t4\t1",
@@ -576,11 +566,6 @@ class PermanovaTests(TestHelper):
         self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(
                 self.distmtx_non_sym_str)
         self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
-
-        f = open('dm3.txt', 'w')
-        for line in self.distmtx_non_sym_str:
-            f.write(line+'\n')
-        f.close()
 
         # Some group maps to help test Permanova, data_map can be used with
         # distmtx and distmtx_tie while data_map_non_sym can only be used
@@ -597,11 +582,6 @@ class PermanovaTests(TestHelper):
                 \tControl_mouse_I.D._481"]
         self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
 
-        f = open('map1.txt', 'w')
-        for line in self.data_map_str:
-            f.write(line+'\n')
-        f.close()
-
         self.data_map_non_sym_str=["#SampleID\tBarcodeSequence\
                 \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
                 "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
@@ -616,11 +596,6 @@ class PermanovaTests(TestHelper):
                 \tcontrolmouseid"]
         self.data_map_non_sym = MetadataMap.parseMetadataMap(
                 self.data_map_non_sym_str)
-
-        f = open('map2.txt', 'w')
-        for line in self.data_map_non_sym_str:
-            f.write(line+'\n')
-        f.close()
 
         # Formatting the two data_maps to meet permanova requirements.
         self.map = {}
