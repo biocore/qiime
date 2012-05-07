@@ -1808,6 +1808,10 @@ class RExecutorTests(TestCase):
 
     def setUp(self):
         """Define some useful test objects."""
+        
+        # define temp directory
+        self.TmpDir='/tmp/'
+        
         # The unweighted unifrac distance matrix from the overview tutorial.
         self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                 \tPC.607\tPC.634\tPC.635\tPC.636",
@@ -1849,7 +1853,7 @@ class RExecutorTests(TestCase):
                                 \t0.560605525642\t0.575788039321\t0.0"]
         self.overview_dm = DistanceMatrix.parseDistanceMatrix(
             self.overview_dm_str)
-
+        
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
                                  "PC.354\tAGCACGAGCCTA\tControl\t20061218",
@@ -1862,10 +1866,13 @@ class RExecutorTests(TestCase):
                                  "PC.635\tACCGCAGAGTCA\tFast\t20080116",
                                  "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
         self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
-
+        
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
-
+    
+    def tearDown(self):    
+        remove_files(self.files_to_remove)
+                
     def test_output(self):
         """Test executing an arbitrary command."""
         # Temporary input file
@@ -1900,7 +1907,9 @@ class RExecutorTests(TestCase):
         rex = RExecutor()
         results = rex(args, "betadisper.r", output_dir)
 
-
+        self.files_to_remove.append(join(self.TmpDir,'R.stdout'))
+        self.files_to_remove.append(join(self.TmpDir,'R.stderr'))
+        
 # Long strings of test data go here
 fasta_lines = """>seq1
 ACCAGCGGAGAC

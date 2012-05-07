@@ -1618,12 +1618,12 @@ class RExecutor(CommandLineApplication):
         if suppress_stdout:
             outfile = devnull
         else:
-            outfilepath = FilePath(self.getTmpFilename(self.TmpDir))
+            outfilepath = FilePath(join(self.TmpDir,'R.stdout'))
             outfile = open(outfilepath,'w')
         if suppress_stderr:
             errfile = devnull
         else:
-            errfilepath = FilePath(self.getTmpFilename(self.TmpDir))
+            errfilepath = FilePath(join(self.TmpDir,'R.stderr'))
             errfile = open(errfilepath, 'w')
 
         self._R_script = script_name
