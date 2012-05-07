@@ -197,6 +197,14 @@ To start using `StarCluster`_ and `IPython Notebook`_, you should see their resp
 
 Everything in CAPS should be replaced with the corresponding information.
 
+To run jobs in parallel on this system, you'll next need to edit the ``qiime_config`` file in the instance. This file is ``/home/ubuntu/.qiime_config_default``. Edit the value ``cluster_jobs_fp`` so it looks like the following::
+
+	cluster_jobs_fp	start_parallel_jobs_sc.py
+
+After launching your instances, we recommend that you connect as the ubuntu user. You can do this as follows::
+
+	starcluster sshmaster caporaso-test3 -u ubuntu
+
 
 .. _AWS: http://aws.amazon.com/
 .. _AWS console: http://aws.amazon.com/console/
