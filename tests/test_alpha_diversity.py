@@ -81,7 +81,8 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         self.tree1 = parse_newick('((a:2,b:3):2,(c:1,d:2):7);')
         self.tree2 = parse_newick("((a:2,'b':3):2,(c:1,'d_':2):7);")
         
-        self.files_to_remove = [self.otu_table1_fp,self.single_sample_otu_table_fp]
+        self.files_to_remove = [self.otu_table1_fp,self.otu_table2_fp,
+                                self.single_sample_otu_table_fp]
         
     def tearDown(self):
         """ """
