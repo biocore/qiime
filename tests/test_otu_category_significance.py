@@ -67,8 +67,7 @@ class TopLevelTests(TestCase):
         #test that works with a max filter
         result = filter_OTUs(otu_table, 1, False, max_filter=2)
         self.assertEqual(result, ['0', '1'])
-
-
+            
     def test_make_contingency_matrix(self):
         """make_contingency_matrix works"""
         category_info = {'sample1': 'A',
@@ -923,7 +922,9 @@ sample3\tC\t1.0""".split('\n')
             'cat2', threshold, _filter, otu_include=None)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
-
+        
+        remove(fp1)
+        
     def test_aggregate_multiple_results_ANOVA(self):
         """aggregate_multiple_results_ANOVA works"""
         all_results = {
