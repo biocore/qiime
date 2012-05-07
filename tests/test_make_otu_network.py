@@ -186,7 +186,7 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
                         "time":4}
         self.num_cat_less = {"Day":1,
                         "time":3}
-        self._paths_to_clean_up = []
+        self._paths_to_clean_up = [self.otu_table_fp]
         self._dir_to_clean_up = ''
 
     def tearDown(self):
