@@ -51,6 +51,10 @@ distance matrix. The Mantel statistics obtained from each of these tests are \
 then plotted in a correlogram. A filled-in point on the plot indicates that \
 the Mantel statistic was statistically significant (you may provide what \
 alpha to use).
+
+For more information and examples pertaining to this script, please refer to \
+the accompanying tutorial, which can be found at \
+http://qiime.org/tutorials/distance_matrix_comparison.html.
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Partial Mantel",
