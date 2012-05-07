@@ -88,13 +88,13 @@ script_info['script_usage'].append(("""""","""If you prefer to use a nearest-nei
 
 script_info['script_usage'].append(("""""","""The sequence similarity parameter may also be specified. For example, the following command may be used to create OTU's at the level of 95% similarity:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -s 0.90"""))
 
-script_info['script_usage'].append(("""Usearch (OTUPipe)""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.""",""""""))
+script_info['script_usage'].append(("""Usearch_qf ('usearch quality filter')""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.""",""""""))
 
-script_info['script_usage'].append(("""Standard usearch (OTUPipe) example:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/"""))
+script_info['script_usage'].append(("""Standard usearch (usearch_qf) example:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o usearch_qf_results/"""))
 
-script_info['script_usage'].append(("""Usearch (OTUpipe) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/""")) 
+script_info['script_usage'].append(("""Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o usearch_qf_results/""")) 
 
-script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. OTUpipe) can additionally have log files for each intermediate call to usearch.
+script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
 Example lines from the resulting .txt file:
 
@@ -120,8 +120,8 @@ script_info['optional_options'] = [
         help=('Method for picking OTUs.  Valid choices are: ' +\
               ', '.join(otu_picking_method_choices) +\
               '. The mothur method requires an input file ' +\
-              'of aligned sequences.  usearch will enable OTUpipe filtering.'
-              ' [default: %default]')),
+              'of aligned sequences.  usearch will enable the usearch quality '
+              'filtering pipeline. [default: %default]')),
               
     make_option('-c', '--clustering_algorithm', type='choice',
         choices=MothurOtuPicker.ClusteringAlgorithms, default='furthest',
@@ -254,38 +254,38 @@ script_info['optional_options'] = [
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust.  Also enables "
               "preservation of all intermediate files created by usearch "
-              "(OTUpipe). [default: %default]")),
+              "(usearch_qf). [default: %default]")),
               
     make_option('-j', '--percent_id_err', default=0.97, help=("Percent identity"
-              " threshold for cluster error detection with OTUpipe. "
+              " threshold for cluster error detection with usearch_qf. "
               "[default: %default]"), type='float'),
               
     make_option('-g', '--minsize', default=4, help=("Minimum cluster size "
-              "for size filtering with OTUpipe. [default: %default]"),
+              "for size filtering with usearch_qf. [default: %default]"),
               type='int'),
               
     make_option('-a','--abundance_skew', default=2.0, help=("Abundance skew "
-              "setting for de novo chimera detection with OTUpipe. "
+              "setting for de novo chimera detection with usearch_qf. "
               "[default: %default]"), type='float'),
               
     make_option('-f', '--db_filepath', default=None, help=("Reference database "
               "of fasta sequences for reference based chimera detection with "
-              "OTUpipe. [default: %default]")),
+              "usearch_qf. [default: %default]")),
               
     make_option('--perc_id_blast', default=0.97, help=("Percent ID for "
-              "mapping OTUs created by OTUpipe back to original sequence IDs. "
-              "[default: %default]"), type='float'),
+              "mapping OTUs created by usearch_qf back to original sequence"
+              " IDs [default: %default]"), type='float'),
               
     make_option('-k', '--de_novo_chimera_detection', default=True, help=(
-              "Perform de novo chimera detection in OTUpipe. "
+              "Perform de novo chimera detection in usearch_qf. "
               "[default: %default]"), action='store_false'),
               
     make_option('-x', '--reference_chimera_detection', default=True, 
-              help=("Perform reference based chimera detection in OTUpipe. "
+              help=("Perform reference based chimera detection in usearch_qf. "
               "[default: %default]"), action='store_false'),
               
     make_option('-l', '--cluster_size_filtering', default=True, help=("Perform "
-              "cluster size filtering in OTUpipe.  [default: %default]"),
+              "cluster size filtering in usearch_qf.  [default: %default]"),
               action='store_false'),
               
     make_option('--remove_usearch_logs', default=False, help=("Disable "
@@ -344,7 +344,7 @@ def main():
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     
-    # OTUpipe specific parameters
+    # usearch_qf specific parameters
     percent_id_err = opts.percent_id_err
     minsize = opts.minsize
     abundance_skew = opts.abundance_skew
@@ -456,7 +456,7 @@ def main():
         otu_picker(input_seqs_filepath,
                    result_path=result_path,log_path=log_path,HALT_EXEC=False)
                    
-    ## usearch (OTUPipe)
+    ## usearch (usearch_qf)
     elif otu_picking_method == 'usearch':
         params = {'percent_id':opts.similarity,
         'maxrejects':max_rejects,
@@ -480,7 +480,7 @@ def main():
         otu_picker(input_seqs_filepath, result_path=result_path,
          log_path=log_path,HALT_EXEC=False)
          
-    # usearch (OTUPipe) with reference OTU picking
+    # usearch (usearch_qf) with reference OTU picking
     elif otu_picking_method == 'usearch_ref':
         params = {'percent_id':opts.similarity,
         'maxrejects':max_rejects,

@@ -519,7 +519,7 @@ def usearch_sort_by_abundance(
         app_result = app(data)
     except ApplicationError:
         raise ValueError, ('No data following filter steps, please check '+\
-         'parameter settings for OTUPipe.')
+         'parameter settings for usearch_qf.')
     
     return app_result, output_filepath
 
@@ -1134,7 +1134,7 @@ def assign_reads_to_otus(original_fasta,
     return app_result, output_filepath
 
 
-def otu_pipe(
+def usearch_qf(
     fasta_filepath,
     refseqs_fp = None,
     output_dir = None,
@@ -1171,7 +1171,7 @@ def otu_pipe(
         
     """ Main convenience wrapper for using usearch to filter/cluster seqs
     
-    The complete 'OTU Pipe' process is a multistep process with many calls
+    The complete 'usearch_qf' process is a multistep process with many calls
     to usearch with various parameters.  It is likely to change from the 
     original implementation.  A lot.
     
@@ -1362,7 +1362,7 @@ def otu_pipe(
         # cluster seqs
         # Should we add in option to use alternative OTU picking here?
         # Seems like it will be a bit of a mess...maybe after we determine
-        # if OTU pipe should become standard.
+        # if usearch_qf should become standard.
         if refseqs_fp:
             if verbose:
                 print "Clustering against reference sequences..."

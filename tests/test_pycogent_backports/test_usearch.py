@@ -29,7 +29,7 @@ from qiime.pycogent_backports.usearch import (Usearch,
  usearch_sort_by_abundance,
  usearch_cluster_error_correction, usearch_chimera_filter_de_novo,
  usearch_chimera_filter_ref_based, usearch_cluster_seqs,
- enumerate_otus, assign_reads_to_otus, otu_pipe, concatenate_fastas,
+ enumerate_otus, assign_reads_to_otus, usearch_qf, concatenate_fastas,
  get_retained_chimeras)
 
 __author__ = "William Walters"
@@ -171,11 +171,11 @@ class UsearchTests(TestCase):
             for curr_dir in self._dirs_to_remove:
                 rmtree(curr_dir)
             
-    def test_otu_pipe(self):
+    def test_usearch_qf(self):
         """ Main program loop test, with default parameters """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
                                       output_dir = self.tmp_dir,
                                       db_filepath = self.tmp_ref_database,
                                       minsize = 1,
@@ -189,11 +189,11 @@ class UsearchTests(TestCase):
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
         
-    def test_otu_pipe_reference_otu_picking(self):
+    def test_usearch_qf_reference_otu_picking(self):
         """ Main program loop test, with reference + new clusters """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_dna_seqs_ref_otu_picking,
+        clusters, failures = usearch_qf(self.tmp_dna_seqs_ref_otu_picking,
                                       output_dir = self.tmp_dir,
                                       refseqs_fp = self.tmp_ref_database,
                                       reference_chimera_detection=False,
@@ -210,11 +210,11 @@ class UsearchTests(TestCase):
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
     
-    def test_otu_pipe_reference_otu_picking_no_new_clusters(self):
+    def test_usearch_qf_reference_otu_picking_no_new_clusters(self):
         """ Main program loop test, with reference and no new clusters """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_dna_seqs_ref_otu_picking,
+        clusters, failures = usearch_qf(self.tmp_dna_seqs_ref_otu_picking,
                                       output_dir = self.tmp_dir,
                                       refseqs_fp = self.tmp_ref_database,
                                       reference_chimera_detection=False,
@@ -231,11 +231,11 @@ class UsearchTests(TestCase):
         self.assertEqual(failures, expected_failures)
         
         
-    def test_otu_pipe_no_ref_database(self):
+    def test_usearch_qf_no_ref_database(self):
         """ Main program loop with no reference chimera testing """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
                                       output_dir = self.tmp_dir,
                                       reference_chimera_detection=False,
                                       minsize = 1,
@@ -251,11 +251,11 @@ class UsearchTests(TestCase):
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
         
-    def test_otu_pipe_union(self):
+    def test_usearch_qf_union(self):
         """ Main program loop with union nonchimera retention """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
                                       output_dir = self.tmp_dir,
                                       reference_chimera_detection=False,
                                       minsize = 1,
@@ -273,11 +273,11 @@ class UsearchTests(TestCase):
         self.assertEqual(failures, expected_failures)
 
         
-    def test_otu_pipe_disabled_filters(self):
+    def test_usearch_qf_disabled_filters(self):
         """ Returns expected clustering with no filtering """
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
                                       output_dir = self.tmp_dir,
                                       de_novo_chimera_detection=False,
                                       reference_chimera_detection=False,
@@ -294,7 +294,7 @@ class UsearchTests(TestCase):
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
         
-    def test_otu_pipe_generates_logs(self):
+    def test_usearch_qf_generates_logs(self):
         """ Generates expected log files """
         
         curr_output_dir = get_tmp_filename(prefix='/UsearchLogTest_',suffix='/')
@@ -305,7 +305,7 @@ class UsearchTests(TestCase):
         self._dirs_to_remove.append(curr_output_dir)
         
         # cluster size filtering set to 1 instead of default 4
-        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
                                       output_dir = curr_output_dir,
                                       db_filepath = self.tmp_ref_database,
                                       minsize = 1,
