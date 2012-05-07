@@ -203,20 +203,18 @@ def main():
     else:
         topiaryexplorer_project_dir =\
          load_qiime_config()['topiaryexplorer_project_dir']
-        if topiaryexplorer_project_dir == None:
-            option_parser.error("Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully.")
-            exit(0)
+        if topiaryexplorer_project_dir:
+            lines += 'file:' + topiaryexplorer_project_dir    
+            lines += jnlp_middle_block
+            if(opts.url):
+                lines += opts.url
+            else:
+                lines += os.path.abspath(tep_fp)
+            # lines += os.path.abspath(tep_fp)
+            lines += jnlp_bottom_block
+            jnlpfile.writelines(lines)
         else:
-            lines += 'file:' + topiaryexplorer_project_dir
-    
-    lines += jnlp_middle_block
-    if(opts.url):
-        lines += opts.url
-    else:
-        lines += os.path.abspath(tep_fp)
-    # lines += os.path.abspath(tep_fp)
-    lines += jnlp_bottom_block
-    jnlpfile.writelines(lines)
+            print "WARNING: Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully."
     
     
     
