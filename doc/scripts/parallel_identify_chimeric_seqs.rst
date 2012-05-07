@@ -25,7 +25,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	**[OPTIONAL]**
 		
 	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
@@ -47,7 +47,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-N, `-`-identify_chimeric_seqs_fp
 		Full path to scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -63,7 +63,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

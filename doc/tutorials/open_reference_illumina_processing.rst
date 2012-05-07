@@ -135,9 +135,9 @@ Several tests were performed:
 
 For all analyses, sequences that fail to align with PyNAST and singleton OTUs were discarded (these are defaults in the subsampled OTU picking workflow).
 
-
+------------------
 88 soils analysis
-=================
+------------------
 This analysis is based on the data presented in the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study.
 
 
@@ -196,9 +196,9 @@ Top 5 OTUs that differ across bins for de novo OTU picking:
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 ============================= ============================= ==============================================================================================
 26819                         3.19e-11                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae
-28062                         5.92e-10                      k__Bacteria; p__Acidobacteria; c__; o__; f__Koribacteraceae
+28062                         5.92e-10                      k__Bacteria; p__Acidobacteria; c\_\_; o\_\_; f__Koribacteraceae
 35264                         2.43e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
-45059                         5.48e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__; f__
+45059                         5.48e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o\_\_; f\_\_
 7687                          2.056e-08	                    k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
 ============================= ============================= ==============================================================================================
 
@@ -220,11 +220,11 @@ Top 5 OTUs that differ across bins for closed-reference OTU picking:
 ============================= ============================= ===================================================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 ============================= ============================= ===================================================================================================================
-212596                        4.03e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
-112859                        4.62e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__; g__; s__
-544749                        5.56e-08                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae; g__; s__
-541300                        1.28e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
-563862                        1.95e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
+212596                        4.03e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s\_\_
+112859                        4.62e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f\_\_; g\_\_; s\_\_
+544749                        5.56e-08                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae; g\_\_; s\_\_
+541300                        1.28e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s\_\_
+563862                        1.95e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s\_\_
 ============================= ============================= ===================================================================================================================
 
 Conclusions
@@ -244,10 +244,10 @@ The parameters file (``-p``) for this analysis contained the following lines::
 	pick_otus:enable_rev_strand_match True
 
 
-
+--------------------
 Whole body analysis
-===================
-This analysis is based on the data presented in the the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study.
+--------------------
+This analysis is based on the data presented in the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study.
 
 Alpha diversity
 ---------------

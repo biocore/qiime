@@ -47,11 +47,11 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 
 
 **Output:**

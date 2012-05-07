@@ -28,6 +28,8 @@ PERMDISP - This method takes a distance matrix and a mapping file. This method i
 
 RDA - This method takes a distance matrix and a mapping file. This method is an ordination method that shows grouping/clustering of samples based on a category in the metadata mapping file and a distance matrix. This category is used to explain the variability between samples. Thus, RDA is similar to PCoA except that it is constrained, while PCoA is unconstrained (you must specify which category should be used to explain the variability in your data).
 
+For more information and examples pertaining to this script, please refer to the accompanying tutorial, which can be found at http://qiime.org/tutorials/category_comparison.html.
+
 
 
 **Usage:** :file:`compare_categories.py [options]`

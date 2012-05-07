@@ -29,7 +29,7 @@ To test, call the example command below. The poller will begin running, at which
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-c, `-`-suppress_custom_functions
 		Use the default functions for checking run completion, processing results, and cleaning up (these are quiet) [default: False]
 

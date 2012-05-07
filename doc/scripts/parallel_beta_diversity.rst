@@ -47,11 +47,11 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-f, `-`-full_tree
 		By default, each job removes calls _fast_unifrac_setup to remove unused parts of the tree. pass -f if you already have a minimal tree, and this script will run faster
 
