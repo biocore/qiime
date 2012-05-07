@@ -602,8 +602,8 @@ class UsearchOtuPickerTests(TestCase):
         seq_file.close()
         
         self._files_to_remove =\
-         [self.tmp_seq_filepath1, self.tmp_seq_filepath2,
-          self.tmp_ref_database]
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath1_derep, 
+          self.tmp_seq_filepath2, self.tmp_ref_database]
           
         self._dirs_to_remove = []
         
@@ -1081,7 +1081,8 @@ class UsearchReferenceOtuPickerTests(TestCase):
         
         self._files_to_remove =\
          [self.tmp_seq_filepath1, self.tmp_seq_filepath2,
-          self.tmp_ref_database, self.tmp_otu_ref_database]
+          self.tmp_seq_filepath1_derep, self.tmp_ref_database, 
+          self.tmp_otu_ref_database]
           
         self._dirs_to_remove = []
         
