@@ -349,6 +349,7 @@ class RtaxTaxonAssignerTests(TestCase):
     """Tests for the RTAX taxonomy assigner."""
 
     def setUp(self):
+      self.version = "0.97"  # can we detect the version present instead of hardcoding it?
       self.id_to_taxonomy_fp = get_tmp_filename(\
        prefix='RtaxTaxonAssignerTests_',suffix='.txt')
       self.input_seqs_fp = get_tmp_filename(\
@@ -492,7 +493,7 @@ class RtaxTaxonAssignerTests(TestCase):
 
         log_file_exp = [
             "RtaxTaxonAssigner parameters:",
-            "Application:RTAX classifier, version 0.96",
+            "Application:RTAX classifier, version %s" % self.version,
             "Citation:Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J.",
             "amplicon_id_regex:(\S+)\s+(\S+?)\/",
             "header_id_regex:\S+\s+(\S+?)\/",
