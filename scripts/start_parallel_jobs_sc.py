@@ -19,7 +19,7 @@ from shutil import rmtree
 from stat import S_IRWXU
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, qiime_system_call
 
 qiime_config = load_qiime_config()
 
@@ -87,7 +87,7 @@ def run_commands(output_dir,commands,run_id,submit_jobs,keep_temp,queue_name):
     # Call the jobs
     if submit_jobs:
         for job_fp in job_fps:
-            Popen(['qsub', job_fp])
+            qiime_system_call(' '.join(['qsub', job_fp]))
     
     # clean up the shell scripts that were created
     if not keep_temp:
