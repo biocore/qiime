@@ -272,6 +272,9 @@ def check_map(infile, disable_primer_check, barcode_type="golay_12",
         var_len_barcodes = True
     else:
         var_len_barcodes = False
+        
+    if barcode_type == "0":
+        has_barcodes = False
     
     # hds, id_map, dsp, run_description, errors, warnings
     hds, mapping_data, run_description, errors, warnings= \
@@ -279,7 +282,7 @@ def check_map(infile, disable_primer_check, barcode_type="golay_12",
         disable_primer_check=disable_primer_check,
         added_demultiplex_field=added_demultiplex_field,
         variable_len_barcodes=var_len_barcodes)
-        
+
     if errors:
         raise ValueError,('Errors were found with mapping file, '+\
          'please run check_id_map.py to identify problems.')
