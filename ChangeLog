@@ -12,6 +12,8 @@ QIIME 1.4.0-dev
 * Updated merge_mapping_files.py to support merging of mapping files with overlapping sample ids.
 * Added support for CASAVA 1.8.0 quality scores in split_libraries_fastq.py. This involved deprecating the --last_bad_quality_char parameter in favor of --phred_quality_threshold. The latter is now computed from the former on the basis of detecting which version of CASAVA is being used from the fastq headers (unfortunately they don't include this information in the file, but it is possible to detect).
 * Added the possibility of printing the function of the curve that was fit to the points in plot_semivariogram.py 
+* Replaced filter_otu_table.py with filter_otus_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
+* Replaced filter_by_metadata.py with filter_samples_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
