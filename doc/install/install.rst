@@ -80,7 +80,7 @@ Supervised learning (``supervised_learning.py``):
 
 Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97% identity:
 
-* Greengenes 97% OTUs, taxonomies, and tree (`zip <http://greengenes.lbl.gov/Download/OTUs/gg_otus_6oct2010.zip>`_)
+* Greengenes 97% OTUs, taxonomies, and tree (`zip <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz>`_)
 
 If you plan to build the QIIME documentation locally:
 
