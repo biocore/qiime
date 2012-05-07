@@ -23,9 +23,7 @@ from qiime.compare_distance_matrices import (run_mantel_correlogram,
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """
-Computes Mantel correlation tests between sets of distance matrices
-"""
+script_info['brief_description'] = """Computes Mantel correlation tests between sets of distance matrices"""
 script_info['script_description'] = """
 This script compares two or more distance/dissimilarity matrices for \
 correlation by providing the Mantel, partial Mantel, and Mantel correlogram \

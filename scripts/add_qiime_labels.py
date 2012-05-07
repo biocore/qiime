@@ -19,9 +19,7 @@ from qiime.add_qiime_labels import add_qiime_labels
 
 options_lookup = get_options_lookup()
 script_info={}
-script_info['brief_description']="""Takes a directory and a mapping file of 
-SampleIDs to fasta file names, combines all files that have valid fasta 
-extensions into a single fasta file, with valid QIIME fasta labels."""
+script_info['brief_description']="""Takes a directory and a mapping file of SampleIDs to fasta file names, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels."""
 script_info['script_description']="""A tab separated text file with SampleIDs 
 and fasta file names (just the file name itself, not the full or relative 
 filepath) is used to generate a combined fasta file with valid

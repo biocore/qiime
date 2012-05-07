@@ -2,9 +2,7 @@
 
 .. index:: add_qiime_labels.py
 
-*add_qiime_labels.py* -- Takes a directory and a mapping file of 
-SampleIDs to fasta file names, combines all files that have valid fasta 
-extensions into a single fasta file, with valid QIIME fasta labels.
+*add_qiime_labels.py* -- Takes a directory and a mapping file of SampleIDs to fasta file names, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**

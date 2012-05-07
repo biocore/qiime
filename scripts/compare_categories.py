@@ -28,9 +28,7 @@ from qiime.util import (parse_command_line_parameters, make_option,
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """
-Analyzes distance matrices for statistical significance of sample grouping
-"""
+script_info['brief_description'] = """Analyzes distance matrices for statistical significance of sample grouping"""
 script_info['script_description'] = """
 This script allows for the analysis of distance matrices using several \
 statistical methods. These methods are Adonis, Anosim, BEST, DFA, Moran's I, \
