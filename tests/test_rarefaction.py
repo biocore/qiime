@@ -17,6 +17,7 @@ from qiime.util import get_tmp_filename, load_qiime_config
 from qiime.rarefaction import RarefactionMaker, get_rare_data, remove_empty_otus
 from qiime.format import format_biom_table
 from biom.table import table_factory, TableException
+from os import remove
 
 class FunctionTests(TestCase):
     def setUp(self):
@@ -40,7 +41,13 @@ class FunctionTests(TestCase):
         self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
                                              prefix='test_rarefaction',suffix='.biom')
         open(self.otu_table_fp,'w').write(self.otu_table_str)
-
+        
+        self._paths_to_clean_up=[self.otu_table_fp]
+    
+    def tearDown(self):
+        """ cleanup temporary files """
+        map(remove,self._paths_to_clean_up)
+    
     
     def test_rarefy_to_list(self):
         """rarefy_to_list should rarefy correctly, same names
