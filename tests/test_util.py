@@ -42,7 +42,6 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices)
-from tests.test_stats import TestHelper
 
 import numpy
 from numpy import array, asarray
@@ -1541,7 +1540,7 @@ class DistanceMatrixTests(TestCase):
             {'id': 'PC.607', 'metadata': None}, {'id': 'PC.634', 'metadata':
             None}, {'id': 'PC.635', 'metadata': None}, {'id': 'PC.636',
             'metadata': None}], 'format':
-            'Biological Observation Matrix 0.9.1-dev', 'data': [[0.0, 0.625,
+            'Biological Observation Matrix %s' % __biom_version__, 'data': [[0.0, 0.625,
             0.623, 0.60999999999999999, 0.57699999999999996,
             0.72899999999999998, 0.80000000000000004, 0.72099999999999997,
             0.76500000000000001], [0.625, 0.0, 0.61499999999999999,
@@ -1804,8 +1803,68 @@ class MetadataMapTests(TestCase):
         self.assertEqual(obs, [])
 
 
-class RExecutorTests(TestHelper):
+class RExecutorTests(TestCase):
     """Tests of the RExecutor class."""
+
+    def setUp(self):
+        """Define some useful test objects."""
+        # The unweighted unifrac distance matrix from the overview tutorial.
+        self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
+                                \tPC.607\tPC.634\tPC.635\tPC.636",
+                                "PC.354\t0.0\t0.595483768391\t0.618074717633\
+                                \t0.582763100909\t0.566949022108\
+                                \t0.714717232268\t0.772001731764\
+                                \t0.690237118413\t0.740681707488",
+                                "PC.355\t0.595483768391\t0.0\t0.581427669668\
+                                \t0.613726772383\t0.65945132763\
+                                \t0.745176523638\t0.733836123821\
+                                \t0.720305073505\t0.680785600439",
+                                "PC.356\t0.618074717633\t0.581427669668\t0.0\
+                                \t0.672149021573\t0.699416863323\
+                                \t0.71405573754\t0.759178215168\
+                                \t0.689701276341\t0.725100672826",
+                                "PC.481\t0.582763100909\t0.613726772383\
+                                \t0.672149021573\t0.0\t0.64756120797\
+                                \t0.666018240373\t0.66532968784\
+                                \t0.650464714994\t0.632524644216",
+                                "PC.593\t0.566949022108\t0.65945132763\
+                                \t0.699416863323\t0.64756120797\t0.0\
+                                \t0.703720200713\t0.748240937349\
+                                \t0.73416971958\t0.727154987937",
+                                "PC.607\t0.714717232268\t0.745176523638\
+                                \t0.71405573754\t0.666018240373\
+                                \t0.703720200713\t0.0\t0.707316869557\
+                                \t0.636288883818\t0.699880573956",
+                                "PC.634\t0.772001731764\t0.733836123821\
+                                \t0.759178215168\t0.66532968784\
+                                \t0.748240937349\t0.707316869557\t0.0\
+                                \t0.565875193399\t0.560605525642",
+                                "PC.635\t0.690237118413\t0.720305073505\
+                                \t0.689701276341\t0.650464714994\
+                                \t0.73416971958\t0.636288883818\
+                                \t0.565875193399\t0.0\t0.575788039321",
+                                "PC.636\t0.740681707488\t0.680785600439\
+                                \t0.725100672826\t0.632524644216\
+                                \t0.727154987937\t0.699880573956\
+                                \t0.560605525642\t0.575788039321\t0.0"]
+        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
+            self.overview_dm_str)
+
+        # The overview tutorial's metadata mapping file.
+        self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
+                                 "PC.354\tAGCACGAGCCTA\tControl\t20061218",
+                                 "PC.355\tAACTCGTCGATG\tControl\t20061218",
+                                 "PC.356\tACAGACCACTCA\tControl\t20061126",
+                                 "PC.481\tACCAGCGACTAG\tControl\t20070314",
+                                 "PC.593\tAGCAGCACTTGT\tControl\t20071210",
+                                 "PC.607\tAACTGTGCGTAC\tFast\t20071112",
+                                 "PC.634\tACAGAGTCGGCT\tFast\t20080116",
+                                 "PC.635\tACCGCAGAGTCA\tFast\t20080116",
+                                 "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
+        self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
+
+        # A 1x1 dm.
+        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
 
     def test_output(self):
         """Test executing an arbitrary command."""
