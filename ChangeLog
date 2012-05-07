@@ -14,6 +14,7 @@ QIIME 1.4.0-dev
 * Added the possibility of printing the function of the curve that was fit to the points in plot_semivariogram.py 
 * Replaced filter_otu_table.py with filter_otus_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 * Replaced filter_by_metadata.py with filter_samples_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
+* Add new script to compute the coverage of a  sample (or its inverse - the conditional uncovered probability) in the script conditional_uncovered_probability.py. Current estimators include lladser_pe, lladser_ci, esty_ci and robbins.
 
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
