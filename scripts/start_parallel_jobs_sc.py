@@ -11,8 +11,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-
-from subprocess import Popen
 from os import makedirs, chmod, getenv, remove
 from os.path import exists
 from shutil import rmtree
