@@ -885,6 +885,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
          float(median_length_filtering)
         seqs_discarded_median = 0
 
+
         fasta_out.seek(0)
         
         final_written_lens = []
@@ -983,11 +984,20 @@ def format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
     # append log data for median absolute deviation sequence length filtering
     # if was performed.
     if median_results[0]:
-        log_out.append("Specified allowed number of median absolute "+\
-         "deviations for sequence retention: %3.2f" % (float(median_results[0])))
-        log_out.append("Sequences with lengths outside bounds of "+\
-         "%d and %d: %d\n" %\
-          (median_results[1], median_results[2], median_results[3]))
+        if (not median_results[1] or not median_results[2] or
+         not median_results[3]):
+            log_out.append("No sequences written, so no median length data "+
+             "available.")
+            actual_median_results = False
+        else:
+            log_out.append("Specified allowed number of median absolute "+\
+             "deviations for sequence retention: %3.2f" % (float(median_results[0])))
+            log_out.append("Sequences with lengths outside bounds of "+\
+             "%d and %d: %d\n" %\
+              (int(median_results[1]), int(median_results[2]), 
+              int(median_results[3])))
+            actual_median_results = True
+              
     
     for f in filters:
         log_out.append(str(f))
@@ -998,14 +1008,14 @@ def format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
          'but without identifiable reverse primer: '+\
          '%d\n' % reverse_primer_not_found)
         log_out.append('-z truncate_only option enabled; sequences '+\
-         'without a discernable reverse primer as well as sequences with a '+\
+         'without a discernible reverse primer as well as sequences with a '+\
          'valid barcode not found in the mapping file may still be written.\n')
     if reverse_primers == "truncate_remove":
         log_out.append('Number of sequences with identifiable barcode '+\
          'but without identifiable reverse primer: '+\
          '%d\n' % reverse_primer_not_found)
         log_out.append('-z truncate_remove option enabled; sequences '+\
-         'without a discernable reverse primer as well as sequences with a '+\
+         'without a discernible reverse primer as well as sequences with a '+\
          'valid barcode not found in the mapping file will not be written.\n')
     if qual_score_window:
         log_out.append('Size of quality score window, in base pairs: %d' %\
@@ -1035,7 +1045,7 @@ def format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
     else:
         log_out.append("No sequences passed quality filters for writing.")
     
-    if median_results[0]:
+    if median_results[0] and actual_median_results:
         log_out.append("Wrote len min/max/avg\t%.1f/%.1f/%.1f" % 
             (min(median_results[4]), max(median_results[4]),
             mean(median_results[4])))

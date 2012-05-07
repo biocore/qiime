@@ -213,6 +213,10 @@ def main():
     if opts.qual_score_window and not opts.qual_fnames:
         option_parser.error('To enable sliding window quality test (-w), '+\
         '.qual files must be included.')
+        
+    if opts.record_qual_scores and not opts.qual_fnames:
+        option_parser.error('To enable recording of truncated quality '+\
+         'scores, one must supply quality score files.')
   
     mapping_file = opts.map_fname
     
