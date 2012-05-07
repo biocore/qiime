@@ -203,9 +203,10 @@ After launching your cluster, we recommend that you connect as the ``ubuntu`` us
 
 where ``CLUSTER_TAG`` refers to the cluster_tag that was specified when you launched your cluster with ``starcluster start``.
 
-To run jobs in parallel on this system, you'll next need to edit the ``qiime_config`` file on the cluster. This file is ``/home/ubuntu/.qiime_config_default``. Edit the value ``cluster_jobs_fp`` so it looks like the following::
+To run jobs in parallel on this system, you'll next need to edit the ``qiime_config`` file on the cluster. This file is ``/home/ubuntu/.qiime_config_default``. Edit the values ``cluster_jobs_fp`` and ``temp_dir`` so they looks like the following::
 
 	cluster_jobs_fp	start_parallel_jobs_sc.py
+	temp_dir	/home/ubuntu/temp/
 
 
 .. _AWS: http://aws.amazon.com/
