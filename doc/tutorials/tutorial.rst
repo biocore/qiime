@@ -66,9 +66,37 @@ Check Mapping File
 --------------------------------------------------------------------
 Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `check_id_map.py <../scripts/check_id_map.html>`_ script. Type: ::
 
-    check_id_map.py -m Fasting_Map.txt -o mapping_output -v
+    check_id_map.py -m Fasting_Map.txt -o mapping_output
 
-If verbose (-v) is enabled, this utility will display a message indicating whether or not problems were found in the mapping file. Errors and warnings will the output to a log file, which will be present in the specified (-o) output directory. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores, or a message indicating that no invalid characters were found.
+This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
+
+Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignments with RDP.
+
+An example mapping file with faux reverse primers specified, using the ReversePrimer field, is available here:  `reverse primer mapping file <../_static/Examples/File_Formats/Fasting_Map_reverse_primers.txt>`_.
+
+.. note::
+
+   * #SampleID  BarcodeSequence LinkerPrimerSequence    Treatment ReversePrimer   Description
+   * #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
+   * #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+   * PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._354
+   * PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._355
+   * PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._356
+   * PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._481
+   * PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._593
+   * PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._607
+   * PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._634
+   * PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._635
+   * PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._636
+
+The reverse primers, like the forward primers, are written in 5'->3' direction.  In this case, these are not the true reverse primers used, but rather just a somewhat conserved site in the sequences used for this example.
+
+An example image of a the entire primer construct and amplicon is shown below, using QIIME nomenclature:
+
+.. image:: ../images/ example_primer_construct.png
+   :align: center
+   
+454 sequencing, in most cases, generates sequences that begin at the BarcodeSequence, which is followed by the LinkerPrimerSequence, both of which are automatically removed during the demultiplexing step described below.  However, the ReversePrimer (i.e., the primer at the end of the read) is not removed by default, and needs to be specified.  The adapter sequence (Adapter B) does not match genomic data, such as 16S sequences, and as such it can disrupt analyses.
 
 .. _assignsamples:
 
@@ -96,6 +124,30 @@ A few lines from the :file:`seqs.fna` file are shown below:
    * TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTT....
    * >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
    * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....
+   
+Reverse primer removal can be accomplished by adding the -z option.  An example command using the mapping file with reverse primers described above is this: ::
+
+    split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers/
+    
+The following is the first several lines of the :file:`split_library_log.txt`
+
+.. note::
+
+   * Number raw input seqs	1339
+   * 
+   * Length outside bounds of 200 and 1000	0
+   * Num ambiguous bases exceeds limit of 6	0
+   * Missing Qual Score	0
+   * Mean qual score below minimum of 25	1
+   * Max homopolymer run exceeds limit of 6	0
+   * Num mismatches in primer exceeds limit of 0: 1
+   * 
+   * Number of sequences with identifiable barcode but without identifiable reverse primer: 961
+   * ...
+   
+If the number of sequences where the reverse primer is not identifiable is high, you want to check the primer sequence to make sure it is in 5'->3' orientation, or increase the number of mismatches allowed with --reverse_primer_mismatches.
+
+Data that are already demultiplexed can have reverse primers removed using the stand-alone script `truncate_reverse_primer.py <../scripts/truncate_reverse_primer.html>`_.
 
 .. _pickotusandrepseqs:
 
