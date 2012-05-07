@@ -19,7 +19,7 @@ from random import sample
 
 from asynchat import async_chat
 from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
-
+from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
 from qiime.util import load_qiime_config, get_qiime_scripts_dir
 
@@ -34,8 +34,11 @@ def submit_jobs(commands, prefix):
     qiime_config = load_qiime_config()
     CLUSTER_JOBS_SCRIPT = qiime_config['cluster_jobs_fp']
 
-    if not CLUSTER_JOBS_SCRIPT or not exists(CLUSTER_JOBS_SCRIPT):
+    if not CLUSTER_JOBS_SCRIPT:
         raise ApplicationNotFoundError,"cluster_jobs_fp not set in config file!"
+    if not (exists(CLUSTER_JOBS_SCRIPT) or app_path(CLUSTER_JOBS_SCRIPT)):
+        raise ApplicationNotFoundError,"cluster_jobs_fp not in $PATH or provided as full path!"
+        
 
     outfilename = prefix+"_commands.txt"
     fh = open(outfilename, "w") 
