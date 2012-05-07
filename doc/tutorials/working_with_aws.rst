@@ -180,10 +180,25 @@ Anytime you attach or re-attach your volume to an instance (so after starting a 
 Once you've created your device, you only need to go through the attachment step to attach to future instances. This is the step illustrated in Figure 11. Note that you'll need to create future instances in the same availability zone as this volume if you'd like to attach this volume.
 
 
+Using QIIME with StarCluster and the IPython Notebook
+=====================================================
 
+QIIME instances can be loaded using `StarCluster`_, which provides an extremely convenient means for starting and using virtual clusters on AWS. This AWS instance also contains support for the `IPython Notebook`_, which provides a convenient interface for creating reproducible analysis pipelines that can easily be shared with others or published as supplementary material with journal articles.
 
+To start using `StarCluster`_ and `IPython Notebook`_, you should see their respective install instructions. Your StarCluster config file should look like this::
 
+	[cluster my.qiime.cluster]
+	node_image_id = LATEST-QIIME-AMI # see http://qiime.org/home_static/dataFiles.html
+	cluster_user = ubuntu
+	keyname = YOUR-KEY
+	cluster_size = DESIRED-CLUSTER-SIZE
+	node_instance_type = DESIRED-INSTANCE-TYPE
+	plugins = ipcluster
+
+Everything in CAPS should be replaced with the corresponding information.
 
 
 .. _AWS: http://aws.amazon.com/
 .. _AWS console: http://aws.amazon.com/console/
+.. _StarCluster: http://web.mit.edu/star/cluster/
+.. _IPython Notebook: http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html
