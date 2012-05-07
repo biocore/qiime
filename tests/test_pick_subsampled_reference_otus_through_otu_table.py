@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -38,7 +38,7 @@ class TimeExceededError(Exception):
     pass
 
 
-allowed_seconds_per_test = 300
+allowed_seconds_per_test = 500
 
 def timeout(signum, frame):
     raise TimeExceededError,\
