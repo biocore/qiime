@@ -360,7 +360,8 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         fh_nast.write(ref_db_nast)
         fh_nast.close()
 
-        self.files_to_remove.extend([ref_db_fp, ref_db_nast_fp])
+        self.files_to_remove.extend([ref_db_fp, ref_db_nast_fp,
+                                     ref_db_nast_fp+'.cidx'])
 
         #empty input gives empty output
         seqs = ""
