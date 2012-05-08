@@ -521,9 +521,6 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported mothur version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
-        # remove the directory and the log file
-        rmtree(tmp_dir)
          
     def test_denoiser_supported_version(self):
         """denoiser aligner is ready to use """
@@ -655,7 +652,7 @@ class Qiime_config(TestCase):
         stdout = proc.stdout.read()
         version_string = stdout.strip()[1:3]
         try:
-            pass_test = version in acceptable_version
+            pass_test = version_string in acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
