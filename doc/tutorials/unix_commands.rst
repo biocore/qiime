@@ -73,7 +73,7 @@ Uncompress a zip file
 
 Uncompress the QIIME tutorial data::
 
-	unzip http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.4.0.zip
+	unzip ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip
 
 Working with files
 ==================
