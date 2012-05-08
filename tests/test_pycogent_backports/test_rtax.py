@@ -52,7 +52,7 @@ class RtaxClassifierTests(TestCase):
         e.close()
 
     def tearDown(self):
-        remove_files(set(self._paths_to_clean_up))
+        remove_files(set(self._paths_to_clean_up),error_on_missing=False)
 
     def test_paired_end_classification(self):
         self._paths_to_clean_up += cleanAll(self.read_1_seqs_fp)
@@ -73,7 +73,7 @@ class RtaxClassifierTests(TestCase):
 
 
 def cleanAll(path):
-    return [path, path + ".pos.dir", path + ".pos.pag", path + ".lines.dir", path + ".lines.pag"]
+    return [path, path + ".pos.db",  path + ".pos.dir", path + ".pos.pag", path + ".lines.db", path + ".lines.dir", path + ".lines.pag"]
 
 
 # sample data copied from GreenGenes

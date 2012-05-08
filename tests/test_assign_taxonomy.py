@@ -371,10 +371,10 @@ class RtaxTaxonAssignerTests(TestCase):
 
 
     def tearDown(self):
-        remove_files(set(self._paths_to_clean_up))
+        remove_files(set(self._paths_to_clean_up),error_on_missing=False)
 
     def cleanAll(self, path):
-        return [path, path + ".pos.dir", path + ".pos.pag", path + ".lines.dir", path + ".lines.pag"]
+        return [path, path + ".pos.db", path + ".pos.dir", path + ".pos.pag", path + ".lines.dir", path + ".lines.db", path + ".lines.pag"]
 
 
 
