@@ -209,14 +209,14 @@ rtax_expected_result_paired_with_fallback = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
     'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
-    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
     }
 
 rtax_expected_result_single = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
     'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
-    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
     }
 
 if __name__ == "__main__":

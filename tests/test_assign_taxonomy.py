@@ -349,7 +349,7 @@ class RtaxTaxonAssignerTests(TestCase):
     """Tests for the RTAX taxonomy assigner."""
 
     def setUp(self):
-      self.version = "0.97"  # can we detect the version present instead of hardcoding it?
+      self.version = "0.98"  # can we detect the version present instead of hardcoding it?
       self.id_to_taxonomy_fp = get_tmp_filename(\
        prefix='RtaxTaxonAssignerTests_',suffix='.txt')
       self.input_seqs_fp = get_tmp_filename(\
@@ -1150,8 +1150,9 @@ AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACGGGGGGGGGGCCCAGACTCCTACGGGAGGCA
 
 
 # these reads are the 4th and 14th lines from the reference seqs, with one nucleotide changed each
-# except D and E, which are unique to one read or the other
-# and F and G, which are just decoys
+# except D and E, which are based on the C reads, altered with a bunch of 'A's,
+# and with IDs that are unique to one read or the other and so can't be paired.
+# F and G are just decoys
 
 rtax_test_read1_fasta = """>splitRead1IdA ampliconId_34563456/1
 ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
@@ -1188,21 +1189,21 @@ rtax_expected_result_paired_with_fallback = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
     'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
-    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
     }
 
 rtax_expected_result_single = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
     'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
-    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
     }
 
 rtax_expected_result_single_lines = set([
     'clusterIdA splitRead1IdA\tk__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes\t1.000\n',
     'clusterIdB splitRead1IdB\tk__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__\t1.000\n',
     'clusterIdC splitRead1IdC\tk__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__\t1.000\n',
-    'clusterIdD splitRead1IdD\tk__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes\t1.000\n',
+    'clusterIdD splitRead1IdD\tk__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__\t1.000\n',
     ])
 
 #run unit tests if run from command-line
