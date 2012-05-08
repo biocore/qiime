@@ -12,7 +12,7 @@ from cogent.app.mothur import Mothur, mothur_from_file
 
 __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
-__credits__ = ["Kyle Bittinger"]
+__credits__ = ["Kyle Bittinger", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Kyle Bittinger"
