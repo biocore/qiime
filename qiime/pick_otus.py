@@ -696,10 +696,9 @@ class UclustOtuPickerBase(OtuPicker):
     def _presort_by_abundance(self,seq_path):
         """ Preform pre-sorting of input by abundance """
         
-        # Turn off uclust's sorting - Not sure why this was manually set
-        # Commented out as this was making it impossible to suppress user_sort
-        '''if self.Params['presort_by_abundance'] == True:
-            '''
+        # Turn off uclust's sorting - if doing our presort by
+        # abundance we _always_ need to disable uclust's sorting.
+        self.Params['suppress_sort'] = True
         
         # Get a temp file name for the sorted fasta file
         sorted_input_seqs_filepath = \
@@ -819,9 +818,6 @@ class UclustOtuPicker(UclustOtuPickerBase):
         if self.Params['presort_by_abundance']:
             # seq path will become the temporary sorted sequences
             # filepath, to be cleaned up after the run
-            
-            # add --user_sort parameter if sorting by abundance
-            self.Params['suppress_sort'] = True
             seq_path = self._presort_by_abundance(seq_path)
             self.files_to_remove.append(seq_path)
         

@@ -355,6 +355,9 @@ def main():
     cluster_size_filtering = opts.cluster_size_filtering
     remove_usearch_logs = opts.remove_usearch_logs
     
+    if user_sort and not suppress_presort_by_abundance_uclust:
+        option_parser.error("Cannot pass -B/--user_sort without -D/--suppress_presort_by_abundance_uclust, as your input would be resorted by abundance. To presort your own sequences before passing to uclust, pass -DB.")
+    
     if abundance_skew <= 1:
         raise ValueError,('abundance skew must be > 1')
     
