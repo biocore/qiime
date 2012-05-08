@@ -670,7 +670,7 @@ class Qiime_config(TestCase):
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip()[8:]
+        version_string = stdout.split('v')[1]
         try:
             version = tuple(map(int,version_string.split('.')))
             pass_test = version in acceptable_version
