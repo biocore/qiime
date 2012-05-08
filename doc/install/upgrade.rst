@@ -21,25 +21,13 @@ Note that you can replace the installation folder (/software/) for any other pat
         
 1.3.0 to 1.4.0 (QIIME Virtual Machines)
 ---------------------------------------
-If you are upgrading your virtual machine, follow these commands to upgrade:
-
-Open a new terminal and run:
-::
-        
-        sudo rm -rf /software/*
-        rm .qiime_config
-        
-Close it, open a new one and run:
-::
-        
-        wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
-        tar zxvf app-deploy-qiime-1.4.0.tgz
-        cd app-deploy-qiime-1.4.0
-        python app-deploy.py /software/ -f etc/qiime_1.4.0.conf --force-remove-failed-dirs
+The new version of the QIIME virtual machine (VM) is based on Ubuntu 12.04 (LTS) due to this upgrade in the operating system we can not support autoupdates. Thus we suggest downloading a new full VM and following the install instructions :ref:`virtual_box`.
 
 1.3.0 to 1.4.0 (general)
 ------------------------
- * QIIME |release| depends on `Python 2.7.1 <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_ or greater; `numpy 1.5.1 <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz>`_; and `matplotlib 1.1.0 <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_.
- * AmpliconNoise support has been updated to use its latest version 1.25, which can be found `here <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.25.tar.gz>`_.
- * muscle support has been updated to use its latest version 3.8.31, which can be found `link <http://www.drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.tar.gz>`_.
+ * mothur support has been updated to use its latest version 1.25.0, which can be found `link_mothur <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_.
+ * rtax support has been added, which can be found `link_rtax <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.98.tgz>`_.
+ * pplacer support has been added, which can be found `link_pplacer <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_.
+ * raxml support has been updated to use its latest version 7.3.0 `link_raxml <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_.
+ * userch support has been updated to use its latest version 5.2.32 `link_usearch <http://www.drive5.com/usearch/>`_.
  
