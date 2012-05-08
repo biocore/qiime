@@ -116,4 +116,4 @@ The final OTU table sequences/sample summary can be displayed now, sans OTUs fro
 	*  PC.634: 110.0
 
 
-.. note:: If you apply this process to multiple runs, and then want to reassemble the final OTU tables into a single OTU table, you can use the ``merge_otu_tables.py`` command.
+If you apply this process to multiple runs, and then want to reassemble the final OTU tables into a single OTU table, you can use the ``merge_otu_tables.py`` command.

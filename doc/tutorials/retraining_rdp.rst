@@ -39,9 +39,9 @@ Next, you'll rebuild the OTU table with the new taxonomic information.
 
 ::
 
-	make_otu_table.py -i otus/uclust_picked_otus/seqs_otus.txt -t otus/rdp_assigned_taxonomy_gg/seqs_rep_set_tax_assignments.txt -o otus/otu_table_gg.txt
+	make_otu_table.py -i otus/uclust_picked_otus/seqs_otus.txt -t otus/rdp_assigned_taxonomy_gg/seqs_rep_set_tax_assignments.txt -o otus/otu_table_gg.biom
 
-That's it. The resulting OTU table (``otu_table_gg.txt``) can now be used in downstream analyses, such as `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_.
+That's it. The resulting OTU table (``otu_table_gg.biom``) can now be used in downstream analyses, such as `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_.
 
 
 Retraining RDP using a custom parameters file
