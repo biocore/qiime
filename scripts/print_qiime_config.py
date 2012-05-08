@@ -507,8 +507,7 @@ class Qiime_config(TestCase):
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
-        tmp_dir = get_random_directory_name(output_dir='/tmp/')
-        command = "cd %s ; mothur -v | grep ^mothur" % tmp_dir
+        command = "mothur 'read.dist(help)' | grep '^mothur'"
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout, stderr = proc.communicate()
@@ -633,7 +632,7 @@ class Qiime_config(TestCase):
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip()[1:3]
+        version_string = stdout.strip()[1:4]
         try:
             version = tuple(map(int,version_string.split('.')))
             pass_test = version in acceptable_version
@@ -646,7 +645,7 @@ class Qiime_config(TestCase):
          
     def test_ParsInsert_supported_version(self):
         """ParsInsert is in path and version is supported """
-        acceptable_version = [(1,04),(1,04)]
+        acceptable_version = ["1.04"]
         self.assertTrue(app_path('ParsInsert'),
          "ParsInsert not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -656,7 +655,6 @@ class Qiime_config(TestCase):
         stdout = proc.stdout.read()
         version_string = stdout.strip()[1:3]
         try:
-            version = tuple(map(int,version_string.split('.')))
             pass_test = version in acceptable_version
         except ValueError:
             pass_test = False
@@ -696,7 +694,7 @@ class Qiime_config(TestCase):
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip()[8:]
+        version_string = stdout.strip()
         try:
             version = tuple(map(int,version_string.split('.')))
             pass_test = version in acceptable_version
@@ -706,9 +704,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported R version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
-        
-        
+         
         
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
