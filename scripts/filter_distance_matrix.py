@@ -33,7 +33,7 @@ script_info['script_usage'] = [("",
  "Filter samples ids in otu_table.biom from dm.txt",
  "filter_distance_matrix.py -i dm.txt -o dm_out.txt -t otu_table.biom"),
  ("",
- "Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run \"filter_by_metadata.py -h\" for additional information on how metadata filtering can be specified.)",
+ "Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run \"filter_samples_from_otu_table.py -h\" for additional information on how metadata filtering can be specified.)",
  "filter_distance_matrix.py -i dm.txt -o dm_out4.txt -m Fasting_Map.txt -s \"DOB:20061218\""),]
 script_info['output_description']= ""
 script_info['required_options'] = [

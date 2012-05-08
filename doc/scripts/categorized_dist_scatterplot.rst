@@ -7,7 +7,7 @@
 
 **Description:**
 
-makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use `filter_by_metadata.py <./filter_by_metadata.html>`_ to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.
+makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use `filter_samples_from_otu_table.py <./filter_samples_from_otu_table.html>`_ to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.
 
 
 **Usage:** :file:`categorized_dist_scatterplot.py [options]`
@@ -24,7 +24,7 @@ makes a figure representing average distances between samples, broken down by ca
 	-d, `-`-distance_matrix
 		Distance matrix
 	-p, `-`-primary_state
-		Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's `filter_by_metadata.py <./filter_by_metadata.html>`_ for more syntax options
+		Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's `filter_samples_from_otu_table.py <./filter_samples_from_otu_table.html>`_ for more syntax options
 	-a, `-`-axis_category
 		This will form the horizontal axis of the figure, e.g.: AgeYears . Must be numbers
 	-o, `-`-output_path

@@ -18,7 +18,7 @@ These are general guidelines that apply to formatting files for use with QIIME, 
 Metadata mapping files
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Metadata mapping files are used through-out QIIME, and provide per-sample metadata. These are used in ``split_libraries.py``, ``beta_diversity_through_3d_plots.py``, ``alpha_rarefaction.py`` and other scripts.
+Metadata mapping files are used through-out QIIME, and provide per-sample metadata. These are used in ``split_libraries.py``, ``beta_diversity_through_plots.py``, ``alpha_rarefaction.py`` and other scripts.
 
 Mapping File Overview
 +++++++++++++++++++++

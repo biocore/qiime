@@ -29,7 +29,7 @@ from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 
 script_info = {}
 script_info['brief_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'"
-script_info['script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_by_metadata.py to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix."
+script_info['script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_samples_from_otu_table.py to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix."
 script_info['script_usage'] = [("Canonical Example:","Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png"),("Example 2:","Same as above, but compares Child with all other categories (e.g.: NA, Infant, etc.)","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg")]
 script_info['output_description']= "a figure and the text dat for that figure "
 script_info['required_options'] = [\
@@ -38,7 +38,7 @@ script_info['required_options'] = [\
  make_option('-d', '--distance_matrix',
      help='distance matrix'),
  make_option('-p', '--primary_state',
-     help="Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's filter_by_metadata.py for more syntax options"),
+     help="Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's filter_samples_from_otu_table.py for more syntax options"),
  make_option('-a', '--axis_category',
      help='this will form the horizontal axis of the figure, e.g.: AgeYears . Must be numbers'),
  make_option('-o', '--output_path',
@@ -83,8 +83,8 @@ def main():
         if state1_samids == [] or state2_samids == [] or \
             (len(state1_samids) == 1 and state1_samids == state2_samids):
             raise RuntimeError("one category of samples didn't have any valid"+\
-            " distances. try eliminating sampels from -p or -s, or changing"+\
-            " your mapping file with filter_by_metadata.py")
+            " distances. try eliminating samples from -p or -s, or changing"+\
+            " your mapping file with filter_samples_from_otu_table.py")
         # go through dmtx
         state1_avg_dists = get_avg_dists(state1_samids,state2_samids,distdict)
 

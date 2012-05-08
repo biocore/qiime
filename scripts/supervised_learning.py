@@ -46,7 +46,7 @@ script. For example, to rarefy at depth 200, then remove OTUs present in \
 < 10 samples run:
 
 single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
-filter_otu_table.py -i otu_table_rarefied200.txt -s 10
+filter_otus_from_otu_table.py -i otu_table_rarefied200.txt -s 10
 
 For an overview of the application of supervised classification to microbiota, \
 see PubMed ID 21039646.
@@ -69,7 +69,7 @@ script_info['script_usage_output_to_remove'] = ['ml','ml_cv10','ml_ntree1000']
 # automated testing
 # script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""","""
 #  single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
-#  filter_otu_table.py -i otu_table_rarefied200.txt -s 10
+#  filter_otus_from_otu_table.py -i otu_table_rarefied200.txt -s 10
 #  supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml"""))
 
 
