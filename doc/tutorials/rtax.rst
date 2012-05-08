@@ -16,7 +16,7 @@ To obtain taxonomic classifications of paired-end sequences with RTAX, follow th
 Obtain fasta files for each read
 --------------------------------
 
-Run split_libraries_fastq on each read individually (making sure to reverse-complement the reverse read)::
+Run `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_ on each read individually (making sure to reverse-complement the reverse read)::
 
     split_libraries_fastq.py -i s_1_1.seqs.fastq -o sl_out.1/ -b s_1_1.barcodes.fastq -m s_1_map.txt
 
@@ -24,7 +24,7 @@ Run split_libraries_fastq on each read individually (making sure to reverse-comp
 
 Note that while most amplicons should be represented in both the forward and the reverse read files (i.e., with mate pairs matchable by amplicon ID), it may happen that one read is eliminated by quality filters while the other is not.
 
-Normally the fasta files resulting from split_libraries_fastq.py will contain millions of sequences; for tutorial purposes we provide tiny samples taken from (`Caporaso et al. 2010 PNAS <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_).  These are constructed to contain 10,000 mate-pairs, as well as 1000 sequences represented only by the forward read and 2000 represented only by the reverse read.  The sample forward and reverse read files thus contain 11,000 and 12,000 sequences, respectively.
+Normally the fasta files resulting from `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_ will contain millions of sequences; for tutorial purposes we provide tiny samples taken from (`Caporaso et al. 2010 PNAS <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_).  These are constructed to contain 10,000 mate-pairs, as well as 1000 sequences represented only by the forward read and 2000 represented only by the reverse read.  The sample forward and reverse read files thus contain 11,000 and 12,000 sequences, respectively.
 
 Perform OTU picking
 -------------------
@@ -44,7 +44,7 @@ To classify the cluster representatives, pass them as the main input to assign_t
 
     assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna --read_2_seqs_fp rtax_sample_data/reverse_read.12k.fna -r  /software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta -t  /software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt -v
 
-The resulting taxonomy file will contain the same FASTA headers that were present in the representative sequence file, typically a cluster ID and the read ID produced by the split_libraries_fastq step.
+The resulting taxonomy file will contain the same FASTA headers that were present in the representative sequence file, typically a cluster ID and the read ID produced by the `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_ step.
 
 RTAX does not presently compute a confidence value for each assignment.  Because Qiime expects one, RTAX simply reports 1.0 for every sequence-- but this is not meaningful.
 

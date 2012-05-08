@@ -4,7 +4,7 @@
 Running Supervised Learning
 ============================
 
-This document describes how to run supervised classification with QIIME. The goal of supervised classification is to classify new, unlabeled communities based on a set of labeled training communities. See (Knights et al. 2010) for a general discussion of the application of supervised classification to microbiota. Supervised classification using the Random Forests (Breiman, 2001) classifier is implemented in the QIIME script `supervised_learning.py <../scripts/supervised_learning.html>`_. When you run this script you will get several output files:
+This document describes how to run supervised classification with QIIME. The goal of supervised classification is to classify new, unlabeled communities based on a set of labeled training communities. See (1_) for a general discussion of the application of supervised classification to microbiota. Supervised classification using the Random Forests (2_) classifier is implemented in the QIIME script `supervised_learning.py <../scripts/supervised_learning.html>`_. When you run this script you will get several output files:
 
 * :file:`summary.txt`. This gives the estimated generalization error (an estimate of how much error the classifier would have on a novel data set), a description of the method used to estimate the generalization error, the expected "baseline" error for a model that always guesses the most common class, and the number of trees used in the forest.The estimated generalization error should be compared to the "baseline" error. For your convenience, this file also shows the ratio of the baseline error to the estimated generalization error of the random forests classifier. A reasonable criterion for good classification is that this ratio should be at least 2, or in other words, the random forests classifier does at least twice as well as random guessing. The baseline error will be very low for data sets with unbalanced classes. For example, if 90% of your samples belong to a single class, then your baseline error is 10%, and you should not be impressed if a classifier achieves, say, 8% error. In contrast, if your data is evenly divided into 10 classes, then your baseline error for random guessing is 90%, and even 45% classifier error is an indication that the classifier is doing quite a bit better than random. If you are interested in the performance of the classifier in a specific class, see the file :file:`confusion_matrix.txt` (explained below).
 * :file:`cv_probabilities.txt`. Cross-validation estimates of class probabilities for the samples. For each sample, gives the classifier's estimated probability that the sample belonged to each of the possible classes or categories. To avoid overfitting, the estimates for a given sample are always predicted by models that did not contain that sample in their training sets.
@@ -47,9 +47,9 @@ Note: we recommend running `single_rarefaction.py` on your OTU table before usin
 
 References
 ------------
-Knights D, Costello EK, Knight R (2010). "Supervised Classification of Human Microbiota". FEMS Microbiology Reviews 35, 343-359
+.. [1] Knights D, Costello EK, Knight R (2010). "Supervised Classification of Human Microbiota". FEMS Microbiology Reviews 35, 343-359 (`link <http://www.ncbi.nlm.nih.gov/pubmed/21039646>`_)
 
-Breiman L (2001). "Random forests". Maching Learning 45: 5–32.
+.. [2] Breiman L (2001). "Random forests". Maching Learning 45: 5–32. (`link <http://www.springerlink.com/content/u0p06167n6173512/>`_)
 
 
 

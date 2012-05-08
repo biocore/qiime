@@ -69,7 +69,7 @@ The identity percentage specified for error correction can be set with the optio
 
 Step 5. Chimera filter, de novo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Once the sequences have been corrected for errors, chimera checking is performed using **UCHIME** (Edgar et al., 2011). In this step "*de novo*" checking is performed, without using any external set of reference sequences. This is particularly useful when are using data for which a good reference set does not exist. However, "*de novo*" chimera checking can be computationally expensive for large datasets, and we suggest to disable it in such cases using the parameter -k or --de_novo_chimera_detection. Results from this step are stored in files :file:`de_novo_non_chimeras.fasta` and :file:`de_novo_chimeras.fasta`.
+Once the sequences have been corrected for errors, chimera checking is performed using **UCHIME** (1_). In this step "*de novo*" checking is performed, without using any external set of reference sequences. This is particularly useful when are using data for which a good reference set does not exist. However, "*de novo*" chimera checking can be computationally expensive for large datasets, and we suggest to disable it in such cases using the parameter -k or --de_novo_chimera_detection. Results from this step are stored in files :file:`de_novo_non_chimeras.fasta` and :file:`de_novo_chimeras.fasta`.
 
 The parameter -a or --abundance_skew can be used to control the abundance skew for chimera detection.
 
@@ -108,4 +108,4 @@ Each non-chimeric reads is assigned to the specific OTU identifier it belongs to
 
 References
 ------------
-Edgar RC, Haas BJ, Clemente JC, Quince C, Knight R. UCHIME improves sensitivity and speed of chimera detection. Bioinformatics. 2011 Aug 15;27(16):2194-200. Epub 2011 Jun 23.
+.. [1] Edgar RC, Haas BJ, Clemente JC, Quince C, Knight R. UCHIME improves sensitivity and speed of chimera detection. Bioinformatics. 2011 Aug 15;27(16):2194-200. Epub 2011 Jun 23. (`link <http://www.ncbi.nlm.nih.gov/pubmed/21700674>`_)
