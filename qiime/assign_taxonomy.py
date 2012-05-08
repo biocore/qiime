@@ -578,7 +578,7 @@ class RtaxTaxonAssigner(TaxonAssigner):
     """Assign taxon using RTAX
     """
     Name = "RtaxTaxonAssigner"
-    Application = "RTAX classifier, version 0.97"
+    Application = "RTAX classifier" # ", version 0.98"  # don't hardcode the version number, as it may change, and then the log output test would fail
     Citation = "Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J."
     _tracked_properties = ['Application','Citation']
 
