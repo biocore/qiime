@@ -40,7 +40,9 @@ This step has to be done separately for each 454 pool, following the usual guide
 For a single, non-barcoded sample, `split_libraries.py <../scripts/split_libraries.html>`_
 can be provided with a mapping file that has an empty field for the BarcodeSequence.
 
-Example::
+Example:
+
+.. note::
 
 	#SampleID   BarcodeSequence	LinkerPrimerSequence	 Description
 	Artificial    			ATTAGATACCCNGGTAG	 ArtificialGSFLX_from_Quince_et_al
@@ -129,7 +131,7 @@ less than 1 GB of memory.
 
 Example command::
 
-	$ denoiser_preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT
+	denoiser_preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT
 
 Several files are stored in the specified output directory. To see the
 clustering stastics check the file :file:`preprocess.log` in the output
@@ -148,7 +150,7 @@ Flowgrams are clustered based on their similarity.
 
 Example command::
 
-	$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised
+	denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised
 
 The preprocessing information in :file:`example_pp` is used and the output is
 stored in a randomly named, new direcory in :file:`example_denoised`. Note, that
@@ -161,7 +163,7 @@ set up the required job submission script (:file:`cluster_jobs_fp` in your qiime
 the following command will distribute the computation over 24
 cpus::
 
-	$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24
+	denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24
 
 Make sure the output directory is shared by all cluster
 nodes. Depending on the complexity of the data this step might take up
@@ -235,12 +237,13 @@ Q: What is the expected run-time?
 
 A: The whole heuristic for our method depends on the actual species distribution in your samples.
 An ideal data set has few species and a very skewed abundance distribution with a few, very abundant species.
-With more species and a flatter abundance distribution run time increases. You can get a rough estimate of the run time after the preprocessing step by looking at the number of reads printed in the log file in verbose mode. Very, very roughly, compute time increases quadratically with the number of reads after preprocessing::
+With more species and a flatter abundance distribution run time increases. You can get a rough estimate of the run time after the preprocessing step by looking at the number of reads printed in the log file in verbose mode. Very, very roughly, compute time increases quadratically with the number of reads after preprocessing:
 
-	...
-	Prefix matching: removed 242038 out of 339647 seqs
-	Remaining number of sequences: 97609
-	...
+.. note::
+    * ...
+    * Prefix matching: removed 242038 out of 339647 seqs
+    * Remaining number of sequences: 97609
+    * ...
 
 If the number of remaining sequences is smaller than 50.000, you can expect <24 hours on 20 cpus.
 With 100k seqs you would need 80 cpus to expect it to finish within a day.
@@ -284,7 +287,7 @@ Q: So where are all the sequences then?
 
 A: If you look at the file denoiser_mapping.txt, e.g. like this::
 
-	$ wc denoiser_mapping.txt
+	wc denoiser_mapping.txt
 
 you should see that the number in the middle of the output (i.e. the number of words) is about the number of sequences in your input set. (Sometimes, the denoiser discards a few additional reads due to quality issues that were not captured by split_libraries.py). All reads that are in this mapping file can and will be used e.g. in the downstream Qiime analysis. The first number in the wc output gives the number of lines on the files, which corresponds to the number of clusters after denoising.
 
@@ -310,7 +313,7 @@ Q: Denoising on the clusters "hangs" after a while. What is going on?
 A: If not provided with already preprocessed data via the -p option, the denoiser.py script automatically starts the preprocessing phase (cluster phase I in the paper) on one CPU on the cluster. This preprocessing takes from a few minutes for partial GS FLX runs to an hour or more for large Titanium runs. After this step, the parallel cluster phase II starts. First, all requested workers are started one-by-one. Depending on your queueing system and the number of jobs this might take from few seconds to several minutes. If one or more of the jobs are not started by the queueing system, all submitted jobs will block and wait. This is most likely the state your process is in if nothing seems to happen. We know this is not optimally and already thinking about a better solution for the future. In the meantime, make sure you only request as many jobs as you can safely run in your queue and monitor (qstat) the startup phase to see if all jobs are properly scheduled. If you finf that you requested to many CPUs and need to restart, simply kill the master process (denoiser.py) and it should bring down all but the last submitted jobs. The last job might need to be killed by hand.
 Once all workers are succesfully started, you can monitor the progress by following the log file in verbose mode (toggled by the -v option)::
 	
-	$ tail -f denoiser.log
+	tail -f denoiser.log
 
 
 Q: How and why can I run the preprocessing step separately?

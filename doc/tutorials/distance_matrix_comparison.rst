@@ -28,14 +28,16 @@ To illustrate the use of the Mantel test, we will determine if there is signific
 
     compare_distance_matrices.py --method=mantel -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_out -n 999
 
-This command will create a new output directory named :file:`mantel_out`, which will contain a single text file called :file:`mantel_results.txt`. Open up :file:`mantel_results.txt` to see the results of the test: ::
+This command will create a new output directory named :file:`mantel_out`, which will contain a single text file called :file:`mantel_results.txt`. Open up :file:`mantel_results.txt` to see the results of the test: 
 
-    # Number of entries refers to the number of rows (or cols) retained in each
-    # distance matrix after filtering the distance matrices to include only those
-    # samples that were in both distance matrices. p-value contains the correct
-    # number of significant digits.
-    DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
+.. note::
+
+    * # Number of entries refers to the number of rows (or cols) retained in each
+    * # distance matrix after filtering the distance matrices to include only those
+    * # samples that were in both distance matrices. p-value contains the correct
+    * # number of significant digits.
+    * DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
+    * unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
 
 The Mantel `r` statistic of 0.75592 indicates that there is relatively strong positive correlation between the UniFrac and pH matrices. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. We determined the p-value by specifying 999 permutations with the -n option. By default, the p-value is calculated using a two-tailed test, though this can be changed using the -t option.
 
@@ -43,16 +45,18 @@ This script also has a "batch" mode where you may specify more than two distance
 
     compare_distance_matrices.py --method=mantel -i unweighted_unifrac_dm.txt,unweighted_unifrac_dm_shuffled.txt,PH_dm.txt -o mantel_out -n 999
 
-Again, open up :file:`mantel_out/mantel_results.txt` to see the results of the test: ::
+Again, open up :file:`mantel_out/mantel_results.txt` to see the results of the test:
 
-    # Number of entries refers to the number of rows (or cols) retained in each
-    # distance matrix after filtering the distance matrices to include only those
-    # samples that were in both distance matrices. p-value contains the correct
-    # number of significant digits.
-    DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	unweighted_unifrac_dm_shuffled_1.txt	77	-0.01380	0.659	999	two sided
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
-    unweighted_unifrac_dm_shuffled_1.txt	PH_dm.txt	77	0.01960	0.559	999	two sided
+.. note::
+
+    * # Number of entries refers to the number of rows (or cols) retained in each
+    * # distance matrix after filtering the distance matrices to include only those
+    * # samples that were in both distance matrices. p-value contains the correct
+    * # number of significant digits.
+    * DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
+    * unweighted_unifrac_dm.txt	unweighted_unifrac_dm_shuffled_1.txt	77	-0.01380	0.659	999	two sided
+    * unweighted_unifrac_dm.txt	PH_dm.txt	77	0.75592	0.001	999	two sided
+    * unweighted_unifrac_dm_shuffled_1.txt	PH_dm.txt	77	0.01960	0.559	999	two sided
 
 We specified three distance matrices in the previous command. Two of the distance matrices are the same and we added a third distance matrix called :file:`unweighted_unifrac_dm_shuffled.txt`. This distance matrix is the same as the original unweighted UniFrac distance matrix except its sample IDs are shuffled. This distance matrix is included to illustrate a negative control, i.e. one that should `not` be correlated with either of the other two distance matrices. The results file indicates that there isn't significant correlation between the original and shuffled UniFrac distance matrices because the Mantel `r` statistic is close to zero and the p-value is very large (0.659). The middle line in the results file is the same as our previous results (strong significant positive correlation). The last line indicates that the shuffled UniFrac and pH distance matrices are not significantly correlated.
 
@@ -64,14 +68,16 @@ To illustrate the use of the partial Mantel test, we will determine if there is 
 
     compare_distance_matrices.py --method=partial_mantel -i unweighted_unifrac_dm.txt,weighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 999
 
-This command will create a new output directory named :file:`partial_mantel_out`, which will contain a single text file called :file:`partial_mantel_results.txt`. Open up :file:`partial_mantel_results.txt` to see the results of the test: ::
+This command will create a new output directory named :file:`partial_mantel_out`, which will contain a single text file called :file:`partial_mantel_results.txt`. Open up :file:`partial_mantel_results.txt` to see the results of the test:
 
-    # Number of entries refers to the number of rows (or cols) retained in each
-    # distance matrix after filtering the distance matrices to include only those
-    # samples that were in both distance matrices. p-value contains the correct
-    # number of significant digits.
-    DM1	DM2	CDM	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
-    unweighted_unifrac_dm.txt	weighted_unifrac_dm.txt	PH_dm.txt	77	0.68183	0.001	999	greater
+.. note::
+
+    * # Number of entries refers to the number of rows (or cols) retained in each
+    * # distance matrix after filtering the distance matrices to include only those
+    * # samples that were in both distance matrices. p-value contains the correct
+    * # number of significant digits.
+    * DM1	DM2	CDM	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
+    * unweighted_unifrac_dm.txt	weighted_unifrac_dm.txt	PH_dm.txt	77	0.68183	0.001	999	greater
 
 The Mantel `r` statistic of 0.68183 indicates that there is relatively strong positive correlation between the unweighted and weighted UniFrac distance matrices while controlling for differences in pH. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. As with the Mantel test (above), we can also specify more than two distance matrices as inputs, and separate partial Mantel tests will be performed for all pairs of input distance matrices, using the same control matrix for each test.
 
@@ -89,29 +95,32 @@ To illustrate the use of the Mantel correlogram method, we will determine if the
 
     compare_distance_matrices.py --method=mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999
 
-This command will create a new output directory named :file:`mantel_correlogram_out`, which will contain two files called :file:`mantel_correlogram_results.txt` and :file:`unweighted_unifrac_dm.txt_AND_PH_dm.txt_mantel_correlogram.pdf`. Open up :file:`mantel_correlogram_results.txt` to see the results of the test: ::
+This command will create a new output directory named :file:`mantel_correlogram_out`, which will contain two files called :file:`mantel_correlogram_results.txt` and :file:`unweighted_unifrac_dm.txt_AND_PH_dm.txt_mantel_correlogram.pdf`. Open up :file:`mantel_correlogram_results.txt` to see the results of the test:
 
-    # Number of entries refers to the number of rows (or cols) retained in each
-    # distance matrix after filtering the distance matrices to include only those
-    # samples that were in both distance matrices. p-value contains the correct
-    # number of significant digits.
-    # Distance classes with values of None were in the second half of the distance
-    # classes and not all samples could be included in the distance class, so
-    # calculations were not performed.
-    DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
-    unweighted_unifrac_dm.txt	PH_dm.txt	77	999	0.185384615385	874	0.366968109081	0.001	0.007	greater
-                                    0.556153846154	830	0.303484182667	0.001	0.007	greater
-                                    0.926923076923	780	0.175832596202	0.001	0.007	greater
-                                    1.29769230769	706	0.0626170953492	0.001	0.007	greater
-                                    1.66846153846	616	-0.0228103590068	0.095	0.665	less
-                                    2.03923076923	572	-0.121409591684	0.001	0.007	less
-                                    2.41	458	-0.191866428719	0.001	0.007	less
-                                    2.78076923077	326	None	None	None	None
-                                    3.15153846154	238	None	None	None	None
-                                    3.52230769231	202	None	None	None	None
-                                    3.89307692308	146	None	None	None	None
-                                    4.26384615385	82	None	None	None	None
-                                    4.63461538462	22	None	None	None	None
+.. note::
+
+    | # Number of entries refers to the number of rows (or cols) retained in each
+    | # distance matrix after filtering the distance matrices to include only those
+    | # samples that were in both distance matrices. p-value contains the correct
+    | # number of significant digits.
+    | # Distance classes with values of None were in the second half of the distance
+    | # classes and not all samples could be included in the distance class, so
+    | # calculations were not performed.
+    | DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
+    | unweighted_unifrac_dm.txt	PH_dm.txt	77	999	0.185384615385	874	0.366968109081	0.001	0.007	greater
+    |    0.556153846154	830	0.303484182667	0.001	0.007	greater
+    |    0.926923076923	780	0.175832596202	0.001	0.007	greater
+    |    1.29769230769	706	0.0626170953492	0.001	0.007	greater
+    |    1.66846153846	616	-0.0228103590068	0.095	0.665	less
+    |    2.03923076923	572	-0.121409591684	0.001	0.007	less
+    |    2.41	458	-0.191866428719	0.001	0.007	less
+    |    2.78076923077	326	None	None	None	None
+    |    3.15153846154	238	None	None	None	None
+    |    3.52230769231	202	None	None	None	None
+    |    3.89307692308	146	None	None	None	None
+    |    4.26384615385	82	None	None	None	None
+    |    4.63461538462	22	None	None	None	None
+
 
 The results file contains information about which two distance matrices were compared, how many entries (i.e. samples) were in each, and the number of permutations used to compute the p-values. The class index indicates the midpoint of each distance class derived from the second distance matrix (in this case, :file:`PH_dm.txt`). The next column contains the number of distances in each distance class. The Mantel `r` statistic denotes the strength of the correlation for the distance class, and the p-value and Bonferroni-corrected p-value indicate the significance of the test.
 
