@@ -14,7 +14,7 @@ import matplotlib
 from matplotlib import use
 use('Agg',warn=False)
 from numpy import array
-from os.path import exists
+from os.path import exists,join
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from os import remove
@@ -99,8 +99,8 @@ class TopLevelTests(TestCase):
     def test_make_line_plot(self):
         """ make_line_plot: creates HTML source for scree plot"""
 
-        filename1 = self.tmp_dir + 'scree_plot.png'
-        filename2 = self.tmp_dir + 'scree_plot.eps.gz'
+        filename1 = join(self.tmp_dir,'scree_plot.png')
+        filename2 = join(self.tmp_dir,'scree_plot.eps.gz')
         self._paths_to_clean_up = [filename1,filename2]
 
         obs1,obs2=make_line_plot(self.tmp_dir, self.tmp_dir,
@@ -176,8 +176,8 @@ plot into html spatial coords which allows for mouseovers"""
     def test_draw_scree_graph(self):
         """draw_scree_graph: draws the matplotlib figure"""
 
-        filename1 = self.tmp_dir + 'scree_plot.png'
-        filename2 = self.tmp_dir + 'scree_plot.eps.gz'
+        filename1 = join(self.tmp_dir,'scree_plot.png')
+        filename2 = join(self.tmp_dir,'scree_plot.eps.gz')
         self._paths_to_clean_up = [filename1,filename2]
 
         obs1,obs2=draw_scree_graph(self.tmp_dir, self.tmp_dir,

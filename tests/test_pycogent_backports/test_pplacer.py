@@ -234,15 +234,15 @@ alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 0.000017 0.037400 0.859448 1.3043
 
 Conducting final model optimizations on all 1 trees under GAMMA-based models ....
 
-Inference[0] final GAMMA-based Likelihood: -107.575676 tree written to file /home/jistombaugh/RAxML_result.results
+Inference[0] final GAMMA-based Likelihood: -107.575676 tree written to file /home/RAxML_result.results
 
 
 Starting final GAMMA-based thorough Optimization on tree 0 likelihood -107.575676 .... 
 
 Final GAMMA-based Score of best tree -107.575676
 
-Program execution info written to /home/jistombaugh/RAxML_info.results
-Best-scoring ML tree written to: /home/jistombaugh/RAxML_bestTree.results
+Program execution info written to /home/RAxML_info.results
+Best-scoring ML tree written to: /home/RAxML_bestTree.results
 
 Overall execution time: 0.078965 secs or 0.000022 hours or 0.000001 days
 """
