@@ -81,20 +81,29 @@ class MothurOtuPickerTests(TestCase):
     def test_call(self):
         app = MothurOtuPicker({})
         observed_otus = app(self.small_seq_path)
-        expected_otus = {0: ['cccccc'], 1: ['bbbbbb'], 2: ['aaaaaa']}
-        self.assertEqual(observed_otus, expected_otus)
+        expected_otus = [['cccccc'],['bbbbbb'],['aaaaaa']]
+        self.assertEqualItems(observed_otus.keys(), 
+                              [0,1,2])
+        self.assertEqualItems(observed_otus.values(), 
+                              expected_otus)
 
     def test_call_low_similarity(self):
         app = MothurOtuPicker({'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
-        expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
-        self.assertEqual(observed_otus, expected_otus)
+        expected_otus = [['bbbbbb', 'cccccc'],['aaaaaa']]
+        self.assertEqualItems(observed_otus.keys(), 
+                              [0,1])
+        self.assertEqualItems(observed_otus.values(), 
+                              expected_otus)
 
     def test_call_nearest_neighbor(self):
         app = MothurOtuPicker({'Algorithm': 'nearest', 'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
-        expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
-        self.assertEqual(observed_otus, expected_otus)
+        expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
+        self.assertEqualItems(observed_otus.keys(), 
+                              [0,1])
+        self.assertEqualItems(observed_otus.values(), 
+                              expected_otus)
 
 class BlastOtuPickerTests(TestCase):
     """ Tests of the blast-based otu picker """
