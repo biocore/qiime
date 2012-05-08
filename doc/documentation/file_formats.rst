@@ -274,7 +274,7 @@ You can find information on the QIIME workflow scripts at:
 
 	* `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_
 	* `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_
-	* `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_
+	* `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_
 	* `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_
 
 
