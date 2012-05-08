@@ -98,6 +98,9 @@ class Qiime_config(TestCase):
         
         fp = self.config["cluster_jobs_fp"]
         
+        if not fp:
+            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
+        
         full_path = app_path(fp)
         if full_path:
             fp = full_path
@@ -499,7 +502,7 @@ class Qiime_config(TestCase):
         
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
-        acceptable_version = (1,6,0)
+        acceptable_version = (1,25,0)
         self.assertTrue(app_path('mothur'),
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -538,7 +541,7 @@ class Qiime_config(TestCase):
         
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
-        acceptable_version = [(7,0,3),(7,3,0)]
+        acceptable_version = [(7,3,0),(7,3,0)]
         self.assertTrue(app_path('raxmlHPC'),
          "raxmlHPC not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -598,6 +601,113 @@ class Qiime_config(TestCase):
     #    #chim_slay = app_path("ChimeraSlayer.pl")
     #    #ChimeraSlayer does not have a version print in their program
     #    pass
+        
+    def test_rtax_supported_version(self):
+        """rtax is in path and version is supported """
+        acceptable_version = [(0,98),(0,98)]
+        self.assertTrue(app_path('rtax'),
+         "rtax not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "rtax 2>&1 > /dev/null | grep Version | awk '{print $2}'"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version in acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported rtax version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+         
+    def test_pplacer_supported_version(self):
+        """pplacer is in path and version is supported """
+        acceptable_version = [(1,1),(1,1)]
+        self.assertTrue(app_path('pplacer'),
+         "pplacer not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "pplacer --version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip()[1:3]
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version in acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported pplacer version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+         
+    def test_ParsInsert_supported_version(self):
+        """ParsInsert is in path and version is supported """
+        acceptable_version = [(1,04),(1,04)]
+        self.assertTrue(app_path('ParsInsert'),
+         "ParsInsert not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "ParsInsert -v | grep App | awk '{print $3}'"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip()[1:3]
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version in acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported ParsInsert version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_usearch_supported_version(self):
+        """usearch is in path and version is supported """
+        acceptable_version = [(5,2,32),(5,2,32)]
+        self.assertTrue(app_path('usearch'),
+         "usearch not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "usearch --version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip()[8:]
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version in acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported usearch version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+         
+    def test_R_supported_version(self):
+        """R is in path and version is supported """
+        acceptable_version = [(2,12,0),(2,12,0)]
+        self.assertTrue(app_path('R'),
+         "usearch not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "R --version | grep 'R version' | awk '{print $3}'"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip()[8:]
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version in acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported R version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+        
         
         
 def test_qiime_config_variable(variable, qiime_config, test,
