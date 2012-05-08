@@ -662,13 +662,16 @@ class RdpTaxonAssignerTests(TestCase):
 
         # make sure all taxonomic results were correct at least once
         self.assertFalse(unverified_seq_ids, msg='\n'.join(messages))
-
+        
+    """
+    # THIS TEST IS NOT GOOD SINCE IT WILL LEAVE FILES IN /tmp/
     def test_call_with_missing_properties_file(self):
         app = self.app_class({
             'training_data_properties_fp': '/this/file/does/not/exist.on/any.system',
             })
         self.assertRaises(ApplicationError, app, self.tmp_seq_filepath)
-
+    """
+    
     def test_call_with_properties_file(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
 

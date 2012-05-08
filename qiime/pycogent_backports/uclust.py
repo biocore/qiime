@@ -521,6 +521,7 @@ def get_clusters_from_fasta_filepath(
             # Get sorted fasta name from application wrapper
             sorted_fasta_filepath = sort_fasta['Output'].name
             files_to_remove.append(sorted_fasta_filepath)
+            
         else:
             sort_fasta = None
             sorted_fasta_filepath = fasta_filepath
@@ -543,6 +544,7 @@ def get_clusters_from_fasta_filepath(
          stable_sort=stable_sort,
          HALT_EXEC=HALT_EXEC)
         # Get cluster file name from application wrapper
+        remove_files(files_to_remove)
     except ApplicationError:
         remove_files(files_to_remove)
         raise ApplicationError, ('Error running uclust. Possible causes are '
@@ -559,10 +561,6 @@ def get_clusters_from_fasta_filepath(
     
     # Remove temp files unless user specifies output filepath
     if not save_uc_files:
-        try:
-            sort_fasta.cleanUp()
-        except AttributeError:
-            pass
         uclust_cluster.cleanUp()
     
     if return_cluster_maps:
