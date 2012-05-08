@@ -8,7 +8,7 @@ Introduction
 -------------
 **usearch_qf** (usearch quality filter) is a pipeline script built using `USEARCH <http://www.drive5.com/usearch>`_ to perform filtering of noisy sequences, chimera checking, and OTU picking on a set of de-multiplexed (i.e. post `split_libraries.py <../scripts/split_libraries.html>`_) sequences. This tutorial explains how to use usearch_qf through QIIME, with details about each of the steps performed and a brief description of basic parameters and their effect.
 
-For detailed information about using usearch as a pipeline of scripts, please check the website `OTUPIPE <http://www.drive5.com/otupipe>`_ where you can also find some benchmark results using an artificial bacterial community `<http://www.drive5.com/usearch/perf/mock_results.html>`_.
+Usearch quality filtering is modeled after the OTUPipe series of scripts by Robert Edgar.  For details, please check the website `OTUPIPE <http://www.drive5.com/otupipe>`_ where you can also find some benchmark results using an artificial bacterial community `<http://www.drive5.com/usearch/perf/mock_results.html>`_.
 
 .. _basicuse:
 
