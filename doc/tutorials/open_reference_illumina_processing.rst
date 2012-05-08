@@ -70,6 +70,8 @@ Step 0: Prefilter (parallel)
 ----------------------------
 Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>`. All reads which fail to hit the reference set are discarded as likely sequencing error.
 
+ .. warning:: If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as ``-p`` to ``pick_subsampled_reference_otus_through_otu_table.py``: ``pick_otus:enable_rev_strand_match True``. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow. 
+
 Step 1: Closed reference (parallel)
 -----------------------------------
 Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
