@@ -320,6 +320,12 @@ def process_fastq_single_end_read_file(fastq_read_f,
           (sample_id,seq_id,header,barcode,corrected_barcode,num_barcode_errors)
         yield fasta_header, sequence, quality, seq_id
         seq_id += 1
+    
+    # Add sample IDs with zero counts to dictionary for logging    
+    for curr_sample_id in barcode_to_sample_id.values():
+        if curr_sample_id not in seqs_per_sample_counts.keys():
+            seqs_per_sample_counts[curr_sample_id] = 0
+    
 
     if log_f != None:
         log_str = format_split_libraries_fastq_log(count_barcode_not_in_map,

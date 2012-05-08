@@ -473,6 +473,12 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
     counts.reverse()
     for sequence_count, sample_id in counts:
         log_out.append('%s\t%d' % (sample_id,sequence_count))
+        
+    total_seqs_written = 0
+    for curr_count in counts:
+        total_seqs_written += curr_count[0]
+        
+    log_out.append('\nTotal number seqs written\t%d' % total_seqs_written)
     return '\n'.join(log_out)
 
 def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
