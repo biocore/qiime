@@ -26,34 +26,39 @@ Making OTU tables for 18S datasets
 
 Here we will cover picking OTUs.  Using the default settings with `pick_otus.py <../scripts/pick_otus.html>`_ is no different than with 16S data.  Sequences will be clustered at 97% identity and new clusters will be allowed.  However, one can utilize a reference based approach with the Silva dataset listed above that discards sequences that do not cluster with the reference set.  The advantage to using this approach is that one can use the reference taxonomic assignments and tree rather than generating new ones, however, a large portion of sequences may be discarded.
 
-To pick OTUs against the Silva reference data set and discard any clusters that do not match, use the following command: ::
+To pick OTUs against the Silva reference data set and discard any clusters that do not match, use the following command (the path to the -r parameter representative sequence file will be different for the Silva 108 release): ::
 
 	pick_otus.py -i 18S_tutorial_sample_seqs.fna -m uclust_ref -C -r QIIME_files/rep_set/silva_104_rep_set.fasta -o uclust_ref_picked_otus/
 
-This will generate a `18S_tutorial_sample_seqs_otus.txt` OTU mapping file in the uclust_ref_picked_otus folder.  An OTU table with taxonomy strings from the reference dataset can be built directly.  To do so now, use the following command: ::
+This will generate a `18S_tutorial_sample_seqs_otus.txt` OTU mapping file in the uclust_ref_picked_otus folder.  An OTU table with taxonomy strings from the reference dataset can be built directly.  To do so now, use the following command (the taxonomy mapping file path for the -t parameter is different if the Silva 108 release is used): ::
 
-	make_otu_table.py -i uclust_ref_picked_otus/18S_tutorial_sample_seqs_otus.txt -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -o otu_table_uclust_ref.txt
+	make_otu_table.py -i uclust_ref_picked_otus/18S_tutorial_sample_seqs_otus.txt -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -o otu_table_uclust_ref.biom
 
-which will generate an OTU table, as shown below:
+The result of this step is :file:`otu_table_uclust_ref.biom`. For more information about the OTU table format, which relies on the biom-format, please go here: `biom-format <http://biom-format.org/documentation/biom_format.html>`_
+
+To convert the table to a tab separated file containing taxonomic information, use this command: ::
+
+    convert_biom.py -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header_key taxonomy
+
+which will generate a tab separate OTU table, with an example generated from the Silva 108 release shown below:
 
 .. note::
 
-	* # QIIME v1.2.1-dev OTU table
-	* #OTU ID	AB019754	AB032231	AB294260	AB294267	AF391990	AY642706	AY854217	DQ521781	DQ809034	DQ889882	EF018454	EF100339	EU284615	Consensus Lineage
-	* 1347	0	1	0	0	0	0	0	0	0	0	0	0	0	Eukaryota;Parabasalia;Trichonymphida;Teranymphidae;Eucomonympha;;Eucomonympha
-	* 3838	0	0	0	0	0	0	0	0	0	0	0	0	1	Archaea;Crenarchaeota;Soil
-	* 5518	0	0	0	1	0	0	0	0	0	0	0	0	0	Archaea;Crenarchaeota;AK31;uncultured
-	* 12442	0	0	0	0	1	0	0	0	0	0	0	0	0	Archaea;Crenarchaeota;Miscellaneous
-	* 13457	0	0	0	0	0	0	0	0	0	1	0	0	0	Bacteria;Proteobacteria;Alphaproteobacteria;Rhodospirillales;Rhodospirillaceae;uncultured;uncultured
-	* 25010	0	0	0	0	0	0	1	0	0	0	0	0	0	Eukaryota;Metazoa;Nematoda;Chromadorea;Desmodorida;Desmodoridae;Spiriniinae;Spirinia;;Spirinia
-	* 25076	0	0	0	0	0	1	0	0	0	0	0	0	0	Eukaryota;Fungi;Chytridiomycota;environmental
-	* 38221	0	0	0	0	0	0	0	0	0	0	0	1	0	Eukaryota;environmental
-	* 39680	0	0	0	0	0	0	0	0	0	0	1	0	0	Bacteria;Proteobacteria;Deltaproteobacteria;Myxococcales;Sorangiineae;Polyangiaceae;Sorangium;uncultured
-	* 43905	0	0	1	0	0	0	0	0	0	0	0	0	0	Archaea;Crenarchaeota;South
-	* 78139	0	0	0	0	0	0	0	0	1	0	0	0	0	Bacteria;Bacteroidetes;Bacteroidia;Bacteroidales;Bacteroidaceae;Bacteroides;uncultured
-	* 88700	1	0	0	0	0	0	0	0	0	0	0	0	0	Archaea;Euryarchaeota;Thermoplasmata;Marine
-	* 96301	0	0	0	0	0	0	0	1	0	0	0	0	0	Archaea;Euryarchaeota;Thermoplasmata;Thermoplasmatales;Marine
-
+    * # Constructed from biom file
+    * #OTU ID	EF100339	AY854217	EF018454	EU284615	AB032231	AB294267	AB019754	DQ521781	AB294260	DQ809034	AY642706	DQ889882	AF391990	taxonomy
+    * 91263	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Eukaryota; environmental samples; uncultured eukaryote
+    * 75161	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Eukaryota; Metazoa; Nematoda; Chromadorea; Desmodorida; Desmodoridae; Spiriniinae; Spirinia; Spirinia parasitifera
+    * 14679	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Bacteria; Proteobacteria; Deltaproteobacteria; Myxococcales; Sorangiineae; Polyangiaceae; Sorangium; uncultured proteobacterium
+    * 35499	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Archaea; Crenarchaeota; Soil Crenarchaeotic Group(SCG); uncultured archaeon
+    * 41347	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Eukaryota; Parabasalia; Trichonymphida; Teranymphidae; Eucomonympha; Eucomonympha sp. HsL3
+    * 24695	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	Archaea; Crenarchaeota; AK31; uncultured archaeon
+    * 53321	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0	Archaea; Euryarchaeota; Thermoplasmata; Marine Benthic Group E; unidentified archaeon
+    * 66907	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0	Archaea; Euryarchaeota; Thermoplasmata; Thermoplasmatales; Marine Benthic Group D and DHVEG-1; uncultured archaeon
+    * 27608	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	Archaea; Crenarchaeota; South African Gold Mine Gp 1(SAGMCG-1); uncultured archaeon
+    * 99024	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	Bacteria; Bacteroidetes; Bacteroidia; Bacteroidales; Porphyromonadaceae; Barnesiella; uncultured bacterium
+    * 73606	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	Eukaryota; environmental samples; uncultured eukaryotic picoplankton
+    * 7461	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	Bacteria; Proteobacteria; Alphaproteobacteria; Rhodospirillales; Rhodospirillaceae; uncultured; uncultured alpha proteobacterium
+    * 74406	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1.0	Archaea; Crenarchaeota; Miscellaneous Crenarchaeotic Group; uncultured thermal soil archaeon
 
 To generate *de novo* OTUs, use the following command: ::
 
