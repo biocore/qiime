@@ -14,12 +14,12 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
-#from subprocess import Popen
+from subprocess import Popen
 from os import makedirs, chmod, getenv, remove
 from os.path import exists
 from shutil import rmtree
 from stat import S_IRWXU
-from qiime.util import load_qiime_config, qiime_system_call
+from qiime.util import load_qiime_config
 
 qiime_config = load_qiime_config()
 
@@ -89,7 +89,10 @@ def run_commands(output_dir,commands,run_id,submit_jobs,keep_temp):
     # Call the jobs
     if submit_jobs:
         for job_fp in job_fps:
-            qiime_system_call(' '.join(['/bin/sh', job_fp]))
+            # note that we can't use qiime_system_call here
+            # as that waits for the job to return which would 
+            # defeat the purpose.
+            Popen(['/bin/sh', job_fp])
     
     # clean up the shell scripts that were created
     if not keep_temp:

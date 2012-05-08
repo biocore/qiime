@@ -30,7 +30,6 @@ def submit_jobs(commands, prefix):
 
     prefix: A uniq prefix used to name submit script
 """
-
     qiime_config = load_qiime_config()
     CLUSTER_JOBS_SCRIPT = qiime_config['cluster_jobs_fp']
 
@@ -44,7 +43,8 @@ def submit_jobs(commands, prefix):
     fh = open(outfilename, "w") 
     fh.write("\n".join(commands))
     fh.close()
-    system('%s -ms %s %s'%(CLUSTER_JOBS_SCRIPT, outfilename, prefix))
+    cmd = '%s -ms %s %s'%(CLUSTER_JOBS_SCRIPT, outfilename, prefix)
+    system(cmd)
     remove(outfilename)
 
 def setup_workers(num_cpus, outdir, server_socket, verbose=True,
@@ -85,6 +85,7 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
         else :
             cmd  = "%s %s -f %s -s %s -p %s" % (qiime_config['python_exe_fp'],
                                             DENOISE_WORKER, name, host, port)
+
         if verbose:
             cmd += " -v"
         if error_profile:
