@@ -24,7 +24,7 @@ Run split_libraries_fastq on each read individually (making sure to reverse-comp
 
 Note that while most amplicons should be represented in both the forward and the reverse read files (i.e., with mate pairs matchable by amplicon ID), it may happen that one read is eliminated by quality filters while the other is not.
 
-Normally the fasta files resulting from split_libraries_fastq.py will contain millions of sequences; for tutorial purposes we provide tiny samples taken from (Caporaso et al. 2010 PNAS).  These are constructed to contain 10,000 mate-pairs, as well as 1000 sequences represented only by the forward read and 2000 represented only by the reverse read.  The sample forward and reverse read files thus contain 11,000 and 12,000 sequences, respectively.
+Normally the fasta files resulting from split_libraries_fastq.py will contain millions of sequences; for tutorial purposes we provide tiny samples taken from (`Caporaso et al. 2010 PNAS <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_).  These are constructed to contain 10,000 mate-pairs, as well as 1000 sequences represented only by the forward read and 2000 represented only by the reverse read.  The sample forward and reverse read files thus contain 11,000 and 12,000 sequences, respectively.
 
 Perform OTU picking
 -------------------
@@ -53,14 +53,14 @@ Impact of reference databases
 
 The choice of reference database can have a large impact on the results.  The 97%-clustered database provided with QIIME is used in this example.  For 99% OTUs, simply replace "97" with "99" in the -r option.
 
-An alternative set of reference databases--those used in (Soergel et al. 2012)--is available `here <http://dev.davidsoergel.com/rtax`>.  To use these, the command line options would include ``-t rtax.greengenes.20110311/gg.nr.taxonomy -r rtax.greengenes.20110311/gg.nr.fasta``.
+An alternative set of reference databases--those used in (`Soergel et al. 2012 <http://www.ncbi.nlm.nih.gov/pubmed/22237546>`_)--is available `here <http://dev.davidsoergel.com/rtax>`_.  To use these, the command line options would include ``-t rtax.greengenes.20110311/gg.nr.taxonomy -r rtax.greengenes.20110311/gg.nr.fasta``.
 
 Fallback from paired-end to single-ended classification
 -------------------------------------------------------
 
 By default, RTAX classifies only those sequences for which mate pairs are available.  In this case, 2079 of the 2301 cluster representatives have an associated reverse read and thus are classified, while the remaining 222 are ignored.
 
-If you wish to classify the remaining sequences using the single-ended classification procedure, pass the "--single_ok" option:
+If you wish to classify the remaining sequences using the single-ended classification procedure, pass the "--single_ok" option::
 
 	assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna --read_2_seqs_fp rtax_sample_data/reverse_read.12k.fna -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax.txt -v --single_ok
 
@@ -69,6 +69,6 @@ This classifies all of the cluster representative sequences, with the caveat tha
 Taxonomic classifications of single-ended sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RTAX can be used for single-ended classification as well; simply omit the "--read_2_seqs_fp" option.  The original read file for the single read must nonetheless be passed via "--read_1_seqs_fp"; it is needed to establish the mapping between cluster ID, read representative ID, and amplicon ID.
+RTAX can be used for single-ended classification as well; simply omit the "--read_2_seqs_fp" option.  The original read file for the single read must nonetheless be passed via "--read_1_seqs_fp"; it is needed to establish the mapping between cluster ID, read representative ID, and amplicon ID.::
 
 	assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax.txt -v
