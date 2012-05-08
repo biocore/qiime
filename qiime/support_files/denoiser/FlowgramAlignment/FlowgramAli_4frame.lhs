@@ -1,13 +1,12 @@
 > module Main where
 
-> import Array
-> import List
+> import Data.Array
+> import Data.List
 > import FlowgramUtils
 > import ADPCombinators
-> import System(getArgs)
+> import System.Environment(getArgs)
 > import System.IO
-> import System.Exit(exitWith)
-> import System
+> import System.Exit(exitWith, ExitCode(..))
 > import Text.Printf(printf)
 
 The signature:

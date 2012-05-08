@@ -1,6 +1,6 @@
 > module FlowgramUtils where
 
-> import Array
+> import Data.Array
 > import System.IO.Unsafe (unsafePerformIO)
 
 > type FlowSignalDistrib = Array (Int,Int) Float

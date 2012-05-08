@@ -7,7 +7,7 @@ programming.
 ----------------------------------------------------------------------
 
 > module ADPCombinators where
-> import Array
+> import Data.Array
 
 Lexical parsers
 ----------------
