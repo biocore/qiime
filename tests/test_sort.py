@@ -6,10 +6,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files

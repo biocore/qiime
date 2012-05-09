@@ -3,10 +3,10 @@ __author__ = "Jai Rideout"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jai Rideout"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 """This module contains functions for plotting distributions in various ways.
 

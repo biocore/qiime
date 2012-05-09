@@ -4,10 +4,10 @@ __author__ = "Adam Robbins-Pianka"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import make_option, create_dir,\
  parse_command_line_parameters, get_options_lookup

@@ -4,10 +4,10 @@ __author__ = "David Soergel"
 __copyright__ = ""
 __credits__ = ["David Soergel"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "David Soergel"
 __email__ = "soergel@cs.umass.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.util.misc import remove_files
 

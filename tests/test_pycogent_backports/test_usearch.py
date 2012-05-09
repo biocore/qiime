@@ -8,10 +8,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
 __credits__ = ["William Walters", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from os.path import isfile, basename
 from shutil import rmtree
@@ -39,7 +39,7 @@ __license__ = "GPL"
 __version__ = "1.6.0.dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 class UsearchTests(TestCase):
 

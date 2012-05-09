@@ -6,10 +6,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 from qiime.util import parse_command_line_parameters, make_option, \
                        get_options_lookup,load_qiime_config,create_dir

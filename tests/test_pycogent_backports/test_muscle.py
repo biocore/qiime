@@ -16,7 +16,7 @@ __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 class GeneralSetUp(TestCase):
 

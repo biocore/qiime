@@ -6,10 +6,10 @@ __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.4.0-dev"
+__version__ = "1.5.0"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
