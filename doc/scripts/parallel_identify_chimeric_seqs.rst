@@ -25,7 +25,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	**[OPTIONAL]**
 		
 	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: $HOME/qiime_software/core_set_aligned.fasta.imputed]
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
@@ -45,11 +45,11 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-o, `-`-output_fp
 		Path to store output [default: derived from input_seqs_fp]
 	-N, `-`-identify_chimeric_seqs_fp
-		Full path to scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_]
+		Full path to scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ [default: $HOME/qiime_software/scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_]
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: $HOME/qiime_software/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -57,7 +57,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: $HOME/qiime_software/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix

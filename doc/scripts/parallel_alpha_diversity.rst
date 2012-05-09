@@ -29,11 +29,11 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-t, `-`-tree_path
 		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-N, `-`-alpha_diversity_fp
-		Full path to scripts/`alpha_diversity.py <./alpha_diversity.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`alpha_diversity.py <./alpha_diversity.html>`_]
+		Full path to scripts/`alpha_diversity.py <./alpha_diversity.html>`_ [default: $HOME/qiime_software/scripts/`alpha_diversity.py <./alpha_diversity.html>`_]
 	-m, `-`-metrics
 		Metrics to use, comma delimited
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: $HOME/qiime_software/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -41,7 +41,7 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: $HOME/qiime_software/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
