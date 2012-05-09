@@ -6,10 +6,10 @@ __author__ = "Jai Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Rideout", "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "1.5.0-dev"
 __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field

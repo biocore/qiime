@@ -10,7 +10,7 @@ __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.app.parameters import ValuedParameter, FlagParameter, \
        MixedParameter

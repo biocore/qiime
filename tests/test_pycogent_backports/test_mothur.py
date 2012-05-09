@@ -17,7 +17,7 @@ __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 class MothurTests(TestCase):

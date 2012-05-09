@@ -29,5 +29,5 @@ The new version of the QIIME virtual machine (VM) is based on Ubuntu 12.04 (LTS)
  * rtax support has been added, which can be found `link_rtax <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.981.tgz>`_.
  * pplacer support has been added, which can be found `link_pplacer <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_.
  * raxml support has been updated to use its latest version 7.3.0 `link_raxml <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_.
- * userch support has been updated to use its latest version 5.2.32 `link_usearch <http://www.drive5.com/usearch/>`_.
+ * usearch support has been updated to use its latest version 5.2.32 `link_usearch <http://www.drive5.com/usearch/>`_.
  

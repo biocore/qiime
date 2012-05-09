@@ -6,10 +6,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
     "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from biom.table import table_factory
 from string import strip

@@ -10,10 +10,10 @@ __author__ = "David Soergel"
 __copyright__ = "Copyright 2007-2011, The PyCogent Project"
 __credits__ = ["David Soergel", "William Walters", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "1.5.0-dev"
 __maintainer__ = "David Soergel"
 __email__ = "soergel@cs.umass.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from os import remove, makedirs
 from os.path import exists, split, splitext, basename, isdir, abspath, isfile

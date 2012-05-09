@@ -55,10 +55,10 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""

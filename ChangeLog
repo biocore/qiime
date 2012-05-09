@@ -1,3 +1,6 @@
+QIIME 1.5.0-dev (changes since 1.5.0 go here)
+=============================================
+
 QIIME 1.5.0 (8 May 2012)
 ==================================
 * OTU tables are now stored on disk in the BIOM file format (see http://biom-format.org). The BIOM format webpage describes the motivation for the switch, but briefly it will support interoperability of related tools (e.g., QIIME/MG-RAST/mothur/VAMPS), and is a more efficient representation of data/metadata. The biom-format projects DenseTable and SparseTable objects are now used to represent OTU tables in memory. See the convert_biom.py script in the biom-format project for converting between 'classic' and BIOM formatted OTU tables.

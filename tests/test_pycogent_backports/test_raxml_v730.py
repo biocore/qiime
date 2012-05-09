@@ -26,7 +26,7 @@ __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Micah Hamady"
 __email__ = "Micah Hamady"
-__status__ = "Release"
+__status__ = "Development"
 
 class GenericRaxml(TestCase):
 
