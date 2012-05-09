@@ -1,11 +1,12 @@
-QIIME 1.4.0-dev
+QIIME 1.5.0 (8 May 2012)
 ==================================
+* OTU tables are now stored on disk in the BIOM file format (see http://biom-format.org). The BIOM format webpage describes the motivation for the switch, but briefly it will support interoperability of related tools (e.g., QIIME/MG-RAST/mothur/VAMPS), and is a more efficient representation of data/metadata. The biom-format projects DenseTable and SparseTable objects are now used to represent OTU tables in memory. See the convert_biom.py script in the biom-format project for converting between 'classic' and BIOM formatted OTU tables.
 * Added a script, add_qiime_labels, that allows users to specify a directory of fasta files, along with a mapping file of SampleID<tab>fasta file name, and combines the fasta files into a single combined fasta file with QIIME compatible labels.  This is to handle situations where sequencing centers perform their own proprietary demultiplexing into separate fasta files per sample, instead of supplying raw data, but users would like to use QIIME to analyze their data.
-* Added new compare_categories.py script to perform significance testing of categories/sample grouping. Added accompanying tutorial and new RExecutor class to util.py.
+* Added new compare_categories.py script to perform significance testing of categories/sample grouping. Added accompanying tutorial and new RExecutor class to util.py. Methods supported by compare_categories.py are Adonis, Anosim, BEST, Moran's I, MRPP, PERMANOVA, PERMDISP, and RDA. See doc/tutorials/category_comparison.rst for details. 
 * compare_distance_matrices.py can now perform partial Mantel and Mantel correlogram tests in addition to the traditional Mantel test. Additionally, the script has several new options. Added new supporting tutorial and generic statistical method library code (doc/tutorials/distance_matrix_comparison.rst, qiime/stats.py, qiime/compare_distance_matrices.py), and two new classes (DistanceMatrix and MetadataMap) to util.py.
 * make_3d_plots.py added a new option "-s" which by default only outputs the unscaled points, whereas user can choose to show scaled, unscaled or both.
 * split_libraries_fastq.py default parameters updated based on evaluation of parameter settings on real and mock community data sets. A manuscript describing these results is currently in preparation. Briefly, the -p/--min_per_read_length parameter was modified to take a fraction of the full read length that is acceptable as the minimum, rather than an absolute (integer) length. Additionally the --max_bad_run_length default was changed from 1 to 3.
-* check_id_map.py code was completely redone to increase readability and ease of modification.  Now also creates html output to display locations of errors and warnings in the mapping file.
+* check_id_map.py code was completely refactored to increase readability and ease of modification.  Now also creates html output to display locations of errors and warnings in the mapping file.
 * Altered default value of min_length in align_seqs.py and parallel_align_seqs_pynast.py. This was previously set to 150 based on 454 FLX data, but it is now computed as 75% of the median input sequence length. This will scale better across platforms and read length, and allow for more consistent handling in of data from different sources. The user can still pass --min_length with a specific value to override the default.
 * Altered the way split_libraries.py handles errors/warnings from the mapping file, and fixed a bug where suppression of warnings about variable length barcodes was not being properly passed.  Now warnings will not cause split_libraries.py to halt execution, although more serious problems (errors) will.  These includes problems with headers, SampleIDs, and invalid characters in DNA sequence fields.
 * Increased allowed ambiguous bases in split_libraries.py default values from 0 to 6.  This is to accommodate the FLX+ long read technology which will often make ambiguous base calls but still have quality sequences following the ambiguous bases.  Also added an option to truncate at the first "N" character option (-x) to allow users to retain these sequences but remove ambiguous bases if desired.
@@ -15,6 +16,20 @@ QIIME 1.4.0-dev
 * Replaced filter_otu_table.py with filter_otus_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 * Replaced filter_by_metadata.py with filter_samples_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 * Add new script to compute the coverage of a  sample (or its inverse - the conditional uncovered probability) in the script conditional_uncovered_probability.py. Current estimators include lladser_pe, lladser_ci, esty_ci and robbins.
+* Updated usearch application wrapper, unit test, and documentation to handle usearch v5.2.32 as earlier version supported has bugs regarding consensus sequence generation (--consout parameter).
+* Added support for the RTAX taxonomy assignment. RTAX is designed for assigning taxonomy to paired-end reads, but additionally works for single end reads. QIIME currently supports RTAX 0.981.
+* Added the pick_subsampled_reference_otus_through_otu_tables.py, a more efficient open reference OTU picking workflow script for processing very large Illumina (or other) data sets. This is being used to process the Earth Microbiome Project data, so is designed to scale to tens of HiSeq runs. A new tutorial has been added that describes this process (doc/tutorials/open_reference_illumina_processing.rst).
+* Added new script convert_fastqual_to_fastq.py to convert fasta/qual files to fastq. 
+* Added ability to output demultiplexed fastq from split_libraries_fastq.py. 
+* Added a new sort option to summarize_taxa_through_plots.py which is very useful for web-interface. By default, sorting is turned off.
+* Added ability to output OTUs per sample instead of sequences per sample to per_library_stats.py.
+* Updates and expansions to existing tutorials, including the using AWS and procrustes analysis tutorials. 
+* Added insert_seqs_into_tree.py to insert reads into an existing tree. This script wraps RAxML, ParsInsert, and PPlacer. 
+* Updated split_libraries_fastq.py to handle look only at the first n bases of the barcode reads, where n is automatically determined as the length of the barcodes in the mapping file. This feature is only use if all of the barcodes are the same length. It allows qiime to easily handle ignoring of a 13th base call in the barcode files - this is a technical artifact that sometimes arises.
+* Added new stats.py module that provides an API for running biogeographical statistical methods, as well as a framework for creating new method implementations in the future (this code was moved over from qiimeutils/microbiogeo). Also added two new classes to the util module (DistanceMatrix and MetadataMap) that are used by the stats module.
+* Updated Mothur OTU picker support from 1.6.0 to the latest (1.25.0) version.
+* Added start_parallel_jobs_sg.py to support parallel jobs on SGE queueing systems.
+* Modified split_libraries_fastq.py and format.py to show SampleIDs with zero sequence count and to show the total sum of sequences written in the log file.
 
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
