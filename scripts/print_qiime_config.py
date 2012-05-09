@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import make_option
-from os import access, X_OK, R_OK, W_OK, getenv, environ
+from os import access, X_OK, R_OK, W_OK, getenv, environ, remove
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
 from shutil import rmtree
@@ -317,7 +317,7 @@ class Qiime_config(TestCase):
         min_acceptable_version = (2,7,1)
         min_unacceptable_version = (2,7,2)
         command = 'python --version'
-        proc = Popen(command,shell=True,universal_newlines=True,\
+        proc = Popen(command,shell=True,universal_newlines=True, \
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
         version_string = stdout.strip().split('Python')[-1].strip()
@@ -507,10 +507,14 @@ class Qiime_config(TestCase):
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
-        command = "mothur 'read.dist(help)' | grep '^mothur'"
+        command = "mothur \"#set.logfile(name=mothur.log)\" | grep '^mothur v'"
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout, stderr = proc.communicate()
+        
+        # remove log file
+        remove('mothur.log')
+        
         version_string = stdout.strip().split(' ')[1].strip('v.')
         try:
             version = tuple(map(int,version_string.split('.')))
@@ -650,6 +654,10 @@ class Qiime_config(TestCase):
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
+        
+        # remove log file generated
+        remove('ParsInsert.log')
+
         version_string = stdout.strip()
         try:
             pass_test = version_string in acceptable_version
