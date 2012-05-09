@@ -37,7 +37,7 @@
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 	-s, `-`-percent_subsample
 		Percent of failure sequences to include in the subsample to cluster de novo (larger numbers should give more comprehensive ,results but will be slower) [default:0.001]
 	`-`-prefilter_percent_id

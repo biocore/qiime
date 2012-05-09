@@ -27,9 +27,9 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 	**[OPTIONAL]**
 		
 	-t, `-`-id_to_taxonomy_fp
-		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: /software/greengenes_tax_rdp_train.txt; REQUIRED when method is blast]
+		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: None; REQUIRED when method is blast]
 	-r, `-`-reference_seqs_fp
-		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: /software/gg_97_otus_4feb2011.fasta; REQUIRED if -b is not provided when method is blast]
+		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: None; REQUIRED if -b is not provided when method is blast]
 	-p, `-`-training_data_properties_fp
 		Path to ".properties" file in pre-compiled training data for the RDP Classifier.  This option is overridden by the -t and -r options. [default: None]
 	`-`-read_1_seqs_fp

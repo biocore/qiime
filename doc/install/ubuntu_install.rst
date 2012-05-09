@@ -27,8 +27,8 @@ Installing QIIME in Ubuntu 11.10 and Ubuntu LTS (12.04)
   ::
   
      mkdir $HOME/qiime_software/
-     wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
-     tar zxvf app-deploy-qiime-1.4.0.tgz
-     cd app-deploy-qiime-1.4.0
-     python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.4.0.conf --force-remove-failed-dirs
+     wget ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/app-deploy-qiime-1.5.0.tgz
+     tar zxvf app-deploy-qiime-1.5.0.tgz
+     cd app-deploy-qiime-1.5.0
+     python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.5.0.conf --force-remove-failed-dirs
 * Happy QIIME-ing!
