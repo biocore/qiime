@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["William Van Treuren"]
+__credits__ = ["William Van Treuren", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "William Van Treuren"
@@ -58,11 +58,12 @@ def main():
         option_parser.error('you must have at least 2 taxa specified' +\
          ' in the taxa file or the math will fail.')
 
-    # make sure no taxa that isnt in the tree is specified
-    try: 
-        [all_ids.index(i) for i in group_ids]
-    except ValueError:
-        option_parser.error('a node in the taxa list was not found in the tree')
+    # make sure specified taxa are in the tree, break at first failure
+    for i in group_ids:
+        try:
+            all_ids.index(i)
+        except ValueError:
+            option_parser.error('taxa '+i+' not found in the tree')
 
     # mapping from string of method name to function handle
     method_lookup = {'nri':nri, 'nti':nti}
