@@ -51,7 +51,9 @@ def nri(dist_mat, all_ids, group_ids, iters=1000):
         mpd_mean_sd(dist_mat, all_ids, len(group_ids), iters)
     # for debugging, check against phylocom
     # print mn_x_obs, mn_x_n, sd_x_n
-    
+    if sd_x_n == 0.0:
+        raise ValueError('the std of the random samples was zero. perhaps your'+\
+            ' taxa ids contained every single tip.')
     return -1.0*((mn_x_obs-mn_x_n)/sd_x_n)
 
 def take_random_ids(all_ids, num_to_take):
@@ -130,7 +132,9 @@ def nti(datamtx, all_ids, group_ids, iters=1000):
         mntd_mean_sd(datamtx, all_ids, len(group_ids), iters)
     # for debugging, to check against phylocom
     # print mn_y_obs, mn_y_n, sd_y_n
-    
+    if sd_y_n == 0.0:
+        raise ValueError('the std of the random samples was zero. perhaps your'+\
+            ' taxa ids contained every single tip.')
     return -1.*((mn_y_obs-mn_y_n)/sd_y_n)
 
 def mntd(datamtx):
