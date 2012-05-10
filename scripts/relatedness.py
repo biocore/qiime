@@ -67,8 +67,16 @@ def main():
 
     if len(all_ids)==len(group_ids): #m ust be the same set of ids if above check passes
         option_parser.error('The taxa_ids you specified contain every tip'+\
-            ' in the tree. While phylocom gives a result for this situation'+\
-            ' it is the result of a floating point arithmatic precision issue,'+\
+            ' in the tree. The NRI and NTI formulas will fail with these values'+\
+            ' because there is no standard deviation of mpd or mntd, and thus'+\
+            ' division by zero will occur. In addition, the concept of over/under'+\
+            ' dispersion of a group of taxa (what NRI/NTI measure) is done in'+\
+            ' reference to the tree they are a part of. If the group being tested'+\
+            ' is the entire tree, the idea of over/under dispersion does not make'+\
+            ' much sense.'
+
+            While phylocom gives a result for this situation'+\
+            ' it is the result of a floating point arithmatic precision issue'+\
             ' not an actually correctly calculated NRI/NTI. The reason is that' +\
             ' if the group is all tips, there will be no standard deviation and'+\
             ' this should cause a division by zero error. In addition, the'+\
