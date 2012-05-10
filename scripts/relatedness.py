@@ -73,16 +73,7 @@ def main():
             ' dispersion of a group of taxa (what NRI/NTI measure) is done in'+\
             ' reference to the tree they are a part of. If the group being tested'+\
             ' is the entire tree, the idea of over/under dispersion does not make'+\
-            ' much sense.'
-
-            While phylocom gives a result for this situation'+\
-            ' it is the result of a floating point arithmatic precision issue'+\
-            ' not an actually correctly calculated NRI/NTI. The reason is that' +\
-            ' if the group is all tips, there will be no standard deviation and'+\
-            ' this should cause a division by zero error. In addition, the'+\
-            ' concept of over/under dispersion does not make a lot of sense'+\
-            ' in the context of every tip of the tree.')
-
+            ' much sense.')
 
     # mapping from string of method name to function handle
     method_lookup = {'nri':nri, 'nti':nti}
