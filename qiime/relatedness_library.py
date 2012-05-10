@@ -12,7 +12,7 @@ __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
  
 from numpy.random import shuffle
-from numpy import std, mean, array
+from numpy import std, mean, array, allclose
 from copy import deepcopy
 
 
@@ -49,11 +49,10 @@ def nri(dist_mat, all_ids, group_ids, iters=1000):
         mpd(take_distmat_data(dist_mat, all_ids, group_ids))
     mn_x_n, sd_x_n = \
         mpd_mean_sd(dist_mat, all_ids, len(group_ids), iters)
-    # for debugging, check against phylocom
-    # print mn_x_obs, mn_x_n, sd_x_n
-    if sd_x_n == 0.0:
-        raise ValueError('the std of the random samples was zero. perhaps your'+\
-            ' taxa ids contained every single tip.')
+    if allclose(sd_x_n,0.0) == True:
+        raise ValueError("The std of the random samples was zero within 10^-8 of"+\
+            " 0.0. This is likely due to a phylogeny which has equal distances"+\
+            " between all tips.")
     return -1.0*((mn_x_obs-mn_x_n)/sd_x_n)
 
 def take_random_ids(all_ids, num_to_take):
@@ -132,9 +131,11 @@ def nti(datamtx, all_ids, group_ids, iters=1000):
         mntd_mean_sd(datamtx, all_ids, len(group_ids), iters)
     # for debugging, to check against phylocom
     # print mn_y_obs, mn_y_n, sd_y_n
-    if sd_y_n == 0.0:
-        raise ValueError('the std of the random samples was zero. perhaps your'+\
-            ' taxa ids contained every single tip.')
+    # WARNING: the std deviation is being rounded 
+    if allclose(sd_y_n,0.0) == True:
+        raise ValueError("The std of the random samples was zero within 10^-8 of"+\
+            " 0.0. This is likely due to a phylogeny which has equal distances"+\
+            " between all tips.")
     return -1.*((mn_y_obs-mn_y_n)/sd_y_n)
 
 def mntd(datamtx):

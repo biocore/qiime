@@ -65,6 +65,17 @@ def main():
         except ValueError:
             option_parser.error('taxa '+i+' not found in the tree')
 
+    if len(all_ids)==len(group_ids): #m ust be the same set of ids if above check passes
+        option_parser.error('The taxa_ids you specified contain every tip'+\
+            ' in the tree. While phylocom gives a result for this situation'+\
+            ' it is the result of a floating point arithmatic precision issue,'+\
+            ' not an actually correctly calculated NRI/NTI. The reason is that' +\
+            ' if the group is all tips, there will be no standard deviation and'+\
+            ' this should cause a division by zero error. In addition, the'+\
+            ' concept of over/under dispersion does not make a lot of sense'+\
+            ' in the context of every tip of the tree.')
+
+
     # mapping from string of method name to function handle
     method_lookup = {'nri':nri, 'nti':nti}
 

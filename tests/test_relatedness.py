@@ -46,6 +46,18 @@ class TopLevelTests(TestCase):
 
         self.assertFloatEqual(expected_out, actual_out)
 
+
+        # test for situations where standard deviation would be close to zero
+        # but not actually zero due to floating point arithmetic errors
+        datamtx = array([[0.0, 0.1, 0.1, 0.1],
+                         [0.1, 0.0, 0.1, 0.1],
+                         [0.1, 0.1, 0.0, 0.1],
+                         [0.1, 0.1, 0.1, 0.0]])
+        all_ids = [0,1,2,3]
+        ids_to_keep = [0,1,2,3]
+
+        self.assertRaises(ValueError, nti, datamtx, all_ids, ids_to_keep, iters)
+
     def test_mntd(self):
         """test mntd walks through input matrices correctly"""
         # define datamtx
@@ -106,6 +118,19 @@ class TopLevelTests(TestCase):
         actual_out = nri(datamtx, all_ids, unsorted_group_ids, iters)
 
         self.assertFloatEqual(expected_out, actual_out)
+
+        # test for situations where standard deviation would be close to zero
+        # but not actually zero due to floating point arithmetic errors
+        datamtx = array([[0.0, 0.1, 0.1, 0.1],
+                         [0.1, 0.0, 0.1, 0.1],
+                         [0.1, 0.1, 0.0, 0.1],
+                         [0.1, 0.1, 0.1, 0.0]])
+        all_ids = [0,1,2,3]
+        ids_to_keep = [0,1,2,3]
+
+        self.assertRaises(ValueError, nri, datamtx, all_ids, ids_to_keep, iters)
+
+
 
     def test_mpd_mean_sd(self):
         """tests randomizations occur correctly given numpy seed 0"""
