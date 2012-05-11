@@ -23,8 +23,8 @@ __credits__ = ["Micah Hamady", "Catherine Lozupone", "Rob Knight", \
                "Daniel McDonald","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
-__maintainer__ = "Micah Hamady"
-__email__ = "hamady@colorado.edu"
+__maintainer__ = "Jesse Stombaugh"
+__email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Prototype"
 
 class Raxml(CommandLineApplication):
