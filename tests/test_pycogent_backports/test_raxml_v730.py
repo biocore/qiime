@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 from os import getcwd, remove, rmdir, mkdir
 from os.path import splitext
@@ -24,8 +24,8 @@ __copyright__ = "Copyright 2007-2011, The Cogent Project"
 __credits__ = ["Micah Hamady", "Rob Knight", "Daniel McDonald","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
-__maintainer__ = "Micah Hamady"
-__email__ = "Micah Hamady"
+__maintainer__ = "Jesse Stombaugh"
+__email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
 class GenericRaxml(TestCase):
