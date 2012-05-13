@@ -238,8 +238,8 @@ def main():
                             "specified with the -o option.")
 
     # Parse the mapping file and distance matrix.
-    md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file))
-    dm = DistanceMatrix.parseDistanceMatrix(open(opts.input_dm))
+    md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file,'U'))
+    dm = DistanceMatrix.parseDistanceMatrix(open(opts.input_dm,'U'))
 
     # Separate all categories into a list, then grab the first category.
     categories = opts.categories.split(',')
