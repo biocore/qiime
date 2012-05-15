@@ -147,8 +147,8 @@
         imp.sd <- apply(result$importances, 1, sd)
     }
     output.table <- cbind(imp, imp.sd)
-    output.table <- output.table[sort(imp,dec=T,index=T)$ix,]
     rownames(output.table) <- feature.ids
+    output.table <- output.table[sort(imp,dec=T,index=T)$ix,]
     colnames(output.table) <- c('Mean_decrease_in_accuracy','Standard_deviation')
 
     sink(filepath)
