@@ -311,7 +311,7 @@ def main():
         output_file.write("Method Name\tR-value\tP-value")
         output_file.write("\n")
         output_file.write(permanova_results["method_name"]+"\t"+\
-            str(permanova_results["r_value"]) + "\t" + \
+            str(permanova_results["f_value"]) + "\t" + \
             format_p_value_for_num_iters(permanova_results["p_value"], \
             opts.num_permutations)+"\t")
         output_file.write("\n")
