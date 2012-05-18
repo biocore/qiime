@@ -308,7 +308,7 @@ def main():
         permanova_results = permanova_plain(opts.num_permutations)
 
         output_file = open(opts.output_dir+"/permanova_results.txt", 'w+')
-        output_file.write("Method Name\tR-value\tP-value")
+        output_file.write("Method Name\tF-value\tP-value")
         output_file.write("\n")
         output_file.write(permanova_results["method_name"]+"\t"+\
             str(permanova_results["f_value"]) + "\t" + \
