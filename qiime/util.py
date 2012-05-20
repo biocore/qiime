@@ -30,6 +30,7 @@ from copy import deepcopy
 from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
+from itertools import repeat
 
 from numpy import min, max, median, mean
 import numpy
@@ -42,6 +43,8 @@ from biom.table import DenseTable
         
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence,DNA
+from cogent.parse.tree import DndParser
+from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
@@ -1100,6 +1103,14 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
             parser = MinimalFastqParser
+        elif fasta_filepath.endswith('.tre') or \
+             fasta_filepath.endswith('.ph') or \
+             fasta_filepath.endswith('.ntree'):
+             # This is clunky, but really convenient bc 
+             # it lets us count tree tips with count_seqs.py
+            def parser(f):
+                t = DndParser(f,constructor=PhyloNode)
+                return zip(t.iterTips(),repeat(''))
         else:
             parser = MinimalFastaParser
         
