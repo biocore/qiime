@@ -265,8 +265,10 @@ def filter_tree(tree,tips_to_keep):
     ## don't use this, it doesn't eliminate tips!
     # result = tree.getSubTree(tips_to_keep,ignore_missing=True)
     def f(node):
-        if node.istip() and \
-           node.Name not in tips_to_keep:
+        if node.istip() and\
+           node.Name != None and\
+           node.Name not in tips_to_keep and\
+           node.Name.strip().strip('"').strip("'") not in tips_to_keep:
             return True
         return False
     result.removeDeleted(f)
