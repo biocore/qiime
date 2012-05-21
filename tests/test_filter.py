@@ -15,6 +15,7 @@ from StringIO import StringIO
 from numpy import inf
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
+from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
 from biom.parse import parse_biom_table_str
@@ -24,7 +25,7 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_otus_from_otu_table,get_sample_ids,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
-                          filter_mapping_file,
+                          filter_mapping_file,filter_tree,
                           filter_fastq,filter_otus_from_otu_map)
 from qiime.util import load_qiime_config
 
@@ -56,6 +57,8 @@ class FilterTests(TestCase):
         self.map_str = map_str
         self.map_data, self.map_headers, self.map_comments =\
          parse_mapping_file(StringIO(self.map_str))
+        self.tree1 = DndParser(tree1)
+        self.tree2 = DndParser(tree2)
         
         
     def tearDown(self):
@@ -140,6 +143,19 @@ class FilterTests(TestCase):
                      seqs_to_keep,
                      negate=True)
         self.assertEqual(actual.s,self.filter_fastq_expected2)
+    
+    def test_filter_tree(self):
+        """filter_tree functions as expected"""
+        actual = [e.Name for e in filter_tree(self.tree1,['bbb','ccc']).tips()]
+        #(a_a:10,(b_b:2,c_c:4):5);
+        expected = [e.Name for e in DndParser("((bbb:2,ccc:4));",PhyloNode).tips()]
+        self.assertEqual(actual,expected)
+        
+        
+        actual = [e.Name for e in filter_tree(self.tree2,['bb|b','ccc']).tips()]
+        #(a_a:10,(b_b:2,c_c:4):5);
+        expected = [e.Name for e in DndParser("((bb|b:2,ccc:4));",PhyloNode).tips()]
+        self.assertEqual(actual,expected)
     
     def test_filter_samples_from_distance_matrix(self):
         """filter_samples_from_distance_matrix functions as expected """
@@ -468,7 +484,8 @@ o2	s1_3	s1_4	s2_5
         self.assertEqualItems(retained_otus,set(['o2']))
         
 
-
+tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
+tree2 = "(aaa:10,(bb|b:2,ccc:4):5);"
 
 map_str = """#SampleID\tStudy\tBodySite\tDescription
 a\tDog\tStool\tx

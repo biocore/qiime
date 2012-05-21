@@ -259,3 +259,16 @@ def filter_otus_from_otu_map(input_otu_map_fp,
             results.add(fields[0].split('\t')[0])
     output_otu_map_f.close()
     return results
+
+def filter_tree(tree,tips_to_keep):
+    result = tree.copy()
+    ## don't use this, it doesn't eliminate tips!
+    # result = tree.getSubTree(tips_to_keep,ignore_missing=True)
+    def f(node):
+        if node.istip() and \
+           node.Name not in tips_to_keep:
+            return True
+        return False
+    result.removeDeleted(f)
+    result.prune()
+    return result

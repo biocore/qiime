@@ -15,7 +15,8 @@ __status__ = "Development"
 from cogent.parse.tree import DndParser
 from qiime.filter import (filter_fasta, negate_tips_to_keep,
                           get_seqs_to_keep_lookup_from_seq_id_file,
-                          get_seqs_to_keep_lookup_from_fasta_file)
+                          get_seqs_to_keep_lookup_from_fasta_file,
+                          filter_tree)
 from qiime.util import parse_command_line_parameters, make_option
 
 script_info = {}
@@ -96,20 +97,8 @@ def main():
     if opts.negate:
         tips_to_keep = negate_tips_to_keep(tips_to_keep, tree)
 
-    t2 = tree.copy()
-    wanted = tips_to_keep
-    def delete_test(node):
-        if node.istip() and node.Name not in wanted:
-            return True
-        return False
-    t2.removeDeleted(delete_test)
-    t2.prune()
-    tree_out = t2
-
-    ## don't use this, it doesn't eliminate tips!
-    # tree_out = tree.getSubTree(tips_to_keep,ignore_missing=True)
-   
-    tree_out.writeToFile(output_tree_fp)
+    filtered_tree = filter_tree(tree,tips_to_keep)
+    filtered_tree.writeToFile(output_tree_fp)
 
 if __name__ == "__main__":
     # this comes in handy sometimes
