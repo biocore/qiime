@@ -151,10 +151,9 @@ class FilterTests(TestCase):
         expected = [e.Name for e in DndParser("((bbb:2,ccc:4));",PhyloNode).tips()]
         self.assertEqual(actual,expected)
         
-        
-        actual = [e.Name for e in filter_tree(self.tree2,['bb|b','ccc']).tips()]
+        actual = [e.Name for e in filter_tree(self.tree2,['bbb','ccc']).tips()]
         #(a_a:10,(b_b:2,c_c:4):5);
-        expected = [e.Name for e in DndParser("((bb|b:2,ccc:4));",PhyloNode).tips()]
+        expected = [e.Name for e in DndParser("(('bbb':2,ccc:4));",PhyloNode).tips()]
         self.assertEqual(actual,expected)
     
     def test_filter_samples_from_distance_matrix(self):
@@ -485,7 +484,7 @@ o2	s1_3	s1_4	s2_5
         
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
-tree2 = "(aaa:10,(bb|b:2,ccc:4):5);"
+tree2 = "(aaa:10,('bbb':2,ccc:4):5);"
 
 map_str = """#SampleID\tStudy\tBodySite\tDescription
 a\tDog\tStool\tx
