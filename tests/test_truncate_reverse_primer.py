@@ -108,8 +108,9 @@ class TruncateRemoveReversePrimerTests(TestCase):
         
         actual_rev_primers = get_rev_primer_seqs(open(self.mapping_fp, "U"))
         
-        expected_rev_primers = {'PC.481': 'CTCTCCG', 'PC.634': 'CTCTCAG',
-        'PC.635': 'CTCTCAG', 'PC.636': 'CTCTCAG', 'PC.354': 'CTCTCAG'}
+        expected_rev_primers = {'PC.481': ['CTCTCCG'], 'PC.634': ['CTCTCAG'],
+        'PC.635': ['CTCTCAG'], 'PC.636': ['CTCTCAG'], 'PC.354': ['CTCTCAG',
+        'TTCTCRG']}
 	    
         self.assertEqual(actual_rev_primers, expected_rev_primers)
 	    
@@ -142,8 +143,8 @@ class TruncateRemoveReversePrimerTests(TestCase):
         
         out_f = FakeOutFile()
         
-        rev_primers = {'PC.481': 'CTCTCCG', 'PC.634': 'CTCTCAG',
-        'PC.635': 'CTCTCAG', 'PC.636': 'CTCTCAG', 'PC.354': 'CTCTCAG'}
+        rev_primers = {'PC.481': ['CTCTCCG'], 'PC.634': ['CTCTCAG'],
+        'PC.635': ['CTCTCAG'], 'PC.636': ['CTCTCAG'], 'PC.354': ['CTCTCAG']}
         
         # Use default options, all sequences should get truncated and written
         log_data = truncate_rev_primers(open(self.fasta_fp, "U"),
@@ -193,8 +194,8 @@ class TruncateRemoveReversePrimerTests(TestCase):
         # Should count sample ids not found in log
         out_f = FakeOutFile()
         
-        rev_primers = {'PC.481': 'CTCTCCG', 'PC.634': 'CTCTCAG',
-        'PC.635': 'CTCTCAG', 'PC.636': 'CTCTCAG', 'PC.354': 'CTCTCAG'}
+        rev_primers = {'PC.481': ['CTCTCCG'], 'PC.634': ['CTCTCAG'],
+        'PC.635': ['CTCTCAG'], 'PC.636': ['CTCTCAG'], 'PC.354': ['CTCTCAG']}
         
         # Use default options, all sequences should get truncated and written
         log_data = truncate_rev_primers(open(self.fasta_badlabels_fp, "U"),
@@ -304,7 +305,7 @@ TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACC
 
 sample_mapping_file1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	ReversePrimer	Description
 "#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009)."						
-PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	CTGAGAG	Control_mouse_I.D._354
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	CTGAGAG,CYGAGAA	Control_mouse_I.D._354
 PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	CGGAGAG	Control_mouse_I.D._481
 PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._634
 PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._635

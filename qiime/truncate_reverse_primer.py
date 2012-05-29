@@ -43,14 +43,17 @@ def get_rev_primer_seqs(mapping_fp):
             id_map[curr_data[0]][hds[header]] = curr_data[header]
     
     reverse_primers = {}
+
     
     for curr_id in id_map.keys():
         try:
             reverse_primers[curr_id] =\
-             DNA.rc(id_map[curr_id]['ReversePrimer'])
+             [DNA.rc(curr_rev_primer) for curr_rev_primer in\
+             id_map[curr_id]['ReversePrimer'].split(',')]
         except KeyError:
             raise KeyError,("Reverse primer not found in mapping file, "+\
              "please include a 'ReversePrimer' column.")
+
              
     # Check for valid reverse primers
     # Will have been detected as warnings from mapping file
@@ -58,7 +61,7 @@ def get_rev_primer_seqs(mapping_fp):
         if curr_warning.startswith("reverse primer"):
             raise ValueError,("Problems found with reverse primers, please "+\
              "check mapping file with check_id_map.py")
-
+    
     return reverse_primers
     
 def get_output_filepaths(output_dir,
@@ -115,8 +118,16 @@ def truncate_rev_primers(fasta_f,
             log_data['seqs_written'] += 1
             continue
         
-        rev_primer_mm, rev_primer_index =\
-         local_align_primer_seq(curr_rev_primer, seq)
+        mm_tests = {}
+        for rev_primer in curr_rev_primer: 
+        
+            rev_primer_mm, rev_primer_index =\
+             local_align_primer_seq(rev_primer, seq)
+             
+            mm_tests[rev_primer_mm] = rev_primer_index
+            
+        rev_primer_mm = min(mm_tests.keys())
+        rev_primer_index = mm_tests[rev_primer_mm]
          
         if rev_primer_mm > primer_mismatches:
             if truncate_option == "truncate_remove":
