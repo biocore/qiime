@@ -706,8 +706,16 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             if reverse_primers == "truncate_only":
                 try:
                     rev_primer = rev_primers[curr_bc]
-                    rev_primer_mm, rev_primer_index  = \
-                     local_align_primer_seq(rev_primer,cres)
+                    mm_tested = {}
+                    for curr_rev_primer in rev_primer:
+                        # Try to find lowest count of mismatches for all 
+                        # reverse primers
+                        rev_primer_mm, rev_primer_index  = \
+                         local_align_primer_seq(curr_rev_primer,cres)
+                        mm_tested[rev_primer_mm] = rev_primer_index
+					
+                    rev_primer_mm = min(mm_tested.keys())
+                    rev_primer_index = mm_tested[rev_primer_mm]
                     if rev_primer_mm <= reverse_primer_mismatches:
                         write_seq = write_seq[0:rev_primer_index]
                         if qual_out:
@@ -720,8 +728,16 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             elif reverse_primers == "truncate_remove":
                 try:
                     rev_primer = rev_primers[curr_bc]
-                    rev_primer_mm, rev_primer_index  = \
-                     local_align_primer_seq(rev_primer,cres)
+                    mm_tested = {}
+                    for curr_rev_primer in rev_primer:
+                        # Try to find lowest count of mismatches for all 
+                        # reverse primers
+                        rev_primer_mm, rev_primer_index  = \
+                         local_align_primer_seq(curr_rev_primer,cres)
+                        mm_tested[rev_primer_mm] = rev_primer_index
+                        
+                    rev_primer_mm = min(mm_tested.keys())
+                    rev_primer_index = mm_tested[rev_primer_mm]
                     if rev_primer_mm <= reverse_primer_mismatches:
                         write_seq = write_seq[0:rev_primer_index]
                         if qual_out:
@@ -1121,7 +1137,9 @@ def get_reverse_primers(id_map):
         # Generate a dictionary with Barcode:reverse primer
         # Convert to reverse complement of the primer so its in the 
         # proper orientation with the input fasta sequences
-        rev_primers[n[1]['BarcodeSequence']]=DNA.rc(n[1]['ReversePrimer'])
+        rev_primers[n[1]['BarcodeSequence']]=\
+         [DNA.rc(curr_rev_primer) for curr_rev_primer in\
+         (n[1]['ReversePrimer']).split(',')]
         
     return rev_primers
 

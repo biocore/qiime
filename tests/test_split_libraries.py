@@ -1861,9 +1861,9 @@ AACCGGCCGGTT
 ACGTTTACTGGA"""
 
 # These test data have equal length barcodes
-reverse_primers_fixed_len_bc1 = {'ACACATGTCTAC':'CTTATAT',
-                                    'AGAGTCCTGAGC':'GCCCTTT',
-                                    'AATCGTGACTCG':'AGTACC'}
+reverse_primers_fixed_len_bc1 = {'ACACATGTCTAC':['CTTATAT'],
+                                    'AGAGTCCTGAGC':['GCCCTTT'],
+                                    'AATCGTGACTCG':['AGTACC']}
 
 # Fixed barcode, reverse primers test data
 in_seqs_reverse_primers = """>a
