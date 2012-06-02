@@ -106,8 +106,8 @@ BT2\tB\t0\t2
                          expected_otu_table_object.SampleMetadata)
         self.assertEqual(converted_otu_table_object.ObservationMetadata,
                          expected_otu_table_object.ObservationMetadata)
-        self.assertFloatEqual(converted_otu_table_object._data,
-                         expected_otu_table_object._data)
+        self.assertFloatEqual(sorted(converted_otu_table_object._data.items()),
+                         sorted(expected_otu_table_object._data.items()))
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
