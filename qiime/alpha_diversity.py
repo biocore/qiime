@@ -39,7 +39,7 @@ from optparse import OptionParser
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-import cogent.maths.stats.alpha_diversity as alph
+import qiime.pycogent_backports.alpha_diversity as alph
 
 from qiime.parse import make_envs_dict
 from qiime.util import FunctionWithParams, make_safe_f
@@ -266,7 +266,7 @@ alph.menhinick,
 alph.michaelis_menten_fit,
 alph.observed_species,
 alph.osd,
-alph.reciprocal_simpson,
+alph.simpson_reciprocal,
 alph.robbins,
 alph.shannon,
 alph.simpson,

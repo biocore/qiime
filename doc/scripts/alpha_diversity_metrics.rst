@@ -22,10 +22,10 @@
 	* michaelis_menten_fit
 	* observed_species
 	* osd (observed # otus, singleton OTUs, doubleton OTUs)
-	* reciprocal_simpson
 	* robbins
 	* shannon
 	* simpson (1 - Dominance)
+	* simpson_reciprocal (1 / Dominance)
 	* simpson_e
 	* singles (# OTUs with exactly one individual present in sample)
 	* strong
