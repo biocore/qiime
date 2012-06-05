@@ -41,7 +41,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
-    RExecutor, duplicates_indices)
+    RExecutor, duplicates_indices, trim_fasta)
 
 import numpy
 from numpy import array, asarray
@@ -83,6 +83,7 @@ class TopLevelTests(TestCase):
         self.denoiser_mapping1 = denoiser_mapping1.split('\n')
         self.raw_seqs1 = raw_seqs1.split('\n')
         self.fastq_barcodes = fastq_barcodes
+        self.fasta_barcodes = fasta_barcodes
 
     def tearDown(self):    
         remove_files(self.files_to_remove)
@@ -652,6 +653,17 @@ hhhhhh
 """]
         
         self.assertEqual(list(trim_fastq(self.fastq_barcodes,6)),expected)
+        
+    def test_trim_fasta(self):
+        """ trim_fasta functions as expected """
+        expected = [""">HWUSI-EAS552R_0357:8:1:10040:6364#0/1
+GACGAG
+""",
+""">HWUSI-EAS552R_0357:8:1:10184:6365#0/1
+GTCTGA
+"""]
+        
+        self.assertEqual(list(trim_fasta(self.fasta_barcodes,6)),expected)
         
     def test_duplicates_indices(self):
         """ Properly returns dict of duplicates and their indices """
@@ -1271,6 +1283,11 @@ fastq_barcodes=["@HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
 "GTCTGACAGTTG",
 "+HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
 "hhhhhhhhhhhh"]
+fasta_barcodes=[">HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
+"GACGAGTCAGTC",
+">HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
+"GTCTGACAGTTG"
+]
 fastq_seqs=["@HWUSI-EAS552R_0357:8:1:10040:6364#0/2",
 "TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG",
 "+HWUSI-EAS552R_0357:8:1:10040:6364#0/2",

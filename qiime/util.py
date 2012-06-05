@@ -240,6 +240,11 @@ def trim_fastq(fastq_lines,output_length):
     for seq_id, seq, qual in MinimalFastqParser(fastq_lines,strict=False):
         yield '@%s\n%s\n+\n%s\n' % (seq_id,seq[:output_length],
                                       qual[:output_length])
+                                      
+def trim_fasta(fasta_lines,output_length):
+    """trim fasta seqs to output_length bases """
+    for seq_id, seq in MinimalFastaParser(fasta_lines):
+        yield '>%s\n%s\n' % (seq_id,seq[:output_length])
 
 def get_qiime_project_dir():
     """ Returns the top-level QIIME directory
