@@ -26,7 +26,8 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
                           filter_mapping_file,filter_tree,
-                          filter_fastq,filter_otus_from_otu_map)
+                          filter_fastq,filter_otus_from_otu_map,
+                          filter_otu_table_to_n_samples)
 from qiime.util import load_qiime_config
 
 class fake_output_f():
@@ -399,6 +400,32 @@ class FilterTests(TestCase):
         expected_sample_ids = set(['PC.354','PC.635','PC.593'])
         filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
         self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+    
+    def test_filter_otu_table_to_n_samples(self):
+        """filter_otu_table_to_n_samples returns randomly selected subset of samples
+        """
+        otu_table = parse_biom_table_str(dense_otu_table1)
+        
+        # keep two samples
+        filtered_otu_table= filter_otu_table_to_n_samples(otu_table,2)
+        self.assertEqual(len(filtered_otu_table.SampleIds),2)
+        
+        # keep three samples
+        filtered_otu_table= filter_otu_table_to_n_samples(otu_table,3)
+        self.assertEqual(len(filtered_otu_table.SampleIds),3)
+        
+        # ValueError on invalid n
+        self.assertRaises(ValueError,filter_otu_table_to_n_samples,otu_table,-1)
+        self.assertRaises(ValueError,filter_otu_table_to_n_samples,otu_table,10)
+        
+        # Multiple iterations yield different OTU tables - check that in 100 iterations
+        # we get at least two different results to avoid random test failures.
+        results = []
+        for i in range(100):
+            filtered_otu_table= filter_otu_table_to_n_samples(otu_table,3)
+            results.append(tuple(filtered_otu_table.SampleIds))
+        self.assertTrue(len(set(results)) > 1)
+            
 
     def test_filter_samples_from_otu_table_counts_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""

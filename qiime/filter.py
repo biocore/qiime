@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from random import shuffle
+from random import shuffle, sample
 from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
@@ -230,6 +230,18 @@ def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count,
 
 # end functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
+def filter_otu_table_to_n_samples(otu_table,n):
+    """ Filter OTU table to n random samples. 
+    
+        If n is greater than the number of samples or less than zero a 
+         ValueError will be raised.
+    """
+    try:
+        ids_to_keep = sample(otu_table.SampleIds,n)
+    except ValueError:
+        raise ValueError,\
+         "Number of samples to filter must be between 0 and the number of samples."
+    return filter_samples_from_otu_table(otu_table, ids_to_keep, 0, inf)
 
 def filter_otus_from_otu_map(input_otu_map_fp,
                              output_otu_map_fp,
