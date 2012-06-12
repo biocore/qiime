@@ -238,10 +238,6 @@ script_info['optional_options'] = [
                     " OTU picker [default: %default, OTU ids are ascending"
                     " integers]")),
                     
-    make_option('--uclust_stable_sort',default=True,action='store_true',
-              help=("Deprecated: stable sort enabled by default, pass "
-              "--uclust_suppress_stable_sort to disable [default: %default]")),
-                    
     make_option('--suppress_uclust_stable_sort',default=False,
               action='store_true', help=("Don't pass --stable-sort to "
               "uclust [default: %default]")),
@@ -276,17 +272,32 @@ script_info['optional_options'] = [
               "mapping OTUs created by usearch_qf back to original sequence"
               " IDs [default: %default]"), type='float'),
               
-    make_option('-k', '--de_novo_chimera_detection', default=True, help=(
-              "Perform de novo chimera detection in usearch_qf. "
-              "[default: %default]"), action='store_false'),
+    make_option('--de_novo_chimera_detection', help=(
+              "Deprecated:  de novo chimera detection performed by default, "
+              "pass --suppress_de_novo_chimera_detection to disable."
+              " [default: %default]")),
+    
+    make_option('-k', '--suppress_de_novo_chimera_detection', default=False,
+              help=("Perform de novo chimera detection in usearch_qf. "
+              "[default: %default]"), action='store_true'),          
+
+    make_option('--reference_chimera_detection', 
+              help=("Deprecated:  Reference based chimera detection performed "
+              "by default, pass --supress_reference_chimera_detection to "
+              "disable [default: %default]")),
               
-    make_option('-x', '--reference_chimera_detection', default=True, 
+    make_option('-x', '--suppress_reference_chimera_detection', default=False, 
               help=("Perform reference based chimera detection in usearch_qf. "
-              "[default: %default]"), action='store_false'),
+              "[default: %default]"), action='store_true'),          
+    
+    make_option('--cluster_size_filtering', help=("Deprecated, "
+              "cluster size filtering enabled by default, pass "
+              "--disable_cluster_size_filtering to disable."
+              "  [default: %default]")),
               
-    make_option('-l', '--cluster_size_filtering', default=True, help=("Perform "
-              "cluster size filtering in usearch_qf.  [default: %default]"),
-              action='store_false'),
+    make_option('-l', '--suppress_cluster_size_filtering', default=False,
+              help=("Disable cluster size filtering in usearch_qf.  "
+              "[default: %default]"), action='store_true'),
               
     make_option('--remove_usearch_logs', default=False, help=("Disable "
               "creation of logs when usearch is called.  Up to nine logs are "
@@ -350,10 +361,11 @@ def main():
     abundance_skew = opts.abundance_skew
     db_filepath = opts.db_filepath
     perc_id_blast = opts.perc_id_blast
-    de_novo_chimera_detection = opts.de_novo_chimera_detection
-    reference_chimera_detection = opts.reference_chimera_detection
-    cluster_size_filtering = opts.cluster_size_filtering
+    de_novo_chimera_detection = not opts.suppress_de_novo_chimera_detection
+    reference_chimera_detection = not opts.suppress_reference_chimera_detection
+    cluster_size_filtering = not opts.suppress_cluster_size_filtering
     remove_usearch_logs = opts.remove_usearch_logs
+
     
     if user_sort and not suppress_presort_by_abundance_uclust:
         option_parser.error("Cannot pass -B/--user_sort without -D/--suppress_presort_by_abundance_uclust, as your input would be resorted by abundance. To presort your own sequences before passing to uclust, pass -DB.")
@@ -362,7 +374,7 @@ def main():
         raise ValueError,('abundance skew must be > 1')
     
     # Check for logical inputs
-    if otu_picking_method == 'usearch' and \
+    if otu_picking_method in ['usearch', 'usearch_ref'] and \
      reference_chimera_detection and not db_filepath:
         raise ValueError,('No reference filepath specified with '+\
          '--db_filepath option.  Disable reference based chimera detection '+\
