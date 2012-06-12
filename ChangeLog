@@ -1,6 +1,7 @@
 QIIME 1.5.0-dev (changes since 1.5.0 go here)
 =============================================
 * Added a 'simpson_reciprocal' measure of alpha diversity, which is 1/D, following the definition at http://www.countrysideinfo.co.uk/simpsons.htm among other places. Note the measure 'reciprocal_simpson' is 1/simpson, not 1/D. It was removed for clarity.
+* Added new script, compute_core_microbiome.py, which identifies the core OTUs (i.e., those defined in some user-defined percentage of the samples).
 
 QIIME 1.5.0 (8 May 2012)
 ==================================

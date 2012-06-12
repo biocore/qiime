@@ -34,7 +34,7 @@ def get_filter_to_core_f(table,
     # generate the position mask, which contains True at SampleIds
     # positions that contain an id in sample_ids
     if sample_ids == None:
-        position_mask = [True] * len(table.SampleIds)
+        position_mask = array([True] * len(table.SampleIds))
     else:
         position_mask = array([s in sample_ids for s in table.SampleIds])
     # determine the number of sample_ids that must have a non-zero
@@ -83,5 +83,4 @@ def core_observations_across_sample_ids(table,
     except TableException:
         result = []
     return result
-    
 
