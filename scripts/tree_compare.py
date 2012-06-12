@@ -32,7 +32,7 @@ script_info['output_description']="""The result of tree_compare.py contains the 
 script_info['required_options']=[\
 make_option('-m', '--master_tree', type='existing_filepath', help='master tree filepath'),\
 make_option('-s', '--support_dir', type='existing_path', help='path to dir containing support trees'),\
-make_option('-o', '--output_dir', help='output directory, writes three files here '+\
+make_option('-o', '--output_dir', type='new_dirpath',help='output directory, writes three files here '+\
 "makes dir if it doesn't exist")
 ]
 script_info['optional_options']=[]

@@ -71,7 +71,7 @@ script_info['optional_options']=[\
     make_option('--suppress_html_output',dest='suppress_html_output',\
         default=False,action='store_true',
         help='Suppress HTML output. [default: %default]'),\
-    make_option('-f','--fields', default=None,
+    make_option('-f','--fields', default=None, type='string',
         help='Comma-separated list of fields to compare, where the list of' +\
         ' fields should be in quotes (e.g. "Field1,Field2,Field3").' +\
         ' Note: if this option is passed on the' +\

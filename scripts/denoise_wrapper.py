@@ -44,18 +44,18 @@ script_info['output_description']="""This script results in a OTU like mapping f
 
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
-                type='string', dest='sff_fp',
+                type='existing_filepath', dest='sff_fp',
                 help='path to flowgram files (.sff.txt), '+
                 'comma separated'),
 
     make_option('-f','--fasta_file', action='store',
-                type='string', dest='fasta_fp',
+                type='existing_filepath', dest='fasta_fp',
                 help='path to fasta file from split_libraries.py')
     ]
 
 script_info['optional_options'] = [\
     make_option('-o','--output_dir', action='store',
-                type='string', dest='output_dir',
+                type='new_dirpath', dest='output_dir',
                 help='path to output directory '+
                 '[default: %default]',
                 default="denoised_seqs/"),

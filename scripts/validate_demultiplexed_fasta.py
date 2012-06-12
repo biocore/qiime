@@ -23,7 +23,7 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""",""" """,""" validate_demultiplexed_fasta.py -f seqs.fasta -m Mapping_File.txt"""))
 script_info['output_description']=""""""
 script_info['required_options']=[\
-   make_option('-m', '--mapping_fp',
+   make_option('-m', '--mapping_fp', type='existing_filepath',
         help='name of mapping file. NOTE: Must contain a header'+\
          ' line indicating SampleID in the first column and'+\
          ' BarcodeSequence in the second,'+\
@@ -33,9 +33,9 @@ script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']\
 ]
 script_info['optional_options']=[\
-    make_option('-o', '--output_dir', default='.',
+    make_option('-o', '--output_dir', default='.',type='new_dirpath',
         help='directory prefix for output files [default: %default]'),
-    make_option('-t','--tree_fp', default=None,
+    make_option('-t','--tree_fp', default=None,type='existing_filepath',
         help='path to the tree file; '+\
          'Needed to test if sequence IDs are a subset or exact match to the '+\
          'tree tips, options -s and -e  [default: %default]'),

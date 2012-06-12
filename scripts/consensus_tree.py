@@ -36,8 +36,8 @@ script_info['script_usage'] = [
 script_info['output_description']= "The output is a newick formatted tree compatible with most standard tree viewing programs"
 script_info['required_options'] = [\
  make_option('-i','--input_dir',action='store',
-          type='string',help='input folder containing trees'),
- make_option('-o','--output_fname',help='the output consensus tree filepath')
+          type='existing_dirpath',help='input folder containing trees'),
+ make_option('-o','--output_fname',type='new_filepath',help='the output consensus tree filepath')
 ]
 script_info['optional_options'] = [\
  make_option('-s','--strict', 

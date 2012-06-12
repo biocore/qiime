@@ -48,7 +48,7 @@ script_info['script_usage'].append(("Example 5","""Pass in a list of desired edg
 script_info['script_usage'].append(("Example 6","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
 script_info['output_description']="""This script results in a folder containing an html file which displays the 3D Plots generated."""
 script_info['required_options']= [\
-    make_option('-i', '--coord_fnames',\
+    make_option('-i', '--coord_fnames',type='string',\
         help='This is comma-separated list of the paths to the principal \
 coordinates files (i.e., resulting file \
 from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
@@ -57,14 +57,14 @@ from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
 ]
 
 script_info['optional_options']= [\
- make_option('-b', '--colorby', dest='colorby',\
+ make_option('-b', '--colorby', dest='colorby',type='string',\
      help='This is a list of the categories to color by in the plots from the \
 user-generated mapping file. The categories must match the name of a column \
 header in the mapping file exactly and multiple categories can be list by comma \
 separating them without spaces. The user can also combine columns in the \
 mapping file by separating the categories by "&&" without spaces \
 [default=%default]'),
- make_option('-a', '--custom_axes',help='This is a category or list of \
+ make_option('-a', '--custom_axes',type='string',help='This is a category or list of \
 categories from the user-generated mapping file to use as a custom axis in the \
 plot.  For instance, if there is a pH category and one would like to see \
 the samples plotted on that axis instead of PC1, PC2, etc., one can use \
@@ -73,7 +73,7 @@ this option.  It is also useful for plotting time-series data \
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis. See make_prefs_file.py. [default: %default]',type='existing_filepath'),
- make_option('-k', '--background_color',help='This is the background color to \
+ make_option('-k', '--background_color', type='string', help='This is the background color to \
 use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  make_option('-e', '--edges_file',help='A file where each line contains two \
 sample IDs separated by a whitespace character; for each pair of sample IDs, \

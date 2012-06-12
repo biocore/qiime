@@ -33,11 +33,11 @@ script_info['required_options']=[
     make_option('-o', '--output_path',
         help="Output directory.",
         type='new_dirpath'),
-    make_option('-m', '--min', type=int,
+    make_option('-m', '--min', type='int',
         help='Minimum number of seqs/sample for rarefaction.'),
-    make_option('-x', '--max', type=int,
+    make_option('-x', '--max', type='int',
         help='Maximum number of seqs/sample (inclusive) for rarefaction. '),
-    make_option('-s', '--step', type=int,
+    make_option('-s', '--step', type='int',
         help='Size of each steps between the min/max of' +\
         ' seqs/sample (e.g. min, min+step... for level <= max).')
 ]
@@ -46,7 +46,7 @@ script_info['optional_options']=[
     ### but I'm not sure if we can do anything about it since '-' is not allowed
     ### in variable names... Hmmm... Changing the long-form parameter name
     ### would cause older parameter files not to work.
-    make_option('-n', '--num-reps', dest='num_reps', default=10, type=int,
+    make_option('-n', '--num-reps', dest='num_reps', default=10, type='int',
         help='The number of iterations at each step. [default: %default]'),
     make_option('--lineages_included', default=False,
         action="store_true",

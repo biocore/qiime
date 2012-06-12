@@ -110,7 +110,7 @@ This result implies that four clusters were created based on 7 input sequences. 
 The resulting .log file contains a list of parameters passed to the pick_otus.py script along with the output location of the resulting .txt file."""
 
 script_info['required_options'] = [
-    make_option('-i', '--input_seqs_filepath',
+    make_option('-i', '--input_seqs_filepath',type='existing_filepath',
         help='Path to input sequences file'),
     ]
 
@@ -130,20 +130,20 @@ script_info['optional_options'] = [
               ', '.join(MothurOtuPicker.ClusteringAlgorithms) +\
               '. [default: %default]')),
               
-    make_option('-M', '--max_cdhit_memory', type=int, default=400,
+    make_option('-M', '--max_cdhit_memory', type='int', default=400,
         help=('Maximum available memory to cd-hit-est (via the program\'s -M '
               'option) for cdhit OTU picking method (units of Mbyte) '
               '[default: %default]')),
               
-    make_option('-o', '--output_dir',\
+    make_option('-o', '--output_dir',type='new_dirpath',\
         help=('Path to store result file '
               '[default: ./<OTU_METHOD>_picked_otus/]')),
               
-    make_option('-r', '--refseqs_fp',
+    make_option('-r', '--refseqs_fp',type='existing_filepath',
         help=('Path to reference sequences to search against when using -m '
               'blast, -m uclust_ref, or -m usearch_ref [default: %default]')),
               
-    make_option('-b', '--blast_db',
+    make_option('-b', '--blast_db',type='string',
         help=('Pre-existing database to blast against when using -m blast '
               '[default: %default]')),
               
@@ -163,7 +163,7 @@ script_info['optional_options'] = [
         help=('Reverse seqs before picking OTUs with the Trie OTU picker for '
               'suffix (rather than prefix) collapsing [default: %default]')),
               
-    make_option('-n', '--prefix_prefilter_length', type=int, default=None,
+    make_option('-n', '--prefix_prefilter_length', type='int', default=None,
         help=('Prefilter data so seqs with identical first '
               'prefix_prefilter_length are automatically grouped into a single '
               'OTU.  This is useful for large sequence collections where OTU '
@@ -177,12 +177,12 @@ script_info['optional_options'] = [
               'large sequence collections where OTU picking doesn\'t scale '
               'well [default: %default]')),
               
-    make_option('-p', '--prefix_length', type=int, default=50,
+    make_option('-p', '--prefix_length', type='int', default=50,
         help=('Prefix length when using the prefix_suffix otu picker; '
               'WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length (-n)! '
               '[default: %default]')),
               
-    make_option('-u', '--suffix_length', type=int, default=50,
+    make_option('-u', '--suffix_length', type='int', default=50,
         help=('Suffix length when using the prefix_suffix otu picker '
               '[default: %default]')),
               
@@ -233,7 +233,7 @@ script_info['optional_options'] = [
              help="w value to usearch, uclust, and "
                   "uclust_ref.  Set to 64 for usearch. [default: %default]"),
                   
-    make_option('--uclust_otu_id_prefix',default=None,
+    make_option('--uclust_otu_id_prefix',default=None,type='string',
               help=("OTU identifier prefix (string) for the de novo uclust" 
                     " OTU picker [default: %default, OTU ids are ascending"
                     " integers]")),
@@ -264,7 +264,7 @@ script_info['optional_options'] = [
               "setting for de novo chimera detection with usearch_qf. "
               "[default: %default]"), type='float'),
               
-    make_option('-f', '--db_filepath', default=None, help=("Reference database "
+    make_option('-f', '--db_filepath',type='existing_filepath', default=None, help=("Reference database "
               "of fasta sequences for reference based chimera detection with "
               "usearch_qf. [default: %default]")),
               
@@ -317,7 +317,7 @@ script_info['optional_options'] = [
               "flagged as non-chimeric from either filter, while intersection "
               "will retain only those sequences that are flagged as non-"
               "chimeras from both detection methods. [default: %default]"),
-              type='str')
+              type='string')
     ]
 
 script_info['version'] = __version__

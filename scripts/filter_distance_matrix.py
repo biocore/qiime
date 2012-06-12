@@ -49,7 +49,7 @@ script_info['optional_options'] = [
  make_option('-t','--otu_table_fp',
   type="existing_filepath",help='the otu table filepath'),
  make_option('-m','--mapping_fp',help='path to the mapping file',type="existing_filepath"),\
- make_option('-s','--valid_states',help="string containing valid states, e.g. 'STUDY_NAME:DOG'"),
+ make_option('-s','--valid_states',type='string',help="string containing valid states, e.g. 'STUDY_NAME:DOG'"),
  make_option('--negate',default=False,
              action='store_true',
              help="discard specified samples (instead of keeping them) [default: %default]")]

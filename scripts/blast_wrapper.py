@@ -28,7 +28,7 @@ from refseqs.fasta (-r).""","""%prog -i inseqs.fasta -r refseqs.fasta"""))
 script_info['output_description']="""This is a utility program, which returns BLAST results."""
 script_info['required_options']=[\
 options_lookup['fasta_as_primary_input'],
-make_option('-r','--refseqs_fp',\
+make_option('-r','--refseqs_fp', type='string',\
     help='path to blast database as a fasta file')
 ]
 script_info['optional_options']=[\

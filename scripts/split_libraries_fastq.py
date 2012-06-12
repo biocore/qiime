@@ -106,7 +106,7 @@ script_info['optional_options'] = [
              'only be applied for golay_12 barcodes. [default: %default]',
         default='golay_12'),
      make_option('--max_barcode_errors',
-        default=1.5, type=float,
+        default=1.5, type='float',
         help='maximum number of errors in barcode [default: %default]'),
      # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
      # make_option('--filter_bad_illumina_qual_digit',

@@ -81,7 +81,7 @@ script_info['required_options'] = [
         help='input distance matrix filepath (i.e. the result of '
              'beta_diversity.py)',
         type='existing_filepath'),
-    make_option('-f', '--fields',
+    make_option('-f', '--fields',type='string',
         help='comma-separated list of fields to compare, where the list of '
              'fields should be in quotes (e.g. "Field1,Field2,Field3")')]
 

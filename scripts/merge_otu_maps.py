@@ -49,15 +49,15 @@ script_info['script_usage'].append(("""Expand a failures file:""",""" Some OTU p
 
 script_info['output_description']="""The result of this script is an OTU mapping file."""
 script_info['required_options']=[
-    make_option('-i','--otu_map_fps',
+    make_option('-i','--otu_map_fps',type='existing_filepaths',
                     help=('the otu map filepaths, comma-separated and '
                     'ordered as the OTU pickers were run [REQUIRED]')),
-    make_option('-o','--output_fp',
+    make_option('-o','--output_fp', type='new_filepath',
                 help='path to write output OTU map [REQUIRED]')
 ]
 
 script_info['optional_options']=[
-    make_option('-f','--failures_fp',
+    make_option('-f','--failures_fp',type='existing_filepath',
                 help='failures filepath, if applicable')
 ]
 
@@ -67,7 +67,7 @@ def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
     
-    otu_files = map(open,opts.otu_map_fps.split(','))
+    otu_files = map(open,opts.otu_map_fps)
     failures_fp = opts.failures_fp
     output_fp = opts.output_fp
     if failures_fp:

@@ -40,7 +40,7 @@ script_info['optional_options'] = [
 exist. [default: %default]', default="."),
 
             make_option('-a', '--ascii_increment',
-                type = int,
+                type = 'int',
                 help = 'The number to add to the quality score to get the \
 ASCII character. [default: %default]', default = 33),
 

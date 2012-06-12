@@ -46,9 +46,9 @@ script_info['required_options'] = [\
     options_lookup['fasta_as_primary_input'],
     options_lookup['output_dir'],
     make_option('-t','--starting_tree_fp',\
-             type='string',help='Starting Tree which you would like to insert into.'),
+             type='existing_filepath',help='Starting Tree which you would like to insert into.'),
     make_option('-r','--refseq_fp',\
-          type='string',dest='refseq_fp',help='Filepath for '+\
+          type='existing_filepath',dest='refseq_fp',help='Filepath for '+\
           'reference alignment'),
 ]
 script_info['optional_options'] = [\
@@ -59,9 +59,9 @@ script_info['optional_options'] = [\
           choices=insertion_method_choices,\
           default='raxml_v730'),
     make_option('-s','--stats_fp',\
-          type='string',help='Stats file produced by tree-building software. REQUIRED if -m pplacer [default: %default]'),
+          type='existing_filepath',help='Stats file produced by tree-building software. REQUIRED if -m pplacer [default: %default]'),
     make_option('-p','--method_params_fp',\
-            type='string',help='Parameters file containing method-specific parameters to use. [default: %default]'),
+            type='existing_filepath',help='Parameters file containing method-specific parameters to use. [default: %default]'),
 
 ]
 script_info['version'] = __version__

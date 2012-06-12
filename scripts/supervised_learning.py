@@ -82,7 +82,7 @@ script_info['required_options'] = [\
                 help='Input data file containing predictors (e.g. otu table)',),
     make_option('-m', '--mapping_file', type='existing_filepath', 
                 help='File containing meta data (response variables)'),
-    make_option('-c', '--category', help='Name of meta data category to predict'),
+    make_option('-c', '--category', type='string', help='Name of meta data category to predict'),
 ]
 
 errortype_choices = ['oob','loo','cv5','cv10']

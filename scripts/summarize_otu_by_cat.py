@@ -36,7 +36,7 @@ script_info['required_options']=[\
     make_option('-c', '--otu_table_fp',
         help='Input OTU table filepath. [REQUIRED]',
         type='existing_filepath'),
-    make_option('-m', '--mapping_category',
+    make_option('-m', '--mapping_category', type='string',
         help='Summarize OTU table using this category. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [REQUIRED]'),

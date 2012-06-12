@@ -108,7 +108,7 @@ script_info['required_options']=[\
 ]
 
 script_info['optional_options']=[\
-    make_option('-c', '--category', dest='category', default=None,\
+    make_option('-c', '--category', dest='category', type='string', default=None,\
         help='name of the category over which to run the analysis'),\
     make_option('-s','--test', dest='test', default='ANOVA',\
         help='the type of statistical test to run. options are: ' +\
@@ -129,7 +129,7 @@ script_info['optional_options']=[\
         default= 'otu_category_significance_results.txt',\
         help='path to output file. [default: %default]',
         type='new_filepath'),\
-    make_option('-f','--filter', dest='filter',\
+    make_option('-f','--filter', dest='filter', type='int', \
         default= 10, \
         help='minimum number of samples that must contain the OTU for the ' +\
         'OTU to be included in the analysis. For longitudinal options, is ' +\
@@ -140,7 +140,7 @@ script_info['optional_options']=[\
         'evaluated with longitudinal_correlation, a value of 10 would ' +\
         'indicate that the OTU would have to have been detected in at least ' +\
         '2 individuals. The default value=10.'),\
-    make_option('-t','--threshold', dest='threshold', default=None, \
+    make_option('-t','--threshold', dest='threshold', default=None, type='float', \
         help='threshold under which to consider something absent: ' +\
         'Only used if you have numerical data that should be converted to ' +\
         'present or absent based on a threshold. Should be None for ' +\
@@ -151,14 +151,14 @@ script_info['optional_options']=[\
         'filepath is given here in which each OTU name one wishes to ' +\
         'evaluate is on a separate line, will apply this additional filter'),\
     make_option('-z', '--reference_sample_column', dest='reference_sample_column',\
-        default='reference_sample',\
+        default='reference_sample', type='string',\
         help='This column specifies the sample to which all other samples ' +\
         'within an individual are compared. For instance, for timeseries ' +\
         'data, it would usually be the initial timepoint before a treatment ' +\
         'began. The reference samples should be marked with a 1, and ' +\
         'other samples with a 0.'),\
     make_option('-n','--individual_column', dest='individual_column', \
-        default='individual',\
+        default='individual', type='string',\
         help='name of the column in the category mapping file that ' +\
         'designates which sample is from which individual.'),\
     make_option('-b', '--converted_otu_table_output_fp', type='new_filepath',\

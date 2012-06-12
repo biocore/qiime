@@ -29,10 +29,10 @@ script_info['script_usage'].append(("""PCoA (Multiple Files):""","""The script a
 script_info['output_description']="""The resulting output file consists of the principal coordinate (PC) axes (columns) for each sample (rows). Pairs of PCs can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each PC."""
 script_info['required_options']=[\
 
-make_option('-i', '--input_path',\
+make_option('-i', '--input_path',type='existing_path',\
      help='path to the input distance matrix file(s) (i.e., the output from beta_diversity.py). Is a directory for batch processing and a filename for a single file operation.'),\
 
-make_option('-o', '--output_path',
+make_option('-o', '--output_path',type='new_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),\
 ]

@@ -57,14 +57,14 @@ alpha_rarefaction_20_3.txt  20                      3           0.91    0.93
 
 """
 script_info['required_options']=[\
- make_option('-i', '--input_path',
+ make_option('-i', '--input_path', type='existing_path',
  help='input path (a directory)'),
- make_option('-o', '--output_path',
+ make_option('-o', '--output_path', type='new_dirpath',
  help='output path (a directory).  will be created if needed')
 ]
 
 script_info['optional_options']=[\
- make_option('-e', '--example_path',
+ make_option('-e', '--example_path',type='existing_filepath',
  help='example alpha_diversity analysis file, containing all samples'+\
  ' and all metrics to be included in the collated result'+\
  '[Default: chosen automatically (see usage string)]')

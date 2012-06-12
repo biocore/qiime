@@ -33,7 +33,7 @@ script_info['script_usage'] = [\
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
- make_option('-i','--input_fps',
+ make_option('-i','--input_fps', type='existing_filepaths',
         help='the input filepaths (comma-separated)'),
 ]
 script_info['optional_options'] = [
@@ -69,12 +69,12 @@ def main():
        parse_command_line_parameters(**script_info)
     suppress_errors = opts.suppress_errors
     input_fps = []
-    for e in opts.input_fps.split(','):
+    for e in opts.input_fps:
         input_fps.extend(glob(e))
     input_fps = set(input_fps)
     if len(input_fps) == 0:
         option_parser.error(\
-         "No filepaths match pattern(s) passed via -i: %s" % opts.input_fps)
+         "No filepaths match pattern(s) passed via -i: %s" % ''.join(opts.input_fps))
         
     output_fp = opts.output_fp
 

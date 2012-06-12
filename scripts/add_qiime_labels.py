@@ -45,12 +45,12 @@ script_info['output_description']="""A combined_seqs.fasta file will be created 
 script_info['required_options']= [\
     make_option('-m', '--mapping_fp',type='existing_filepath',
                 help='SampleID to fasta file name mapping file filepath'),
-    make_option('-i', '--fasta_dir',
+    make_option('-i', '--fasta_dir',type='existing_dirpath',
                 help='Directory of fasta files to combine and label.')
     
 ]
 script_info['optional_options']= [\
-    make_option('-o', '--output_dir',
+    make_option('-o', '--output_dir',type='new_dirpath',
         help='Required output directory for log file and corrected mapping '+\
         'file, log file, and html file. [default: %default]', default="./"),
     make_option('-n', '--count_start',

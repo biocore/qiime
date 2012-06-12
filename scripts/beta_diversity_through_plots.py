@@ -58,7 +58,7 @@ script_info['optional_options']=[
             '[default: %default; only include fields with greater than one value '+\
             'and fewer values than the number of samples]',
             default=False,action='store_true'),
- make_option('-c','--histogram_categories',
+ make_option('-c','--histogram_categories', type='string',
              help='mapping fields to use when plotting distance '+\
              'histograms [default: %default]'),
  make_option('-f','--force',action='store_true',

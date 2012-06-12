@@ -210,9 +210,9 @@ script_info['required_options'] = [
         'options: [adonis, anosim, best, morans_i, mrpp, permanova, '
         'permdisp, rda]', type='choice', choices=['adonis', 'anosim', 'best',
         'morans_i', 'mrpp', 'permanova', 'permdisp', 'rda']),
-    make_option('-i', '--input_dm', help='the input distance matrix'),
-    make_option('-m', '--mapping_file', help='the metadata mapping file'),
-    make_option('-c', '--categories', help='A comma-delimited list of '
+    make_option('-i', '--input_dm', type='existing_filepath',help='the input distance matrix'),
+    make_option('-m', '--mapping_file', type='existing_filepath',help='the metadata mapping file'),
+    make_option('-c', '--categories', type='string',help='A comma-delimited list of '
         'categories from the mapping file (NOTE: many methods take just a '
         'single category, if multiple are passed only the first will be '
         'selected.)'),

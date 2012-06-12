@@ -41,7 +41,7 @@ script_info['output_description']= ""
 
 script_info['required_options'] = [
  options_lookup['otu_table_as_primary_input'],
- make_option('-s','--sample_name',help='name of the sample to plot. Use "*" to plot all.'),
+ make_option('-s','--sample_name',type='string',help='name of the sample to plot. Use "*" to plot all.'),
  make_option('-o','--output_dir',help='name of output directory',type='new_dirpath'),
  ]
 
@@ -65,7 +65,7 @@ script_info['optional_options'] = [\
                 action='store_true', default=False),
 
     make_option('-f','--file_type',help='save plot using this image type. Choice of '+
-                ', '.join(file_types) +' [default: %default]',
+                ', '.join(file_types) +' [default: %default]', type='choice', choices=file_types,
                 default='pdf')
 
 ]

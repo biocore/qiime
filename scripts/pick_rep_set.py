@@ -29,13 +29,13 @@ script_info['output_description'] = """The output from pick_rep_set.py is a sing
 """
 script_info['required_options'] = [\
  make_option('-i','--input_file',action='store',\
-          type='string',dest='otu_fp',help='Path to '+\
+          type='existing_filepath',dest='otu_fp',help='Path to '+\
           'input otu mapping file [REQUIRED]'),\
 ]
 rep_set_picking_method_choices = rep_set_picking_methods.keys()
 script_info['optional_options']=[\
  make_option('-f','--fasta_file',action='store',\
-          type='string',dest='fasta_fp',help='Path to input '+\
+          type='existing_filepath',dest='fasta_fp',help='Path to input '+\
           'fasta file [REQUIRED if not picking against a '+\
           'reference set; default: None]'),\
  make_option('-m','--rep_set_picking_method',\
@@ -45,15 +45,15 @@ script_info['optional_options']=[\
                 ' [default: %default (first chooses cluster seed when picking otus with uclust)]'),\
           choices=rep_set_picking_method_choices,default='first'),\
  make_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
+          type='new_filepath',dest='result_fp',help='Path to store '+\
           'result file [default: <input_sequences_filepath>_rep_set.fasta]'),\
  make_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
+          type='new_filepath',dest='log_fp',help='Path to store '+\
           'log file [default: No log file created.]'),\
  make_option('-s', '--sort_by', action='store',\
             type='string', dest='sort_by', default='otu',
             help='sort by otu or seq_id [default: %default]'),\
- make_option('-r', '--reference_seqs_fp',
+ make_option('-r', '--reference_seqs_fp',type='existing_filepath',
             help='collection of preferred representative '+\
             'sequences [default: %default]')
 ]

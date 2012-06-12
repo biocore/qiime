@@ -29,10 +29,10 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""This examples takes the "dists/" directory as input and returns the results in the "dist_stats/" directory:""","""dissimilarity_mtx_stats.py -i dists/ -o dist_stats/"""))
 script_info['output_description']="""The outputs are in distance matrix format, where each value is the mean, median, or stdev of that element in all the input distance matrices"""
 script_info['required_options']=[\
- make_option('-i','--input_dir',
+ make_option('-i','--input_dir',type='existing_dirpath',
        help='Path to input directory'),
 
- make_option('-o','--output_dir',
+ make_option('-o','--output_dir',type='new_dirpath',
        help='Path to store result files')
 ]
 script_info['optional_options']=[]

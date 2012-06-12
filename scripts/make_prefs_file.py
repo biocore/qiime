@@ -35,7 +35,7 @@ script_info['optional_options']=[]
 
 
 script_info['required_options']=[\
-    make_option('-m', '--map_fname', dest='map_fname', \
+    make_option('-m', '--map_fname', dest='map_fname', type='existing_filepath',\
      help='This is the metadata mapping file [default=%default]'),
     options_lookup['output_fp']
 ]
@@ -44,20 +44,20 @@ script_info['optional_options']=[\
     make_option('-b','--mapping_headers_to_use',action='store',\
           type='string',dest='mapping_headers_to_use',help='mapping fields to '+\
           'use in prefs file [default: %default]', default='ALL'),\
-    make_option('-k', '--background_color',help='This is the background'+ \
+    make_option('-k', '--background_color',type='string',help='This is the background'+ \
           'color to  use in the plots. [default: %default]',default='black'),
     make_option('-d','--monte_carlo_dists',action='store',\
           type='string',dest='monte_carlo_dist',help='monte carlo distance'+\
           'to use for each sample header [default: %default]',default=10),\
     make_option('-i', '--input_taxa_file', dest='input_taxa_file',\
-      action='store',type='string', help='summarized taxa file with sample' + \
+      action='store',type='existing_filepath', help='summarized taxa file with sample' + \
             'counts by taxonomy (resulting file from summarize_taxa.py)'),\
     make_option('-s', '--ball_scale', type='float',\
       help='scale factor for the size of each ball in the plots' + \
       ' [default: %default]', default=1.0),\
-    make_option('-l', '--arrow_line_color', help='arrow line color for' + \
+    make_option('-l', '--arrow_line_color',type='string', help='arrow line color for' + \
             'procrustes analysis. [default: %default]', default='white'),
-    make_option('-a', '--arrow_head_color', help='arrow head color for' + \
+    make_option('-a', '--arrow_head_color', type='string', help='arrow head color for' + \
             'procrustes analysis. [default: %default]', default='red'),
 ]
 

@@ -36,7 +36,7 @@ script_info['required_options'] = [\
  make_option('-g','--taxa_fp',type="existing_filepath",help='taxa list filepath')]
 script_info['optional_options'] = [\
  make_option('-i','--iters',type="int",default=1000,help='number of iterations to use for sampling tips without replacement (null model 2 community sampling, see see http://bodegaphylo.wikispot.org/Community_Phylogenetics). [default: %default]'),
- make_option('-m','--methods',default='nri,nti',help='comma-separated list of metrics to calculate. [default: %default]')]
+ make_option('-m','--methods',type='string', default='nri,nti',help='comma-separated list of metrics to calculate. [default: %default]')]
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = True
 

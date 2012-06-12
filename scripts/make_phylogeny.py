@@ -33,26 +33,26 @@ script_info['output_description']="""The result of make_phylogeny.py consists of
 The tips of the tree are the first word from the input sequences from the fasta file, e.g.: '>101 PC.481_71 RC:1..220' is represented in the tree as '101'."""
 script_info['required_options']=[
     make_option('-i','--input_fp',action='store',
-     type='string',dest='input_fp',help='Path to read '+\
+     type='existing_filepath',dest='input_fp',help='Path to read '+\
      'input fasta alignment, only first word in defline will be considered')
 ]
 valid_root_methods = ['midpoint','tree_method_default']
 
 script_info['optional_options']=[\
-    make_option('-t','--tree_method',action='store',
+    make_option('-t','--tree_method',action='store',type='choice', choices=list(tree_module_names.keys()),
           help='Method for tree building. Valid choices are: '+\
           ', '.join(tree_module_names.keys())+\
           ' [default: %default]', default='fasttree'),
           
-    make_option('-o','--result_fp',action='store',
+    make_option('-o','--result_fp',action='store',type='new_filepath',
           help='Path to store '+\
           'result file [default: <input_sequences_filename>.tre]'),
           
-    make_option('-l','--log_fp',action='store',
+    make_option('-l','--log_fp',action='store',type='new_filepath',
           help='Path to store '+\
           'log file [default: No log file created.]'),
           
-    make_option('-r','--root_method',action='store',
+    make_option('-r','--root_method',action='store',type='choice', choices=list(valid_root_methods),
         help='method for choosing root of phylo tree'+\
         '  Valid choices are: '+ ', '.join(valid_root_methods) +\
         ' [default: tree_method_default]',

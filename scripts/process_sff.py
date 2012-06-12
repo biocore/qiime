@@ -30,7 +30,7 @@ script_info['script_usage'].append(("""Flowgram example""","""Convert all the sf
 script_info['script_usage'].append(("""Output example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual, along with a flowgram file and write them to another directory.""","""process_sff.py -i sffs/ -f -o output_dir"""))
 script_info['output_description']="""This script results in FASTA and QUAL formatted files."""
 script_info['required_options'] = [\
-    make_option('-i', '--input_dir', help='Input directory of sff files'),
+    make_option('-i', '--input_dir', type='existing_dirpath',help='Input directory of sff files'),
 ]
 
 script_info['optional_options'] = [
@@ -43,7 +43,7 @@ script_info['optional_options'] = [
     make_option('--use_sfftools', action='store_true', default=False,
         help=('use the external programs sfffile and sffinfo for processing, '
               'instead of the equivalent python implementation')),
-    make_option('-o', '--output_dir',default=None,
+    make_option('-o', '--output_dir',default=None,type='new_dirpath',
      help='Input directory of sff files [default: same as input dir]'),
 ]
 script_info['version'] = __version__

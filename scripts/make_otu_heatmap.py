@@ -50,15 +50,15 @@ script_info['required_options']=[\
 ]
 script_info['optional_options']=[\
 options_lookup['output_dir'],
- make_option('-t','--otu_tree', type="string",
+ make_option('-t','--otu_tree', type='existing_filepath',
   help='Tree file to be used for sorting OTUs \
 in the heatmap',default=None),
- make_option('-m', '--map_fname', dest='map_fname', type="string",
+ make_option('-m', '--map_fname', dest='map_fname', type='existing_filepath',
      help='Metadata mapping file to be used for sorting Samples in the \
 heatmap.',default=None),
  make_option('-c', '--category', dest='category', type="string",
      help='Metadata category for sorting samples. Samples will be clustered within each category level using euclidean UPGMA.',default=None),
- make_option('-s', '--sample_tree', dest='sample_tree', type="string",
+ make_option('-s', '--sample_tree', dest='sample_tree', type='existing_filepath',
      help='Tree file to be used for sorting samples (e.g, output from \
 upgma_cluster.py). If both this and the \
 sample mapping file are provided, the mapping file is ignored.',default=None),

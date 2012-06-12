@@ -34,9 +34,9 @@ script_info['required_options'] = [
     ]
 
 script_info['optional_options']=[
-    make_option("-p", "--sfffile_path", default='sfffile', 
+    make_option("-p", "--sfffile_path", default='sfffile', type='string',
         help="Path to sfffile binary [default: %default]"),
-    make_option("-q", "--sffinfo_path", default='sffinfo',
+    make_option("-q", "--sffinfo_path", default='sffinfo', type='string',
         help="Path to sffinfo binary [default: %default]"),
     make_option('--use_sfftools', action='store_true', default=False,
         help=('Use external sffinfo and sfffile programs instead of '

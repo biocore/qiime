@@ -80,13 +80,13 @@ script_info['required_options']= [\
     
 ]
 script_info['optional_options']= [\
-    make_option('-o', '--output_dir',
+    make_option('-o', '--output_dir',type='new_dirpath',
         help='Required output directory for log file and corrected mapping '+\
         'file, log file, and html file. [default: %default]', default="./"),
     make_option('-v', '--verbose',
         help='Enable printing information to standard out '+\
         '[default: %default]', default=True,action='store_false'),
-    make_option('-c', '--char_replace',
+    make_option('-c', '--char_replace',type='string',
         help='Changes the default character used to replace invalid '+\
         'characters found in the mapping file.  Must be a valid character ('+\
         'alphanumeric, period, or underscore).'+\
@@ -101,7 +101,7 @@ script_info['optional_options']= [\
     make_option('-p', '--disable_primer_check',
         action='store_true', default=False,
         help='Use -p to disable checks for primers. [default: %default]'),
-    make_option('-j', '--added_demultiplex_field',
+    make_option('-j', '--added_demultiplex_field',type='string',
         help='Use -j to add a field to use in the mapping file as an '+\
         'additional demultiplexing option to the barcode.  All combinations '+\
         'of barcodes/primers and the these fields must be unique. The '+\

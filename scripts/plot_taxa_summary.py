@@ -59,7 +59,7 @@ script_info['optional_options']=[\
     make_option('-o', '--dir_path',
         help='Output directory',
         type='new_dirpath'),
-    make_option('-b', '--colorby', dest='colorby',\
+    make_option('-b', '--colorby', dest='colorby',type='string',\
         help='This is the categories to color by in the plots from the' +\
         ' metadata mapping file. The categories must match the name of a ' +\
         ' column header in the mapping file exactly and multiple categories' +\
@@ -80,10 +80,10 @@ script_info['optional_options']=[\
         type='int',default=80),
     make_option('-x', '--x_width',
         help='This is the width of the x-axis to use in the plots.' +\
-        ' [default: %default]',default=12,type=int),
+        ' [default: %default]',default=12,type='int'),
     make_option('-y', '--y_height',
         help='This is the height of the y-axis to use in the plots.' +\
-        ' [default: %default]',default=6,type=int),
+        ' [default: %default]',default=6,type='int'),
     make_option('-w', '--bar_width',
         help='This the width of the bars in the bar graph and should be a' +\
         ' number between 0 and 1. NOTE: this only applies to the bar charts.' +\

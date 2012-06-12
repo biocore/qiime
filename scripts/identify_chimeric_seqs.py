@@ -58,21 +58,21 @@ script_info['required_options']=[options_lookup['fasta_as_primary_input']]
 chimera_detection_method_choices = ['blast_fragments','ChimeraSlayer']
 
 script_info['optional_options']=[\
-    make_option('-t', '--id_to_taxonomy_fp',
+    make_option('-t', '--id_to_taxonomy_fp',type='existing_filepath',
         help='Path to tab-delimited file mapping sequences to assigned '
          'taxonomy. Each assigned taxonomy is provided as a comma-separated '
          'list. [default: %default; REQUIRED when method is blast_fragments]'),
 
-    make_option('-r', '--reference_seqs_fp',
+    make_option('-r', '--reference_seqs_fp',type='existing_filepath',
         help='Path to reference sequences (used to build a blast db when method blast_fragments). '
         '[default: %default; REQUIRED when method blast_fragments'+\
          ' if no blast_db is provided;]'),
 
-    make_option('-a', '--aligned_reference_seqs_fp',
+    make_option('-a', '--aligned_reference_seqs_fp',type='existing_filepath',
         help='Path to (Py)Nast aligned reference sequences. '
         'REQUIRED when method ChimeraSlayer [default: %default]'),       
 
-    make_option('-b', '--blast_db',
+    make_option('-b', '--blast_db',type='string',
         help='Database to blast against. Must provide either --blast_db or '
         '--reference_seqs_fp when method is blast_fragments [default: %default]'),
         
@@ -107,7 +107,7 @@ script_info['optional_options']=[\
                     'useful for debugging ' +\
                     ' [default: %default]', default=False),  
     
-    make_option('-o', '--output_fp',
+    make_option('-o', '--output_fp',type='new_filepath',
         help='Path to store output [default: derived from input_seqs_fp]')
     ]
 script_info['version'] = __version__

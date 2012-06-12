@@ -43,13 +43,13 @@ script_info['optional_options']= [\
         type = 'new_path',
         help='Output directory.  Will be created if does not exist.  '+\
         '[default: %default]', default="."),
-    make_option('-z', '--truncate_option', type=str,
+    make_option('-z', '--truncate_option', type='string',
         help='Truncation option.  The default option, "truncate_only" will '+\
         'try to find the reverse primer to truncate, and if not found, '+\
         'will write the sequence unchanged.  If set to "truncate_remove", '+\
         'sequences where the reverse primer is not found will not be '+\
         'written. [default: %default]', default='truncate_only'),
-    make_option('-M', '--primer_mismatches', type=int,
+    make_option('-M', '--primer_mismatches', type='int',
         help='Number of mismatches allowed in the reverse primer. '+\
         '[default: %default]', default=2)
 ]

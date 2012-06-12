@@ -30,14 +30,14 @@ script_info['script_usage'].append(("""Example:""","""Make per-library sff files
 script_info['output_description']="""The result of this script generates sff files for each library."""
 
 script_info['required_options'] = [
-    make_option("-i", "--input_sff",
+    make_option("-i", "--input_sff",type='existing_filepaths',
         help="Input sff file (separate multiple files w/ comma)"),
-    make_option("-l", "--libdir",
+    make_option("-l", "--libdir",type='existing_dirpath',
         help="Directory containing ID list text files, one per library"),
 ]
 
 script_info['optional_options'] = [
-    make_option("-p", "--sfffile_path",
+    make_option("-p", "--sfffile_path", type='string',
         help="Path to sfffile binary [default: use sfffile in $PATH]"),
     make_option('--use_sfftools', action='store_true', default=False,
         help=('Use external sfffile program instead of equivalent Python '
@@ -50,7 +50,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    sff_fps = opts.input_sff.split(',')
+    sff_fps = opts.input_sff
     make_per_library_sffs(
         sff_fps,
         opts.libdir,

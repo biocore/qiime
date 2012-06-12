@@ -34,7 +34,7 @@ script_info['required_options']=[
     make_option('-o', '--output_path',
         help='Output OTU table filepath.',
         type='new_filepath'),
-    make_option('-d', '--depth', type=int,
+    make_option('-d', '--depth', type='int',
         help='Number of sequences to subsample per sample.'),
 ]
 script_info['optional_options']=[

@@ -43,7 +43,7 @@ script_info['optional_options']=[
  make_option('-n','--negate',action='store_true',default=False,
   help='negate the sample ID list (i.e., output sample '+
   'ids not passed via -s) [default: %default]'),
- make_option('-s','--sample_ids',\
+ make_option('-s','--sample_ids',type='string',\
   help="comma-separated sample_ids to include in output fasta file"+\
   " (or exclude if --negate), or string describing mapping file states"+\
   " defining sample ids (mapping_fp must be provided for the latter)"),

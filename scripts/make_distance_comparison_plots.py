@@ -77,9 +77,9 @@ script_info['required_options'] = [
         help='input distance matrix filepath (i.e. the result of '
              'beta_diversity.py)',
         type='existing_filepath'),
-    make_option('-f', '--field',
+    make_option('-f', '--field',type='string',
         help='field in the mapping file to make comparisons on'),
-    make_option('-c', '--comparison_groups',
+    make_option('-c', '--comparison_groups',type='string',
         help='comma-separated list of field states to compare to every other '
              'field state, where the list of field states should be in quotes '
              '(e.g. "FieldState1,FieldState2,FieldState3")')]

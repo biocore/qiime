@@ -40,7 +40,7 @@ script_info['optional_options']=[
      help='Input OTU table in biom format or input directory containing OTU ' +\
      'tables in biom format for batch processing.',
      type='existing_path'),
- make_option('-r', '--rows', default=None,
+ make_option('-r', '--rows', default=None, type='string',
      help='Compute for only these rows of the distance matrix.' +\
       ' User should pass a list of sample names (e.g. "s1,s3")' +\
       ' [default: %default; full n x n matrix is generated]'),

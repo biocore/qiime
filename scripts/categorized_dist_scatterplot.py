@@ -33,21 +33,21 @@ script_info['script_description'] = "makes a figure representing average distanc
 script_info['script_usage'] = [("Canonical Example:","Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png"),("Example 2:","Same as above, but compares Child with all other categories (e.g.: NA, Infant, etc.)","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg")]
 script_info['output_description']= "a figure and the text dat for that figure "
 script_info['required_options'] = [\
- make_option('-m', '--map',
+ make_option('-m', '--map', type='existing_filepath',
      help='mapping file'),
- make_option('-d', '--distance_matrix',
+ make_option('-d', '--distance_matrix', type='existing_filepath',
      help='distance matrix'),
- make_option('-p', '--primary_state',
+ make_option('-p', '--primary_state', type='string',
      help="Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's filter_samples_from_otu_table.py for more syntax options"),
- make_option('-a', '--axis_category',
+ make_option('-a', '--axis_category', type='string',
      help='this will form the horizontal axis of the figure, e.g.: AgeYears . Must be numbers'),
- make_option('-o', '--output_path',
+ make_option('-o', '--output_path', type='new_dirpath',
      help='output figure, filename extention determines format. E.g.: "fig1.png" or similar. A "fig1.txt" or similar will also be created with the data underlying the figure'),
 ]
 script_info['optional_options'] = [
- make_option('-c', '--colorby',
+ make_option('-c', '--colorby', type='string',
      help='samples will first be separated by this column of the mapping file. They will be colored by this column of the mapping file, and all comparisons will be done only among samples with the same value in this column. e.g.: Country. You may omit -c, and the samples will not be separated'),
- make_option('-s', '--secondary_state',
+ make_option('-s', '--secondary_state', type='string',
      help='all samples matching the primary state will be compared to samples matcthing this secondary state. E.g.: AgeCategory:Adult'),
 ]
 script_info['version'] = __version__

@@ -25,23 +25,23 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Create a list containing library ids for a fasta file (seqs.fna):""","""make_library_id_lists.py -i seqs.fna -o results/"""))
 script_info['output_description']="""This script produces a separate file for each library."""
 script_info['required_options']=[\
-    make_option("-i","--input_fasta",dest='in_fasta',default = None,\
+    make_option("-i","--input_fasta",dest='in_fasta',default = None,type='existing_filepath',\
         help="The path to a FASTA file containing input sequences")
 ]
 
 script_info['optional_options']=[\
     make_option("-s", "--screened_rep_seqs",dest="screened_rep_seqs",
-        default=None,
+        default=None,type='existing_filepath',
         help="The path to a FASTA file containing screened representative seqs" +
         "[DEFAULT: %default]"),\
     make_option("-u", "--otus",dest="otus",
-        default=None,
+        default=None,type='existing_filepath',
         help="The path to an OTU file mapping OTUs onto rep seqs" +
         "[DEFAULT: %default]"),\
     make_option("-o","--outdir",dest='outdir',\
-        default = '.',\
+        default = '.',type='new_dirpath',\
         help=""" The base directory to save results (one file per library)."""),\
-    make_option("-f", "--field",dest="field", type=int,\
+    make_option("-f", "--field",dest="field", type='int',\
         default = 1,\
         help="Index of space-delimited field to read id from [DEFAULT: %default]"),\
     make_option("--debug", dest="debug", action="store_true",

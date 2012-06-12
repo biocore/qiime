@@ -94,7 +94,7 @@ script_info['required_options'] = [
         '[mantel, partial_mantel, mantel_corr]',
         type='choice',
         choices=['mantel', 'partial_mantel', 'mantel_corr']),
-    make_option('-i','--input_dms',
+    make_option('-i','--input_dms', type='existing_filepaths',
         help='the input distance matrices, comma-separated'),
     options_lookup['output_dir']
 ]
@@ -103,7 +103,7 @@ script_info['optional_options'] = [
     make_option('-n','--num_permutations',
         help='the number of permutations to perform when calculating the '
         'p-value [default: %default]', default=100, type='int'),
-     make_option('-s','--sample_id_map_fp',
+     make_option('-s','--sample_id_map_fp', type='existing_filepath',
         help='Map of original sample ids to new sample ids [default: '
         '%default]', default=None),
     # Standard Mantel specific, i.e., method == mantel
@@ -160,7 +160,7 @@ def main():
     if opts.sample_id_map_fp:
         sample_id_map = dict([(k, v[0]) \
         for k,v in fields_to_dict(open(opts.sample_id_map_fp, "U")).items()])
-    input_dm_fps = opts.input_dms.split(',')
+    input_dm_fps = opts.input_dms
     distmats = [parse_distmat(open(dm_fp, 'U')) for dm_fp in input_dm_fps]
 
     if opts.method == 'mantel':

@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from optparse import make_option
+from qiime.util import make_option
 from glob import glob
 from os.path import split
 from cogent.util.misc import create_dir
@@ -28,12 +28,12 @@ script_info['script_usage'] = [("","Generate fastq files from all lanes of read 
                                ("","Generate fastq files from all lanes of read 2 data in the current directory, truncating the sequences after the first 12 bases.","process_qseq.py -i ./ -o ./fastq/ -r 2 -b 12")]
 script_info['output_description']= ""
 script_info['required_options'] = [
- make_option('-i','--input_dir',help='the input directory'),
- make_option('-o','--output_dir',help='the output directory'),
+ make_option('-i','--input_dir',type='new_dirpath',help='the input directory'),
+ make_option('-o','--output_dir',type='new_dirpath',help='the output directory'),
  make_option('-r','--read',help='the read number to consider',type='int')
 ]
 script_info['optional_options'] = [
- make_option('-l','--lanes',
+ make_option('-l','--lanes',type='string',
   help='the lane numbers to consider, comma-separated [defaut: %default]',
   default='1,2,3,4,5,6,7,8'),
  make_option('-b','--bases',type='int',

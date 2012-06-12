@@ -66,12 +66,12 @@ script_info['required_options'] = [
 
 ]
 script_info['optional_options'] = [
- make_option('-n','--np',type=int,default=2,help='number of processes to use for mpi steps. Default: %default'),
- make_option('--chimera_alpha',type=float,default=-3.8228,help='alpha value to Class.pl used for chimera removal  Default: %default'),
- make_option('--chimera_beta',type=float,default=0.6200,help='beta value to Class.pl used for chimera removal  Default: %default'),
- make_option('--seqnoise_resolution',type=str,default=None,help='-s parameter passed to seqnoise. Default is 25.0 for titanium, 30.0 for flx'),
- make_option('-d','--output_dir',default=None,help='directory for ampliconnoise intermediate results. Default is output_filepath_dir'),
-    make_option('-p','--parameter_fp',
+ make_option('-n','--np',type='int',default=2,help='number of processes to use for mpi steps. Default: %default'),
+ make_option('--chimera_alpha',type='float',default=-3.8228,help='alpha value to Class.pl used for chimera removal  Default: %default'),
+ make_option('--chimera_beta',type='float',default=0.6200,help='beta value to Class.pl used for chimera removal  Default: %default'),
+ make_option('--seqnoise_resolution',type='string',default=None,help='-s parameter passed to seqnoise. Default is 25.0 for titanium, 30.0 for flx'),
+ make_option('-d','--output_dir',type='new_dirpath',default=None,help='directory for ampliconnoise intermediate results. Default is output_filepath_dir'),
+    make_option('-p','--parameter_fp',type='existing_filepath',
         help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
@@ -84,8 +84,8 @@ script_info['optional_options'] = [
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]'),
  make_option('--suppress_perseus',action='store_true',default=False,help='omit perseus from ampliconnoise workflow'),
- make_option('--platform',default='flx',help="sequencing technology, options are 'titanium','flx'. [default: %default]"),
- make_option('--truncate_len', default=None, help="Specify a truncation length for ampliconnoise.  Note that is this is not specified, the truncate length is chosen by the --platform option (220 for FLX, 400 for Titanium) [default: %default]")
+ make_option('--platform',type='choice',choices=['titanium', 'flx'], default='flx',help="sequencing technology, options are 'titanium','flx'. [default: %default]"),
+ make_option('--truncate_len',type='int', default=None, help="Specify a truncation length for ampliconnoise.  Note that is this is not specified, the truncate length is chosen by the --platform option (220 for FLX, 400 for Titanium) [default: %default]")
 
 
 ]

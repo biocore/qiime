@@ -46,7 +46,7 @@ script_info['required_options']=[\
         type='existing_filepath')
 ]
 script_info['optional_options']=[\
-    make_option('-b', '--colorby', dest='colorby',\
+    make_option('-b', '--colorby', dest='colorby',type='string',\
         help='Comma-separated list categories metadata categories' +\
         ' (column headers) ' +\
         'to color by in the plots. The categories must match the name of a ' +\

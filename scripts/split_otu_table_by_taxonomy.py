@@ -39,7 +39,7 @@ script_info['required_options'] = [
 ]
 
 script_info['optional_options'] = [
- make_option('--md_identifier',default='taxonomy',
+ make_option('--md_identifier',default='taxonomy', type='string',
              help='the relevant observation metadat key [default: %default]'),
  make_option('--md_as_string',default=False,action='store_true',
              help='metadata is included as string [default: metadata is included as list]'),

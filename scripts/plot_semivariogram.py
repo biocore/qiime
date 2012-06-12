@@ -12,7 +12,7 @@ __email__ = "antgonza@gmail.com"
 __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat
 from qiime.filter import filter_samples_from_distance_matrix
@@ -32,11 +32,11 @@ script_info['script_usage'].append(("""Fitting""","""For this script, the user s
 script_info['output_description']="""The resulting output file consists of a pdf image containing the plot between the two distances matrices and the fitted model"""
 
 script_info['required_options']=[\
- make_option('-x', '--input_path_x',\
+ make_option('-x', '--input_path_x',type='existing_path',\
      help='path to distance matrix to be displayed in the x axis'),\
- make_option('-y', '--input_path_y',\
+ make_option('-y', '--input_path_y',type='existing_path',\
      help='path to distance matrix to be displayed in the y axis'),\
- make_option('-o', '--output_path',
+ make_option('-o', '--output_path',type='new_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),
 
@@ -55,19 +55,19 @@ script_info['optional_options']=[\
  make_option('--x_min', type='float', help='x axis min limit [default: auto]', default=None),         
  make_option('--y_max', type='float', help='y axis max limit [default: auto]', default=None),         
  make_option('--y_min', type='float', help='y axis min limit [default: auto]', default=None),
- make_option('-X', '--x_label', default='Distance Dissimilarity (m)',\
+ make_option('-X', '--x_label', default='Distance Dissimilarity (m)',type='string',\
      help='Label for the x axis [default: %default]'),
- make_option('-Y', '--y_label', default='Community Dissimilarity',\
+ make_option('-Y', '--y_label', default='Community Dissimilarity',type='string',\
      help='Label for the y axis [default: %default]'),
- make_option('-t', '--fig_title', default='Semivariogram',\
+ make_option('-t', '--fig_title', default='Semivariogram',type='string',\
      help='Title of the plot [default: %default]'),       
- make_option('--dot_color', help='dot color for plot, more info:' +\
+ make_option('--dot_color', type='string', help='dot color for plot, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="white"), 
- make_option('--dot_marker', help='dot color for plot, more info:' +\
+ make_option('--dot_marker', type='string', help='dot color for plot, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="o"), 
- make_option('--line_color', help='line color for plot, more info:' +\
+ make_option('--line_color', type='string', help='line color for plot, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="blue"), 
  make_option('--dot_alpha', type='float', help='alpha for dots, more info:' +\

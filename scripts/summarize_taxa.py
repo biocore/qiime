@@ -43,7 +43,7 @@ script_info['required_options']= [\
         type='existing_filepath'),
 ]
 script_info['optional_options'] = [\
-    make_option('-L','--level',default='2,3,4,5,6' ,
+    make_option('-L','--level',default='2,3,4,5,6' , type='string',
         help='Taxonomic level to summarize by. [default: %default]'),
     make_option('-m','--mapping', 
         help='Input metadata mapping filepath. If supplied, then the taxon' +\
@@ -51,7 +51,7 @@ script_info['optional_options'] = [\
         ' useful for coloring PCoA plots by taxon abundance or to ' +\
         ' perform statistical tests of taxon/mapping associations.',
         type='existing_filepath'),
-    make_option('--md_identifier',default='taxonomy',
+    make_option('--md_identifier',default='taxonomy', type='string',
              help='the relevant observation metadat key [default: %default]'),
     make_option('--md_as_string',default=False,action='store_true',
              help='metadata is included as string [default: metadata is included as list]'),

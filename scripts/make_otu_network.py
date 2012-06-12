@@ -56,7 +56,7 @@ make_option('-o', '--output_dir',type='new_dirpath',
 ]
 
 script_info['optional_options'] = [\
-make_option('-b', '--colorby', dest='colorby',\
+make_option('-b', '--colorby', dest='colorby',type='string',\
      help='This is the categories to color by in the plots from the \
 user-generated mapping file. The categories must match the name of a column \
 header in the mapping file exactly and multiple categories can be list by comma \
@@ -66,7 +66,7 @@ mapping file by separating the categories by "&&" without spaces \
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis [default: %default]',type='existing_filepath'),
- make_option('-k', '--background_color',help='This is the background color to \
+ make_option('-k', '--background_color',type='string',help='This is the background color to \
 use in the plots. [default: %default]'),
 ]
 

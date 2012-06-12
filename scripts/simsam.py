@@ -28,10 +28,10 @@ script_info['required_options'] = [
  make_option('-t','--tree_file',help='tree file',type='existing_filepath'),
  make_option('-o','--output_file',help='the output file',type='new_filepath'),
  make_option('-d','--dissim',help='dissimilarity between nodes up the tree',
-    type=float),
+    type='float'),
  make_option('-n','--num',
     help='number of simulated samples per input sample',
-    type=int)
+    type='int')
 
 ]
 script_info['optional_options'] = []

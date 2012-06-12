@@ -26,12 +26,12 @@ script_info['script_usage'].append(("""neighbor joining (Multiple Files):""","""
 script_info['script_usage'].append(('','',''))
 script_info['output_description']="""The output is a newick formatted tree compatible with most standard tree viewing programs. Batch processing is also available, allowing the analysis of an entire directory of distance matrices."""
 script_info['required_options']=[
-make_option('-i', '--input_path',
+make_option('-i', '--input_path',type='existing_path',
      help='input path.  directory for batch processing, '+\
       'filename for single file operation'),\
       
 
-make_option('-o', '--output_path',
+make_option('-o', '--output_path',type='new_path',
             help='output path. directory for batch processing, '+\
              'filename for single file operation'),\
 ]

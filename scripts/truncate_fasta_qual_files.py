@@ -42,7 +42,7 @@ script_info['required_options']= [\
         type='existing_filepath',
         help='Quality score file used to generate histogram data.'),
         
-    make_option('-b', '--base_pos',
+    make_option('-b', '--base_pos', type='int',
         help='Nucleotide position to truncate the fasta and quality score '+\
          'files at.')
 ]

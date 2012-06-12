@@ -35,14 +35,14 @@ script_info['required_options']=[
     make_option('-o', '--output_path',type='new_dirpath',
         help="write output rarefied otu tables files to this dir (makes dir if it doesn't exist)"),
 
-    make_option('-d', '--depth', type=int,
+    make_option('-d', '--depth', type='int',
         help='sequences per sample to subsample'),
 ]
 
 
 script_info['optional_options']=[
 
-    make_option('-n', '--num-reps', dest='num_reps', default=10, type=int,
+    make_option('-n', '--num-reps', dest='num_reps', default=10, type='int',
         help='num iterations at each seqs/sample level [default: %default]'),
      
     make_option('--lineages_included', dest='lineages_included', default=False,

@@ -52,12 +52,12 @@ script_info['required_options'] = [
              help='the output directory'),
 ]
 script_info['optional_options'] = [
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
         ' [if omitted, default values will be used]'),
- make_option('-n','--new_ref_set_id',default='New',
+ make_option('-n','--new_ref_set_id',default='New',type='string',
          help='Unique identifier for OTUs that get created in this ref set '+\
          '(this is useful to support combining of reference sets) [default:%default]'),
  make_option('-f','--force',action='store_true',\

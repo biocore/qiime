@@ -41,7 +41,7 @@ script_info['required_options'] = [\
 
 script_info['optional_options'] = [\
  # Example optional option
- make_option('-r','--reference_sample',
+ make_option('-r','--reference_sample',type='string',
              help='Name of reference sample to which all pairs of samples should be compared '
              + '[default: %default]', default=None),
 ]

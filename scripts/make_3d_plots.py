@@ -66,7 +66,7 @@ script_info['required_options']=[\
         type='existing_filepath')
     ]
 script_info['optional_options']=[\
-    make_option('-b', '--colorby', dest='colorby',\
+    make_option('-b', '--colorby', dest='colorby',type='string',\
         help='Comma-separated list categories metadata categories' +\
         ' (column headers) ' +\
         'to color by in the plots. The categories must match the name of a ' +\
@@ -74,10 +74,10 @@ script_info['optional_options']=[\
         'can be list by comma separating them without spaces. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [default=color by all]'),
-    make_option('-s', '--scaling_method',
+    make_option('-s', '--scaling_method',type='string',
         help='Comma-separated list of scaling methods (i.e. scaled or' +\
         ' unscaled) [default=%default]',default='unscaled'),
-    make_option('-a', '--custom_axes',
+    make_option('-a', '--custom_axes',type='string',
         help='This is the category from the metadata mapping file to use as' +\
         ' a custom axis in the plot.  For instance, if there is a pH' +\
         ' category and you would like to see the samples plotted on that' +\
@@ -110,7 +110,7 @@ script_info['optional_options']=[\
         ' 0 produces completely transparent (invisible) ellipsoids' +\
         ' and 1 produces completely opaque ellipsoids.' +\
         ' [default=%default]', \
-        default=0.33,type=float),
+        default=0.33,type='float'),
     make_option('--ellipsoid_method',
         help='Used only when plotting ellipsoids for jackknifed' +\
         ' beta diversity (i.e. using a directory of coord files' +\
@@ -134,7 +134,7 @@ script_info['optional_options']=[\
     make_option('--n_taxa_keep',
         help='Used only when generating BiPlots. This is the number of taxa '+\
         ' to display. Use -1 to display all. [default: %default]',default=10,
-        type=int),
+        type='int'),
     make_option('--biplot_output_file', 
         help='Used only when generating BiPlots. Output coordinates filepath '+\
         ' when generating a biplot. [default: %default]',default=None,
@@ -159,7 +159,7 @@ script_info['optional_options']=[\
         ' --polyhedron_points option. This is only used when' +\
         ' using the invue output_format. [default: %default]', default=1.5),
     # vector analysis options
-    make_option('--add_vectors', dest='add_vectors', default=None,
+    make_option('--add_vectors', type='string', dest='add_vectors', default=None,
         help='Create vectors based on a column of the mapping file. This.parameter' +\
         ' accepts up to 2 columns: (1) create the vectors, (2) sort them.' +\
         ' If you wanted to group by Species and' +\
@@ -167,7 +167,7 @@ script_info['optional_options']=[\
         ' wanted to group by Species but order by DOB you will pass' +\
         ' --add_vectors=Species,DOB;' +\
         ' this is useful when you use --custom_axes param [default: %default]'),
-    make_option('--rms_algorithm', dest='rms_algorithm', default=None,
+    make_option('--rms_algorithm', type='string', dest='rms_algorithm', default=None,
         help='The algorithm to calculate the RMS, either avg or trajectory;' +\
         ' both algorithms use all the dimensions and weights them using their' +\
         ' percentange explained; return the norm of the created vectors; and their ' +\
@@ -175,12 +175,12 @@ script_info['optional_options']=[\
         ' avg it calculates the average at each timepoint (averaging within' +\
         ' a group), then calculates the norm of each point; for trajectory ' +\
         ' calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: %default]'),
-    make_option('--rms_axes', dest='rms_axes', type=int, default=3,
+    make_option('--rms_axes', dest='rms_axes', type='int', default=3,
         help='The number of axes to account while doing the RMS calculations.' +\
         ' We suggest using 3 because those are the ones being displayed in the plots' +\
         ' but you could use any number between 1 and number of samples - 1. To' +\
         ' use all of them pass 0. [default: %default]'),
-    make_option('--rms_path', dest='rms_path', default='RMS_output.txt',
+    make_option('--rms_path', dest='rms_path', default='RMS_output.txt', type='new_filepath',
         help='Name of the file to save the root mean square (RMS) of the vectors' +\
         ' grouped by the column used with the --add_vectors function. Note that' +\
         ' this option only works with --add_vectors. The file is going to be' +\

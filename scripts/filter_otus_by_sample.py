@@ -33,7 +33,7 @@ script_info['output_description']="""As a result a new OTU and sequence file is 
 script_info['required_options']=[\
  options_lookup['otu_map_as_primary_input'],
  options_lookup['input_fasta'],
- make_option('-s', '--samples_to_extract', help='This is a list of sample \
+ make_option('-s', '--samples_to_extract', type='string', help='This is a list of sample \
 ids, which should be removed from the OTU file')]
 
 script_info['optional_options']=[\

@@ -47,16 +47,16 @@ script_info['script_usage'].append(("""Example:""","""Generate plots and output 
 script_info['output_description']="""A .pdf file with the two plots will be created in the output directory"""
 script_info['required_options']= [\
       
-    make_option('-q', '--qual_fp',
+    make_option('-q', '--qual_fp',type='existing_filepath',
         help='Quality score file used to generate histogram data.')
 ]
 
 script_info['optional_options']= [\
-    make_option('-o', '--output_dir',
+    make_option('-o', '--output_dir',type='new_dirpath',
         help='Output directory.  Will be created if does not exist.  '+\
         '[default: %default]', default="."),
         
-    make_option('-s', '--score_min',
+    make_option('-s', '--score_min', type='int',
         help='Minimum quality score to be considered acceptable.  Used to '+\
         'draw dotted line on histogram for easy visualization of poor '+\
         'quality scores. [default: %default]', default=25, ),

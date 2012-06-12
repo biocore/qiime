@@ -26,11 +26,11 @@ script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--otu_table_fp',type="existing_filepath",help='the input otu table'),
  make_option('-m','--mapping_fp',type="existing_filepath",help='the mapping file path'),
- make_option('-f','--mapping_field',help="mapping column to split otu table on"),
+ make_option('-f','--mapping_field',type='string',help="mapping column to split otu table on"),
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory'),
 ]
 script_info['optional_options'] = [
- make_option('-c','--column_rename_ids',help='Mapping column used as sample id in the output files.' +\
+ make_option('-c','--column_rename_ids',type='string',help='Mapping column used as sample id in the output files.' +\
                 ' Has to be unique in the splited samples. This option can be helpful to create otu tables' +
                 ' and mapping files for Procustes analysis.', default=None),
  make_option('--include_repeat_cols',action='store_true', help='By default the new mapping files' +\

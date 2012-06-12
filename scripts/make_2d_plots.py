@@ -58,7 +58,7 @@ script_info['required_options']=[\
         type='existing_filepath')
 ]
 script_info['optional_options']=[\
-    make_option('-b', '--colorby', dest='colorby',\
+    make_option('-b', '--colorby', dest='colorby',type='string',\
         help='Comma-separated list categories metadata categories' +\
         ' (column headers) ' +\
         'to color by in the plots. The categories must match the name of a ' +\
@@ -81,7 +81,7 @@ script_info['optional_options']=[\
         ' 0 produces completely transparent (invisible) ellipsoids' +\
         ' and 1 produces completely opaque ellipsoids.' +\
         ' [default=%default]', \
-        default=0.33,type=float),
+        default=0.33,type='float'),
     make_option('--ellipsoid_method',
         help='Used only when plotting ellipsoids for jackknifed' +\
         ' beta diversity (i.e. using a directory of coord files' +\

@@ -106,7 +106,7 @@ script_info['optional_options']=[\
         help='Taxon assignment method, either blast, rdp, or rtax '
         '[default:%default]',
         choices=assignment_method_choices, default="rdp"),\
- make_option('-b', '--blast_db',
+ make_option('-b', '--blast_db', type='string',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
  make_option('-c', '--confidence', type='float',
@@ -118,7 +118,7 @@ script_info['optional_options']=[\
  make_option('-e', '--e_value', type='float',
         help='Maximum e-value to record an assignment, only used for blast '
         'method [default: %default]',default=0.001),\
- make_option('-o','--output_dir',\
+ make_option('-o','--output_dir', type='new_dirpath',\
           help='Path to store result file '+\
           '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
 ]

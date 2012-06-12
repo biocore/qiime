@@ -32,11 +32,11 @@ script_info['script_usage'] = [
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
- make_option('-c','--centroid_fps',help='the centroid fasta filepaths'),
- make_option('-s','--singleton_fps',help='the singleton fasta filepaths'),
- make_option('-f','--fasta_fps',help='the input (to denoiser) fasta filepaths'),
- make_option('-d','--denoiser_map_fps',help='the denoiser map filepaths'),
- make_option('-o','--output_fasta_fp',help='the output fasta filepath'),
+ make_option('-c','--centroid_fps',type='existing_filepaths',help='the centroid fasta filepaths'),
+ make_option('-s','--singleton_fps',type='existing_filepaths',help='the singleton fasta filepaths'),
+ make_option('-f','--fasta_fps',type='existing_filepaths',help='the input (to denoiser) fasta filepaths'),
+ make_option('-d','--denoiser_map_fps',type='existing_filepaths',help='the denoiser map filepaths'),
+ make_option('-o','--output_fasta_fp',type='new_filepath',help='the output fasta filepath'),
 ]
 script_info['optional_options'] = []
 script_info['version'] = __version__
@@ -46,13 +46,13 @@ def main():
        parse_command_line_parameters(**script_info)
     
     centroid_seqs = \
-     [MinimalFastaParser(open(e,'U')) for e in opts.centroid_fps.split(',')]
+     [MinimalFastaParser(open(e,'U')) for e in opts.centroid_fps]
     singleton_seqs = \
-     [MinimalFastaParser(open(e,'U')) for e in opts.singleton_fps.split(',')]
+     [MinimalFastaParser(open(e,'U')) for e in opts.singleton_fps]
     fasta_seqs = \
-     [MinimalFastaParser(open(e,'U')) for e in opts.fasta_fps.split(',')]
+     [MinimalFastaParser(open(e,'U')) for e in opts.fasta_fps]
     denoiser_map_fs = \
-     [open(e,'U') for e in opts.denoiser_map_fps.split(',')]
+     [open(e,'U') for e in opts.denoiser_map_fps]
     output_fasta_fp = opts.output_fasta_fp
     
     output_f = open(opts.output_fasta_fp,'w')

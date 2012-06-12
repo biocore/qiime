@@ -29,13 +29,13 @@ script_info['script_usage'].append(("""cluster quality based on the treatment ca
 script_info['script_usage'].append(('','',''))
 script_info['output_description']="""The output is either a single number (with -s), or a more detailed output of the similarity between and within clusters."""
 script_info['required_options']=[
-make_option('-i', '--input_path',
+make_option('-i', '--input_path', type='existing_filepath',
      help='input distance matrix file'),\
 
-make_option('-m', '--map',
+make_option('-m', '--map', type='existing_filepath',
      help='mapping file'),
 
-make_option('-c', '--category',
+make_option('-c', '--category', type='string',
      help='column of mapping file delimiting clusters'),
 
 
@@ -43,7 +43,7 @@ make_option('-c', '--category',
 ]
 script_info['optional_options']=[
 
-make_option('-o', '--output_path',default=None,
+make_option('-o', '--output_path',default=None, type='new_path',
             help='output path, prints to stdout if omitted'),
 make_option('-s', '--short',action="store_true",
             help='print only '+\

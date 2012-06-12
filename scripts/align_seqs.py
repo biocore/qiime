@@ -72,7 +72,7 @@ script_info['required_options']=[\
 
 script_info['optional_options']=[\
     make_option('-t','--template_fp',\
-          type='string',dest='template_fp',help='Filepath for '+\
+          type='existing_filepath',dest='template_fp',help='Filepath for '+\
           'template against %s' % template_fp_default_help,\
           default=qiime_config['pynast_template_alignment_fp']),
 
@@ -91,7 +91,7 @@ script_info['optional_options']=[\
           choices=pairwise_alignment_method_choices,\
           default='uclust'),
 
-    make_option('-d','--blast_db',\
+    make_option('-d','--blast_db', type='string',\
           dest='blast_db',help='Database to blast against when -m pynast '+\
           '[default: %s]' % blast_db_default_help,\
           default=qiime_config['pynast_template_alignment_blastdb']),
@@ -100,7 +100,7 @@ script_info['optional_options']=[\
         help='Maximum memory allocation for the muscle alignment method ' +\
         '(MB) [default: 80% of available memory, as detected by MUSCLE]'),
 
-    make_option('-o','--output_dir',\
+    make_option('-o','--output_dir', type='new_dirpath',\
           help='Path to store '+\
           'result file [default: <ALIGNMENT_METHOD>_aligned]'),
           

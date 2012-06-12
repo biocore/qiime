@@ -44,7 +44,7 @@ script_info['optional_options'] = [
     make_option('-m','--mapping_fp',
         help='Input metadata mapping filepath. [default: %default]',
         type='existing_filepath'),
-    make_option('-s','--sort_field',
+    make_option('-s','--sort_field',type='string',
         help='Category to sort OTU table by. [default: %default]'),
     make_option('-l','--sorted_sample_ids_fp',
         help='Sorted sample id filepath [default: %default]',

@@ -63,7 +63,7 @@ script_info['optional_options'] = [\
   help='A biom file where otu identifiers should be retained'),\
  make_option('-a','--subject_fasta_fp',type='existing_filepath',
   help='A fasta file where the seq ids should be retained.'),\
- make_option('-p','--seq_id_prefix',
+ make_option('-p','--seq_id_prefix',type='string',
   help='keep seqs where seq_id starts with this prefix'),\
  make_option('--sample_id_fp',type='existing_filepath',
   help='keep seqs where seq_id starts with a sample id listed in this file'),\
@@ -72,7 +72,7 @@ script_info['optional_options'] = [\
   action='store_true'),
  make_option('--mapping_fp',type='existing_filepath',
   help='mapping file path (for use with --valid_states) [default: %default]'),
- make_option('--valid_states',
+ make_option('--valid_states',type='string',
   help='description of sample ids to retain (for use with --mapping_fp) [default: %default]')
 ]
 script_info['version'] = __version__

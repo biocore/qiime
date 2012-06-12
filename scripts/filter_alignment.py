@@ -33,17 +33,17 @@ script_info['script_usage'].append(("","""Alternatively, if the user would like 
 script_info['output_description']="""The output of filter_alignment.py consists of a single FASTA file, which ends with "pfiltered.fasta", where the "p" stands for positional filtering of the columns."""
 script_info['required_options']= [\
     make_option('-i','--input_fasta_file',action='store',\
-         type='string',help='the input directory ')
+         type='existing_filepath',help='the input directory ')
 ]
 
 qiime_config = load_qiime_config()
 
 script_info['optional_options']= [\
     make_option('-o','--output_dir',action='store',\
-        type='string',help='the output directory '+\
+        type='new_dirpath',help='the output directory '+\
         '[default: %default]',default='.'),\
     make_option('-m','--lane_mask_fp',action='store',\
-        type='string',
+        type='existing_filepath',
         default=qiime_config['template_alignment_lanemask_fp'],
         help='path to lanemask file [default: %default]'),\
     make_option('-s','--suppress_lane_mask_filter',action='store_true',\

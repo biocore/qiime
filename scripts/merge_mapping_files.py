@@ -23,9 +23,9 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Merge two mapping files into a new mapping file (merged_mapping.txt). In cases where a mapping field is not provided for some samples, add the value 'Data not collected'.""",""" merge_mapping_files.py -m inseqs1_mapping.txt,inseqs2_mapping.txt  -o merged_mapping.txt -n 'Data not collected'"""))
 script_info['output_description']="""The result of this script is a merged mapping file (tab-delimited)."""
 script_info['required_options']=[\
- make_option('-m','--mapping_fps',\
+ make_option('-m','--mapping_fps',type='existing_filepaths',\
          help='the input mapping files in a comma-separated list'),\
- make_option('-o','--output_fp',\
+ make_option('-o','--output_fp',type='new_filepath',\
          help='the output mapping file to write'),
 ]
 
@@ -42,7 +42,7 @@ def main():
       
     verbose = opts.verbose
     output_fp = opts.output_fp
-    mapping_files = [open(fp,'U') for fp in opts.mapping_fps.split(',')]
+    mapping_files = [open(fp,'U') for fp in opts.mapping_fps]
     no_data_value = opts.no_data_value
     
     mapping_data = merge_mapping_files(mapping_files,\

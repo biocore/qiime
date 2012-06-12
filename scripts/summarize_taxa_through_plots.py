@@ -58,7 +58,7 @@ script_info['optional_options']=[\
     make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]',default=False),\
-    make_option('-c','--mapping_category',default=None,
+    make_option('-c','--mapping_category',default=None, type='string',
         help='Summarize OTU table using this category. [default: %default]'),
     make_option('-s','--sort',action='store_true',\
         dest='sort',help='Sort the OTU Table '+\

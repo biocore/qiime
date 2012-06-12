@@ -41,7 +41,7 @@ script_info['output_description'] =""""""
 script_info['required_options'] = [
     # type='existing_filepaths' not currently working for -i - need change to 
     # function in workflow.py
-    make_option('-i','--input_fnas',
+    make_option('-i','--input_fnas',type='existing_filepaths',
         help='the input fasta file(s) -- comma-separated '+\
         'if more than one [REQUIRED]'),
     make_option('-o','--output_dir',type='new_dirpath',
@@ -58,7 +58,7 @@ script_info['optional_options'] = [\
         ' [if omitted, default values will be used]'),
  # type='existing_filepaths' not currently working for -q - need change to 
  # function in workflow.py
- make_option('-q','--input_quals',
+ make_option('-q','--input_quals',type='existing_filepaths',
         help='The 454 qual files. Comma-separated'+\
         ' if more than one, and must correspond to the '+\
         ' order of the fasta files. Not relevant if passing '+\
@@ -90,7 +90,7 @@ script_info['optional_options'] = [\
      ' Relevant for closed-reference-based OTU picking'+\
      ' methods only (i.e., uclust_ref -C and BLAST)'+\
      ' [default: de novo tree will be used]'),
- make_option('-c','--categories',
+ make_option('-c','--categories', type='string',
             help='The metadata category or categories to compare'+\
             ' (i.e., column headers in the mapping file)' +\
             ' for the otu_category_significance,'+\
@@ -124,7 +124,7 @@ def main():
     
     parallel = opts.parallel
     
-    if suppress_split_libraries and len(input_fnas.split(',')) > 1:
+    if suppress_split_libraries and len(input_fnas) > 1:
         option_parser.error("Only a single fasta file can be passed with "+\
                             "--suppress_split_libraries")
     
@@ -169,9 +169,19 @@ def main():
     else:
         status_update_callback = no_status_updates
     
+    input_fnas_string = input_fnas[0]
+    for inp_fna in input_fnas[1:]:
+        input_fnas_string = input_fnas_string + ',' + inp_fna
+
+    input_quals_string = None
+    if input_quals:
+        input_quals_string = input_quals[0]
+        for inp_qual in input_quals[1:]:
+            input_quals_string = input_quals_string + ',' + inp_qual
+
     run_core_qiime_analyses(
-        fna_fps=input_fnas,
-        qual_fps=input_quals,
+        fna_fps=input_fnas_string,
+        qual_fps=input_quals_string,
         mapping_fp=mapping_fp,
         output_dir=output_dir,
         command_handler=command_handler,
