@@ -28,9 +28,9 @@ def get_filter_to_core_f(table,
          considered a core observation
         
     """
-    if not (0 <= fraction_for_core <= 1):
+    if not (0. <= fraction_for_core <= 1.):
         raise ValueError, \
-        "invalid fraction_for_core passed to core filter: must be in range [0,1]."
+        "invalid fraction_for_core passed to core filter: %1.2f is outside of range [0,1]." % fraction_for_core
     # generate the position mask, which contains True at SampleIds
     # positions that contain an id in sample_ids
     if sample_ids == None:
