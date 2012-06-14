@@ -74,10 +74,10 @@ script_info['optional_options']=[\
         'can be list by comma separating them without spaces. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [default=color by all]'),
-    make_option('-s', '--scaling_method', type='string,'
+    make_option('-s', '--scaling_method', type='string',
         help='Comma-separated list of scaling methods (i.e. scaled or' +\
         ' unscaled) [default=%default]',default='unscaled'),
-    make_option('-a', '--custom_axes', type='string'
+    make_option('-a', '--custom_axes', type='string',
         help='This is the category from the metadata mapping file to use as' +\
         ' a custom axis in the plot.  For instance, if there is a pH' +\
         ' category and you would like to see the samples plotted on that' +\
