@@ -7,7 +7,7 @@ from __future__ import division
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
-    "Justin Kuczynski", "Antonio Gonzalez Pena"]
+    "Justin Kuczynski", "Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -66,7 +66,7 @@ script_info['required_options']=[\
         type='existing_filepath')
     ]
 script_info['optional_options']=[\
-    make_option('-b', '--colorby', dest='colorby',type='string',\
+    make_option('-b', '--colorby', dest='colorby', type='string',\
         help='Comma-separated list categories metadata categories' +\
         ' (column headers) ' +\
         'to color by in the plots. The categories must match the name of a ' +\
@@ -74,10 +74,10 @@ script_info['optional_options']=[\
         'can be list by comma separating them without spaces. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [default=color by all]'),
-    make_option('-s', '--scaling_method',type='string',
+    make_option('-s', '--scaling_method', type='string,'
         help='Comma-separated list of scaling methods (i.e. scaled or' +\
         ' unscaled) [default=%default]',default='unscaled'),
-    make_option('-a', '--custom_axes',type='string',
+    make_option('-a', '--custom_axes', type='string'
         help='This is the category from the metadata mapping file to use as' +\
         ' a custom axis in the plot.  For instance, if there is a pH' +\
         ' category and you would like to see the samples plotted on that' +\
@@ -160,31 +160,34 @@ script_info['optional_options']=[\
         ' using the invue output_format. [default: %default]', default=1.5),
     # vector analysis options
     make_option('--add_vectors', type='string', dest='add_vectors', default=None,
-        help='Create vectors based on a column of the mapping file. This.parameter' +\
+        help='Create vectors based on a column of the mapping file. This parameter' +\
         ' accepts up to 2 columns: (1) create the vectors, (2) sort them.' +\
-        ' If you wanted to group by Species and' +\
-        ' order by SampleID you will pass --add_vectors=Species but if you' +\
-        ' wanted to group by Species but order by DOB you will pass' +\
-        ' --add_vectors=Species,DOB;' +\
-        ' this is useful when you use --custom_axes param [default: %default]'),
-    make_option('--rms_algorithm', type='string', dest='rms_algorithm', default=None,
-        help='The algorithm to calculate the RMS, either avg or trajectory;' +\
-        ' both algorithms use all the dimensions and weights them using their' +\
-        ' percentange explained; return the norm of the created vectors; and their ' +\
-        ' confidence using ANOVA. The vectors are created as follows: for' +\
-        ' avg it calculates the average at each timepoint (averaging within' +\
-        ' a group), then calculates the norm of each point; for trajectory ' +\
-        ' calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: %default]'),
-    make_option('--rms_axes', dest='rms_axes', type='int', default=3,
-        help='The number of axes to account while doing the RMS calculations.' +\
-        ' We suggest using 3 because those are the ones being displayed in the plots' +\
-        ' but you could use any number between 1 and number of samples - 1. To' +\
-        ' use all of them pass 0. [default: %default]'),
-    make_option('--rms_path', dest='rms_path', default='RMS_output.txt', type='new_filepath',
-        help='Name of the file to save the root mean square (RMS) of the vectors' +\
-        ' grouped by the column used with the --add_vectors function. Note that' +\
-        ' this option only works with --add_vectors. The file is going to be' +\
-        ' created inside the output_dir and its name will start with "RMS".' +\
+        ' If you wanted to group by Species and order by SampleID you will pass' +\
+        ' --add_vectors=Species but if you wanted to group by Species but order' +\
+        ' by DOB you will pass --add_vectors=Species,DOB; this is useful when you use' +\
+        ' --custom_axes param [default: %default]'),
+    make_option('--vectors_algorithm', type='string', dest='vectors_algorithm', default=None,
+        help='The algorithm used to create the vectors. The method used can' +\
+        ' be RMS (either using \'avg\' or \'trajectory\'); or the first difference (using \'diff\'),' +\
+        ' the aforementioned options use all the dimensions and weights them' +\
+        ' using their percentage explained; returns the norm of the created' +\
+        ' vectors; and their confidence using ANOVA. The Vectors are created as' +\
+        ' follows: for \'avg\' it calculates the average at each timepoint (averaging' +\
+        ' within a group), then calculates the norm of each point; for \'trajectory\'' +\
+        ' calculates the norm for the 1st-2nd, 2nd-3rd, etc.; for \'diff\', it calculates' +\
+        ' the norm for all the time-points and then calculates the first difference for' +\
+        ' each resulting point, it will also include the mean and the standard' +\
+        ' deviation of the calculations [defautl: %default]'),
+    make_option('--vectors_axes', dest='vectors_axes', type='int', default=3,
+        help='The number of axes to account while doing the vector specific' +\
+        ' calculations. We suggest using 3 because those are the ones being displayed' +\
+        ' in the plots but you could use any number between 1 and number of samples' +\
+        ' - 1. To use all of them pass 0. [default: %default]'),
+    make_option('--vectors_path', dest='vectors_path', default='vectors_output.txt', type='new_filepath',
+        help='Name of the file to save the first difference, or the root mean' +\
+        ' square (RMS) of the vectors grouped by the column used with the --add_vectors' +\
+        ' function. Note that this option only works with --add_vectors. The file is' +\
+        ' going to be created inside the output_dir and its name will start with "Vectors".' +\
         ' [default: %default]'),
     options_lookup['output_dir'],
 ]
@@ -208,9 +211,9 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
                              'polyhedron_offset':'Polyhedron offset',
                              'custom_axes':'Custom Axis',
                              'add_vectors':'Create vectors based on metadata',
-                             'rms_path':'RMS output path calculations',
-                             'rms_axes':'Number of axes to use in RMS algorithm',
-                             'rms_algorithm':'RMS algorithm'}
+                             'vectors_path':'Vectors output path calculations',
+                             'vectors_axes':'Number of axes to to calculate the vectors.',
+                             'vectors_algorithm':'Vectors algorithm'}
 script_info['version'] = __version__
 
 def main():
@@ -330,6 +333,7 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     custom_axes = None
     if opts.custom_axes:	
         custom_axes = process_custom_axes(opts.custom_axes)
+
         get_custom_coords(custom_axes, data['map'], data['coord'])
         remove_nans(data['coord'])
         scale_custom_coords(custom_axes,data['coord'])
@@ -341,25 +345,25 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
         if len(add_vectors)>3:
             raise ValueError, 'You must add maximum 3 columns but %s' % opts.add_vectors
         
-        # Validating RMS values
-        if opts.rms_algorithm:
+        # Validating Vectors values
+        if opts.vectors_algorithm:
             axes_number = len(data['coord'][1][1])
-            if opts.rms_axes<0 or opts.rms_axes>axes_number:
-                raise ValueError, 'rms_algorithm should be between 0 and the max number' +\
+            if opts.vectors_axes<0 or opts.vectors_axes>axes_number:
+                raise ValueError, 'vectors_algorithm should be between 0 and the max number' +\
                       'of samples/pcoa-axes: %d' % len(data['coord'][1][1])
-            if opts.rms_axes == 0: 
-                opts.rms_axes = axes_number
-            add_vectors['rms_axes'] = opts.rms_axes
+            if opts.vectors_axes == 0: 
+                opts.vectors_axes = axes_number
+            add_vectors['vectors_axes'] = opts.vectors_axes
             valid_chars = '_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-            for c in opts.rms_path:
+            for c in opts.vectors_path:
                 if c not in valid_chars:
-                    raise ValueError, 'rms_path (%s) has invalid chars' % opts.rms_path
-            add_vectors['rms_output'] = {}
-            add_vectors['rms_algorithm']=opts.rms_algorithm
+                    raise ValueError, 'vectors_path (%s) has invalid chars' % opts.vectors_path
+            add_vectors['vectors_output'] = {}
+            add_vectors['vectors_algorithm']=opts.vectors_algorithm
             add_vectors['eigvals'] = data['coord'][3]
         else:
-            add_vectors['rms_algorithm'] = None
-        add_vectors['rms_path'] = opts.rms_path
+            add_vectors['vectors_algorithm'] = None
+        add_vectors['vectors_path'] = opts.vectors_path
     else:
     	add_vectors = None
 

@@ -4,7 +4,7 @@
 __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",\
-"Antonio Gonzalez Pena"] #remember to add yourself
+"Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -16,7 +16,7 @@ from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
 from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan
+from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std
 from numpy.linalg import norm
 import numpy as np
 import os
@@ -208,7 +208,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         radius = float(auto_radius(coords))*float(ball_scale)
     else:
         radius = float(radius)*float(ball_scale)
-      
+
     maxes = coords.max(0)[:num_coords]
     mins = coords.min(0)[:num_coords]
     pct_var = pct_var[:num_coords]    #scale from fraction
@@ -282,17 +282,18 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         if add_vectors:
             result += make_vectors_output(coord_dict, add_vectors, num_coords, color, \
                                           ids)
-            if not scaled and add_vectors['rms_path'] and add_vectors['rms_algorithm']:
-               vector_result = make_subgroup_rms(coord_dict, add_vectors['eigvals'], \
-                                                 ids, add_vectors['rms_algorithm'], \
-                                                 add_vectors['rms_axes'], custom_axes)
-               if not isnan(vector_result['rms']):
-                   if name not in add_vectors['rms_output']:
-                       add_vectors['rms_output'][name] = {}
-                   if group_name not in add_vectors['rms_output'][name]:
-                       add_vectors['rms_output'][name][group_name] = {}
-                   add_vectors['rms_output'][name][group_name]['rms_vector'] = vector_result['vector']
-                   add_vectors['rms_output'][name][group_name]['rms_result'] = vector_result['rms']
+            if not scaled and add_vectors['vectors_path'] and add_vectors['vectors_algorithm']:
+                vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'], \
+                                                ids, add_vectors['vectors_algorithm'], \
+                                                add_vectors['vectors_axes'], custom_axes)
+                if type(vector_result['calc']) is dict or not isnan(vector_result['calc']):
+                    if name not in add_vectors['vectors_output']:
+                        add_vectors['vectors_output'][name] = {}
+                    if group_name not in add_vectors['vectors_output'][name]:
+                        add_vectors['vectors_output'][name][group_name] = {}
+                    
+                    add_vectors['vectors_output'][name][group_name]['vectors_vector'] = vector_result['vector']
+                    add_vectors['vectors_output'][name][group_name]['vectors_result'] = vector_result['calc']
 
     if not taxa is None:
         result += make_mage_taxa(taxa, num_coords, pct_var,
@@ -341,48 +342,61 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     
     return result
 
-
-def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', rms_axes=3, custom_axes=None):
-    """Creates the rms value, vector, of a subgroup (ids) of coord_dict
+def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3, custom_axes=None):
+    """Creates either the first difference or the rms value, vector, of a subgroup (ids) of coord_dict
     
        Params: 
         coord_dict: a dict of (sampleID, coords), where coords is a numpy array (row)
         eigvals: the eigvals of the coords
-        ids: the list of ids that should be use to caclulate the rms from coord_dict
+        ids: the list of ids that should be used to caclulate the first difference or the rms 
+        from coord_dict
+        method: 'avg', 'trajectory' or 'diff'
         custom_axes: the list of custom axis used in other methods
         
        Returns:
-        a dict with 2 members: 'vector', the vector representing from which 
-        the RMS value was calculated; and 'rms' the resulting RMS from the 
-        vector.
+        a dict with 2 members: 'vector', the vector representing from which the first 
+        difference or RMS value was calculated; and 'calc' the resulting calculation of the first
+        difference or the RMS value with the selected algorithm.
     """
     result = {}
     
-    # We multiply the cood values with the value of the eigvals represented
+    # We multiply the coord values with the value of the eigvals represented
     if custom_axes:
-        vectors = [coord_dict[id][1:][:rms_axes]*eigvals[:rms_axes] for id in ids if id in coord_dict]
+        vectors = [coord_dict[id][1:][:vectors_axes]*eigvals[:vectors_axes] for id in ids if id in coord_dict]
     else:
-        vectors = [coord_dict[id][:rms_axes]*eigvals[:rms_axes] for id in ids if id in coord_dict]
-    
+        vectors = [coord_dict[id][:vectors_axes]*eigvals[:vectors_axes] for id in ids if id in coord_dict]
+
     if method=='avg':
-       center = average(vectors,axis=0)
-       if len(ids)==1:
-           result['vector'] = [norm(center)]
-           result['rms'] = result['vector']
-       else:
-           result['vector'] = [norm(i) for i in vectors-center]
-           result['rms'] = average(result['vector'])
+        center = average(vectors,axis=0)
+        if len(ids)==1:
+            result['vector'] = [norm(center)]
+            result['calc'] = {'avg':result['vector']}
+        else:
+            result['vector'] = [norm(i) for i in vectors-center]
+            result['calc'] = {'avg':average(result['vector'])}
     elif method=='trajectory':
-       if len(ids)==1:
-           result['vector'] = [norm(vectors)]
-           result['rms'] = result['vector']
-       else:
-           result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
-           result['rms']=norm(result['vector'])
+        if len(ids)==1:
+            result['vector'] = [norm(vectors)]
+            result['calc'] = {'trajectory':result['vector']}
+        else:
+            result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
+            result['calc'] = {'trajectory':norm(result['vector'])}
+    elif method=='diff':
+        if len(ids)==1:
+            result['vector'] = [norm(vectors)]
+            result['calc'] = {'mean':result['vector'], 'std':0}
+        elif len(ids)==2:
+            result['vector'] = [norm(vectors[1]-vectors[0])]
+            result['calc'] = {'mean':result['vector'], 'std':0}
+        else:   
+            vec_norm = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
+            vec_diff = diff(vec_norm)
+            result['calc'] = {'mean':mean(vec_diff), 'std':std(vec_diff)}
+            result['vector'] = vec_diff
     elif method==None:
-       result['rms']=nan
+        result['calc'] = nan
     else:
-       raise ValueError, 'The method "%s" for RMS does not exist' % method
+       raise ValueError, 'The method "%s" for Vectors does not exist' % method
        
     return result
 
@@ -407,7 +421,7 @@ def run_ANOVA_trajetories(groups):
     for trajectory in groups:
         labels.append(trajectory)
         values.append(Numbers(groups[trajectory]))
-            
+    
     # This is copied from otu_category_significance.py
     try:
         dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
@@ -994,33 +1008,49 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         plot_unscaled=plot_unscaled)
     
     
-    # Validating if we should add RMS values
-    if add_vectors and add_vectors['rms_algorithm'] and add_vectors['vectors'] and add_vectors['rms_path']:
-        f_rms = open(os.path.join(htmlpath,add_vectors['rms_path']), 'w')
+    # Validating if we should add specific values for the vectors option
+    if add_vectors and add_vectors['vectors_algorithm'] and add_vectors['vectors'] and add_vectors['vectors_path']:
+        f_vectors = open(os.path.join(htmlpath,add_vectors['vectors_path']), 'w')
         
-        f_rms.write('Method to calculate the RMS: %s\n\n' % add_vectors['rms_algorithm'])
-        
-        for group in add_vectors['rms_output']:
-            if len(add_vectors['rms_output'][group].keys())==1:
-                f_rms.write('Grouped by %s: Only one value in the group.\n\n' \
+        f_vectors.write('Method to calculate the vectors: %s\n' % add_vectors['vectors_algorithm'])
+
+        # Each group has different categories, output the
+        # information per group and per category 
+        for group in add_vectors['vectors_output']:
+
+            # buffer all the extra info per category of group (rms, avg, diff, etc)
+            # see make_subgroup_vectors to see how this values are calculated
+            per_category_information = []
+
+            if len(add_vectors['vectors_output'][group].keys())==1:
+                f_vectors.write('\nGrouped by %s: Only one value in the group.\n' \
                     % (group))
             else:
                 to_test = {}
-                categories_values = []
-                for cat in add_vectors['rms_output'][group]:
-                    if len(add_vectors['rms_output'][group][cat]['rms_vector']) != 0:
-                        to_test[cat] = add_vectors['rms_output'][group][cat]['rms_vector']
+                for cat in add_vectors['vectors_output'][group]:
+                    if len(add_vectors['vectors_output'][group][cat]['vectors_vector']) != 0:
+                        to_test[cat] = add_vectors['vectors_output'][group][cat]['vectors_vector']
+                        per_category_information.append(add_vectors['vectors_output'][group][cat]['vectors_result'])
                     else:
-                        add_vectors['rms_output'][group][cat]['rms_result'] = nan
+                        add_vectors['vectors_output'][group][cat]['vectors_result'] = nan
                 
-                labels, group_means, prob = run_ANOVA_trajetories(to_test)
-                if (len(labels)==len(group_means)):
-                    f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
-                        % (group, prob, [(labels[i], group_means[i]) for i in range(len(labels))]))
+                # Not all dicts can be tested
+                if can_run_ANOVA_trajectories(to_test):
+                    labels, group_means, prob = run_ANOVA_trajetories(to_test)
+                    if (len(labels)==len(group_means)):
+                        f_vectors.write('\nGrouped by "%s", probability: %f\n' % (group, prob))
+
+                        # Each category of the current group has its own values
+                        for i in range(len(labels)): 
+                            f_vectors.write('For group: "{0}", the group means is: {1}\n'\
+                                            .format(labels[i], group_means[i]))
+                            f_vectors.write('The info is: {0}\n'.format(per_category_information[i]))
+                    else:
+                        f_vectors.write('\nGrouped by %s: this value can not be used\n' % (group))
                 else:
-                    f_rms.write('Grouped by %s: this value can not be used\n\n' % (group))
+                    f_vectors.write('\nGrouped by %s: this value can not be used\n' % (group))
                     
-        f_rms.close()
+        f_vectors.close()
     
     #Write kinemage file
     f = open(kinpath, 'w')
@@ -1032,8 +1062,22 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
     #Write html page with the kinemage embedded
     f2 = open(os.path.join(htmlpath,filename)+'.html', 'w')
     f2.write("<html><head></head><body><applet code='king/Kinglet.class' \
-archive='./jar/king.jar' width=800 height=600> \
-<param name='kinSource' value='%s'></body></html>" % (kinlink)) 
+            archive='./jar/king.jar' width=800 height=600> \
+            <param name='kinSource' value='%s'></body></html>" % (kinlink)) 
     f2.write('\n'.join(res))
     f2.close()
-    
+
+def can_run_ANOVA_trajectories(input_dict):
+    """
+        can_run_ANOVA_trajectories: checks if input_dict can be tested using 
+        ANOVA, without raising any RuntimeWarning. ANOVA testing requires
+        for at least one element to have a size different to one. When a 
+        dictionary of size N by 1 is passed, a division by zero will happen.
+
+        input_dict: dict with arrays as values for each of the keys
+    """
+    # Obtain the total number of elements in the dict
+    total_values = sum([ len(value) for value in input_dict.values()])
+    return not (total_values == len(input_dict.keys()))
+
+    return True;

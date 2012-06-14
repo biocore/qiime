@@ -3,7 +3,8 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Jesse Stombaugh", "Dan Knights", "Antonio Gonzalez Pena"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Dan Knights", "Antonio Gonzalez Pena", \
+                "Yoshiki Vazquez Baeza"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -14,7 +15,7 @@ from numpy import array, nan
 from StringIO import StringIO
 from os.path import exists
 from cogent.util.unit_test import TestCase, main
-from os import remove
+from os import remove, mkdir, system
 from random import choice, randrange, random
 import shutil
 from qiime.colors import data_colors
@@ -27,7 +28,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     make_mage_ellipsoids,subdivide,
                                     get_multiple_coords,validate_coord_files,
                                     make_3d_plots_invue, make_vectors_output, 
-                                    make_subgroup_rms, run_ANOVA_trajetories)
+                                    make_subgroup_vectors, run_ANOVA_trajetories,
+                                    generate_3d_plots)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -41,7 +43,6 @@ class TopLevelTests(TestCase):
                             array([25.00,30.00])]
         self.data['map']=[['#Sample-ID','Day'],['Sample1','Day1'],['Sample2',\
                           'Day1']]
-                          
         self.coord_header=["Sample1","Sample2","Sample3"]
         self.coords=array([[-0.219044992,0.079674486,0.09233683],[-0.042258081,\
                        0.000204041,0.024837603],[0.080504323,-0.212014503,\
@@ -70,6 +71,30 @@ class TopLevelTests(TestCase):
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
+        self.prefs_vectors={}
+        self.prefs_vectors['Sample']={}   
+        self.prefs_vectors['Sample']['column']="Type"
+        self.coords2 = array([[0, -0.219044992,0.079674486,0.09233683], \
+                                [1, -0.042258081, 0.000204041, 0.024837603], \
+                                [2, 0.080504323, -0.212014503, -0.088353435], \
+                                [3, 0.012345551, -0.124512513, -01142356135]])
+        self.custom_axes = ['Height']
+        self.add_vectors = {'vectors_algorithm': 'trajectory', 'vectors_axes': 3, \
+                                'vectors': ['Height'], 'vectors_path': 'vectors_test', \
+                                'eigvals': array([ 0, 2.44923871, 1.11678013, 1.01533255]), \
+                                'vectors_output': {}}
+        self.filename_vectors = 'vectors_test'
+        self.file_path_vectors = 'vectors_test_dir'
+
+        self.data_vectors = {}
+        self.data_vectors['coord'] = array([["Sample1","Sample2","Sample3","Sample4"],self.coords2, \
+                            self.add_vectors['eigvals'], self.pct_var, None, None])
+        self.data_vectors['map'] = [["Sample-ID","Height","Type","Weight"],\
+                            ["Sample1","10","Soil_A","60"],\
+                            ["Sample2","20","Soil_A","55"],\
+                            ["Sample3","30","Soil_B","50"],\
+                            ["Sample4","40","Soil_B","55"]]
+
     def tearDown(self):
         map(remove,self._paths_to_clean_up)
         if self._dir_to_clean_up != '':
@@ -95,6 +120,13 @@ class TopLevelTests(TestCase):
                           self.label_color,custom_axes=custom_axes, \
                           plot_scaled=True,plot_unscaled=True)
         self.assertEqual(obs_kin, exp_kin_full_axes)
+        
+        # test with custom axes and vector creation
+        obs_kin = make_3d_plots(self.coord_header, self.coords2, self.pct_var, \
+                          self.mapping2, self.prefs, self.background_color, \
+                          self.label_color, custom_axes=self.custom_axes, \
+                          add_vectors=self.add_vectors)
+        self.assertEqual(obs_kin, exp_kin_vectors)
 
         # test with multiple 'colorby' columns to ensure sorting
         newprefs = {}
@@ -126,7 +158,7 @@ class TopLevelTests(TestCase):
         
         self.assertFalse(text.find('Day_unscaled')>0)
         self.assertTrue(text.find('Day_scaled')>0)
-        
+
     def test_make_3d_plots_invue(self):
         """make_3d_plots_invue: main script to create invue files"""
         data = {'map': [
@@ -179,7 +211,34 @@ class TopLevelTests(TestCase):
         self.assertFloatEqual(smp_lbl_grp['Treatment']['Control']['coords'],\
                   smp_lbl_grp_exp['Treatment']['Control']['coords'], 16711680.0)
         self.assertFloatEqual(poly_pts,poly_pts_exp)
-    
+
+    def test_generate_3d_plots(self):
+        """generate_3d_plots: Writes the output of make_3d_plots into a file"""
+        # Tests could have failed prior to this execution, therefore check if
+        # any of the following dirs exist already and try to remove them
+        try:
+            shutil.rmtree(self.file_path_vectors)
+            remove(self.filename_vectors)
+            remove("{0}_3D_PCoA_plots.html".format(self.filename_vectors))
+        except OSError:
+            pass
+
+        # Create a dir for the vector files
+        mkdir(self.file_path_vectors)
+
+        generate_3d_plots(self.prefs_vectors, self.data_vectors, self.custom_axes, self.background_color, \
+                          self.label_color, data_file_path=self.file_path_vectors, \
+                          filename=self.filename_vectors, add_vectors=self.add_vectors)
+
+        # Check that the files are created
+        self.assertTrue(exists(self.filename_vectors))
+        self.assertTrue(exists("{0}_3D_PCoA_plots.html".format(self.filename_vectors)))
+
+        # Remove the temp directory and all the other files
+        shutil.rmtree(self.file_path_vectors)
+        remove(self.filename_vectors)
+        remove("{0}_3D_PCoA_plots.html".format(self.filename_vectors))
+
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
         exp=array([[-1.56460709e-01,6.82924166e-02,9.23368300e-02],\
@@ -258,23 +317,28 @@ class TopLevelTests(TestCase):
             
         self.assertEqual(obs_result, exp_result)
     
-    def test_make_subgroup_rms(self):
-        """make_subgroup_rms: Returns the correct vector based on groups
+    def test_make_subgroup_vectors(self):
+        """make_subgroup_vectors: Returns the correct vector based on groups
         per algorithm"""
         coord_dict = dict(zip(self.coord_header,self.coords))
         # eigvals values should go from high to low and pct_var goes from low to high
         eigvals = [i for i in reversed(self.pct_var)]
         ids = ['Sample1', 'Sample2', 'Sample3']
-        
+
         # Testing rms
-        exp_result = {'rms': 5.32480386489972, \
+        exp_result = {'calc': {'avg':5.32480386489972}, \
                       'vector': [6.995474752449276, 1.5180408981614073, 7.4608959440884766] }
-        self.assertFloatEqual(make_subgroup_rms(coord_dict, eigvals, ids), exp_result)
+        self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids), exp_result)
         
         # Testing trajectory
-        exp_result = {'rms': 15.92846773878855, \
+        exp_result = {'calc': {'trajectory':15.92846773878855}, \
                       'vector': [14.383977976653455, 6.8423140875566384] }
-        self.assertFloatEqual(make_subgroup_rms(coord_dict, eigvals, ids, 'trajectory'), exp_result)
+        self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids, 'trajectory'), exp_result)
+
+        # Testing first difference 
+        exp_result = {'vector': array([-7.54166389]) , \
+                        'calc': {'mean': [-7.541663889096816], 'std': [0.0]}}
+        self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids, 'diff'), exp_result)
                       
     def test_run_ANOVA_trajetories(self):
         """run_ANOVA_trajetories: should return the same value
@@ -620,6 +684,9 @@ exp_kin_full=\
 
 exp_kin_full_axes =\
 ['@kinemage {Day_unscaled}', '@dimension {Height} {Weight} {PC1} {PC2} {PC3}', '@dimminmax -0.219044992 0.161008646 -0.219044992 0.161008646 -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00380053638 alpha=0.75 dimension=5 master={points} nobutton', '{Sample1} -0.219044992 0.161008646 -0.219044992 0.079674486 0.09233683\n{Sample2} -0.029018173 -0.029018173 -0.042258081 0.000204041 0.024837603\n{Sample3} 0.161008646 -0.219044992 0.080504323 -0.212014503 -0.088353435', '@labellist color=red1 radius=0.00380053638 alpha=0.75 dimension=5 master={labels} nobutton', '{Sample1} -0.219044992 0.161008646 -0.219044992 0.079674486 0.09233683\n{Sample2} -0.029018173 -0.029018173 -0.042258081 0.000204041 0.024837603\n{Sample3} 0.161008646 -0.219044992 0.080504323 -0.212014503 -0.088353435', '@group {axes} collapsible', '@vectorlist {Height line} dimension=5 on', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '0.1690590783 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '@labellist {Height} dimension=5 on', '{Height}0.177512032215 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '@vectorlist {Weight line} dimension=5 on', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 0.1690590783 -0.2299972416 -0.22261522815 -0.09277110675 white', '@labellist {Weight} dimension=5 on', '{Weight}-0.2299972416 0.177512032215 -0.2299972416 -0.22261522815 -0.09277110675 white', '@vectorlist {PC1 line} dimension=5 on', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.2299972416 0.08452953915 -0.22261522815 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=5 on', '{PC1 (25%)}-0.2299972416 -0.2299972416 0.0887560161075 -0.22261522815 -0.09277110675 white', '@vectorlist {PC2 line} dimension=5 off', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.2299972416 -0.2299972416 0.0836582103 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=5 off', '{PC2 (30%)}-0.2299972416 -0.2299972416 -0.2299972416 0.087841120815 -0.09277110675 white', '@vectorlist {PC3 line} dimension=5 off', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=5 off', '{PC3 (35%)}-0.2299972416 -0.2299972416 -0.2299972416 -0.22261522815 0.101801355075 white', '@kinemage {Day_scaled}', '@dimension {Height} {Weight} {PC1} {PC2} {PC3}', '@dimminmax -0.156460708571 0.115006175714 -0.156460708571 0.115006175714 -0.156460708571 0.0575030878571 -0.181726716857 0.0682924165714 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00271466884286 alpha=0.75 dimension=5 master={points} nobutton', '{Sample1} -0.156460708571 0.115006175714 -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0207272664286 -0.0207272664286 -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.115006175714 -0.156460708571 0.0575030878571 -0.181726716857 -0.088353435', '@labellist color=red1 radius=0.00271466884286 alpha=0.75 dimension=5 master={labels} nobutton', '{Sample1} -0.156460708571 0.115006175714 -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0207272664286 -0.0207272664286 -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.115006175714 -0.156460708571 0.0575030878571 -0.181726716857 -0.088353435', '@group {axes} collapsible', '@vectorlist {Height line} dimension=5 on', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '0.1207564845 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '@labellist {Height} dimension=5 on', '{Height}0.126794308725 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '@vectorlist {Weight line} dimension=5 on', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 0.1207564845 -0.164283744 -0.1908130527 -0.09277110675 white', '@labellist {Weight} dimension=5 on', '{Weight}-0.164283744 0.126794308725 -0.164283744 -0.1908130527 -0.09277110675 white', '@vectorlist {PC1 line} dimension=5 on', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.164283744 0.06037824225 -0.1908130527 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=5 on', '{PC1 (25%)}-0.164283744 -0.164283744 0.0633971543625 -0.1908130527 -0.09277110675 white', '@vectorlist {PC2 line} dimension=5 off', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.164283744 -0.164283744 0.0717070374 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=5 off', '{PC2 (30%)}-0.164283744 -0.164283744 -0.164283744 0.07529238927 -0.09277110675 white', '@vectorlist {PC3 line} dimension=5 off', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.164283744 -0.164283744 -0.1908130527 0.0969536715 white', '@labellist {PC3 (35%)} dimension=5 off', '{PC3 (35%)}-0.164283744 -0.164283744 -0.164283744 -0.1908130527 0.101801355075 white']
+
+exp_kin_vectors=\
+['@kinemage {Day_unscaled}', '@dimension {Height} {PC1} {PC2} {PC3}', '@dimminmax 0.0 3.0 -0.219044992 0.080504323 -0.212014503 0.079674486 -160029789.0 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.03 alpha=0.75 dimension=4 master={points} nobutton', '{Sample1} 0.0 -0.219044992 0.079674486 0.09233683\n{Sample2} 1.0 -0.042258081 0.000204041 0.024837603\n{Sample3} 2.0 0.080504323 -0.212014503 -0.088353435', '@labellist color=red1 radius=0.03 alpha=0.75 dimension=4 master={labels} nobutton', '{Sample1} 0.0 -0.219044992 0.079674486 0.09233683\n{Sample2} 1.0 -0.042258081 0.000204041 0.024837603\n{Sample3} 2.0 0.080504323 -0.212014503 -0.088353435', '@vectorlist {trace} dimension=4 on', '@group {axes} collapsible', '@vectorlist {Height line} dimension=4 on', '0.0 -0.2299972416 -0.22261522815 -168031278.45 white', '3.15 -0.2299972416 -0.22261522815 -168031278.45 white', '@labellist {Height} dimension=4 on', '{Height}3.3075 -0.2299972416 -0.22261522815 -168031278.45 white', '@vectorlist {PC1 line} dimension=4 on', '0.0 -0.2299972416 -0.22261522815 -168031278.45 white', '0.0 0.08452953915 -0.22261522815 -168031278.45 white', '@labellist {PC1 (25%)} dimension=4 on', '{PC1 (25%)}0.0 0.0887560161075 -0.22261522815 -168031278.45 white', '@vectorlist {PC2 line} dimension=4 on', '0.0 -0.2299972416 -0.22261522815 -168031278.45 white', '0.0 -0.2299972416 0.0836582103 -168031278.45 white', '@labellist {PC2 (30%)} dimension=4 on', '{PC2 (30%)}0.0 -0.2299972416 0.087841120815 -168031278.45 white', '@vectorlist {PC3 line} dimension=4 off', '0.0 -0.2299972416 -0.22261522815 -168031278.45 white', '0.0 -0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=4 off', '{PC3 (35%)}0.0 -0.2299972416 -0.22261522815 0.101801355075 white']
 exp_kin_partial=\
 ['@kinemage {_unscaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=blue1 radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@labellist color=blue1 radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '0.08452953915 -0.22261522815 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0887560161075 -0.22261522815 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 0.0836582103 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.2299972416 0.087841120815 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.2299972416 -0.22261522815 0.101801355075 white']
 
