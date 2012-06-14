@@ -2,7 +2,7 @@
 from __future__ import division
 #unit tests for util.py
 
-from os import mkdir, rmdir
+from os import mkdir, rmdir, remove
 from os.path import split, abspath, dirname, exists, join
 from glob import glob
 from random import seed
@@ -11,6 +11,7 @@ from tempfile import mkdtemp
 from collections import defaultdict
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
+from biom.parse import parse_biom_table_str
 
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
@@ -799,6 +800,53 @@ class FunctionWithParamsTests(TestCase):
         """FunctionWithParams formatResult should produce expected format"""
         x = self.FWP({'x':3})
         self.assertEqual(x.formatResult(3), '3')
+    def test_getBiomData(self):
+        """FunctionWithParams getBiomData should return biom"""
+        bt_string = '''{
+        "id":null,
+        "format": "Biological Observation Matrix 0.9.1-dev",
+        "format_url": "http://biom-format.org",
+        "type": "OTU table",
+        "generated_by": "QIIME revision XYZ",
+        "date": "2011-12-19T19:00:00",
+        "rows":[
+                {"id":"GG_OTU_1", "metadata":null},
+                {"id":"GG_OTU_2", "metadata":null},
+                {"id":"GG_OTU_3", "metadata":null},
+                {"id":"GG_OTU_4", "metadata":null},
+                {"id":"GG_OTU_5", "metadata":null}
+            ],
+        "columns": [
+                {"id":"Sample1", "metadata":null},
+                {"id":"Sample2", "metadata":null},
+                {"id":"Sample3", "metadata":null},
+                {"id":"Sample4", "metadata":null},
+                {"id":"Sample5", "metadata":null},
+                {"id":"Sample6", "metadata":null}
+            ],
+        "matrix_type": "dense",
+        "matrix_element_type": "int",
+        "shape": [5,6],
+        "data":  [[0,0,1,0,0,0],
+                  [5,1,0,2,3,1],
+                  [0,0,1,4,2,0],
+                  [2,1,1,0,0,1],
+                  [0,1,1,0,0,0]]
+    }'''
+        biom_data = parse_biom_table_str(bt_string)
+        F = FunctionWithParams('')
+
+        self.assertEqual(biom_data, F.getBiomData(biom_data))
+
+        # write biom_data to temp location
+        bt_path = get_tmp_filename()
+        biom_file = open(bt_path, 'w')
+        biom_file.writelines(bt_string)
+        biom_file.close()
+        self.assertEqual(biom_data, F.getBiomData(bt_path))
+
+        # cleanup
+        remove(bt_path)
 
 
 

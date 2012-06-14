@@ -609,7 +609,6 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                     rarefaction_legend_mat[metric_name]['groups'][labelname][g]['groupcolor']=\
                                             data_colors[colors[g]].toHex()
 
-
                 #Create the individual category average plots
                 rarefaction_data_mat,rarefaction_legend_mat=make_plots(\
                                     background_color, label_color, \

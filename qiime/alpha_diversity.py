@@ -117,7 +117,7 @@ class AlphaDiversityCalc(FunctionWithParams):
         2d: [(return val 1 from sample1),(return val 2)...]
             [(return val 1 on sample2),...]
         """
-        otu_table = parse_biom_table(open(data_path,'U'))
+        otu_table = self.getBiomData(data_path)
         data = otu_table.iterSampleData()
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
@@ -180,7 +180,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         result: a matrix of sample by alpha diversity method, sample_names, 
         calc_names
         """
-        otu_table = parse_biom_table(open(data_path,'U'))
+        otu_table = self.getBiomData(data_path)
 
         calc_names = []
         for calc in self.Calcs:
@@ -304,7 +304,6 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
         stderr.write("Failed because of missing files.\n")
         stderr.write(str(e)+'\n')
         exit(1)
-
 
 def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     """ performs minimal error checking on input args, then calls os.system

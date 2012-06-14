@@ -22,7 +22,7 @@ from cogent.maths.stats.rarefaction import subsample
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.format import format_biom_table
-from biom.parse import parse_biom_table
+#from biom.parse import parse_biom_table
 
 class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
@@ -32,7 +32,8 @@ class SingleRarefactionMaker(FunctionWithParams):
         we just ignore any rarefaction levels beyond any sample in the data
         """
         self.depth = depth
-        self.otu_table = parse_biom_table(open(otu_path,'U'))
+        #self.otu_table = parse_biom_table(open(otu_path,'U'))
+        self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1
         for val in self.otu_table.iterObservationData():
@@ -80,7 +81,8 @@ class RarefactionMaker(FunctionWithParams):
         """
         self.rare_depths = range(min,max+1, step)
         self.num_reps = num_reps
-        self.otu_table = parse_biom_table(open(otu_path,'U'))
+        #self.otu_table = parse_biom_table(open(otu_path,'U'))
+        self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
         tmp = -1
         for val in self.otu_table.iterObservationData():

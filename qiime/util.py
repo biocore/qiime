@@ -40,6 +40,8 @@ from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
         float, where, isnan, mean, std, sqrt, ravel
 
 from biom.table import DenseTable
+from biom.parse import parse_biom_table
+import biom
         
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence,DNA
@@ -204,6 +206,42 @@ class FunctionWithParams(object):
         #if we got here, either we didn't get a string or we couldn't read
         #the data source into any other kind of object
         return data_source
+
+    def getBiomData(self, data):
+        """returns a biom object regardless of whether path or object given"""
+        try:
+            if os.path.isfile(data):
+                otu_table = parse_biom_table(open(data,'U'))
+                return otu_table
+        except TypeError:
+            if any([type(data) in \
+                [biom.table.DenseFunctionTable,
+                biom.table.DenseGeneTable,
+                biom.table.DenseMetaboliteTable,
+                biom.table.DenseOTUTable,
+                biom.table.DenseOrthologTable,
+                biom.table.DensePathwayTable,
+                biom.table.DenseTable,
+                biom.table.DenseTaxonTable,
+                biom.table.FunctionTable,
+                biom.table.GeneTable,
+                biom.table.MetaboliteTable,
+                biom.table.OTUTable,
+                biom.table.OrthologTable,
+                biom.table.PathwayTable,
+                biom.table.SparseFunctionTable,
+                biom.table.SparseGeneTable,
+                biom.table.SparseMetaboliteTable,
+                biom.table.SparseOTUTable,
+                biom.table.SparseOrthologTable,
+                biom.table.SparsePathwayTable,
+                biom.table.SparseTable,
+                biom.table.SparseTaxonTable]]):
+                    otu_table = data
+                    return otu_table
+            else: 
+                raise TypeError('Data is neither a path to a biom table or a'+\
+                ' biom table object.')
 
     def getAlignment(self, aln_source):
         """Returns parsed alignment from putative alignment source"""
