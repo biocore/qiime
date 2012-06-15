@@ -1,0 +1,2 @@
+# Core OTUs across 100 % of samples.
+63	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
