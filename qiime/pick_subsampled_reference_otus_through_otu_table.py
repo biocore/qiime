@@ -323,7 +323,8 @@ def iterative_pick_subsampled_open_referenence_otus(
                               command_handler,
                               params,
                               qiime_config,
-                              prefilter_percent_id=0.80,
+                              prefilter_refseqs_fp=None,
+                              prefilter_percent_id=0.60,
                               min_otu_size=2,
                               run_tax_align_tree=True,
                               step1_otu_map_fp=None,
@@ -332,124 +333,131 @@ def iterative_pick_subsampled_open_referenence_otus(
                               suppress_step4=False,
                               logger=None,
                               status_update_callback=print_to_stdout):
-        """ Call the pick_subsampled_open_referenence_otus workflow on multiple inputs
-             and handle processing of the results.
-        """
-        create_dir(output_dir)
-        commands = []
-        if logger == None:
-            logger = WorkflowLogger(generate_log_fp(output_dir),
-                                    params=params,
-                                    qiime_config=qiime_config)
-            close_logger_on_success = True
+    """ Call the pick_subsampled_open_referenence_otus workflow on multiple inputs
+         and handle processing of the results.
+    """
+    create_dir(output_dir)
+    commands = []
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
+    
+    # if the user has not passed a different reference collection for the pre-filter,
+    # used the input refseqs_fp for all iterations. we want to pre-filter all data against
+    # the input data as lower percent identity searches with uclust can be slow, so we 
+    # want the reference collection to stay at a reasonable size.
+    if prefilter_refseqs_fp == None:
+       prefilter_refseqs_fp = refseqs_fp
+    
+    otu_table_fps = []
+    repset_fasta_fps = []
+    for i,input_fp in enumerate(input_fps):
+        iteration_output_dir = '%s/%d/' % (output_dir,i)
+        if iteration_output_exists(iteration_output_dir,min_otu_size):
+            # if the output from an iteration already exists, skip that 
+            # iteration (useful for continuing failed runs)
+            log_input_md5s(logger,[input_fp,refseqs_fp])
+            logger.write('Iteration %d (input file: %s) output data already exists. '
+                         'Skipping and moving to next.\n\n' % (i,input_fp))
         else:
-            close_logger_on_success = False
-            
-        otu_table_fps = []
-        repset_fasta_fps = []
-        for i,input_fp in enumerate(input_fps):
-            iteration_output_dir = '%s/%d/' % (output_dir,i)
-            if iteration_output_exists(iteration_output_dir,min_otu_size):
-                # if the output from an iteration already exists, skip that 
-                # iteration (useful for continuing failed runs)
-                log_input_md5s(logger,[input_fp,refseqs_fp])
-                logger.write('Iteration %d (input file: %s) output data already exists. '
-                             'Skipping and moving to next.\n\n' % (i,input_fp))
-                otu_table_fps.append('%s/otu_table_mc%d.biom' % \
-                                     (iteration_output_dir, min_otu_size))
-                repset_fasta_fps.append('%s/rep_set.fna' % iteration_output_dir)
-            else:
-                pick_subsampled_open_referenence_otus(input_fp=input_fp,
-                                         refseqs_fp=refseqs_fp,
-                                         output_dir=iteration_output_dir,
-                                         percent_subsample=percent_subsample,
-                                         new_ref_set_id='.'.join([new_ref_set_id,str(i)]),
-                                         command_handler=command_handler,
-                                         params=params,
-                                         qiime_config=qiime_config,
-                                         run_tax_align_tree=False,
-                                         prefilter_percent_id=prefilter_percent_id,
-                                         min_otu_size=min_otu_size,
-                                         step1_otu_map_fp=step1_otu_map_fp,
-                                         step1_failures_fasta_fp=step1_failures_fasta_fp,
-                                         parallel=parallel,
-                                         suppress_step4=suppress_step4,
-                                         logger=logger,
-                                         status_update_callback=status_update_callback)
-                # step1 otu map and failures can only be used for the first iteration
-                # as subsequent iterations need to use updated refseqs files
-                step1_otu_map_fp = step1_failures_fasta_fp = None
-                new_refseqs_fp = '%s/new_refseqs.fna' % iteration_output_dir
-                refseqs_fp = new_refseqs_fp
-                otu_table_fps.append('%s/otu_table_mc%d.biom' % (iteration_output_dir,min_otu_size))
-                repset_fasta_fps.append('%s/rep_set.fna' % iteration_output_dir)
+            pick_subsampled_open_referenence_otus(input_fp=input_fp,
+                                     refseqs_fp=refseqs_fp,
+                                     output_dir=iteration_output_dir,
+                                     percent_subsample=percent_subsample,
+                                     new_ref_set_id='.'.join([new_ref_set_id,str(i)]),
+                                     command_handler=command_handler,
+                                     params=params,
+                                     qiime_config=qiime_config,
+                                     run_tax_align_tree=False,
+                                     prefilter_refseqs_fp=prefilter_refseqs_fp,
+                                     prefilter_percent_id=prefilter_percent_id,
+                                     min_otu_size=min_otu_size,
+                                     step1_otu_map_fp=step1_otu_map_fp,
+                                     step1_failures_fasta_fp=step1_failures_fasta_fp,
+                                     parallel=parallel,
+                                     suppress_step4=suppress_step4,
+                                     logger=logger,
+                                     status_update_callback=status_update_callback)
+        ## perform post-iteration file shuffling whether the previous iteration's
+        ## data previously existed or was just computed.
+        # step1 otu map and failures can only be used for the first iteration
+        # as subsequent iterations need to use updated refseqs files
+        step1_otu_map_fp = step1_failures_fasta_fp = None
+        new_refseqs_fp = '%s/new_refseqs.fna' % iteration_output_dir
+        refseqs_fp = new_refseqs_fp
+        otu_table_fps.append('%s/otu_table_mc%d.biom' % (iteration_output_dir,min_otu_size))
+        repset_fasta_fps.append('%s/rep_set.fna' % iteration_output_dir)
+    
+    # Merge OTU tables - check for existence first as this step has historically
+    # been a frequent failure, so is sometimes run manually in failed runs.
+    otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir,min_otu_size)
+    if not (exists(otu_table_fp) and getsize(otu_table_fp) > 0):
+        merge_cmd = 'merge_otu_tables.py -i %s -o %s' %\
+         (','.join(otu_table_fps),otu_table_fp)        
+        commands.append([("Merge OTU tables",merge_cmd)])
+    
+    # Build master rep set
+    final_repset_fp = '%s/rep_set.fna' % output_dir
+    final_repset_from_iteration_repsets_fps(repset_fasta_fps,final_repset_fp)
+    
+    command_handler(commands,
+            status_update_callback,
+            logger=logger,
+            close_logger_on_success=False)
+    commands = []
+    
+    if run_tax_align_tree:
+        otu_table_w_tax_fp = \
+         '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
+        final_otu_table_fp = \
+         '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,min_otu_size)
+        if exists(final_otu_table_fp) and getsize(final_otu_table_fp) > 0:
+            logger.write("Final output file exists (%s). Will not rebuild." % otu_table_fp)
+        else:
+            # remove files from partially completed runs
+            remove_files([otu_table_w_tax_fp,final_otu_table_fp],error_on_missing=False)
         
-        # Merge OTU tables - check for existence first as this step has historically
-        # been a frequent failure, so is sometimes run manually in failed runs.
-        otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir,min_otu_size)
-        if not (exists(otu_table_fp) and getsize(otu_table_fp) > 0):
-            merge_cmd = 'merge_otu_tables.py -i %s -o %s' %\
-             (','.join(otu_table_fps),otu_table_fp)        
-            commands.append([("Merge OTU tables",merge_cmd)])
+            taxonomy_fp, pynast_failures_fp = tax_align_tree(
+                       repset_fasta_fp=final_repset_fp,
+                       output_dir=output_dir,
+                       command_handler=command_handler,
+                       params=params,
+                       qiime_config=qiime_config,
+                       parallel=parallel,
+                       logger=logger,
+                       status_update_callback=status_update_callback)
         
-        # Build master rep set
-        final_repset_fp = '%s/rep_set.fna' % output_dir
-        final_repset_from_iteration_repsets_fps(repset_fasta_fps,final_repset_fp)
+            # Add taxa to otu table
+            add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
+             (otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
+            commands.append([("Add taxa to OTU table",add_taxa_cmd)])
         
-        command_handler(commands,
+            command_handler(commands,
                 status_update_callback,
                 logger=logger,
                 close_logger_on_success=False)
-        commands = []
+            commands = []
         
-        if run_tax_align_tree:
-            otu_table_w_tax_fp = \
-             '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
-            final_otu_table_fp = \
-             '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,min_otu_size)
-            if exists(final_otu_table_fp) and getsize(final_otu_table_fp) > 0:
-                logger.write("Final output file exists (%s). Will not rebuild." % otu_table_fp)
-            else:
-                # remove files from partially completed runs
-                remove_files([otu_table_w_tax_fp,final_otu_table_fp],error_on_missing=False)
-            
-                taxonomy_fp, pynast_failures_fp = tax_align_tree(
-                           repset_fasta_fp=final_repset_fp,
-                           output_dir=output_dir,
-                           command_handler=command_handler,
-                           params=params,
-                           qiime_config=qiime_config,
-                           parallel=parallel,
-                           logger=logger,
-                           status_update_callback=status_update_callback)
-            
-                # Add taxa to otu table
-                add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
-                 (otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
-                commands.append([("Add taxa to OTU table",add_taxa_cmd)])
-            
-                command_handler(commands,
-                    status_update_callback,
-                    logger=logger,
-                    close_logger_on_success=False)
-                commands = []
-            
-                # Build OTU table without PyNAST failures
-                filtered_otu_table = filter_otus_from_otu_table(
-                      parse_biom_table(open(otu_table_w_tax_fp,'U')),
-                      get_seq_ids_from_fasta_file(open(pynast_failures_fp,'U')),
-                      0,inf,0,inf,negate_ids_to_keep=True)
-                otu_table_f = open(final_otu_table_fp,'w')
-                otu_table_f.write(format_biom_table(filtered_otu_table))
-                otu_table_f.close()
-        
-                command_handler(commands,
-                                status_update_callback,
-                                logger=logger,
-                                close_logger_on_success=False)
-                commands = []
-        
-        logger.close()
+            # Build OTU table without PyNAST failures
+            filtered_otu_table = filter_otus_from_otu_table(
+                  parse_biom_table(open(otu_table_w_tax_fp,'U')),
+                  get_seq_ids_from_fasta_file(open(pynast_failures_fp,'U')),
+                  0,inf,0,inf,negate_ids_to_keep=True)
+            otu_table_f = open(final_otu_table_fp,'w')
+            otu_table_f.write(format_biom_table(filtered_otu_table))
+            otu_table_f.close()
+    
+            command_handler(commands,
+                            status_update_callback,
+                            logger=logger,
+                            close_logger_on_success=False)
+            commands = []
+    
+    logger.close()
 
 
 def pick_subsampled_open_referenence_otus(input_fp, 
@@ -460,8 +468,9 @@ def pick_subsampled_open_referenence_otus(input_fp,
                               command_handler,
                               params,
                               qiime_config,
+                              prefilter_refseqs_fp=None,
                               run_tax_align_tree=True,
-                              prefilter_percent_id=0.80,
+                              prefilter_percent_id=0.60,
                               min_otu_size=2,
                               step1_otu_map_fp=None,
                               step1_failures_fasta_fp=None,
@@ -501,6 +510,13 @@ def pick_subsampled_open_referenence_otus(input_fp,
 
     log_input_md5s(logger,[input_fp,refseqs_fp,step1_otu_map_fp,step1_failures_fasta_fp])
     
+    # if the user has not passed a different reference collection for the pre-filter,
+    # used the main refseqs_fp. this is useful if the user wants to provide a smaller
+    # reference collection, or to use the input reference collection when running in 
+    # iterative mode (rather than an iteration's new refseqs)
+    if prefilter_refseqs_fp == None:
+       prefilter_refseqs_fp = refseqs_fp
+    
     ## Step 1: Closed-reference OTU picking on the input file (if not already complete)
     if step1_otu_map_fp and step1_failures_fasta_fp:
         step1_dir = '%s/step1_otus' % output_dir
@@ -515,7 +531,7 @@ def pick_subsampled_open_referenence_otus(input_fp,
              (prefilter_dir,input_basename)
             prefilter_pick_otu_cmd = pick_reference_otus(\
              input_fp,prefilter_dir,reference_otu_picking_method,
-             refseqs_fp,parallel,params,logger,prefilter_percent_id)
+             prefilter_refseqs_fp,parallel,params,logger,prefilter_percent_id)
             commands.append([('Pick Reference OTUs (prefilter)', prefilter_pick_otu_cmd)])
             
             prefiltered_input_fp = '%s/prefiltered_%s%s' %\
