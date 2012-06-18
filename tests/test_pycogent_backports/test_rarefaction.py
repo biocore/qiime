@@ -6,7 +6,8 @@ from qiime.pycogent_backports.rarefaction import (subsample,
                                             naive_histogram,
                                             wrap_numpy_histogram,
                                             rarefaction,
-                                            subsample_freq_dist_nonzero)
+                                            subsample_freq_dist_nonzero,
+                                            subsample_random)
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
@@ -67,6 +68,34 @@ class TopLevelTests(TestCase):
             actual[tuple(e)] = None
             self.assertTrue(e.sum() == 2)
         self.assertEqual(actual, {(1,0,1):None,(2,0,0):None})
+
+    def test_subsample_random(self):
+        """subsample_freq_dist_nonzero should return a random subsample of a vector
+        """
+        a = array([0,5,0])
+        self.assertEqual(subsample_random(a,5), array([0,5,0]))
+        self.assertEqual(subsample_random(a,2), array([0,2,0]))
+        
+        # selecting 35 counts from the vector 1000 times yields each at least
+        # two different results
+        b = array([2,0,1,2,1,8,6,0,3,3,5,0,0,0,5])
+        actual = {}
+        for i in range(100):
+            e = subsample_random(b,35)
+            self.assertTrue(e.sum(),35)
+            actual[tuple(e)] = None
+        self.assertTrue(len(actual) > 1)
+        
+        # selecting 2 counts from the vector 1000 times yields each of the 
+        # two possible results at least once each
+        b = array([2,0,1])
+        actual = {}
+        for i in range(1000):
+            e = subsample_random(b,2)
+            actual[tuple(e)] = None
+            self.assertTrue(e.sum() == 2)
+        self.assertEqual(actual, {(1,0,1):None,(2,0,0):None})
+
 
     def test_naive_histogram(self):
         """naive_histogram should produce expected result"""

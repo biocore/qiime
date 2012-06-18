@@ -21,7 +21,9 @@ replacement) otu tables.
 import os.path
 import numpy
 from numpy import inf
-from qiime.pycogent_backports.rarefaction import subsample, subsample_freq_dist_nonzero
+from qiime.pycogent_backports.rarefaction import (subsample,
+                                                  subsample_freq_dist_nonzero,
+                                                  subsample_random)
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.format import format_biom_table
@@ -171,7 +173,6 @@ def get_rare_data(otu_table,
         if x.sum() < seqs_per_sample:
             return x
         else:
-            print subsample_f
             return subsample_f(x, seqs_per_sample)
 
     subsampled_otu_table = otu_table.transformSamples(func)
