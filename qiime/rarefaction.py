@@ -45,7 +45,7 @@ class SingleRarefactionMaker(FunctionWithParams):
             self.max_num_taxa = max(self.max_num_taxa, val.sum())
 
     def rarefy_to_file(self, output_fname, small_included=False,
-        include_lineages=False,empty_otus_removed=False):
+        include_lineages=False,empty_otus_removed=False,subsample_f=subsample):
         """ computes rarefied otu tables and writes them, one at a time
         
         this prevents large memory usage
@@ -59,7 +59,8 @@ class SingleRarefactionMaker(FunctionWithParams):
 
         sub_otu_table = get_rare_data(self.otu_table,
                                       self.depth, 
-                                      small_included)
+                                      small_included, 
+                                      subsample_f=subsample_f)
 
         if empty_otus_removed:
             sub_otu_table = filter_otus_from_otu_table(sub_otu_table,

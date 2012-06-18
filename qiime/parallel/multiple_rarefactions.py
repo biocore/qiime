@@ -17,7 +17,7 @@ __status__ = "Development"
 
 def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
-    lineages_included, command_prefix=None,command_suffix=None):
+    lineages_included, subsample_multinomial, command_prefix=None,command_suffix=None):
     """Generate rarefaction diversity commands to be submitted to cluster
     """
     # Create data for each run (depth, output_fn)
@@ -38,6 +38,11 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     else:
         lineages_included_param = '--suppress_lineages_included'
     
+    if subsample_multinomial:
+        subsample_multinomial_param = '--subsample_multinomial'
+    else:
+        subsample_multinomial_param = ''
+    
     for depth,output_fn in run_parameters:
         # Each run ends with moving the output file from the tmp dir to
         # the output_dir. Build the command to perform the move here.
@@ -45,13 +50,14 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
          [output_fn],working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s %s -d %s %s %s' %\
+        command = '%s %s %s -i %s -o %s %s %s -d %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           rarefaction_fp,\
           input_fp,
           working_dir + '/' + output_fn,
           lineages_included_param,
+          subsample_multinomial_param,
           depth,
           rename_command,
           command_suffix)

@@ -66,6 +66,8 @@ script_info['optional_options'] = [\
            default=join(get_qiime_scripts_dir(),'single_rarefaction.py')),\
  make_option('-s', '--step', type=int, default=1,\
                       help='levels: min, min+step... for level <= max [default: %default]'),\
+ make_option('--subsample_multinomial',default=False,action='store_true',
+    help='subsample using subsampling with replacement [default: %default]'),
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
  options_lookup['suppress_submit_jobs'],\
@@ -139,7 +141,8 @@ def main():
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,single_rarefaction_fp,job_prefix,\
      input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,
-     lineages_included,command_prefix=' ',command_suffix=' ')
+     lineages_included,subsample_multinomial=opts.subsample_multinomial,
+     command_prefix=' ',command_suffix=' ')
      
     # Merge commands into jobs_to_start number of jobs
     commands = merge_to_n_commands(commands,jobs_to_start)

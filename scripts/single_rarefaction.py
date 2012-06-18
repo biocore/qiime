@@ -10,8 +10,8 @@ __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
- 
 
+from qiime.pycogent_backports.rarefaction import subsample, subsample_multinomial
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.rarefaction import SingleRarefactionMaker
@@ -50,6 +50,8 @@ script_info['optional_options']=[
     make_option('-k', '--keep_empty_otus', default=False, action='store_true',
         help='Retain OTUs of all zeros, which are usually omitted from' +\
         ' the output OTU tables. [default: %default]'),
+    make_option('--subsample_multinomial',default=False,action='store_true',
+        help='subsample using subsampling with replacement [default: %default]')
 ]
 script_info['option_label']={'input_path':'OTU table filepath',
                              'output_path': 'Output filepath',
@@ -62,11 +64,16 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-      
+
+    if opts.subsample_multinomial:
+        subsample_f = subsample_multinomial
+    else:
+        subsample_f = subsample
+
     maker = SingleRarefactionMaker(opts.input_path, opts.depth)
     maker.rarefy_to_file(opts.output_path, False,
         include_lineages=opts.lineages_included,
-        empty_otus_removed=(not opts.keep_empty_otus))
+        empty_otus_removed=(not opts.keep_empty_otus),subsample_f=subsample_f)
 
 if __name__ == "__main__":
     main()

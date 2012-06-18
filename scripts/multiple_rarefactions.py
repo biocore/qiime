@@ -57,7 +57,7 @@ script_info['optional_options']=[
         help='Retain OTUs of all zeros, which are usually omitted from' +\
         ' the output OTU tables. [default: %default]'),
     make_option('--subsample_multinomial',default=False,action='store_true',
-        help='subsample using subsampling with replacement')
+        help='subsample using subsampling with replacement [default: %default]')
 ]
 
 script_info['option_label']={'input_path':'OTU table filepath',
