@@ -3,7 +3,10 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Justin Kuczynski", "Jose Carlos Clemente Litran"] #remember to add yourself
+__credits__ = ["Justin Kuczynski", 
+               "Jose Carlos Clemente Litran", 
+               "Rob Knight", 
+               "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -18,11 +21,10 @@ replacement) otu tables.
 import os.path
 import numpy
 from numpy import inf
-from cogent.maths.stats.rarefaction import subsample
+from qiime.pycogent_backports.rarefaction import subsample, subsample_freq_dist_nonzero
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.format import format_biom_table
-#from biom.parse import parse_biom_table
 
 class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
@@ -153,7 +155,10 @@ class RarefactionMaker(FunctionWithParams):
         f.write(format_biom_table(sub_otu_table))
         f.close()
 
-def get_rare_data(otu_table, seqs_per_sample, include_small_samples=False):
+def get_rare_data(otu_table, 
+                  seqs_per_sample, 
+                  include_small_samples=False, 
+                  subsample_f=subsample):
     """Filter OTU table to keep only desired sample sizes.
     
     - include_small_sampes=False => do not write samples with < seqs_per_sample
@@ -166,7 +171,8 @@ def get_rare_data(otu_table, seqs_per_sample, include_small_samples=False):
         if x.sum() < seqs_per_sample:
             return x
         else:
-            return subsample(x, seqs_per_sample)
+            print subsample_f
+            return subsample_f(x, seqs_per_sample)
 
     subsampled_otu_table = otu_table.transformSamples(func)
     
