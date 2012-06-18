@@ -58,7 +58,8 @@ class SingleRarefactionMaker(FunctionWithParams):
                 del meta['taxonomy']
 
         sub_otu_table = get_rare_data(self.otu_table,
-                                      self.depth, small_included)
+                                      self.depth, 
+                                      small_included)
 
         if empty_otus_removed:
             sub_otu_table = filter_otus_from_otu_table(sub_otu_table,
@@ -97,7 +98,7 @@ class RarefactionMaker(FunctionWithParams):
 
     def rarefy_to_files(self, output_dir, small_included=False, 
         include_full=False, include_lineages=False,
-        empty_otus_removed=False):
+        empty_otus_removed=False,subsample_f=subsample):
         """ computes rarefied otu tables and writes them, one at a time
         
         this prevents large memory usage"""
@@ -112,8 +113,10 @@ class RarefactionMaker(FunctionWithParams):
         self.output_dir = output_dir
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
-                sub_otu_table = get_rare_data(self.otu_table, depth, 
-                                              small_included)
+                sub_otu_table = get_rare_data(self.otu_table, 
+                                              depth, 
+                                              small_included, 
+                                              subsample_f=subsample_f)
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(\
                         sub_otu_table,
