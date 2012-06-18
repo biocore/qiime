@@ -7,7 +7,8 @@ from qiime.pycogent_backports.rarefaction import (subsample,
                                             wrap_numpy_histogram,
                                             rarefaction,
                                             subsample_freq_dist_nonzero,
-                                            subsample_random)
+                                            subsample_random,
+                                            subsample_multinomial)
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
@@ -70,7 +71,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual, {(1,0,1):None,(2,0,0):None})
 
     def test_subsample_random(self):
-        """subsample_freq_dist_nonzero should return a random subsample of a vector
+        """subsample_random should return a random subsample of a vector
         """
         a = array([0,5,0])
         self.assertEqual(subsample_random(a,5), array([0,5,0]))
@@ -96,6 +97,18 @@ class TopLevelTests(TestCase):
             self.assertTrue(e.sum() == 2)
         self.assertEqual(actual, {(1,0,1):None,(2,0,0):None})
 
+    def test_subsample_multinomial(self):
+        """subsample_multinomial should return a random subsample of a vector
+        """
+        # selecting 35 counts from the vector 1000 times yields each at least
+        # two different results
+        actual = {}
+        for i in range(100):
+            b = array([2,0,1,2,1,8,6,0,3,3,5,0,0,0,5])
+            e = subsample_multinomial(b,35)
+            self.assertTrue(e.sum(),35)
+            actual[tuple(e)] = None
+        self.assertTrue(len(actual) > 1)
 
     def test_naive_histogram(self):
         """naive_histogram should produce expected result"""

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from numpy import concatenate, repeat, array, zeros, histogram, arange, uint, zeros
-from numpy.random import permutation, randint, sample
+from numpy.random import permutation, randint, sample, multinomial
 from random import Random, _ceil, _log
 
 """Given array of objects (counts or indices), perform rarefaction analyses."""
@@ -139,6 +139,25 @@ def subsample_random(counts, n, dtype=uint):
     for p in permuted:
         result[p] += 1
     return result
+
+def subsample_multinomial(counts, n, dtype=None):
+    """Subsamples new vector from vector of orig items.
+
+    Returns all items if requested sample is larger than number of items.
+
+    This version uses the multinomial to sample WITH replacement.
+    """
+    if dtype == None:
+        dtype=counts.dtype
+    if counts.sum() <= n:
+        return counts
+    result = zeros(len(counts), dtype=dtype)
+    nz = counts.nonzero()[0]
+    compressed = counts.take(nz).astype(float)
+    compressed /= compressed.sum()
+    result = multinomial(n, compressed).astype(dtype)
+    counts[nz] = result
+    return counts
 
 def naive_histogram(vals, max_val=None, result=None):
     """Naive histogram for performance testing vs. numpy's.

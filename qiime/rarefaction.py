@@ -23,7 +23,8 @@ import numpy
 from numpy import inf
 from qiime.pycogent_backports.rarefaction import (subsample,
                                                   subsample_freq_dist_nonzero,
-                                                  subsample_random)
+                                                  subsample_random,
+                                                  subsample_multinomial)
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.format import format_biom_table
