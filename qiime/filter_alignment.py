@@ -17,6 +17,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
+from qiime.util import get_tmp_filename
+
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -80,7 +82,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
             return
 
     # random temporary file for first-pass results
-    tmpfilename = "/tmp/"+"".join(sample(lowercase, 20)) + ".tmp"
+    tmpfilename = get_tmp_filename()
     try:
         tmpfile = open(tmpfilename,'w')
     except IOError:
@@ -120,7 +122,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
     tmpfile = open(tmpfilename,'U')
     
     # random temporary file for second-pass results
-    tmpfilename_gaps = "/tmp/"+"".join(sample(lowercase, 20)) + ".tmp"
+    tmpfilename_gaps = get_tmp_filename()
     try:
         tmpfile_gaps = open(tmpfilename_gaps,'w')
     except IOError:
