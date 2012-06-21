@@ -22,7 +22,7 @@ from StringIO import StringIO
 from os import getenv, makedirs
 from operator import itemgetter
 from os.path import abspath, exists, dirname, join, isdir
-from collections import defaultdict, Counter
+from collections import defaultdict
 import gzip
 import sys
 import os
@@ -1784,7 +1784,12 @@ def get_duplicates(fields):
     
     fields:  list of elements to check for duplicates
     """
-    cnt= Counter(fields)
+    cnt = {} 
+    for field in fields:
+        try:
+            cnt[field] += 1
+        except KeyError:
+            cnt[field] = 1
     return [key for key in cnt.keys() if cnt[key]> 1]
 
 def duplicates_indices(fields):
