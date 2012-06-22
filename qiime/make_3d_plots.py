@@ -28,6 +28,7 @@ from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
 from qiime.format import format_coords
 from cogent.maths.stats.test import ANOVA_one_way
 from cogent.maths.stats.util import Numbers
+from copy import deepcopy
 
 '''
 xdata_colors = {
@@ -187,7 +188,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      add_vectors=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
-    
+
     #Scale the coords and generate header labels
     if scaled:
         scalars = pct_var
@@ -280,8 +281,21 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         
         # Write vectors if requested
         if add_vectors:
-            result += make_vectors_output(coord_dict, add_vectors, num_coords, color, \
-                                          ids)
+            result += make_vectors_output(coord_dict, add_vectors, num_coords, color, ids)
+
+            # Calculate the average traces for this group
+            avg_coord_dict, avg_add_vectors = avg_vector_for_group(group_name,\
+                ids, coord_dict, custom_axes, deepcopy(add_vectors))
+
+            # Add the average traces, these are by default non-visible 
+            result += make_vectors_output(avg_coord_dict, avg_add_vectors,\
+                num_coords, color, avg_coord_dict.keys(),\
+                display_name='average', state='off')
+            
+            avg_coord_dict = {}
+            avg_add_vectors = {}
+            avg_ids = {}
+
             if not scaled and add_vectors['vectors_path'] and add_vectors['vectors_algorithm']:
                 vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'], \
                                                 ids, add_vectors['vectors_algorithm'], \
@@ -443,7 +457,7 @@ def run_ANOVA_trajetories(groups):
     
     return labels, group_means, prob
         
-def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
+def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids, display_name='trace', state='on'):
     """Creates make output to display vectors (as a kinemage vectorlist).
 
        Params:
@@ -454,18 +468,20 @@ def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
         color, the color of this batch of vectors, 
         ids the list of ids that are in this batch and where the first member 
         of the groups id a should be a member of.
+        state: whether the trace displayed will appear on screen by default, 
+        the permitted values are 'on' and 'off'; default is 'on'.
         
        Returns:
         result, a list of strings containing a kinemage vectorlist
     """
     # default parameters
     which_set = 0
-    tip_fraction=0.5
+    tip_fraction = 0.5
     arrow_colors = {'line_color': color, 'head_color': color}
     
     # header for section in kin file
     result = []
-    result.append('@vectorlist {trace} dimension=%s on' % (num_coords))
+    result.append('@vectorlist {%s} dimension=%s %s' % (display_name, num_coords, state))
     
     # selecting the edges to draw in this batch
     edges = []
@@ -1080,4 +1096,69 @@ def can_run_ANOVA_trajectories(input_dict):
     total_values = sum([ len(value) for value in input_dict.values()])
     return not (total_values == len(input_dict.keys()))
 
-    return True;
+def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
+    """
+        insert_average_vectors: adds a new group that represents the average
+        of the elements of the elements with the same first value (the added
+        vector) in the coordinates matrix. A new group will be created for
+        each of the available groups, named with the prefix avg.
+
+        Input:
+        group_name: name of the category that will be used to obtain the mean 
+        of the coordinates.
+
+        ids: list of ids that belong to the group, the coordinates belonging to
+        this list, are the ones to be used for the average.
+
+        coord_dict: dictionary containing the coordinates values for each of 
+        the unique ids. New ids will be added with the prefix avg, for each 
+        of the elements of each group's average representation.
+
+        custom_axes: added column to the coordinates matrix (usually a time 
+        vector). This first column is used to group together and average the 
+        coordinates, if none is provided all the coordinates of the group are 
+        averaged.
+
+        add_vectors: reference dictionary used in other functions.
+
+        Output:
+        avg_coord_dict: dictionary of coordinates corresponding to the average 
+        of the COORD_DICT input argument. If there is an added vector, the
+        average will be taken over that vector, else all the points will be
+        averaged togther.
+
+        avg_add_vectors: dictionary, modified properly so that the other
+        functions can it as an input.
+    """
+    avg_add_vectors = add_vectors
+
+    grouped_coords = {}
+
+    # For each of the key-value pairs in the add_vectors dictionary, search
+    # through each of the values, each of these values is a tuple containing
+    # in the first element either a value for the custom axes or another value
+    # to order them (if no custom axes provided), the second element is the id
+    # of a list of coordinates, if this id is included in the input ids, then 
+    # add it to a group corresponding to the first element of this tuple
+    for keys, values in add_vectors['vectors'].iteritems():
+        # Be sure to sort the values otherwise, lines won't make much sense
+        for value in natsort(values):
+            if value[1] in ids:
+                # If the list hasn't been created yet, then create an empty one
+                if value[0] not in grouped_coords.keys():
+                    grouped_coords[value[0]] = []
+                grouped_coords[value[0]].append(coord_dict[value[1]])
+
+    avg_coord_dict = {}
+
+    # Create a dictionary keyed by the custom axes (or the other value provided)
+    # and valued with the means of all the lists of coordinates with the same id
+    for per_point_id, per_point_coords in grouped_coords.iteritems():
+        avg_coord_dict[per_point_id] = mean(per_point_coords, axis = 0)
+
+    # Add vectors is used by other functions, so create a mock dict, be aware
+    # of the order in the ids, otherwise the visualization will be confusing
+    avg_add_vectors['vectors'] = {group_name :[ (str(i), avg_id)\
+        for i, avg_id in enumerate(natsort(avg_coord_dict.keys())) ]}   
+
+    return avg_coord_dict, avg_add_vectors
