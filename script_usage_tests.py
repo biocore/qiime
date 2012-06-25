@@ -66,7 +66,8 @@ def main():
                            verbose=verbose,
                            tests=tests,
                            failure_log_fp=failure_log_fp)
-    print result_summary
+    if verbose:
+        print result_summary
 
 
 
