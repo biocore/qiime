@@ -361,9 +361,6 @@ def load_qiime_config():
         
     return parse_qiime_config_files(qiime_config_files)
 
-# The qiime_blast_seqs function should evetually move to PyCogent,
-# but I want to test that it works for all of the QIIME functionality that
-# I need first. -Greg
 def qiime_blast_seqs(seqs,
      blast_constructor=Blastall,
      blast_program='blastn',
@@ -374,6 +371,7 @@ def qiime_blast_seqs(seqs,
      params={},
      WorkingDir=None,
      seqs_per_blast_run=1000,
+     is_protein=False,
      HALT_EXEC=False):
     """Blast list of sequences.
 
@@ -381,16 +379,21 @@ def qiime_blast_seqs(seqs,
      tuples (e.g., the output of MinimalFastaParser)
     
     """
+    
     assert blast_db or refseqs_fp or refseqs, \
      'Must provide either a blast_db or a fasta '+\
      'filepath containing sequences to build one.'
      
     if refseqs_fp:
         blast_db, db_files_to_remove =\
-         build_blast_db_from_fasta_path(refseqs_fp,output_dir=WorkingDir)
+         build_blast_db_from_fasta_path(refseqs_fp,
+                                        output_dir=WorkingDir,
+                                        is_protein=is_protein)
     elif refseqs:
         blast_db, db_files_to_remove =\
-         build_blast_db_from_fasta_file(refseqs,output_dir=WorkingDir)
+         build_blast_db_from_fasta_file(refseqs,
+                                        output_dir=WorkingDir,
+                                        is_protein=is_protein)
     else:
         db_files_to_remove = []
     
@@ -424,6 +427,35 @@ def qiime_blast_seqs(seqs,
     remove_files(db_files_to_remove)
     
     return blast_results
+
+def qiime_blastx_seqs(seqs,
+     blast_constructor=Blastall,
+     blast_db=None,
+     refseqs=None,
+     refseqs_fp=None,
+     blast_mat_root=None,
+     params={},
+     WorkingDir=None,
+     seqs_per_blast_run=1000,
+     HALT_EXEC=False):
+    """Blast list of sequences.
+
+    seqs: a list (or object with list-like interace) of (seq_id, seq) 
+     tuples (e.g., the output of MinimalFastaParser)
+    
+    """
+    return qiime_blast_seqs(seqs,
+     blast_constructor=blast_constructor,
+     blast_program='blastx',
+     blast_db=blast_db,
+     refseqs=refseqs,
+     refseqs_fp=refseqs_fp,
+     blast_mat_root=blast_mat_root,
+     params={},
+     WorkingDir=WorkingDir,
+     seqs_per_blast_run=seqs_per_blast_run,
+     is_protein=True,
+     HALT_EXEC=HALT_EXEC)
 
 def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
     """ Returns (seq id, seq) pairs if sample_id is in sample_ids """

@@ -42,7 +42,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
-    RExecutor, duplicates_indices, trim_fasta)
+    RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
+    qiime_blastx_seqs)
 
 import numpy
 from numpy import array, asarray
@@ -1150,11 +1151,13 @@ class BlastSeqsTests(TestCase):
         self.refseqs1 = refseqs1.split('\n')
         self.inseqs1 = inseqs1.split('\n')
         self.blast_db, db_files_to_remove =\
-          build_blast_db_from_fasta_file(self.refseqs1,output_dir='/tmp/')
+          build_blast_db_from_fasta_file(self.refseqs1,
+                                         output_dir=get_qiime_temp_dir())
         self.files_to_remove = db_files_to_remove
         
-        self.refseqs1_fp = get_tmp_filename(\
-         tmp_dir='/tmp/', prefix="BLAST_temp_db_", suffix=".fasta")    
+        self.refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
+                                            prefix="BLAST_temp_db_",
+                                            suffix=".fasta")
         fasta_f = open(self.refseqs1_fp,'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1227,7 +1230,83 @@ class BlastSeqsTests(TestCase):
         # no blastdb or refseqs
         self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
 
+class BlastXSeqsTests(TestCase):
+    """ Tests of the qiime_blastx_seqs function (will move to PyCogent eventually)
+    """
+
+    def setUp(self):
+        """ 
+        """
+        self.nt_inseqs1 = nt_inseqs1.split('\n')
         
+        self.pr_refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
+                                            prefix="BLAST_temp_db_",
+                                            suffix=".fasta")
+        fasta_f = open(self.pr_refseqs1_fp,'w')
+        fasta_f.write(pr_refseqs1)
+        fasta_f.close()
+        
+        self.files_to_remove = [self.pr_refseqs1_fp]
+          
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        
+    def test_w_refseqs_file(self):
+        """qiime_blastx_seqs functions with refseqs file 
+        """
+        inseqs = MinimalFastaParser(self.nt_inseqs1)
+        actual = qiime_blastx_seqs(inseqs,refseqs_fp=self.pr_refseqs1_fp)
+        self.assertEqual(len(actual),3)
+        
+        # couple of sanity checks against command line blast
+        self.assertEqual(actual['eco:b0001'][0][0]['SUBJECT ID'],'eco:b0001')
+        self.assertEqual(actual['eco:b0122'][0][0]['SUBJECT ID'],'eco:b0122')
+        self.assertEqual(actual['eco:b0122'][0][1]['SUBJECT ID'],'eco:b0015')
+
+pr_refseqs1 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (A)
+MKRISTTITTTITITTGNGAG
+>eco:b0015 dnaJ; chaperone Hsp40, co-chaperone with DnaK; K03686 molecular chaperone DnaJ (A)
+MAKQDYYEILGVSKTAEEREIRKAYKRLAMKYHPDRNQGDKEAEAKFKEIKEAYEVLTDS
+QKRAAYDQYGHAAFEQGGMGGGGFGGGADFSDIFGDVFGDIFGGGRGRQRAARGADLRYN
+MELTLEEAVRGVTKEIRIPTLEECDVCHGSGAKPGTQPQTCPTCHGSGQVQMRQGFFAVQ
+QTCPHCQGRGTLIKDPCNKCHGHGRVERSKTLSVKIPAGVDTGDRIRLAGEGEAGEHGAP
+AGDLYVQVQVKQHPIFEREGNNLYCEVPINFAMAALGGEIEVPTLDGRVKLKVPGETQTG
+KLFRMRGKGVKSVRGGAQGDLLCRVVVETPVGLNERQKQLLQELQESFGGPTGEHNSPRS
+KSFFDGVKKFFDDLTR
+>eco:b0122 yacC; conserved protein, PulS_OutS family (A)
+MKTFFRTVLFGSLMAVCANSYALSESEAEDMADLTAVFVFLKNDCGYQNLPNGQIRRALV
+FFAQQNQWDLSNYDTFDMKALGEDSYRDLSGIGIPVAKKCKALARDSLSLLAYVK"""
+
+nt_inseqs1 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (N)
+atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+ggctga
+>eco:b0015 dnaJ; chaperone Hsp40, co-chaperone with DnaK; K03686 molecular chaperone DnaJ (N)
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+>eco:b0122 yacC; conserved protein, PulS_OutS family (N)
+atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa"""
 
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
