@@ -584,7 +584,7 @@ def parse_qiime_parameters(lines):
     for line in lines:
         line = line.strip()
         if line and not line.startswith('#'):
-            fields = line.split()
+            fields = line.split(None,1)
             script_id, parameter_id = fields[0].split(':')
             try:
                 value = fields[1]

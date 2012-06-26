@@ -586,12 +586,15 @@ eigvals\t4.94\t1.79\t1.50
                  "assign_taxonomy:use_rdp\ttRuE",\
                  "assign_taxonomy:something\tNone",\
                  "",\
-                 "#some_script:fake_parameter\t99.0"]
+                 "#some_script:fake_parameter\t99.0",
+                 'summarize_taxa:md_identifier "Consensus Lineage"']
         actual = parse_qiime_parameters(lines)
         expected = {'pick_otus':\
                      {'similarity':'0.94', 'otu_picking_method':'cdhit'},\
                     'assign_taxonomy':\
-                     {'use_rdp':None}}
+                     {'use_rdp':None},
+                    'summarize_taxa':
+                     {'md_identifier':'"Consensus Lineage"'}}
         self.assertEqual(actual,expected)
         
         # default dict functions as expected -- looking up non-existant key
