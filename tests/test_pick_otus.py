@@ -25,7 +25,7 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
-    UsearchReferenceOtuPicker)
+    UsearchReferenceOtuPicker, get_blast_hits)
 
 
 class OtuPickerTests(TestCase):
@@ -128,6 +128,7 @@ class BlastOtuPickerTests(TestCase):
          ('ref2','ACCGATGAGATATTAGCACAGGGGAATTAGAACCA'),\
          ('ref3','TGTCGAGAGTGAGATGAGATGAGAACA'),\
          ('ref4','ACGTATTTTAATGGGGCATGGT'),\
+         ('ref5','AGAGCCACAGGAGAGAGAGAGCTTC'),\
         ]
         
         self.ref_seqs_rc = [\
@@ -136,12 +137,22 @@ class BlastOtuPickerTests(TestCase):
          ('ref3',DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),\
          ('ref4',DNA.rc('ACGTATTTTAATGGGGCATGGT')),\
         ]
+
+        self.ref_seqs_pr = [\
+            ('ref1','CSLSHRRERA'),
+            ('ref2','TDEILAQGN'),
+            ('ref3','CRE'),
+            ('ref4','TYFNGAW'),
+            ('ref5','RATGEREL'),
+        ]
         
         self.seqs_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
         self.reference_seqs_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
         self.reference_seqs_rc_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        self.reference_seqs_pr_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
             
         f = open(self.seqs_fp, 'w')
@@ -155,14 +166,28 @@ class BlastOtuPickerTests(TestCase):
         f = open(self.reference_seqs_rc_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.ref_seqs_rc]))
         f.close()
+
+        f = open(self.reference_seqs_pr_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.ref_seqs_pr]))
+        f.close()
         
-        self._files_to_remove = \
-         [self.seqs_fp,self.reference_seqs_fp,self.reference_seqs_rc_fp]
+        self.blast_db, self.db_files_to_remove = \
+                build_blast_db_from_fasta_path(self.reference_seqs_fp)
+        self.blast_db_pr, self.pr_db_files_to_remove = \
+                build_blast_db_from_fasta_path(self.reference_seqs_pr_fp,
+                                               is_protein=True)
+        
+        self._files_to_remove = self.db_files_to_remove +\
+                                self.pr_db_files_to_remove +\
+                                [self.seqs_fp,
+                                 self.reference_seqs_fp,
+                                 self.reference_seqs_rc_fp,
+                                 self.reference_seqs_pr_fp]
         
     def tearDown(self):
         """
         """
-        remove_files(self._files_to_remove)
+        remove_files(self._files_to_remove,error_on_missing=False)
         
     def test_blast_seqs(self):
         """ blast_seqs: functions as expected
@@ -219,6 +244,59 @@ class BlastOtuPickerTests(TestCase):
         # no clusters at all
         actual = self.otu_picker._update_cluster_map({},{})
         self.assertEqual(actual,{})
+    
+    def test_get_blast_hits_blastn(self):
+        """get_blast_hits functions as expected with blastn """
+        
+        actual = get_blast_hits(
+                   self.seqs,
+                   self.blast_db,
+                   max_e_value=1e-10,
+                   min_pct_identity=0.5,
+                   min_aligned_percent=0.5)
+        # couple of sanity checks against command line blast
+        self.assertEqual(len(actual['s3']),2)
+        self.assertEqual(actual['s3'][0]['SUBJECT ID'],'ref1')
+        self.assertEqual(actual['s3'][1]['SUBJECT ID'],'ref5')
+
+        # increase stringency reduces number of blast hits
+        actual = get_blast_hits(
+                   self.seqs,
+                   self.blast_db,
+                   max_e_value=1e-10,
+                   min_pct_identity=0.5,
+                   min_aligned_percent=0.8)
+        # couple of sanity checks against command line blast
+        self.assertEqual(len(actual['s3']),1)
+        self.assertEqual(actual['s3'][0]['SUBJECT ID'],'ref1')
+
+    def test_get_blast_hits_blastx(self):
+        """get_blast_hits functions as expected with blastx """
+        
+        actual = get_blast_hits(
+                   self.seqs,
+                   self.blast_db_pr,
+                   max_e_value=0.01,
+                   min_pct_identity=0.5,
+                   min_aligned_percent=0.5,
+                   blast_program='blastx')
+        
+        # couple of sanity checks against command line blast
+        self.assertEqual(len(actual['s3']),2)
+        self.assertEqual(actual['s3'][0]['SUBJECT ID'],'ref1')
+        self.assertEqual(actual['s3'][1]['SUBJECT ID'],'ref5')
+
+        # increase stringency reduces number of blast hits
+        actual = get_blast_hits(
+                   self.seqs,
+                   self.blast_db_pr,
+                   max_e_value=0.001,
+                   min_pct_identity=0.5,
+                   min_aligned_percent=0.5,
+                   blast_program='blastx')
+        # couple of sanity checks against command line blast
+        self.assertEqual(len(actual['s3']),1)
+        self.assertEqual(actual['s3'][0]['SUBJECT ID'],'ref1')
         
         
     def test_call(self):

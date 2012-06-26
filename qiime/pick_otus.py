@@ -334,7 +334,8 @@ def get_blast_hits(seqs,
                    blast_db,
                    max_e_value=1e-10,
                    min_pct_identity=0.75,
-                   min_aligned_percent=0.50):
+                   min_aligned_percent=0.50,
+                   blast_program='blastn'):
     """ blast each seq in seqs against blast_db and retain good hits
     """
     max_evalue = max_e_value
@@ -344,7 +345,7 @@ def get_blast_hits(seqs,
     
     blast_result = blast_seqs(\
      seqs,Blastall,blast_db=blast_db,\
-     params={'-p':'blastn','-n':'F'},\
+     params={'-p':blast_program,'-n':'F'},\
      add_seq_names=False)
      
     if blast_result['StdOut']:
@@ -355,7 +356,12 @@ def get_blast_hits(seqs,
         
     for seq_id,seq in seqs:
         blast_result_id = seq_id.split()[0]
-        min_alignment_length = len(seq) * min_aligned_percent
+        max_alignment_length = len(seq)
+        if blast_program == 'blastx':
+            # if this is a translated blast search, the max alignment
+            # length is the number of 3mers in seq
+            max_alignment_length /= 3
+        min_alignment_length = max_alignment_length * min_aligned_percent
         result[seq_id] = []
         if blast_result_id in blast_result:
             for e in blast_result[blast_result_id][0]:
