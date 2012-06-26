@@ -777,6 +777,11 @@ class FunctionWithParamsTests(TestCase):
             def getResult(self):
                 return 3
         self.FWP = FWP
+    
+        self.files_to_remove = []
+    
+    def tearDown(self):
+        remove_files(self.files_to_remove)
 
     def test_init(self):
         """FunctionWithParams __init__ should be successful."""
@@ -847,95 +852,6 @@ class FunctionWithParamsTests(TestCase):
 
         # cleanup
         remove(bt_path)
-
-
-
-class BlastSeqsTests(TestCase):
-    """ Tests of the qiime_blast_seqs function (will move to PyCogent eventually)
-    """
-
-    def setUp(self):
-        """ 
-        """
-        self.refseqs1 = refseqs1.split('\n')
-        self.inseqs1 = inseqs1.split('\n')
-        self.blast_db, db_files_to_remove =\
-          build_blast_db_from_fasta_file(self.refseqs1,output_dir='/tmp/')
-        self.files_to_remove = db_files_to_remove
-        
-        self.refseqs1_fp = get_tmp_filename(\
-         tmp_dir='/tmp/', prefix="BLAST_temp_db_", suffix=".fasta")    
-        fasta_f = open(self.refseqs1_fp,'w')
-        fasta_f.write(refseqs1)
-        fasta_f.close()
-        
-        self.files_to_remove = db_files_to_remove + [self.refseqs1_fp]
-          
-    def tearDown(self):
-        remove_files(self.files_to_remove)
-        
-    def test_w_refseqs_file(self):
-        """qiime_blast_seqs functions with refseqs file 
-        """
-        inseqs = MinimalFastaParser(self.inseqs1)
-        actual = qiime_blast_seqs(inseqs,refseqs=self.refseqs1)
-        self.assertEqual(len(actual),5)
-        
-        # couple of sanity checks against command line blast
-        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
-        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
-        
-    def test_w_refseqs_fp(self):
-        """qiime_blast_seqs functions refseqs_fp
-        """
-        inseqs = MinimalFastaParser(self.inseqs1)
-        actual = qiime_blast_seqs(inseqs,refseqs_fp=self.refseqs1_fp)
-        self.assertEqual(len(actual),5)
-        
-        # couple of sanity checks against command line blast
-        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
-        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
-    
-    def test_w_preexising_blastdb(self):
-        """qiime_blast_seqs functions with pre-existing blast_db
-        """        
-        # pre-existing blast db
-        inseqs = MinimalFastaParser(self.inseqs1)
-        actual = qiime_blast_seqs(inseqs,blast_db=self.blast_db)
-        self.assertEqual(len(actual),5)
-        
-        # couple of sanity checks against command line blast
-        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
-        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
-    
-    def test_w_alt_seqs_per_blast_run(self):
-        """qiime_blast_seqs: functions with alt seqs_per_blast_run
-        """
-        for i in range(1,20):
-            inseqs = MinimalFastaParser(self.inseqs1)
-            actual = qiime_blast_seqs(\
-             inseqs,blast_db=self.blast_db,seqs_per_blast_run=i)
-            self.assertEqual(len(actual),5)
-    
-            # couple of sanity checks against command line blast
-            self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
-            self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
-            
-    def test_alt_blast_param(self):
-        """qiime_blast_seqs: alt blast params give alt results"""
-        # Fewer blast hits with stricter e-value
-        inseqs = MinimalFastaParser(self.inseqs1)
-        actual = qiime_blast_seqs(inseqs,blast_db=self.blast_db,params={'-e':'1e-4'})
-        # NOTE: A BUG (?) IN THE BlastResult OR THE PARSER RESULTS IN AN EXTRA
-        # BLAST RESULT IN THE DICT (actual HERE) WITH KEY ''
-        
-        self.assertTrue('s2_like_seq' in actual)
-        self.assertFalse('s100' in actual)
-        
-    def test_error_on_bad_param_set(self):
-        inseqs = MinimalFastaParser(self.inseqs1)
-        # no blastdb or refseqs
-        self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
         
     def test_convert_OTU_table_relative_abundance(self):
         """convert_OTU_table_relative_abundance works
@@ -1222,7 +1138,94 @@ AAAAAAA
         exp=(array([[1,1,1,1],[2,2,2,2],[3,3,3,3]]),0)
         obs=_chk_asarray([[1,1,1,1],[2,2,2,2],[3,3,3,3]],0)
         self.assertEqual(obs,exp)
+
+
+class BlastSeqsTests(TestCase):
+    """ Tests of the qiime_blast_seqs function (will move to PyCogent eventually)
+    """
+
+    def setUp(self):
+        """ 
+        """
+        self.refseqs1 = refseqs1.split('\n')
+        self.inseqs1 = inseqs1.split('\n')
+        self.blast_db, db_files_to_remove =\
+          build_blast_db_from_fasta_file(self.refseqs1,output_dir='/tmp/')
+        self.files_to_remove = db_files_to_remove
+        
+        self.refseqs1_fp = get_tmp_filename(\
+         tmp_dir='/tmp/', prefix="BLAST_temp_db_", suffix=".fasta")    
+        fasta_f = open(self.refseqs1_fp,'w')
+        fasta_f.write(refseqs1)
+        fasta_f.close()
+        
+        self.files_to_remove = db_files_to_remove + [self.refseqs1_fp]
+          
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        
+    def test_w_refseqs_file(self):
+        """qiime_blast_seqs functions with refseqs file 
+        """
+        inseqs = MinimalFastaParser(self.inseqs1)
+        actual = qiime_blast_seqs(inseqs,refseqs=self.refseqs1)
+        self.assertEqual(len(actual),5)
+        
+        # couple of sanity checks against command line blast
+        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
+        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
+        
+    def test_w_refseqs_fp(self):
+        """qiime_blast_seqs functions refseqs_fp
+        """
+        inseqs = MinimalFastaParser(self.inseqs1)
+        actual = qiime_blast_seqs(inseqs,refseqs_fp=self.refseqs1_fp)
+        self.assertEqual(len(actual),5)
+        
+        # couple of sanity checks against command line blast
+        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
+        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
     
+    def test_w_preexising_blastdb(self):
+        """qiime_blast_seqs functions with pre-existing blast_db
+        """        
+        # pre-existing blast db
+        inseqs = MinimalFastaParser(self.inseqs1)
+        actual = qiime_blast_seqs(inseqs,blast_db=self.blast_db)
+        self.assertEqual(len(actual),5)
+        
+        # couple of sanity checks against command line blast
+        self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
+        self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
+    
+    def test_w_alt_seqs_per_blast_run(self):
+        """qiime_blast_seqs: functions with alt seqs_per_blast_run
+        """
+        for i in range(1,20):
+            inseqs = MinimalFastaParser(self.inseqs1)
+            actual = qiime_blast_seqs(\
+             inseqs,blast_db=self.blast_db,seqs_per_blast_run=i)
+            self.assertEqual(len(actual),5)
+    
+            # couple of sanity checks against command line blast
+            self.assertEqual(actual['s2_like_seq'][0][0]['SUBJECT ID'],'s2')
+            self.assertEqual(actual['s105'][0][2]['SUBJECT ID'],'s1')
+            
+    def test_alt_blast_param(self):
+        """qiime_blast_seqs: alt blast params give alt results"""
+        # Fewer blast hits with stricter e-value
+        inseqs = MinimalFastaParser(self.inseqs1)
+        actual = qiime_blast_seqs(inseqs,blast_db=self.blast_db,params={'-e':'1e-4'})
+        # NOTE: A BUG (?) IN THE BlastResult OR THE PARSER RESULTS IN AN EXTRA
+        # BLAST RESULT IN THE DICT (actual HERE) WITH KEY ''
+        
+        self.assertTrue('s2_like_seq' in actual)
+        self.assertFalse('s100' in actual)
+        
+    def test_error_on_bad_param_set(self):
+        inseqs = MinimalFastaParser(self.inseqs1)
+        # no blastdb or refseqs
+        self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
 
         
 
