@@ -31,11 +31,13 @@ from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
-from qiime.util import FunctionWithParams, get_tmp_filename
+from qiime.util import FunctionWithParams, get_tmp_filename, load_qiime_config
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
+
+qiime_config = load_qiime_config()
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -188,7 +190,8 @@ class BlastOtuPicker(OtuPicker):
         if not blast_db:
             self.blast_db, self.db_files_to_remove = \
                 build_blast_db_from_fasta_path(refseqs_fp,
-                 is_protein=self.Params['is_protein'])
+                 is_protein=self.Params['is_protein'],
+                 output_dir=qiime_config['qiime_temp_dir'])
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
              refseqs_fp)
         else:
