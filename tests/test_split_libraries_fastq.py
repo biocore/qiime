@@ -20,7 +20,7 @@ from qiime.split_libraries_fastq import (
  quality_filter_sequence,
  FastqParseError,
  check_header_match_pre180,check_header_match_180_or_later,
- correct_barcode,is_casava_v180_or_later,
+ correct_barcode,is_casava_v180_or_later,process_fastq_single_end_read_file_no_barcode
  )
 from qiime.golay import decode_golay_12
 
@@ -47,6 +47,7 @@ class SplitLibrariesFastqTests(TestCase):
         self.fastq1_expected_no_qual_unassigned = fastq1_expected_no_qual_unassigned
         self.fastq1_expected_default = fastq1_expected_default
         self.fastq2_expected_default = fastq2_expected_default
+        self.fastq1_expected_single_barcode = fastq1_expected_single_barcode
         self.barcode_map1 = barcode_map1
     
     def test_is_casava_v180_or_later(self):
@@ -164,6 +165,19 @@ class SplitLibrariesFastqTests(TestCase):
                                        min_per_read_length_fraction=0.45)
         actual = list(actual)
         expected = self.fastq1_expected_default
+        self.assertEqual(len(actual),len(expected))
+        for i in range(len(expected)):
+            self.assertEqual(actual[i],expected[i])
+
+    def test_process_fastq_single_end_read_file_no_barcode(self):
+        """process_fastq_single_end_read_file functions as expected for non-barcoded lane 
+        """
+        actual = process_fastq_single_end_read_file_no_barcode(
+                                       self.fastq1,
+                                       's1',
+                                       min_per_read_length_fraction=0.45)
+        actual = list(actual)
+        expected = self.fastq1_expected_single_barcode
         self.assertEqual(len(actual),len(expected))
         for i in range(len(expected)):
             self.assertEqual(actual[i],expected[i])
@@ -1099,6 +1113,43 @@ fastq1_expected_default = [
   "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
   7),
  ("s4_8 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
+  "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
+  "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",8)]
+  
+fastq1_expected_single_barcode = [
+ ("s1_0 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+  0),
+ ("s1_1 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
+  "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
+  1),
+ ("s1_2 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
+  "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
+  2),
+ ("s1_3 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
+  "bb^bbbbbbbbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
+  3),
+ ("s1_4 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
+  "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+  4),
+ ("s1_5 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
+  "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+  5),
+ ("s1_6 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
+  "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
+  6),
+ ("s1_7 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
+  "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
+  7),
+ ("s1_8 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
   "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
   "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",8)]
 
