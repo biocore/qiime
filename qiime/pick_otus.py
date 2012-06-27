@@ -174,7 +174,9 @@ class BlastOtuPicker(OtuPicker):
         _params = {'max_e_value':1e-10,\
                    'seqs_per_blast_run':1000,\
                    'Similarity':0.97,\
-                   'min_aligned_percent':0.50}
+                   'min_aligned_percent':0.50,
+                   'blast_program':'blastn',
+                   'is_protein':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -185,7 +187,8 @@ class BlastOtuPicker(OtuPicker):
         
         if not blast_db:
             self.blast_db, self.db_files_to_remove = \
-                build_blast_db_from_fasta_path(refseqs_fp)
+                build_blast_db_from_fasta_path(refseqs_fp,
+                 is_protein=self.Params['is_protein'])
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
              refseqs_fp)
         else:
@@ -280,7 +283,8 @@ class BlastOtuPicker(OtuPicker):
         blast_hits = get_blast_hits(seqs,self.blast_db,
          max_e_value=self.Params['max_e_value'],
          min_pct_identity=self.Params['Similarity'],
-         min_aligned_percent=self.Params['min_aligned_percent'])
+         min_aligned_percent=self.Params['min_aligned_percent'],
+         blast_program=self.Params['blast_program'])
         # Choose the longest alignment out of the acceptable blast hits -- 
         # the result will therefore be the blast hit with at least
         # self.Params['Similarity'] percent identity to the input sequence
@@ -320,7 +324,31 @@ class BlastOtuPicker(OtuPicker):
             query = query.split()[0]    #get rid of spaces
             result[query] = choice
         return result
-  
+
+class BlastxOtuPicker(BlastOtuPicker):
+    """Blastx-based OTU picker: clusters sequence by their 'best' blast hit.
+    
+        The 'best blast hit' for a sequence is defined as the database 
+         sequence which achieves the longest alignment with percent sequence
+         identity greater than or equal to the OTU similarity threshold
+         (default in Params['Similarity'] = 0.97). Database hits must have an
+         e-value threshold less than or equal to the max_e_value threshold 
+         (default in Params['max_e_value'] as 1e-10).
+    """
+    
+    def __init__(self, params):
+        """Return new BlastOtuPicker object with specified params.
+        
+        """
+        _params = {'max_e_value':1e-3,\
+                   'seqs_per_blast_run':1000,\
+                   'Similarity':0.75,\
+                   'min_aligned_percent':0.50,
+                   'blast_program':'blastx',
+                   'is_protein':True}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+
 ## START MOVE TO BLAST APP CONTROLLER
 ## The following two functions should be move to the blast application
 ## controller. When that's done, qiime.assign_taxonomy needs to be updated
@@ -353,7 +381,7 @@ def get_blast_hits(seqs,
         blast_result = BlastResult(lines)
     else:
         return {}.fromkeys(seq_ids,[])
-        
+    
     for seq_id,seq in seqs:
         blast_result_id = seq_id.split()[0]
         max_alignment_length = len(seq)
