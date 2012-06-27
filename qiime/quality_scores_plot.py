@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "William Walters"
@@ -19,7 +19,8 @@ from pylab import plot, savefig, xlabel, ylabel, text, \
     hist, figure, legend, title, show, xlim ,ylim, xticks, yticks,\
     scatter, subplot
 from matplotlib.font_manager import fontManager, FontProperties
-from qiime.parse import parse_qual_score
+from qiime.util import gzip_open
+from qiime.parse import parse_qual_score, parse_fastq_qual_score
 
 
 
@@ -185,24 +186,29 @@ def write_qual_report(ave_bins,
     
     outfile.write(",".join(str("%d" %\
      total_bases) for total_bases in total_bases_bins))
-    
+
 def generate_histogram(qual_fp,
                        output_dir,
                        score_min=25,
-                       verbose=True):
+                       verbose=True,
+                       qual_parser=parse_qual_score):
     """ Main program function for generating quality score histogram
 
     qual_fp: quality score filepath
     output_dir: output directory
     score_min: minimum score to be considered a reliable base call, used 
      to generate dotted line on histogram for easy visualization of poor
-     quality scores."""
+     quality scores.
+    qual_parser : function to apply to extract quality scores
+    """
     
-    qual_lines = open(qual_fp, "U")
+    if qual_fp.endswith('.gz'):
+        qual_lines = gzip_open(qual_fp)
+    else:
+        qual_lines = open(qual_fp, "U")
     
-    qual_scores = parse_qual_score(qual_lines)
+    qual_scores = qual_parser(qual_lines)
     
-   
     # Sort bins according to base position
     qual_bins = bin_qual_scores(qual_scores)
     

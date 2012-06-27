@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "William Walters"
@@ -12,10 +12,10 @@ __email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
  
 from qiime.util import make_option
-
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.quality_scores_plot import generate_histogram
 from qiime.util import create_dir
+from qiime.parse import (parse_fastq_qual_score,parse_qual_score)
 
 
 options_lookup = get_options_lookup()
@@ -79,7 +79,16 @@ def main():
     
     create_dir(output_dir)
     
-    generate_histogram(qual_fp, output_dir, score_min, verbose)
+    if qual_fp.endswith('.fastq') or qual_fp.endswith('.fastq.gz'):
+        qual_parser = parse_fastq_qual_score
+    else:
+        qual_parser = parse_qual_score
+    
+    generate_histogram(qual_fp,
+                       output_dir,
+                       score_min,
+                       verbose,
+                       qual_parser=qual_parser)
     
 
 

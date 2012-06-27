@@ -19,8 +19,10 @@ from qiime.split_libraries_fastq import (
  get_illumina_qual_chars,
  quality_filter_sequence,
  FastqParseError,
- check_header_match_pre180,check_header_match_180_or_later,
- correct_barcode,is_casava_v180_or_later,process_fastq_single_end_read_file_no_barcode
+ check_header_match_pre180,
+ check_header_match_180_or_later,
+ correct_barcode,
+ process_fastq_single_end_read_file_no_barcode
  )
 from qiime.golay import decode_golay_12
 
@@ -49,26 +51,6 @@ class SplitLibrariesFastqTests(TestCase):
         self.fastq2_expected_default = fastq2_expected_default
         self.fastq1_expected_single_barcode = fastq1_expected_single_barcode
         self.barcode_map1 = barcode_map1
-    
-    def test_is_casava_v180_or_later(self):
-        """ is_casava_v180_or_later functions as expected """
-        # handles trailing \n
-        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0\n"
-        self.assertTrue(is_casava_v180_or_later(header_line))
-        # same w no trailing \n
-        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
-        self.assertTrue(is_casava_v180_or_later(header_line))
-        
-        header_line = "@HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
-        self.assertFalse(is_casava_v180_or_later(header_line))
-        header_line = "@ some misc junk..."
-        self.assertFalse(is_casava_v180_or_later(header_line))
-        
-        # non-header line raises error
-        header_line = "HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
-        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
-        header_line = "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
-        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
         
     
     def test_correct_barcode_exact_match(self):

@@ -27,7 +27,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping,parse_otu_map,parse_taxonomy_to_otu_metadata)
+    parse_denoiser_mapping,parse_otu_map,parse_taxonomy_to_otu_metadata,
+    is_casava_v180_or_later)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -76,7 +77,27 @@ class TopLevelTests(TestCase):
     
     def tearDown(self):
         remove_files(self.files_to_remove)
+
+    def test_is_casava_v180_or_later(self):
+        """ is_casava_v180_or_later functions as expected """
+        # handles trailing \n
+        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0\n"
+        self.assertTrue(is_casava_v180_or_later(header_line))
+        # same w no trailing \n
+        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
+        self.assertTrue(is_casava_v180_or_later(header_line))
         
+        header_line = "@HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
+        self.assertFalse(is_casava_v180_or_later(header_line))
+        header_line = "@ some misc junk..."
+        self.assertFalse(is_casava_v180_or_later(header_line))
+        
+        # non-header line raises error
+        header_line = "HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
+        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
+        header_line = "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
+        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
+
     def test_parse_taxa_summary_table(self):
         """ parse_taxa_summary_table functions as expected """
         actual = parse_taxa_summary_table(self.taxa_summary1.split('\n'))
