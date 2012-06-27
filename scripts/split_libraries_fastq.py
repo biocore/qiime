@@ -17,7 +17,8 @@ from cogent.util.misc import safe_md5, create_dir
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
 from qiime.parse import parse_mapping_file
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
-                                         BARCODE_DECODER_LOOKUP)
+                                         BARCODE_DECODER_LOOKUP,
+                                         process_fastq_single_end_read_file_no_barcode)
 from qiime.split_libraries import check_map
 from qiime.split_libraries_fastq import get_illumina_qual_chars
 from qiime.golay import get_invalid_golay_barcodes
@@ -34,6 +35,10 @@ script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q2
 
 script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20"))
 
+script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+
+script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
@@ -41,10 +46,6 @@ script_info['required_options'] = [\
              '--sequence_read_fps',
              type="existing_filepaths",
              help='the sequence read fastq files (comma-separated if more than one)'),
- make_option('-b',
-             '--barcode_read_fps',
-             type="existing_filepaths",
-             help='the barcode read fastq files (comma-separated if more than one)'),
  make_option('-o',
              '--output_dir',
              type="new_dirpath",
@@ -55,10 +56,20 @@ script_info['required_options'] = [\
              help='metadata mapping files (comma-separated if more than one)'),
 ]
 script_info['optional_options'] = [
+     make_option('-b',
+        '--barcode_read_fps',
+        type="existing_filepaths",
+        default=None,
+        help='the barcode read fastq files (comma-separated '+\
+             'if more than one) [default: %default]'),
      make_option("--store_qual_scores",
         default=False,
         action='store_true',
         help='store qual strings in .qual files [default: %default]'),
+     make_option("--sample_id",
+        default=None,
+        help='single sample id to be applied to all sequences (used when '
+             'data is not multiplexed) [default: %default]'),
      make_option("--store_demultiplexed_fastq",
         default=False,
         action='store_true',
@@ -125,6 +136,7 @@ def main():
     
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps
+    sample_id = opts.sample_id
     mapping_fps = opts.mapping_fps
     phred_quality_threshold = opts.phred_quality_threshold
     retain_unassigned_reads = opts.retain_unassigned_reads
@@ -139,6 +151,20 @@ def main():
     filter_bad_illumina_qual_digit = False #opts.filter_bad_illumina_qual_digit
     store_qual_scores = opts.store_qual_scores
     store_demultiplexed_fastq = opts.store_demultiplexed_fastq
+    barcode_type = opts.barcode_type
+    max_barcode_errors = opts.max_barcode_errors
+    
+    # if this is not a demultiplexed run, 
+    if barcode_type == 'not-barcoded':
+        if sample_id == None:
+            option_parser.error("If not providing barcode reads (because "
+            "your data is not multiplexed), must provide a --sample_id.")
+        barcode_read_fps = [None] * len(sequence_read_fps)
+    elif barcode_read_fps == None:
+        option_parser.error("Must provide --barcode_fps if "
+                            "--barcode_type is not 'not-barcoded'")
+    else:
+        pass
     
     if opts.last_bad_quality_char != None:
         option_parser.error('--last_bad_quality_char is no longer supported. '
@@ -148,13 +174,13 @@ def main():
         option_parser.error('--min_per_read_length_fraction must be between '
          '0 and 1 (inclusive). You passed %1.5f' % min_per_read_length_fraction)
     
-    barcode_type = opts.barcode_type
-    max_barcode_errors = opts.max_barcode_errors
-    
     try:
         barcode_correction_fn = BARCODE_DECODER_LOOKUP[barcode_type]
     except KeyError:
         barcode_correction_fn = None
+    
+    if len(mapping_fps) == 1 and len(sequence_read_fps) > 1:
+        mapping_fps = mapping_fps * len(sequence_read_fps)
     
     if len(set([len(sequence_read_fps), len(barcode_read_fps), len(mapping_fps)])) > 1:
         option_parser.error("Same number of sequence, barcode and mapping files must be provided.")
@@ -201,7 +227,9 @@ def main():
       zip(sequence_read_fps, barcode_read_fps, mapping_fps):
         mapping_f = open(mapping_fp, 'U')
         h, i, barcode_to_sample_id, warnings, errors, p, a =\
-           check_map(mapping_f, disable_primer_check=True)
+           check_map(mapping_f, 
+                     disable_primer_check=True, 
+                     has_barcodes=barcode_read_fp != None)
         
         if rev_comp_mapping_barcodes:
             barcode_to_sample_id = \
@@ -224,21 +252,25 @@ def main():
           (mapping_fp,safe_md5(open(mapping_fp)).hexdigest()))
         log_f.write('Sequence read filepath: %s (md5: %s)\n' %\
           (sequence_read_fp,str(safe_md5(open(sequence_read_fp)).hexdigest())))
-        log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %\
-          (barcode_read_fp,safe_md5(open(barcode_read_fp)).hexdigest()))
        
         if sequence_read_fp.endswith('.gz'):
             sequence_read_f = gzip_open(sequence_read_fp)
         else:
             sequence_read_f = open(sequence_read_fp,'U')
         
-        if barcode_read_fp.endswith('.gz'):
-            barcode_read_f = gzip_open(barcode_read_fp)
-        else:
-            barcode_read_f = open(barcode_read_fp,'U')
+
         seq_id = start_seq_id
-        for fasta_header, sequence, quality, seq_id in \
-            process_fastq_single_end_read_file(
+        
+        if barcode_read_fp != None:
+            
+            log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %\
+              (barcode_read_fp,safe_md5(open(barcode_read_fp)).hexdigest()))
+              
+            if barcode_read_fp.endswith('.gz'):
+                barcode_read_f = gzip_open(barcode_read_fp)
+            else:
+                barcode_read_f = open(barcode_read_fp,'U')
+            seq_generator = process_fastq_single_end_read_file(
                sequence_read_f,
                barcode_read_f,
                barcode_to_sample_id,
@@ -255,7 +287,24 @@ def main():
                log_f=log_f,
                histogram_f=histogram_f,
                barcode_correction_fn=barcode_correction_fn,
-               max_barcode_errors=max_barcode_errors):
+               max_barcode_errors=max_barcode_errors)
+        else:
+            seq_generator = process_fastq_single_end_read_file_no_barcode(
+               sequence_read_f,
+               sample_id,
+               store_unassigned=retain_unassigned_reads,
+               max_bad_run_length=max_bad_run_length,
+               phred_quality_threshold=phred_quality_threshold,
+               min_per_read_length_fraction=min_per_read_length_fraction,
+               rev_comp=rev_comp,
+               seq_max_N=seq_max_N,
+               start_seq_id=start_seq_id,
+               filter_bad_illumina_qual_digit=\
+                filter_bad_illumina_qual_digit,
+               log_f=log_f,
+               histogram_f=histogram_f)
+        
+        for fasta_header, sequence, quality, seq_id in seq_generator:
             output_f.write('>%s\n%s\n' % (fasta_header,sequence))
             qual_writer(fasta_header,quality)
             fastq_writer(fasta_header,sequence,quality)
