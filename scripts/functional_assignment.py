@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import splitext, split, exists
+from os.path import splitext, split, exists, abspath
 from qiime.util import (make_option, parse_command_line_parameters, create_dir)
 from qiime.pick_otus  import BlastxOtuPicker
 
@@ -69,6 +69,8 @@ def main():
     # Create local copies of the options to avoid repetitive lookups
     assignment_method = opts.assignment_method
     refseqs_fp = opts.refseqs_fp
+    if refseqs_fp:
+        refseqs_fp = abspath(refseqs_fp)
     blast_db = opts.blast_db
     min_percent_similarity = opts.min_percent_similarity
     min_aligned_percent = opts.min_aligned_percent
@@ -108,7 +110,7 @@ def main():
                    result_path=result_path, 
                    log_path=log_path,
                    blast_db=opts.blast_db,
-                   refseqs_fp=opts.refseqs_fp)
+                   refseqs_fp=abspath(opts.refseqs_fp))
     else:
         ## other -- shouldn't be able to get here as a KeyError would have
         ## been raised earlier
