@@ -1,0 +1,13 @@
+OtuPicker parameters:
+Similarity:0.75
+blast_program:blastx
+is_protein:True
+max_e_value:1e-10
+min_aligned_percent:0.5
+seqs_per_blast_run:1000
+Reference seqs fp (to build blast db): refseqs_pr.fasta
+Blast database: ./refseqs_pr.fasta
+Num OTUs: 2
+Result path: blast_assigned_functions//query_nt_clusters.txt
+Num failures: 1
+Failures: eco:b0001

@@ -37,8 +37,9 @@ script_info['required_options'] = [
 script_info['optional_options'] = [\
  make_option('-t','--tests',
              help='comma-separated list of the tests to run [default: all]'),
- make_option('-w','--working_dir',default=qiime_config['temp_dir'],
-             help='the tests to run [default: %default]',type='existing_dirpath'),
+ make_option('-w','--working_dir',default=qiime_config['temp_dir'] or '/tmp/',
+             help='directory where the tests should be run [default: %default]',
+             type='existing_dirpath'),
  make_option('-q','--qiime_scripts_dir',default=qiime_config['qiime_scripts_dir'],
              help='directory containing scripts to test [default: %default]',
              type='existing_dirpath'),
@@ -65,7 +66,8 @@ def main():
                             verbose=verbose,
                             tests=tests,
                             failure_log_fp=failure_log_fp)
-    print result_summary
+    if verbose:
+        print result_summary
 
 
 if __name__ == "__main__":
