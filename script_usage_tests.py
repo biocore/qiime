@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -58,15 +58,14 @@ def main():
         tests = tests.split(',')
     failure_log_fp = opts.failure_log_fp
 
-    result_summary = run_script_usage_tests(
-                           qiime_test_data_dir,
-                           qiime_scripts_dir,
-                           working_dir,
-                           verbose=verbose,
-                           tests=tests,
-                           failure_log_fp=failure_log_fp)
+    result_summary, num_failures = run_script_usage_tests(
+                            qiime_test_data_dir,
+                            qiime_scripts_dir,
+                            working_dir,
+                            verbose=verbose,
+                            tests=tests,
+                            failure_log_fp=failure_log_fp)
     print result_summary
-
 
 
 if __name__ == "__main__":
