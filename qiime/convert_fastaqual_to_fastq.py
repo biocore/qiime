@@ -21,6 +21,11 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
         full_fastq=False, full_fasta_headers=False):
     '''Takes a FASTA file and it's corresponding QUAL file, and returns
 a FASTQ file. Returns True on success, False on failure.'''
+
+    fastq_file = None
+    fasta_file = None
+    qual_file = None
+
     # Make sure the input files are accessible
     try:
         qual_file = open(qual_file_path)
