@@ -1836,3 +1836,8 @@ def duplicates_indices(fields):
     for i, v in enumerate(fields):
         if v in dup: ind[v].append(i)
     return ind
+
+def head_gzip(fp,n=10):
+    f = gzip_open(fp)
+    for i in range(n):
+        print f.readline(),
