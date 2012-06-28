@@ -32,8 +32,9 @@ script_info['script_usage'] = [\
    "%prog -i \"*.fasta\"")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
- # Example required option
- make_option('-i','--input_fps', type='existing_filepaths',
+ # input_fps needs to be a string, not a existing_filepath, so wildcards can
+ # be passed in
+ make_option('-i','--input_fps', type='string',
         help='the input filepaths (comma-separated)'),
 ]
 script_info['optional_options'] = [
@@ -69,7 +70,7 @@ def main():
        parse_command_line_parameters(**script_info)
     suppress_errors = opts.suppress_errors
     input_fps = []
-    for e in opts.input_fps:
+    for e in opts.input_fps.split(','):
         input_fps.extend(glob(e))
     input_fps = set(input_fps)
     if len(input_fps) == 0:
