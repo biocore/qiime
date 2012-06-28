@@ -6,6 +6,7 @@ from subprocess import Popen, PIPE, STDOUT
 from os.path import join, abspath, dirname, split
 from glob import glob
 import re
+from sys import exit
 from cogent.app.util import get_tmp_filename
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
@@ -14,7 +15,7 @@ from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso", "Jai Ram Rideout"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -117,10 +118,11 @@ def main():
                 if not script_good_pattern.search(stdout):
                     bad_scripts.append(script_name)
     
+    num_script_usage_example_failures = 0
     qiime_test_data_dir = qiime_config['qiime_test_data_dir']
     if not opts.suppress_script_usage_tests and qiime_test_data_dir != None:
         # Run the script usage testing functionality
-        script_usage_result_summary = \
+        script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
                qiime_test_data_dir=qiime_test_data_dir,
                qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
@@ -156,14 +158,27 @@ def main():
             else:
                 print "All basic script tests passed successfully.\n"
     
+    qiime_test_data_dir_exists = True
     if not opts.suppress_script_usage_tests:
         if qiime_test_data_dir:
             print "\nScript usage test result summary\n------------------------------------\n"
             print script_usage_result_summary
         else:
-            print "\nCould not run script usage tests because qiime_test_data is not defined in your qiime_config."
-        
+            print "\nCould not run script usage tests because qiime_test_data_dir is not defined in your qiime_config."
+            qiime_test_data_dir_exists = False
         print ""
-            
+
+    # If any of the unit tests, script tests, or script usage tests fail, or if
+    # we have any missing application errors or a missing QIIME test data dir
+    # if script usage tests weren't suppressed, use return code 1 (as python's
+    # unittest module does to indicate one or more failures).
+    return_code = 1
+    if (len(bad_tests) == 0 and len(missing_application_tests) == 0 and
+        len(bad_scripts) == 0 and num_script_usage_example_failures == 0 and
+        qiime_test_data_dir_exists):
+        return_code = 0
+    return return_code
+
+
 if __name__ == "__main__":
-    main()
+    exit(main())

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -30,7 +30,10 @@ def run_script_usage_tests(qiime_test_data_dir,
     """ Test script_usage examples when test data is present in qiime_test_data_dir
     
         These tests are currently used with the qiime_test_data repository, which can
-         be found at https://github.com/qiime-dev/qiime_test_data
+        be found at https://github.com/qiime-dev/qiime_test_data
+
+        Returns a result summary string and the number of script usage
+        examples (i.e. commands) that failed.
     """
     # process input filepaths and directories
     qiime_test_data_dir = abspath(qiime_test_data_dir)
@@ -117,4 +120,4 @@ def run_script_usage_tests(qiime_test_data_dir,
     
     rmtree(working_dir)
     
-    return result_summary
+    return result_summary, len(failed_tests)
