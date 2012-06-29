@@ -169,7 +169,8 @@ def process_fastq_single_end_read_file_no_barcode(
                                        start_seq_id=0,
                                        filter_bad_illumina_qual_digit=False,
                                        log_f=None,
-                                       histogram_f=None):
+                                       histogram_f=None,
+                                       phred_to_ascii_f=None):
     """ Quality filtering when a single sample has been run in a lane
     
         This code simulates a barcode file to allow us to re-use the quality
@@ -197,7 +198,8 @@ def process_fastq_single_end_read_file_no_barcode(
                histogram_f=histogram_f,
                barcode_correction_fn=None,
                max_barcode_errors=0,
-               strict_header_match=False):
+               strict_header_match=False,
+               phred_to_ascii_f=phred_to_ascii_f):
         yield e
     
 
@@ -217,7 +219,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        histogram_f=None,
                                        barcode_correction_fn=None,
                                        max_barcode_errors=1.5,
-                                       strict_header_match=True):
+                                       strict_header_match=True,
+                                       phred_to_ascii_f=None):
     """parses fastq single-end read file
     """
     header_index = 0
@@ -225,7 +228,6 @@ def process_fastq_single_end_read_file(fastq_read_f,
     quality_index = 2
     
     seq_id = start_seq_id
-    
     # grab the first lines and then seek back to the beginning of the file
     try:
         fastq_read_f_line1 = fastq_read_f.readline()
@@ -235,14 +237,19 @@ def process_fastq_single_end_read_file(fastq_read_f,
         fastq_read_f_line1 = fastq_read_f[0]
         fastq_read_f_line2 = fastq_read_f[1]
     
+    # determine the version of casava that was used to generate the fastq
+    # to determine how to compare header lines and decode ascii phred scores
     post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
     if post_casava_v180:
-        phred_to_ascii_f = phred_to_ascii33
         check_header_match_f = check_header_match_180_or_later
+        if phred_to_ascii_f == None:
+            phred_to_ascii_f = phred_to_ascii33
     else:
-        phred_to_ascii_f = phred_to_ascii64
         check_header_match_f = check_header_match_pre180
+        if phred_to_ascii_f == None:
+            phred_to_ascii_f = phred_to_ascii64
     
+    # determine the last unacceptable quality character
     if phred_quality_threshold != None:
         last_bad_quality_char = phred_to_ascii_f(phred_quality_threshold)
     else:
