@@ -110,7 +110,7 @@ def main():
                    result_path=result_path, 
                    log_path=log_path,
                    blast_db=opts.blast_db,
-                   refseqs_fp=opts.refseqs_fp)
+                   refseqs_fp=refseqs_fp)
     else:
         ## other -- shouldn't be able to get here as a KeyError would have
         ## been raised earlier
