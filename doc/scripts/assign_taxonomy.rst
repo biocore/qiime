@@ -9,7 +9,7 @@
 
 Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). 
+Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column).
 
 
 **Usage:** :file:`assign_taxonomy.py [options]`
@@ -18,14 +18,14 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 
 .. note::
 
-	
+
 	**[REQUIRED]**
-		
+
 	-i, `-`-input_fasta_fp
 		Path to the input fasta file
-	
+
 	**[OPTIONAL]**
-		
+
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: None; REQUIRED when method is blast]
 	-r, `-`-reference_seqs_fp
@@ -38,6 +38,8 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 		Path to fasta file containing a second read from paired-end sequencing, prior to OTU clustering (used for RTAX only).[default: None]
 	`-`-single_ok
 		When classifying paired ends, allow fallback to single-ended classification when the mate pair is lacking (used for RTAX only).[default: False]
+	`-`-no_single_ok_generic
+		When classifying paired ends, do not allow fallback to single-ended classification when the mate pair is overly generic (used for RTAX only).[default: False]
 	-m, `-`-assignment_method
 		Taxon assignment method, either blast, rdp, or rtax [default:rdp]
 	-b, `-`-blast_db

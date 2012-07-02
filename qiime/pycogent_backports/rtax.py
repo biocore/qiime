@@ -70,8 +70,11 @@ class Rtax(CommandLineApplication):
         # -m temporary directory
         '-m': ValuedParameter('-', Name='m', Delimiter=' ', IsPath=True),
 
-        # -f allow fallback from paired-end to single-ended classification
-        '-f':FlagParameter(Prefix='-',Name='f')
+        # -f allow fallback from paired-end to single-ended classification when one read is missing
+        '-f':FlagParameter(Prefix='-',Name='f'),
+
+        # -g do not allow fallback from paired-end to single-ended classification when one read is too generic
+        '-g':FlagParameter(Prefix='-',Name='g')
     }
 
     _suppress_stdout = False
@@ -90,7 +93,7 @@ class Rtax(CommandLineApplication):
         """ Set the input path (a fasta filepath)
         """
         # The list of values which can be passed on a per-run basis
-        allowed_values = ['-r','-t','-a','-b','-l','-d','i','-o','-m','-v','-f']
+        allowed_values = ['-r','-t','-a','-b','-l','-d','i','-o','-m','-v','-f', '-g']
 
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:
@@ -138,13 +141,13 @@ class Rtax(CommandLineApplication):
 
         Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.
         Selection of primers for optimal taxonomic classification
-        of environmental 16S rRNA gene sequences.  ISME J.
+        of environmental 16S rRNA gene sequences.  ISME J (6), 1440Ð1444
         """
         return help_str
 
-def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp, single_ok=False,
+def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp, single_ok=False, no_single_ok_generic=False,
                     header_id_regex=None, read_id_regex = "\S+\s+(\S+)", amplicon_id_regex = "(\S+)\s+(\S+?)\/",
-                    output_fp=None, log_path=None):
+                    output_fp=None, log_path=None, HALT_EXEC=False):
     """Assign taxonomy to each sequence in data with the RTAX classifier
 
         # data: open fasta file object or list of fasta lines
@@ -218,7 +221,7 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         data.close()
         id_list_fp.close()
 
-        app = Rtax()
+        app = Rtax(HALT_EXEC=HALT_EXEC)
 
         temp_output_file = tempfile.NamedTemporaryFile(
             prefix='RtaxAssignments_', suffix='.txt')
@@ -233,6 +236,7 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         app.Parameters['-i'].on(header_id_regex)
         app.Parameters['-m'].on(my_tmp_dir)
         if single_ok: app.Parameters['-f'].on();
+        if no_single_ok_generic: app.Parameters['-g'].on();
         #app.Parameters['-v'].on()
 
         app_result = app()

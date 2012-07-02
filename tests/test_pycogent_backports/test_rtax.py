@@ -71,6 +71,11 @@ class RtaxClassifierTests(TestCase):
         result = assign_taxonomy(self.input_seqs_fp, self.reference_seqs_fp, self.id_to_taxonomy_fp, self.read_1_seqs_fp, None ,header_id_regex="\\S+\\s+(\\S+?)\/")
         self.assertEqual(result, rtax_expected_result_single)
 
+    # I'd like to add tests here that involve the TOOMANYHITS case.  However, that requires either a reference
+    # database with >16,000 sequences, which we don't have handy for tests, or adjusting the maxMaxAccepts parameter to rtaxSearch.pl.
+    # However the "rtax" wrapper shell script currently doesn't allow setting that option, and I'd prefer to leave that as is
+    # unless someone actually wants to use it.  Thus the TOOMANYHITS situation is not easily testable at the moment.
+
 
 def cleanAll(path):
     return [path, path + ".pos.db",  path + ".pos.dir", path + ".pos.pag", path + ".lines.db", path + ".lines.dir", path + ".lines.pag"]

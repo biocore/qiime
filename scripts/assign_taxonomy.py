@@ -102,6 +102,10 @@ script_info['optional_options']=[\
         help='When classifying paired ends, allow fallback to single-ended '
         'classification when the mate pair is lacking (used for RTAX only).'
         '[default: %default]',default=False),\
+ make_option('--no_single_ok_generic',action="store_true",
+        help='When classifying paired ends, do not allow fallback to single-ended '
+        'classification when the mate pair is overly generic (used for RTAX only).'
+        '[default: %default]',default=False),\
  make_option('-m', '--assignment_method', type='choice',
         help='Taxon assignment method, either blast, rdp, or rtax '
         '[default:%default]',
@@ -211,6 +215,7 @@ def main():
        params['read_1_seqs_fp'] = opts.read_1_seqs_fp
        params['read_2_seqs_fp'] = opts.read_2_seqs_fp
        params['single_ok'] = opts.single_ok
+       params['no_single_ok_generic'] = opts.no_single_ok_generic
 
     else:
         # should not be able to get here as an unknown classifier would

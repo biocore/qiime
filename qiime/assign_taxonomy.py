@@ -594,7 +594,8 @@ class RtaxTaxonAssigner(TaxonAssigner):
             'amplicon_id_regex' : "(\\S+)\\s+(\\S+?)\/",  # split_libraries produces >read_1_id ampliconID/1 .   This makes a map between read_1_id and ampliconID.
             'read_1_seqs_fp' : None,
             'read_2_seqs_fp' : None,
-            'single_ok' : False
+            'single_ok' : False,
+            'no_single_ok_generic' : False
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
@@ -630,6 +631,7 @@ class RtaxTaxonAssigner(TaxonAssigner):
 
         read_2_seqs_fp=self.Params['read_2_seqs_fp']
         single_ok=self.Params['single_ok']
+        no_single_ok_generic=self.Params['no_single_ok_generic']
         header_id_regex=self.Params['header_id_regex']
         assert header_id_regex, \
             "Must not provide empty header_id_regex when calling an RtaxTaxonAssigner; leave unset"\
@@ -640,7 +642,7 @@ class RtaxTaxonAssigner(TaxonAssigner):
 
         # seq_file = open(seq_path, 'r')
         results = rtax.assign_taxonomy(seq_path, reference_sequences_fp, id_to_taxonomy_fp,
-                                       read_1_seqs_fp, read_2_seqs_fp, single_ok=single_ok,
+                                       read_1_seqs_fp, read_2_seqs_fp, single_ok=single_ok, no_single_ok_generic=no_single_ok_generic,
                                        header_id_regex=header_id_regex, read_id_regex=read_id_regex,
                                        amplicon_id_regex=amplicon_id_regex, output_fp=result_path,
                                        log_path=log_path)

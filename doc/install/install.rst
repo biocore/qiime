@@ -9,7 +9,7 @@
 ===========================
 Installing QIIME natively
 ===========================
-QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats. 
+QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
 
 As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
 
@@ -57,7 +57,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
 * cdbtools (`src_cdbtools <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
-* rtax 0.981 (`src_rtax <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.981.tgz>`_) (license: GPL)
+* rtax 0.982 (`src_rtax <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.982.tgz>`_) (license: GPL)
 * pplacer 1.1 (`src_pplacer <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_) (license: GPL)
 * ParsInsert 1.04 (`src_parsinsert <http://downloads.sourceforge.net/project/parsinsert/ParsInsert.1.04.tgz>`_) (license: GPL)
 
@@ -120,16 +120,16 @@ svn users should periodically update QIIME by using the following command::
 
 Unpacking QIIME (release only)
 ---------------------------------------
-After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime/``. 
+After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime/``.
 
 Unpack the release Qiime tar file with the commands::
 
 	cd /home/qiime_user
 	tar -xvzf Qiime-1.5.0.tar.gz
 	ln -s /home/qiime/Qiime-1.5.0 /home/qiime/Qiime
-	
+
 If you have downloaded from svn, QIIME is already unpacked.
-	
+
 Installing QIIME
 ----------------
 QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of running the tests (optional, but highly recommend), installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files.
@@ -138,26 +138,26 @@ QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests
 
 Installing the library code and scripts with setup.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Using ``Qiime/setup.py`` (and thereby python's ``distutils`` package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed -- depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python's ``site-packages``, and the QIIME scripts will be place in ``/usr/local/bin/``. You may need to run ``setup.py`` using ``sudo`` if you do not have permission to place files in the default locations. 
+Using ``Qiime/setup.py`` (and thereby python's ``distutils`` package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed -- depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python's ``site-packages``, and the QIIME scripts will be place in ``/usr/local/bin/``. You may need to run ``setup.py`` using ``sudo`` if you do not have permission to place files in the default locations.
 
 First, ensure that you are in the top-level QIIME directory::
-	
+
 	cd /home/qiime/Qiime
 
 By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify and alternate directory for the library files with ``--install-purelib``, but if you do so you must also specify ``--install-data`` as the same directory. Failure to do this will result in a broken QIIME install. An example command is::
-	
+
 	python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/ --install-data=/home/qiime/lib/
 
 For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/release/2.7.1/install/index.html#alternate-installation>`_.
 
 If you used default values for ``--install-scripts`` and ``--install-purelib`` (by not specifying them), your installation should be complete. If you specified an alternate value for ``--install-scripts``, you'll need to ensure that the shell knows where to look for the scripts. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
-	
+
 	echo "export PATH=/home/qiime/bin/:$PATH" >> /home/qiime/.bashrc
 
 If you specified an alternate value for ``--install-purelib``, you'll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
-	
+
 	echo "export PYTHONPATH=/home/qiime/lib/:$PYTHONPATH" >> /home/qiime/.bashrc
-	
+
 The source your ``.bashrc``::
 
 	source /home/qiime/.bashrc
@@ -167,29 +167,29 @@ The source your ``.bashrc``::
 Finally, you'll need to create and edit a custom ``qiime_config`` file to tell QIIME where to look for the QIIME scripts. Create a custom ``qiime_config`` file by copying the default ``qiime_config`` packaged with QIIME::
 
 	cp /home/qiime/Qiime/qiime/support_files/qiime_config /home/qiime/.qiime_config
-	
+
 Open the new file, ``/home/qiime/.qiime_config``, in a text editor such as TextEdit (on Mac), gedit (on Linux), vim, or emacs (but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_!). Find the line beginning ``qiime_scripts_dir`` and add a tab, followed by the QIIME scripts directory. If you've used the default value (i.e., you didn't specify ``--install-scripts``) the value you add will be ``/usr/local/bin/``. Otherwise, specify the value that you provided for ``--install-scripts``. In the example above, this would look like::
 
 	qiime_scripts_dir	/home/qiime/bin/
-	
+
 Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, `see this document <./qiime_config.html>`_.
 
 Running the test suite
 ----------------------
 Next you should run the test suite. Execute the following commands::
-	
+
 	cd /home/qiime/Qiime/tests/
 	python all_tests.py
 
-You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests. 
+You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests.
 
 Testing your QIIME installation
 -------------------------------
 If QIIME is installed correctly, you should be able to run the QIIME scripts. Try the following::
-	
+
 	cd
 	align_seqs.py -h
-	
+
 This should give you help text describing the interface to the align_seqs.py script. (Note that if you do not have a /home/qiime/.bashrc you may get an error at the ``source`` step. If you did not specify alternate values for ``--install-purelib`` or ``--install-scripts`` this shouldn't be a problem.)
 
 External application install notes
@@ -199,17 +199,17 @@ PATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 External applications used by QIIME need to be visible to the shell by existing in executable search path (i.e., listed in the ``$PATH`` environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in ``/home/qiime/bin`` you can add this directory to your system path with the commands::
-	
+
 	echo "export PATH=/home/qiime/bin/:$PATH" >> /home/qiime/.bashrc
 	source /home/qiime/.bashrc
 
 PYTHONPATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME; PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment; and Denoiser must be visible to python if you plan to denoise 454 data. With the exception of Denoiser, all of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable. 
+Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME; PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment; and Denoiser must be visible to python if you plan to denoise 454 data. With the exception of Denoiser, all of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable.
 
 For example, if you've installed PyNAST in ``/home/qiime/PyNAST`` you can add this to your PYTHONPATH with the commands::
-	
+
 	echo "export PYTHONPATH=/home/qiime/PyNAST/:$PYTHONPATH" >> /home/qiime/.bashrc
 	source /home/qiime/.bashrc
 
@@ -223,14 +223,14 @@ If you plan to use the RDP classifier for taxonomy assignment you must also defi
 
 	echo "export RDP_JAR_PATH=/home/qiime/app/rdp_classifier-2.0.1.jar" >> /home/qiime/.bashrc
 	source /home/qiime/.bashrc
-	
+
 uclust Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _uclust-install:
 
 The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.2.21q_i86linux64`` as ``/home/qiime/bin/uclust1.2.21q_i86linux64``, we recommend creating a symbolic link to this file::
-	
+
 	ln -s /home/qiime/bin/uclust1.2.21q_i86linux64 /home/qiime/bin/uclust
 
 usearch Install Notes
@@ -239,9 +239,9 @@ usearch Install Notes
 .. _usearch-install:
 
 The usearch binary must be called ``usearch``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``usearch5.2.32_i86linux32`` as ``/home/qiime/bin/usearch5.2.32_i86linux32``, we recommend creating a symbolic link to this file::
-	
+
 	ln -s /home/qiime/bin/usearch5.2.32_i86linux32 /home/qiime/bin/usearch
-	
+
 ChimeraSlayer Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -257,7 +257,7 @@ If you're having trouble getting ChimeraSlayer to work via QIIME, you should fir
 Once you have configured Qiime, you can test your ChimeraSlayer install by running::
 
 	print_qiime_config.py -t
-	
+
 This includes a check for obvious problems with your ChimeraSlayer install, and should help you determine if you have it installed correctly.
 
 R Install Notes
@@ -278,7 +278,7 @@ AmpliconNoise Install Notes
 AmpliconNoise requires that several environment variables are set. After you've installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is ``/home/qiime/AmpliconNoiseV1.24/``)::
 
 	echo "export PATH=/home/qiime/AmpliconNoiseV1.24/Scripts:/home/qiime/AmpliconNoiseV1.24/bin:$PATH" >> /home/qiime/.bashrc
-	
+
 	echo "export PYRO_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/LookUp_E123.dat" >> /home/qiime/.bashrc
 	echo "export SEQ_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/Tran.dat" >> /home/qiime/.bashrc
 
@@ -298,5 +298,5 @@ Building The QIIME Documentation
 If you are using the svn version of QIIME, you may want to build the documentation locally for access to the latest version. You can change to the ``Qiime/doc`` directory and run::
 
 	make html
-	
-We try to update the documentation as we update the code, but svn users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file ``Qiime/doc/_build/html/index.html``. You may want to bookmark that page for easy access. 
+
+We try to update the documentation as we update the code, but svn users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file ``Qiime/doc/_build/html/index.html``. You may want to bookmark that page for easy access.
