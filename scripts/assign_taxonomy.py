@@ -18,17 +18,18 @@ from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
-    RtaxTaxonAssigner, validate_rdp_version,
+    RtaxTaxonAssigner, PplacerTaxonAssigner, validate_rdp_version,
     )
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
+    'pplacer': PplacerTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
 }
 
-assignment_method_choices = ['rdp','blast','rtax','mothur']
+assignment_method_choices = ['rdp','blast','rtax','mothur','pplacer']
 
 options_lookup = get_options_lookup()
 
@@ -123,6 +124,7 @@ script_info['optional_options']=[\
  make_option('-b', '--blast_db', type='string',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
+ make_option('--hrefpkg', help='hrefpkg to use for pplacer assignment.'),\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
@@ -189,6 +191,9 @@ def main():
                 'reference sequences (via -r) and an id_to_taxonomy '
                 'file (via -t).')
 
+    if assignment_method == 'pplacer' and opts.hrefpkg is None:
+        option_parser.error('pplacer classification requires a hrefpkg.')
+
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -226,6 +231,9 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
+    elif assignment_method == 'pplacer':
+        params['hrefpkg'] = opts.hrefpkg
+
     elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
@@ -240,6 +248,7 @@ def main():
        params['read_2_seqs_fp'] = opts.read_2_seqs_fp
        params['single_ok'] = opts.single_ok
        params['no_single_ok_generic'] = opts.no_single_ok_generic
+
 
     else:
         # should not be able to get here as an unknown classifier would
