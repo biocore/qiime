@@ -46,6 +46,10 @@ class Usearch(CommandLineApplication):
         # Fasta input file for merge-sort function
         '--mergesort':ValuedParameter('--',Name='mergesort',Delimiter=' ',
             IsPath=True),
+
+        # Fasta input file for merge-sort function
+        '--evalue':ValuedParameter('--',Name='evalue',Delimiter=' ',
+            IsPath=False),
     
         # Output file, used by several difference functions
         '--output':ValuedParameter('--',Name='output',Delimiter=' ',
