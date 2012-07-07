@@ -11,11 +11,48 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import splitext, split, exists, abspath
-from qiime.util import (make_option, parse_command_line_parameters, create_dir)
+from os.path import splitext, split, exists, abspath, join
+from qiime.util import (make_option, parse_command_line_parameters, create_dir, load_qiime_config)
 from qiime.pick_otus  import BlastxOtuPicker
+from qiime.pycogent_backports.usearch import Usearch, clusters_from_blast_uc_file
+from qiime.format import format_otu_map
 
-assignment_constructors = {'blastx':BlastxOtuPicker}
+qiime_config = load_qiime_config()
+
+def usearch_search(query_fp,
+                   refseqs_fp,
+                   output_dir,
+                   evalue,
+                   min_id,
+                   queryalnfract,
+                   targetalnfract,
+                   maxaccepts,
+                   maxrejects,
+                   HALT_EXEC=False):
+    
+    output_fp = join(output_dir,'search_results.uc')
+    
+    params = {}
+    
+    app = Usearch(params,  
+                  WorkingDir=qiime_config['temp_dir'],
+                  HALT_EXEC=HALT_EXEC)
+    
+    app.Parameters['--evalue'].on(evalue)
+    app.Parameters['--id'].on(min_id)
+    app.Parameters['--queryalnfract'].on(queryalnfract)
+    app.Parameters['--targetalnfract'].on(targetalnfract)
+    app.Parameters['--maxaccepts'].on(maxaccepts)
+    app.Parameters['--maxrejects'].on(maxrejects)
+    
+    data = {'--query':query_fp,
+            '--uc':output_fp,
+            '--db':refseqs_fp,
+            }
+    
+    app_result = app(data)
+
+assignment_constructors = {'blastx':BlastxOtuPicker,'usearch':usearch_search}
 
 script_info={}
 script_info['brief_description'] = """ Script for performing functional assignment of reads against a reference database """
@@ -31,7 +68,7 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     make_option('-m', '--assignment_method', type='choice',
-        choices=assignment_constructors.keys(), default = "blastx",
+        choices=assignment_constructors.keys(), default = "usearch",
         help=('Method for picking OTUs.  Valid choices are: ' +\
               ', '.join(assignment_constructors.keys()) +\
               '. [default: %default]')),
@@ -52,11 +89,26 @@ script_info['optional_options'] = [
         help=('Minimum percent of query sequence that can be aligned to consider a match'
               ' [default: %default]'),default=0.50,type='float'),
               
-    make_option('-s', '--min_percent_similarity', type='float', default=0.75,
-        help=('Minimum percent similarity to consider a match [default: %default]')),
-              
-    make_option('-e', '--max_e_value', type='float', default=1e-10,
+    make_option('-e', '--evalue', type='float', default=1e-10,
         help=('Max e-value to consider a match [default: %default]')),
+              
+    make_option('-s', '--min_percent_id', type='float', default=0.75,
+        help=('Min percent id to consider a match [default: %default]')),
+              
+    make_option('--queryalnfract', type='float', default=0.75,
+        help=('Min percent of the query seq that must match to consider a match [default: %default]')),
+              
+    make_option('--targetalnfract', type='float', default=0.75,
+        help=('Min percent of the target/reference seq that must match to consider a match [default: %default]')),
+
+    make_option('--max_accepts',type='int',default=1,
+              help="max_accepts value to uclust and "
+                   "uclust_ref [default: %default]"),
+                   
+    make_option('--max_rejects',type='int',default=32,
+              help="max_rejects value to uclust and "
+                   "uclust_ref [default: %default]"),
+
 ]
 
 script_info['version'] = __version__
@@ -72,9 +124,8 @@ def main():
     if refseqs_fp:
         refseqs_fp = abspath(refseqs_fp)
     blast_db = opts.blast_db
-    min_percent_similarity = opts.min_percent_similarity
+    min_percent_similarity = opts.min_percent_id
     min_aligned_percent = opts.min_aligned_percent
-    max_e_value = opts.max_e_value
     verbose = opts.verbose
     
     if (assignment_method == 'blastx' and
@@ -87,13 +138,13 @@ def main():
     
     # split the input filepath into components used for generating
     # the output file name
-    input_seqs_filepath = opts.input_seqs_filepath
+    input_seqs_filepath = abspath(opts.input_seqs_filepath)
     input_seqs_dir, input_seqs_filename = split(input_seqs_filepath)
     input_seqs_basename, ext = splitext(input_seqs_filename)
     
     # create the output directory name (if not provided) and 
     # create it if it doesn't already exist
-    output_dir = opts.output_dir or assignment_method + '_assigned_functions'
+    output_dir = abspath(opts.output_dir or assignment_method + '_assigned_functions')
     create_dir(output_dir, fail_on_exist=False)
     
     # Create the output and log file names
@@ -102,7 +153,7 @@ def main():
     failure_path = '%s/%s_failures.txt' % (output_dir,input_seqs_basename)
     
     if assignment_method == 'blastx':
-        params = {'max_e_value':max_e_value,
+        params = {'max_e_value':evalue,
                   'Similarity': min_percent_similarity,
                   'min_aligned_percent':min_aligned_percent}
         otu_picker = assignment_constructor(params)
@@ -111,6 +162,23 @@ def main():
                    log_path=log_path,
                    blast_db=opts.blast_db,
                    refseqs_fp=refseqs_fp)
+    elif assignment_method == 'usearch':
+        usearch_search(query_fp=input_seqs_filepath,
+                       refseqs_fp=refseqs_fp,
+                       output_dir=output_dir,
+                       evalue=opts.evalue,
+                       min_id=opts.min_percent_id,
+                       queryalnfract=opts.queryalnfract,
+                       targetalnfract=opts.targetalnfract,
+                       maxaccepts=opts.max_accepts,
+                       maxrejects=opts.max_rejects)
+        otus, failures = clusters_from_blast_uc_file(\
+         open('%s/search_results.uc' % output_dir,'U'),9)
+        function_map_f = open('%s/function_map.txt' % output_dir,'w')
+        for line in format_otu_map(otus.items(),''):
+            function_map_f.write(line)
+        function_map_f.close()
+        
     else:
         ## other -- shouldn't be able to get here as a KeyError would have
         ## been raised earlier

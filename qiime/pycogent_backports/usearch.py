@@ -63,6 +63,12 @@ class Usearch(CommandLineApplication):
         # ID percent for OTU, by default is 97%
         '--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
 
+        '--evalue':ValuedParameter('--',Name='evalue',Delimiter=' ',IsPath=False),
+
+        '--queryalnfract':ValuedParameter('--',Name='queryalnfract',Delimiter=' ',IsPath=False),
+
+        '--targetalnfract':ValuedParameter('--',Name='targetalnfract',Delimiter=' ',IsPath=False),
+
         # Disable reverse comparison option, if norev is disabled
         # memory usage is expected to double for uclust
         '--rev':FlagParameter('--',Name='rev'),
