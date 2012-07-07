@@ -21,7 +21,7 @@ qiime_config = load_qiime_config()
 
 def usearch_search(query_fp,
                    refseqs_fp,
-                   output_dir,
+                   output_fp,
                    evalue,
                    min_id,
                    queryalnfract,
@@ -29,9 +29,6 @@ def usearch_search(query_fp,
                    maxaccepts,
                    maxrejects,
                    HALT_EXEC=False):
-    
-    output_fp = join(output_dir,'search_results.uc')
-    
     params = {}
     
     app = Usearch(params,  
@@ -148,9 +145,10 @@ def main():
     create_dir(output_dir, fail_on_exist=False)
     
     # Create the output and log file names
-    result_path = '%s/%s_clusters.txt' % (output_dir,input_seqs_basename)
+    result_path = '%s/%s_fmap.txt' % (output_dir,input_seqs_basename)
     log_path = '%s/%s_clusters.log' % (output_dir,input_seqs_basename)
     failure_path = '%s/%s_failures.txt' % (output_dir,input_seqs_basename)
+    usearch_path = '%s/%s.uc' % (output_dir,input_seqs_basename)
     
     if assignment_method == 'blastx':
         params = {'max_e_value':evalue,
@@ -165,7 +163,7 @@ def main():
     elif assignment_method == 'usearch':
         usearch_search(query_fp=input_seqs_filepath,
                        refseqs_fp=refseqs_fp,
-                       output_dir=output_dir,
+                       output_fp=usearch_path,
                        evalue=opts.evalue,
                        min_id=opts.min_percent_id,
                        queryalnfract=opts.queryalnfract,
@@ -173,11 +171,21 @@ def main():
                        maxaccepts=opts.max_accepts,
                        maxrejects=opts.max_rejects)
         otus, failures = clusters_from_blast_uc_file(\
-         open('%s/search_results.uc' % output_dir,'U'),9)
-        function_map_f = open('%s/function_map.txt' % output_dir,'w')
+         open(usearch_path,'U'),9)
+        function_map_f = open(result_path,'w')
         for line in format_otu_map(otus.items(),''):
             function_map_f.write(line)
         function_map_f.close()
+        failure_f = open(failure_path,'w')
+        failure_f.write("## This is not the file you're looking for.\n")
+        failure_f.write("## All failed pairwise matches will be listed (hence single ids\n")
+        failure_f.write("## being listed multiple times), and many of the ids listed here\n")
+        failure_f.write("## will have ultimately been assigned. Generating these anyway as\n")
+        failure_f.write("## a placeholder.\n")
+        for failure in failures:
+            failure_f.write(failure)
+            failure_f.write('\n')
+        failure_f.close()
         
     else:
         ## other -- shouldn't be able to get here as a KeyError would have

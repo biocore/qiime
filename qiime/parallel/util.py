@@ -232,7 +232,11 @@ def write_filepaths_to_file(job_result_filepaths,expected_files_filepath):
     f.write('\n'.join(job_result_filepaths))
     f.close()  
     
-    
+
+##################
+# method-specific code
+##################
+
 def write_merge_map_file_align_seqs(job_result_filepaths,output_dir,\
     merge_map_filepath,input_file_basename):
     
