@@ -22,6 +22,7 @@ qiime_config = load_qiime_config()
 def usearch_search(query_fp,
                    refseqs_fp,
                    output_fp,
+                   log_fp,
                    evalue,
                    min_id,
                    queryalnfract,
@@ -30,7 +31,9 @@ def usearch_search(query_fp,
                    maxrejects,
                    HALT_EXEC=False):
     params = {}
-    
+    log_f = open(log_fp,'w')
+    log_f.write('place holder...')
+    log_f.close()
     app = Usearch(params,  
                   WorkingDir=qiime_config['temp_dir'],
                   HALT_EXEC=HALT_EXEC)
@@ -146,7 +149,7 @@ def main():
     
     # Create the output and log file names
     result_path = '%s/%s_fmap.txt' % (output_dir,input_seqs_basename)
-    log_path = '%s/%s_clusters.log' % (output_dir,input_seqs_basename)
+    log_path = '%s/%s_fmap.log' % (output_dir,input_seqs_basename)
     failure_path = '%s/%s_failures.txt' % (output_dir,input_seqs_basename)
     usearch_path = '%s/%s.uc' % (output_dir,input_seqs_basename)
     
@@ -164,6 +167,7 @@ def main():
         usearch_search(query_fp=input_seqs_filepath,
                        refseqs_fp=refseqs_fp,
                        output_fp=usearch_path,
+                       log_fp=log_path,
                        evalue=opts.evalue,
                        min_id=opts.min_percent_id,
                        queryalnfract=opts.queryalnfract,
