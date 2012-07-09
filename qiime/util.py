@@ -1234,6 +1234,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     revcomp_barcode_mapping_column=[]
     for i in barcode_mapping_column:
         revcomp_barcode_mapping_column.append(DNA.rc(i))
+        barcode_len=len(i)
     revcomp_barcode_mapping_column=set(revcomp_barcode_mapping_column)
     
     # get the filenames and sort them, so the file1 corresponds to file2
@@ -1273,9 +1274,9 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
         fastq_fp=open(bfile)
         parsed_fastq=MinimalFastqParser(fastq_fp,strict=False)
         for bdata in parsed_fastq:
-            if bdata[1] in barcode_mapping_column:
+            if bdata[1][:barcode_len] in barcode_mapping_column:
                 fwd_count+=1
-            elif bdata[1] in revcomp_barcode_mapping_column:
+            elif bdata[1][:barcode_len] in revcomp_barcode_mapping_column:
                 rev_count+=1
         fastq_fp.close()
     
