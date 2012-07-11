@@ -30,13 +30,13 @@ script_info['script_usage'].append(("""""",""" Combine two categories and collap
 
 script_info['output_description']= """"""
 script_info['required_options']=[\
-    make_option('-m', '--mapping_fp',
+    make_option('-i', '--mapping_fp',
         help='Input metadata mapping filepath [REQUIRED]',
         type='existing_filepath'),
-    make_option('-i', '--otu_table_fp',
+    make_option('-c', '--otu_table_fp',
         help='Input OTU table filepath. [REQUIRED]',
         type='existing_filepath'),
-    make_option('-c', '--mapping_category', type='string',
+    make_option('-m', '--mapping_category', type='string',
         help='Summarize OTU table using this category. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [REQUIRED]'),
