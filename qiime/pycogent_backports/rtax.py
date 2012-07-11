@@ -141,7 +141,7 @@ class Rtax(CommandLineApplication):
 
         Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.
         Selection of primers for optimal taxonomic classification
-        of environmental 16S rRNA gene sequences.  ISME J (6), 1440Ð1444
+        of environmental 16S rRNA gene sequences.  ISME J (6), 1440-1444
         """
         return help_str
 
