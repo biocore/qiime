@@ -70,6 +70,8 @@ script_info['optional_options']=[\
  make_option('-e','--max_rare_depth',type='int',\
             help='the upper limit of rarefaction depths '+\
             '[default: median sequence/sample count]'),
+  make_option('--print_to_file',action=store_true,\
+            help='save output in one file',default=False),
  options_lookup['jobs_to_start_workflow']]
 script_info['version'] = __version__
 
@@ -87,6 +89,8 @@ def main():
     parallel = opts.parallel
     min_rare_depth = opts.min_rare_depth
     max_rare_depth = opts.max_rare_depth
+    print_to_file = opt.print_to_file
+    
     
     if opts.parameter_fp:
         try:
