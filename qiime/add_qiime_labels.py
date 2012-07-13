@@ -85,6 +85,7 @@ def get_fasta_fps(fasta_dir):
     fasta_files = glob(fasta_dir + "/*.fna")
     fasta_files.extend(glob(fasta_dir + "/*.fa"))
     fasta_files.extend(glob(fasta_dir + "/*.fasta"))
+    fasta_files.extend(glob(fasta_dir + "/*.fas"))
     
     return fasta_files
     
