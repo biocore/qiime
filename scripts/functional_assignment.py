@@ -95,10 +95,10 @@ script_info['optional_options'] = [
     make_option('-s', '--min_percent_id', type='float', default=0.75,
         help=('Min percent id to consider a match [default: %default]')),
               
-    make_option('--queryalnfract', type='float', default=0.75,
+    make_option('--queryalnfract', type='float', default=0.35,
         help=('Min percent of the query seq that must match to consider a match [default: %default]')),
               
-    make_option('--targetalnfract', type='float', default=0.75,
+    make_option('--targetalnfract', type='float', default=0.0,
         help=('Min percent of the target/reference seq that must match to consider a match [default: %default]')),
 
     make_option('--max_accepts',type='int',default=1,
