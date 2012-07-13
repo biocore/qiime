@@ -3,8 +3,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
-               "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"] 
+__credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,53 +11,30 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os.path import splitext, split, exists, abspath, join
-from qiime.util import (make_option, parse_command_line_parameters, create_dir, load_qiime_config)
+from qiime.util import (make_option, 
+                        parse_command_line_parameters, 
+                        create_dir, 
+                        load_qiime_config,
+                        get_qiime_temp_dir)
 from qiime.pick_otus  import BlastxOtuPicker
-from qiime.pycogent_backports.usearch import Usearch, clusters_from_blast_uc_file
-from qiime.format import format_otu_map
+from qiime.functional_assignment import usearch_function_assigner
 
 qiime_config = load_qiime_config()
 
-def usearch_search(query_fp,
-                   refseqs_fp,
-                   output_fp,
-                   log_fp,
-                   evalue,
-                   min_id,
-                   queryalnfract,
-                   targetalnfract,
-                   maxaccepts,
-                   maxrejects,
-                   HALT_EXEC=False):
-    params = {}
-    log_f = open(log_fp,'w')
-    log_f.write('place holder...')
-    log_f.close()
-    app = Usearch(params,  
-                  WorkingDir=qiime_config['temp_dir'],
-                  HALT_EXEC=HALT_EXEC)
-    
-    app.Parameters['--evalue'].on(evalue)
-    app.Parameters['--id'].on(min_id)
-    app.Parameters['--queryalnfract'].on(queryalnfract)
-    app.Parameters['--targetalnfract'].on(targetalnfract)
-    app.Parameters['--maxaccepts'].on(maxaccepts)
-    app.Parameters['--maxrejects'].on(maxrejects)
-    
-    data = {'--query':query_fp,
-            '--uc':output_fp,
-            '--db':refseqs_fp,
-            }
-    
-    app_result = app(data)
-
-assignment_constructors = {'blastx':BlastxOtuPicker,'usearch':usearch_search}
+assignment_constructors = {'blastx':BlastxOtuPicker,'usearch':usearch_function_assigner}
 
 script_info={}
 script_info['brief_description'] = """ Script for performing functional assignment of reads against a reference database """
 script_info['script_description'] = """ """
-script_info['script_usage'] = [("""""","""Run assignment with BLAST using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blast_assigned_functions/""")]
-script_info['script_usage'].append(("""""","""Run assignment with BLAST using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blast_assigned_function_strict/ -e 1e-70"""))
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("""""","""Run assignment with BLAST using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o usearch_assigned_function/ -m usearch"""))
+
+script_info['script_usage'].append(("""""","""Run assignment with BLAST using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blast_assigned_function/ -m blastx"""))
+
+script_info['script_usage'].append(("""""","""Run assignment with BLAST using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blast_assigned_function_strict/ -e 1e-70  -m blastx"""))
+
 script_info['output_description'] = """ """
 
 script_info['required_options'] = [
@@ -154,42 +130,33 @@ def main():
     usearch_path = '%s/%s.uc' % (output_dir,input_seqs_basename)
     
     if assignment_method == 'blastx':
-        params = {'max_e_value':evalue,
-                  'Similarity': min_percent_similarity,
-                  'min_aligned_percent':min_aligned_percent}
-        otu_picker = assignment_constructor(params)
-        otu_picker(input_seqs_filepath,
-                   result_path=result_path, 
-                   log_path=log_path,
-                   blast_db=opts.blast_db,
-                   refseqs_fp=refseqs_fp)
+        
+        params = {'max_e_value':opts.evalue,
+                  'Similarity': opts.min_percent_id,
+                  'min_aligned_percent':opts.min_aligned_percent}
+        app = assignment_constructor(params)
+        app(input_seqs_filepath,
+            result_path=result_path, 
+            log_path=log_path,
+            blast_db=opts.blast_db,
+            refseqs_fp=refseqs_fp)
+                   
     elif assignment_method == 'usearch':
-        usearch_search(query_fp=input_seqs_filepath,
-                       refseqs_fp=refseqs_fp,
-                       output_fp=usearch_path,
-                       log_fp=log_path,
-                       evalue=opts.evalue,
-                       min_id=opts.min_percent_id,
-                       queryalnfract=opts.queryalnfract,
-                       targetalnfract=opts.targetalnfract,
-                       maxaccepts=opts.max_accepts,
-                       maxrejects=opts.max_rejects)
-        otus, failures = clusters_from_blast_uc_file(\
-         open(usearch_path,'U'),9)
-        function_map_f = open(result_path,'w')
-        for line in format_otu_map(otus.items(),''):
-            function_map_f.write(line)
-        function_map_f.close()
-        failure_f = open(failure_path,'w')
-        failure_f.write("## This is not the file you're looking for.\n")
-        failure_f.write("## All failed pairwise matches will be listed (hence single ids\n")
-        failure_f.write("## being listed multiple times), and many of the ids listed here\n")
-        failure_f.write("## will have ultimately been assigned. Generating these anyway as\n")
-        failure_f.write("## a placeholder.\n")
-        for failure in failures:
-            failure_f.write(failure)
-            failure_f.write('\n')
-        failure_f.close()
+        
+        assignment_constructor(query_fp=input_seqs_filepath,
+                               refseqs_fp=refseqs_fp,
+                               output_fp=result_path,
+                               failure_fp=failure_path,
+                               usearch_fp=usearch_path,
+                               log_fp=log_path,
+                               evalue=opts.evalue,
+                               min_id=opts.min_percent_id,
+                               queryalnfract=opts.queryalnfract,
+                               targetalnfract=opts.targetalnfract,
+                               maxaccepts=opts.max_accepts,
+                               maxrejects=opts.max_rejects,
+                               temp_dir=get_qiime_temp_dir(),
+                               HALT_EXEC=False)
         
     else:
         ## other -- shouldn't be able to get here as a KeyError would have
