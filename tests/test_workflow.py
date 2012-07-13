@@ -11,7 +11,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import signal
 import os
 from shutil import rmtree
 from glob import glob
@@ -30,6 +29,7 @@ from qiime.util import load_qiime_config, count_seqs
 from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from biom.parse import parse_biom_table
+from qiime.test import initiate_timeout, disable_timeout
 from qiime.workflow import (run_qiime_data_preparation,
     run_pick_reference_otus_through_otu_table,
     run_beta_diversity_through_plots,
@@ -40,42 +40,12 @@ from qiime.workflow import (run_qiime_data_preparation,
     print_commands,print_to_stdout,run_core_qiime_analyses,
     run_summarize_taxa_through_plots, run_ampliconnoise)
 
-## The test case timing code included in this file is adapted from
-## recipes provided at:
-##  http://code.activestate.com/recipes/534115-function-timeout/
-##  http://stackoverflow.com/questions/492519/timeout-on-a-python-function-call
-class TimeExceededError(Exception):
-    pass
 
-
-allowed_seconds_per_test = 240
-
-def timeout(signum, frame):
-    raise TimeExceededError,\
-     "Test failed to run in allowed time (%d seconds)."\
-      % allowed_seconds_per_test
-
-
-def core_analyses_sigalrm_setup(allowed_seconds = 600):
-    """ call this in e.g. test_core_qiime... - allows longer time before timeout
-    """
-    #this test takes a long time, turn off the alarm from setUp
-    # and reset it
-
-    # reset alarm (note only one at a time can be set)
-    signal.alarm(0)
-
-    # can't reuse global fn timeout - alredy has 240s set
-    def core_timeout(signum, frame):
-        raise TimeExceededError,\
-         "Test failed to run in allowed time (%d seconds)."\
-         % allowed_seconds
-    signal.signal(signal.SIGALRM, core_timeout)
-    # set the 'alarm' to go off in allowed_seconds seconds
-    signal.alarm(allowed_seconds)
-
-    # tearDown will reset our alarm when finished
-
+# function to stop/start the timeout with longer
+# timer for certain tests
+def restart_timeout(seconds):
+    disable_timeout()
+    initiate_timeout(seconds)
 
 class WorkflowTests(TestCase):
     
@@ -209,15 +179,12 @@ class WorkflowTests(TestCase):
         self.run_core_qiime_analyses_params1 =\
          parse_qiime_parameters(run_core_qiime_analyses_params1.split('\n'))
         
-        signal.signal(signal.SIGALRM, timeout)
-        # set the 'alarm' to go off in allowed_seconds seconds
-        signal.alarm(allowed_seconds_per_test)
+        initiate_timeout(240)
         
     
     def tearDown(self):
         """ """
-        # turn off the alarm
-        signal.alarm(0)
+        disable_timeout()
         # change back to the start dir - some workflows change directory
         chdir(self.start_dir)
         remove_files(self.files_to_remove)
@@ -249,7 +216,7 @@ class WorkflowTests(TestCase):
         """run_core_qiime_analyses: functions (serially) using default qiime params
         """
         # this takes a long time, so use a longer sigalrm
-        core_analyses_sigalrm_setup()
+        restart_timeout(600)
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,
@@ -284,7 +251,7 @@ class WorkflowTests(TestCase):
         """
         # Single category and sampling_depth=None
         # this takes a long time, so use a longer sigalrm
-        core_analyses_sigalrm_setup()
+        restart_timeout(600)
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,
@@ -319,7 +286,7 @@ class WorkflowTests(TestCase):
         """run_core_qiime_analyses: functions as expected in parallel
         """
         # this takes a long time, so use a longer sigalrm
-        core_analyses_sigalrm_setup()
+        restart_timeout(600)
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,

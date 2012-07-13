@@ -41,7 +41,7 @@ def initiate_timeout(seconds=60):
          "Test failed to run in allowed time (%d seconds)." % seconds
     
     signal.signal(signal.SIGALRM, timeout)
-    # set the 'alarm' to go off in allowed_seconds seconds
+    # set the 'alarm' to go off in seconds seconds
     signal.alarm(seconds)
 
 def disable_timeout():
