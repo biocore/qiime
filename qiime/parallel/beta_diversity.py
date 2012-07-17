@@ -1,158 +1,221 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# beta_diversity.py
-
-""" Description
-File created on 7 Jan 2010.
-
-"""
+# File created on 13 Jul 2012
 from __future__ import division
-from os.path import split, join, splitext
-import os
-from biom.parse import parse_biom_table
-from qiime.parallel.util import get_rename_command, merge_to_n_commands
-from qiime.format import format_distance_matrix
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Justin Kuczynski"] 
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-def get_job_commands_multiple_otu_tables(
-    python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fps,
-    output_dir,working_dir,command_prefix=None,command_suffix=None,
-    full_tree=False):
-    """Generate beta diversity to split multiple OTU tables to multiple jobs
-    """
+from os.path import join, split, splitext
+from cogent.util.misc import create_dir
+from biom.parse import parse_biom_table
+from qiime.parallel.util import ParallelWrapper
 
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
+class ParallelBetaDiversity(ParallelWrapper):
+    _script_name = "beta_diversity.py"
+    _input_splitter = ParallelWrapper._input_existing_filepaths
+    _job_prefix = 'BDIV'
+
+    def _identify_files_to_remove(self,job_result_filepaths,params):
+        """ The output of the individual jobs are the files we want to keep
+        """
+        return []
     
-    if full_tree:
-        full_tree_str = '-f'
-    else:
-        full_tree_str = ''
+    def _commands_to_shell_script(self,commands,fp,shebang='#!/bin/bash'):
+        f = open(fp,'w')
+        f.write(shebang)
+        f.write('\n')
+        f.write('\n'.join(commands))
+        f.write('\n')
+        f.close()
+
+
+class ParallelBetaDiversitySingle(ParallelBetaDiversity):
+
+    def _write_merge_map_file(self,
+                              input_file_basename,
+                              job_result_filepaths,
+                              params,
+                              output_dir,
+                              merge_map_filepath):
+
+        merge_map_f = open(merge_map_filepath,'w')
     
-    commands = []
-    result_filepaths = []
+        for metric in params['metrics'].split(','):
+            fps_to_merge = [fp for fp in job_result_filepaths if '/%s_' % metric in fp]
+            output_fp = join(output_dir,'%s_%s.txt' % (metric,input_file_basename))
+            merge_map_f.write('%s\t%s\n' % ('\t'.join(fps_to_merge),output_fp))
     
-    for input_fp in input_fps:
-        input_path, input_fn = split(input_fp)
-        input_basename, input_ext = splitext(input_fn)
-        output_fns = ['%s_%s.txt' % (metric, input_basename) \
-         for metric in metrics.split(',')]
-        rename_command, current_result_filepaths = get_rename_command(\
-         output_fns,working_dir,output_dir)
-        result_filepaths += current_result_filepaths
+        merge_map_f.close()
+
+    def _get_job_commands(self,
+                          input_fp,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate beta diversity to split single OTU table to multiple jobs
+    
+        full_tree=True is faster: beta_diversity.py -f will make things
+        go faster, but be sure you already have the correct minimal tree.
+        """
+        commands = []
+        result_filepaths = []
+    
+        sids = parse_biom_table(open(input_fp,'U')).SampleIds
         
-        command = '%s %s %s -i %s -o %s -t %s -m %s %s %s %s' %\
-         (command_prefix,\
-          python_exe_fp,\
-          beta_diversity_fp,\
-          input_fp,
-          working_dir + '/',
-          tree_fp,
-          metrics,
-          full_tree_str,
-          rename_command,
-          command_suffix)
-          
-        commands.append(command)
-        
-    return commands, result_filepaths
-
-def commands_to_shell_script(commands,fp,shebang='#!/bin/bash'):
-    f = open(fp,'w')
-    f.write(shebang)
-    f.write('\n')
-    f.write('\n'.join(commands))
-    f.write('\n')
-    f.close()
-
-def get_job_commands_single_otu_table(
-    python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fp,
-    output_dir,working_dir,jobs_to_start,command_prefix=None,
-    command_suffix=None, full_tree=False):
-    """Generate beta diversity to split single OTU table to multiple jobs
-    
-    full_tree=True is faster: beta_diversity.py -f will make things
-    go faster, but be sure you already have the correct minimal tree.
-    """
-
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
-    
-    commands = []
-    result_filepaths = []
-    
-    sids = parse_biom_table(open(input_fp,'U')).SampleIds
-    
-    sample_id_groups = merge_to_n_commands(sids,
-                                           jobs_to_start,
-                                           ',','','')
-    for i, sample_id_group in enumerate(sample_id_groups):
-        working_dir_i = os.path.join(working_dir, str(i))
-        output_dir_i = os.path.join(output_dir, str(i))
-        input_dir, input_fn = split(input_fp)
-        input_basename, input_ext = splitext(input_fn)
-        sample_id_desc = sample_id_group.replace(',','_')
-        output_fns = ['%s_%s.txt' % (metric, input_basename) \
-         for metric in metrics.split(',')]
-        rename_command, current_result_filepaths = get_rename_command(\
-         output_fns,working_dir_i,output_dir_i)
-
-        result_filepaths += current_result_filepaths
-        
-
-        if full_tree:
-            bdiv_command = '%s -i %s -o %s -t %s -m %s -f -r %s' %\
-             (beta_diversity_fp,\
-              input_fp,
-              working_dir_i + '/',
-              tree_fp,
-              metrics,
-              sample_id_group)
-              
+        if params['full_tree']:
+            full_tree_str = '-f'
         else:
-            bdiv_command = '%s -i %s -o %s -t %s -m %s -r %s' %\
-             (beta_diversity_fp,\
-              input_fp,
-              working_dir_i + '/',
-              tree_fp,
-              metrics,
-              sample_id_group)
-        shell_script_fp = '%s/%s%d.sh' % (working_dir_i,job_prefix,i)
-        shell_script_commands = [bdiv_command] + rename_command.split(';')
-        commands_to_shell_script(shell_script_commands,shell_script_fp)
-        commands.append('bash %s' % shell_script_fp)
+            full_tree_str = ''
         
-    return commands, result_filepaths
+        if params['tree_path']:
+            tree_str = '-t %s' % params['tree_path']
+        else:
+            tree_str = ''
+        
+        metrics = params['metrics']
+        
+        # this is a little bit of an abuse of _merge_to_n_commands, so may
+        # be worth generalizing that method - this determines the correct
+        # number of samples to process in each command
+        sample_id_groups = self._merge_to_n_commands(sids,
+                                                     params['jobs_to_start'],
+                                                     delimiter=',',
+                                                     command_prefix='',
+                                                     command_suffix='')
+                                                     
+        for i, sample_id_group in enumerate(sample_id_groups):
+            working_dir_i = join(working_dir, str(i))
+            create_dir(working_dir_i)
+            output_dir_i = join(output_dir, str(i))
+            create_dir(output_dir_i)
+            input_dir, input_fn = split(input_fp)
+            input_basename, input_ext = splitext(input_fn)
+            sample_id_desc = sample_id_group.replace(',','_')
+            output_fns = ['%s_%s.txt' % (metric, input_basename) \
+             for metric in metrics.split(',')]
+            rename_command, current_result_filepaths = self._get_rename_command(\
+             output_fns,working_dir_i,output_dir_i)
+
+            result_filepaths += current_result_filepaths
+
+            bdiv_command = '%s -i %s -o %s %s -m %s %s -r %s' %\
+             (self._script_name,\
+              input_fp,
+              working_dir_i,
+              tree_str,
+              params['metrics'],
+              full_tree_str,
+              sample_id_group)
+
+            shell_script_fp = '%s/%s%d.sh' % (working_dir_i,job_prefix,i)
+            shell_script_commands = [bdiv_command] + rename_command.split(';')
+            self._commands_to_shell_script(shell_script_commands,
+                                           shell_script_fp)
+            commands.append('bash %s' % shell_script_fp)
+        
+        return commands, result_filepaths
+
+class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
+
+    def _get_job_commands(self,
+                          input_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate beta diversity to split multiple OTU tables to multiple jobs
+        """
     
-def create_merge_map_file_single_otu_table(input_fp,output_dir,
-    metrics,merge_map_filepath,expected_files_filepath):
+        if params['full_tree']:
+            full_tree_str = '-f'
+        else:
+            full_tree_str = ''
+        
+        if params['tree_path']:
+            tree_str = '-t %s' % params['tree_path']
+        else:
+            tree_str = ''
+            
+        commands = []
+        result_filepaths = []
+        
+        metrics = params['metrics']
+        
+        for input_fp in input_fps:
+            input_path, input_fn = split(input_fp)
+            input_basename, input_ext = splitext(input_fn)
+            output_fns = \
+             ['%s_%s.txt' % (metric, input_basename) for metric in metrics.split(',')]
+            rename_command, current_result_filepaths = self._get_rename_command(\
+             output_fns,working_dir,output_dir)
+            result_filepaths += current_result_filepaths
+        
+            command = '%s %s -i %s -o %s %s -m %s %s %s %s' %\
+             (command_prefix,
+              self._script_name,
+              input_fp,
+              working_dir,
+              tree_str,
+              params['metrics'],
+              full_tree_str,
+              rename_command,
+              command_suffix)
+          
+            commands.append(command)
+        
+        return commands, result_filepaths
+
+    def _get_poller_command(self,
+                            expected_files_filepath,
+                            merge_map_filepath,
+                            deletion_list_filepath,
+                            command_prefix='/bin/bash; ',
+                            command_suffix='; exit'):
+        """Generate command to initiate a poller to monitior/process completed runs
+        """
     
-    merge_map_f = open(merge_map_filepath,'w')
+        result = '%s poller.py -f %s -m %s -d %s -t %d -p %s %s' % \
+         (command_prefix,
+          expected_files_filepath,
+          merge_map_filepath,
+          deletion_list_filepath,
+          self._seconds_to_sleep,
+          'qiime.parallel.beta_diversity.parallel_beta_diversity_process_run_results_f',
+          command_suffix)
+      
+        return result, []
+
+def parallel_beta_diversity_process_run_results_f(f):
+    """ Handles re-assembling of an OTU table from component vectors
+    """
+    # iterate over component, output fp lines
+    for line in f:
+        fields = line.strip().split('\t')
+        dm_components = fields[:-1]
+        output_fp = fields[-1]
+        # assemble the current dm
+        dm = assemble_distance_matrix(map(open,dm_components))
+        # and write it to file
+        output_f = open(output_fp,'w')
+        output_f.write(dm)
+        output_f.close()
     
-    input_dir, input_fn = split(input_fp)
-    input_basename, input_ext = splitext(input_fn)
-    
-    expected_output_files = [fp.strip() for fp in 
-     open(expected_files_filepath,'U')]
-    
-    for metric in metrics.split(','):
-        fps_to_merge = [fp for fp in expected_output_files if '/%s_' % metric in fp]
-        output_fp = join(output_dir,'%s_%s.txt' % (metric,input_basename))
-        merge_map_f.write('%s\t%s\n' % ('\t'.join(fps_to_merge),output_fp))
-    
-    merge_map_f.close()
+    return True
 
 def assemble_distance_matrix(dm_components):
     """ assemble distance matrix components into a complete dm string
-    
+
     """
     data = {}
     # iterate over compenents
@@ -182,45 +245,3 @@ def assemble_distance_matrix(dm_components):
     # create the dm string and return it
     dm = format_distance_matrix(labels,dm)
     return dm
-        
-def parallel_beta_diversity_process_run_results_f(f):
-    """ Handles re-assembling of an OTU table from component vectors
-    """
-    # iterate over component, output fp lines
-    for line in f:
-        fields = line.strip().split('\t')
-        dm_components = fields[:-1]
-        output_fp = fields[-1]
-        # assemble the current dm
-        dm = assemble_distance_matrix(map(open,dm_components))
-        # and write it to file
-        output_f = open(output_fp,'w')
-        output_f.write(dm)
-        output_f.close()
-        
-    return True
-
-def get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-    merge_map_filepath,deletion_list_filepath,seconds_to_sleep,\
-    process_run_results_f,
-    command_prefix='/bin/bash; ',command_suffix='; exit'):
-    """Generate command to initiate a poller to monitior/process completed runs
-    """
-    
-    if process_run_results_f != None:
-        process_run_results_f_str = '-p %s' % process_run_results_f
-    else:
-        process_run_results_f_str = ''
-    
-    result = '%s %s %s -f %s -m %s -d %s -t %d %s %s' % \
-     (command_prefix,
-      python_exe_fp,
-      poller_fp,
-      expected_files_filepath,
-      merge_map_filepath,
-      deletion_list_filepath,
-      seconds_to_sleep,
-      process_run_results_f_str,
-      command_suffix)
-      
-    return result, []

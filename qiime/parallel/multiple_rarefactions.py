@@ -1,67 +1,80 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# rarefaction.py
-
+# File created on 14 Jul 2012
 from __future__ import division
-from qiime.parallel.util import get_rename_command
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Justin Kuczynski"] 
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from qiime.parallel.util import ParallelWrapper
 
-def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
-    input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
-    lineages_included, subsample_multinomial, command_prefix=None,command_suffix=None):
-    """Generate rarefaction diversity commands to be submitted to cluster
-    """
-    # Create data for each run (depth, output_fn)
-    run_parameters = []
-    for num_seqs in range(min_seqs,max_seqs+1, step):
-        for rep_num in range(num_reps):
-            run_parameters.append((\
-             num_seqs,'rarefaction_%d_%d.biom' % (num_seqs,rep_num)))
+class ParallelMultipleRarefactions(ParallelWrapper):
+    _script_name = "single_rarefaction.py"
+    _job_prefix = 'RARIF'
+    _input_splitter = ParallelWrapper._input_existing_filepaths
 
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
+    def _identify_files_to_remove(self,job_result_filepaths,params):
+        """ The output of the individual jobs are the files we want to keep
+        """
+        return []
+
+    def _get_job_commands(self,
+                          input_fp,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate rarefaction diversity commands to be submitted to cluster
+        """
+        # Create data for each run (depth, output_fn)
+        min_seqs = params['min']
+        max_seqs = params['max']
+        step = params['step']
+        num_reps = params['num_reps']
+        run_parameters = []
+        for num_seqs in range(min_seqs,max_seqs+1, step):
+            for rep_num in range(num_reps):
+                run_parameters.append((\
+                 num_seqs,'rarefaction_%d_%d.biom' % (num_seqs,rep_num)))
     
-    commands = []
-    result_filepaths = []
+        commands = []
+        result_filepaths = []
     
-    if lineages_included:
-        lineages_included_param = ''
-    else:
-        lineages_included_param = '--suppress_lineages_included'
+        if params['suppress_lineages_included']:
+            lineages_included_str = '--suppress_lineages_included'
+        else:
+            lineages_included_str = ''
     
-    if subsample_multinomial:
-        subsample_multinomial_param = '--subsample_multinomial'
-    else:
-        subsample_multinomial_param = ''
+        if params['subsample_multinomial']:
+            subsample_multinomial_str = '--subsample_multinomial'
+        else:
+            subsample_multinomial_str = ''
     
-    for depth,output_fn in run_parameters:
-        # Each run ends with moving the output file from the tmp dir to
-        # the output_dir. Build the command to perform the move here.
-        rename_command, current_result_filepaths = get_rename_command(\
-         [output_fn],working_dir,output_dir)
-        result_filepaths += current_result_filepaths
+        for depth,output_fn in run_parameters:
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            rename_command, current_result_filepaths =\
+             self._get_rename_command([output_fn],working_dir,output_dir)
+            result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s %s %s -d %s %s %s' %\
-         (command_prefix,\
-          python_exe_fp,\
-          rarefaction_fp,\
-          input_fp,
-          working_dir + '/' + output_fn,
-          lineages_included_param,
-          subsample_multinomial_param,
-          depth,
-          rename_command,
-          command_suffix)
+            command = '%s %s -i %s -o %s %s %s -d %s %s %s' %\
+             (command_prefix,
+              self._script_name,
+              input_fp,
+              working_dir + '/' + output_fn,
+              lineages_included_str,
+              subsample_multinomial_str,
+              depth,
+              rename_command,
+              command_suffix)
           
-        commands.append(command)
+            commands.append(command)
         
-    return commands, result_filepaths
+        return commands, result_filepaths

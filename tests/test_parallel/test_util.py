@@ -1,36 +1,151 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# test_util.py
-
-""" Description
-File created on 25 Aug 2009.
-
-"""
+# File created on 13 Jul 2012
 from __future__ import division
-from os import remove
-from cogent import LoadSeqs
-from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
-from qiime.parallel.util import (split_fasta, get_random_job_prefix,
- write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths,
- submit_jobs, merge_to_n_commands)
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"] 
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-class UtilTests(TestCase):
-    """Tests of parallel code utility functions """
-    
+from cogent.util.unit_test import TestCase, main
+from cogent import LoadSeqs
+from cogent.util.misc import remove_files
+from qiime.util import get_tmp_filename
+from qiime.parallel.util import (ParallelWrapper, 
+                                 compute_seqs_per_file,
+                                 get_random_job_prefix,
+                                 split_fasta)
+
+
+class ParallelWrapperTests(TestCase):
+
     def setUp(self):
-        pass
+        """ """
+        # instantiating the abstract class to test some of the more 
+        # stand-alone methods
+        self.pw = ParallelWrapper()
+
+    def test_merge_to_n_commands_even(self):
+        """ _merge_to_n_commands functions as expected (even number of cmds)"""
+        commands = ['pick_otus.py -h ; mv somthing.txt something_else.txt',
+                    'pick_otus.py -g',
+                    'pick_otus.py -f',
+                    'pick_otus.py -w']
+                    
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; pick_otus.py -f ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,1)
+        self.assertEqual(actual,expected)
         
+        expected = [
+         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,2)
+        self.assertEqual(actual,expected)
+        
+        # rounds to 2 jobs to start
+        expected = [
+         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,3)
+        self.assertEqual(actual,expected)
+        
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -f ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,4)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,-42)
+        
+        # jobs to start is much higer than actual jobs
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -f ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,100)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,-42)
+        
+        
+    def test_merge_to_n_commands_odd(self):
+        """ _merge_to_n_commands functions as expected (odd number of cmds)"""
+        commands = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+                    
+        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,1)
+        self.assertEqual(actual,expected)
+                    
+        # rounds to 1 job to start
+        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,2)
+        self.assertEqual(actual,expected)
+                    
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,3)
+        self.assertEqual(actual,expected)
+        
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,4)
+        self.assertEqual(actual,expected)
+        
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = self.pw._merge_to_n_commands(commands,100)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,self.pw._merge_to_n_commands,commands,-42)    
+        
+    def test_merge_to_n_commands_alt_params(self):
+        """ _merge_to_n_commands functions with alt params"""
+        commands = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+                    
+        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        actual = self.pw._merge_to_n_commands(commands,2,command_prefix='',command_suffix='')
+        self.assertEqual(actual,expected)
+                    
+        expected = ['pick_otus.py -h ! pick_otus.py -g ! pick_otus.py -w']
+        actual = self.pw._merge_to_n_commands(commands,2,command_prefix='',
+         command_suffix='',delimiter=' ! ')
+        self.assertEqual(actual,expected)
+        
+        commands = map(str,range(10))
+        actual = self.pw._merge_to_n_commands(commands,5,command_prefix='',
+         command_suffix='',delimiter=',')
+        expected = ['0,1','2,3','4,5','6,7','8,9']
+        self.assertEqual(actual,expected)
+
+    def test_merge_to_n_commands_w_prefix(self):
+        """ _merge_to_n_commands functions as expected (w prefix/suffix)"""
+        commands = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash;pick_otus.py -g;exit',
+                    '/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -h ; pick_otus.py -w ; exit']
+        
+        actual = self.pw._merge_to_n_commands(commands,2,command_prefix='/bin/bash ;',command_suffix='; exit')
+        self.assertEqual(actual,expected)
+        actual = self.pw._merge_to_n_commands(commands,2)
+        self.assertEqual(actual,expected)
+
+class FunctionTests(TestCase):
+
     def test_get_random_job_prefix(self):
         """ get_random_job_prefix functions as expected """
         
@@ -66,117 +181,7 @@ class UtilTests(TestCase):
         self.assertEqual(len(s1),12)
         self.assertTrue(s1.startswith('HELLO'))
         self.assertFalse(s1.endswith('_'))
-        
-    def test_merge_to_n_commands_even(self):
-        """ merge_to_n_commands functions as expected (even number of cmds)"""
-        commands = ['pick_otus.py -h ; mv somthing.txt something_else.txt',
-                    'pick_otus.py -g',
-                    'pick_otus.py -f',
-                    'pick_otus.py -w']
-                    
-        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; pick_otus.py -f ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,1)
-        self.assertEqual(actual,expected)
-        
-        expected = [
-         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
-         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,2)
-        self.assertEqual(actual,expected)
-        
-        # rounds to 2 jobs to start
-        expected = [
-         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
-         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,3)
-        self.assertEqual(actual,expected)
-        
-        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -f ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,4)
-        self.assertEqual(actual,expected)
-        
-        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
-        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
-        
-        # jobs to start is much higer than actual jobs
-        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -f ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,100)
-        self.assertEqual(actual,expected)
-        
-        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
-        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
-        
-        
-    def test_merge_to_n_commands_odd(self):
-        """ merge_to_n_commands functions as expected (odd number of cmds)"""
-        commands = ['pick_otus.py -h',
-                    'pick_otus.py -g',
-                    'pick_otus.py -w']
-                    
-        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,1)
-        self.assertEqual(actual,expected)
-                    
-        # rounds to 1 job to start
-        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,2)
-        self.assertEqual(actual,expected)
-                    
-        expected = ['/bin/bash ; pick_otus.py -h ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,3)
-        self.assertEqual(actual,expected)
-        
-        expected = ['/bin/bash ; pick_otus.py -h ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,4)
-        self.assertEqual(actual,expected)
-        
-        expected = ['/bin/bash ; pick_otus.py -h ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
-        actual = merge_to_n_commands(commands,100)
-        self.assertEqual(actual,expected)
-        
-        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
-        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)    
-        
-    def test_merge_to_n_commands_alt_params(self):
-        """ merge_to_n_commands functions with alt params"""
-        commands = ['pick_otus.py -h',
-                    'pick_otus.py -g',
-                    'pick_otus.py -w']
-                    
-        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
-        actual = merge_to_n_commands(commands,2,command_prefix='',command_suffix='')
-        self.assertEqual(actual,expected)
-                    
-        expected = ['pick_otus.py -h ! pick_otus.py -g ! pick_otus.py -w']
-        actual = merge_to_n_commands(commands,2,command_prefix='',
-         command_suffix='',delimiter=' ! ')
-        self.assertEqual(actual,expected)
-        
-        commands = map(str,range(10))
-        actual = merge_to_n_commands(commands,5,command_prefix='',
-         command_suffix='',delimiter=',')
-        expected = ['0,1','2,3','4,5','6,7','8,9']
-        self.assertEqual(actual,expected)
-        
-        
-    def test_submit_jobs_fail(self):
-        """submit jobs fails by raising an error
-        """
-        self.assertRaises(RuntimeError,submit_jobs,
-         'some_fake_exe','some_fake_fp.txt','JOB')
-        
+    
     def test_compute_seqs_per_file(self):
         """compute_seqs_per_file functions as expected
         """
@@ -191,64 +196,14 @@ class UtilTests(TestCase):
         actual_5 = compute_seqs_per_file(temp_fasta_fp,5)
         actual_40 = compute_seqs_per_file(temp_fasta_fp,40)
         
-        remove(temp_fasta_fp)
+        remove_files([temp_fasta_fp])
         
         self.assertEqual(actual_25,1)
         self.assertEqual(actual_2,13)
         self.assertEqual(actual_10,3)
         self.assertEqual(actual_5,5)
         self.assertEqual(actual_40,1)
-        
-        
-    def test_build_filepaths_from_filepaths(self):
-        """ build_filepaths_from_filepaths functions as expected
-        """
-        # no additional params just strips paths
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps)
-        expected = ['in1.txt','in2.txt','in3.txt']
-        self.assertEqual(actual,expected)
-        
-        # replace works as expected
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,replacement=('.txt','.fasta'))
-        expected = ['in1.fasta','in2.fasta','in3.fasta']
-        self.assertEqual(actual,expected)
-        
-        # adding directory works as expected (no trailing / in directory)
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,directory='/home/bob')
-        expected = ['/home/bob/in1.txt','/home/bob/in2.txt','/home/bob/in3.txt']
-        self.assertEqual(actual,expected)
-        # adding directory works as expected (trailing / in directory)
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,directory='/home/bob/')
-        expected = ['/home/bob/in1.txt','/home/bob/in2.txt','/home/bob/in3.txt']
-        self.assertEqual(actual,expected)
-        
-        # prefix works as expected
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,prefix='blah_')
-        expected = ['blah_in1.txt','blah_in2.txt','blah_in3.txt']
-        self.assertEqual(actual,expected)
-        
-        # suffix works as expected
-        in_fps = ['in1.txt','somewhere/in2.txt','in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,suffix='.out')
-        expected = ['in1.txt.out','in2.txt.out','in3.txt.out']
-        self.assertEqual(actual,expected)
-        
-        # combination works as expected (including order of operations)
-        in_fps = ['txt_dir/in1.txt','somewhere/in2.txt','txt_dir/in3.txt']
-        actual = build_filepaths_from_filepaths(in_fps,replacement=('txt','fasta'),\
-         prefix='blah_',suffix='.out',directory='out/')
-        expected = ['out/blah_in1.fasta.out','out/blah_in2.fasta.out',\
-                    'out/blah_in3.fasta.out']
-        self.assertEqual(actual,expected)
-    
-        actual = build_filepaths_from_filepaths(in_fps,prefix='',\
-            directory='',suffix='',replacement=('',''))
-    
+
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
@@ -319,8 +274,6 @@ class UtilTests(TestCase):
             self.assertEqual(\
              LoadSeqs(data=infile,aligned=False),\
              LoadSeqs(data=actual_seqs,aligned=False))
-         
-    
-        
+
 if __name__ == "__main__":
     main()
