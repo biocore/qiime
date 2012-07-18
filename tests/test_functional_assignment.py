@@ -38,9 +38,10 @@ class FunctionalAssignmentTests(TestCase):
         self.output_fp = join(self.test_out,'fmap.txt')
         self.failure_fp = join(self.test_out,'fail.txt')
         self.usearch_fp = join(self.test_out,'out.uc')
+        self.bl6_fp = join(self.test_out,'out.bl6')
         self.log_fp = join(self.test_out,'fmap.log')
         self.files_to_remove = [self.output_fp, self.failure_fp, 
-                                self.usearch_fp, self.log_fp]
+                                self.usearch_fp, self.log_fp, self.bl6_fp]
         
         self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                             prefix='qiime_refseqs',
@@ -76,6 +77,7 @@ class UsearchFunctionalAssignmentTests(FunctionalAssignmentTests):
                               output_fp=self.output_fp,
                               failure_fp=self.failure_fp,
                               usearch_fp=self.usearch_fp,
+                              blast6_fp=self.bl6_fp,
                               log_fp=self.log_fp,
                               evalue=1e-10,
                               min_id=0.75,
