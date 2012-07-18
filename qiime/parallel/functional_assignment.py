@@ -16,6 +16,14 @@ from qiime.parallel.pick_otus import ParallelPickOtus
 class ParallelFunctionAssignerUsearch(ParallelPickOtus):
     _script_name = 'functional_assignment.py'
     _job_prefix = 'FUAS'
+
+    def _identify_files_to_remove(self,job_result_filepaths,params):
+        """ Select the files to remove: by default remove all files
+        """
+        # save the .uc files
+        result =\
+             [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
+        return result
     
     def _get_job_commands(self,
                           fasta_fps,
@@ -29,7 +37,8 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
         # in to create the full list of files created by all of the runs.
         out_filenames = [job_prefix + '.%d_fmap.txt',
                          job_prefix + '.%s_failures.txt',
-                         job_prefix + '.%s.uc']
+                         job_prefix + '.%s.uc',
+                         job_prefix + '.%s.bl6']
     
         # Create lists to store the results
         commands = []
@@ -62,7 +71,6 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
               command_suffix)
 
             commands.append(command)
-
         return commands, result_filepaths
 
     def _write_merge_map_file(self,
@@ -78,12 +86,14 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
         otus_fps = []
         log_fps = []
         failures_fps = []
+        blast6_fps = []
     
         out_filepaths = [
          '%s/%s_fmap.txt' % (output_dir,input_file_basename),
          '%s/%s_fmap.log' % (output_dir,input_file_basename),
-         '%s/%s_failures.txt' % (output_dir,input_file_basename)]
-        in_filepaths = [otus_fps,log_fps,failures_fps]
+         '%s/%s_failures.txt' % (output_dir,input_file_basename),
+         '%s/%s.bl6' % (output_dir,input_file_basename)]
+        in_filepaths = [otus_fps,log_fps,failures_fps,blast6_fps]
     
         for fp in job_result_filepaths:
             if fp.endswith('_fmap.txt'):
@@ -92,6 +102,8 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
                 log_fps.append(fp)
             elif fp.endswith('_failures.txt'):
                 failures_fps.append(fp)
+            elif fp.endswith('.bl6'):
+                blast6_fps.append(fp)
             else:
                 pass
     

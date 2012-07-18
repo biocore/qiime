@@ -128,6 +128,7 @@ def main():
     log_path = '%s/%s_fmap.log' % (output_dir,input_seqs_basename)
     failure_path = '%s/%s_failures.txt' % (output_dir,input_seqs_basename)
     usearch_path = '%s/%s.uc' % (output_dir,input_seqs_basename)
+    blast6_path = '%s/%s.bl6' % (output_dir,input_seqs_basename)
     
     if assignment_method == 'blastx':
         
@@ -148,6 +149,7 @@ def main():
                                output_fp=result_path,
                                failure_fp=failure_path,
                                usearch_fp=usearch_path,
+                               blast6_fp=blast6_path,
                                log_fp=log_path,
                                evalue=opts.evalue,
                                min_id=opts.min_percent_id,

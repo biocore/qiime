@@ -59,6 +59,9 @@ class Usearch(CommandLineApplication):
         # Output cluster file, required parameter
         '--uc':ValuedParameter('--',Name='uc',Delimiter=' ',
             IsPath=True),
+
+        '--blast6out':ValuedParameter('--',Name='blast6out',Delimiter=' ',
+            IsPath=True),
         
         # ID percent for OTU, by default is 97%
         '--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
@@ -176,7 +179,7 @@ class Usearch(CommandLineApplication):
                            '--cluster', '--seedsout', '--sortsize',\
                            '--consout', '--uchime', '--chimeras',\
                            '--nonchimeras', '--db', '--uchimeout',\
-                           '--query']
+                           '--query','--blast6out']
                            
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:

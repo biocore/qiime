@@ -261,8 +261,9 @@ def parallel_pick_otus_process_run_results_f(f):
     basic_process_run_results_f([lines[1]])
     try:
         basic_process_run_results_f([lines[2]])
+        basic_process_run_results_f([lines[3]])
     except IndexError:
-        # no failures files were generated (BLAST
+        # no failures files or blast6 were generated (BLAST
         # doesn't create these)
         pass
     # handle merging of otu maps

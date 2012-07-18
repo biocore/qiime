@@ -88,8 +88,8 @@ class ParalleFunctionalAssignmentUsearchTests(ParallelFunctionalAssignmentTests)
                 suppress_submit_jobs=False)
         otu_map_fp = glob(join(self.test_out,'*fmap.txt'))[0]
         fmap = parse_otu_map(open(otu_map_fp,'U'))
-        self.assertEqual(len(fmap[0]),2)
-        self.assertEqualItems(fmap[1],['eco:b0015', 'eco:b0122'])
+        self.assertEqual(len(fmap[0]),3)
+        self.assertEqualItems(fmap[1],['eco:b0015', 'eco:b0122','eco:b0015:duplicate'])
         self.assertEqualItems(fmap[2],['eco:b0015-pr', 'eco:b0122-pr'])
 
 refseqs1 = """>eco:b0001-pr
@@ -137,6 +137,26 @@ ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
 tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
 ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
 aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>eco:b0015:duplicate
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 """
 
 if __name__ == "__main__":
