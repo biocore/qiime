@@ -134,11 +134,11 @@ class RSupervisedLearner(CommandLineApplication):
         
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
-        args = ['--source_dir', source_dir,
-                '-i', predictor_fp, 
-                '-m', response_fp,
+        args = ['--source_dir', '"'+source_dir+'"',
+                '-i', '"'+predictor_fp+'"', 
+                '-m', '"'+response_fp+'"',
                 '-c', response_name,
-                '-o', output_dir, 
+                '-o', '"'+output_dir+'"', 
                 '-e', errortype,
                 '--ntree', str(ntree)]
         if verbose:
@@ -147,7 +147,7 @@ class RSupervisedLearner(CommandLineApplication):
         command = self._commandline_join(
             [   cd_command, base_command,
                 '--args'
-            ] + args + [' < %s ' %(rscript)]
+            ] + args + [' < "%s" ' %(rscript)]
             )
 
         if verbose:
