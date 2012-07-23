@@ -49,17 +49,18 @@ pageTracker._trackPageview();
 		<h3>Latest Amazon Web Services (AWS) virtual machine identifiers</h3>
 		<ul>
 		<li>QIIME 1.5.0 (release) AMI: ami-e4bf1b8d<li>
-		<li>QIIME 1.5.0-dev (development) coming soon...<li>
 		</ul>
-		<!-- <h3>To update the development AMI to the latest svn version of QIIME, run the following commands (<i>this will not work in the release AMIs!</i>):</h3>
+		<h3>To update the release AMI to the latest svn version of QIIME, run the following commands:</h3>
 			<p>
 		<div class="code">
 		<ul class="code">
-		<li>cd app-deploy-qiime-1.4.0_dev/</li>
-		<li>python app-deploy.py /software/ -f etc/qiime_1.4.0_repository.conf --force-remove-failed-dirs --force-remove-previous-repos</li>
+		<li>wget ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/app-deploy-qiime-1.5.0.tgz</li>
+		<li>tar zxvf app-deploy-qiime-1.5.0.tgz</li>
+		<li>cd app-deploy-qiime-1.5.0 </li>
+		<li>python app-deploy.py /home/ubuntu/qiime_software/ -f etc/qiime_1.5.0_repository.conf --force-remove-failed-dirs --force-remove-previous-repos</li>
 		<li>source ~/.bash_profile</li>
 		</ul>
-		</div> -->
+		</div>
 		<h3>Older Amazon Web Services (AWS) virtual machine identifiers</h3>
 		<ul>
 		<li>QIIME 1.4.0 (release) AMI: ami-458d5b2c</li>
