@@ -15,11 +15,9 @@ __status__ = "Development"
 from numpy import array
 from cogent.util.unit_test import TestCase, main
 
-from qiime.compare_taxa_summaries import (add_filename_suffix,
-        compare_taxa_summaries, _compute_correlation,
-        _format_correlation_vector, _format_taxa_summary,
-        _get_correlation_function, _get_rank, _make_compatible_taxa_summaries,
-        parse_sample_id_map, _sort_and_fill_taxa_summaries,
+from qiime.compare_taxa_summaries import (compare_taxa_summaries,
+        _compute_correlation, _get_correlation_function, _get_rank,
+        _make_compatible_taxa_summaries, _sort_and_fill_taxa_summaries,
         _pearson_correlation, _spearman, _spearman_correlation)
 
 class CompareTaxaSummariesTests(TestCase):
@@ -143,19 +141,6 @@ class CompareTaxaSummariesTests(TestCase):
         # Partial mapping.
         self.taxa_summary_paired_samp_id_map2 = {'S1':'a', 'S2':'b',
                                                  'E1':'c', 'E2':'a'}
-
-        # For formatting as correlation vectors.
-        self.corr_vec1 = [('S1', 'T1', 0.7777777777, 0, 0)]
-        self.corr_vec2 = [('S1', 'T1', 0.7777777777, 0, 0),
-                          ('S2', 'T2', 0.1, 0.05, 0.15),
-                          ('S3', 'T3', 100.68, 0.9, 1)]
-
-        # Sample ID maps for testing the parser.
-        self.sample_id_map_lines1 = ['\t\t\n', '', ' ', '\n', 'S1\ta',
-                                    'S2\tb', '\n \t', 'T1\ta', 'T2\tb']
-        self.sample_id_map_lines2 = ['\t\t\n', '', ' ', '\n', 'S1\ta',
-                                    'S2\tb', '\n \t', 'S1\tc']
-        self.sample_id_map_lines3 = ['S1\ta', 'T1\ta', 'S2\ta']
 
         # For testing _spearman_correlation, taken from the Spearman wikipedia
         # article.
@@ -320,84 +305,6 @@ class CompareTaxaSummariesTests(TestCase):
         self.assertRaises(ValueError, compare_taxa_summaries,
                 self.taxa_summary_obs1, self.taxa_summary_exp1, 'foo',
                 'pearson')
-
-    def test_parse_sample_id_map(self):
-        """Test parsing a sample id map functions correctly."""
-        exp = {'S1':'a', 'S2':'b', 'T1':'a', 'T2':'b'}
-        obs = parse_sample_id_map(self.sample_id_map_lines1)
-        self.assertEqual(obs, exp)
-
-    def test_parse_sample_id_map_repeat_sample_ids(self):
-        """Test parsing a sample id map with non-unique first column fails."""
-        self.assertRaises(ValueError, parse_sample_id_map,
-                          self.sample_id_map_lines2)
-
-    def test_parse_sample_id_map_many_to_one_mapping(self):
-        """Test parsing a sample id map with many-to-one mapping fails."""
-        self.assertRaises(ValueError, parse_sample_id_map,
-                          self.sample_id_map_lines3)
-
-    def test_add_filename_suffix(self):
-        """Test adding a suffix to a filename works correctly."""
-        self.assertEqual(add_filename_suffix('/foo/bar/baz.txt', 'z'),
-                                             'bazz.txt')
-        self.assertEqual(add_filename_suffix('baz.txt', 'z'),
-                                             'bazz.txt')
-        self.assertEqual(add_filename_suffix('/foo/bar/baz', 'z'),
-                                             'bazz')
-        self.assertEqual(add_filename_suffix('baz', 'z'),
-                                             'bazz')
-        self.assertEqual(add_filename_suffix('/baz.fasta.txt', 'z'),
-                                             'baz.fastaz.txt')
-        self.assertEqual(add_filename_suffix('baz.fasta.txt', 'z'),
-                                             'baz.fastaz.txt')
-        self.assertEqual(add_filename_suffix('/foo/', 'z'), 'z')
-
-    def test_format_correlation_vector(self):
-        """Test formatting correlations works correctly."""
-        # One row.
-        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\n'
-        obs = _format_correlation_vector(self.corr_vec1)
-        self.assertEqual(obs, exp)
-
-        # Multiple rows.
-        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t100.6800\t' + \
-              '0.9000\t1.0000\n'
-        obs = _format_correlation_vector(self.corr_vec2)
-        self.assertEqual(obs, exp)
-
-    def test_format_correlation_vector_with_header(self):
-        """Test formatting correlations with a header works correctly."""
-        # One row.
-        exp = 'foo\nSample ID\tSample ID\tCorrelation coefficient\t' + \
-              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
-              '0.0000\t0.0000\n'
-        obs = _format_correlation_vector(self.corr_vec1, 'foo')
-        self.assertEqual(obs, exp)
-
-        # Multiple rows.
-        exp = '#foobar\nSample ID\tSample ID\tCorrelation coefficient\t' + \
-              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
-              '0.0000\t0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t' + \
-              '100.6800\t0.9000\t1.0000\n'
-        obs = _format_correlation_vector(self.corr_vec2, '#foobar')
-        self.assertEqual(obs, exp)
-
-    def test_format_taxa_summary(self):
-        """Test formatting a taxa summary works correctly."""
-        # More than one sample.
-        exp = 'Taxon\tEven7\tEven8\nEukarya\t1.0\t1.0\n'
-        obs = _format_taxa_summary(self.taxa_summary3)
-        self.assertEqual(obs, exp)
-
-        # More than one taxon.
-        exp = 'Taxon\tExpected\nEukarya\t0.5\nBacteria\t0.6\nArchaea\t0.4\n'
-        obs = _format_taxa_summary(self.taxa_summary_exp2)
-        self.assertEqual(obs, exp)
 
     def test_get_correlation_function(self):
         """Test returns correct correlation function."""

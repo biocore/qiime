@@ -3,8 +3,9 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",\
-                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
+               "Cathy Lozupone", "Jens Reeder", "Daniel McDonald",
+               "Jai Ram Rideout"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -27,8 +28,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping,parse_otu_map,parse_taxonomy_to_otu_metadata,
-    is_casava_v180_or_later)
+    parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
+    parse_taxonomy_to_otu_metadata, is_casava_v180_or_later)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -958,6 +959,28 @@ otu3	s8_7	s2_5""".split('\n')
         self.assertEqual(actual[0],expected_map)
         self.assertEqual(actual[1],expected_sids)
         self.assertEqual(actual[2],expected_oids)
+
+    def test_parse_sample_id_map(self):
+        """Test parsing a sample id map functions correctly."""
+        sample_id_map = ['\t\t\n', '', ' ', '\n', 'S1\ta',
+                         'S2\tb', '\n \t', 'T1\ta', 'T2\tb']
+        exp = {'S1':'a', 'S2':'b', 'T1':'a', 'T2':'b'}
+        obs = parse_sample_id_map(sample_id_map)
+        self.assertEqual(obs, exp)
+
+    def test_parse_sample_id_map_repeat_sample_ids(self):
+        """Test parsing a sample id map with non-unique first column fails."""
+        sample_id_map = ['\t\t\n', '', ' ', '\n', 'S1\ta',
+                         'S2\tb', '\n \t', 'S1\tc']
+        self.assertRaises(ValueError, parse_sample_id_map,
+                          sample_id_map)
+
+    def test_parse_sample_id_map_many_to_one_mapping(self):
+        """Test parsing a sample id map with many-to-one mapping fails."""
+        sample_id_map = ['S1\ta', 'T1\ta', 'S2\ta']
+        self.assertRaises(ValueError, parse_sample_id_map,
+                          sample_id_map)
+
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')

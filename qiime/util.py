@@ -21,7 +21,7 @@ A lot of this might migrate into cogent at some point.
 from StringIO import StringIO
 from os import getenv, makedirs
 from operator import itemgetter
-from os.path import abspath, exists, dirname, join, isdir
+from os.path import abspath, basename, exists, dirname, join, isdir, splitext
 from collections import defaultdict
 import gzip
 import sys
@@ -1842,3 +1842,19 @@ def head_gzip(fp,n=10):
     f = gzip_open(fp)
     for i in range(n):
         print f.readline(),
+
+def add_filename_suffix(filepath, suffix):
+    """Adds a suffix to the filepath, inserted before the file extension.
+
+    Returns the new filepath string. For example, if filepath is 'foo.txt' and
+    suffix is '_bar', 'foo_bar.txt' will be returned.
+
+    Arguments:
+        filepath - any filepath to append the suffix to (before the file
+            extension, if it exists). Most useful if the filepath points to a
+            file instead of a directory. The filepath isn't required to have
+            an extension
+    """
+    root, extension = splitext(basename(filepath))
+    return root + suffix + extension
+

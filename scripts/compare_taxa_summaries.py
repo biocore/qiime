@@ -12,13 +12,12 @@ __status__ = "Development"
 
 from os.path import basename, join
 from cogent.util.misc import create_dir
-from qiime.parse import parse_taxa_summary_table
-from qiime.util import (parse_command_line_parameters, get_options_lookup,
-                        make_option)
+from qiime.parse import parse_sample_id_map, parse_taxa_summary_table
+from qiime.util import (add_filename_suffix, parse_command_line_parameters,
+                        get_options_lookup, make_option)
 
-from qiime.compare_taxa_summaries import (add_filename_suffix,
-        comparison_modes, compare_taxa_summaries, correlation_types,
-        parse_sample_id_map)
+from qiime.compare_taxa_summaries import (comparison_modes,
+        compare_taxa_summaries, correlation_types)
 
 options_lookup = get_options_lookup()
 

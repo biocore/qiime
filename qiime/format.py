@@ -2,8 +2,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", \
-        "Antonio Gonzalez Pena", "Daniel McDonald"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann",
+               "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
@@ -141,6 +141,52 @@ def write_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
                                                 header, delimiter):
         of.write(line)
     of.close()
+
+def format_taxa_summary(taxa_summary):
+    """Formats a taxa summary to be suitable for writing to a file.
+
+    Returns a string where the first line contains 'Taxon' and then a list of
+    tab-separated sample IDs. The next lines contain each taxon and its
+    abundance in each sample separated by a tab.
+
+    Arguments:
+        taxa_summary - the taxa summary tuple (i.e. the output of
+            qiime.parse.parse_taxa_summary_table) to format
+    """
+    result = 'Taxon\t' + '\t'.join(taxa_summary[0]) + '\n'
+    for taxon, row in zip(taxa_summary[1], taxa_summary[2]):
+        row = map(str, row)
+        result += '%s\t' % taxon + '\t'.join(row) + '\n'
+    return result
+
+def format_correlation_vector(corr_vector, header=''):
+    """Formats a correlation vector to be suitable for writing to a file.
+
+    Returns a string where each line contains five tab-separated fields: the
+    two sample IDs that were compared, the correlation coefficient, the
+    p-value, and the Bonferroni-corrected p-value.
+
+    Arguments:
+        corr_vector - a list of 5-element tuples, where the first
+            element is a sample ID, the second element is a sample ID, the
+            third element is the correlation coefficient computed between the
+            two samples (a double), the fourth element is the p-value, and the
+            fifth element is the Bonferroni-corrected p-value
+        header - if provided, this string will be inserted at the beginning of
+            the returned string. For example, might be useful to add a comment
+            describing what correlation coefficient was used. This string does
+            not need to contain a newline at the end
+    """
+    result = ''
+    if header != '':
+        result += header + '\n'
+    result += 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\n'
+    for samp_id1, samp_id2, corr_coeff, p_val, p_val_corr in corr_vector:
+        result += '%s\t%s\t%.4f\t%.4f\t%.4f\n' % (samp_id1, samp_id2,
+                                                  corr_coeff, p_val,
+                                                  p_val_corr)
+    return result
 
 def write_otu_map(otu_map,output_fp,otu_id_prefix=''):
     """

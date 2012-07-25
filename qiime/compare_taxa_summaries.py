@@ -12,11 +12,10 @@ __status__ = "Development"
 
 """Contains functions used in the compare_taxa_summaries.py script."""
 
-from collections import defaultdict
-from os.path import basename, splitext
 from numpy import array, sqrt
 from cogent.maths.stats.distribution import tprob
 from cogent.maths.stats.test import correlation
+from qiime.format import format_correlation_vector, format_taxa_summary
 
 # Define valid choices for comparison mode and correlation type here so that it
 # can be used by the library code and the script.
@@ -138,107 +137,10 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         detailed_header = header
         if correlation_type == 'spearman' and len(filled_ts1[1]) <= 10:
             detailed_header += '\n' + spearman_detailed_warning
-        corr_vec_str = _format_correlation_vector(corr_vec, detailed_header)
+        corr_vec_str = format_correlation_vector(corr_vec, detailed_header)
 
-    return (_format_taxa_summary(filled_ts1), _format_taxa_summary(filled_ts2),
+    return (format_taxa_summary(filled_ts1), format_taxa_summary(filled_ts2),
            overall_corr_str, corr_vec_str)
-
-def parse_sample_id_map(sample_id_map_f):
-    """Parses the lines of a sample ID map file into a dictionary.
-
-    Returns a dictionary with original sample IDs as the keys and new sample
-    IDs as the values.
-
-    This function only allows a sample ID map to perform one-to-one mappings
-    between sample IDs.
-
-    Arguments:
-        sample_id_map_f - the lines of a sample ID map file to parse. Each line
-            should contain two sample IDs separated by a tab. Each value in the
-            first column must be unique, since the returned data structure is a
-            dictionary using those values as keys
-    """
-    result = {}
-    new_samp_id_counts = defaultdict(int)
-    for line in sample_id_map_f:
-        # Only try to parse lines that aren't just whitespace.
-        line = line.strip()
-        if line:
-            samp_id, mapped_id = line.split('\t')
-            if samp_id in result:
-                raise ValueError("The first column of the sample ID map must "
-                                 "contain unique sample IDs ('%s' is "
-                                 "repeated). The second column, however, may "
-                                 "contain repeats." % samp_id)
-            elif new_samp_id_counts[mapped_id] >= 2:
-                raise ValueError("Only two original sample IDs may map to the "
-                                 "same new sample ID. The new sample ID '%s' "
-                                 "has more than two sample IDs mapping to it."
-                                 % mapped_id)
-            else:
-                result[samp_id] = mapped_id
-                new_samp_id_counts[mapped_id] += 1
-    return result
-
-def add_filename_suffix(filepath, suffix):
-    """Adds a suffix to the filepath, inserted before the file extension.
-
-    Returns the new filepath string. For example, if filepath is 'foo.txt' and
-    suffix is '_bar', 'foo_bar.txt' will be returned.
-
-    Arguments:
-        filepath - any filepath to append the suffix to (before the file
-            extension, if it exists). Most useful if the filepath points to a
-            file instead of a directory
-    """
-    root, extension = splitext(basename(filepath))
-    return root + suffix + extension
-
-def _format_correlation_vector(correlations, header=''):
-    """Formats a correlation vector to be suitable for writing to a file.
-
-    Returns a string where each line contains five tab-separated fields: the
-    two sample IDs that were compared, the computed correlation coefficient,
-    the p-value, and the Bonferroni-corrected p-value.
-
-    Arguments:
-        correlations - a list of 5-element tuples, where the first element is a
-            sample ID, the second element is a sample ID, the third element is
-            the correlation coefficient computed between the two samples (a
-            double), the fourth element is the p-value, and the fifth element
-            is the Bonferroni-corrected p-value
-        header - if provided, this string will be inserted at the beginning of
-            the returned string. For example, might be useful to add a comment
-            describing what correlation coefficient was used. This string does
-            not need to contain a newline at the end
-    """
-    result = ''
-    if header != '':
-        result += header + '\n'
-    result += 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\n'
-    for samp_id1, samp_id2, corr_coeff, p_val, p_val_corr in correlations:
-        result += '%s\t%s\t%.4f\t%.4f\t%.4f\n' % (samp_id1, samp_id2,
-                                                  corr_coeff, p_val,
-                                                  p_val_corr)
-    return result
-
-def _format_taxa_summary(taxa_summary):
-    """Formats a taxa summary to be suitable for writing to a file.
-
-    Returns a string where the first line contains 'Taxon' and then a list of
-    tab-separated sample IDs. The next lines contain each taxon and its
-    abundance separated by a tab.
-
-    Arguments:
-        taxa_summary - the taxa summary tuple (i.e. the output of
-            qiime.parse.parse_taxa_summary_table) to format
-    """
-    result = 'Taxon\t' + '\t'.join(taxa_summary[0]) + '\n'
-    for taxon, row in zip(taxa_summary[1], taxa_summary[2]):
-        row = map(str, row)
-        result += '%s\t' % taxon + '\t'.join(row) + '\n'
-    return result
 
 def _get_correlation_function(correlation_type):
     """Returns the correlation function to use based on the correlation type.

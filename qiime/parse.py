@@ -4,7 +4,8 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
-    "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder", "Antonio Gonzalez Pena"]
+               "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder",
+               "Antonio Gonzalez Pena", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -952,4 +953,41 @@ def parse_otu_map(otu_map_f,otu_ids_to_exclude=None,delim='_'):
         otu_count += 1
         otu_ids.append(otu_id)
     return result, sample_ids, otu_ids
-    
+
+def parse_sample_id_map(sample_id_map_f):
+    """Parses the lines of a sample ID map file into a dictionary.
+
+    Returns a dictionary with original sample IDs as the keys and new sample
+    IDs as the values.
+
+    This function only allows a sample ID map to perform one-to-one mappings
+    between sample IDs (e.g. S1 and T1 point to new ID 'a', but a third
+    original ID, such as S2, cannot also point to 'a').
+
+    Arguments:
+        sample_id_map_f - the lines of a sample ID map file to parse. Each line
+            should contain two sample IDs separated by a tab. Each value in the
+            first column must be unique, since the returned data structure is a
+            dictionary using those values as keys
+    """
+    result = {}
+    new_samp_id_counts = defaultdict(int)
+    for line in sample_id_map_f:
+        # Only try to parse lines that aren't just whitespace.
+        line = line.strip()
+        if line:
+            samp_id, mapped_id = line.split('\t')
+            if samp_id in result:
+                raise ValueError("The first column of the sample ID map must "
+                                 "contain unique sample IDs ('%s' is "
+                                 "repeated). The second column, however, may "
+                                 "contain repeats." % samp_id)
+            elif new_samp_id_counts[mapped_id] >= 2:
+                raise ValueError("Only two original sample IDs may map to the "
+                                 "same new sample ID. The new sample ID '%s' "
+                                 "has more than two sample IDs mapping to it."
+                                 % mapped_id)
+            else:
+                result[samp_id] = mapped_id
+                new_samp_id_counts[mapped_id] += 1
+    return result

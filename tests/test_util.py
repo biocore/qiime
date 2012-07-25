@@ -43,7 +43,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
-    qiime_blastx_seqs)
+    qiime_blastx_seqs, add_filename_suffix)
 
 import numpy
 from numpy import array, asarray
@@ -686,6 +686,22 @@ GTCTGA
         expected_results['2'] = [1, 4]
         
         self.assertEqual(results, expected_results)
+
+    def test_add_filename_suffix(self):
+        """Test adding a suffix to a filename works correctly."""
+        self.assertEqual(add_filename_suffix('/foo/bar/baz.txt', 'z'),
+                                             'bazz.txt')
+        self.assertEqual(add_filename_suffix('baz.txt', 'z'),
+                                             'bazz.txt')
+        self.assertEqual(add_filename_suffix('/foo/bar/baz', 'z'),
+                                             'bazz')
+        self.assertEqual(add_filename_suffix('baz', 'z'),
+                                             'bazz')
+        self.assertEqual(add_filename_suffix('/baz.fasta.txt', 'z'),
+                                             'baz.fastaz.txt')
+        self.assertEqual(add_filename_suffix('baz.fasta.txt', 'z'),
+                                             'baz.fastaz.txt')
+        self.assertEqual(add_filename_suffix('/foo/', 'z'), 'z')
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
@@ -2056,7 +2072,8 @@ class RExecutorTests(TestCase):
 
         self.files_to_remove.append(join(self.TmpDir,'R.stdout'))
         self.files_to_remove.append(join(self.TmpDir,'R.stderr'))
-        
+
+
 # Long strings of test data go here
 fasta_lines = """>seq1
 ACCAGCGGAGAC

@@ -3,7 +3,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald"] 
+__credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald",
+               "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
@@ -25,9 +26,9 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
-    format_qiime_parameters, format_p_value_for_num_iters,
-    format_mapping_file,illumina_data_to_fastq, format_biom_table,
-    format_mapping_html_data)
+    format_taxa_summary, format_correlation_vector, format_qiime_parameters,
+    format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
+    format_biom_table, format_mapping_html_data)
 from biom.parse import parse_biom_table
 
 class TopLevelTests(TestCase):
@@ -60,7 +61,13 @@ class TopLevelTests(TestCase):
          expected_formatted_html_warnings
         self.expected_formatted_html_data_nonloc_error =\
          expected_formatted_html_data_nonloc_error
-        
+
+        # For testing formatting of correlation vectors.
+        self.corr_vec1 = [('S1', 'T1', 0.7777777777, 0, 0)]
+        self.corr_vec2 = [('S1', 'T1', 0.7777777777, 0, 0),
+                          ('S2', 'T2', 0.1, 0.05, 0.15),
+                          ('S3', 'T3', 100.68, 0.9, 1)]
+
     def tearDown(self):
         remove_files(self.files_to_remove)
         
@@ -132,7 +139,6 @@ class TopLevelTests(TestCase):
                          'foobar\t2\t5\n'])
         self.assertEqual(obs,exp)
         self.files_to_remove.append(self.tmp_fp1)
-        
 
     def test_format_add_taxa_summary_mapping(self):
         """format_add_taxa_summary_mapping functions as expected"""
@@ -145,6 +151,55 @@ class TopLevelTests(TestCase):
                                               self.add_taxa_header)
         obs = ''.join(list(tmp))
         self.assertEqual(obs,exp)
+
+    def test_format_taxa_summary(self):
+        """Test formatting a taxa summary works correctly."""
+        # More than one sample.
+        taxa_summary = (['Even7','Even8'], ['Eukarya'], array([[1.0, 1.0]]))
+        exp = 'Taxon\tEven7\tEven8\nEukarya\t1.0\t1.0\n'
+        obs = format_taxa_summary(taxa_summary)
+        self.assertEqual(obs, exp)
+
+        # More than one taxon.
+        taxa_summary = (['Expected'], ['Eukarya', 'Bacteria', 'Archaea'],
+                        array([[0.5], [0.6], [0.4]]))
+        exp = 'Taxon\tExpected\nEukarya\t0.5\nBacteria\t0.6\nArchaea\t0.4\n'
+        obs = format_taxa_summary(taxa_summary)
+        self.assertEqual(obs, exp)
+
+    def test_format_correlation_vector(self):
+        """Test formatting correlations works correctly."""
+        # One row.
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\n'
+        obs = format_correlation_vector(self.corr_vec1)
+        self.assertEqual(obs, exp)
+
+        # Multiple rows.
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t100.6800\t' + \
+              '0.9000\t1.0000\n'
+        obs = format_correlation_vector(self.corr_vec2)
+        self.assertEqual(obs, exp)
+
+    def test_format_correlation_vector_with_header(self):
+        """Test formatting correlations with a header works correctly."""
+        # One row.
+        exp = 'foo\nSample ID\tSample ID\tCorrelation coefficient\t' + \
+              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
+              '0.0000\t0.0000\n'
+        obs = format_correlation_vector(self.corr_vec1, 'foo')
+        self.assertEqual(obs, exp)
+
+        # Multiple rows.
+        exp = '#foobar\nSample ID\tSample ID\tCorrelation coefficient\t' + \
+              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
+              '0.0000\t0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t' + \
+              '100.6800\t0.9000\t1.0000\n'
+        obs = format_correlation_vector(self.corr_vec2, '#foobar')
+        self.assertEqual(obs, exp)
 
     def test_format_qiime_parameters(self):
         """format_qiime_parameters: returns lines in qiime_parameters format"""
