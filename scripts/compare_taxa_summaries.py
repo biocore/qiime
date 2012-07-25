@@ -38,21 +38,31 @@ reporting an abundance of zero). The sorted and filled taxa summary files can
 then be passed to a script, such as plot_taxa_summary.py, to visually compare
 the differences using the same taxa coloring scheme.
 """
+
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Paired sample comparison",
 "Compare all samples that have matching sample IDs between the two input taxa "
-"summary files using the pearson correlation coefficient.",
+"summary files using the pearson correlation coefficient. The first input "
+"taxa summary file is from the overview tutorial, using the RDP classifier "
+"with a confidence level of 0.60 and the gg_otus_4feb2011 97% representative "
+"set. The second input taxa summary file was generated the same way, except "
+"for using a confidence level of 0.80.",
 "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp"))
 script_info['script_usage'].append(("Paired sample comparison with sample ID "
 "map", "Compare samples based on the mappings in the sample ID map using the "
-"pearson correlation coefficient.",
-"%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp -s "
-"sample_id_map.txt"))
-script_info['script_usage'].append(("Expected sample comparison",
-"Compare all samples in the first taxa summary file to a taxa summary file "
-"that contains a single expected, or known, sample using the spearman "
-"correlation coefficient.",
-"%prog -i ts_rdp_0.60.txt,expected.txt -m expected -o taxa_comp -c spearman"))
+"spearman correlation coefficient. The second input taxa summary file is "
+"simply the original ts_rdp_0.60.txt file with all sample IDs containing "
+"'PC.' renamed to 'S.'.",
+"%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o "
+"taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman"))
+script_info['script_usage'].append(("Detailed paired sample comparison",
+"Compare all samples that have matching sample IDs between the two input taxa "
+"summary files using the pearson correlation coefficient. Additionally, "
+"compute the correlation coefficient between each pair of samples "
+"individually.",
+"%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed "
+"--perform_detailed_comparisons"))
+
 script_info['output_description'] = """
 The script will always output at least three files to the specified output
 directory. Two files will be the sorted and filled versions of the input taxa
