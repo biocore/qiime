@@ -37,6 +37,10 @@ each sample has the same taxa listed in the same order (with missing taxa
 reporting an abundance of zero). The sorted and filled taxa summary files can
 then be passed to a script, such as plot_taxa_summary.py, to visually compare
 the differences using the same taxa coloring scheme.
+
+For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+http://qiime.org/tutorials/taxa_summary_comparison.html.
 """
 
 script_info['script_usage'] = []

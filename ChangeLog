@@ -4,7 +4,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * Added a 'simpson_reciprocal' measure of alpha diversity, which is 1/D, following the definition at http://www.countrysideinfo.co.uk/simpsons.htm among other places. Note the measure 'reciprocal_simpson' is 1/simpson, not 1/D. It was removed for clarity.
 * Added new script, compute_core_microbiome.py, which identifies the core OTUs (i.e., those defined in some user-defined percentage of the samples).
 * Major refactoring of parallel QIIME. Repetitive code was consolidated into the ParallelWrapper class, which may ultimately move to PyCogent. The only script interface changes are that the -Y/--python_exe_fp, -N (serial script filepath), and -P/--poller_fp parameters are no longer available to the user. These were very infrequently (if ever) modified from defaults, so it doesn't make sense to continue to support these. These changes will allow for easier development of new parallel wrappers and facilitate changes to the underlying parallel functionality. 
-* Added new script, compare_taxa_summaries.py, and supporting library and test code (qiime/compare_taxa_summaries.py and tests/test_compare_taxa_summaries.py) to allow for the comparison of taxa summary files, including sorting and filling, expected, and paired comparisons using pearson or spearman correlation.
+* Added new script, compare_taxa_summaries.py, and supporting library and test code (qiime/compare_taxa_summaries.py and tests/test_compare_taxa_summaries.py) to allow for the comparison of taxa summary files, including sorting and filling, expected, and paired comparisons using pearson or spearman correlation. Added accompanying tutorial (doc/tutorials/taxa_summary_comparison.rst).
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
