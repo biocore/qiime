@@ -12,9 +12,11 @@ __status__ = "Development"
 
 """Contains functions used in the compare_taxa_summaries.py script."""
 
+from collections import defaultdict
 from os.path import basename, splitext
 from numpy import array, sqrt
-from cogent.maths.stats.test import pearson
+from cogent.maths.stats.distribution import tprob
+from cogent.maths.stats.test import correlation
 
 # Define valid choices for comparison mode and correlation type here so that it
 # can be used by the library code and the script.
@@ -22,7 +24,9 @@ comparison_modes = ['paired', 'expected']
 correlation_types = ['pearson', 'spearman']
 
 def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
-                           correlation_type='pearson', sample_id_map=None):
+                           correlation_type='pearson',
+                           perform_detailed_comparisons=False,
+                           sample_id_map=None, expected_sample_id=None):
     """Compares two taxa summaries using the specified comparison mode.
 
     Taxa summaries are compared by computing the correlation coefficient
@@ -31,10 +35,17 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
     missing in one summary but are present in the other are represented with
     zero abundance.
 
-    Returns the sorted and filled taxa summaries (in a format ready to be
-    written to a file) and a correlation vector (also in a format ready to be
-    written to a file) where each line shows the samples that were compared and
-    the associated correlation coefficient.
+    Returns a four-element tuple containing the following values: the sorted
+    and filled taxa summaries (in a format ready to be written to a file) and a
+    report detailing the correlation between the taxa summaries (also in a
+    format ready to be written to a file), including the correlation
+    coefficient and p-value for the overall comparison.
+
+    If perform_detailed_comparisons is True, the correlation vector is returned
+    (also in a format ready to be written to a file) where each line shows the
+    samples that were compared and the associated correlation coefficient,
+    p-value, and Bonferroni-corrected p-value. If perform_detailed_comparisons
+    is False, None will be returned for this value.
 
     Arguments:
         taxa_summary1 - the first taxa summary to compare. This should be a
@@ -45,21 +56,43 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
             summaries. Can be either 'paired' or 'expected'. If 'paired', the
             samples that match between the two taxa summaries will be compared,
             unless a sample_id_map is specified. If 'expected', each sample in
-            the first taxa summary will be compared to the single 'expected'
-            sample in the second taxa summary. If 'expected', the second taxa
-            summary must only contain a single sample
+            the first taxa summary will be compared to an 'expected' sample in
+            the second taxa summary. If 'expected', the second taxa summary
+            must only contain a single sample unless expected_sample_id is
+            provided
         correlation_type - the type of correlation coefficient to calculate
             when comparing samples in the taxa summaries. Can be either
             'pearson' or 'spearman'
-        sample_id_map - a dictionary mapping sample IDs in the first taxa
-            summary to be compared to sample IDs in the second taxa summary.
-            Multiple keys (i.e. sample IDs in the first taxa summary) may map
-            to the same value (i.e. sample IDs in the second taxa summary).
-            Comparisons will only be made between mappings that exist in this
-            dictionary. This argument is only used if the comparison mode is
-            'paired'. If not provided, only matching sample IDs between the two
-            taxa summaries will be compared
+        perform_detailed_comparisons - if True, computes the correlation
+            between pairs of samples in addition to computing the overall
+            correlation between taxa summaries
+        sample_id_map - a dictionary mapping original sample IDs to new sample
+            IDs. New sample IDs that match will be compared. All original
+            sample IDs must be mapped. This argument is only used if the
+            comparison mode is 'paired'. If not provided, only matching sample
+            IDs between the two taxa summaries will be compared
+        expected_sample_id - the sample ID in taxa_summary2 to compare all
+            samples in taxa_summary1 to. This argument is only used if the
+            comparison mode is 'expected'. If not provided, taxa_summary2 must
+            only contain a single sample, and all samples in taxa_summary1 will
+            be compared to it
     """
+    # Define some comments to be put in the result strings.
+    header = "# Correlation coefficient: %s. " % correlation_type
+    header += "Performed a two-tailed test of significance using a " + \
+              "t-distribution."
+    spearman_overall_warning = "# Since there were 10 or fewer " + \
+            "observations when calculating Spearman's rank correlation " + \
+            "coefficient, the p-value is "
+    spearman_detailed_warning = "# Since there were 10 or fewer taxa in " + \
+            "the sorted and filled taxa summary files, the p-values and " + \
+            "Bonferroni-corrected p-values are "
+    spearman_warning_suffix = "not accurate when using the " + \
+            "t-distribution. Please see Biometry (Sokal and Rohlf, " + \
+            "3rd edition) page 600 for more details."
+    spearman_overall_warning += spearman_warning_suffix
+    spearman_detailed_warning += spearman_warning_suffix
+
     # Sort and fill the taxa summaries so that we can compare them.
     correlation_fn = _get_correlation_function(correlation_type)
     filled_ts1, filled_ts2 = _sort_and_fill_taxa_summaries([taxa_summary1,
@@ -69,26 +102,55 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         # compared against according to the sample ID map.
         compatible_ts1, compatible_ts2 = _make_compatible_taxa_summaries(
                 filled_ts1, filled_ts2, sample_id_map)
-        correlations = _compute_paired_sample_correlations(compatible_ts1,
-                compatible_ts2, correlation_fn)
+        overall_corr, corr_vec = _compute_correlation(compatible_ts1,
+                compatible_ts2, comparison_mode, correlation_fn,
+                perform_detailed_comparisons)
+
+        # Calculate the length of the vectors that were used to compute
+        # correlation of.
+        num_overall_observations = len(compatible_ts1[0]) * \
+                                   len(compatible_ts1[1])
+
+        # Report the number of samples that matched.
+        header += "\n# Number of samples that matched between the taxa " + \
+                  "summary files: %d" % len(compatible_ts1[0])
     elif comparison_mode == 'expected':
-        correlations = _compute_all_to_expected_correlations(filled_ts1,
-                filled_ts2, correlation_fn)
+        overall_corr, corr_vec = _compute_correlation(filled_ts1, filled_ts2,
+                comparison_mode, correlation_fn, perform_detailed_comparisons,
+                expected_sample_id)
+        num_overall_observations = len(filled_ts1[0]) * len(filled_ts1[1])
     else:
         raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
                          (comparison_mode, comparison_modes))
 
-    # Format the correlation vector with a header describing the correlation
-    # coefficient that was used.
-    header = "# Correlation coefficient: %s" % correlation_type
-    correlation_vector = _format_correlation_vector(correlations, header)
+    # Format the overall correlation into a string that is writable to a file.
+    # Include a warning in the header if the correlation coefficient was
+    # spearman and the number of observations was <= 10.
+    overall_corr_str = header
+    if correlation_type == 'spearman' and num_overall_observations <= 10:
+        overall_corr_str += '\n' + spearman_overall_warning
+    overall_corr_str += '\nCorrelation coefficient\tp-value'
+    overall_corr_str += '\n%.4f\t%.4f\n' % overall_corr
+
+    # Format the correlation vector.
+    corr_vec_str = None
+    if perform_detailed_comparisons:
+        detailed_header = header
+        if correlation_type == 'spearman' and len(filled_ts1[1]) <= 10:
+            detailed_header += '\n' + spearman_detailed_warning
+        corr_vec_str = _format_correlation_vector(corr_vec, detailed_header)
+
     return (_format_taxa_summary(filled_ts1), _format_taxa_summary(filled_ts2),
-           correlation_vector)
+           overall_corr_str, corr_vec_str)
 
 def parse_sample_id_map(sample_id_map_f):
     """Parses the lines of a sample ID map file into a dictionary.
 
-    Returns a dictionary with sample IDs as the keys and values.
+    Returns a dictionary with original sample IDs as the keys and new sample
+    IDs as the values.
+
+    This function only allows a sample ID map to perform one-to-one mappings
+    between sample IDs.
 
     Arguments:
         sample_id_map_f - the lines of a sample ID map file to parse. Each line
@@ -97,18 +159,25 @@ def parse_sample_id_map(sample_id_map_f):
             dictionary using those values as keys
     """
     result = {}
+    new_samp_id_counts = defaultdict(int)
     for line in sample_id_map_f:
+        # Only try to parse lines that aren't just whitespace.
         line = line.strip()
         if line:
-            # Only try to parse lines that aren't just whitespace.
             samp_id, mapped_id = line.split('\t')
             if samp_id in result:
                 raise ValueError("The first column of the sample ID map must "
                                  "contain unique sample IDs ('%s' is "
                                  "repeated). The second column, however, may "
                                  "contain repeats." % samp_id)
+            elif new_samp_id_counts[mapped_id] >= 2:
+                raise ValueError("Only two original sample IDs may map to the "
+                                 "same new sample ID. The new sample ID '%s' "
+                                 "has more than two sample IDs mapping to it."
+                                 % mapped_id)
             else:
                 result[samp_id] = mapped_id
+                new_samp_id_counts[mapped_id] += 1
     return result
 
 def add_filename_suffix(filepath, suffix):
@@ -128,15 +197,16 @@ def add_filename_suffix(filepath, suffix):
 def _format_correlation_vector(correlations, header=''):
     """Formats a correlation vector to be suitable for writing to a file.
 
-    Returns a string where each line contains three tab-separated fields: the
-    two sample IDs that were compared, and the computed correlation
-    coefficient.
+    Returns a string where each line contains five tab-separated fields: the
+    two sample IDs that were compared, the computed correlation coefficient,
+    the p-value, and the Bonferroni-corrected p-value.
 
     Arguments:
-        correlations - a list of 3-element tuples, where the first element is a
-            sample ID, the second element is a sample ID, and the third element
-            is the correlation coefficient computed between the two samples (a
-            double)
+        correlations - a list of 5-element tuples, where the first element is a
+            sample ID, the second element is a sample ID, the third element is
+            the correlation coefficient computed between the two samples (a
+            double), the fourth element is the p-value, and the fifth element
+            is the Bonferroni-corrected p-value
         header - if provided, this string will be inserted at the beginning of
             the returned string. For example, might be useful to add a comment
             describing what correlation coefficient was used. This string does
@@ -145,8 +215,12 @@ def _format_correlation_vector(correlations, header=''):
     result = ''
     if header != '':
         result += header + '\n'
-    for samp_id1, samp_id2, correlation in correlations:
-        result += '%s\t%s\t%.4f\n' % (samp_id1, samp_id2, correlation)
+    result += 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\n'
+    for samp_id1, samp_id2, corr_coeff, p_val, p_val_corr in correlations:
+        result += '%s\t%s\t%.4f\t%.4f\t%.4f\n' % (samp_id1, samp_id2,
+                                                  corr_coeff, p_val,
+                                                  p_val_corr)
     return result
 
 def _format_taxa_summary(taxa_summary):
@@ -170,7 +244,8 @@ def _get_correlation_function(correlation_type):
     """Returns the correlation function to use based on the correlation type.
 
     The correlation function that is returned will always accept two lists of
-    numbers to compute the correlation coefficient on.
+    numbers to compute the correlation coefficient on, and return a two-element
+    tuple containing the correlation coefficient and the p-value.
 
     Arguments:
         correlation_type - a string specifying the correlation type (may be
@@ -196,10 +271,9 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
 
     As another example, assume ts1 has samples 'S1' and 'S2' and ts2 has
     samples 'T1' and 'T2'. A sample ID map may be provided that maps 'S1' to
-    'T1' and 'S2' also to 'T1'. The first resulting compatible taxa summary
+    'T1' and 'S2' to 'T2'. The first resulting compatible taxa summary
     will have the samples 'S1' and 'S2' and the second resulting compatible
-    taxa summary will have samples 'T1' and 'T1' (repeated due to the
-    many-to-one mapping in the sample ID map). Thus, these resulting taxa
+    taxa summary will have samples 'T1' and 'T2'. Thus, these resulting taxa
     summaries can be directly compared because each sample lines up to the one
     it needs to be compared to.
 
@@ -218,13 +292,15 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
             summary. If not provided, only samples whose sample IDs directly
             match will be compared
     """
-    # Check to make sure the sample ID map looks sane.
+    # Check to make sure the sample ID map looks sane. All samples IDs in both
+    # taxa summaries should be mapped, though extra mappings (i.e. if the taxa
+    # summaries have been filtered) are allowed.
     if sample_id_map:
-        bad_samp_ids = set(sample_id_map.keys()).difference(set(ts1[0]))
-        if len(bad_samp_ids) != 0:
-            raise ValueError("The sample IDs %r in the sample ID map do not "
-                             "match any of the sample IDs in the taxa summary "
-                             "file." % bad_samp_ids)
+        for samp_id in ts1[0] + ts2[0]:
+            if samp_id not in sample_id_map:
+                raise ValueError("The original sample ID '%s' does not have a "
+                        "mapping in the sample ID map. All sample IDs must "
+                        "have a mapping." % samp_id)
 
     # For each sample ID in the first taxa summary file, try to find a matching
     # sample ID (using the sample ID map if one was provided) in the second
@@ -234,8 +310,16 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
     for samp_idx, samp_id in enumerate(ts1[0]):
         matching_samp_id = None
         if sample_id_map:
-            if samp_id in sample_id_map:
-                matching_samp_id = sample_id_map[samp_id]
+            # Find the matching sample ID that the current sample ID maps to.
+            # Only one-to-one mappings are allowed when the sample ID map is
+            # first parsed, though 'broken' mappings are allowed (i.e. a sample
+            # maps to a new sample ID, but no other sample maps to that ID). In
+            # this case, we simply ignore the broken mapping.
+            new_samp_id = sample_id_map[samp_id]
+            for orig_samp_id in sample_id_map:
+                if (orig_samp_id != samp_id and
+                    sample_id_map[orig_samp_id] == new_samp_id):
+                    matching_samp_id = orig_samp_id
         else:
             if samp_id in ts2[0]:
                 matching_samp_id = samp_id
@@ -245,12 +329,7 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
 
             # Transpose the data matrix so that we can index by sample index.
             new_data1.append(ts1[2].T[samp_idx])
-            try:
-                new_data2.append(ts2[2].T[ts2[0].index(matching_samp_id)])
-            except ValueError:
-                raise ValueError("The sample ID '%s' was not in the second "
-                                 "taxa summary file. Please check your sample "
-                                 "ID map." % matching_samp_id)
+            new_data2.append(ts2[2].T[ts2[0].index(matching_samp_id)])
     if len(new_samp_ids1) == 0:
         raise ValueError("No sample IDs matched between the taxa summaries. "
                          "The taxa summaries are incompatible.")
@@ -298,87 +377,80 @@ def _sort_and_fill_taxa_summaries(taxa_summaries):
         result.append((samples, master_taxa, array(data)))
     return result
 
-def _compute_all_to_expected_correlations(observed_taxa_summary,
-                                          expected_taxa_summary,
-                                          correlation_fn):
-    """Computes the correlation between all samples and an expected sample.
+def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
+                         perform_detailed_comparisons=False,
+                         expected_sample_id=None):
+    """Computes the correlation between two taxa summary files.
 
     The input taxa summaries MUST already be sorted and filled (see
     _sort_and_fill_taxa_summaries) so that the various taxa line up and contain
     the same number of taxa (e.g. the first taxon in both files is 'Bacteria'
     and not mismatched).
 
-    Returns a correlation vector, which is a list of 3-element tuples, where
-    the first element is a sample ID from observed_taxa_summary, the second
-    element is the single sample ID from expected_taxa_summary, and the third
-    element is the correlation coefficient computed between the two samples (a
-    double).
+    Additionally, if comparison_mode is 'paired', the input taxa summaries must
+    already have been made compatible, meaning the number of samples match
+    between the two taxa summaries. This is very important as the first sample
+    in ts1 will be compared to the first sample in ts2, the second sample in
+    ts1 will be compared to the second sample in ts2, and so on. The sample IDs
+    are not checked by this function to ensure they are in the correct order or
+    mapping (this is the job of _make_compatible_taxa_summaries).
 
-    Arguments:
-        observed_taxa_summary - the taxa summary containing samples that will
-            be compared to the expected sample
-        expected_taxa_summary - the taxa summary containing a single sample
-            that all samples in observed_taxa_summary will be compared to
-        correlation_fn - the correlation function to use when comparing
-            samples. This function must accept two lists of numbers and return
-            a number (the correlation coefficient)
-    """
-    # Make sure that the second taxa summary has only one sample.
-    if len(expected_taxa_summary[0]) != 1:
-        raise ValueError("The second taxa summary file must contain a single "
-                "sample (column) to compare all samples in the first taxa "
-                "summary file against when the comparison mode is 'expected'. "
-                "You provided %d samples." % len(expected_taxa_summary[0]))
+    Returns a two-element tuple: the first element is a two-element tuple
+    containing the correlation coefficient and p-value for the overall
+    comparison.
 
-    # Make sure the taxa information is the same (i.e. the summaries have been
-    # sorted and filled).
-    if observed_taxa_summary[1] != expected_taxa_summary[1]:
-        raise ValueError("The taxa do not match exactly between the two taxa "
-                         "summary files. The taxa must be sorted and filled "
-                         "before attempting to compare them.")
-
-    # Compute the correlation between each sample and the expected sample.
-    result = []
-    for sample_idx, sample_id in enumerate(observed_taxa_summary[0]):
-        result.append((sample_id, expected_taxa_summary[0][0],
-            correlation_fn(observed_taxa_summary[2].T[sample_idx],
-                           expected_taxa_summary[2].T[0])))
-    return result
-
-def _compute_paired_sample_correlations(ts1, ts2, correlation_fn):
-    """Computes the correlation between each sample pair in the taxa summaries.
-
-    The input taxa summaries MUST already be sorted and filled (see
-    _sort_and_fill_taxa_summaries) so that the various taxa line up and contain
-    the same number of taxa (e.g. the first taxon in both files is 'Bacteria'
-    and not mismatched). Additionally, the input taxa summaries must already
-    have been made compatible, meaning the number of samples match between the
-    two taxa summaries. This is very important as the first sample in ts1 will
-    be compared to the first sample in ts2, the second sample in ts1 will be
-    compared to the second sample in ts2, and so on. The sample IDs are not
-    checked by this function to ensure they are in the correct order or mapping
-    (this is the job of compare_taxa_summaries).
-
-    Returns a correlation vector, which is a list of 3-element tuples, where
-    the first element is a sample ID from ts1, the second element is a sample
-    ID from ts2, and the third element is the correlation coefficient computed
-    between the two samples (a double).
+    If perform_detailed_comparisons is True, the second element is a
+    correlation vector, which is a list of 5-element tuples, where the first
+    element is a sample ID from ts1, the second element is a sample ID from
+    ts2, the third element is the correlation coefficient computed between the
+    two samples (a double), the fourth element is the p-value, and the fifth
+    element is the Bonferroni-corrected p-value. If
+    perform_detailed_comparisons is False, None will be returned.
 
     Arguments:
         ts1 - the first taxa summary to be compared
         ts2 - the second taxa summary to be compared
+        comparison_mode - the type of comparison to perform on the two taxa
+            summaries. Can be either 'paired' or 'expected'. If 'paired', each
+            positional pair of samples between the two taxa summaries will be
+            compared. If 'expected', each sample in ts1 will be compared to an
+            'expected' sample in ts2. If 'expected', ts2 must only contain a
+            single sample unless expected_sample_id is provided
         correlation_fn - the correlation function to use when comparing
             samples. This function must accept two lists of numbers and return
-            a number (the correlation coefficient)
+            a two-element tuple containing the correlation coefficient and the
+            p-value
+        perform_detailed_comparisons - if True, computes the correlation
+            between each pair of samples in addition to computing the overall
+            correlation between taxa summaries
+        expected_sample_id - the sample ID in ts2 to compare all samples in ts1
+            to. If not provided, ts2 must only contain a single sample, and all
+            samples in ts1 will be compared to it
     """
-    # Make sure the number of samples match between the two files (the IDs do
-    # not have to match because of the sample ID map).
-    if len(ts1[0]) != len(ts2[0]):
-        raise ValueError("The two taxa summaries are incompatible because "
-                         "they do not have the same number of sample IDs. The "
-                         "taxa summaries must be made compatible before "
-                         "attempting to perform pairwise-comparisons between "
-                         "samples.")
+    if comparison_mode != 'paired' and comparison_mode != 'expected':
+        raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
+                         (comparison_mode, comparison_modes))
+
+    # Make sure that the second taxa summary has only one sample if we weren't
+    # provided an expected sample ID to compare against.
+    if (comparison_mode == 'expected' and expected_sample_id is None and
+        len(ts2[0]) != 1):
+        raise ValueError("The second taxa summary file must contain a single "
+                "sample (column) to compare all samples in the first taxa "
+                "summary file against when the comparison mode is 'expected' "
+                "and an expected sample ID is not provided. You provided a "
+                "file with %d samples."
+                % len(ts2[0]))
+
+    if comparison_mode == 'paired':
+        # Make sure the number of samples match between the two files (the IDs
+        # do not have to match because of the sample ID map).
+        if len(ts1[0]) != len(ts2[0]):
+            raise ValueError("The two taxa summaries are incompatible because "
+                             "they do not have the same number of sample IDs. "
+                             "The taxa summaries must be made compatible "
+                             "before attempting to perform "
+                             "pairwise-comparisons between samples.")
 
     # Make sure the taxa information is the same (i.e. the summaries have been
     # sorted and filled).
@@ -387,15 +459,58 @@ def _compute_paired_sample_correlations(ts1, ts2, correlation_fn):
                          "summary files. The taxa must be sorted and filled "
                          "before attempting to compare them.")
 
-    # Compute the correlation between each paired sample.
-    result = []
+    # Find the index of the expected sample ID.
+    if comparison_mode == 'expected':
+        if expected_sample_id:
+            try:
+                expected_idx = ts2[0].index(expected_sample_id)
+            except ValueError:
+                raise ValueError("The expected sample ID '%s' is not in the "
+                                 "taxa summary file." % expected_sample_id)
+        else:
+            # We know the 'expected' taxa summary has a single sample in it, so
+            # this is the only possible index.
+            expected_idx = 0
+
+    # Compute the overall correlation between each sample and the expected
+    # sample, or each of the paired samples, and optionally the correlation
+    # between each pair of samples individually.
+    corr_vec = None
+    if perform_detailed_comparisons:
+        corr_vec = []
+        num_comparisons = len(ts1[0])
+
+    all_ts1_data = []
+    all_ts2_data = []
     for samp_idx, samp_id in enumerate(ts1[0]):
-        corr_coeff = correlation_fn(ts1[2].T[samp_idx], ts2[2].T[samp_idx])
-        result.append((samp_id, ts2[0][samp_idx], corr_coeff))
-    return result
+        if comparison_mode == 'paired':
+            paired_idx = samp_idx
+        elif comparison_mode == 'expected':
+            paired_idx = expected_idx
+        else:
+            # Redundant check, but here for safety in case the one above is
+            # changed or removed.
+            raise ValueError("Invalid comparison mode '%s'. Must be one of "
+                             "%r." % (comparison_mode, comparison_modes))
+
+        # Grab the columns of data for the current sample and its pair.
+        ts1_data = ts1[2].T[samp_idx]
+        ts2_data = ts2[2].T[paired_idx]
+        all_ts1_data.extend(ts1_data)
+        all_ts2_data.extend(ts2_data)
+
+        if perform_detailed_comparisons:
+            # Compare the current sample and its pair.
+            corr_coeff, p_val = correlation_fn(ts1_data, ts2_data)
+            corr_vec.append((samp_id, ts2[0][paired_idx], corr_coeff, p_val,
+                             min(p_val * num_comparisons, 1)))
+
+    # Compare all paired samples at once.
+    overall_corr = correlation_fn(all_ts1_data, all_ts2_data)
+    return overall_corr, corr_vec
 
 def _pearson_correlation(vec1, vec2):
-    """Wraps PyCogent's pearson function to provide better error handling."""
+    """Wraps PyCogent's correlation function to provide more error checking."""
     if len(vec1) != len(vec2):
         raise ValueError("The length of the two vectors must be the same in "
                          "order to calculate the Pearson correlation "
@@ -403,13 +518,39 @@ def _pearson_correlation(vec1, vec2):
     if len(vec1) < 2:
         raise ValueError("The two vectors must both contain at least 2 "
                 "elements. The vectors are of length %d." % len(vec1))
-    return pearson(vec1, vec2)
+    return correlation(vec1, vec2)
+
+def _spearman_correlation(vec1, vec2):
+    """Calculates Spearman's rank correlation coefficient and significance.
+
+    Uses Student's t-distribution with df=n-2 to perform a two-tailed test
+    according to Sokal and Rohlf pg. 575 and 600. This p-value is an
+    approximation, and is especially unreliable for n<=10.
+
+    This implementation is based on cogent.maths.stats.test.correlation.
+
+    Returns Spearman's rank correlation coefficient (rho) and the associated
+    p-value.
+    """
+    rho = _spearman(vec1, vec2)
+    n = len(vec1)
+    if n < 3:
+        prob = 1
+    else:
+        try:
+            t = rho / sqrt((1 - (rho * rho)) / (n - 2))
+            prob = tprob(t, n - 2)
+        except (ZeroDivisionError, FloatingPointError): # rho was presumably 1
+            prob = 0
+    return rho, prob
 
 # These next two functions are taken from the qiime.stats.BioEnv class, written
 # by Michael Dwan. We don't use the class itself because we don't have the
 # required data to instantiate one, so the methods are copied here for
-# convenience. TODO: this should be moved into pycogent at some point.
-def _spearman_correlation(vec1, vec2, ranked=False):
+# convenience. TODO: this should be moved into pycogent at some point. Note
+# that this method has been modified slightly from its original form to perform
+# more error checking.
+def _spearman(vec1, vec2, ranked=False):
     """Calculates the the Spearman distance of two vectors."""
     try:
         temp = len(vec1)
@@ -419,8 +560,9 @@ def _spearman_correlation(vec1, vec2, ranked=False):
         temp = len(vec2)
     except ValueError:
         raise ValueError('Second input vector is not a list.')
-    if len(vec1) == 0 or len(vec2) == 0:
-        raise ValueError('One or both input vectors has/have zero elements')
+    if len(vec1) < 2 or len(vec2) < 2:
+        raise ValueError('One or both input vectors has/have less than 2 '
+                         'elements')
     if len(vec1) != len(vec2):
         raise ValueError('Vector lengths must be equal')
 
@@ -445,8 +587,14 @@ def _spearman_correlation(vec1, vec2, ranked=False):
     numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
     denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
                        sum([(y-y_bar)**2 for y in rank2]))
-    # Calculate rho.
-    return numerator/denominator
+
+    # Calculate rho. Handle the case when there is no variation in one or both
+    # of the input vectors.
+    if denominator == 0.0:
+        rho = 0.0
+    else:
+        rho = numerator/denominator
+    return rho
 
 def _get_rank(data):
     """Ranks the elements of a list. Used in Spearman correlation."""

@@ -45,8 +45,8 @@ script_info['script_usage'].append(("Paired sample comparison",
 "summary files using the pearson correlation coefficient.",
 "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp"))
 script_info['script_usage'].append(("Paired sample comparison with sample ID "
-"map", "Compare all samples that have mappings in the sample ID "
-"map using the pearson correlation coefficient.",
+"map", "Compare samples based on the mappings in the sample ID map using the "
+"pearson correlation coefficient.",
 "%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp -s "
 "sample_id_map.txt"))
 script_info['script_usage'].append(("Expected sample comparison",
@@ -55,19 +55,23 @@ script_info['script_usage'].append(("Expected sample comparison",
 "correlation coefficient.",
 "%prog -i ts_rdp_0.60.txt,expected.txt -m expected -o taxa_comp -c spearman"))
 script_info['output_description'] = """
-The script will always output three files to the specified output directory.
-Two files will be the sorted and filled versions of the input taxa summary
-files, which can then be used in plot_taxa_summary.py to visualize the
+The script will always output at least three files to the specified output
+directory. Two files will be the sorted and filled versions of the input taxa
+summary files, which can then be used in plot_taxa_summary.py to visualize the
 differences in taxonomic composition. These files will be named based on the
 basename of the input files. If the input files' basenames are the same, the
 output files will have '0' and '1' appended to their names to keep the
 filenames unique. The first input taxa summary file will have '0' in its
 filename and the second input taxa summary file will have '1' in its filename.
 
-The third output file is a tab-separated file containing the correlation
-coefficients that were computed between each of the samples. Each line will
-contain the sample IDs of the samples that were compared, followed by the
-correlation coefficient that was computed.
+The third output file will contain the results of the overall comparison of the
+input taxa summary files using the specified sample pairings.
+
+If --perform_detailed_comparisons is specified, the fourth output file is a
+tab-separated file containing the correlation coefficients that were computed
+between each of the paired samples. Each line will contain the sample IDs of
+the samples that were compared, followed by the correlation coefficient that
+was computed, followed by the p-value and Bonferroni-corrected p-value.
 """
 
 script_info['required_options'] = [
@@ -83,15 +87,12 @@ script_info['required_options'] = [
         'perform. Valid choices: ' + ' or '.join(comparison_modes) +
         '. "paired" will compare each sample in the taxa summary '
         'files that match based on sample ID, or that match given a sample ID '
-        'map (see the --sample_id_map_fp for more information). "expected" '
-        'will compare each sample in the first taxa summary file to an '
-        'expected sample (contained in the second taxa summary file). If '
-        '"expected", the second taxa summary file must contain only a single '
-        'sample that all other samples will be compared to. Note that the '
-        '"expected" mode is provided purely for convenience, as this type of '
-        'comparison can be accomplished by providing a sample ID map that '
-        'maps each sample in the first taxa summary file to a single sample '
-        'in the second taxa summary file')
+        'map (see the --sample_id_map_fp option for more information). '
+        '"expected" will compare each sample in the first taxa summary file '
+        'to an expected sample (contained in the second taxa summary file). '
+        'If "expected", the second taxa summary file must contain only a '
+        'single sample that all other samples will be compared to (unless the '
+        '--expected_sample_id option is provided)')
 ]
 script_info['optional_options'] = [
     make_option('-c', '--correlation_type', type='choice',
@@ -99,14 +100,24 @@ script_info['optional_options'] = [
         'to compute. Valid choices: ' + ' or '.join(correlation_types) +
         ' [default: %default]', default='pearson'),
      make_option('-s','--sample_id_map_fp', type='existing_filepath',
-        help='Map of sample IDs from the first taxa summary file to compare '
-        'against the sample IDs from the second taxa summary file. Each line '
-        'should contain two sample IDs separated by a tab. More than one '
-        'sample ID from the first taxa summary file may map to the same '
-        'sample ID in the second taxa summary file if desired. This option '
-        'only applies if the comparison mode is "paired". If not provided, '
-        'only sample IDs that exist in both taxa summary files will be '
-        'compared [default: %default]', default=None)
+        help='map of original sample IDs to new sample IDs. Use this to match '
+        'up sample IDs that should be compared between the two taxa summary '
+        'files. Each line should contain an original sample ID, a tab, and '
+        'the new sample ID. All original sample IDs from the two input taxa '
+        'summary files must be mapped. This option only applies if the '
+        'comparison mode is "paired". If not provided, only sample IDs that '
+        'exist in both taxa summary files will be compared '
+        '[default: %default]', default=None),
+     make_option('-e','--expected_sample_id', type='string',
+        help='the sample ID in the second "expected" taxa summary file to '
+        'compare all samples to. This option only applies if the comparison '
+        'mode is "expected". If not provided, the second taxa summary file '
+        'must have only one sample [default: %default]', default=None),
+    make_option('--perform_detailed_comparisons', action='store_true',
+        help='Perform a comparison for each sample pair in addition to the '
+        'single overall comparison. The results will include the '
+        'Bonferroni-corrected p-values in addition to the original p-values '
+        '[default: %default]', default=False)
 ]
 script_info['version'] = __version__
 
@@ -132,7 +143,9 @@ def main():
             parse_taxa_summary_table(open(opts.taxa_summary_fps[0], 'U')),
             parse_taxa_summary_table(open(opts.taxa_summary_fps[1], 'U')),
             opts.comparison_mode, correlation_type=opts.correlation_type,
-            sample_id_map=sample_id_map)
+            perform_detailed_comparisons=opts.perform_detailed_comparisons,
+            sample_id_map=sample_id_map,
+            expected_sample_id=opts.expected_sample_id)
 
     # Write out the sorted and filled taxa summaries, basing their
     # filenames on the original input filenames. If the filenames are the same,
@@ -152,11 +165,17 @@ def main():
         filled_ts_f.write(filled_ts_lines)
         filled_ts_f.close()
 
-    # Write the correlation vector.
-    corr_vec_f = open(join(opts.output_dir,
-                           'taxa_summary_comparison.txt'), 'w')
-    corr_vec_f.write(results[2])
-    corr_vec_f.close()
+    # Write the overall comparison result.
+    overall_comp_f = open(join(opts.output_dir, 'overall_comparison.txt'), 'w')
+    overall_comp_f.write(results[2])
+    overall_comp_f.close()
+
+    # Write the correlation vector containing the pairwise sample comparisons.
+    if opts.perform_detailed_comparisons:
+        corr_vec_f = open(join(opts.output_dir,
+                               'detailed_comparisons.txt'), 'w')
+        corr_vec_f.write(results[3])
+        corr_vec_f.close()
 
 
 if __name__ == "__main__":

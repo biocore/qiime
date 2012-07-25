@@ -16,12 +16,11 @@ from numpy import array
 from cogent.util.unit_test import TestCase, main
 
 from qiime.compare_taxa_summaries import (add_filename_suffix,
-        compare_taxa_summaries, _compute_all_to_expected_correlations,
-        _compute_paired_sample_correlations, _format_correlation_vector,
-        _format_taxa_summary, _get_correlation_function, _get_rank,
-        _make_compatible_taxa_summaries, parse_sample_id_map,
-        _sort_and_fill_taxa_summaries, _pearson_correlation,
-        _spearman_correlation)
+        compare_taxa_summaries, _compute_correlation,
+        _format_correlation_vector, _format_taxa_summary,
+        _get_correlation_function, _get_rank, _make_compatible_taxa_summaries,
+        parse_sample_id_map, _sort_and_fill_taxa_summaries,
+        _pearson_correlation, _spearman, _spearman_correlation)
 
 class CompareTaxaSummariesTests(TestCase):
     """Tests for the compare_taxa_summaries.py module."""
@@ -70,20 +69,16 @@ class CompareTaxaSummariesTests(TestCase):
                                    array([[0.5, 0.6]]))
 
         # A sample ID map for testing making compatible taxa summaries.
-        self.sample_id_map1 = {'Even7':'Even1'}
+        self.sample_id_map1 = {'Even7':'1', 'Even1':'1', 'Even8':'2',
+                               'Even2':'2'}
 
-        # A sample ID map for testing making compatible taxa summaries using
-        # two substitutions.
-        self.sample_id_map2 = {'Even7':'Even1', 'Even8':'Even2'}
+        # A sample ID map with an extra sample ID not found in the taxa
+        # summaries.
+        self.sample_id_map2 = {'Even7':'1', 'Even1':'1', 'Even8':'2',
+                               'Even2':'2', 'Foo':'3'}
 
-        # A sample ID map for testing many-to-one mappings.
-        self.sample_id_map3 = {'Even7':'Even1', 'Even8':'Even1'}
-
-        # A sample ID map with a bad sample ID as the value.
-        self.sample_id_map4 = {'Even7':'Even1', 'Even8':'foo'}
-
-        # A sample ID map with bad sample IDs as the keys.
-        self.sample_id_map5 = {'foo':'Even1', 'bar':'Even2'}
+        # A sample ID map without all original sample IDs mapped.
+        self.sample_id_map3 = {'Even7':'1', 'Even1':'1'}
 
         # No intersection with self.taxa_summary4_data.
         self.taxa_summary5 = (['Even1','Even2'], ['foo'],
@@ -120,6 +115,12 @@ class CompareTaxaSummariesTests(TestCase):
                                   ['Eukarya', 'Bacteria', 'Archaea'],
                                   array([[0.4, 0.5], [0.5, 0.7], [0.4, 0.4]]))
 
+        # For testing expected comparison mode with an expected sample ID (same
+        # data as self.taxa_summary_exp2, but with extra sample).
+        self.taxa_summary_exp3 = (['Expected', 'Expected2'],
+                                  ['Eukarya', 'Bacteria', 'Archaea'],
+                                   array([[0.5, 0.1], [0.6, 0.1], [0.4, 0.1]]))
+
         # For testing paired comparison mode.
         self.taxa_summary_paired1 = (['S1', 'S2'],
                 ['Eukarya', 'Bacteria', 'Archaea'],
@@ -136,22 +137,32 @@ class CompareTaxaSummariesTests(TestCase):
         self.taxa_summary_paired5 = (['E1', 'E2'],
                 ['Eukarya', 'Bacteria', 'Archaea', 'Foobar'],
                 array([[0.5, 0.6], [0.7, 0.8], [0.5, 0.6], [0.1, 0.9]]))
-        self.taxa_summary_paired_samp_id_map1 = {'S1':'E1', 'S2':'E1'}
-        self.taxa_summary_paired_samp_id_map2 = {'S1':'E2'}
+        # Full mapping.
+        self.taxa_summary_paired_samp_id_map1 = {'S1':'a', 'S2':'b',
+                                                 'E1':'a','E2':'b'}
+        # Partial mapping.
+        self.taxa_summary_paired_samp_id_map2 = {'S1':'a', 'S2':'b',
+                                                 'E1':'c', 'E2':'a'}
 
         # For formatting as correlation vectors.
-        self.corr_vec1 = [('S1', 'T1', 0.7777777777)]
-        self.corr_vec2 = [('S1', 'T1', 0.7777777777),
-                          ('S2', 'T2', 0.1),
-                          ('S3', 'T3', 100.68)]
+        self.corr_vec1 = [('S1', 'T1', 0.7777777777, 0, 0)]
+        self.corr_vec2 = [('S1', 'T1', 0.7777777777, 0, 0),
+                          ('S2', 'T2', 0.1, 0.05, 0.15),
+                          ('S3', 'T3', 100.68, 0.9, 1)]
 
         # Sample ID maps for testing the parser.
-        self.sample_id_map_lines1 = ['\t\t\n', '', ' ', '\n', 'S1\tT1',
-                                    'S2\tT2', '\n \t']
-        self.sample_id_map_lines2 = ['\t\t\n', '', ' ', '\n', 'S1\tT1',
-                                    'S2\tT2', '\n \t', 'S1\tT4']
+        self.sample_id_map_lines1 = ['\t\t\n', '', ' ', '\n', 'S1\ta',
+                                    'S2\tb', '\n \t', 'T1\ta', 'T2\tb']
+        self.sample_id_map_lines2 = ['\t\t\n', '', ' ', '\n', 'S1\ta',
+                                    'S2\tb', '\n \t', 'S1\tc']
+        self.sample_id_map_lines3 = ['S1\ta', 'T1\ta', 'S2\ta']
 
-        # For testing spearman correlation, taken from test_stats.BioEnvTests.
+        # For testing _spearman_correlation, taken from the Spearman wikipedia
+        # article.
+        self.spearman_data1 = [106, 86, 100, 101, 99, 103, 97, 113, 112, 110]
+        self.spearman_data2 = [7, 0, 27, 50, 28, 29, 20, 12, 6, 17]
+        
+        # For testing _spearman, taken from test_stats.BioEnvTests.
         self.a = [1,2,4,3,1,6,7,8,10,4]
         self.b = [2,10,20,1,3,7,5,11,6,13]
         self.c = [7,1,20,13,3,57,5,121,2,9]
@@ -160,55 +171,132 @@ class CompareTaxaSummariesTests(TestCase):
 
     def test_compare_taxa_summaries_expected_pearson(self):
         """Functions correctly using 'expected' comparison mode and pearson."""
+        # Overall correlation.
         exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
                'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
-               '# Correlation coefficient: pearson\nS1\tExpected\t1.0000\nS2\t'
-               'Expected\t1.0000\n')
+               '# Correlation coefficient: pearson. Performed a two-tailed '
+               'test of significance using a t-distribution.\nCorrelation '
+               'coefficient\tp-value\n0.6882\t0.3118\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
                 self.taxa_summary_exp1, 'expected', 'pearson')
         self.assertEqual(obs, exp)
 
-    def test_compare_taxa_summaries_expected_spearman(self):
-        """Functions correctly using 'expected' comparison mode w/ spearman."""
+        # Broken down by sample pairs.
         exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
                'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
-               '# Correlation coefficient: spearman\nS1\tExpected\t1.0000\nS2'
-               '\tExpected\t1.0000\n')
+               '# Correlation coefficient: pearson. Performed a two-tailed '
+               'test of significance using a t-distribution.\nCorrelation '
+               'coefficient\tp-value\n0.6882\t0.3118\n',
+               '# Correlation coefficient: pearson. Performed a two-tailed '
+               'test of significance using a t-distribution.\nSample ID\t'
+               'Sample ID\tCorrelation coefficient\tp-value\tp-value '
+               '(Bonferroni-corrected)\nS1\tExpected\t1.0000\t1.0000\t1.0000\n'
+               'S2\tExpected\t1.0000\t1.0000\t1.0000\n')
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
-                self.taxa_summary_exp1, 'expected', 'spearman')
+                self.taxa_summary_exp1, 'expected', 'pearson', True)
         self.assertEqual(obs, exp)
+
+    def test_compare_taxa_summaries_spearman_warning(self):
+        """Functions correctly using spearman with <= 10 obs."""
+        # Verified with R's cor.test function.
+        exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
+            'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
+            "# Correlation coefficient: spearman. Performed a two-tailed "
+            "test of significance using a t-distribution.\n# Since there "
+            "were 10 or fewer observations when calculating Spearman's "
+            "rank correlation coefficient, the p-value is not accurate "
+            "when using the t-distribution. Please see Biometry (Sokal "
+            "and Rohlf, 3rd edition) page 600 for more details.\nCorrelation "
+            "coefficient\tp-value\n0.7071\t0.2929\n",
+            '# Correlation coefficient: spearman. Performed a two-tailed '
+            'test of significance using a t-distribution.\n# Since there '
+            'were 10 or fewer taxa in the sorted and filled taxa '
+            'summary files, the p-values and Bonferroni-corrected p-values '
+            'are not accurate when using the t-distribution. Please see '
+            'Biometry (Sokal and Rohlf, 3rd edition) page 600 for more '
+            'details.\nSample ID\tSample ID\tCorrelation coefficient\t'
+            'p-value\tp-value (Bonferroni-corrected)\nS1\tExpected\t1.0000\t'
+            '1.0000\t1.0000\nS2\tExpected\t1.0000\t1.0000\t1.0000\n')
+        obs = compare_taxa_summaries(self.taxa_summary_obs1,
+                self.taxa_summary_exp1, 'expected', 'spearman', True)
+        self.assertEqual(obs, exp)
+
+    def test_compare_taxa_summaries_spearman_no_warning(self):
+        """Functions correctly using spearman with > 10 obs."""
+        # Verified with R's cor.test function.
+
+        # We should receive a warning only for the individual tests, but not
+        # for the overall test.
+        exp = ('# Correlation coefficient: spearman. Performed a '
+            'two-tailed test of significance using a t-distribution.\n'
+            '# Number of samples that matched between the taxa summary '
+            'files: 3\nCorrelation coefficient\tp-value\n0.2629\t0.1853\n',
+            '# Correlation coefficient: spearman. Performed a two-tailed '
+            'test of significance using a t-distribution.\n# Number of '
+            'samples that matched between the taxa summary files: 3\n'
+            '# Since there were 10 or fewer taxa in the sorted and filled '
+            'taxa summary files, the p-values and Bonferroni-corrected '
+            'p-values are not accurate when using the t-distribution. '
+            'Please see Biometry (Sokal and Rohlf, 3rd edition) page 600 '
+            'for more details.\nSample ID\tSample ID\t'
+            'Correlation coefficient\tp-value\tp-value '
+            '(Bonferroni-corrected)\nEven1\tEven4\t0.0753\t0.8473\t'
+            '1.0000\nEven2\tEven5\t0.4017\t0.2839\t0.8517\nEven3\t'
+            'Even6\t0.4017\t0.2839\t0.8517\n')
+        sample_id_map = {'Even1':'a', 'Even2':'b', 'Even3':'c',
+                         'Even4':'a', 'Even5':'b', 'Even6':'c'}
+        obs = compare_taxa_summaries(self.taxa_summary1,
+                self.taxa_summary2, 'paired', 'spearman', True, sample_id_map)
+        self.assertEqual(obs[2:], exp)
 
     def test_compare_taxa_summaries_paired_pearson(self):
         """Functions correctly using 'paired' comparison mode and pearson."""
-        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t0.7\nEukarya'
-               '\t0.4\t0.5\n',
-               'Taxon\tS1\tS2\nArchaea\t0.5\t0.6\nBacteria\t0.7\t0.8\nEukarya'
-               '\t0.5\t0.6\n',
-               '# Correlation coefficient: pearson\nS1\tS1\t1.0000\nS2\tS2\t'
-               '0.9449\n')
+        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
+            '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tS1\tS2\nArchaea\t0.5\t'
+            '0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
+            '# Correlation coefficient: pearson. Performed a two-tailed '
+            'test of significance using a t-distribution.\n'
+            '# Number of samples that matched between the taxa summary '
+            'files: 2\nCorrelation coefficient\tp-value\n0.9024\t'
+            '0.0138\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired2, 'paired', 'pearson')
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_sample_id_map(self):
         """Functions correctly using 'paired' comp mode and sample id map."""
-        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t0.7\nEukarya'
-               '\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5\t0.6\nBacteria\t'
-               '0.7\t0.8\nEukarya\t0.5\t0.6\n', '# Correlation coefficient: '
-               'pearson\nS1\tE1\t1.0000\nS2\tE1\t0.9449\n')
+        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
+            '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5\t'
+            '0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
+            '# Correlation coefficient: pearson. Performed a two-tailed '
+            'test of significance using a t-distribution.\n'
+            '# Number of samples that matched between the taxa summary '
+            'files: 2\nCorrelation coefficient\tp-value\n0.9024\t'
+            '0.0138\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired4, 'paired', 'pearson',
+                self.taxa_summary_paired4, 'paired', 'pearson', False,
                 self.taxa_summary_paired_samp_id_map1)
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_sample_id_map_partial(self):
         """Functions correctly using a partial sample id map."""
-        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t0.7\nEukarya'
-               '\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5\t0.6\nBacteria\t'
-               '0.7\t0.8\nEukarya\t0.5\t0.6\n', '# Correlation coefficient: '
-               'pearson\nS1\tE2\t1.0000\n')
+        # The sample ID map has some mappings that are not complete- i.e. a
+        # sample from one file has a new sample ID that doesn't match any other
+        # new sample IDs. In this case, the sample should be ignored.
+        exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
+            '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5'
+            '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
+            '# Correlation coefficient: pearson. Performed a two-tailed '
+            'test of significance using a t-distribution.\n# Number of '
+            'samples that matched between the taxa summary '
+            'files: 1\nCorrelation coefficient\tp-value\n1.0000\t0.0000\n',
+            '# Correlation coefficient: pearson. Performed a two-tailed '
+            'test of significance using a t-distribution.\n# Number of '
+            'samples that matched between the taxa summary files: 1\n'
+            'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t'
+            'p-value (Bonferroni-corrected)\nS1\tE2\t1.0000\t0.0000\t0.0000\n')
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired4, 'paired', 'pearson',
+                self.taxa_summary_paired4, 'paired', 'pearson', True,
                 self.taxa_summary_paired_samp_id_map2)
         self.assertEqual(obs, exp)
 
@@ -217,9 +305,13 @@ class CompareTaxaSummariesTests(TestCase):
         exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t0.7\nEukarya'
                '\t0.4\t0.5\nFoobar\t0.0\t0.0\n', 'Taxon\tE1\tE2\nArchaea\t0.5'
                '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\nFoobar\t0.1\t0.9'
-               '\n', '# Correlation coefficient: pearson\nS1\tE2\t-0.6264\n')
+               '\n', '# Correlation coefficient: pearson. Performed a '
+               'two-tailed test of significance using a t-distribution.\n'
+               '# Number of samples that matched between the taxa '
+               'summary files: 1\nCorrelation coefficient\tp-value\n'
+               '-0.6264\t0.3736\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired5, 'paired', 'pearson',
+                self.taxa_summary_paired5, 'paired', 'pearson', False,
                 self.taxa_summary_paired_samp_id_map2)
         self.assertEqual(obs, exp)
 
@@ -231,7 +323,7 @@ class CompareTaxaSummariesTests(TestCase):
 
     def test_parse_sample_id_map(self):
         """Test parsing a sample id map functions correctly."""
-        exp = {'S1':'T1', 'S2':'T2'}
+        exp = {'S1':'a', 'S2':'b', 'T1':'a', 'T2':'b'}
         obs = parse_sample_id_map(self.sample_id_map_lines1)
         self.assertEqual(obs, exp)
 
@@ -239,6 +331,11 @@ class CompareTaxaSummariesTests(TestCase):
         """Test parsing a sample id map with non-unique first column fails."""
         self.assertRaises(ValueError, parse_sample_id_map,
                           self.sample_id_map_lines2)
+
+    def test_parse_sample_id_map_many_to_one_mapping(self):
+        """Test parsing a sample id map with many-to-one mapping fails."""
+        self.assertRaises(ValueError, parse_sample_id_map,
+                          self.sample_id_map_lines3)
 
     def test_add_filename_suffix(self):
         """Test adding a suffix to a filename works correctly."""
@@ -259,24 +356,34 @@ class CompareTaxaSummariesTests(TestCase):
     def test_format_correlation_vector(self):
         """Test formatting correlations works correctly."""
         # One row.
-        exp = 'S1\tT1\t0.7778\n'
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\n'
         obs = _format_correlation_vector(self.corr_vec1)
         self.assertEqual(obs, exp)
 
         # Multiple rows.
-        exp = 'S1\tT1\t0.7778\nS2\tT2\t0.1000\nS3\tT3\t100.6800\n'
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
+              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t100.6800\t' + \
+              '0.9000\t1.0000\n'
         obs = _format_correlation_vector(self.corr_vec2)
         self.assertEqual(obs, exp)
 
     def test_format_correlation_vector_with_header(self):
         """Test formatting correlations with a header works correctly."""
         # One row.
-        exp = 'foo\nS1\tT1\t0.7778\n'
+        exp = 'foo\nSample ID\tSample ID\tCorrelation coefficient\t' + \
+              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
+              '0.0000\t0.0000\n'
         obs = _format_correlation_vector(self.corr_vec1, 'foo')
         self.assertEqual(obs, exp)
 
         # Multiple rows.
-        exp = '#foobar\nS1\tT1\t0.7778\nS2\tT2\t0.1000\nS3\tT3\t100.6800\n'
+        exp = '#foobar\nSample ID\tSample ID\tCorrelation coefficient\t' + \
+              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
+              '0.0000\t0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t' + \
+              '100.6800\t0.9000\t1.0000\n'
         obs = _format_correlation_vector(self.corr_vec2, '#foobar')
         self.assertEqual(obs, exp)
 
@@ -336,32 +443,26 @@ class CompareTaxaSummariesTests(TestCase):
                                               self.taxa_summary7)
         self.assertFloatEqual(obs, exp)
 
-    def test_make_compatible_taxa_summaries_sample_id_map_one_sub(self):
-        """Test making compatible ts using a sample ID map with one sub."""
-        # A simple 1-1 substitution.
-        exp = ((['Even7'], ['Eukarya'], array([[ 1.]])),
-               (['Even1'], ['Eukarya'], array([[ 0.5]])))
+    def test_make_compatible_taxa_summaries_sample_id_map(self):
+        """Test making compatible ts using a sample ID map."""
+        exp = ((['Even7', 'Even8'], ['Eukarya'], array([[ 1., 1.]])),
+               (['Even1', 'Even2'], ['Eukarya'], array([[ 0.5, 0.6]])))
         obs = _make_compatible_taxa_summaries(self.taxa_summary3,
                 self.taxa_summary4, self.sample_id_map1)
         self.assertFloatEqual(obs, exp)
 
-    def test_make_compatible_taxa_summaries_sample_id_map_two_sub(self):
-        """Test making compatible ts using a sample ID map with two subs."""
-        # Two simple 1-1 substitutions.
+    def test_make_compatible_taxa_summaries_sample_id_map_extra_sample(self):
+        """Test using a sample ID map with an extra sample ID."""
         exp = ((['Even7', 'Even8'], ['Eukarya'], array([[ 1.,  1.]])),
                (['Even1', 'Even2'], ['Eukarya'], array([[ 0.5,  0.6]])))
         obs = _make_compatible_taxa_summaries(self.taxa_summary3,
                 self.taxa_summary4, self.sample_id_map2)
         self.assertFloatEqual(obs, exp)
 
-    def test_make_compatible_taxa_summaries_sample_id_map_many_to_one(self):
-        """Test making compatible ts using sample ID map with M-1 sub."""
-        # A many-to-1 substitution.
-        exp = ((['Even7', 'Even8'], ['Eukarya'], array([[ 1.,  1.]])),
-               (['Even1', 'Even1'], ['Eukarya'], array([[ 0.5,  0.5]])))
-        obs = _make_compatible_taxa_summaries(self.taxa_summary3,
-                self.taxa_summary4, self.sample_id_map3)
-        self.assertFloatEqual(obs, exp)
+    def test_make_compatible_taxa_summaries_sample_id_map_incomplete_map(self):
+        """Test using a sample ID map that is incomplete."""
+        self.assertRaises(ValueError, _make_compatible_taxa_summaries,
+                self.taxa_summary3, self.taxa_summary4, self.sample_id_map3)
 
     def test_make_compatible_taxa_summaries_incompatible(self):
         """Test on taxa summaries that have no common sample IDs."""
@@ -369,14 +470,6 @@ class CompareTaxaSummariesTests(TestCase):
                           self.taxa_summary3, self.taxa_summary4)
         self.assertRaises(ValueError, _make_compatible_taxa_summaries,
             self.taxa_summary1, self.taxa_summary2)
-
-    def test_make_compatible_taxa_summaries_bad_sample_id_map(self):
-        """Test using a bad sample ID map."""
-        self.assertRaises(ValueError, _make_compatible_taxa_summaries,
-                          self.taxa_summary3, self.taxa_summary4,
-                          self.sample_id_map4)
-        self.assertRaises(ValueError, _make_compatible_taxa_summaries,
-            self.taxa_summary3, self.taxa_summary4, self.sample_id_map5)
 
     def test_sort_and_fill_taxa_summaries(self):
         """Test _sort_and_fill_taxa_summaries functions as expected."""
@@ -482,68 +575,128 @@ class CompareTaxaSummariesTests(TestCase):
                                              self.taxa_summary5])
         self.assertFloatEqual(obs, exp)
 
-    def test_compute_all_to_expected_correlations_pearson(self):
-        """Test functions correctly with pearson correlation."""
-        exp = [('S1', 'Expected', 1.0), ('S2', 'Expected', 1.0)]
-        obs = _compute_all_to_expected_correlations(self.taxa_summary_obs1,
-                                       self.taxa_summary_exp1,
-                                       _pearson_correlation)
+    def test_compute_correlation_expected_pearson(self):
+        """Test functions correctly with expected mode and pearson corr."""
+        exp = ((0.68824720161169595, 0.31175279838830405), None)
+        obs = _compute_correlation(self.taxa_summary_obs1,
+                self.taxa_summary_exp1, 'expected', _pearson_correlation)
         self.assertFloatEqual(obs, exp)
 
-    def test_compute_all_to_expected_correlations_spearman(self):
-        """Test functions correctly with spearman correlation."""
+    def test_compute_correlation_expected_pearson_detailed(self):
+        """Test functions with expected mode, pearson corr, detailed tests."""
+        exp = ((0.68824720161169595, 0.31175279838830405),
+               [('S1', 'Expected', 1.0, 1, 1), ('S2', 'Expected', 1.0, 1, 1)])
+        obs = _compute_correlation(self.taxa_summary_obs1,
+                self.taxa_summary_exp1, 'expected', _pearson_correlation, True)
+        self.assertFloatEqual(obs, exp)
+
+    def test_compute_correlation_expected_spearman_detailed(self):
+        """Test functions with expected mode, spearman corr, detailed tests."""
+        # Verified with R's cor.test function.
+
         # No repeats in ranks.
-        exp = [('S1', 'Expected', 1.0), ('S2', 'Expected', 1.0)]
-        obs = _compute_all_to_expected_correlations(self.taxa_summary_obs1,
-                                       self.taxa_summary_exp1,
-                                       _spearman_correlation)
+        exp = ((0.707106781187, 0.292893218813),
+               [('S1', 'Expected', 1.0, 1, 1), ('S2', 'Expected', 1.0, 1, 1)])
+        obs = _compute_correlation(self.taxa_summary_obs1,
+                                   self.taxa_summary_exp1,
+                                   'expected',
+                                   _spearman_correlation, True)
         self.assertFloatEqual(obs, exp)
 
         # Repeats in ranks.
-        exp = [('S1', 'Expected', 0.866025), ('S2', 'Expected', 1.0)]
-        obs = _compute_all_to_expected_correlations(self.taxa_summary_obs2,
-                                       self.taxa_summary_exp2,
-                                       _spearman_correlation)
+        exp = ((0.839146391678, 0.0367298712193),
+               [('S1', 'Expected', 0.866025, 0.33333333333333326,
+                 0.66666666666666652),
+                ('S2', 'Expected', 1.0, 0, 0)])
+        obs = _compute_correlation(self.taxa_summary_obs2,
+                                   self.taxa_summary_exp2,
+                                   'expected',
+                                   _spearman_correlation, True)
         self.assertFloatEqual(obs, exp)
 
-    def test_compute_all_to_expected_correlations_invalid_sample_count(self):
+    def test_compute_correlation_expected_expected_sample_id(self):
+        """Test functions with expected mode using an expected sample ID."""
+        exp = ((0.839146391678, 0.0367298712193),
+               [('S1', 'Expected', 0.866025, 0.33333333333333326,
+                 0.66666666666666652),
+                ('S2', 'Expected', 1.0, 0, 0)])
+
+        # Using a single-sample expected ts.
+        obs = _compute_correlation(self.taxa_summary_obs2,
+                                   self.taxa_summary_exp2,
+                                   'expected',
+                                   _spearman_correlation, True, 'Expected')
+        self.assertFloatEqual(obs, exp)
+
+        # Using a two-sample expected ts.
+        obs = _compute_correlation(self.taxa_summary_obs2,
+                                   self.taxa_summary_exp3,
+                                   'expected',
+                                   _spearman_correlation, True, 'Expected')
+        self.assertFloatEqual(obs, exp)
+
+    def test_compute_correlation_expected_invalid_sample_count(self):
         """Test running on expected taxa summary without exactly one sample."""
-        self.assertRaises(ValueError, _compute_all_to_expected_correlations,
-                          self.taxa_summary1, self.taxa_summary2,
+        self.assertRaises(ValueError, _compute_correlation,
+                          self.taxa_summary1, self.taxa_summary2, 'expected',
                           _pearson_correlation)
 
-    def test_compute_all_to_expected_correlations_incompatible_taxa(self):
+    def test_compute_correlation_expected_invalid_expected_sample_id(self):
+        """Test running in expected mode with invalid expected sample ID."""
+        self.assertRaises(ValueError, _compute_correlation,
+                self.taxa_summary_obs2, self.taxa_summary_exp3, 'expected',
+                _pearson_correlation, expected_sample_id='foo')
+
+    def test_compute_correlation_invalid_comparison_mode(self):
+        """Test running using an invalid comparison mode."""
+        self.assertRaises(ValueError, _compute_correlation,
+                          self.taxa_summary1, self.taxa_summary2, 'foo',
+                          _pearson_correlation)
+
+    def test_compute_correlation_incompatible_taxa(self):
         """Test running on taxa summaries that have mismatched taxa info."""
-        self.assertRaises(ValueError, _compute_all_to_expected_correlations,
+        self.assertRaises(ValueError, _compute_correlation,
                           self.taxa_summary_obs1_mismatch,
                           self.taxa_summary_exp1,
-                          _pearson_correlation)
+                          'expected', _pearson_correlation)
 
-    def test_compute_paired_sample_correlations(self):
+    def test_compute_correlation_paired(self):
         """Test runs correctly on standard input taxa summaries."""
-        exp = [('S1', 'S1', 1.0), ('S2', 'S2', 0.94491118252306538)]
-        obs = _compute_paired_sample_correlations(self.taxa_summary_paired1,
-                self.taxa_summary_paired2, _pearson_correlation)
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808), None)
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired2, 'paired', _pearson_correlation)
         self.assertFloatEqual(obs, exp)
 
-    def test_compute_paired_sample_correlations_mismatched_ids(self):
+    def test_compute_correlation_paired_detailed(self):
+        """Test runs correctly on standard input ts with detailed tests."""
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808),
+               [('S1', 'S1', 1.0, 0, 0),
+                ('S2', 'S2', 0.94491118252306538, 0.21229561501,
+                 0.424591230019)])
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired2, 'paired', _pearson_correlation,
+                True)
+        self.assertFloatEqual(obs, exp)
+
+    def test_compute_correlation_paired_mismatched_ids(self):
         """Test runs correctly on taxa summaries with mismatched IDs."""
-        exp = [('S1', 'E1', 1.0), ('S2', 'E1', 0.94491118252306538)]
-        obs = _compute_paired_sample_correlations(self.taxa_summary_paired1,
-                self.taxa_summary_paired3, _pearson_correlation)
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808),
+               [('S1', 'E1', 1.0, 0, 0),
+                ('S2', 'E1', 0.94491118252306538, 0.21229561501,
+                 0.424591230019)])
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired3, 'paired', _pearson_correlation,
+                True)
         self.assertFloatEqual(obs, exp)
 
-    def test_compute_paired_sample_correlations_incompatible_taxa(self):
-        """Test running on taxa summaries that have mismatched taxa info."""
-        self.assertRaises(ValueError, _compute_paired_sample_correlations,
-                          self.taxa_summary4, self.taxa_summary5,
-                          _pearson_correlation)
-
-    def test_compute_paired_sample_correlations_incompatible_samples(self):
+    def test_compute_correlation_paired_incompatible_samples(self):
         """Test on incompatible taxa summaries (mismatched sample lengths)."""
-        self.assertRaises(ValueError, _compute_paired_sample_correlations,
+        self.assertRaises(ValueError, _compute_correlation,
                           self.taxa_summary1, self.taxa_summary3,
-                          _pearson_correlation)
+                          'paired', _spearman_correlation)
 
     def test_pearson_correlation_invalid_input(self):
         """Test running pearson correlation on bad input."""
@@ -551,11 +704,58 @@ class CompareTaxaSummariesTests(TestCase):
                           [1.4, 2.5], [5.6, 8.8, 9.0])
         self.assertRaises(ValueError, _pearson_correlation, [1.4], [5.6])
 
+    def test_spearman_correlation(self):
+        """Test running spearman correlation on valid input."""
+        # This example taken from Wikipedia page:
+        # http://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient
+        #
+        # The p-value is off because the example uses a one-tailed test, while
+        # we use a two-tailed test. Someone confirms the answer that we get
+        # here for a two-tailed test:
+        # http://stats.stackexchange.com/questions/22816/calculating-p-value-
+        #     for-spearmans-rank-correlation-coefficient-example-on-wikip
+        exp = (-0.17575757575757578, 0.62718834477648433)
+        obs = _spearman_correlation(self.spearman_data1, self.spearman_data2)
+        self.assertFloatEqual(obs, exp)
+
+    def test_spearman_correlation_one_obs(self):
+        """Test running spearman correlation on a single observation."""
+        self.assertRaises(ValueError, _spearman_correlation, [1.0], [5.0])
+
+    def test_spearman_no_variation(self):
+        """Test the _spearman function with a vector having no variation."""
+        exp = 0.0
+        obs = _spearman([1, 1, 1], [1, 2, 3])
+        self.assertEqual(obs, exp)
+
     # The following tests are taken from test_stats.BioEnvTests to test the
     # spearman function. They have been modified only to work with the function
     # instead of the BioEnv object containing that method.
+    def test_spearman(self):
+        """Test the _spearman function."""
+        # One vector has no ties.
+        exp = 0.3719581
+        obs = _spearman(self.a,self.b)
+        self.assertFloatEqual(obs,exp)
+
+        # Both vectors have no ties.
+        exp = 0.2969697
+        obs = _spearman(self.b,self.c)
+        self.assertFloatEqual(obs,exp)
+
+        # Both vectors have ties.
+        exp = 0.388381
+        obs = _spearman(self.a,self.r)
+        self.assertFloatEqual(obs,exp)
+
+    def test_spearman_invalid_input(self):
+        """Test the _spearman function with invalid input."""
+        self.assertRaises(ValueError, _spearman, [],[])
+        self.assertRaises(ValueError, _spearman, self.a,[])
+        self.assertRaises(ValueError, _spearman, {0:2}, [1,2,3])
+
     def test_get_rank(self):
-        """Test the _get_rank method with valid input."""
+        """Test the _get_rank function with valid input."""
         exp = ([1.5,3.5,7.5,5.5,1.5,9.0,10.0,11.0,12.0,7.5,14.0,3.5,5.5,13.0],
                4)
         obs = _get_rank(self.x)
@@ -578,7 +778,7 @@ class CompareTaxaSummariesTests(TestCase):
         self.assertEqual(exp,obs)
 
     def test_get_rank_invalid_input(self):
-        """Test the _get_rank method with invalid input."""
+        """Test the _get_rank function with invalid input."""
         vec = [1, 'a', 3, 2.5, 3, 1]
         self.assertRaises(TypeError, _get_rank, vec)
 
@@ -590,29 +790,6 @@ class CompareTaxaSummariesTests(TestCase):
 
         vec = [1, 2, (1,), 2.5, 3, 1]
         self.assertRaises(TypeError, _get_rank, vec)
-
-    def test_spearman_correlation(self):
-        """Test the _spearman_correlation method."""
-        # One vector has no ties.
-        exp = 0.3719581
-        obs = _spearman_correlation(self.a,self.b)
-        self.assertFloatEqual(exp,obs)
-
-        # Both vectors have no ties.
-        exp = 0.2969697
-        obs = _spearman_correlation(self.b,self.c)
-        self.assertFloatEqual(exp,obs)
-
-        # Both vectors have ties.
-        exp = 0.388381
-        obs = _spearman_correlation(self.a,self.r)
-        self.assertFloatEqual(exp,obs)
-
-    def test_spearman_correlation_invalid_input(self):
-        """Test the _spearman_correlation method with invalid input."""
-        self.assertRaises(ValueError, _spearman_correlation, [],[])
-        self.assertRaises(ValueError, _spearman_correlation, self.a,[])
-        self.assertRaises(ValueError, _spearman_correlation, {0:2}, [1,2,3])
 
 
 if __name__ == "__main__":
