@@ -1,0 +1,4 @@
+# Correlation coefficient: spearman. Performed a two-tailed test of significance using a t-distribution.
+# Number of samples that matched between the taxa summary files: 9
+Correlation coefficient	p-value
+0.9687	0.0000

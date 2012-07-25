@@ -1,0 +1,12 @@
+# Correlation coefficient: pearson. Performed a two-tailed test of significance using a t-distribution.
+# Number of samples that matched between the taxa summary files: 9
+Sample ID	Sample ID	Correlation coefficient	p-value	p-value (Bonferroni-corrected)
+PC.354	PC.354	0.9997	0.0000	0.0000
+PC.355	PC.355	0.9998	0.0000	0.0000
+PC.356	PC.356	0.9999	0.0000	0.0000
+PC.481	PC.481	0.9998	0.0000	0.0000
+PC.593	PC.593	0.9999	0.0000	0.0000
+PC.607	PC.607	0.9990	0.0000	0.0000
+PC.634	PC.634	1.0000	0.0000	0.0000
+PC.635	PC.635	0.9963	0.0000	0.0000
+PC.636	PC.636	0.9999	0.0000	0.0000
