@@ -621,11 +621,6 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
     if ignore_val == 'None':
         ignore_val = None
     
-    try:
-        otu_table = parse_biom_table(otu_table)
-    except AttributeError:
-        otu_table = parse_biom_table_str(otu_table)
-
     if test == 'ANOVA' or test == 'correlation': 
         if not otu_table_relative_abundance:
             otu_table = otu_table.normObservationBySample()
@@ -678,7 +673,7 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
         output = output_results_paired_T_test(results, taxonomy_info)
     return output
 
-def get_common_OTUs(otu_table_paths, _filter, category_info, \
+def get_common_OTUs(parsed_otu_tables, _filter, category_info, \
                         filter_all_samples, otu_include):
     """Searches all OTU tables in dir, returns common OTUs and their taxonomies
        Applies filter within each OTU table."""
@@ -687,13 +682,10 @@ def get_common_OTUs(otu_table_paths, _filter, category_info, \
     count = 0
 
     # get list of all observed OTUs and their taxonomies
-    for otu_table_fp in otu_table_paths:
+    for otu_table in parsed_otu_tables:
         count += 1
         sys.stdout.flush()
-        otu_table_fh = open(otu_table_fp,'U')
-        otu_table = parse_biom_table(otu_table_fh)
         taxonomy_info = get_taxonomy_info(otu_table)
-        otu_table_fh.close()
         OTU_list_i = filter_OTUs(otu_table, _filter,
                                  all_samples=filter_all_samples,
                                  category_mapping_info=category_info)
@@ -718,7 +710,7 @@ def get_common_OTUs(otu_table_paths, _filter, category_info, \
             del(taxonomy_all_OTUs[k])
     return OTU_list, taxonomy_all_OTUs
 
-def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, \
+def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
                 threshold, _filter, otu_include=None, \
                 otu_table_relative_abundance=False):
     """runs statistical test to look for category/OTU associations on multiple files.
@@ -732,19 +724,17 @@ def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, \
     # if this is the g_test, disallow otus that are present in all samples 
     filter_all_samples = test == "g_test"
 
-    OTU_list, taxonomy_all_OTUs = get_common_OTUs(otu_table_paths, _filter, \
+    OTU_list, taxonomy_all_OTUs = get_common_OTUs(parsed_otu_tables, _filter, \
                                   category_info=category_info, \
                                   filter_all_samples=filter_all_samples, \
                                   otu_include=otu_include)
 
     all_results = {}
     count = 0
-    for otu_table_fp in otu_table_paths:
+    for otu_table in parsed_otu_tables:
         count += 1
         sys.stdout.flush()
-        otu_table_fh = open(otu_table_fp,'U')
 
-        otu_table = parse_biom_table(otu_table_fh)
         if test == 'ANOVA' or test == 'correlation': 
             if not otu_table_relative_abundance:
                 otu_table = otu_table.normObservationBySample()

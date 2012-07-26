@@ -21,6 +21,7 @@ from qiime.longitudinal_otu_category_significance import \
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.format import format_biom_table
+from biom.parse import parse_biom_table, parse_biom_table_str
 
 script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
@@ -214,6 +215,11 @@ def main():
     if not isdir(opts.otu_table_fp):
         # if single file, process normally
         otu_table = open(otu_table_fp,'U')
+        try:
+            otu_table = parse_biom_table(otu_table)
+        except AttributeError:
+            otu_table = parse_biom_table_str(otu_table)
+
         if test == 'longitudinal_correlation' or test == 'paired_T':
             converted_otu_table_str = format_biom_table(\
                     longitudinal_otu_table_conversion_wrapper(otu_table,
@@ -241,7 +247,13 @@ def main():
         if test != 'longitudinal_correlation' and test != 'paired_T':
             otu_table_paths = glob('%s/*biom' % otu_table_fp)
             # if directory, get aggregated results
-            output = test_wrapper_multiple(test, otu_table_paths, \
+            parsed_otu_tables = []
+            for path in otu_table_paths:
+                ot = open(otu_table_fp,'U')
+                ot = parse_biom_table(ot)
+                parsed_otu_tables.append(ot)
+
+            output = test_wrapper_multiple(test, parsed_otu_tables, \
                 category_mapping, category, threshold, filter, otu_include,\
                 otu_table_relative_abundance=relative_abundance)
         else:

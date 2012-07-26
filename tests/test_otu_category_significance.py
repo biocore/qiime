@@ -849,7 +849,7 @@ sample3\tC\t1.0""".split('\n')
         
     def test_test_wrapper(self):
         """runs the specified statistical test"""
-        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table1 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
         {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
         "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0],
@@ -861,7 +861,7 @@ sample3\tC\t1.0""".split('\n')
         "sparse", "shape": [3, 4], "format_url":
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T15:42:03.286885", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
         
         category_mapping = ['#SampleID\tcat1\tcat2',
                                       'sample1\tA\t0',
@@ -870,21 +870,10 @@ sample3\tC\t1.0""".split('\n')
                                       'sample4\tB\t1.0']
         OTU_list = ['1', '0'] 
 
-        fp1 = get_tmp_filename()
-        try:
-            f1 = open(fp1,'w')
-        except IOError, e:
-            raise e,"Could not create temporary files: %s, %s" %(f1)
-        
-        f1.write(otu_table1)
-        f1.close()
-
         # ANOVA
-        otu_table_path = fp1
         threshold = None
         _filter = 0
         otu_include = None
-        otu_table1 = open(fp1,'U')
         category = 'cat1'
 
         # get expected ANOVA output from file
@@ -900,8 +889,6 @@ sample3\tC\t1.0""".split('\n')
 
 
         # get expected ANOVA means when it is specified not to convert the table to relative abundance
-        otu_table_path = fp1
-        otu_table1 = open(fp1,'U')
         results1 = test_wrapper('ANOVA', otu_table1, category_mapping, \
             category, threshold, _filter, otu_include=None, otu_table_relative_abundance=True)
         self.assertEqual(len(results1), 4)
@@ -913,17 +900,14 @@ sample3\tC\t1.0""".split('\n')
         self.assertFloatEqual(B_mean, 0.5)
         
         # correlation
-        otu_table_paths = fp1
         threshold = None
         _filter = 0
         otu_include = None
-        otu_table1 = open(fp1,'U')
         results1 = test_wrapper('correlation', otu_table1, category_mapping, \
             'cat2', threshold, _filter, otu_include=None)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
         
-        remove(fp1)
         
     def test_aggregate_multiple_results_ANOVA(self):
         """aggregate_multiple_results_ANOVA works"""
@@ -975,7 +959,7 @@ sample3\tC\t1.0""".split('\n')
         """get_common_OTUs works"""
 
         # create the temporary OTU tables
-        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table1 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
         {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
         "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
@@ -986,9 +970,9 @@ sample3\tC\t1.0""".split('\n')
         "shape": [3, 3], "format_url":
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T17:19:22.290776", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
         
-        otu_table2 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table2 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
         {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
         "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
@@ -997,11 +981,11 @@ sample3\tC\t1.0""".split('\n')
         {"id": "sample3", "metadata": null}], "generated_by":
         "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
         "shape": [3, 3], "format_url":
-        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "http://www.qiime.org/svn_documentation/biom_format.html",
         "date": "2011-12-21T17:21:13.685763", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
         
-        otu_table3 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table3 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
         "format": "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
         [1, 0, 1.0], [1, 1, 1.0], [1, 2, 1.0]], "columns": [{"id": "sample1",
@@ -1011,36 +995,20 @@ sample3\tC\t1.0""".split('\n')
         "shape": [2, 3], "format_url":
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T17:22:55.602729", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
         
         category_info = {'sample1':'0.1',
                         'sample2':'0.2',
                         'sample3':'0.3'}
         OTU_list = ['1', '0', '2'] 
 
-        fp1 = get_tmp_filename()
-        fp2 = get_tmp_filename()
-        fp3 = get_tmp_filename()
-        try:
-            f1 = open(fp1,'w')
-            f2 = open(fp2,'w')
-            f3 = open(fp3,'w')
-        except IOError, e:
-            raise e,"Could not create temporary files: %s, %s" %(f1,f2, f3)
-        
-        f1.write(otu_table1)
-        f1.close()
-        f2.write(otu_table2)
-        f2.close()
-        f3.write(otu_table3)
-        f3.close()
 
         # case where one OTU is missing from one file
-        otu_table_paths = [fp1,fp2,fp3]
+        otu_tables = [otu_table1, otu_table2, otu_table3]
         _filter = 0
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_table_paths, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1050,11 +1018,11 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(taxonomy,exp_taxonomy)
 
         # case where no OTUs should be filtered
-        otu_table_paths = [fp1,fp2]
+        otu_tables = [otu_table1, otu_table2]
         _filter = 0
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_table_paths, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1064,11 +1032,11 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(taxonomy,exp_taxonomy)
 
         # case where one OTU should be filtered due to filter_all_samples
-        otu_table_paths = [fp1,fp2]
+        otu_tables = [otu_table1,otu_table2]
         _filter = 0
         filter_all_samples = True
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_table_paths, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1078,11 +1046,11 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(taxonomy,exp_taxonomy)
 
         # case where two OTUs should be filtered due to _filter value
-        otu_table_paths = [fp1,fp2]
+        otu_tables = [otu_table1,otu_table2]
         _filter = 2
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_table_paths, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1091,16 +1059,10 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(sorted(OTU_list), exp_OTU_list)
         self.assertEqual(taxonomy,exp_taxonomy)
 
-
-        # clean up temporary files
-        remove(fp1)
-        remove(fp2)
-        remove(fp3)
-
     def test_test_wrapper_multiple(self):
         """test_wrapper_multiple works"""
         # create the temporary OTU tables
-        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table1 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
         {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
         "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0],
@@ -1112,9 +1074,9 @@ sample3\tC\t1.0""".split('\n')
         "sparse", "shape": [3, 4], "format_url":
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T15:42:03.286885", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
         
-        otu_table2 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        otu_table2 = parse_biom_table_str("""{"rows": [{"id": "0", "metadata": {"taxonomy":
         ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
         {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
         "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
@@ -1126,7 +1088,7 @@ sample3\tC\t1.0""".split('\n')
         "sparse", "shape": [3, 4], "format_url":
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T15:45:47.278634", "type": "OTU table", "id": null,
-        "matrix_element_type": "float"}"""
+        "matrix_element_type": "float"}""")
 
         category_mapping = ['#SampleID\tcat1\tcat2',
                                       'sample1\tA\t0',
@@ -1135,26 +1097,11 @@ sample3\tC\t1.0""".split('\n')
                                       'sample4\tB\t1.0']
         OTU_list = ['1', '0'] 
 
-        fp1 = get_tmp_filename()
-        fp2 = get_tmp_filename()
-        try:
-            f1 = open(fp1,'w')
-            f2 = open(fp2,'w')
-        except IOError, e:
-            raise e,"Could not create temporary files: %s, %s" %(f1,f2, f3)
-        
-        f1.write(otu_table1)
-        f1.close()
-        f2.write(otu_table2)
-        f2.close()
-
         # ANOVA
-        otu_table_paths = [fp1,fp2]
+        otu_tables = [otu_table1,otu_table2]
         threshold = None
         _filter = 0
         otu_include = None
-        otu_table1 = open(fp1,'U')
-        otu_table2 = open(fp2,'U')
         category = 'cat1'
 
         # get expected ANOVA output from each file separately
@@ -1163,7 +1110,7 @@ sample3\tC\t1.0""".split('\n')
         results2 = test_wrapper('ANOVA', otu_table2, category_mapping, category, threshold, \
                  _filter, otu_include=None)
 
-        results = test_wrapper_multiple('ANOVA', otu_table_paths,
+        results = test_wrapper_multiple('ANOVA', otu_tables,
                                         category_mapping, category,
                                         threshold, _filter,
                                         otu_include)
@@ -1194,12 +1141,9 @@ sample3\tC\t1.0""".split('\n')
                 self.assertEqual(round(entry_combined, 3), mean)
 
         # correlation
-        otu_table_paths = [fp1,fp2]
         threshold = None
         _filter = 0
         otu_include = None
-        otu_table1 = open(fp1,'U')
-        otu_table2 = open(fp2,'U')
         category = 'cat2'
 
         # get expected correlation output from each file separately
@@ -1208,7 +1152,7 @@ sample3\tC\t1.0""".split('\n')
         results2 = test_wrapper('correlation', otu_table2, category_mapping, category, threshold, \
                  _filter, otu_include=None)
 
-        results = test_wrapper_multiple('correlation', otu_table_paths,
+        results = test_wrapper_multiple('correlation', otu_tables,
                                         category_mapping, category,
                                         threshold, _filter,
                                         otu_include)
@@ -1241,12 +1185,9 @@ sample3\tC\t1.0""".split('\n')
 
 
         # G test
-        otu_table_paths = [fp1,fp2]
         threshold = None
         _filter = 0
         otu_include = None
-        otu_table1 = open(fp1,'U')
-        otu_table2 = open(fp2,'U')
         category = 'cat1'
 
         # get expected G_TEST output from each file separately
@@ -1255,7 +1196,7 @@ sample3\tC\t1.0""".split('\n')
 
         results2 = test_wrapper('g_test', otu_table2, category_mapping, category, threshold, \
                  _filter, otu_include=['0'])
-        results = test_wrapper_multiple('g_test', otu_table_paths,
+        results = test_wrapper_multiple('g_test', otu_tables,
                                         category_mapping, category,
                                         threshold, _filter,
                                         otu_include=['0'])
@@ -1283,11 +1224,6 @@ sample3\tC\t1.0""".split('\n')
                 entry2 = float(results2_dict[k][i])
                 entry_combined = float(results_dict[k][i])
                 mean = round((entry1+entry2)/2.0, 3)
-                self.assertEqual(round(entry_combined, 3), mean)
-
-        # clean up temporary files
-        remove(fp1)
-        remove(fp2)
 
     def test_sort_rows(self):
         """sort_rows works"""
