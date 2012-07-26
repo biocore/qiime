@@ -12,6 +12,7 @@ from collections import defaultdict
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
 from biom.parse import parse_biom_table_str
+from biom.util import get_biom_format_version_string
 
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
@@ -1661,7 +1662,7 @@ class DistanceMatrixTests(TestCase):
     def test_getBiomFormatObject(self):
         """Should return a dictionary of the dm in BIOM format."""
         exp = {'rows': [{'id': 's1', 'metadata': None}],
-               'format': 'Biological Observation Matrix %s' % __biom_version__,
+               'format': get_biom_format_version_string(),
                'generated_by': 'foo',
                'data': [[0]],
                'columns': [{'id': 's1', 'metadata': None}],
@@ -1681,7 +1682,7 @@ class DistanceMatrixTests(TestCase):
         exp = {'rows': [{'id': 's1', 'metadata': None},
                         {'id': 's2', 'metadata': None},
                         {'id': 's3', 'metadata': None}],
-               'format': 'Biological Observation Matrix %s' % __biom_version__,
+               'format': get_biom_format_version_string(),
                'generated_by': 'foo',
                'data': [[0, 2, 4], [1, 2, 3], [4, 5, 6]],
                'columns': [{'id': 's1', 'metadata': None},
@@ -1702,8 +1703,8 @@ class DistanceMatrixTests(TestCase):
             'PC.481', 'metadata': None}, {'id': 'PC.593', 'metadata': None},
             {'id': 'PC.607', 'metadata': None}, {'id': 'PC.634', 'metadata':
             None}, {'id': 'PC.635', 'metadata': None}, {'id': 'PC.636',
-            'metadata': None}], 'format':
-            'Biological Observation Matrix %s' % __biom_version__, 'data': [[0.0, 0.625,
+            'metadata': None}], 
+               'format': get_biom_format_version_string(), 'data': [[0.0, 0.625,
             0.623, 0.60999999999999999, 0.57699999999999996,
             0.72899999999999998, 0.80000000000000004, 0.72099999999999997,
             0.76500000000000001], [0.625, 0.0, 0.61499999999999999,
