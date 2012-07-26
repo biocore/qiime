@@ -604,7 +604,7 @@ class Qiime_config(TestCase):
         
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
-        acceptable_version = [(0,981),(0,981)]
+        acceptable_version = [(0,982),(0,982)]
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
