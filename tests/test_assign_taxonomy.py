@@ -392,7 +392,8 @@ class RtaxTaxonAssignerTests(TestCase):
             'amplicon_id_regex' : "(\\S+)\\s+(\\S+?)\/",
             'read_1_seqs_fp' : None,
             'read_2_seqs_fp' : None,
-            'single_ok' : False
+            'single_ok' : False,
+            'no_single_ok_generic' : False
             }
         self.assertEqual(p.Params, default_params)
 
@@ -493,7 +494,7 @@ class RtaxTaxonAssignerTests(TestCase):
         log_file_exp = [
             "RtaxTaxonAssigner parameters:",
             "Application:RTAX classifier",
-            "Citation:Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J.",
+            "Citation:Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J (6), 1440-1444",
             "amplicon_id_regex:(\S+)\s+(\S+?)\/",
             "header_id_regex:\S+\s+(\S+?)\/",
             "id_to_taxonomy_fp:%s" % self.id_to_taxonomy_fp,
@@ -501,13 +502,14 @@ class RtaxTaxonAssignerTests(TestCase):
             "read_2_seqs_fp:None",
             "read_id_regex:\S+\s+(\S+)",
             "reference_sequences_fp:%s" % self.reference_seqs_fp,
-            "single_ok:False"
+            "single_ok:False",
+            "no_single_ok_generic:False"
          ]
         # compare data in log file to fake expected log file
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n')[0:11], log_file_exp)
+        self.assertEqualItems(log_file_str.split('\n')[0:12], log_file_exp)
 
 
 
@@ -662,7 +664,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         # make sure all taxonomic results were correct at least once
         self.assertFalse(unverified_seq_ids, msg='\n'.join(messages))
-        
+
     """
     # THIS TEST IS NOT GOOD SINCE IT WILL LEAVE FILES IN /tmp/
     def test_call_with_missing_properties_file(self):
@@ -671,7 +673,7 @@ class RdpTaxonAssignerTests(TestCase):
             })
         self.assertRaises(ApplicationError, app, self.tmp_seq_filepath)
     """
-    
+
     def test_call_with_properties_file(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
 
