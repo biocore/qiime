@@ -90,6 +90,34 @@ class TestHelper(TestCase):
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
 
+        # How many times to test a p-value.
+        self.p_val_tests = 10
+
+    def assertCorrectPValue(self, exp_min, exp_max, fn, num_perms=None,
+                            p_val_key='p_value'):
+        """Tests that the stochastic p-value falls in the specified range.
+
+        Performs the test self.p_val_tests times and fails if the observed
+        p-value does not fall into the specified range at least once. Each
+        p-value is also tested that it falls in the range 0.0 to 1.0.
+
+        This method assumes that fn is callable, and will pass num_perms to fn
+        if num_perms is provided. p_val_key specifies the key that will be used
+        to retrieve the p-value from the results dict that is returned by fn.
+        """
+        found_match = False
+        for i in range(self.p_val_tests):
+            if num_perms is not None:
+                obs = fn(num_perms)
+            else:
+                obs = fn()
+            p_val = obs[p_val_key]
+            self.assertIsProb(p_val)
+            if p_val >= exp_min and p_val <= exp_max:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
 
 class NonRandomShuffler(object):
     """Helper class for testing p-values that are calculated by permutations.
@@ -418,10 +446,9 @@ class AnosimTests(TestHelper):
         exp = {'method_name': 'ANOSIM', 'p_value': 0.0080000000000000002,
                'r_value': 0.8125}
         obs = self.anosim_overview()
-
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.06)
+        self.assertCorrectPValue(0, 0.06, self.anosim_overview)
 
     def test_call_small(self):
         """Test __call__() on small dm."""
@@ -431,7 +458,7 @@ class AnosimTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
+        self.assertCorrectPValue(0.28, 0.42, self.anosim_small)
 
     def test_call_small_ties(self):
         """Test __call__() on small dm with ties in ranks."""
@@ -442,7 +469,7 @@ class AnosimTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
+        self.assertCorrectPValue(0.56, 0.75, self.anosim_small_tie)
 
     def test_call_no_perms(self):
         """Test __call__() on small dm with no permutations."""
@@ -652,7 +679,7 @@ class PermanovaTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
+        self.assertCorrectPValue(0.28, 0.42, self.permanova_plain)
 
     def test_call_tie(self):
         """Test __call__() on dm with ties in ranks."""
@@ -661,7 +688,7 @@ class PermanovaTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
+        self.assertCorrectPValue(0.56, 0.75, self.permanova_tie)
 
     def test_call_non_sym(self):
         """Test __call__() on non_sym dm with no permutations."""
@@ -680,7 +707,7 @@ class PermanovaTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertTrue(obs['p_value'] > 0.005 and obs['p_value'] < 0.07)
+        self.assertCorrectPValue(0.005, 0.07, self.permanova_overview, 50)
 
     def test_call_incompatible_data(self):
         """Should fail on incompatible mdmap/dm combo and bad perms."""
@@ -986,15 +1013,24 @@ class MantelCorrelogramTests(TestHelper):
             0.6, 0.7, 0.8, 0.9])
 
         # Test p-values and corrected p-values.
-        p_vals = obs['mantel_p']
-        corr_p_vals = obs['mantel_p_corr']
-        self.assertEqual(len(p_vals), 7)
-        self.assertTrue(p_vals[0] >= 0 and p_vals[0] <= 0.01)
-        self.assertTrue(p_vals[1] > 0.01 and p_vals[1] <= 0.1)
-        self.assertTrue(p_vals[2] > 0.1 and p_vals[2] <= 0.5)
-        self.assertEqual(p_vals[3:], [None, None, None, None])
-        self.assertFloatEqual(corr_p_vals,
-            [p_val * 3 if p_val is not None else None for p_val in p_vals])
+        found_match = False
+        for i in range(self.p_val_tests):
+            obs = self.mc()
+            p_vals = obs['mantel_p']
+            corr_p_vals = obs['mantel_p_corr']
+            self.assertEqual(len(p_vals), 7)
+            self.assertEqual(p_vals[3:], [None, None, None, None])
+            self.assertIsProb(p_vals[0])
+            self.assertIsProb(p_vals[1])
+            self.assertIsProb(p_vals[2])
+            self.assertFloatEqual(corr_p_vals,
+                [p_val * 3 if p_val is not None else None for p_val in p_vals])
+
+            if (p_vals[0] >= 0 and p_vals[0] <= 0.01 and p_vals[1] > 0.01 and
+                p_vals[1] <= 0.1 and p_vals[2] > 0.1 and p_vals[2] <= 0.5):
+                found_match = True
+                break
+        self.assertTrue(found_match)
 
     def test_call_small(self):
         """Test running a Mantel correlogram analysis on the smallest input."""
@@ -1026,12 +1062,20 @@ class MantelCorrelogramTests(TestHelper):
             0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
 
         # Test p-values and corrected p-values.
-        p_vals = obs['mantel_p']
-        corr_p_vals = obs['mantel_p_corr']
-        self.assertEqual(len(p_vals), 3)
-        self.assertTrue(p_vals[0] >= 0 and p_vals[0] <= 0.5)
-        self.assertEqual(p_vals[1:], [None, None])
-        self.assertFloatEqual(corr_p_vals, p_vals)
+        found_match = False
+        for i in range(self.p_val_tests):
+            obs = self.small_mc()
+            p_vals = obs['mantel_p']
+            corr_p_vals = obs['mantel_p_corr']
+            self.assertEqual(len(p_vals), 3)
+            self.assertEqual(p_vals[1:], [None, None])
+            self.assertIsProb(p_vals[0])
+            self.assertFloatEqual(corr_p_vals, p_vals)
+
+            if p_vals[0] >= 0 and p_vals[0] <= 0.5:
+                found_match = True
+                break
+        self.assertTrue(found_match)
 
     def test_find_distance_classes(self):
         """Test finding the distance classes a matrix's elements are in."""
@@ -1178,6 +1222,32 @@ class MantelTests(TestHelper):
         self.m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
         self.m3_dm = DistanceMatrix(m3, sample_ids, sample_ids)
 
+    def assertCorrectPValueMantel(self, exp_min, exp_max, fn, num_perms=None):
+        """Tests that the stochastic p-value falls in the specified range.
+
+        Performs the test self.p_val_tests times and fails if the observed
+        p-value does not fall into the specified range at least once. Each
+        p-value is also tested that it falls in the range 0.0 to 1.0.
+
+        This method assumes that fn is callable, and will pass num_perms to fn
+        if num_perms is provided. It also assumes that fn returns a tuple of
+        results, with the p-value as the first element.
+
+        This is for testing Mantel._mantel_test and is ported from PyCogent.
+        """
+        found_match = False
+        for i in range(self.p_val_tests):
+            if num_perms is not None:
+                obs = fn(num_perms)
+            else:
+                obs = fn()
+            p_val = obs[0]
+            self.assertIsProb(p_val)
+            if p_val >= exp_min and p_val <= exp_max:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
     def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm]
@@ -1218,17 +1288,16 @@ class MantelTests(TestHelper):
 
         obs_method_name = overview_mantel_output['method_name']
         obs_num_permutations = overview_mantel_output['num_perms']
-        obs_p_value = overview_mantel_output['p_value']
         obs_r_value = overview_mantel_output['r_value']
         obs_perm_stats_len = len(overview_mantel_output['perm_stats'])
         obs_tail_type = overview_mantel_output['tail_type']
 
         self.assertEqual(expected_method_name, obs_method_name)
-        self.assertTrue(obs_p_value > 0 and obs_p_value < 0.006)
         self.assertFloatEqual(expected_r_value, obs_r_value)
         self.assertFloatEqual(expected_perm_stats_len, obs_perm_stats_len)
         self.assertEqual(expected_number_of_permutations, obs_num_permutations)
         self.assertEqual(expected_tail_type, obs_tail_type)
+        self.assertCorrectPValue(0, 0.006, overview_mantel, 999)
 
     # The remaining tests in this class were grabbed from PyCogent's mantel
     # unit tests. They should be removed once we start using PyCogent's version
@@ -1242,14 +1311,14 @@ class MantelTests(TestHelper):
         mantel = Mantel(self.m1_dm, self.m1_dm, 'greater')
         p, stat, perms = mantel._mantel_test(999)
 
-        self.assertTrue(p > 0.09 and p < 0.25)
+        self.assertCorrectPValueMantel(0.09, 0.25, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
         mantel = Mantel(self.m1_dm, self.m2_dm, 'greater')
         p, stat, perms = mantel._mantel_test(999)
 
-        self.assertTrue(p > 0.2 and p < 0.5)
+        self.assertCorrectPValueMantel(0.2, 0.5, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
@@ -1266,13 +1335,13 @@ class MantelTests(TestHelper):
 
         mantel = Mantel(self.m1_dm, self.m2_dm, 'less')
         p, stat, perms = mantel._mantel_test(999)
-        self.assertTrue(p > 0.6 and p < 1.0)
+        self.assertCorrectPValueMantel(0.6, 1.0, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
         mantel = Mantel(self.m1_dm, self.m3_dm, 'less')
         p, stat, perms = mantel._mantel_test(999)
-        self.assertTrue(p > 0.1 and p < 2.5)
+        self.assertCorrectPValueMantel(0.1, 0.25, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
 
@@ -1283,19 +1352,19 @@ class MantelTests(TestHelper):
         # test).
         mantel = Mantel(self.m1_dm, self.m1_dm, 'two sided')
         p, stat, perms = mantel._mantel_test(999)
-        self.assertTrue(p > 0.20 and p < 0.45)
+        self.assertCorrectPValueMantel(0.20, 0.45, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
         mantel = Mantel(self.m1_dm, self.m2_dm, 'two sided')
         p, stat, perms = mantel._mantel_test(999)
-        self.assertTrue(p > 0.6 and p < 0.75)
+        self.assertCorrectPValueMantel(0.6, 0.75, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
         mantel = Mantel(self.m1_dm, self.m3_dm, 'two sided')
         p, stat, perms = mantel._mantel_test(999)
-        self.assertTrue(p > 0.2 and p < 0.45)
+        self.assertCorrectPValueMantel(0.2, 0.45, mantel._mantel_test, 999)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
 
@@ -1370,7 +1439,7 @@ class PartialMantelTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp_method_name)
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] >= 0.001 and obs['mantel_p'] < 0.01)
+        self.assertCorrectPValue(0.001, 0.01, self.pm, p_val_key='mantel_p')
 
     def test_call_small(self):
         """Test the running of partial Mantel analysis on small input."""
@@ -1380,7 +1449,8 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = 0.99999999999999944
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.40 and obs['mantel_p'] < 0.60)
+        self.assertCorrectPValue(0.40, 0.60, self.small_pm,
+                                 p_val_key='mantel_p')
 
         obs = self.small_pm_diff()
         exp_method_name = 'Partial Mantel'
@@ -1388,7 +1458,8 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = 0.99999999999999734
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.25 and obs['mantel_p'] < 0.4)
+        self.assertCorrectPValue(0.25, 0.4, self.small_pm_diff,
+                                 p_val_key='mantel_p')
 
         obs = self.small_pm_diff2()
         exp_method_name = 'Partial Mantel'
@@ -1396,7 +1467,8 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = -0.350624881409
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.8)
+        self.assertCorrectPValue(0.8, 1.0, self.small_pm_diff2,
+                                 p_val_key='mantel_p')
 
 
 if __name__ == "__main__":
