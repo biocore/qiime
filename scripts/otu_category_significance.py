@@ -22,6 +22,7 @@ from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table, parse_biom_table_str
+from qiime.parse import parse_mapping_file
 
 script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
@@ -189,6 +190,7 @@ def main():
 
     category_mapping_fp = opts.category_mapping_fp
     category_mapping = open(category_mapping_fp,'U')
+    category_mapping = parse_mapping_file(category_mapping)
     individual_column = opts.individual_column
     reference_sample_column = opts.reference_sample_column
     conv_output_fp = opts.converted_otu_table_output_fp
@@ -229,7 +231,6 @@ def main():
                 of = open(conv_output_fp, 'w')
                 of.write(converted_otu_table_str)
                 of.close()
-            category_mapping = open(category_mapping_fp,'U')
             if test == 'longitudinal_correlation':
                 output = test_wrapper('correlation', converted_otu_table_str, \
                     category_mapping, category, threshold, filter, otu_include, \

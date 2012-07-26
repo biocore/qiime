@@ -25,8 +25,6 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
-from biom.parse import parse_biom_table, \
-        parse_biom_table_str
 
 """Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
@@ -633,7 +631,7 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
         raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, g_test, paired_T.")
 
     taxonomy_info = get_taxonomy_info(otu_table)
-    mapping_data, header, comments = parse_mapping_file(category_mapping)
+    mapping_data, header, comments = category_mapping
 
     if not test == 'paired_T':
         category_info, category_values = \
@@ -717,7 +715,7 @@ def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
        Unlike the test_wrapper() method, this method includes all OTUs, even when 
        some have zero counts.
     """
-    mapping_data, header, comments = parse_mapping_file(category_mapping)
+    mapping_data, header, comments = category_mapping
     category_info, category_values = \
         get_category_info(mapping_data, header, category, threshold)
     

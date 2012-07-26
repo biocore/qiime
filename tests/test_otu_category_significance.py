@@ -868,6 +868,7 @@ sample3\tC\t1.0""".split('\n')
                                       'sample2\tA\t8.0',
                                       'sample3\tB\t1.0',
                                       'sample4\tB\t1.0']
+        category_mapping = parse_mapping_file(category_mapping)
         OTU_list = ['1', '0'] 
 
         # ANOVA
@@ -1095,6 +1096,7 @@ sample3\tC\t1.0""".split('\n')
                                       'sample2\tA\t8.0',
                                       'sample3\tB\t1.0',
                                       'sample4\tB\t1.0']
+        category_mapping = parse_mapping_file(category_mapping)
         OTU_list = ['1', '0'] 
 
         # ANOVA

@@ -15,7 +15,6 @@ from collections import defaultdict
 from numpy import zeros
 from string import strip
 from qiime.format import format_otu_table
-from qiime.parse import parse_mapping_file
 from biom.table import table_factory
 
 """Prepare otu table for performing otu significance studies that account
@@ -87,7 +86,7 @@ def longitudinal_otu_table_conversion_wrapper(otu_table, category_mapping,\
     individual_column, timepoint_zero_column):
     """returns the modified otu_table"""
     otu_table = otu_table.normObservationBySample()
-    mapping_data, header, comments = parse_mapping_file(category_mapping)
+    mapping_data, header, comments = category_mapping
     samples_from_subject, sample_to_subtract = \
         get_sample_individual_info(mapping_data, header, individual_column, \
         timepoint_zero_column)
