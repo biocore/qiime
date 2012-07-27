@@ -250,7 +250,7 @@ def main():
             # if directory, get aggregated results
             parsed_otu_tables = []
             for path in otu_table_paths:
-                ot = open(otu_table_fp,'U')
+                ot = open(path,'U')
                 ot = parse_biom_table(ot)
                 parsed_otu_tables.append(ot)
 
