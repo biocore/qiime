@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -14,6 +14,9 @@ __status__ = "Development"
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import ParallelWrapper
 from qiime.parallel.poller import basic_process_run_results_f
+from cogent.parse.fasta import MinimalFastaParser
+from os.path import basename
+from datetime import datetime
 
 class ParallelPickOtus(ParallelWrapper):
     _script_name = "pick_otus.py"
@@ -300,3 +303,202 @@ def parallel_pick_otus_process_run_results_f(f):
     # you'll get an error right away rather than going into an infinite loop
     return True
 
+
+#TODO: 
+# - distribut jobs evely according to load in multicore env,
+#   if we have a queuing system we could submit all jobs individually
+# - ask Greg if there is a more direct way to make the prefix_len available
+#   to the input_splitter, as it does not get the params dict. Right now, I 
+#   have to overwrite __init__ just to pass this param in.
+
+class ParallelPickOtusTrie(ParallelPickOtus):
+
+    _process_run_results_f =\
+        'qiime.parallel.pick_otus.parallel_pick_otus_trie_process_run_results_f'
+
+    def __init__(self,
+                 prefix_length=1,
+                 *args,
+                 **kwargs):
+        super(ParallelPickOtusTrie, self).__init__(*args, **kwargs)
+        self.prefix_length = prefix_length
+
+        # Maybe use this to distribute across fixed number of jobs with relatively even load 
+        self.prefix_counts = {}
+
+    def _split_along_prefix(self, input_fp, jobs_to_start,
+                            job_prefix, output_dir):
+        """ Split input sequences into sets with identical prefix
+        """
+        out_files = []
+        buffers = {}
+        for seq_id, seq in MinimalFastaParser(open(input_fp)):
+
+            # TODO: if not too expensive check for length first and fail if seq too short
+            #       without this tests, we will get wrong results for short reads
+            prefix = seq[:self.prefix_length]
+
+            if (prefix not in buffers):
+                # never seen this prefix before
+                out_fp = "%s/%s%s" % (output_dir, job_prefix, prefix)
+                buffers[prefix] = BufferedWriter(out_fp)
+                out_files.append(out_fp)
+                self.prefix_counts[prefix] = 0
+
+            self.prefix_counts[prefix] += 1                                
+            buffers[prefix].write('>%s\n%s\n' % (seq_id, seq))
+
+        remove_files=True 
+        return out_files, remove_files
+
+    _input_splitter = _split_along_prefix
+
+    def _get_job_commands(self,
+                          fasta_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate pick_otus commands which should be run
+        """
+        # Create basenames for each of the output files. These will be filled
+        # in to create the full list of files created by all of the runs.
+        out_filenames = ['%s_otus.log', 
+                         '%s_otus.txt']
+    
+        # Create lists to store the results
+        commands = []
+        result_filepaths = []
+            
+        # Iterate over the input files
+        for i,fasta_fp in enumerate(fasta_fps):
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            rename_command, current_result_filepaths = self._get_rename_command(
+                [fn % basename(fasta_fp) for fn in out_filenames],
+                working_dir,
+                output_dir)
+            result_filepaths += current_result_filepaths
+            
+            command = \
+             '%s %s -i %s -m trie -o %s %s %s' %\
+             (command_prefix,
+              self._script_name,\
+              fasta_fp,\
+              working_dir,\
+              rename_command,
+              command_suffix)
+
+            commands.append(command)
+
+        #TODO: on a queue based cluster system, we should let 
+        #      the queue do this and submit all jobs as they are
+        commands = self._merge_to_n_commands(commands,
+                                             params['jobs_to_start'],
+                                             command_prefix=command_prefix,
+                                             command_suffix=command_suffix)
+        return commands, result_filepaths
+
+
+#TODO: This class needs tests and maybe should be moved to some of the qiime util modules if generally useful
+class BufferedWriter():
+    """A file like thing that delays writing to file without keeping an open filehandle
+
+    This class comes useful in scenarios were potentially many open fhs are needed. Since
+    each OS limits the max number of open fh at any time, we provide a fh like class that
+    can be used much like a regular (writable) fh, but without keeping the fh open permanently.
+    """
+
+    def __init__(self, filename, buf_size=100):
+        """
+        filename: name of file to write to in append mode 
+        
+        buf_size: buffer size in lines
+        """
+        self.buffer = []
+        self.buf_size = buf_size
+        self.filename = filename
+
+        #test open the file
+        fh = open(self.filename, "w")
+        fh.close()
+
+    def __del__(self):
+        self._flush()
+
+    def close(self):
+        self._flush()
+    
+    def write(self, line):
+        """write line to BufferedWriter"""
+
+        self.buffer.append(line)
+        if (len(self.buffer) > self.buf_size):
+            self._flush()
+
+    def _flush(self):
+        """Write buffer to file"""
+
+        fh = open(self.filename, "a")
+        fh.write("".join(self.buffer))
+        fh.close()
+
+        self.buffer = []
+
+def parallel_pick_otus_trie_process_run_results_f(f):
+    """ Copy each list of infiles to each outfile and delete infiles
+    
+        f: file containing one set of mapping instructions per line
+        
+        example f:
+         f1.txt f2.txt f3.txt f_combined.txt
+         f1.log f2.log f3.log f_combined.log
+         f1_failures.txt f2_failures.txt f3_failures.txt f_failires.txt
+         
+        If f contained the two lines above, this function would 
+         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
+         and f1.log, f2.log, and f3.log into f_combined.log
+         
+         Note: this is mostly copied from 
+               parallel_pick_otus_process_run_results_f
+               The only difference is the way how otu_maps are combined.
+               Since each otu_map for the parallel trie otu pickers yields disjoint
+               sets, we have to make the otu_ids disjoint as well.
+    """
+    lines = list(f)
+    # handle catting of log files and failure files
+    basic_process_run_results_f([lines[1]])
+    try:
+        basic_process_run_results_f([lines[2]])
+        basic_process_run_results_f([lines[3]])
+    except IndexError:
+        # no failures files or blast6 were generated (BLAST
+        # doesn't create these)
+        pass
+    # handle merging of otu maps
+    fields = lines[0].strip().split()
+    infiles_list = fields[:-1]
+    out_filepath = fields[-1] 
+    try:
+        of = open(out_filepath,'w')
+    except IOError:
+        raise IOError,\
+         "Poller can't open final output file: %s" % out_filepath  +\
+         "\nLeaving individual jobs output.\n Do you have write access?"
+
+    unique_otu_map = {}
+    otu_id = 0
+    for fp in infiles_list:
+        for line in open(fp):
+            fields = line.strip().split()
+            of.write('\t'.join(["%d" % otu_id] + fields[1:]))
+            of.write('\n')            
+            otu_id += 1
+    of.close()
+    
+    # It is a good idea to have your clean_up_callback return True.
+    # That way, if you get mixed up and pass it as check_run_complete_callback, 
+    # you'll get an error right away rather than going into an infinite loop
+    return True

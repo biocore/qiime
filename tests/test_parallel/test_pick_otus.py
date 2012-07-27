@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,7 +16,9 @@ from glob import glob
 from os.path import exists, join
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
-from qiime.parallel.pick_otus import ParallelPickOtusUclustRef, ParallelPickOtusBlast
+from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
+                                      ParallelPickOtusBlast,
+                                      ParallelPickOtusTrie)
 from qiime.util import (get_qiime_temp_dir, 
                         get_tmp_filename)
 from qiime.test import initiate_timeout, disable_timeout
@@ -123,6 +125,59 @@ class ParallelPickOtusBlastTests(ParallelPickOtusTests):
         self.assertTrue(len(otu_map[0])>5)
         self.assertEqual(set(otu_map[2]),set(['r1','r2','r3','r4','r5']))
         
+class ParallelPickOtusTrieTests(ParallelPickOtusTests):
+
+    def setUp(self):
+        """
+        """
+
+        super(ParallelPickOtusTrieTests, self).setUp()
+        seqs = [\
+         ('s1 some description','ACGTAATGGT'),\
+         ('s2','ACGTATTTTAATTTGGCATGGT'),\
+         ('s3','ACGTAAT'),\
+         ('s4','ACGTA'),\
+         ('s5','ATTTAATGGT'),\
+         ('s6','ATTTAAT'),\
+         ('s7','AAATAAAAA')
+        ]
+        self.small_seq_path = get_tmp_filename(
+            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        self.files_to_remove = [self.small_seq_path]
+        f = open(self.small_seq_path, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
+        f.close()
+        
+    def test_parallel_pick_otus_trie(self):
+        """ parallel_pick_otus_trie functions as expected """
+        
+        params = {
+            'jobs_to_start': 2
+            }
+        
+        app = ParallelPickOtusTrie(prefix_length=1)
+        r = app(self.small_seq_path,
+                self.test_out,
+                params,
+                job_prefix='PTEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+
+        otu_map_fp = glob(join(self.test_out,'*otus.txt'))[0]
+        otu_map = parse_otu_map(open(otu_map_fp,'U'))
+
+        expected =( {(1, 2): 1,
+                     (0, 0): 1,
+                     (2, 4): 1,
+                     (1, 3): 1,
+                     (3, 6): 1,
+                     (1, 1): 1,
+                     (3, 5): 1} ,
+                    ['s2', 's1', 's3', 's4', 's7', 's5', 's6'],
+                    ['0', '1', '2', '3'])
+
+        self.assertEqual(len(otu_map[0]), 7)
+        self.assertEqual(otu_map, expected)
         
 
 refseqs1 = """>r1
