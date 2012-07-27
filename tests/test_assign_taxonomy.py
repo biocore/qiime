@@ -29,7 +29,8 @@ from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
-    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, guess_rdp_version
+    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, guess_rdp_version,
+    MothurTaxonAssigner,
     )
 from sys import stderr
 
@@ -511,6 +512,78 @@ class RtaxTaxonAssignerTests(TestCase):
         # the equal unordered lists of lines is present in actual and expected
         self.assertEqualItems(log_file_str.split('\n')[0:12], log_file_exp)
 
+
+class MothurTaxonAssignerTests(TestCase):
+    """Tests for the Mothur taxon assigner.
+    """
+    def setUp(self):
+        def tfp(suffix):
+            return get_tmp_filename(
+                prefix='MothurTaxonAssigner_',
+                suffix=suffix,
+                result_constructor=str,
+                )
+        
+        tax_fp = tfp('.txt')
+        f = open(tax_fp, "w")
+        f.write(rdp_id_to_taxonomy)
+        f.close()
+
+        ref_fp = tfp('.fna')
+        g = open(ref_fp, "w")
+        g.write(rdp_reference_seqs)
+        g.close()
+
+        self.seq_fp1 = tfp(".fasta")
+        h = open(self.seq_fp1, "w")
+        h.write(rdp_test1_fasta)
+        h.close()
+
+        self.params = {
+            'id_to_taxonomy_fp': tax_fp,
+            'reference_sequences_fp': ref_fp,
+            }
+        
+        self._paths_to_clean_up = [
+            tax_fp, ref_fp, self.seq_fp1,
+            ]
+
+    def tearDown(self):
+        remove_files(self._paths_to_clean_up)
+
+    def test_assignment_minimum_conf(self):
+        self.params["Confidence"] = 0.00
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        x_lineage, x_conf = result['X67228']
+        self.assertEqual(x_lineage, [
+            'Bacteria', 'Proteobacteria', 'Alphaproteobacteria',
+            'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
+            ])
+        self.assertTrue(x_conf > 0.5)
+        
+        e_lineage, e_conf = result['EF503697']
+        self.assertEqual(e_lineage, [
+            'Bacteria', 'Proteobacteria', 'Gammaproteobacteria',
+            'Vibrionales', 'Vibrionaceae', 'Vibrio'
+            ])
+        self.assertTrue(e_conf < 0.5)
+
+    def test_assignment_maximum_conf(self):
+        self.params["Confidence"] = 0.95
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        x_lineage, x_conf = result['X67228']
+        self.assertEqual(x_lineage, [
+            'Bacteria', 'Proteobacteria', 'Alphaproteobacteria',
+            'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
+            ])
+        self.assertTrue(x_conf > 0.94)
+        
+        e_lineage, e_conf = result['EF503697']
+        self.assertTrue(len(e_lineage) < 3)
 
 
 class RdpTaxonAssignerTests(TestCase):

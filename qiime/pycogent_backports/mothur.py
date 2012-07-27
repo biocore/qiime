@@ -5,9 +5,11 @@ mothur Version 1.6.0
 
 
 from __future__ import with_statement
-from os import path, getcwd, mkdir, remove, listdir
+from os import path, getcwd, mkdir, remove, listdir, rmdir
+import re
 from shutil import copyfile
 from subprocess import Popen
+from tempfile import mkdtemp, NamedTemporaryFile
 from cogent.app.parameters import ValuedParameter
 from cogent.app.util import CommandLineApplication, ResultPath, \
     CommandLineAppResult, ApplicationError
@@ -15,8 +17,8 @@ from cogent.parse.mothur import parse_otu_list
 
 
 __author__ = "Kyle Bittinger"
-__copyright__ = "Copyright 2007-2011, The Cogent Project"
-__credits__ = ["Kyle Bittinger", "Jose Carlos Clemente Litran"]
+__copyright__ = "Copyright 2007-2012, The Cogent Project"
+__credits__ = ["Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Kyle Bittinger"
@@ -354,3 +356,113 @@ def mothur_from_file(file):
     result.cleanUp()
     return otus
 
+
+class MothurClassifySeqs(Mothur):
+    _options = {
+        'reference': ValuedParameter(
+            Name='reference', Value=None, Delimiter='=', Prefix=''),
+        'taxonomy': ValuedParameter(
+            Name='taxonomy', Value=None, Delimiter='=', Prefix=''),
+        'cutoff': ValuedParameter(
+            Name='cutoff', Value=None, Delimiter='=', Prefix=''),
+        'iters': ValuedParameter(
+            Name='iters', Value=None, Delimiter='=', Prefix=''),
+        'ksize': ValuedParameter(
+            Name='ksize', Value=None, Delimiter='=', Prefix=''),
+        }
+    _parameters = {}
+    _parameters.update(_options)
+
+    def _format_function_arguments(self, opts):
+        """Format a series of function arguments in a Mothur script."""
+        params = [self.Parameters[x] for x in opts]
+        return ', '.join(filter(None, map(str, params)))
+
+    def _compile_mothur_script(self):
+        """Returns a Mothur batch script as a string"""
+        fasta = self._input_filename
+
+        required_params = ["reference", "taxonomy"]
+        for p in required_params:
+            if self.Parameters[p].Value is None:
+                raise ValueError("Must provide value for parameter %s" % p)
+        optional_params = ["ksize", "cutoff", "iters"]
+        args = self._format_function_arguments(
+            required_params + optional_params)
+        script = '#classify.seqs(fasta=%s, %s)' % (fasta, args)
+        return script
+
+    def _get_result_paths(self):
+        input_base, ext = path.splitext(path.basename(self._input_filename))
+        result_by_suffix = {
+            ".summary": "summary",
+            ".taxonomy": "assignments",
+            ".accnos": "accnos",
+            }
+        
+        paths = {'log': self._derive_log_path()}
+        for fn in listdir(self.WorkingDir):
+            if fn.startswith(input_base):
+                _, suffix = path.splitext(fn)
+                result_key = result_by_suffix.get(suffix)
+                if result_key is not None:
+                    paths[result_key] = path.join(self.WorkingDir, fn)
+
+        return dict([(k, ResultPath(v)) for (k,v) in paths.items()])
+
+
+def parse_mothur_assignments(lines):
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        seq_id, _, assignment = line.partition("\t")
+        toks = assignment.rstrip(";").split(";")
+        lineage = []
+        conf = None
+        for tok in toks:
+            matchobj = re.match("(.+)\((\d+)\)$", tok)
+            if matchobj:
+                lineage.append(matchobj.group(1))
+                pct_conf = int(matchobj.group(2))
+                conf = pct_conf / 100.0
+        yield seq_id, lineage, conf
+
+
+def mothur_classify_file(
+    query_file, ref_fp, tax_fp, cutoff=None, iters=None, ksize=None,
+    output_fp=None):
+
+    # Copy the taxonomy file to ensure a semicolon at the end of each line
+    tmp_tax_file = NamedTemporaryFile(suffix=".tax.txt")
+    for line in open(tax_fp):
+        line = line.rstrip()
+        if not line.endswith(";"):
+            line = line + ";"
+        tmp_tax_file.write(line)
+        tmp_tax_file.write("\n")
+    tmp_tax_file.seek(0)
+
+    params = {"reference": ref_fp, "taxonomy": tmp_tax_file.name}
+    if cutoff is not None:
+        params["cutoff"] = cutoff
+    if ksize is not None:
+        params["ksize"] = ksize
+    if iters is not None:
+        params["iters"] = iters
+
+    app = MothurClassifySeqs(params, InputHandler='_input_as_lines')
+    result = app(query_file)
+
+    # Force evaluation, so we can safely clean up files
+    assignments = list(parse_mothur_assignments(result['assignments']))
+    result.cleanUp()
+
+    if output_fp is not None:
+        f = open(output_fp, "w")
+        for query_id, taxa, conf in assignments:
+            taxa_str = ";".join(taxa)
+            f.write("%s\t%s\t%.2f\n" % (query_id, taxa_str, conf))
+        f.close()
+        return None
+    return dict((a, (b, c)) for a, b, c in assignments)

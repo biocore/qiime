@@ -17,15 +17,18 @@ from qiime.util import make_option, get_rdp_jarpath, load_qiime_config
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
-    BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner, guess_rdp_version)
+    BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
+    RtaxTaxonAssigner, guess_rdp_version,
+    )
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
+    'mothur': MothurTaxonAssigner,
     'rdp22': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
 }
 
-assignment_method_choices = ['rdp','blast','rtax']
+assignment_method_choices = ['rdp','blast','rtax','mothur']
 
 options_lookup = get_options_lookup()
 
@@ -107,7 +110,7 @@ script_info['optional_options']=[\
         'classification when the mate pair is overly generic (used for RTAX only).'
         '[default: %default]',default=False),\
  make_option('-m', '--assignment_method', type='choice',
-        help='Taxon assignment method, either blast, rdp, or rtax '
+        help='Taxon assignment method, either blast, mothur, rdp, or rtax '
         '[default:%default]',
         choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db', type='string',
@@ -115,7 +118,7 @@ script_info['optional_options']=[\
         '--reference_seqs_db for assignment with blast [default: %default]'),\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
-        'method [default: %default]', default=0.80),\
+        'and mothur methods [default: %default]', default=0.80),\
  make_option('--rdp_max_memory', default=1000, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
@@ -170,6 +173,13 @@ def main():
                          'in addition to the cluster representatives.  Pass '
                          'these via --read_1_seqs_fp and --read_2_seqs_fp.')
 
+    if assignment_method == 'mothur':
+        if None in [opts.id_to_taxonomy_fp, opts.reference_seqs_fp]:
+            option_parser.error(
+                'Mothur classification requires both a filepath for '
+                'reference sequences (via -r) and an id_to_taxonomy '
+                'file (via -t).')
+
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -201,6 +211,11 @@ def main():
         else:
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
         params['Max E value'] = opts.e_value
+
+    elif assignment_method == 'mothur':
+        params['Confidence'] = opts.confidence
+        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+        params['reference_sequences_fp'] = opts.reference_seqs_fp
 
     elif assignment_method.startswith('rdp'):
         params['Confidence'] = opts.confidence

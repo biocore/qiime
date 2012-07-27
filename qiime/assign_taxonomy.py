@@ -26,6 +26,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from qiime.pycogent_backports import rdp_classifier
 from qiime.pycogent_backports import rtax
+from qiime.pycogent_backports import mothur
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath
 
@@ -299,6 +300,47 @@ class BlastTaxonAssigner(TaxonAssigner):
                 # leave the key out, or have it point to None?
                 result[k] = None
 
+        return result
+
+
+class MothurTaxonAssigner(TaxonAssigner):
+    """Assign taxonomy using Mothur's naive Bayes implementation
+    """
+    Name = 'MothurTaxonAssigner'
+    Application = "Mothur"
+    Citation = (
+        "Schloss, P.D., et al., Introducing mothur: Open-source, platform-"
+        "independent, community-supported software for describing and "
+        "comparing microbial communities. Appl Environ Microbiol, 2009. "
+        "75(23):7537-41."
+        )
+    _tracked_properties = ['Application', 'Citation']
+
+    def __init__(self, params):
+        _params = {
+            'Confidence': 0.80,
+            'Iterations': None,
+            'KmerSize': None,
+            'id_to_taxonomy_fp': None,
+            'reference_sequences_fp': None,
+            }
+        _params.update(params)
+        super(MothurTaxonAssigner, self).__init__(_params)
+
+    def __call__(self, seq_path, result_path=None, log_path=None):
+        seq_file = open(seq_path)
+        percent_confidence = int(self.Params['Confidence'] * 100)
+        result = mothur.mothur_classify_file(
+            query_file=seq_file,
+            ref_fp=self.Params['reference_sequences_fp'],
+            tax_fp=self.Params['id_to_taxonomy_fp'],
+            cutoff=percent_confidence,
+            iters=self.Params['Iterations'],
+            ksize=self.Params['KmerSize'],
+            output_fp=result_path,
+            )
+        if log_path:
+            self.writeLog(log_path)
         return result
 
 
