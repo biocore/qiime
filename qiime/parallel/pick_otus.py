@@ -334,8 +334,9 @@ class ParallelPickOtusTrie(ParallelPickOtus):
         buffers = {}
         for seq_id, seq in MinimalFastaParser(open(input_fp)):
 
-            # TODO: if not too expensive check for length first and fail if seq too short
-            #       without this tests, we will get wrong results for short reads
+            if(len(seq) < self.prefix_length):
+                raise ValueError("Prefix length must be equal or longer than sequence.\n"
+                                 +" Found seq %s with length %d" % (seq_id, len(seq)))
             prefix = seq[:self.prefix_length]
 
             if (prefix not in buffers):

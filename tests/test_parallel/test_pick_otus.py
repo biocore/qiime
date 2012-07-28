@@ -178,7 +178,22 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
 
         self.assertEqual(len(otu_map[0]), 7)
         self.assertEqual(otu_map, expected)
+
+    def test_parallel_pick_otus_trie_raises(self):
+        """ parallel_pick_otus_trie functions as expected """
         
+        params = {
+            'jobs_to_start': 2
+            }
+        
+        app = ParallelPickOtusTrie(prefix_length=5)
+        self.assertRaises( ValueError, app ,
+                           self.small_seq_path,
+                           self.test_out,
+                           params,
+                           job_prefix='PTEST',
+                           poll_directly=True,
+                           suppress_submit_jobs=False)
 
 refseqs1 = """>r1
 CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTTACCTCACCAACTAGCTAATGCGCCGCAGGTCCATCCATGTTCACGCCTTGATGGGCGCTTTAATATACTGAGCATGCGCTCTGTATACCTATCCGGTTTTAGCTACCGTTTCCAGCAGTTATCCCGGACACATGGGCTAGG
