@@ -180,13 +180,13 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         self.assertEqual(otu_map, expected)
 
     def test_parallel_pick_otus_trie_raises(self):
-        """ parallel_pick_otus_trie functions as expected """
+        """ parallel_pick_otus_trie raises error"""
         
         params = {
             'jobs_to_start': 2
             }
         
-        app = ParallelPickOtusTrie(prefix_length=5)
+        app = ParallelPickOtusTrie(prefix_length=6)
         self.assertRaises( ValueError, app ,
                            self.small_seq_path,
                            self.test_out,
