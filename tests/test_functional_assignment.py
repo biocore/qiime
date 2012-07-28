@@ -19,6 +19,7 @@ from cogent.util.misc import remove_files, create_dir
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.functional_assignment import usearch_function_assigner
 from qiime.parse import parse_otu_map
+from qiime.test import initiate_timeout, disable_timeout
 
 class FunctionalAssignmentTests(TestCase):
     """
@@ -58,10 +59,12 @@ class FunctionalAssignmentTests(TestCase):
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
+        initiate_timeout(60)
     
     def tearDown(self):
         """ """
-        remove_files(self.files_to_remove)
+        disable_timeout()
+        remove_files(self.files_to_remove,error_on_missing=False)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
