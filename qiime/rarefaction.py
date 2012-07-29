@@ -107,8 +107,8 @@ class RarefactionMaker(FunctionWithParams):
             for (val, id, meta) in self.otu_table.iterObservations():
                 try:
                     del meta['taxonomy']
-                except TypeError:
-                    # no taxonomy present
+                except (TypeError,KeyError) as e:
+                    # no meta or just no taxonomy present
                     pass
 
         self.output_dir = output_dir
