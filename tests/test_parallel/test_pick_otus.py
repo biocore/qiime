@@ -18,8 +18,9 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
-                                      ParallelPickOtusTrie)
-from qiime.util import (get_qiime_temp_dir, 
+                                      ParallelPickOtusTrie,
+                                      greedy_partition)
+from qiime.util import (get_qiime_temp_dir,
                         get_tmp_filename)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import parse_otu_map
@@ -194,6 +195,33 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
                            job_prefix='PTEST',
                            poll_directly=True,
                            suppress_submit_jobs=False)
+
+class ParallelPickOtusFunctionTests(TestCase):
+    
+    def test_greedy_partition(self):
+        """greedy_partition works as expected"""
+
+        #(non) partition into one bucket
+        obs_part, obs_levels = greedy_partition({'1':2,
+                                                 '2':1,
+                                                 '3':3 }, 1)
+        self.assertEquals(obs_levels, [6])
+        self.assertEquals(obs_part, [['3','1','2']])
+
+        # two buckets
+        obs_part, obs_levels = greedy_partition({'1':2,
+                                                 '2':1,
+                                                 '3':3}, 2)
+
+        self.assertEquals(obs_levels, [3,3])
+        self.assertEquals(obs_part, [['3'],['1','2']])
+
+        # larger input
+        obs_part, obs_levels = greedy_partition({'1':1, '2':2, '3':3,
+                                                 '4':4,'5':5, '6':6}, 2)
+        self.assertEquals(obs_levels, [11,10])
+        self.assertEquals(obs_part, [['6','3','2'],['5','4','1']])
+
 
 refseqs1 = """>r1
 CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTTACCTCACCAACTAGCTAATGCGCCGCAGGTCCATCCATGTTCACGCCTTGATGGGCGCTTTAATATACTGAGCATGCGCTCTGTATACCTATCCGGTTTTAGCTACCGTTTCCAGCAGTTATCCCGGACACATGGGCTAGG

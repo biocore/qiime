@@ -12,11 +12,12 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.parallel.util import ParallelWrapper
+from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
 from cogent.parse.fasta import MinimalFastaParser
+from math import ceil
 from os.path import basename
-from datetime import datetime
+from re import compile
 
 class ParallelPickOtus(ParallelWrapper):
     _script_name = "pick_otus.py"
@@ -304,14 +305,15 @@ def parallel_pick_otus_process_run_results_f(f):
     return True
 
 
-#TODO: 
-# - distribut jobs evely according to load in multicore env,
-#   if we have a queuing system we could submit all jobs individually
-# - ask Greg if there is a more direct way to make the prefix_len available
-#   to the input_splitter, as it does not get the params dict. Right now, I 
-#   have to overwrite __init__ just to pass this param in.
-
 class ParallelPickOtusTrie(ParallelPickOtus):
+    """Picking Otus using a trie the parallel way
+
+    We parallelize the Trie OTU picker using this scheme:
+    1. use the exact prefix filter with a short wordlength (say 5)
+       to sort all reads into buckets according to their first 5 nucs.
+    2. Run trie otupicker an each bucket separately, distribute over cluster
+    3. Combine mappings of 2, Since each bucket is independent fro the rest, a simple cat should do it.
+    """
 
     _process_run_results_f =\
         'qiime.parallel.pick_otus.parallel_pick_otus_trie_process_run_results_f'
@@ -328,8 +330,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
 
     def _split_along_prefix(self, input_fp, jobs_to_start,
                             job_prefix, output_dir):
-        """ Split input sequences into sets with identical prefix
-        """
+        """ Split input sequences into sets with identical prefix"""
         out_files = []
         buffers = {}
         for seq_id, seq in MinimalFastaParser(open(input_fp)):
@@ -384,70 +385,67 @@ class ParallelPickOtusTrie(ParallelPickOtus):
             result_filepaths += current_result_filepaths
             
             command = \
-             '%s %s -i %s -m trie -o %s %s %s' %\
-             (command_prefix,
-              self._script_name,\
+             '%s -i %s -m trie -o %s %s' %\
+             (self._script_name,\
               fasta_fp,\
               working_dir,\
-              rename_command,
-              command_suffix)
+              rename_command)
 
             commands.append(command)
 
-        #TODO: on a queue based cluster system, we should let 
-        #      the queue do this and submit all jobs as they are
         commands = self._merge_to_n_commands(commands,
                                              params['jobs_to_start'],
                                              command_prefix=command_prefix,
                                              command_suffix=command_suffix)
         return commands, result_filepaths
 
-
-#TODO: This class needs tests and maybe should be moved to some of the qiime util modules if generally useful
-class BufferedWriter():
-    """A file like thing that delays writing to file without keeping an open filehandle
-
-    This class comes useful in scenarios were potentially many open fhs are needed. Since
-    each OS limits the max number of open fh at any time, we provide a fh like class that
-    can be used much like a regular (writable) fh, but without keeping the fh open permanently.
-    """
-
-    def __init__(self, filename, buf_size=100):
+    def _merge_to_n_commands(self,
+                             commands,
+                             n,
+                             delimiter=' ; ',
+                             command_prefix=None,
+                             command_suffix=None):
+        """ merge a list of commands into n commands 
+            
+        Uses the size of each jobs to estimate an even distribution
+        of commands ofver the n jobs. 
+ 
         """
-        filename: name of file to write to in append mode 
-        
-        buf_size: buffer size in lines
-        """
-        self.buffer = []
-        self.buf_size = buf_size
-        self.filename = filename
+        if n < 1:
+            raise ValueError, "number of commands (n) must be an integer >= 1"
 
-        #test open the file
-        fh = open(self.filename, "w")
-        fh.close()
+        # Distribute jobs according to their load
+        grouped_prefixe, levels = greedy_partition(self.prefix_counts, n)        
+        #TODO: remove after profiling
+#       print levels 
+#       print ("Maximal theoretical speed up: %f" % (sum(levels)/max(levels)))
 
-    def __del__(self):
-        self._flush()
+        result = []
+        # begin iterating through the commands
+        current_cmds = []
+ 
+        for bucket in grouped_prefixe:
+            for prefix in bucket:
+                re = compile("%s -m trie" % prefix)
+                matches = filter(re.search, commands)
+                if (len(matches) == 0):
+                    raise ValueError("No command found for prefix %s! Aborting." % prefix)
+                if (len(matches) > 1):
+                    raise ValueError("Ambigous commands found for prefix %s! Aborting." % prefix)
+                command = matches[0]
 
-    def close(self):
-        self._flush()
-    
-    def write(self, line):
-        """write line to BufferedWriter"""
+                subcommands = [c.strip() for c in command.split(';')]
+                current_cmds.append(delimiter.join(subcommands))
 
-        self.buffer.append(line)
-        if (len(self.buffer) > self.buf_size):
-            self._flush()
+            result.append(delimiter.join(current_cmds))
+            current_cmds = []
+            
+        for i,r in enumerate(result):
+            r = '%s %s %s' % (command_prefix, r, command_suffix)
+            result[i] = r.strip()
 
-    def _flush(self):
-        """Write buffer to file"""
-
-        fh = open(self.filename, "a")
-        fh.write("".join(self.buffer))
-        fh.close()
-
-        self.buffer = []
-
+        return result
+ 
 def parallel_pick_otus_trie_process_run_results_f(f):
     """ Copy each list of infiles to each outfile and delete infiles
     
@@ -458,7 +456,7 @@ def parallel_pick_otus_trie_process_run_results_f(f):
          f1.log f2.log f3.log f_combined.log
          f1_failures.txt f2_failures.txt f3_failures.txt f_failires.txt
          
-        If f contained the two lines above, this function would 
+         If f contained the two lines above, this function would 
          concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
          and f1.log, f2.log, and f3.log into f_combined.log
          
@@ -503,3 +501,19 @@ def parallel_pick_otus_trie_process_run_results_f(f):
     # That way, if you get mixed up and pass it as check_run_complete_callback, 
     # you'll get an error right away rather than going into an infinite loop
     return True
+
+
+
+def greedy_partition(counts, n):
+    """Distribute k counts evenly across n buckets"""
+    
+    buckets = [ [] for i in range(n) ]
+    fill_levels = [ 0 for i in range(n) ]
+
+    for key in sorted(counts, reverse=True, 
+                      key=lambda c: counts[c]):
+        smallest = fill_levels.index(min(fill_levels))
+        buckets[smallest].append(key)
+        fill_levels[smallest] += counts[key]
+
+    return buckets, fill_levels

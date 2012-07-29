@@ -11,15 +11,17 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from os.path import exists
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
+from qiime.util import (get_tmp_filename,
+                        get_qiime_temp_dir) 
 from qiime.parallel.util import (ParallelWrapper, 
                                  compute_seqs_per_file,
                                  get_random_job_prefix,
-                                 split_fasta)
-
+                                 split_fasta,
+                                 BufferedWriter)
 
 class ParallelWrapperTests(TestCase):
 
@@ -274,6 +276,55 @@ class FunctionTests(TestCase):
             self.assertEqual(\
              LoadSeqs(data=infile,aligned=False),\
              LoadSeqs(data=actual_seqs,aligned=False))
+
+
+class BufferedWriterTests(TestCase):
+    
+    def setUp(self):
+        """ """
+        self.files_to_remove = []
+        tmp_dir = get_qiime_temp_dir()
+        self.test_fp = get_tmp_filename(tmp_dir=tmp_dir,
+                                        prefix='bufWriterTest',
+                                        suffix='.txt')
+        self.files_to_remove.append(self.test_fp)
+
+    def tearDown(self):
+        """ """
+        remove_files(self.files_to_remove)
+
+    def test_init(self):
+        """BufferedWriter constructor works"""
+        
+        b = BufferedWriter(self.test_fp)
+        self.assertTrue(exists(self.test_fp))
+
+    def test_write(self):
+        """BufferedWriter writes nothing until max buffer reached."""
+        
+        b = BufferedWriter(self.test_fp, buf_size=2)
+        b.write("1")
+        content = open(self.test_fp, "r").readlines()
+        self.assertEquals(content, [])
+
+        #still nothing
+        b.write("2")
+        content = open(self.test_fp, "r").readlines()
+        self.assertEquals(content, [])
+
+        #finally, buffer is flushed
+        b.write("3")
+        content = open(self.test_fp, "r").readlines()
+        self.assertEquals(content, ["123"])
+
+    def test_close(self):
+        """close() flushes the buffer"""
+        
+        b = BufferedWriter(self.test_fp, buf_size=2)
+        b.write("1")
+        b.close()
+        content = open(self.test_fp, "r").readlines()
+        self.assertEquals(content, ["1"])
 
 if __name__ == "__main__":
     main()

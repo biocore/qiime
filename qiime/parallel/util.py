@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -478,3 +478,54 @@ def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
         
     # return the result as an integer
     return int(result)
+
+class BufferedWriter():
+    """A file like object that delays writing to file without keeping an open filehandle
+
+    This class comes useful in scenarios were potentially many open fhs are needed
+    (e.g. during splitting of inputs for parallelization). Since
+    each OS limits the max number of open fh at any time, we provide a fh like class that
+    can be used much like a regular (writable) fh, but without keeping the fh open permanently.
+    Using a larger buffer size speeds up the program by using less of the expensive open/close 
+    IO operations.    
+    """
+
+    def __init__(self, filename, buf_size=100):
+        """
+        filename: name of file to write to in append mode 
+        
+        buf_size: buffer size in chunks. Each write operations counts as one chunk.
+        """
+    
+        if(buf_size<1):
+            raise ValueError("Invalid buf_size. Must be 1 or larger.")
+
+        self.buffer = []
+        self.buf_size = buf_size
+        self.filename = filename
+
+        #touch the file
+        fh = open(self.filename, "w")
+        fh.close()
+
+    def __del__(self):
+        self._flush()
+
+    def close(self):
+        self._flush()
+    
+    def write(self, line):
+        """write line to BufferedWriter"""
+
+        self.buffer.append(line)
+        if (len(self.buffer) > self.buf_size):
+            self._flush()
+
+    def _flush(self):
+        """Write buffer to file"""
+
+        fh = open(self.filename, "a")
+        fh.write("".join(self.buffer))
+        fh.close()
+
+        self.buffer = []

@@ -140,6 +140,8 @@ def starr_est(sample, m=1):
           Ann Stat 7: 644-652.
 
     Note: No test code, thus not hooked up to CLI yet.
+    Note: for m=1 starr equals robbins
+
     TODO: If we ever only are interested in the last estimate,
           we can speed up the code considerably
 
