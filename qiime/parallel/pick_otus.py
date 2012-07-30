@@ -315,13 +315,20 @@ class ParallelPickOtusTrie(ParallelPickOtus):
     3. Combine mappings of 2, Since each bucket is independent fro the rest,
        a simple cat with incrementing OTU ids should do it.
     """
-
-    def __init__(self,*args,**kwargs):
-        super(ParallelPickOtusTrie, self).__init__(*args, **kwargs)
-        self.prefix_counts = {}
-
     _process_run_results_f =\
         'qiime.parallel.pick_otus.parallel_pick_otus_trie_process_run_results_f'
+
+
+    def _call_initialization(self,
+                             input_fp,
+                             output_dir,
+                             params,
+                             job_prefix,
+                             poll_directly,
+                             suppress_submit_jobs):
+        """ Called as the first step in __call__.
+        """
+        self.prefix_counts = {}
 
     def _split_along_prefix(self, 
                             input_fp, 

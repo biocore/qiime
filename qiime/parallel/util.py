@@ -50,6 +50,17 @@ class ParallelWrapper(object):
         self._suppress_polling = suppress_polling
         self._seconds_to_sleep = seconds_to_sleep
 
+    def _call_initialization(self,
+                             input_fp,
+                             output_dir,
+                             params,
+                             job_prefix,
+                             poll_directly,
+                             suppress_submit_jobs):
+        """ Called as the first step in __call__.
+        """
+        pass
+
     def __call__(self,
                  input_fp,
                  output_dir,
@@ -60,6 +71,15 @@ class ParallelWrapper(object):
         """ """
         ## Generate a list of files and directories that will need to be cleaned up
         self.files_to_remove = []
+        
+        # Perform any method-specific setup. This should prevent the need to 
+        # overwrite __call__
+        self._call_initialization(input_fp,
+                                  output_dir,
+                                  params,
+                                  job_prefix,
+                                  poll_directly,
+                                  suppress_submit_jobs)
     
         # split the input filepath into directory and filename, base filename and
         # extension for use in naming other files
