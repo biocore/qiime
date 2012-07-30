@@ -316,29 +316,29 @@ class ParallelPickOtusTrie(ParallelPickOtus):
        a simple cat with incrementing OTU ids should do it.
     """
 
+    def __init__(self,*args,**kwargs):
+        super(ParallelPickOtusTrie, self).__init__(*args, **kwargs)
+        self.prefix_counts = {}
+
     _process_run_results_f =\
         'qiime.parallel.pick_otus.parallel_pick_otus_trie_process_run_results_f'
 
-    def __init__(self,
-                 prefix_length=1,
-                 *args,
-                 **kwargs):
-        super(ParallelPickOtusTrie, self).__init__(*args, **kwargs)
-        self.prefix_length = prefix_length
-
-        self.prefix_counts = {}
-
-    def _split_along_prefix(self, input_fp, jobs_to_start,
-                            job_prefix, output_dir):
+    def _split_along_prefix(self, 
+                            input_fp, 
+                            params, 
+                            jobs_to_start,
+                            job_prefix, 
+                            output_dir):
         """ Split input sequences into sets with identical prefix"""
         out_files = []
         buffers = {}
+        prefix_length = params['prefix_length'] or 1
         for seq_id, seq in MinimalFastaParser(open(input_fp)):
 
-            if(len(seq) < self.prefix_length):
+            if(len(seq) < prefix_length):
                 raise ValueError("Prefix length must be equal or longer than sequence.\n"
                                  +" Found seq %s with length %d" % (seq_id, len(seq)))
-            prefix = seq[:self.prefix_length]
+            prefix = seq[:prefix_length]
 
             if (prefix not in buffers):
                 # never seen this prefix before
@@ -352,7 +352,6 @@ class ParallelPickOtusTrie(ParallelPickOtus):
 
         remove_files=True 
         return out_files, remove_files
-
     _input_splitter = _split_along_prefix
 
     def _get_job_commands(self,

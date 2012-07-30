@@ -153,10 +153,11 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         """ parallel_pick_otus_trie functions as expected """
         
         params = {
-            'jobs_to_start': 2
+            'jobs_to_start': 2,
+            'prefix_length': 1
             }
         
-        app = ParallelPickOtusTrie(prefix_length=1)
+        app = ParallelPickOtusTrie()
         r = app(self.small_seq_path,
                 self.test_out,
                 params,
@@ -184,10 +185,11 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         """ parallel_pick_otus_trie raises error"""
         
         params = {
-            'jobs_to_start': 2
+            'jobs_to_start': 2,
+            'prefix_length': 6
             }
         
-        app = ParallelPickOtusTrie(prefix_length=6)
+        app = ParallelPickOtusTrie()
         self.assertRaises( ValueError, app ,
                            self.small_seq_path,
                            self.test_out,
