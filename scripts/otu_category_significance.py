@@ -15,7 +15,8 @@ __status__ = "Development"
 from os.path import isdir, join
 from os import listdir
 from glob import glob
-from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple
+from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple,\
+    sync_mapping_to_otu_table
 from qiime.longitudinal_otu_category_significance import \
     longitudinal_otu_table_conversion_wrapper
 from qiime.util import parse_command_line_parameters
@@ -221,6 +222,14 @@ def main():
             otu_table = parse_biom_table(otu_table)
         except AttributeError:
             otu_table = parse_biom_table_str(otu_table)
+        #synchronize the mapping file with the otu table
+        category_mapping, removed_samples = sync_mapping_to_otu_table(otu_table, \
+                        category_mapping)
+        if removed_samples:
+            print "Warning, the following samples were in the category mapping file " +\
+                            "but not the OTU table and will be ignored: "
+            for i in removed_samples:
+                    print i + '\n'
 
         if test == 'longitudinal_correlation' or test == 'paired_T':
             converted_otu_table_str = format_biom_table(\
@@ -253,6 +262,17 @@ def main():
                 ot = open(path,'U')
                 ot = parse_biom_table(ot)
                 parsed_otu_tables.append(ot)
+
+            #synchronize the mapping file with the otu table
+            #checks with just the first OTU table and assumes that all otu tables
+            #have the same collection of samples
+            category_mapping, removed_samples = sync_mapping_to_otu_table(parsed_otu_tables[0], \
+                        category_mapping)
+            if removed_samples:
+                print "Warning, the following samples were in the category mapping file " +\
+                            "but not the OTU table and will be ignored: "
+                for i in removed_samples:
+                        print i + '\n'
 
             output = test_wrapper_multiple(test, parsed_otu_tables, \
                 category_mapping, category, threshold, filter, otu_include,\

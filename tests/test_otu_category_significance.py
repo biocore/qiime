@@ -23,12 +23,13 @@ from qiime.otu_category_significance import filter_OTUs, \
     aggregate_multiple_results_correlation, get_common_OTUs,\
     test_wrapper_multiple, test_wrapper, get_single_correlation_values,\
     run_paired_T_test_OTUs, run_single_paired_T_test, \
-    get_single_paired_T_values, output_results_paired_T_test, sort_rows
+    get_single_paired_T_values, output_results_paired_T_test, sort_rows,\
+    sync_mapping_to_otu_table
 from numpy import array
 from cogent.util.dict2d import Dict2D
 from qiime.util import get_tmp_filename
 from os import remove
-from qiime.parse import parse_mapping_file
+from qiime.parse import parse_mapping_file, parse_otu_table
 from biom.parse import parse_biom_table_str
 
 class TopLevelTests(TestCase):
@@ -68,6 +69,24 @@ class TopLevelTests(TestCase):
         result = filter_OTUs(otu_table, 1, False, max_filter=2)
         self.assertEqual(result, ['0', '1'])
             
+    def test_sync_mapping_to_otu_table(self):
+        """sync_mapping_to_otu_table returns a filtered cat mapping"""
+        mapping_f4 = """#SampleID\tSomething\tdays_since_epoch
+S3\thello\t23
+S4\thello\t24
+S5\thello\t25
+NotInOtuTable1\thello\t26
+NotInOtuTable2\thello\t27""".split('\n')
+        mapping = parse_mapping_file(mapping_f4)
+        
+        otu_table_fake2 = """{"rows": [{"id": "0", "metadata": {"Consensus Lineage": "Root;Bacteria"}}, {"id": "3", "metadata": {"Consensus Lineage": "Root;Bacteria;Acidobacteria"}}, {"id": "4", "metadata": {"Consensus Lineage": "Root;Bacteria;Bacteroidetes"}}], "format": "Biological Observation Matrix 1.0.0", "data": [[0, 0, 1.0], [0, 2, 1.0], [1, 0, 2.0], [1, 2, 1.0], [2, 0, 1.0], [2, 2, 9.0]], "columns": [{"id": "S3", "metadata": null}, {"id": "S4", "metadata": null}, {"id": "S5", "metadata": null}], "generated_by": "BIOM-Format 1.0.0-dev", "matrix_type": "sparse", "shape": [3, 3], "format_url": "http://biom-format.org", "date": "2012-07-30T14:36:33.318159", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+
+        otu_table = parse_biom_table_str(otu_table_fake2)
+        new_mapping, removed_samples = sync_mapping_to_otu_table(otu_table,\
+                        mapping)
+        self.assertEqual(new_mapping[0], [['S3', 'hello', '23'], ['S4', 'hello', '24'], ['S5', 'hello', '25']])
+        self.assertEqual(removed_samples, ['NotInOtuTable1', 'NotInOtuTable2']) 
+
     def test_make_contingency_matrix(self):
         """make_contingency_matrix works"""
         category_info = {'sample1': 'A',

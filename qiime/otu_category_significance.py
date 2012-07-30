@@ -83,6 +83,25 @@ def filter_OTUs(otu_table, filter, all_samples=True,\
                 result.append(str(obs_id))
     return result
 
+def sync_mapping_to_otu_table(otu_table, mapping):
+    """removes samples from the mapping file that are not in the otu table
+
+    otu_table and mapping are each parsed with the standard parsers first
+    returns a new parsed mapping and a list of samples removed
+    """
+    mapping_data, header, comments = mapping
+    otu_table_samples = otu_table.SampleIds
+
+    new_mapping_data = []
+    removed_samples = []
+    for i in mapping_data:
+        sample = i[0]
+        if sample not in otu_table_samples:
+            removed_samples.append(sample)
+        else:
+            new_mapping_data.append(i)
+    return [new_mapping_data, header, comments], removed_samples
+
 def run_single_G_test(OTU_name, category_info, otu_table, category_values,
                       suppress_warnings=False):
     """run the G test on a single OTU
