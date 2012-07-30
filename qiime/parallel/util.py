@@ -93,6 +93,7 @@ class ParallelWrapper(object):
         # individual job files to the files_to_remove list
         input_fps, remove_input_on_completion = self._input_splitter(
                                          input_fp,
+                                         params,
                                          self._jobs_to_start,
                                          job_prefix,
                                          working_dir)
@@ -389,6 +390,7 @@ class ParallelWrapper(object):
     ####
     def _split_fasta(self,
                      input_fp,
+                     params,
                      jobs_to_start,
                      job_prefix,
                      output_dir):
@@ -405,6 +407,7 @@ class ParallelWrapper(object):
     
     def _input_existing_filepaths(self,
                                   input_fps,
+                                  params,
                                   jobs_to_start,
                                   job_prefix,
                                   output_dir):
