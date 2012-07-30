@@ -43,6 +43,9 @@ script_info['optional_options'] = [
              action='store_true',
              help='suppress script usage tests [default: %default]',
              default=False),
+ make_option('--unittest_glob',
+             help='wildcard pattern to match tests to run [default: %default]',
+             default=None),
 ]
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
@@ -70,11 +73,16 @@ def main():
     # fail unit tests.
     if not opts.suppress_unit_tests:
         unittest_names = []
-
-        for root, dirs, files in walk(test_dir):
-            for name in files:
-                if name.startswith('test_') and name.endswith('.py'):
-                    unittest_names.append(join(root,name))
+        if not opts.unittest_glob:
+            for root, dirs, files in walk(test_dir):
+                for name in files:
+                    if name.startswith('test_') and name.endswith('.py'):
+                        unittest_names.append(join(root,name))
+        else:
+            for fp in glob(opts.unittest_glob):
+                fn = split(fp)[1]
+                if fn.startswith('test_') and fn.endswith('.py'):
+                    unittest_names.append(abspath(fp))
 
         unittest_names.sort()
 
