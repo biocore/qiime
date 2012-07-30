@@ -312,7 +312,8 @@ class ParallelPickOtusTrie(ParallelPickOtus):
     1. use the exact prefix filter with a short wordlength (say 5)
        to sort all reads into buckets according to their first 5 nucs.
     2. Run trie otupicker an each bucket separately, distribute over cluster
-    3. Combine mappings of 2, Since each bucket is independent fro the rest, a simple cat should do it.
+    3. Combine mappings of 2, Since each bucket is independent fro the rest,
+       a simple cat with incrementing OTU ids should do it.
     """
 
     _process_run_results_f =\
@@ -325,7 +326,6 @@ class ParallelPickOtusTrie(ParallelPickOtus):
         super(ParallelPickOtusTrie, self).__init__(*args, **kwargs)
         self.prefix_length = prefix_length
 
-        # Maybe use this to distribute across fixed number of jobs with relatively even load 
         self.prefix_counts = {}
 
     def _split_along_prefix(self, input_fp, jobs_to_start,
@@ -392,6 +392,8 @@ class ParallelPickOtusTrie(ParallelPickOtus):
               rename_command)
 
             commands.append(command)
+            #TODO: save command here in a hash
+            #      that will make the sorting into buckets later a lot faster
 
         commands = self._merge_to_n_commands(commands,
                                              params['jobs_to_start'],
@@ -505,7 +507,11 @@ def parallel_pick_otus_trie_process_run_results_f(f):
 
 
 def greedy_partition(counts, n):
-    """Distribute k counts evenly across n buckets"""
+    """Distribute k counts evenly across n buckets,
+    
+    counts: dict of key, counts pairs
+    n: number of buckets that the counts should be distributed over
+    """
     
     buckets = [ [] for i in range(n) ]
     fill_levels = [ 0 for i in range(n) ]
