@@ -177,8 +177,8 @@ class TopLevelTests(TestCase):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\tN/A\tN/A\t(0.5000, 1.0000)\n'
+              'CI (lower)\tCI (upper)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\t0.5000\t1.0000\n'
         obs = format_correlation_vector(self.corr_vec1, 0)
         self.assertEqual(obs, exp)
 
@@ -187,8 +187,8 @@ class TopLevelTests(TestCase):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\tN/A\tN/A\tN/A\n'
+              'CI (lower)\tCI (upper)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\tN/A\tN/A\n'
         obs = format_correlation_vector(self.corr_vec3, 0)
         self.assertEqual(obs, exp)
 
@@ -197,10 +197,10 @@ class TopLevelTests(TestCase):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\t0.000\t0.000\t(0.5000, 1.0000)\nS2\tT2\t0.1000\t' + \
-              '0.0500\t0.1500\t0.040\t0.120\t(-0.1000, 0.2000)\nS3\tT3\t' + \
-              '100.6800\t0.9000\t1.0000\t1.000\t1.000\t(-0.4000, -0.2000)\n'
+              'CI (lower)\tCI (upper)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\t0.000\t0.000\t0.5000\t1.0000\nS2\tT2\t0.1000\t' + \
+              '0.0500\t0.1500\t0.040\t0.120\t-0.1000\t0.2000\nS3\tT3\t' + \
+              '100.6800\t0.9000\t1.0000\t1.000\t1.000\t-0.4000\t-0.2000\n'
         obs = format_correlation_vector(self.corr_vec2, 999)
         self.assertEqual(obs, exp)
 
@@ -210,8 +210,8 @@ class TopLevelTests(TestCase):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\tN/A\tN/A\t(0.5000, 1.0000)\n'
+              'CI (lower)\tCI (upper)\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\t0.5000\t1.0000\n'
         obs = format_correlation_vector(self.corr_vec1, 0, '#foo')
         self.assertEqual(obs, exp)
 
@@ -221,10 +221,10 @@ class TopLevelTests(TestCase):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              'CI (lower)\tCI (upper)\nS1\tT1\t0.7778\t0.0000\t' + \
               '0.0000\tToo few iters to compute p-value (num_iters=2)\t' + \
               'Too few iters to compute p-value (num_iters=2)\t' + \
-              '(0.5000, 1.0000)\n'
+              '0.5000\t1.0000\n'
         obs = format_correlation_vector(self.corr_vec1, 2)
         self.assertEqual(obs, exp)
 
@@ -232,30 +232,30 @@ class TopLevelTests(TestCase):
         """Test formatting correlation information with valid input."""
         # With 999 permutations.
         exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
-              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
-              '0.000\t(0.0000, 1.0000)\n'
+              'p-value\tCI (lower)\tCI (upper)\n0.7778\t0.0000\t' + \
+              '0.000\t0.0000\t1.0000\n'
         obs = format_correlation_info(0.7778, 0, 0, (0, 1), 999)
         self.assertEqual(obs, exp)
 
         # With 0 permutations.
         exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
-              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
-              'N/A\t(0.0000, 1.0000)\n'
+              'p-value\tCI (lower)\tCI (upper)\n0.7778\t0.0000\t' + \
+              'N/A\t0.0000\t1.0000\n'
         obs = format_correlation_info(0.7778, 0, 0, (0, 1), 0)
         self.assertEqual(obs, exp)
 
         # With a small number of permutations.
         exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
-              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              'p-value\tCI (lower)\tCI (upper)\n0.7778\t0.0000\t' + \
               'Too few iters to compute p-value (num_iters=1)\t' + \
-              '(0.0000, 1.0000)\n'
+              '0.0000\t1.0000\n'
         obs = format_correlation_info(0.7778, 0, 0, (0, 1), 1)
         self.assertEqual(obs, exp)
 
         # With undefined confidence interval.
         exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
-              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
-              'N/A\tN/A\n'
+              'p-value\tCI (lower)\tCI (upper)\n0.7778\t0.0000\t' + \
+              'N/A\tN/A\tN/A\n'
         obs = format_correlation_info(0.7778, 0, 0, (None, None), 0)
         self.assertEqual(obs, exp)
 
@@ -263,8 +263,8 @@ class TopLevelTests(TestCase):
         """Test formatting correlation information with header."""
         exp = '# Some comment...\nCorrelation coefficient\t' + \
               'Parametric p-value\tNonparametric ' + \
-              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
-              '0.000\t(0.0000, 1.0000)\n'
+              'p-value\tCI (lower)\tCI (upper)\n0.7778\t0.0000\t' + \
+              '0.000\t0.0000\t1.0000\n'
         obs = format_correlation_info(0.7778, 0, 0, (0, 1), 999,
                                       '# Some comment...')
         self.assertEqual(obs, exp)

@@ -48,8 +48,8 @@ This command will create a new output directory named :file:`taxa_comp`, which w
     * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
     * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
-    * 0.9993	0.0000	0.001	(0.9989, 0.9996)
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	CI (lower)	CI (upper)
+    * 0.9993	0.0000	0.001	0.9989	0.9996
 
 The comment at the top of the file tells us that Pearson's correlation coefficient was used to compute the correlation between samples. The value of 0.9993 is very close to +1, which indicates strong positive correlation between the paired samples in the two input taxa summary files. Both parametric and nonparametric p-values indicate that the correlation is statistically significant. The two-sided 95% confidence interval also supports the same conclusion. Thus, it appears that using the RDP classifier at a confidence level of 0.60 or 0.80 yields highly correlated results (i.e. you might draw the same biological conclusions from using either taxa summary file).
 
@@ -72,8 +72,8 @@ This command will create a new output directory named :file:`taxa_comp_using_sam
     * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
     * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
-    * 0.9687	0.0000	0.001	(0.9502, 0.9803)
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	CI (lower)	CI (upper)
+    * 0.9687	0.0000	0.001	0.9502	0.9803
 
 Notice that all 9 samples were still included because we provided a sample ID map. If we had not provided a sample ID map, the script would have raised an error stating that the two taxa summary files were incompatible because no matches could be found.
 
@@ -92,16 +92,16 @@ In addition to the three previous file, you will find the file :file:`detailed_c
     * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
     * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Sample ID	Sample ID	Correlation coefficient	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)	Confidence interval
-    * PC.354	PC.354	0.9997	0.0000	0.0000	0.006	0.054	(0.9985, 1.0000)
-    * PC.355	PC.355	0.9998	0.0000	0.0000	0.004	0.036	(0.9988, 1.0000)
-    * PC.356	PC.356	0.9999	0.0000	0.0000	0.001	0.009	(0.9995, 1.0000)
-    * PC.481	PC.481	0.9998	0.0000	0.0000	0.001	0.009	(0.9989, 1.0000)
-    * PC.593	PC.593	0.9999	0.0000	0.0000	0.002	0.018	(0.9993, 1.0000)
-    * PC.607	PC.607	0.9990	0.0000	0.0000	0.001	0.009	(0.9942, 0.9998)
-    * PC.634	PC.634	1.0000	0.0000	0.0000	0.001	0.009	(1.0000, 1.0000)
-    * PC.635	PC.635	0.9963	0.0000	0.0000	0.002	0.018	(0.9788, 0.9994)
-    * PC.636	PC.636	0.9999	0.0000	0.0000	0.001	0.009	(0.9994, 1.0000)
+    * Sample ID	Sample ID	Correlation coefficient	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)	CI (lower)	CI (upper)
+    * PC.354	PC.354	0.9997	0.0000	0.0000	0.007	0.063	0.9985	1.0000
+    * PC.355	PC.355	0.9998	0.0000	0.0000	0.005	0.045	0.9988	1.0000
+    * PC.356	PC.356	0.9999	0.0000	0.0000	0.002	0.018	0.9995	1.0000
+    * PC.481	PC.481	0.9998	0.0000	0.0000	0.002	0.018	0.9989	1.0000
+    * PC.593	PC.593	0.9999	0.0000	0.0000	0.002	0.018	0.9993	1.0000
+    * PC.607	PC.607	0.9990	0.0000	0.0000	0.002	0.018	0.9942	0.9998
+    * PC.634	PC.634	1.0000	0.0000	0.0000	0.001	0.009	1.0000	1.0000
+    * PC.635	PC.635	0.9963	0.0000	0.0000	0.002	0.018	0.9788	0.9994
+    * PC.636	PC.636	0.9999	0.0000	0.0000	0.001	0.009	0.9994	1.0000
 
 We see that nearly all of the comparisons indicate strong, statistically-significant correlation. The p-values are provided that have been Bonferroni-corrected for multiple comparisons (though are still zero for the parametric test because the uncorrected p-values are zero). The minor differences in confidence intervals between correlation coefficients that are the same is attributed to rounding error.
 
@@ -118,8 +118,8 @@ This command will create a new output directory named :file:`taxa_comp_one_taile
     * # The nonparametric p-value(s) were calculated using a one-sided (negative association) permutation test with 999 permutations.
     * # The confidence interval(s) were constructed at a confidence level of 90.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
-    * 0.9993	1.0000	1.000	(0.9990, 0.9996)
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	CI (lower)	CI (upper)
+    * 0.9993	1.0000	1.000	0.9990	0.9996
 
 We performed a one-tailed test of negative association, i.e. the null hypothesis was that Pearson's product-moment coefficient was equal to 0 (no association) and the alternative hypothesis was that the correlation coefficient was less than 0. We see that both parametric and nonparametric p-values are now insignificant, indicating that we fail to reject the null hypothesis of no association (keep in mind that the observed correlation coefficient of 0.9993 indicates strong `positive` correlation, not negative correlation).
 

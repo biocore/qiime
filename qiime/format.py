@@ -162,14 +162,15 @@ def format_taxa_summary(taxa_summary):
 def format_correlation_vector(corr_vector, num_permutations, header=''):
     """Formats a correlation vector to be suitable for writing to a file.
 
-    Returns a string where each line contains eight tab-separated fields: the
+    Returns a string where each line contains nine tab-separated fields: the
     two sample IDs that were compared, the correlation coefficient, the
     parametric p-value, the Bonferroni-corrected parametric p-value, the
     nonparametric p-value, the Bonferroni-corrected nonparametric p-value, and
-    the confidence interval.
+    the confidence interval (lower and upper endpoints as separate fields).
 
-    If the confidence intervals are not valid for this dataset (i.e. is
-    (None, None)), the confidence intervals will be 'N/A'.
+    If the confidence intervals are not valid for this dataset (i.e. the
+    input CI is (None, None)), the confidence intervals will be formatted as
+    'N/A' for both lower and upper endpoints.
 
     Arguments:
         corr_vector - a list of 8-element tuples, where the first
@@ -197,7 +198,7 @@ def format_correlation_vector(corr_vector, num_permutations, header=''):
               'Parametric p-value\tParametric p-value ' + \
               '(Bonferroni-corrected)\tNonparametric p-value\t' + \
               'Nonparametric p-value (Bonferroni-corrected)\t' + \
-              'Confidence interval\n'
+              'CI (lower)\tCI (upper)\n'
     for samp_id1, samp_id2, corr_coeff, param_p_val, param_p_val_corr, \
         nonparam_p_val, nonparam_p_val_corr, conf_interval in corr_vector:
         if num_permutations > 0:
@@ -209,9 +210,9 @@ def format_correlation_vector(corr_vector, num_permutations, header=''):
             nonparam_p_val_str = 'N/A'
             nonparam_p_val_corr_str = 'N/A'
         if conf_interval == (None, None):
-            conf_interval_str = 'N/A'
+            conf_interval_str = 'N/A\tN/A'
         else:
-            conf_interval_str = '(%.4f, %.4f)' % conf_interval
+            conf_interval_str = '%.4f\t%.4f' % conf_interval
 
         result += '%s\t%s\t%.4f\t%.4f\t%.4f\t%s\t%s\t%s\n' % (
                 samp_id1, samp_id2, corr_coeff, param_p_val, param_p_val_corr,
@@ -227,8 +228,9 @@ def format_correlation_info(corr_coeff, param_p_val, nonparam_p_val,
     format, with nonparametric p-value formatted according to the number of
     permutations.
 
-    If the confidence interval is not valid for this dataset (i.e. is
-    (None, None)), the confidence interval will be 'N/A'.
+    If the confidence interval is not valid for this dataset (i.e. the
+    input CI is (None, None)), the confidence interval will be formatted as
+    'N/A' for both lower and upper endpoints.
 
     Arguments:
         corr_coeff - the correlation coefficient (a float)
@@ -249,7 +251,7 @@ def format_correlation_info(corr_coeff, param_p_val, nonparam_p_val,
     if header != '':
         result += header + '\n'
     result += 'Correlation coefficient\tParametric p-value\t' + \
-              'Nonparametric p-value\tConfidence interval\n'
+              'Nonparametric p-value\tCI (lower)\tCI (upper)\n'
 
     if num_permutations > 0:
         nonparam_p_val_str = format_p_value_for_num_iters(nonparam_p_val,
@@ -258,9 +260,9 @@ def format_correlation_info(corr_coeff, param_p_val, nonparam_p_val,
         nonparam_p_val_str = 'N/A'
 
     if conf_interval == (None, None):
-        conf_interval_str = 'N/A'
+        conf_interval_str = 'N/A\tN/A'
     else:
-        conf_interval_str = '(%.4f, %.4f)' % conf_interval
+        conf_interval_str = '%.4f\t%.4f' % conf_interval
 
     result += '%.4f\t%.4f\t%s\t%s\n' % (corr_coeff, param_p_val,
             nonparam_p_val_str, conf_interval_str)

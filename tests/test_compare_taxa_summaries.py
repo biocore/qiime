@@ -173,7 +173,7 @@ class CompareTaxaSummariesTests(TestCase):
             '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
             'edition pg. ). The confidence interval(s) are two-sided.\n'
             'Correlation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n', None)
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t-.\t.\n', None)
 
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
                 self.taxa_summary_exp1, 'expected', 'pearson')
@@ -195,7 +195,7 @@ class CompareTaxaSummariesTests(TestCase):
             '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
             'edition pg. ). The confidence interval(s) are two-sided.\n'
             'Correlation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t-.\t.\n',
             '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
             'were calculated using a two-sided test of significance using a '
             't-distribution.\n# The nonparametric p-value(s) were calculated '
@@ -206,8 +206,8 @@ class CompareTaxaSummariesTests(TestCase):
             'Sample ID\tSample ID\tCorrelation coefficient\t'
             'Parametric p-value\tParametric p-value (Bonferroni-corrected)\t'
             'Nonparametric p-value\tNonparametric p-value '
-            '(Bonferroni-corrected)\tConfidence interval\nS\tExpected\t'
-            '.\t.\t.\t.\t.\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\n')
+            '(Bonferroni-corrected)\tCI (lower)\tCI (upper)\nS\tExpected\t'
+            '.\t.\t.\t.\t.\tN/A\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\tN/A\n')
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
                 self.taxa_summary_exp1, 'expected', 'pearson',
                 perform_detailed_comparisons=True)
@@ -231,7 +231,7 @@ class CompareTaxaSummariesTests(TestCase):
             'is not accurate when using the t-distribution. Please see '
             'Biometry (Sokal and Rohlf, rd edition) page  for more details.\n'
             'Correlation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t-.\t.\n',
             '# Correlation coefficient: spearman.\n# The parametric p-value(s) '
             'were calculated using a two-sided test of significance using a '
             't-distribution.\n# The nonparametric p-value(s) were calculated '
@@ -247,8 +247,8 @@ class CompareTaxaSummariesTests(TestCase):
             'Correlation coefficient\tParametric p-value\tParametric p-value '
             '(Bonferroni-corrected)'
             '\tNonparametric p-value\tNonparametric p-value '
-            '(Bonferroni-corrected)\tConfidence interval\nS\tExpected\t'
-            '.\t.\t.\t.\t.\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\n')
+            '(Bonferroni-corrected)\tCI (lower)\tCI (upper)\nS\tExpected\t'
+            '.\t.\t.\t.\t.\tN/A\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\tN/A\n')
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
                 self.taxa_summary_exp1, 'expected', 'spearman',
                 perform_detailed_comparisons=True)
@@ -270,7 +270,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t-.\t.\n',
             '# Correlation coefficient: spearman.\n# The parametric '
             'p-value(s) were calculated using a two-sided test of significance'
             ' using a '
@@ -289,10 +289,10 @@ class CompareTaxaSummariesTests(TestCase):
             'Sample ID\tSample ID\tCorrelation coefficient\t'
             'Parametric p-value\tParametric p-value (Bonferroni-corrected)\t'
             'Nonparametric p-value\tNonparametric p-value '
-            '(Bonferroni-corrected)\tConfidence interval\n'
-            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n'
-            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n'
-            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n')
+            '(Bonferroni-corrected)\tCI (lower)\tCI (upper)\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t-.\t.\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t-.\t.\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t-.\t.\n')
 
         sample_id_map = {'Even1':'a', 'Even2':'b', 'Even3':'c',
                          'Even4':'a', 'Even5':'b', 'Even6':'c'}
@@ -316,7 +316,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(., .)\n', None)
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t.\t.\n', None)
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired2, 'paired', 'pearson')
@@ -338,7 +338,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\t(., .)\n', None)
+            'p-value\tCI (lower)\tCI (upper)\n.\t.\t.\t.\t.\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired4, 'paired', 'pearson',
                 perform_detailed_comparisons=False,
@@ -357,34 +357,32 @@ class CompareTaxaSummariesTests(TestCase):
             '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
             '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
             'were calculated using a two-sided test of significance using a '
-            't-distribution.\n# The nonparametric p-value(s) were calculated '
-            'using a two-sided permutation test with  permutations.\n# The '
+            't-distribution.\n# The '
             'confidence interval(s) were constructed at a confidence level of '
-            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
-            'edition pg. ). The confidence interval(s) are two-sided.\n# '
-            'Number of samples that matched between the taxa summary files: '
+            '95.0% using Fisher\'s z-transformation (see Sokal and Rohlf 3rd '
+            'edition pg. 575). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: 1'
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n.\t.\t.\tN/A\n',
+            'p-value\tCI (lower)\tCI (upper)\n1.0000\t0.0000\tN/A\tN/A\tN/A\n',
             '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
             'were calculated using a two-sided test of significance using a '
-            't-distribution.\n# The nonparametric p-value(s) were calculated '
-            'using a two-sided permutation test with  permutations.\n# The '
+            't-distribution.\n# The '
             'confidence interval(s) were constructed at a confidence level of '
-            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
-            'edition pg. ). The confidence interval(s) are two-sided.\n# '
-            'Number of samples that matched between the taxa summary files: '
+            '95.0% using Fisher\'s z-transformation (see Sokal and Rohlf 3rd '
+            'edition pg. 575). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: 1'
             '\nSample ID\tSample ID\tCorrelation coefficient\tParametric '
             'p-value\tParametric p-value (Bonferroni-corrected)\t'
             'Nonparametric p-value\tNonparametric p-value '
-            '(Bonferroni-corrected)\tConfidence interval\nS\tE\t.\t.\t.\t.\t.'
-            '\tN/A\n')
+            '(Bonferroni-corrected)\tCI (lower)\tCI (upper)\nS1\tE2\t1.0000\t'
+            '0.0000\t0.0000\tN/A\tN/A\tN/A\tN/A\n')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired4, 'paired', 'pearson',
+                num_permutations=0,
                 perform_detailed_comparisons=True,
                 sample_id_map=self.taxa_summary_paired_samp_id_map2)
-        obs = (obs[0], obs[1], self.remove_nums(obs[2]),
-               self.remove_nums(obs[3]))
+        # We can test exactly because there aren't any stochastic p-values.
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_sample_id_map_mismatched_taxa(self):
@@ -402,7 +400,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n', None)
+            'p-value\tCI (lower)\tCI (upper)\n-.\t.\t.\t-.\t.\n', None)
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
@@ -425,7 +423,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n')
+            'p-value\tCI (lower)\tCI (upper)\n-.\t.\t.\t-.\t.\n')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
@@ -447,7 +445,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. ). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: '
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n')
+            'p-value\tCI (lower)\tCI (upper)\n-.\t.\t.\t-.\t.\n')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
@@ -459,23 +457,25 @@ class CompareTaxaSummariesTests(TestCase):
 
     def test_compare_taxa_summaries_no_permutations(self):
         """Functions correctly without performing nonparametric test."""
+        # Verified with R's cor.test function.
         exp = ('# Correlation coefficient: pearson.\n# The parametric '
             'p-value(s) were calculated using a one-sided (positive '
             'association) test of significance using a '
             't-distribution.\n# The '
             'confidence interval(s) were constructed at a confidence level of '
-            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
-            'edition pg. ). The confidence interval(s) are two-sided.\n# '
-            'Number of samples that matched between the taxa summary files: '
+            '70.0% using Fisher\'s z-transformation (see Sokal and Rohlf 3rd '
+            'edition pg. 575). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: 1'
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval\n-.\t.\tN/A\t(-., .)\n')
+            'p-value\tCI (lower)\tCI (upper)\n-0.6264\t0.8132\tN/A\t-0.9438\t'
+            '0.2922\n')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
                 tail_type='high', num_permutations=0, confidence_level=0.70,
                 perform_detailed_comparisons=False,
                 sample_id_map=self.taxa_summary_paired_samp_id_map2)
-        obs = (self.remove_nums(obs[2]))
+        obs = (obs[2])
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_correct_header(self):
@@ -488,7 +488,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. 575). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: 1'
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval')
+            'p-value\tCI (lower)\tCI (upper)')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
@@ -511,7 +511,7 @@ class CompareTaxaSummariesTests(TestCase):
             'edition pg. 575). The confidence interval(s) are two-sided.\n# '
             'Number of samples that matched between the taxa summary files: 1'
             '\nCorrelation coefficient\tParametric p-value\tNonparametric '
-            'p-value\tConfidence interval')
+            'p-value\tCI (lower)\tCI (upper)')
 
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired5, 'paired', 'pearson',
