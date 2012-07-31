@@ -17,7 +17,7 @@ from qiime.util import (add_filename_suffix, parse_command_line_parameters,
                         get_options_lookup, make_option)
 
 from qiime.compare_taxa_summaries import (comparison_modes,
-        compare_taxa_summaries, correlation_types)
+        compare_taxa_summaries, correlation_types, tail_types)
 
 options_lookup = get_options_lookup()
 
@@ -52,6 +52,7 @@ script_info['script_usage'].append(("Paired sample comparison",
 "set. The second input taxa summary file was generated the same way, except "
 "for using a confidence level of 0.80.",
 "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp"))
+
 script_info['script_usage'].append(("Paired sample comparison with sample ID "
 "map", "Compare samples based on the mappings in the sample ID map using the "
 "spearman correlation coefficient. The second input taxa summary file is "
@@ -59,6 +60,7 @@ script_info['script_usage'].append(("Paired sample comparison with sample ID "
 "'PC.' renamed to 'S.'.",
 "%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o "
 "taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman"))
+
 script_info['script_usage'].append(("Detailed paired sample comparison",
 "Compare all samples that have matching sample IDs between the two input taxa "
 "summary files using the pearson correlation coefficient. Additionally, "
@@ -66,6 +68,16 @@ script_info['script_usage'].append(("Detailed paired sample comparison",
 "individually.",
 "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed "
 "--perform_detailed_comparisons"))
+
+script_info['script_usage'].append(("One-tailed test",
+"Compare all samples that have matching sample IDs between the two input taxa "
+"summary files using the pearson correlation coefficient. Perform a "
+"one-tailed (negative association) test of significance for both parametric "
+"and nonparametric tests. Additionally, compute a 90% confidence interval for "
+"the correlation coefficient. Note that the confidence interval will still be "
+"two-sided.",
+"%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed "
+"-t low -l 0.90"))
 
 script_info['output_description'] = """
 The script will always output at least three files to the specified output
@@ -78,13 +90,20 @@ filenames unique. The first input taxa summary file will have '0' in its
 filename and the second input taxa summary file will have '1' in its filename.
 
 The third output file will contain the results of the overall comparison of the
-input taxa summary files using the specified sample pairings.
+input taxa summary files using the specified sample pairings. The correlation
+coefficient, parametric p-value, nonparametric p-value, and a confidence
+interval for the correlation coefficient will be included.
 
 If --perform_detailed_comparisons is specified, the fourth output file is a
 tab-separated file containing the correlation coefficients that were computed
 between each of the paired samples. Each line will contain the sample IDs of
 the samples that were compared, followed by the correlation coefficient that
-was computed, followed by the p-value and Bonferroni-corrected p-value.
+was computed, followed by the parametric and nonparametric p-values
+(uncorrrected and Bonferroni-corrected) and a confidence interval for the
+correlation coefficient.
+
+The output files will contain comments at the top explaining the types of tests
+that were performed.
 """
 
 script_info['required_options'] = [
@@ -112,6 +131,27 @@ script_info['optional_options'] = [
         choices=correlation_types, help='the type of correlation coefficient '
         'to compute. Valid choices: ' + ' or '.join(correlation_types) +
         ' [default: %default]', default='pearson'),
+    make_option('-t', '--tail_type', type='choice',
+        choices=tail_types, help='the type of tail test to compute when '
+        'calculating the p-values. "high" specifies a one-tailed test for '
+        'values greater than the observed correlation coefficient (positive '
+        'association), while "low" specifies a one-tailed test for values '
+        'less than the observed correlation coefficient (negative '
+        'association). "two-sided" specifies a two-tailed test for values '
+        'greater in magnitude than the observed correlation coefficient. '
+        'Valid choices: ' + ' or '.join(tail_types) + ' [default: %default]',
+        default='two-sided'),
+    make_option('-n','--num_permutations', type='int',
+        help='the number of permutations to perform when calculating the '
+        'nonparametric p-value. Must be an integer greater than or equal to '
+        'zero. If zero, the nonparametric test of significance will not be '
+        'performed and the nonparametric p-value will be reported as "N/A" '
+        '[default: %default]', default=999),
+    make_option('-l', '--confidence_level', type='float',
+        help='the confidence level of the correlation coefficient confidence '
+        'interval. Must be a value between 0 and 1 (exclusive). For example, '
+        'a 95% confidence interval would be 0.95 [default: %default]',
+        default=0.95),
      make_option('-s','--sample_id_map_fp', type='existing_filepath',
         help='map of original sample IDs to new sample IDs. Use this to match '
         'up sample IDs that should be compared between the two taxa summary '
@@ -156,6 +196,8 @@ def main():
             parse_taxa_summary_table(open(opts.taxa_summary_fps[0], 'U')),
             parse_taxa_summary_table(open(opts.taxa_summary_fps[1], 'U')),
             opts.comparison_mode, correlation_type=opts.correlation_type,
+            tail_type=opts.tail_type, num_permutations=opts.num_permutations,
+            confidence_level=opts.confidence_level,
             perform_detailed_comparisons=opts.perform_detailed_comparisons,
             sample_id_map=sample_id_map,
             expected_sample_id=opts.expected_sample_id)

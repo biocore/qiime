@@ -12,19 +12,37 @@ __status__ = "Development"
 
 """Test suite for the compare_taxa_summaries.py module."""
 
+from string import digits
 from numpy import array
 from cogent.util.unit_test import TestCase, main
 
 from qiime.compare_taxa_summaries import (compare_taxa_summaries,
-        _compute_correlation, _get_correlation_function, _get_rank,
-        _make_compatible_taxa_summaries, _sort_and_fill_taxa_summaries,
-        _pearson_correlation, _spearman, _spearman_correlation)
+        _compute_correlation, _make_compatible_taxa_summaries,
+        _sort_and_fill_taxa_summaries)
 
 class CompareTaxaSummariesTests(TestCase):
     """Tests for the compare_taxa_summaries.py module."""
 
+    def remove_nums(self, text):
+        """Removes all digits from the given string.
+
+        Returns the string will all digits removed. Useful for testing strings
+        for equality in unit tests where you don't care about numeric values,
+        or if some values are random.
+
+        This code was taken from http://bytes.com/topic/python/answers/
+            850562-finding-all-numbers-string-replacing
+
+        Arguments:
+            text - the string to remove digits from
+        """
+        return text.translate(None, digits)
+
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        # How many times to test a stochastic p-value.
+        self.p_val_tests = 10
+
         self.taxa_summary1 = (['Even1','Even2','Even3'],
             ['Bacteria;Actinobacteria;Actinobacteria(class);Actinobacteridae',
              'Bacteria;Bacteroidetes/Chlorobigroup;Bacteroidetes;Bacteroidia',
@@ -142,110 +160,168 @@ class CompareTaxaSummariesTests(TestCase):
         self.taxa_summary_paired_samp_id_map2 = {'S1':'a', 'S2':'b',
                                                  'E1':'c', 'E2':'a'}
 
-        # For testing _spearman_correlation, taken from the Spearman wikipedia
-        # article.
-        self.spearman_data1 = [106, 86, 100, 101, 99, 103, 97, 113, 112, 110]
-        self.spearman_data2 = [7, 0, 27, 50, 28, 29, 20, 12, 6, 17]
-        
-        # For testing _spearman, taken from test_stats.BioEnvTests.
-        self.a = [1,2,4,3,1,6,7,8,10,4]
-        self.b = [2,10,20,1,3,7,5,11,6,13]
-        self.c = [7,1,20,13,3,57,5,121,2,9]
-        self.r = (1.7,10,20,1.7,3,7,5,11,6.5,13)
-        self.x = (1, 2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
-
     def test_compare_taxa_summaries_expected_pearson(self):
         """Functions correctly using 'expected' comparison mode and pearson."""
         # Overall correlation.
         exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
-               'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
-               '# Correlation coefficient: pearson. Performed a two-tailed '
-               'test of significance using a t-distribution.\nCorrelation '
-               'coefficient\tp-value\n0.6882\t0.3118\n', None)
+            'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n'
+            'Correlation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n', None)
+
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
                 self.taxa_summary_exp1, 'expected', 'pearson')
+
+        # We only test the structure of the returned string because of possible
+        # roundoff error and stochastic p-values. The actual numbers will be
+        # tested in the appropriate 'private' functions.
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]), obs[3])
         self.assertEqual(obs, exp)
 
-        # Broken down by sample pairs.
+        # Broken down by sample pairs, with an undefined confidence interval.
         exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
-               'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
-               '# Correlation coefficient: pearson. Performed a two-tailed '
-               'test of significance using a t-distribution.\nCorrelation '
-               'coefficient\tp-value\n0.6882\t0.3118\n',
-               '# Correlation coefficient: pearson. Performed a two-tailed '
-               'test of significance using a t-distribution.\nSample ID\t'
-               'Sample ID\tCorrelation coefficient\tp-value\tp-value '
-               '(Bonferroni-corrected)\nS1\tExpected\t1.0000\t1.0000\t1.0000\n'
-               'S2\tExpected\t1.0000\t1.0000\t1.0000\n')
+            'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n'
+            'Correlation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n'
+            'Sample ID\tSample ID\tCorrelation coefficient\t'
+            'Parametric p-value\tParametric p-value (Bonferroni-corrected)\t'
+            'Nonparametric p-value\tNonparametric p-value '
+            '(Bonferroni-corrected)\tConfidence interval\nS\tExpected\t'
+            '.\t.\t.\t.\t.\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\n')
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
-                self.taxa_summary_exp1, 'expected', 'pearson', True)
+                self.taxa_summary_exp1, 'expected', 'pearson',
+                perform_detailed_comparisons=True)
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]),
+               self.remove_nums(obs[3]))
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_spearman_warning(self):
         """Functions correctly using spearman with <= 10 obs."""
-        # Verified with R's cor.test function.
         exp = ('Taxon\tS1\tS2\nBacteria\t0.5\t0.7\nEukarya\t0.4\t0.5\n',
             'Taxon\tExpected\nBacteria\t0.6\nEukarya\t0.5\n',
-            "# Correlation coefficient: spearman. Performed a two-tailed "
-            "test of significance using a t-distribution.\n# Since there "
-            "were 10 or fewer observations when calculating Spearman's "
-            "rank correlation coefficient, the p-value is not accurate "
-            "when using the t-distribution. Please see Biometry (Sokal "
-            "and Rohlf, 3rd edition) page 600 for more details.\nCorrelation "
-            "coefficient\tp-value\n0.7071\t0.2929\n",
-            '# Correlation coefficient: spearman. Performed a two-tailed '
-            'test of significance using a t-distribution.\n# Since there '
-            'were 10 or fewer taxa in the sorted and filled taxa '
-            'summary files, the p-values and Bonferroni-corrected p-values '
-            'are not accurate when using the t-distribution. Please see '
-            'Biometry (Sokal and Rohlf, 3rd edition) page 600 for more '
-            'details.\nSample ID\tSample ID\tCorrelation coefficient\t'
-            'p-value\tp-value (Bonferroni-corrected)\nS1\tExpected\t1.0000\t'
-            '1.0000\t1.0000\nS2\tExpected\t1.0000\t1.0000\t1.0000\n')
+            '# Correlation coefficient: spearman.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n'
+            '# Since there were  or fewer observations when calculating '
+            'Spearman\'s rank correlation coefficient, the parametric p-value '
+            'is not accurate when using the t-distribution. Please see '
+            'Biometry (Sokal and Rohlf, rd edition) page  for more details.\n'
+            'Correlation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            '# Correlation coefficient: spearman.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n'
+            '# Since there were  or fewer taxa in the sorted and filled taxa '
+            'summary files, the parametric p-values and Bonferroni-corrected '
+            'parametric p-values are not accurate when using the '
+            't-distribution. Please see Biometry (Sokal and Rohlf, '
+            'rd edition) page  for more details.\nSample ID\tSample ID\t'
+            'Correlation coefficient\tParametric p-value\tParametric p-value '
+            '(Bonferroni-corrected)'
+            '\tNonparametric p-value\tNonparametric p-value '
+            '(Bonferroni-corrected)\tConfidence interval\nS\tExpected\t'
+            '.\t.\t.\t.\t.\tN/A\nS\tExpected\t.\t.\t.\t.\t.\tN/A\n')
         obs = compare_taxa_summaries(self.taxa_summary_obs1,
-                self.taxa_summary_exp1, 'expected', 'spearman', True)
+                self.taxa_summary_exp1, 'expected', 'spearman',
+                perform_detailed_comparisons=True)
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]),
+               self.remove_nums(obs[3]))
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_spearman_no_warning(self):
         """Functions correctly using spearman with > 10 obs."""
-        # Verified with R's cor.test function.
-
         # We should receive a warning only for the individual tests, but not
         # for the overall test.
-        exp = ('# Correlation coefficient: spearman. Performed a '
-            'two-tailed test of significance using a t-distribution.\n'
-            '# Number of samples that matched between the taxa summary '
-            'files: 3\nCorrelation coefficient\tp-value\n0.2629\t0.1853\n',
-            '# Correlation coefficient: spearman. Performed a two-tailed '
-            'test of significance using a t-distribution.\n# Number of '
-            'samples that matched between the taxa summary files: 3\n'
-            '# Since there were 10 or fewer taxa in the sorted and filled '
-            'taxa summary files, the p-values and Bonferroni-corrected '
-            'p-values are not accurate when using the t-distribution. '
-            'Please see Biometry (Sokal and Rohlf, 3rd edition) page 600 '
-            'for more details.\nSample ID\tSample ID\t'
-            'Correlation coefficient\tp-value\tp-value '
-            '(Bonferroni-corrected)\nEven1\tEven4\t0.0753\t0.8473\t'
-            '1.0000\nEven2\tEven5\t0.4017\t0.2839\t0.8517\nEven3\t'
-            'Even6\t0.4017\t0.2839\t0.8517\n')
+        exp = ('# Correlation coefficient: spearman.\n# The parametric '
+            'p-value(s) were calculated using a two-sided test of significance'
+            ' using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(-., .)\n',
+            '# Correlation coefficient: spearman.\n# The parametric '
+            'p-value(s) were calculated using a two-sided test of significance'
+            ' using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\n# Since there were  or fewer taxa in the sorted and filled '
+            'taxa summary files, the parametric p-values and '
+            'Bonferroni-corrected parametric p-values are not accurate when '
+            'using the t-distribution. '
+            'Please see Biometry (Sokal and Rohlf, rd edition) page  '
+            'for more details.\n'
+            'Sample ID\tSample ID\tCorrelation coefficient\t'
+            'Parametric p-value\tParametric p-value (Bonferroni-corrected)\t'
+            'Nonparametric p-value\tNonparametric p-value '
+            '(Bonferroni-corrected)\tConfidence interval\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n'
+            'Even\tEven\t.\t.\t.\t.\t.\t(-., .)\n')
+
         sample_id_map = {'Even1':'a', 'Even2':'b', 'Even3':'c',
                          'Even4':'a', 'Even5':'b', 'Even6':'c'}
         obs = compare_taxa_summaries(self.taxa_summary1,
-                self.taxa_summary2, 'paired', 'spearman', True, sample_id_map)
-        self.assertEqual(obs[2:], exp)
+                self.taxa_summary2, 'paired', 'spearman',
+                perform_detailed_comparisons=True, sample_id_map=sample_id_map)
+        obs = (self.remove_nums(obs[2]), self.remove_nums(obs[3]))
+        self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_pearson(self):
         """Functions correctly using 'paired' comparison mode and pearson."""
         exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
             '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tS1\tS2\nArchaea\t0.5\t'
             '0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
-            '# Correlation coefficient: pearson. Performed a two-tailed '
-            'test of significance using a t-distribution.\n'
-            '# Number of samples that matched between the taxa summary '
-            'files: 2\nCorrelation coefficient\tp-value\n0.9024\t'
-            '0.0138\n', None)
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(., .)\n', None)
+
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
                 self.taxa_summary_paired2, 'paired', 'pearson')
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]),
+               obs[3])
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_sample_id_map(self):
@@ -253,15 +329,23 @@ class CompareTaxaSummariesTests(TestCase):
         exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
             '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5\t'
             '0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
-            '# Correlation coefficient: pearson. Performed a two-tailed '
-            'test of significance using a t-distribution.\n'
-            '# Number of samples that matched between the taxa summary '
-            'files: 2\nCorrelation coefficient\tp-value\n0.9024\t'
-            '0.0138\n', None)
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\t(., .)\n', None)
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired4, 'paired', 'pearson', False,
-                self.taxa_summary_paired_samp_id_map1)
-        self.assertEqual(obs, exp)
+                self.taxa_summary_paired4, 'paired', 'pearson',
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map1)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        self.assertEqual(self.remove_nums(obs[2]), exp[2])
 
     def test_compare_taxa_summaries_paired_sample_id_map_partial(self):
         """Functions correctly using a partial sample id map."""
@@ -271,51 +355,196 @@ class CompareTaxaSummariesTests(TestCase):
         exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t'
             '0.7\nEukarya\t0.4\t0.5\n', 'Taxon\tE1\tE2\nArchaea\t0.5'
             '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\n',
-            '# Correlation coefficient: pearson. Performed a two-tailed '
-            'test of significance using a t-distribution.\n# Number of '
-            'samples that matched between the taxa summary '
-            'files: 1\nCorrelation coefficient\tp-value\n1.0000\t0.0000\n',
-            '# Correlation coefficient: pearson. Performed a two-tailed '
-            'test of significance using a t-distribution.\n# Number of '
-            'samples that matched between the taxa summary files: 1\n'
-            'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t'
-            'p-value (Bonferroni-corrected)\nS1\tE2\t1.0000\t0.0000\t0.0000\n')
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n.\t.\t.\tN/A\n',
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nSample ID\tSample ID\tCorrelation coefficient\tParametric '
+            'p-value\tParametric p-value (Bonferroni-corrected)\t'
+            'Nonparametric p-value\tNonparametric p-value '
+            '(Bonferroni-corrected)\tConfidence interval\nS\tE\t.\t.\t.\t.\t.'
+            '\tN/A\n')
+
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired4, 'paired', 'pearson', True,
-                self.taxa_summary_paired_samp_id_map2)
+                self.taxa_summary_paired4, 'paired', 'pearson',
+                perform_detailed_comparisons=True,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]),
+               self.remove_nums(obs[3]))
         self.assertEqual(obs, exp)
 
     def test_compare_taxa_summaries_paired_sample_id_map_mismatched_taxa(self):
         """Functions correctly using a sample id map and mismatched taxa."""
         exp = ('Taxon\tS1\tS2\nArchaea\t0.4\t0.4\nBacteria\t0.5\t0.7\nEukarya'
-               '\t0.4\t0.5\nFoobar\t0.0\t0.0\n', 'Taxon\tE1\tE2\nArchaea\t0.5'
-               '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\nFoobar\t0.1\t0.9'
-               '\n', '# Correlation coefficient: pearson. Performed a '
-               'two-tailed test of significance using a t-distribution.\n'
-               '# Number of samples that matched between the taxa '
-               'summary files: 1\nCorrelation coefficient\tp-value\n'
-               '-0.6264\t0.3736\n', None)
+            '\t0.4\t0.5\nFoobar\t0.0\t0.0\n', 'Taxon\tE1\tE2\nArchaea\t0.5'
+            '\t0.6\nBacteria\t0.7\t0.8\nEukarya\t0.5\t0.6\nFoobar\t0.1\t0.9'
+            '\n',
+            '# Correlation coefficient: pearson.\n# The parametric p-value(s) '
+            'were calculated using a two-sided test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a two-sided permutation test with  permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n', None)
+
         obs = compare_taxa_summaries(self.taxa_summary_paired1,
-                self.taxa_summary_paired5, 'paired', 'pearson', False,
-                self.taxa_summary_paired_samp_id_map2)
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+        obs = (obs[0], obs[1], self.remove_nums(obs[2]), obs[3])
         self.assertEqual(obs, exp)
 
-    def test_compare_taxa_summaries_invalid_comparison_mode(self):
-        """Throws error on unrecognized comparison mode."""
+    def test_compare_taxa_summaries_tail_type(self):
+        """Functions correctly using various tail types."""
+        # High.
+        exp = ('# Correlation coefficient: pearson.\n# The parametric '
+            'p-value(s) were calculated using a one-sided (positive '
+            'association) test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a one-sided (positive association) permutation test with  '
+            'permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n')
+
+        obs = compare_taxa_summaries(self.taxa_summary_paired1,
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                tail_type='high', confidence_level=0.80,
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+        obs = (self.remove_nums(obs[2]))
+        self.assertEqual(obs, exp)
+
+        # Low.
+        exp = ('# Correlation coefficient: pearson.\n# The parametric '
+            'p-value(s) were calculated using a one-sided (negative '
+            'association) test of significance using a '
+            't-distribution.\n# The nonparametric p-value(s) were calculated '
+            'using a one-sided (negative association) permutation test with  '
+            'permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n-.\t.\t.\t(-., .)\n')
+
+        obs = compare_taxa_summaries(self.taxa_summary_paired1,
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                tail_type='low', confidence_level=0.80,
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+        obs = (self.remove_nums(obs[2]))
+        self.assertEqual(obs, exp)
+
+    def test_compare_taxa_summaries_no_permutations(self):
+        """Functions correctly without performing nonparametric test."""
+        exp = ('# Correlation coefficient: pearson.\n# The parametric '
+            'p-value(s) were calculated using a one-sided (positive '
+            'association) test of significance using a '
+            't-distribution.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '.% using Fisher\'s z-transformation (see Sokal and Rohlf rd '
+            'edition pg. ). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: '
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval\n-.\t.\tN/A\t(-., .)\n')
+
+        obs = compare_taxa_summaries(self.taxa_summary_paired1,
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                tail_type='high', num_permutations=0, confidence_level=0.70,
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+        obs = (self.remove_nums(obs[2]))
+        self.assertEqual(obs, exp)
+
+    def test_compare_taxa_summaries_correct_header(self):
+        """Header is constructed properly based on different parameters."""
+        exp = ('# Correlation coefficient: pearson.\n# The parametric '
+            'p-value(s) were calculated using a one-sided (positive '
+            'association) test of significance using a t-distribution.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '90.0% using Fisher\'s z-transformation (see Sokal and Rohlf 3rd '
+            'edition pg. 575). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: 1'
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval')
+
+        obs = compare_taxa_summaries(self.taxa_summary_paired1,
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                tail_type='high', num_permutations=0, confidence_level=0.90,
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+
+        # Only look at the header.
+        obs = '\n'.join(obs[2].split('\n')[:-2])
+        self.assertEqual(obs, exp)
+
+        exp = ('# Correlation coefficient: pearson.\n# The parametric '
+            'p-value(s) were calculated using a one-sided (negative '
+            'association) test of significance using a t-distribution.\n'
+            '# The nonparametric p-value(s) were calculated '
+            'using a one-sided (negative association) permutation test with '
+            '85 permutations.\n# The '
+            'confidence interval(s) were constructed at a confidence level of '
+            '5.668% using Fisher\'s z-transformation (see Sokal and Rohlf 3rd '
+            'edition pg. 575). The confidence interval(s) are two-sided.\n# '
+            'Number of samples that matched between the taxa summary files: 1'
+            '\nCorrelation coefficient\tParametric p-value\tNonparametric '
+            'p-value\tConfidence interval')
+
+        obs = compare_taxa_summaries(self.taxa_summary_paired1,
+                self.taxa_summary_paired5, 'paired', 'pearson',
+                tail_type='low', num_permutations=85, confidence_level=0.05668,
+                perform_detailed_comparisons=False,
+                sample_id_map=self.taxa_summary_paired_samp_id_map2)
+
+        # Only look at the header.
+        obs = '\n'.join(obs[2].split('\n')[:-2])
+        self.assertEqual(obs, exp)
+
+    def test_compare_taxa_summaries_invalid_input(self):
+        """Throws error on invalid input."""
+        # Invalid comparison mode.
         self.assertRaises(ValueError, compare_taxa_summaries,
                 self.taxa_summary_obs1, self.taxa_summary_exp1, 'foo',
                 'pearson')
-
-    def test_get_correlation_function(self):
-        """Test returns correct correlation function."""
-        self.assertEqual(_get_correlation_function('pearson'),
-                         _pearson_correlation)
-        self.assertEqual(_get_correlation_function('spearman'),
-                         _spearman_correlation)
-
-    def test_get_correlation_function_invalid_correlation_type(self):
-        """Test with an invalid (unrecognized) correlation type."""
-        self.assertRaises(ValueError, _get_correlation_function, 'foo')
+        # Invalid correlation type.
+        self.assertRaises(ValueError, compare_taxa_summaries,
+                self.taxa_summary_obs1, self.taxa_summary_exp1, 'paired',
+                'foo')
+        # Invalid tail type.
+        self.assertRaises(ValueError, compare_taxa_summaries,
+                self.taxa_summary_obs1, self.taxa_summary_exp1, 'paired',
+                'spearman', 'foo')
+        # Invalid number of permutations.
+        self.assertRaises(ValueError, compare_taxa_summaries,
+                self.taxa_summary_obs1, self.taxa_summary_exp1, 'paired',
+                'spearman', 'high', -1)
+        # Invalid confidence level.
+        self.assertRaises(ValueError, compare_taxa_summaries,
+                self.taxa_summary_obs1, self.taxa_summary_exp1, 'paired',
+                'spearman', 'high', 0, 1)
 
     def test_make_compatible_taxa_summaries(self):
         """Test making compatible taxa summaries works correctly on two ts."""
@@ -484,219 +713,367 @@ class CompareTaxaSummariesTests(TestCase):
 
     def test_compute_correlation_expected_pearson(self):
         """Test functions correctly with expected mode and pearson corr."""
-        exp = ((0.68824720161169595, 0.31175279838830405), None)
+        exp = ((0.68824720161169595, 0.31175279838830405, 0.339,
+               (-0.80594408245459292, 0.99269848760560575)), None)
         obs = _compute_correlation(self.taxa_summary_obs1,
-                self.taxa_summary_exp1, 'expected', _pearson_correlation)
-        self.assertFloatEqual(obs, exp)
+                self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
+                999, 0.95)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+        self.assertFloatEqual(obs[1], exp[1])
+        
+        # Test stochastic p-value by making sure it falls within a sane range
+        # at least once out of self.p_val_tests times.
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs1,
+                    self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
+                    999, 0.95)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.33 and p_val <= 0.35:
+                found_match = True
+                break
+        self.assertTrue(found_match)
 
     def test_compute_correlation_expected_pearson_detailed(self):
         """Test functions with expected mode, pearson corr, detailed tests."""
-        exp = ((0.68824720161169595, 0.31175279838830405),
-               [('S1', 'Expected', 1.0, 1, 1), ('S2', 'Expected', 1.0, 1, 1)])
+        exp = ((0.68824720161169595, 0.31175279838830405, 0.348,
+                (-0.66416860387615351, 0.9863313909937903)),
+               [('S1', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None))])
         obs = _compute_correlation(self.taxa_summary_obs1,
-                self.taxa_summary_exp1, 'expected', _pearson_correlation, True)
-        self.assertFloatEqual(obs, exp)
+                self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
+                999, 0.90, True)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+        self.assertFloatEqual(obs[1], exp[1])
+        
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs1,
+                    self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
+                    999, 0.90, True)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.3 and p_val <= 0.35:
+                found_match = True
+                break
+        self.assertTrue(found_match)
 
     def test_compute_correlation_expected_spearman_detailed(self):
         """Test functions with expected mode, spearman corr, detailed tests."""
         # Verified with R's cor.test function.
 
         # No repeats in ranks.
-        exp = ((0.707106781187, 0.292893218813),
-               [('S1', 'Expected', 1.0, 1, 1), ('S2', 'Expected', 1.0, 1, 1)])
+        exp = ((0.70710678118654757, 0.29289321881345232, 0.671,
+                (-0.93471237439516763, 0.99801522848859603)),
+               [('S1', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None))])
         obs = _compute_correlation(self.taxa_summary_obs1,
                                    self.taxa_summary_exp1,
-                                   'expected',
-                                   _spearman_correlation, True)
-        self.assertFloatEqual(obs, exp)
+                                   'expected', 'spearman', 'two-sided',
+                                   999, 0.99, True)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+        self.assertFloatEqual(obs[1], exp[1])
+        
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs1,
+                    self.taxa_summary_exp1, 'expected', 'spearman',
+                    'two-sided', 999, 0.99, True)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.6 and p_val <= 0.7:
+                found_match = True
+                break
+        self.assertTrue(found_match)
 
         # Repeats in ranks.
-        exp = ((0.839146391678, 0.0367298712193),
-               [('S1', 'Expected', 0.866025, 0.33333333333333326,
-                 0.66666666666666652),
-                ('S2', 'Expected', 1.0, 0, 0)])
+        exp = ((0.83914639167827365, 0.036729871219315036, 0.126,
+                (-0.2625774054977657, 0.99110427297276837)),
+               [('S1', 'Expected', 0.86602540378443871, 0.33333333333333326,
+                 0.66666666666666652, 0.67, 1, (None, None)),
+                 ('S2', 'Expected', 1.0, 0, 0, 0.331, 0.662, (None, None))])
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp2,
-                                   'expected',
-                                   _spearman_correlation, True)
-        self.assertFloatEqual(obs, exp)
+                                   'expected', 'spearman', 'two-sided', 999,
+                                   0.99, True)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs2,
+                    self.taxa_summary_exp2, 'expected', 'spearman',
+                    'two-sided', 999, 0.99, True)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.11 and p_val <= 0.14:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0][:5], exp[1][0][:5])
+        self.assertIsProb(obs[1][0][5])
+        self.assertIsProb(obs[1][0][6])
+        self.assertFloatEqual(obs[1][0][7], exp[1][0][7])
+
+        self.assertFloatEqual(obs[1][1][:5], exp[1][1][:5])
+        self.assertIsProb(obs[1][1][5])
+        self.assertIsProb(obs[1][1][6])
+        self.assertFloatEqual(obs[1][1][7], exp[1][1][7])
 
     def test_compute_correlation_expected_expected_sample_id(self):
         """Test functions with expected mode using an expected sample ID."""
-        exp = ((0.839146391678, 0.0367298712193),
-               [('S1', 'Expected', 0.866025, 0.33333333333333326,
-                 0.66666666666666652),
-                ('S2', 'Expected', 1.0, 0, 0)])
+        exp = ((0.83914639167827365, 0.036729871219315036,
+                0.13786213786213786, (0.032537093928499856,
+                0.98380431996767537)),
+               [('S1', 'Expected', 0.86602540378443871, 0.33333333333333326,
+                 0.66666666666666652, 0.6943056943056943, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 0, 0, 0.33466533466533466,
+                 0.6693306693306693, (None, None))])
 
         # Using a single-sample expected ts.
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp2,
-                                   'expected',
-                                   _spearman_correlation, True, 'Expected')
-        self.assertFloatEqual(obs, exp)
+                                   'expected', 'spearman', 'two-sided',
+                                   1000, 0.96, True, 'Expected')
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs2,
+                    self.taxa_summary_exp2, 'expected', 'spearman',
+                    'two-sided', 1000, 0.96, True, 'Expected')[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.1 and p_val <= 0.15:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0][:5], exp[1][0][:5])
+        self.assertIsProb(obs[1][0][5])
+        self.assertIsProb(obs[1][0][6])
+        self.assertFloatEqual(obs[1][0][7], exp[1][0][7])
+
+        self.assertFloatEqual(obs[1][1][:5], exp[1][1][:5])
+        self.assertIsProb(obs[1][1][5])
+        self.assertIsProb(obs[1][1][6])
+        self.assertFloatEqual(obs[1][1][7], exp[1][1][7])
 
         # Using a two-sample expected ts.
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp3,
-                                   'expected',
-                                   _spearman_correlation, True, 'Expected')
+                                   'expected', 'spearman', 'two-sided',
+                                   1000, 0.96, True, 'Expected')
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_obs2,
+                    self.taxa_summary_exp3, 'expected', 'spearman',
+                    'two-sided', 1000, 0.96, True, 'Expected')[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.1 and p_val <= 0.15:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0][:5], exp[1][0][:5])
+        self.assertIsProb(obs[1][0][5])
+        self.assertIsProb(obs[1][0][6])
+        self.assertFloatEqual(obs[1][0][7], exp[1][0][7])
+
+        self.assertFloatEqual(obs[1][1][:5], exp[1][1][:5])
+        self.assertIsProb(obs[1][1][5])
+        self.assertIsProb(obs[1][1][6])
+        self.assertFloatEqual(obs[1][1][7], exp[1][1][7])
+
+    def test_compute_correlation_paired(self):
+        """Test runs correctly on standard input taxa summaries."""
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.011,
+               (0.33958335414859975, 0.98938788428012969)), None)
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired2, 'paired', 'pearson', 'two-sided',
+                999, 0.95)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+        self.assertFloatEqual(obs[1], exp[1])
+        
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_paired1,
+                    self.taxa_summary_paired2, 'paired', 'pearson',
+                    'two-sided', 999, 0.95)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.009 and p_val <= 0.012:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+    def test_compute_correlation_paired_detailed(self):
+        """Test runs correctly on standard input ts with detailed tests."""
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.011,
+                (0.33958335414859975, 0.98938788428012969)),
+               [('S1', 'S1', 1.0, 0, 0, 0.324, 0.648, (None, None)),
+                ('S2', 'S2', 0.94491118252306538, 0.21229561500966185,
+                 0.4245912300193237, 0.355, 0.71, (None, None))])
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired2, 'paired', 'pearson', 'two-sided',
+                999, 0.95, True)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_paired1,
+                    self.taxa_summary_paired2, 'paired', 'pearson',
+                    'two-sided', 999, 0.95, True)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.008 and p_val <= 0.018:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0][:5], exp[1][0][:5])
+        self.assertIsProb(obs[1][0][5])
+        self.assertIsProb(obs[1][0][6])
+        self.assertFloatEqual(obs[1][0][7], exp[1][0][7])
+
+        self.assertFloatEqual(obs[1][1][:5], exp[1][1][:5])
+        self.assertIsProb(obs[1][1][5])
+        self.assertIsProb(obs[1][1][6])
+        self.assertFloatEqual(obs[1][1][7], exp[1][1][7])
+
+    def test_compute_correlation_paired_mismatched_ids(self):
+        """Test runs correctly on taxa summaries with mismatched IDs."""
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.014,
+                (0.48961251524616184, 0.98476601971494115)),
+               [('S1', 'E1', 1.0, 0, 0, 0.346, 0.692, (None, None)),
+                ('S2', 'E1', 0.94491118252306538, 0.21229561500966185,
+                 0.4245912300193237, 0.3, 0.6, (None, None))])
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired3, 'paired', 'pearson', 'two-sided',
+                999, 0.90, True)
+
+        self.assertFloatEqual(obs[0][:2], exp[0][:2])
+        self.assertFloatEqual(obs[0][3:], exp[0][3:])
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            p_val = _compute_correlation(self.taxa_summary_paired1,
+                    self.taxa_summary_paired3, 'paired', 'pearson',
+                    'two-sided', 999, 0.90, True)[0][2]
+            self.assertIsProb(p_val)
+            if p_val >= 0.01 and p_val <= 0.018:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0][:5], exp[1][0][:5])
+        self.assertIsProb(obs[1][0][5])
+        self.assertIsProb(obs[1][0][6])
+        self.assertFloatEqual(obs[1][0][7], exp[1][0][7])
+
+        self.assertFloatEqual(obs[1][1][:5], exp[1][1][:5])
+        self.assertIsProb(obs[1][1][5])
+        self.assertIsProb(obs[1][1][6])
+        self.assertFloatEqual(obs[1][1][7], exp[1][1][7])
+
+    def test_compute_correlation_paired_no_permutations(self):
+        """Test runs correctly on taxa summaries without nonparametric test."""
+        # Verified using R's cor.test function.
+        exp = ((0.90243902439024193, 0.013812916237431808, None,
+                (0.48961251524616184, 0.98476601971494115)),
+               [('S1', 'E1', 1.0, 0, 0, None, None, (None, None)),
+                ('S2', 'E1', 0.94491118252306538, 0.21229561500966185,
+                 0.4245912300193237, None, None, (None, None))])
+        obs = _compute_correlation(self.taxa_summary_paired1,
+                self.taxa_summary_paired3, 'paired', 'pearson', 'two-sided',
+                0, 0.90, True)
+        self.assertFloatEqual(obs, exp)
+
+    def test_compute_correlation_paired_tail_type(self):
+        """Test runs correctly on taxa summaries with single-tailed test."""
+        # Verified using R's cor.test function.
+        exp = ((0.50151319303934072, 0.99615167469303467, None,
+               (0.21229308395242716, 0.70994854785747563)),
+               [('Even1', 'Even4', 0.18206274970805661, 0.68040119701955393,
+                1, None, None, (-0.45214511993120049, 0.69399617731638885)),
+                ('Even2', 'Even5', 0.8953176947428052, 0.99944917346644746, 1,
+                None, None, (0.65074921580251011, 0.97157247969474569)),
+                ('Even3', 'Even6', 0.89969103596277555, 0.99952349856557832,
+                1, None, None, (0.6635260751754386, 0.97280581291498336))])
+        ts1, ts2 = _sort_and_fill_taxa_summaries(
+                [self.taxa_summary1, self.taxa_summary2])
+        obs = _compute_correlation(ts1, ts2, 'paired', 'pearson', 'low', 0,
+                                   0.90, True)
         self.assertFloatEqual(obs, exp)
 
     def test_compute_correlation_expected_invalid_sample_count(self):
         """Test running on expected taxa summary without exactly one sample."""
         self.assertRaises(ValueError, _compute_correlation,
                           self.taxa_summary1, self.taxa_summary2, 'expected',
-                          _pearson_correlation)
+                          'pearson', 'high', 0, 0.95)
 
     def test_compute_correlation_expected_invalid_expected_sample_id(self):
         """Test running in expected mode with invalid expected sample ID."""
         self.assertRaises(ValueError, _compute_correlation,
                 self.taxa_summary_obs2, self.taxa_summary_exp3, 'expected',
-                _pearson_correlation, expected_sample_id='foo')
+                'pearson', 'low', 10, 0.1, expected_sample_id='foo')
 
     def test_compute_correlation_invalid_comparison_mode(self):
         """Test running using an invalid comparison mode."""
         self.assertRaises(ValueError, _compute_correlation,
                           self.taxa_summary1, self.taxa_summary2, 'foo',
-                          _pearson_correlation)
+                          'pearson', 'two-sided', 999, 0.90)
 
     def test_compute_correlation_incompatible_taxa(self):
         """Test running on taxa summaries that have mismatched taxa info."""
         self.assertRaises(ValueError, _compute_correlation,
                           self.taxa_summary_obs1_mismatch,
                           self.taxa_summary_exp1,
-                          'expected', _pearson_correlation)
-
-    def test_compute_correlation_paired(self):
-        """Test runs correctly on standard input taxa summaries."""
-        # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808), None)
-        obs = _compute_correlation(self.taxa_summary_paired1,
-                self.taxa_summary_paired2, 'paired', _pearson_correlation)
-        self.assertFloatEqual(obs, exp)
-
-    def test_compute_correlation_paired_detailed(self):
-        """Test runs correctly on standard input ts with detailed tests."""
-        # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808),
-               [('S1', 'S1', 1.0, 0, 0),
-                ('S2', 'S2', 0.94491118252306538, 0.21229561501,
-                 0.424591230019)])
-        obs = _compute_correlation(self.taxa_summary_paired1,
-                self.taxa_summary_paired2, 'paired', _pearson_correlation,
-                True)
-        self.assertFloatEqual(obs, exp)
-
-    def test_compute_correlation_paired_mismatched_ids(self):
-        """Test runs correctly on taxa summaries with mismatched IDs."""
-        # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808),
-               [('S1', 'E1', 1.0, 0, 0),
-                ('S2', 'E1', 0.94491118252306538, 0.21229561501,
-                 0.424591230019)])
-        obs = _compute_correlation(self.taxa_summary_paired1,
-                self.taxa_summary_paired3, 'paired', _pearson_correlation,
-                True)
-        self.assertFloatEqual(obs, exp)
+                          'expected', 'pearson', 'low', 999, 0.5)
 
     def test_compute_correlation_paired_incompatible_samples(self):
         """Test on incompatible taxa summaries (mismatched sample lengths)."""
         self.assertRaises(ValueError, _compute_correlation,
-                          self.taxa_summary1, self.taxa_summary3,
-                          'paired', _spearman_correlation)
+                          self.taxa_summary1, self.taxa_summary3, 'paired',
+                          'spearman', 'high', 9, 0.22222)
 
-    def test_pearson_correlation_invalid_input(self):
-        """Test running pearson correlation on bad input."""
-        self.assertRaises(ValueError, _pearson_correlation,
-                          [1.4, 2.5], [5.6, 8.8, 9.0])
-        self.assertRaises(ValueError, _pearson_correlation, [1.4], [5.6])
+    def test_compute_correlation_invalid_num_permutations(self):
+        """Test on invalid number of permutations."""
+        self.assertRaises(ValueError, _compute_correlation,
+                          self.taxa_summary1, self.taxa_summary1, 'paired',
+                          'spearman', 'high', -10, 0.22222)
 
-    def test_spearman_correlation(self):
-        """Test running spearman correlation on valid input."""
-        # This example taken from Wikipedia page:
-        # http://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient
-        #
-        # The p-value is off because the example uses a one-tailed test, while
-        # we use a two-tailed test. Someone confirms the answer that we get
-        # here for a two-tailed test:
-        # http://stats.stackexchange.com/questions/22816/calculating-p-value-
-        #     for-spearmans-rank-correlation-coefficient-example-on-wikip
-        exp = (-0.17575757575757578, 0.62718834477648433)
-        obs = _spearman_correlation(self.spearman_data1, self.spearman_data2)
-        self.assertFloatEqual(obs, exp)
+    def test_compute_correlation_invalid_confidence_level(self):
+        """Test on invalid confidence level."""
+        self.assertRaises(ValueError, _compute_correlation,
+                          self.taxa_summary1, self.taxa_summary1, 'paired',
+                          'spearman', 'high', 10, 0)
 
-    def test_spearman_correlation_one_obs(self):
-        """Test running spearman correlation on a single observation."""
-        self.assertRaises(ValueError, _spearman_correlation, [1.0], [5.0])
-
-    def test_spearman_no_variation(self):
-        """Test the _spearman function with a vector having no variation."""
-        exp = 0.0
-        obs = _spearman([1, 1, 1], [1, 2, 3])
-        self.assertEqual(obs, exp)
-
-    # The following tests are taken from test_stats.BioEnvTests to test the
-    # spearman function. They have been modified only to work with the function
-    # instead of the BioEnv object containing that method.
-    def test_spearman(self):
-        """Test the _spearman function."""
-        # One vector has no ties.
-        exp = 0.3719581
-        obs = _spearman(self.a,self.b)
-        self.assertFloatEqual(obs,exp)
-
-        # Both vectors have no ties.
-        exp = 0.2969697
-        obs = _spearman(self.b,self.c)
-        self.assertFloatEqual(obs,exp)
-
-        # Both vectors have ties.
-        exp = 0.388381
-        obs = _spearman(self.a,self.r)
-        self.assertFloatEqual(obs,exp)
-
-    def test_spearman_invalid_input(self):
-        """Test the _spearman function with invalid input."""
-        self.assertRaises(ValueError, _spearman, [],[])
-        self.assertRaises(ValueError, _spearman, self.a,[])
-        self.assertRaises(ValueError, _spearman, {0:2}, [1,2,3])
-
-    def test_get_rank(self):
-        """Test the _get_rank function with valid input."""
-        exp = ([1.5,3.5,7.5,5.5,1.5,9.0,10.0,11.0,12.0,7.5,14.0,3.5,5.5,13.0],
-               4)
-        obs = _get_rank(self.x)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,3.0,5.5,4.0,1.5,7.0,8.0,9.0,10.0,5.5],2)
-        obs = _get_rank(self.a)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([2,7,10,1,3,6,4,8,5,9],0)
-        obs = _get_rank(self.b)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,7.0,10.0,1.5,3.0,6.0,4.0,8.0,5.0,9.0], 1)
-        obs = _get_rank(self.r)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([],0)
-        obs = _get_rank([])
-        self.assertEqual(exp,obs)
-
-    def test_get_rank_invalid_input(self):
-        """Test the _get_rank function with invalid input."""
-        vec = [1, 'a', 3, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, {1:2}, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, [23,1], 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, (1,), 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
+    def test_compute_correlation_invalid_tail_type(self):
+        """Test on invalid tail type."""
+        self.assertRaises(ValueError, _compute_correlation,
+                          self.taxa_summary1, self.taxa_summary1, 'paired',
+                          'spearman', 'foo', 10, 0.1)
 
 
 if __name__ == "__main__":

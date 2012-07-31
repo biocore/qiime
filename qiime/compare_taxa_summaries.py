@@ -13,17 +13,19 @@ __status__ = "Development"
 """Contains functions used in the compare_taxa_summaries.py script."""
 
 from numpy import array, sqrt
-from cogent.maths.stats.distribution import tprob
-from cogent.maths.stats.test import correlation
-from qiime.format import format_correlation_vector, format_taxa_summary
+from qiime.pycogent_backports.test import correlation_test
+from qiime.format import (format_correlation_info, format_correlation_vector,
+                          format_taxa_summary)
 
-# Define valid choices for comparison mode and correlation type here so that it
-# can be used by the library code and the script.
+# Define valid choices for various options here so that they can be used by the
+# library code and the script.
 comparison_modes = ['paired', 'expected']
 correlation_types = ['pearson', 'spearman']
+tail_types = ['low', 'high', 'two-sided']
 
 def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
-                           correlation_type='pearson',
+                           correlation_type='pearson', tail_type='two-sided',
+                           num_permutations=999, confidence_level=0.95,
                            perform_detailed_comparisons=False,
                            sample_id_map=None, expected_sample_id=None):
     """Compares two taxa summaries using the specified comparison mode.
@@ -38,13 +40,16 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
     and filled taxa summaries (in a format ready to be written to a file) and a
     report detailing the correlation between the taxa summaries (also in a
     format ready to be written to a file), including the correlation
-    coefficient and p-value for the overall comparison.
+    coefficient, parametric and nonparametric p-values, and confidence interval
+    for the overall comparison.
 
-    If perform_detailed_comparisons is True, the correlation vector is returned
+    If perform_detailed_comparisons is True, a correlation vector is returned
     (also in a format ready to be written to a file) where each line shows the
     samples that were compared and the associated correlation coefficient,
-    p-value, and Bonferroni-corrected p-value. If perform_detailed_comparisons
-    is False, None will be returned for this value.
+    parametric and nonparametric p-values (uncorrected and
+    Bonferroni-corrected), and the confidence interval. If
+    perform_detailed_comparisons is False, None will be returned for this
+    value.
 
     Arguments:
         taxa_summary1 - the first taxa summary to compare. This should be a
@@ -62,6 +67,17 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         correlation_type - the type of correlation coefficient to calculate
             when comparing samples in the taxa summaries. Can be either
             'pearson' or 'spearman'
+        tail_type - if 'two-sided', a two-sided test is performed. 'high'
+            for a one-tailed test for positive association, or 'low' for a
+            one-tailed test for negative association. This parameter affects
+            both the parametric and nonparametric tests, but the confidence
+            interval will always be two-sided
+        num_permutations - the number of permutations to use in the
+            nonparametric test. Must be a number greater than or equal to 0. If
+            0, the nonparametric test will not be performed. In this case, the
+            nonparametric p-value will be 'N/A' in the formatted results string
+        confidence_level - the confidence level to use when constructing the
+            confidence interval. Must be between 0 and 1 (exclusive)
         perform_detailed_comparisons - if True, computes the correlation
             between pairs of samples in addition to computing the overall
             correlation between taxa summaries
@@ -76,16 +92,51 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
             only contain a single sample, and all samples in taxa_summary1 will
             be compared to it
     """
+    # Perform some initial error checking before getting into the heavy
+    # processing.
+    if correlation_type not in correlation_types:
+        raise ValueError("Invalid correlation type '%s'. Must be one of %r." %
+                         (correlation_type, correlation_types))
+    if tail_type not in tail_types:
+        raise ValueError("Invalid tail type '%s'. Must be one of %r." %
+                         (tail_type, tail_types))
+    if num_permutations < 0:
+        raise ValueError("Invalid number of permutations: %d. Must be greater "
+                         "than or equal to zero." % num_permutations)
+    if confidence_level <= 0 or confidence_level >= 1:
+        raise ValueError("Invalid confidence level: %.4f. Must be between "
+                         "zero and one (exclusive)." % confidence_level)
+
     # Define some comments to be put in the result strings.
-    header = "# Correlation coefficient: %s. " % correlation_type
-    header += "Performed a two-tailed test of significance using a " + \
-              "t-distribution."
+    header = "# Correlation coefficient: %s.\n" % correlation_type
+    header += "# The parametric p-value(s) were calculated using a "
+
+    if tail_type == 'two-sided':
+        tail_type_desc = tail_type
+    elif tail_type == 'high':
+        tail_type_desc = "one-sided (positive association)"
+    elif tail_type == 'low':
+        tail_type_desc = "one-sided (negative association)"
+
+    header += tail_type_desc + " test of significance using a " + \
+              "t-distribution.\n"
+    
+    if num_permutations > 0:
+        header += "# The nonparametric p-value(s) were calculated using " + \
+                  "a " + tail_type_desc + " permutation test with " + \
+                  str(num_permutations) + " permutations.\n"
+
+    header += "# The confidence interval(s) were constructed at a " + \
+              "confidence level of " + str(confidence_level * 100) + \
+              "% using Fisher's z-transformation (see Sokal and Rohlf " + \
+              "3rd edition pg. 575). The confidence interval(s) are two-sided."
+
     spearman_overall_warning = "# Since there were 10 or fewer " + \
             "observations when calculating Spearman's rank correlation " + \
-            "coefficient, the p-value is "
+            "coefficient, the parametric p-value is "
     spearman_detailed_warning = "# Since there were 10 or fewer taxa in " + \
-            "the sorted and filled taxa summary files, the p-values and " + \
-            "Bonferroni-corrected p-values are "
+            "the sorted and filled taxa summary files, the parametric " + \
+            "p-values and Bonferroni-corrected parametric p-values are "
     spearman_warning_suffix = "not accurate when using the " + \
             "t-distribution. Please see Biometry (Sokal and Rohlf, " + \
             "3rd edition) page 600 for more details."
@@ -93,7 +144,6 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
     spearman_detailed_warning += spearman_warning_suffix
 
     # Sort and fill the taxa summaries so that we can compare them.
-    correlation_fn = _get_correlation_function(correlation_type)
     filled_ts1, filled_ts2 = _sort_and_fill_taxa_summaries([taxa_summary1,
                                                             taxa_summary2])
     if comparison_mode == 'paired':
@@ -102,7 +152,8 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         compatible_ts1, compatible_ts2 = _make_compatible_taxa_summaries(
                 filled_ts1, filled_ts2, sample_id_map)
         overall_corr, corr_vec = _compute_correlation(compatible_ts1,
-                compatible_ts2, comparison_mode, correlation_fn,
+                compatible_ts2, comparison_mode, correlation_type, tail_type,
+                num_permutations, confidence_level,
                 perform_detailed_comparisons)
 
         # Calculate the length of the vectors that were used to compute
@@ -115,7 +166,8 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
                   "summary files: %d" % len(compatible_ts1[0])
     elif comparison_mode == 'expected':
         overall_corr, corr_vec = _compute_correlation(filled_ts1, filled_ts2,
-                comparison_mode, correlation_fn, perform_detailed_comparisons,
+                comparison_mode, correlation_type, tail_type, num_permutations,
+                confidence_level, perform_detailed_comparisons,
                 expected_sample_id)
         num_overall_observations = len(filled_ts1[0]) * len(filled_ts1[1])
     else:
@@ -125,11 +177,12 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
     # Format the overall correlation into a string that is writable to a file.
     # Include a warning in the header if the correlation coefficient was
     # spearman and the number of observations was <= 10.
-    overall_corr_str = header
+    overall_corr_str_header = header
     if correlation_type == 'spearman' and num_overall_observations <= 10:
-        overall_corr_str += '\n' + spearman_overall_warning
-    overall_corr_str += '\nCorrelation coefficient\tp-value'
-    overall_corr_str += '\n%.4f\t%.4f\n' % overall_corr
+        overall_corr_str_header += '\n' + spearman_overall_warning
+    overall_corr_str = format_correlation_info(overall_corr[0],
+            overall_corr[1], overall_corr[2], overall_corr[3],
+            num_permutations, overall_corr_str_header)
 
     # Format the correlation vector.
     corr_vec_str = None
@@ -137,30 +190,11 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         detailed_header = header
         if correlation_type == 'spearman' and len(filled_ts1[1]) <= 10:
             detailed_header += '\n' + spearman_detailed_warning
-        corr_vec_str = format_correlation_vector(corr_vec, detailed_header)
+        corr_vec_str = format_correlation_vector(corr_vec, num_permutations,
+                                                 detailed_header)
 
     return (format_taxa_summary(filled_ts1), format_taxa_summary(filled_ts2),
            overall_corr_str, corr_vec_str)
-
-def _get_correlation_function(correlation_type):
-    """Returns the correlation function to use based on the correlation type.
-
-    The correlation function that is returned will always accept two lists of
-    numbers to compute the correlation coefficient on, and return a two-element
-    tuple containing the correlation coefficient and the p-value.
-
-    Arguments:
-        correlation_type - a string specifying the correlation type (may be
-            either 'pearson' or 'spearman')
-    """
-    if correlation_type == 'pearson':
-        correlation_fn = _pearson_correlation
-    elif correlation_type == 'spearman':
-        correlation_fn = _spearman_correlation
-    else:
-        raise ValueError("Invalid correlation type '%s'. Must be one of %r." %
-                         (correlation_type, correlation_types))
-    return correlation_fn
 
 def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
     """Returns two taxa summaries that are ready for direct comparison.
@@ -279,7 +313,8 @@ def _sort_and_fill_taxa_summaries(taxa_summaries):
         result.append((samples, master_taxa, array(data)))
     return result
 
-def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
+def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
+                         tail_type, num_permutations, confidence_level,
                          perform_detailed_comparisons=False,
                          expected_sample_id=None):
     """Computes the correlation between two taxa summary files.
@@ -297,17 +332,22 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
     are not checked by this function to ensure they are in the correct order or
     mapping (this is the job of _make_compatible_taxa_summaries).
 
-    Returns a two-element tuple: the first element is a two-element tuple
-    containing the correlation coefficient and p-value for the overall
+    Returns a two-element tuple: the first element is a four-element tuple
+    containing the correlation coefficient, parametric p-value, nonparametric
+    p-value, and a tuple for the confidence interval for the overall
     comparison.
 
     If perform_detailed_comparisons is True, the second element is a
-    correlation vector, which is a list of 5-element tuples, where the first
+    correlation vector, which is a list of 8-element tuples, where the first
     element is a sample ID from ts1, the second element is a sample ID from
     ts2, the third element is the correlation coefficient computed between the
-    two samples (a double), the fourth element is the p-value, and the fifth
-    element is the Bonferroni-corrected p-value. If
-    perform_detailed_comparisons is False, None will be returned.
+    two samples (a double), the fourth element is the parametric p-value, the
+    fifth element is the Bonferroni-corrected parametric p-value, the sixth
+    element is the nonparametric p-value, the seventh element is the
+    Bonferroni-corrected nonparametric p-value, and the eighth element is a
+    tuple containing the low and high ends of the confidence interval. If
+    perform_detailed_comparisons is False, None will be returned for the second
+    element.
 
     Arguments:
         ts1 - the first taxa summary to be compared
@@ -318,10 +358,20 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
             compared. If 'expected', each sample in ts1 will be compared to an
             'expected' sample in ts2. If 'expected', ts2 must only contain a
             single sample unless expected_sample_id is provided
-        correlation_fn - the correlation function to use when comparing
-            samples. This function must accept two lists of numbers and return
-            a two-element tuple containing the correlation coefficient and the
-            p-value
+        correlation_type - the type of correlation coefficient to calculate
+            when comparing samples in the taxa summaries. Can be either
+            'pearson' or 'spearman'
+        tail_type - if 'two-sided', a two-sided test is performed. 'high'
+            for a one-tailed test for positive association, or 'low' for a
+            one-tailed test for negative association. This parameter affects
+            both the parametric and nonparametric tests, but the confidence
+            interval will always be two-sided
+        num_permutations - the number of permutations to use in the
+            nonparametric test. Must be a number greater than or equal to 0. If
+            0, the nonparametric test will not be performed. In this case, the
+            nonparametric p-values will be None
+        confidence_level - the confidence level to use when constructing the
+            confidence interval. Must be between 0 and 1 (exclusive)
         perform_detailed_comparisons - if True, computes the correlation
             between each pair of samples in addition to computing the overall
             correlation between taxa summaries
@@ -329,6 +379,11 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
             to. If not provided, ts2 must only contain a single sample, and all
             samples in ts1 will be compared to it
     """
+    # Convert our notion of tail type into the format expected by PyCogent's
+    # correlation_test().
+    if tail_type == 'two-sided':
+        tail_type = None
+
     if comparison_mode != 'paired' and comparison_mode != 'expected':
         raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
                          (comparison_mode, comparison_modes))
@@ -403,124 +458,27 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_fn,
 
         if perform_detailed_comparisons:
             # Compare the current sample and its pair.
-            corr_coeff, p_val = correlation_fn(ts1_data, ts2_data)
-            corr_vec.append((samp_id, ts2[0][paired_idx], corr_coeff, p_val,
-                             min(p_val * num_comparisons, 1)))
+            corr_coeff, param_p_val, unused, nonparam_p_val, conf_interval = \
+                    correlation_test(ts1_data, ts2_data,
+                                     method=correlation_type,
+                                     tails=tail_type,
+                                     permutations=num_permutations,
+                                     confidence_level=confidence_level)
+
+            # Compute the Bonferroni-corrected p-values.
+            param_p_val_corr = min(param_p_val * num_comparisons, 1)
+            nonparam_p_val_corr = None if nonparam_p_val is None else \
+                                  min(nonparam_p_val * num_comparisons, 1)
+
+            corr_vec.append((samp_id, ts2[0][paired_idx], corr_coeff,
+                param_p_val, param_p_val_corr, nonparam_p_val,
+                nonparam_p_val_corr, conf_interval))
 
     # Compare all paired samples at once.
-    overall_corr = correlation_fn(all_ts1_data, all_ts2_data)
+    results = correlation_test(all_ts1_data, all_ts2_data,
+                               method=correlation_type, tails=tail_type,
+                               permutations=num_permutations,
+                               confidence_level=confidence_level)
+    # We don't need to return all of the permuted correlation coefficients.
+    overall_corr = (results[0], results[1], results[3], results[4])
     return overall_corr, corr_vec
-
-def _pearson_correlation(vec1, vec2):
-    """Wraps PyCogent's correlation function to provide more error checking."""
-    if len(vec1) != len(vec2):
-        raise ValueError("The length of the two vectors must be the same in "
-                         "order to calculate the Pearson correlation "
-                         "coefficient.")
-    if len(vec1) < 2:
-        raise ValueError("The two vectors must both contain at least 2 "
-                "elements. The vectors are of length %d." % len(vec1))
-    return correlation(vec1, vec2)
-
-def _spearman_correlation(vec1, vec2):
-    """Calculates Spearman's rank correlation coefficient and significance.
-
-    Uses Student's t-distribution with df=n-2 to perform a two-tailed test
-    according to Sokal and Rohlf pg. 575 and 600. This p-value is an
-    approximation, and is especially unreliable for n<=10.
-
-    This implementation is based on cogent.maths.stats.test.correlation.
-
-    Returns Spearman's rank correlation coefficient (rho) and the associated
-    p-value.
-    """
-    rho = _spearman(vec1, vec2)
-    n = len(vec1)
-    if n < 3:
-        prob = 1
-    else:
-        try:
-            t = rho / sqrt((1 - (rho * rho)) / (n - 2))
-            prob = tprob(t, n - 2)
-        except (ZeroDivisionError, FloatingPointError): # rho was presumably 1
-            prob = 0
-    return rho, prob
-
-# These next two functions are taken from the qiime.stats.BioEnv class, written
-# by Michael Dwan. We don't use the class itself because we don't have the
-# required data to instantiate one, so the methods are copied here for
-# convenience. TODO: this should be moved into pycogent at some point. Note
-# that this method has been modified slightly from its original form to perform
-# more error checking.
-def _spearman(vec1, vec2, ranked=False):
-    """Calculates the the Spearman distance of two vectors."""
-    try:
-        temp = len(vec1)
-    except ValueError:
-        raise ValueError('First input vector is not a list.')
-    try:
-        temp = len(vec2)
-    except ValueError:
-        raise ValueError('Second input vector is not a list.')
-    if len(vec1) < 2 or len(vec2) < 2:
-        raise ValueError('One or both input vectors has/have less than 2 '
-                         'elements')
-    if len(vec1) != len(vec2):
-        raise ValueError('Vector lengths must be equal')
-
-    if not ranked:
-        rank1, ties1 = _get_rank(vec1)
-        rank2, ties2 = _get_rank(vec2)
-    else:
-        rank1, ties1 = vec1
-        rank2, ties2 = vec2
-
-    if ties1 == 0 and ties2 == 0:
-        n = len(rank1)
-        sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
-        rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
-        return rho
-
-    avg = lambda x: sum(x)/len(x)
-
-    x_bar = avg(rank1)
-    y_bar = avg(rank2)
-
-    numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
-    denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
-                       sum([(y-y_bar)**2 for y in rank2]))
-
-    # Calculate rho. Handle the case when there is no variation in one or both
-    # of the input vectors.
-    if denominator == 0.0:
-        rho = 0.0
-    else:
-        rho = numerator/denominator
-    return rho
-
-def _get_rank(data):
-    """Ranks the elements of a list. Used in Spearman correlation."""
-    indices = range(len(data))
-    ranks = range(1,len(data)+1)
-    indices.sort(key=lambda index:data[index])
-    ranks.sort(key=lambda index:indices[index-1])
-    data_len = len(data)
-    i = 0
-    ties = 0
-    while i < data_len:
-        j = i + 1
-        val = data[indices[i]]
-        try:
-            val += 0
-        except TypeError:
-            raise(TypeError)
-
-        while j < data_len and data[indices[j]] == val:
-            j += 1
-        dup_ranks = j - i
-        val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
-        for k in range(i, i+dup_ranks):
-            ranks[indices[k]] = val
-        i += dup_ranks
-        ties += dup_ranks-1
-    return ranks, ties

@@ -159,19 +159,32 @@ def format_taxa_summary(taxa_summary):
         result += '%s\t' % taxon + '\t'.join(row) + '\n'
     return result
 
-def format_correlation_vector(corr_vector, header=''):
+def format_correlation_vector(corr_vector, num_permutations, header=''):
     """Formats a correlation vector to be suitable for writing to a file.
 
-    Returns a string where each line contains five tab-separated fields: the
+    Returns a string where each line contains eight tab-separated fields: the
     two sample IDs that were compared, the correlation coefficient, the
-    p-value, and the Bonferroni-corrected p-value.
+    parametric p-value, the Bonferroni-corrected parametric p-value, the
+    nonparametric p-value, the Bonferroni-corrected nonparametric p-value, and
+    the confidence interval.
+
+    If the confidence intervals are not valid for this dataset (i.e. is
+    (None, None)), the confidence intervals will be 'N/A'.
 
     Arguments:
-        corr_vector - a list of 5-element tuples, where the first
+        corr_vector - a list of 8-element tuples, where the first
             element is a sample ID, the second element is a sample ID, the
             third element is the correlation coefficient computed between the
-            two samples (a double), the fourth element is the p-value, and the
-            fifth element is the Bonferroni-corrected p-value
+            two samples (a double), the fourth element is the parametric
+            p-value, the fifth value is the Bonferroni-corrected parametric
+            p-value, the sixth value is the nonparametric p-value, the seventh
+            value is the Bonferroni-corrected nonparametric p-value, and the
+            eighth element is a tuple containing the low and high ends of the
+            confidence interval
+        num_permutations - the number of permutations that were used to
+            calculate the nonparametric p-values. Will be used to format the
+            correct number of digits for these p-values. If less than 1, the
+            p-values will be 'N/A'
         header - if provided, this string will be inserted at the beginning of
             the returned string. For example, might be useful to add a comment
             describing what correlation coefficient was used. This string does
@@ -180,12 +193,77 @@ def format_correlation_vector(corr_vector, header=''):
     result = ''
     if header != '':
         result += header + '\n'
-    result += 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\n'
-    for samp_id1, samp_id2, corr_coeff, p_val, p_val_corr in corr_vector:
-        result += '%s\t%s\t%.4f\t%.4f\t%.4f\n' % (samp_id1, samp_id2,
-                                                  corr_coeff, p_val,
-                                                  p_val_corr)
+    result += 'Sample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\n'
+    for samp_id1, samp_id2, corr_coeff, param_p_val, param_p_val_corr, \
+        nonparam_p_val, nonparam_p_val_corr, conf_interval in corr_vector:
+        if num_permutations > 0:
+            nonparam_p_val_str = format_p_value_for_num_iters(nonparam_p_val,
+                                                              num_permutations)
+            nonparam_p_val_corr_str = format_p_value_for_num_iters(
+                    nonparam_p_val_corr, num_permutations)
+        else:
+            nonparam_p_val_str = 'N/A'
+            nonparam_p_val_corr_str = 'N/A'
+        if conf_interval == (None, None):
+            conf_interval_str = 'N/A'
+        else:
+            conf_interval_str = '(%.4f, %.4f)' % conf_interval
+
+        result += '%s\t%s\t%.4f\t%.4f\t%.4f\t%s\t%s\t%s\n' % (
+                samp_id1, samp_id2, corr_coeff, param_p_val, param_p_val_corr,
+                nonparam_p_val_str, nonparam_p_val_corr_str, conf_interval_str)
+    return result
+
+def format_correlation_info(corr_coeff, param_p_val, nonparam_p_val,
+                            conf_interval, num_permutations, header=''):
+    """Formats correlation information to be suitable for writing to a file.
+
+    Returns a string containing a header and a single line (with a newline at
+    the end) that has the input correlation information in tab-separated
+    format, with nonparametric p-value formatted according to the number of
+    permutations.
+
+    If the confidence interval is not valid for this dataset (i.e. is
+    (None, None)), the confidence interval will be 'N/A'.
+
+    Arguments:
+        corr_coeff - the correlation coefficient (a float)
+        param_p_val - the parametric p-value (a float)
+        nonparam_p_val - the nonparametric p-value (a float)
+        conf_interval - a tuple containing the lower and upper bounds of the
+            confidence interval
+        num_permutations - the number of permutations that were used to
+            calculate the nonparametric p-value. Will be used to format the
+            correct number of digits for this p-value. If less than 1, the
+            p-value will be 'N/A'
+        header - if provided, this string will be inserted at the beginning of
+            the returned string. For example, might be useful to add a comment
+            describing what correlation coefficient was used. This string does
+            not need to contain a newline at the end
+    """
+    result = ''
+    if header != '':
+        result += header + '\n'
+    result += 'Correlation coefficient\tParametric p-value\t' + \
+              'Nonparametric p-value\tConfidence interval\n'
+
+    if num_permutations > 0:
+        nonparam_p_val_str = format_p_value_for_num_iters(nonparam_p_val,
+                                                          num_permutations)
+    else:
+        nonparam_p_val_str = 'N/A'
+
+    if conf_interval == (None, None):
+        conf_interval_str = 'N/A'
+    else:
+        conf_interval_str = '(%.4f, %.4f)' % conf_interval
+
+    result += '%.4f\t%.4f\t%s\t%s\n' % (corr_coeff, param_p_val,
+            nonparam_p_val_str, conf_interval_str)
     return result
 
 def write_otu_map(otu_map,output_fp,otu_id_prefix=''):

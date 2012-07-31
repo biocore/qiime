@@ -26,7 +26,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
-    format_taxa_summary, format_correlation_vector, format_qiime_parameters,
+    format_taxa_summary, format_correlation_vector,
+    format_correlation_info, format_qiime_parameters,
     format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
     format_biom_table, format_mapping_html_data)
 from biom.parse import parse_biom_table
@@ -63,10 +64,12 @@ class TopLevelTests(TestCase):
          expected_formatted_html_data_nonloc_error
 
         # For testing formatting of correlation vectors.
-        self.corr_vec1 = [('S1', 'T1', 0.7777777777, 0, 0)]
-        self.corr_vec2 = [('S1', 'T1', 0.7777777777, 0, 0),
-                          ('S2', 'T2', 0.1, 0.05, 0.15),
-                          ('S3', 'T3', 100.68, 0.9, 1)]
+        self.corr_vec1 = [('S1', 'T1', 0.7777777777, 0, 0, 0, 0, (0.5, 1.0))]
+        self.corr_vec2 = [('S1', 'T1', 0.7777777777, 0, 0, 0, 0, (0.5, 1.0)),
+                          ('S2', 'T2', 0.1, 0.05, 0.15, 0.04, 0.12,
+                           (-0.1, 0.2)),
+                          ('S3', 'T3', 100.68, 0.9, 1, 1, 1, (-0.4, -0.2))]
+        self.corr_vec3 = [('S1', 'T1', 0.7777777777, 0, 0, 0, 0, (None, None))]
 
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -168,37 +171,102 @@ class TopLevelTests(TestCase):
         self.assertEqual(obs, exp)
 
     def test_format_correlation_vector(self):
-        """Test formatting correlations works correctly."""
-        # One row.
-        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\n'
-        obs = format_correlation_vector(self.corr_vec1)
+        """Test formatting correlation vector works correctly."""
+        # One row, zero permutations.
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\t(0.5000, 1.0000)\n'
+        obs = format_correlation_vector(self.corr_vec1, 0)
         self.assertEqual(obs, exp)
 
-        # Multiple rows.
-        exp = 'Sample ID\tSample ID\tCorrelation coefficient\tp-value\t' + \
-              'p-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t0.0000\t' + \
-              '0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t100.6800\t' + \
-              '0.9000\t1.0000\n'
-        obs = format_correlation_vector(self.corr_vec2)
+        # Undefined confidence interval.
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\tN/A\n'
+        obs = format_correlation_vector(self.corr_vec3, 0)
+        self.assertEqual(obs, exp)
+
+        # Multiple rows, 999 permutations.
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\t0.000\t0.000\t(0.5000, 1.0000)\nS2\tT2\t0.1000\t' + \
+              '0.0500\t0.1500\t0.040\t0.120\t(-0.1000, 0.2000)\nS3\tT3\t' + \
+              '100.6800\t0.9000\t1.0000\t1.000\t1.000\t(-0.4000, -0.2000)\n'
+        obs = format_correlation_vector(self.corr_vec2, 999)
         self.assertEqual(obs, exp)
 
     def test_format_correlation_vector_with_header(self):
-        """Test formatting correlations with a header works correctly."""
-        # One row.
-        exp = 'foo\nSample ID\tSample ID\tCorrelation coefficient\t' + \
-              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
-              '0.0000\t0.0000\n'
-        obs = format_correlation_vector(self.corr_vec1, 'foo')
+        """Test formatting correlation vector with a header works correctly."""
+        exp = '#foo\nSample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tN/A\tN/A\t(0.5000, 1.0000)\n'
+        obs = format_correlation_vector(self.corr_vec1, 0, '#foo')
         self.assertEqual(obs, exp)
 
-        # Multiple rows.
-        exp = '#foobar\nSample ID\tSample ID\tCorrelation coefficient\t' + \
-              'p-value\tp-value (Bonferroni-corrected)\nS1\tT1\t0.7778\t' + \
-              '0.0000\t0.0000\nS2\tT2\t0.1000\t0.0500\t0.1500\nS3\tT3\t' + \
-              '100.6800\t0.9000\t1.0000\n'
-        obs = format_correlation_vector(self.corr_vec2, '#foobar')
+    def test_format_correlation_vector_small_num_permutations(self):
+        """Test formatting corr vector with small num of permutations."""
+        exp = 'Sample ID\tSample ID\tCorrelation coefficient\t' + \
+              'Parametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\t' + \
+              'Confidence interval\nS1\tT1\t0.7778\t0.0000\t' + \
+              '0.0000\tToo few iters to compute p-value (num_iters=2)\t' + \
+              'Too few iters to compute p-value (num_iters=2)\t' + \
+              '(0.5000, 1.0000)\n'
+        obs = format_correlation_vector(self.corr_vec1, 2)
+        self.assertEqual(obs, exp)
+
+    def test_format_correlation_info(self):
+        """Test formatting correlation information with valid input."""
+        # With 999 permutations.
+        exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
+              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              '0.000\t(0.0000, 1.0000)\n'
+        obs = format_correlation_info(0.7778, 0, 0, (0, 1), 999)
+        self.assertEqual(obs, exp)
+
+        # With 0 permutations.
+        exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
+              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              'N/A\t(0.0000, 1.0000)\n'
+        obs = format_correlation_info(0.7778, 0, 0, (0, 1), 0)
+        self.assertEqual(obs, exp)
+
+        # With a small number of permutations.
+        exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
+              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              'Too few iters to compute p-value (num_iters=1)\t' + \
+              '(0.0000, 1.0000)\n'
+        obs = format_correlation_info(0.7778, 0, 0, (0, 1), 1)
+        self.assertEqual(obs, exp)
+
+        # With undefined confidence interval.
+        exp = 'Correlation coefficient\tParametric p-value\tNonparametric ' + \
+              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              'N/A\tN/A\n'
+        obs = format_correlation_info(0.7778, 0, 0, (None, None), 0)
+        self.assertEqual(obs, exp)
+
+    def test_format_correlation_info_with_header(self):
+        """Test formatting correlation information with header."""
+        exp = '# Some comment...\nCorrelation coefficient\t' + \
+              'Parametric p-value\tNonparametric ' + \
+              'p-value\tConfidence interval\n0.7778\t0.0000\t' + \
+              '0.000\t(0.0000, 1.0000)\n'
+        obs = format_correlation_info(0.7778, 0, 0, (0, 1), 999,
+                                      '# Some comment...')
         self.assertEqual(obs, exp)
 
     def test_format_qiime_parameters(self):

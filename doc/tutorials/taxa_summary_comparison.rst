@@ -43,14 +43,17 @@ This command will create a new output directory named :file:`taxa_comp`, which w
 
 .. note::
 
-    * # Correlation coefficient: pearson. Performed a two-tailed test of significance using a t-distribution.
+    * # Correlation coefficient: pearson.
+    * # The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.
+    * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
+    * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Correlation coefficient p-value
-    * 0.9993  0.0000
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
+    * 0.9993	0.0000	0.001	(0.9989, 0.9996)
 
-The comment at the top of the file tells us that Pearson's correlation coefficient was used to compute the correlation between samples. The value of 0.9993 is very close to +1, which indicates strong positive correlation between the paired samples in the two input taxa summary files. The p-value indicates that the correlation is statistically significant. Thus, it appears that using the RDP classifier at a confidence level of 0.60 or 0.80 yields highly correlated results (i.e. you might draw the same biological conclusions from using either taxa summary file).
+The comment at the top of the file tells us that Pearson's correlation coefficient was used to compute the correlation between samples. The value of 0.9993 is very close to +1, which indicates strong positive correlation between the paired samples in the two input taxa summary files. Both parametric and nonparametric p-values indicate that the correlation is statistically significant. The two-sided 95% confidence interval also supports the same conclusion. Thus, it appears that using the RDP classifier at a confidence level of 0.60 or 0.80 yields highly correlated results (i.e. you might draw the same biological conclusions from using either taxa summary file).
 
-Note the second line of the file, which tells us that 9 samples matched between the two taxa summary files. All 9 samples matched between the two files because both files have the same sample IDs. The script determines which samples to compute the correlation between based on matching sample IDs between the two files (the order of sample IDs does not matter between the two files, but the names must match exactly). Any sample IDs that do not match will not be considered when calculating the results.
+Note the fifth line of the file, which tells us that 9 samples matched between the two taxa summary files. All 9 samples matched between the two files because both files have the same sample IDs. The script determines which samples to compute the correlation between based on matching sample IDs between the two files (the order of sample IDs does not matter between the two files, but the names must match exactly). Any sample IDs that do not match will not be considered when calculating the results.
 
 If you need to compare taxa summaries that do not have matching sample IDs, you
 can use a sample ID map to provide a mapping between sample IDs. To illustrate
@@ -60,39 +63,67 @@ this, run the following command: ::
 
 The second input taxa summary file (:file:`ts_rdp_0.60_renamed.txt`) is simply the original :file:`ts_rdp_0.60.txt` file with all sample IDs starting with 'PC.' renamed to 'S.'. The sample ID map (:file:`sample_id_map.txt`) specifies how to pair up samples between the two taxa summary files now that the sample IDs do not exactly match.
 
-This command will create a new output directory named :file:`taxa_comp_using_sample_id_map`, which will contain the three files like before. Open up :file:`overall_comparison.txt` to see the results of the test:
+This command will create a new output directory named :file:`taxa_comp_using_sample_id_map`, which will contain three files like before. Open up :file:`overall_comparison.txt` to see the results of the test:
 
 .. note::
 
-    * # Correlation coefficient: spearman. Performed a two-tailed test of significance using a t-distribution.
+    * # Correlation coefficient: spearman.
+    * # The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.
+    * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
+    * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
     * # Number of samples that matched between the taxa summary files: 9
-    * Correlation coefficient p-value
-    * 0.9687  0.0000
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
+    * 0.9687	0.0000	0.001	(0.9502, 0.9803)
 
 Notice that all 9 samples were still included because we provided a sample ID map. If we had not provided a sample ID map, the script would have raised an error stating that the two taxa summary files were incompatible because no matches could be found.
 
-Also notice that we used the -c option to use the Spearman correlation coefficient instead of the Pearson correlation coefficient. This is why we obtained a different value for the correlation coefficient.
+Also notice that we used the -c option to use the Spearman correlation coefficient instead of the Pearson correlation coefficient. This is why we obtained a different value for the correlation coefficient. Regardless, we still reach essentially the same conclusion regarding the correlation of the two taxa summary files.
 
 If you'd like to see the correlation tests applied to each pair of samples (instead of to all pairs of samples at one time), use the --perform_detailed_comparisons option: ::
 
     compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed --perform_detailed_comparisons
 
-In addition to the three previous file, you will find the file :file:`detailed_comparisons.txt` in the newly created directory :file:`taxa_comp_detailed`: ::
+In addition to the three previous file, you will find the file :file:`detailed_comparisons.txt` in the newly created directory :file:`taxa_comp_detailed`:
 
-    # Correlation coefficient: pearson. Performed a two-tailed test of significance using a t-distribution.
-    # Number of samples that matched between the taxa summary files: 9
-    Sample ID	Sample ID	Correlation coefficient	p-value	p-value (Bonferroni-corrected)
-    PC.354	PC.354	0.9997	0.0000	0.0000
-    PC.355	PC.355	0.9998	0.0000	0.0000
-    PC.356	PC.356	0.9999	0.0000	0.0000
-    PC.481	PC.481	0.9998	0.0000	0.0000
-    PC.593	PC.593	0.9999	0.0000	0.0000
-    PC.607	PC.607	0.9990	0.0000	0.0000
-    PC.634	PC.634	1.0000	0.0000	0.0000
-    PC.635	PC.635	0.9963	0.0000	0.0000
-    PC.636	PC.636	0.9999	0.0000	0.0000
+.. note::
 
-We see that all of the comparisons indicate strong, statistically-significant correlation. The final column provides p-values that have been corrected for multiple comparisons (though still zero in this case because the uncorrected p-values are zero).
+    * # Correlation coefficient: pearson.
+    * # The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.
+    * # The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
+    * # The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
+    * # Number of samples that matched between the taxa summary files: 9
+    * Sample ID	Sample ID	Correlation coefficient	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)	Confidence interval
+    * PC.354	PC.354	0.9997	0.0000	0.0000	0.006	0.054	(0.9985, 1.0000)
+    * PC.355	PC.355	0.9998	0.0000	0.0000	0.004	0.036	(0.9988, 1.0000)
+    * PC.356	PC.356	0.9999	0.0000	0.0000	0.001	0.009	(0.9995, 1.0000)
+    * PC.481	PC.481	0.9998	0.0000	0.0000	0.001	0.009	(0.9989, 1.0000)
+    * PC.593	PC.593	0.9999	0.0000	0.0000	0.002	0.018	(0.9993, 1.0000)
+    * PC.607	PC.607	0.9990	0.0000	0.0000	0.001	0.009	(0.9942, 0.9998)
+    * PC.634	PC.634	1.0000	0.0000	0.0000	0.001	0.009	(1.0000, 1.0000)
+    * PC.635	PC.635	0.9963	0.0000	0.0000	0.002	0.018	(0.9788, 0.9994)
+    * PC.636	PC.636	0.9999	0.0000	0.0000	0.001	0.009	(0.9994, 1.0000)
+
+We see that nearly all of the comparisons indicate strong, statistically-significant correlation. The p-values are provided that have been Bonferroni-corrected for multiple comparisons (though are still zero for the parametric test because the uncorrected p-values are zero). The minor differences in confidence intervals between correlation coefficients that are the same is attributed to rounding error.
+
+To perform a one-tailed test of negative association instead of a two-tailed test, run the following command: ::
+
+    compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed -t low -l 0.90
+
+This command will create a new output directory named :file:`taxa_comp_one_tailed`, which will contain three files like before. Open up :file:`overall_comparison.txt` to see the results of the test:
+
+.. note::
+
+    * # Correlation coefficient: pearson.
+    * # The parametric p-value(s) were calculated using a one-sided (negative association) test of significance using a t-distribution.
+    * # The nonparametric p-value(s) were calculated using a one-sided (negative association) permutation test with 999 permutations.
+    * # The confidence interval(s) were constructed at a confidence level of 90.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
+    * # Number of samples that matched between the taxa summary files: 9
+    * Correlation coefficient	Parametric p-value	Nonparametric p-value	Confidence interval
+    * 0.9993	1.0000	1.000	(0.9990, 0.9996)
+
+We performed a one-tailed test of negative association, i.e. the null hypothesis was that Pearson's product-moment coefficient was equal to 0 (no association) and the alternative hypothesis was that the correlation coefficient was less than 0. We see that both parametric and nonparametric p-values are now insignificant, indicating that we fail to reject the null hypothesis of no association (keep in mind that the observed correlation coefficient of 0.9993 indicates strong `positive` correlation, not negative correlation).
+
+Also note that we specified a 90% confidence interval instead of the default 95% confidence interval. If you compare these results to the results in the first command of the tutorial, you'll see that the 90% confidence interval is a little tighter than the 95% confidence interval, which is what we would expect.
 
 Expected Comparison
 -------------------

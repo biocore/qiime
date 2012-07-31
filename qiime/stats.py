@@ -23,7 +23,6 @@ create new statistical method implementations.
 
 from types import ListType
 
-from cogent.maths.stats.test import pearson, permute_2d
 from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
@@ -33,6 +32,8 @@ from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 
+from qiime.pycogent_backports.test import (mantel_test, pearson, permute_2d,
+                                           spearman)
 from qiime.util import DistanceMatrix, MetadataMap
 
 
@@ -711,7 +712,7 @@ class BioEnv(CategoryStats):
         cats = self.Categories
         dm = self.DistanceMatrices[0]
         dm_flat = dm.flatten()
-        dm_flat_ranked = self._get_rank(dm_flat)
+        #dm_flat_ranked = self._get_rank(dm_flat)
 
         row_count = dm.Size
         col_count = len(cats)
@@ -723,9 +724,8 @@ class BioEnv(CategoryStats):
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
-                cat_dm_flat_ranked = self._get_rank(cat_dm.flatten())
-                r = self._spearman_correlation(dm_flat_ranked,
-                                               cat_dm_flat_ranked, ranked=True)
+                cat_dm_flat = cat_dm.flatten()
+                r = spearman(dm_flat, cat_dm_flat)
                 if r > stats[i-1][0]:
                     stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
 
@@ -765,73 +765,6 @@ class BioEnv(CategoryStats):
         for i in combo:
             res.append(md_map.getCategoryValues(dm.SampleIds, cats[i-1]))
         return zip(*res)
-
-    def _get_rank(self, data):
-        """Ranks the elements of a list. Used in Spearman correlation."""
-        indices = range(len(data))
-        ranks = range(1,len(data)+1)
-        indices.sort(key=lambda index:data[index])
-        ranks.sort(key=lambda index:indices[index-1])
-        data_len = len(data)
-        i = 0
-        ties = 0
-        while i < data_len:
-            j = i + 1
-            val = data[indices[i]]
-            try:
-                val += 0
-            except TypeError:
-                raise(TypeError)
-
-            while j < data_len and data[indices[j]] == val:
-                j += 1
-            dup_ranks = j - i
-            val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
-            for k in range(i, i+dup_ranks):
-                ranks[indices[k]] = val
-            i += dup_ranks
-            ties += dup_ranks-1
-        return ranks, ties
-
-    def _spearman_correlation(self, vec1, vec2, ranked=False):
-        """Calculates the the Spearman distance of two vectors."""
-        try:
-            temp = len(vec1)
-        except ValueError:
-            raise(ValueError, 'First input vector is not a list.')
-        try:
-            temp = len(vec2)
-        except ValueError:
-            raise(ValueError, 'Second input vector is not a list.')
-        if len(vec1) == 0 or len(vec2) == 0:
-            raise(ValueError,
-                  'One or both input vectors has/have zero elements')
-        if len(vec1) != len(vec2):
-            raise(ValueError, 'Vector lengths must be equal')
-
-        if not ranked:
-            rank1, ties1 = self._get_rank(vec1)
-            rank2, ties2 = self._get_rank(vec2)
-        else:
-            rank1, ties1 = vec1
-            rank2, ties2 = vec2
-
-        if ties1 == 0 and ties2 == 0:
-            n = len(rank1)
-            sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
-            rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
-            return rho
-
-        avg = lambda x: sum(x)/len(x)
-
-        x_bar = avg(rank1)
-        y_bar = avg(rank2)
-
-        numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
-        denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
-                           sum([(y-y_bar)**2 for y in rank2]))
-        # Calculate rho.
-        return numerator/denominator
 
 
 class MantelCorrelogram(CorrelationStats):
@@ -1189,9 +1122,11 @@ class Mantel(CorrelationStats):
         'greater'), so the p-values may differ from R unless you explicitly
         specify the tail type of 'greater'.
         """
-        resultsDict = super(Mantel, self).__call__(num_perms)
-        results = self._mantel_test(num_perms)
+        m1, m2 = self.DistanceMatrices
+        alt = self.TailType
+        results = mantel_test(m1.DataMatrix, m2.DataMatrix, num_perms, alt=alt)
 
+        resultsDict = super(Mantel, self).__call__(num_perms)
         resultsDict['method_name'] = "Mantel"
         resultsDict['dm1'] = self.DistanceMatrices[0]
         resultsDict['dm2'] = self.DistanceMatrices[1]
@@ -1202,53 +1137,6 @@ class Mantel(CorrelationStats):
         resultsDict['tail_type'] = self.TailType
 
         return resultsDict
-
-    def _mantel_test(self, n):
-        """Runs a Mantel test on the current distance matrices.
-
-        Returns the p-value, Mantel correlation statistic, and a list of Mantel
-        correlation statistics for each permutation test. The currently set
-        tail type and number of permutations will be used to run the test.
-
-        Note: this method was taken from the development version of PyCogent as
-        we needed access to different tail types and the currently released
-        version of PyCogent does not support this. Once this functionality is
-        available in the version of PyCogent supported by QIIME, we should
-        remove this method and use the one in PyCogent instead. This method
-        isn't exactly the same as the PyCogent implementation because it has
-        been adapted to use the class members and DistanceMatrix objects, but
-        in essence it is the same implementation.
-
-        Arguments:
-            n - the number of permutations
-        """
-        m1, m2 = self.DistanceMatrices
-        alt = self.TailType
-
-        # Get a flattened list of lower-triangular matrix elements (excluding
-        # the diagonal) in column-major order. Use these values to calculate
-        # the correlation statistic.
-        m1_flat, m2_flat = m1.flatten(True), m2.flatten(True)
-        orig_stat = pearson(m1_flat, m2_flat)
-
-        # Run our permutation tests so we can calculate a p-value for the test.
-        better = 0
-        perm_stats = []
-        for i in range(n):
-            m1_perm_data = permute_2d(m1, permutation(m1.Size))
-            m1_perm = DistanceMatrix(m1_perm_data, m1.SampleIds, m1.SampleIds)
-            m1_perm_flat = m1_perm.flatten()
-            r = pearson(m1_perm_flat, m2_flat)
-
-            if alt == 'two sided':
-                if abs(r) >= abs(orig_stat):
-                    better += 1
-            else:
-                if ((alt == 'greater' and r >= orig_stat) or
-                    (alt == 'less' and r <= orig_stat)):
-                    better += 1
-            perm_stats.append(r)
-        return (better + 1) / (n + 1), orig_stat, perm_stats
 
 
 class PartialMantel(CorrelationStats):
