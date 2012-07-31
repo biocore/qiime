@@ -338,7 +338,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
                             output_dir):
         """ Split input sequences into sets with identical prefix"""
         out_files = []
-        buffers = {}
+        buffered_handles = {}
         prefix_length = params['prefix_length'] or 1
         for seq_id, seq in MinimalFastaParser(open(input_fp)):
 
@@ -347,18 +347,23 @@ class ParallelPickOtusTrie(ParallelPickOtus):
                                  +" Found seq %s with length %d" % (seq_id, len(seq)))
             prefix = seq[:prefix_length]
 
-            if (prefix not in buffers):
+            if (prefix not in buffered_handles):
                 # never seen this prefix before
                 out_fp = "%s/%s%s" % (output_dir, job_prefix, prefix)
-                buffers[prefix] = BufferedWriter(out_fp)
+                buffered_handles[prefix] = BufferedWriter(out_fp)
                 out_files.append(out_fp)
                 self.prefix_counts[prefix] = 0
 
             self.prefix_counts[prefix] += 1                                
-            buffers[prefix].write('>%s\n%s\n' % (seq_id, seq))
+            buffered_handles[prefix].write('>%s\n%s\n' % (seq_id, seq))
 
+        # make sure all buffers are closed and flushed
+        for buf_fh in buffered_handles.itervalues():
+            buf_fh.close()
+        
         remove_files=True 
         return out_files, remove_files
+
     _input_splitter = _split_along_prefix
 
     def _get_job_commands(self,
@@ -377,7 +382,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
                          '%s_otus.txt']
     
         # Create lists to store the results
-        commands = []
+        commands = {}
         result_filepaths = []
             
         # Iterate over the input files
@@ -397,9 +402,9 @@ class ParallelPickOtusTrie(ParallelPickOtus):
               working_dir,\
               rename_command)
 
-            commands.append(command)
-            #TODO: save command here in a hash
-            #      that will make the sorting into buckets later a lot faster
+            re = compile("POTU_\w+_(\w+)")
+            prefix = (re.search(fasta_fp)).group(1)
+            commands[prefix] = command
 
         commands = self._merge_to_n_commands(commands,
                                              params['jobs_to_start'],
@@ -414,17 +419,21 @@ class ParallelPickOtusTrie(ParallelPickOtus):
                              command_prefix=None,
                              command_suffix=None):
         """ merge a list of commands into n commands 
-            
+        
         Uses the size of each jobs to estimate an even distribution
         of commands ofver the n jobs. 
  
+        commands: dict of commands keyed by prefix
+        
+        n: number of jobs 
         """
         if n < 1:
             raise ValueError, "number of commands (n) must be an integer >= 1"
 
         # Distribute jobs according to their load
         grouped_prefixe, levels = greedy_partition(self.prefix_counts, n)        
-        #TODO: remove after profiling
+
+        #TODO: remove after profiling or maybe move to log file      
 #       print levels 
 #       print ("Maximal theoretical speed up: %f" % (sum(levels)/max(levels)))
 
@@ -434,13 +443,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
  
         for bucket in grouped_prefixe:
             for prefix in bucket:
-                re = compile("%s -m trie" % prefix)
-                matches = filter(re.search, commands)
-                if (len(matches) == 0):
-                    raise ValueError("No command found for prefix %s! Aborting." % prefix)
-                if (len(matches) > 1):
-                    raise ValueError("Ambigous commands found for prefix %s! Aborting." % prefix)
-                command = matches[0]
+                command = commands[prefix]
 
                 subcommands = [c.strip() for c in command.split(';')]
                 current_cmds.append(delimiter.join(subcommands))

@@ -161,7 +161,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         r = app(self.small_seq_path,
                 self.test_out,
                 params,
-                job_prefix='PTEST',
+                job_prefix='POTU_TEST_',
                 poll_directly=True,
                 suppress_submit_jobs=False)
 
@@ -194,7 +194,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
                            self.small_seq_path,
                            self.test_out,
                            params,
-                           job_prefix='PTEST',
+                           job_prefix='POTU_TEST_',
                            poll_directly=True,
                            suppress_submit_jobs=False)
 
