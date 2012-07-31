@@ -63,8 +63,7 @@ def main():
                                            jobs_to_start=opts.jobs_to_start,
                                            retain_temp_files=opts.retain_temp_files,
                                            suppress_polling=opts.suppress_polling,
-                                           seconds_to_sleep=opts.seconds_to_sleep,
-                                           prefix_length=opts.prefix_length)
+                                           seconds_to_sleep=opts.seconds_to_sleep)
     parallel_runner(opts.input_fasta_fp,
                     opts.output_dir,
                     params,
