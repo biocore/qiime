@@ -257,6 +257,7 @@ class TopLevelTests(TestCase):
         try:
             shutil.rmtree(self.file_path_vectors)
             remove(self.filename_vectors)
+            remove('vectors_raw_values.txt')
             remove("{0}_3D_PCoA_plots.html".format(self.filename_vectors))
         except OSError:
             pass
@@ -275,6 +276,7 @@ class TopLevelTests(TestCase):
         # Remove the temp directory and all the other files
         shutil.rmtree(self.file_path_vectors)
         remove(self.filename_vectors)
+        remove('vectors_raw_values.txt')
         remove("{0}_3D_PCoA_plots.html".format(self.filename_vectors))
 
     def test_scale_pc_data_matrix(self):

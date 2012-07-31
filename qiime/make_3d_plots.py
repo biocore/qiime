@@ -1026,9 +1026,14 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
     
     # Validating if we should add specific values for the vectors option
     if add_vectors and add_vectors['vectors_algorithm'] and add_vectors['vectors'] and add_vectors['vectors_path']:
+
+        # Two files are written one containing the ANOVA information for each 
+        # group and the other one containing the raw vectors 
         f_vectors = open(os.path.join(htmlpath,add_vectors['vectors_path']), 'w')
-        
+        f_vectors_raw_values = open(os.path.join(htmlpath, 'vectors_raw_values.txt'), 'w')
+
         f_vectors.write('Method to calculate the vectors: %s\n' % add_vectors['vectors_algorithm'])
+        f_vectors_raw_values.write('Method to calculate the vectors: %s\n' % add_vectors['vectors_algorithm'])
 
         # Each group has different categories, output the
         # information per group and per category 
@@ -1055,18 +1060,27 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                     labels, group_means, prob = run_ANOVA_trajetories(to_test)
                     if (len(labels)==len(group_means)):
                         f_vectors.write('\nGrouped by "%s", probability: %f\n' % (group, prob))
-
+                        f_vectors_raw_values.write('\nGrouped by "%s"\n' % group)
+                        
                         # Each category of the current group has its own values
                         for i in range(len(labels)): 
+                            # print the calculated mean for the group
                             f_vectors.write('For group: "{0}", the group means is: {1}\n'\
                                             .format(labels[i], group_means[i]))
+
+                            # print the extra information (diff, avg, rms ...)
                             f_vectors.write('The info is: {0}\n'.format(per_category_information[i]))
+
+                            # on the other file print the raw vectors
+                            f_vectors_raw_values.write('For group: "{0}", the vector is:\n{1}\n'\
+                                .format(labels[i], to_test[labels[i]]))
                     else:
                         f_vectors.write('\nGrouped by %s: this value can not be used\n' % (group))
                 else:
                     f_vectors.write('\nGrouped by %s: this value can not be used\n' % (group))
                     
         f_vectors.close()
+        f_vectors_raw_values.close()
     
     #Write kinemage file
     f = open(kinpath, 'w')
