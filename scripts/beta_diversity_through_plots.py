@@ -38,7 +38,7 @@ script_info['output_description']="""This script results in a distance matrix (f
 
 script_info['required_options']=[\
  make_option('-i','--otu_table_fp',type='existing_filepath',
-            help='the input fasta file [REQUIRED]'),
+            help='the input biom table [REQUIRED]'),
  make_option('-m','--mapping_fp',type='existing_filepath',
             help='path to the mapping file [REQUIRED]'),
  make_option('-o','--output_dir',type='new_dirpath',
