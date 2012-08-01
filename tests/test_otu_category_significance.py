@@ -31,6 +31,9 @@ from qiime.util import get_tmp_filename
 from os import remove
 from qiime.parse import parse_mapping_file, parse_otu_table
 from biom.parse import parse_biom_table_str
+from qiime.format import format_biom_table
+from qiime.longitudinal_otu_category_significance import \
+        longitudinal_otu_table_conversion_wrapper
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -51,22 +54,25 @@ class TopLevelTests(TestCase):
         "matrix_element_type": "float"}"""
         otu_table = parse_biom_table_str(otu_table_str)
 
+        #test with all_samples set to True (default), should filter out otu2
         taxonomy_info = get_taxonomy_info(otu_table)
-        result = filter_OTUs(otu_table, 2)
+        result = filter_OTUs(otu_table, 0.9)
         self.assertEqual(result, [])
-        result = filter_OTUs(otu_table, 1)
+        result = filter_OTUs(otu_table, 0.3333)
         self.assertEqual(result, ['0', '1'])
         
-        result = filter_OTUs(otu_table, 2, False)
+        #test with all_samples set to False. should not filter out otu2
+        result = filter_OTUs(otu_table, 0.9, False)
         self.assertEqual(result, ['2'])
-        result = filter_OTUs(otu_table, 1, False)
+        #test with filter set to 0.333 - so should be in 33.3% of samples (1)
+        result = filter_OTUs(otu_table, 0.333, False)
         self.assertEqual(result, ['0', '1', '2'])
         #test that is works if a category mapping file is supplied
         cat_mapping = {'sample2': '0', 'sample3': '1'}
-        result = filter_OTUs(otu_table, 1, category_mapping_info=cat_mapping)
+        result = filter_OTUs(otu_table, 0.333, category_mapping_info=cat_mapping)
         self.assertEqual(result, ['0'])
         #test that works with a max filter
-        result = filter_OTUs(otu_table, 1, False, max_filter=2)
+        result = filter_OTUs(otu_table, 0.333, False, max_filter=0.666667)
         self.assertEqual(result, ['0', '1'])
             
     def test_sync_mapping_to_otu_table(self):
@@ -254,7 +260,7 @@ NotInOtuTable2\thello\t27""".split('\n')
         category_values = ['A', 'B']
         otu_ab_vals, cat_vals = get_single_correlation_values('0', category_info,\
                 otu_table)
-        r, prob = run_single_correlation(otu_ab_vals, cat_vals, filter=1)
+        r, prob = run_single_correlation(otu_ab_vals, cat_vals)
         self.assertFloatEqual(r, 0.923380516877)
         self.assertFloatEqual(prob, 0.0766194831234)
     
@@ -470,16 +476,17 @@ s6\t0\tC""".split('\n')
         mapping_data, header, comments = parse_mapping_file(cat_mapping)
         taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
-        #should return the results since there should be 4 values to evaluate
+        #should return the results since there should be 66.6% of people to 
+        #evaluate  (2 of 3)
         result = run_single_paired_T_test('0', mapping_data, header,
-            'individual', 'timepoint_zero', otu_table, 999999999.0, 4)
+           'individual', 'timepoint_zero', otu_table, 999999999.0, 0.66)
         self.assertEqual(len(result), 4)
         self.assertFloatEqual(result[1], 0.12566591637800242)
         self.assertFloatEqual(result[2], [0.29999999999999999, 0.20000000000000001])
         self.assertEqual(result[3], 2)
         #check the the filter works
         result = run_single_paired_T_test('0', mapping_data, header,
-            'individual', 'timepoint_zero', otu_table, 999999999.0, 5)
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 0.9)
         self.assertEqual(result, None)
 
     def test_run_paired_T_test_OTUs(self):
@@ -549,7 +556,7 @@ s6\t0\tC""".split('\n')
         taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
         all_results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
-            'individual', 'timepoint_zero', otu_table, 999999999.0, 4)
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 0.6667)
         output = output_results_paired_T_test(all_results)
         self.assertEqual(output, ['OTU\tprob\tT stat\taverage_diff\tnum_pairs\tBonferroni_corrected\tFDR_corrected', '0\t0.125665916378\t-5.0\t0.25\t2\t0.251331832756\t0.251331832756', '2\t0.685730319473\t0.468164588785\t-0.133333333333\t3\t1.37146063895\t0.685730319473'])
 
@@ -892,13 +899,13 @@ sample3\tC\t1.0""".split('\n')
 
         # ANOVA
         threshold = None
-        _filter = 0
+        filt = 0
         otu_include = None
         category = 'cat1'
 
         # get expected ANOVA output from file
         results1 = test_wrapper('ANOVA', otu_table1, category_mapping, \
-            category, threshold, _filter, otu_include=None)
+            category, threshold, filt, otu_include=None)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage')
         otu0_results = results1[1].split('\t')
@@ -910,7 +917,7 @@ sample3\tC\t1.0""".split('\n')
 
         # get expected ANOVA means when it is specified not to convert the table to relative abundance
         results1 = test_wrapper('ANOVA', otu_table1, category_mapping, \
-            category, threshold, _filter, otu_include=None, otu_table_relative_abundance=True)
+            category, threshold, filt, otu_include=None, otu_table_relative_abundance=True)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage')
         otu0_results = results1[1].split('\t')
@@ -921,14 +928,27 @@ sample3\tC\t1.0""".split('\n')
         
         # correlation
         threshold = None
-        _filter = 0
         otu_include = None
         results1 = test_wrapper('correlation', otu_table1, category_mapping, \
-            'cat2', threshold, _filter, otu_include=None)
+            'cat2', threshold, filt=0, otu_include=None)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
         
-        
+        #correlation with filter: should filter out 1 of the 3 otus when
+        #set to >0.75
+        filt = 0.75
+        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+            'cat2', threshold, filt=filt)
+        self.assertEqual(len(results1), 3)
+        #should filter out 2 of 3 when sent to 0.9
+        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+            'cat2', threshold, filt=0.9)
+        self.assertEqual(len(results1), 2)
+        #should filter out none when sent to 0.5
+        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+            'cat2', threshold, filt=0.5)
+        self.assertEqual(len(results1), 4)
+
     def test_aggregate_multiple_results_ANOVA(self):
         """aggregate_multiple_results_ANOVA works"""
         all_results = {
@@ -1025,10 +1045,10 @@ sample3\tC\t1.0""".split('\n')
 
         # case where one OTU is missing from one file
         otu_tables = [otu_table1, otu_table2, otu_table3]
-        _filter = 0
+        filt = 0
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, filt, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1039,10 +1059,10 @@ sample3\tC\t1.0""".split('\n')
 
         # case where no OTUs should be filtered
         otu_tables = [otu_table1, otu_table2]
-        _filter = 0
+        filt = 0
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, filt, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1053,10 +1073,10 @@ sample3\tC\t1.0""".split('\n')
 
         # case where one OTU should be filtered due to filter_all_samples
         otu_tables = [otu_table1,otu_table2]
-        _filter = 0
+        filt = 0
         filter_all_samples = True
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, filt, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1065,12 +1085,12 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(sorted(OTU_list), exp_OTU_list)
         self.assertEqual(taxonomy,exp_taxonomy)
 
-        # case where two OTUs should be filtered due to _filter value
+        # case where two OTUs should be filtered due to filt value
         otu_tables = [otu_table1,otu_table2]
-        _filter = 2
+        filt = 0.66666667
         filter_all_samples = False
         otu_include = None
-        OTU_list, taxonomy = get_common_OTUs(otu_tables, _filter, \
+        OTU_list, taxonomy = get_common_OTUs(otu_tables, filt, \
                                              category_info, \
                                              filter_all_samples, \
                                              otu_include=otu_include)
@@ -1121,19 +1141,19 @@ sample3\tC\t1.0""".split('\n')
         # ANOVA
         otu_tables = [otu_table1,otu_table2]
         threshold = None
-        _filter = 0
+        filt = 0
         otu_include = None
         category = 'cat1'
 
         # get expected ANOVA output from each file separately
         results1 = test_wrapper('ANOVA', otu_table1, category_mapping, category, threshold, \
-                 _filter, otu_include=None)
+                 filt, otu_include=None)
         results2 = test_wrapper('ANOVA', otu_table2, category_mapping, category, threshold, \
-                 _filter, otu_include=None)
+                 filt, otu_include=None)
 
         results = test_wrapper_multiple('ANOVA', otu_tables,
                                         category_mapping, category,
-                                        threshold, _filter,
+                                        threshold, filt,
                                         otu_include)
 
         # multiple results should be combination of individual results
@@ -1163,19 +1183,19 @@ sample3\tC\t1.0""".split('\n')
 
         # correlation
         threshold = None
-        _filter = 0
+        filt = 0
         otu_include = None
         category = 'cat2'
 
         # get expected correlation output from each file separately
         results1 = test_wrapper('correlation', otu_table1, category_mapping, category, threshold, \
-                 _filter, otu_include=None)
+                 filt, otu_include=None)
         results2 = test_wrapper('correlation', otu_table2, category_mapping, category, threshold, \
-                 _filter, otu_include=None)
+                 filt, otu_include=None)
 
         results = test_wrapper_multiple('correlation', otu_tables,
                                         category_mapping, category,
-                                        threshold, _filter,
+                                        threshold, filt,
                                         otu_include)
 
         # multiple results should be combination of individual results
@@ -1207,19 +1227,19 @@ sample3\tC\t1.0""".split('\n')
 
         # G test
         threshold = None
-        _filter = 0
+        filt = 0
         otu_include = None
         category = 'cat1'
 
         # get expected G_TEST output from each file separately
         results1 = test_wrapper('g_test', otu_table1, category_mapping, category, threshold, \
-                 _filter, otu_include=['0'])
+                 filt, otu_include=['0'])
 
         results2 = test_wrapper('g_test', otu_table2, category_mapping, category, threshold, \
-                 _filter, otu_include=['0'])
+                 filt, otu_include=['0'])
         results = test_wrapper_multiple('g_test', otu_tables,
                                         category_mapping, category,
-                                        threshold, _filter,
+                                        threshold, filt,
                                         otu_include=['0'])
 
         # multiple results should be combination of individual results
@@ -1251,6 +1271,32 @@ sample3\tC\t1.0""".split('\n')
         output = ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5']
         result = sort_rows(output, 1)
         self.assertEqual(result, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4'])
+
+    def test_longitudinal_correlation_filter(self):
+        """longitudinal correlation filter works as expected
+        """
+        mapping_lines = """#SampleID\tindividual\ttimepoint_zero\ttimepoint
+AT0\tA\t1\t0
+AT1\tA\t0\t1
+AT2\tA\t0\t2
+BT0\tB\t1\t0
+BT1\tB\t0\t1
+BT2\tB\t0\t2
+""".split('\n')
+        category_mapping = parse_mapping_file(mapping_lines)
+        otu_table = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata": null}], "format": "Biological Observation Matrix 1.0.0", "data": [[0, 0, 1.0], [0, 1, 2.0], [0, 2, 3.0], [1, 3, 1.0], [1, 4, 2.0], [1, 5, 3.0], [2, 0, 1.0], [2, 1, 2.0], [2, 2, 3.0], [2, 4, 1.0], [2, 5, 2.0], [3, 0, 2.0], [3, 1, 4.0], [3, 2, 6.0], [3, 4, 1.0], [3, 5, 2.0], [4, 0, 3.0], [4, 1, 2.0], [4, 2, 1.0], [4, 3, 6.0], [4, 4, 4.0], [4, 5, 2.0]], "columns": [{"id": "AT0", "metadata": null}, {"id": "AT1", "metadata": null}, {"id": "AT2", "metadata": null}, {"id": "BT0", "metadata": null}, {"id": "BT1", "metadata": null}, {"id": "BT2", "metadata": null}], "generated_by": "BIOM-Format 1.0.0-dev", "matrix_type": "sparse", "shape": [5, 6], "format_url": "http://biom-format.org", "date": "2012-08-01T09:14:03.574451", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table)
+        converted_otu_table = longitudinal_otu_table_conversion_wrapper(\
+            otu_table, category_mapping, 'individual', 'timepoint_zero')
+        output = test_wrapper('correlation', converted_otu_table,\
+            category_mapping, category='timepoint', threshold=None, filt=0.1,\
+            ignore_val=999999999.0, otu_table_relative_abundance=True)
+        self.assertEqual(len(output), 5)
+        output = test_wrapper('correlation', converted_otu_table,\
+            category_mapping, category='timepoint', threshold=None, filt=0.6,\
+            ignore_val=999999999.0, otu_table_relative_abundance=True)
+        self.assertEqual(len(output), 3)
+
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
