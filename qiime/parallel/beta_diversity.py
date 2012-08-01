@@ -121,6 +121,11 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
             self._commands_to_shell_script(shell_script_commands,
                                            shell_script_fp)
             commands.append('bash %s' % shell_script_fp)
+
+        commands = self._merge_to_n_commands(commands,
+                                             params['jobs_to_start'],
+                                             command_prefix=command_prefix,
+                                             command_suffix=command_suffix)
         
         return commands, result_filepaths
 
@@ -173,6 +178,11 @@ class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
               command_suffix)
           
             commands.append(command)
+
+        commands = self._merge_to_n_commands(commands,
+                                             params['jobs_to_start'],
+                                             command_prefix=command_prefix,
+                                             command_suffix=command_suffix)
         
         return commands, result_filepaths
 
