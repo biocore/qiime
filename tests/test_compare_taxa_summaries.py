@@ -1007,7 +1007,14 @@ class CompareTaxaSummariesTests(TestCase):
         obs = _compute_correlation(self.taxa_summary_paired1,
                 self.taxa_summary_paired3, 'paired', 'pearson', 'two-sided',
                 0, 0.90, True)
-        self.assertFloatEqual(obs, exp)
+
+        # self.assertFloatEqual has a hard time with the exp data structure, so
+        # we must compare each of the parts separately to get float
+        # comparisons for all elements.
+        self.assertFloatEqual(obs[0], exp[0])
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0], exp[1][0])
+        self.assertFloatEqual(obs[1][1], exp[1][1])
 
     def test_compute_correlation_paired_tail_type(self):
         """Test runs correctly on taxa summaries with single-tailed test."""
@@ -1024,7 +1031,12 @@ class CompareTaxaSummariesTests(TestCase):
                 [self.taxa_summary1, self.taxa_summary2])
         obs = _compute_correlation(ts1, ts2, 'paired', 'pearson', 'low', 0,
                                    0.90, True)
-        self.assertFloatEqual(obs, exp)
+
+        self.assertFloatEqual(obs[0], exp[0])
+        self.assertEqual(len(obs[1]), len(exp[1]))
+        self.assertFloatEqual(obs[1][0], exp[1][0])
+        self.assertFloatEqual(obs[1][1], exp[1][1])
+        self.assertFloatEqual(obs[1][2], exp[1][2])
 
     def test_compute_correlation_expected_invalid_sample_count(self):
         """Test running on expected taxa summary without exactly one sample."""
