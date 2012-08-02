@@ -432,8 +432,21 @@ def parse_mothur_assignments(lines):
 def mothur_classify_file(
     query_file, ref_fp, tax_fp, cutoff=None, iters=None, ksize=None,
     output_fp=None):
+    """Classify a set of sequences using Mothur's naive bayes method
 
-    # Copy the taxonomy file to ensure a semicolon at the end of each line
+    Dashes are used in Mothur to provide multiple filenames.  A
+    filepath with a dash typically breaks an otherwise valid command
+    in Mothur.  This wrapper script makes a copy of both files, ref_fp
+    and tax_fp, to ensure that the path has no dashes.
+
+    For convenience, we also ensure that each taxon list in the
+    id-to-taxonomy file ends with a semicolon.
+    """
+    tmp_ref_file = NamedTemporaryFile(suffix=".ref.fa")
+    for line in open(ref_fp):
+        tmp_ref_file.write(line)
+    tmp_ref_file.seek(0)
+
     tmp_tax_file = NamedTemporaryFile(suffix=".tax.txt")
     for line in open(tax_fp):
         line = line.rstrip()
@@ -443,7 +456,7 @@ def mothur_classify_file(
         tmp_tax_file.write("\n")
     tmp_tax_file.seek(0)
 
-    params = {"reference": ref_fp, "taxonomy": tmp_tax_file.name}
+    params = {"reference": tmp_ref_file.name, "taxonomy": tmp_tax_file.name}
     if cutoff is not None:
         params["cutoff"] = cutoff
     if ksize is not None:
@@ -454,7 +467,7 @@ def mothur_classify_file(
     app = MothurClassifySeqs(params, InputHandler='_input_as_lines')
     result = app(query_file)
 
-    # Force evaluation, so we can safely clean up files
+    # Force evaluation so we can safely clean up files
     assignments = list(parse_mothur_assignments(result['assignments']))
     result.cleanUp()
 
