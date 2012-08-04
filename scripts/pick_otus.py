@@ -317,7 +317,10 @@ script_info['optional_options'] = [
               "flagged as non-chimeric from either filter, while intersection "
               "will retain only those sequences that are flagged as non-"
               "chimeras from both detection methods. [default: %default]"),
-              type='string')
+              type='string'),
+              
+    make_option('--minlen', default=64, help=("Minimum length of sequence "
+                "allowed for usearch. [default: %default]"), type='int'),
     ]
 
 script_info['version'] = __version__
@@ -365,6 +368,7 @@ def main():
     reference_chimera_detection = not opts.suppress_reference_chimera_detection
     cluster_size_filtering = not opts.suppress_cluster_size_filtering
     remove_usearch_logs = opts.remove_usearch_logs
+    minlen = opts.minlen
 
     
     if user_sort and not suppress_presort_by_abundance_uclust:
@@ -489,7 +493,8 @@ def main():
         'remove_usearch_logs':remove_usearch_logs,
         'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
-        'verbose':verbose}
+        'verbose':verbose,
+        'minlen':minlen}
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
@@ -514,7 +519,8 @@ def main():
         'suppress_new_clusters':opts.suppress_new_clusters,
         'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
-        'verbose':verbose}
+        'verbose':verbose,
+        'minlen':minlen}
         
         
         otu_picker = otu_picker_constructor(params)

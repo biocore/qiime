@@ -15,7 +15,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2011, The PyCogent Project"
 __credits__ = ["William Walters","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.2.0.dev"
+__version__ = "1.6.0.dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
@@ -1186,6 +1186,7 @@ def usearch_qf(
     verbose=False
     ):
         
+
     """ Main convenience wrapper for using usearch to filter/cluster seqs
     
     The complete 'usearch_qf' process is a multistep process with many calls

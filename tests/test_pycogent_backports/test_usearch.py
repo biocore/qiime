@@ -188,6 +188,24 @@ class UsearchTests(TestCase):
         
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
+    
+    def test_usearch_qf_minlen(self):
+        """ Main program loop test, with longer minlen """
+        
+        # cluster size filtering set to 1 instead of default 4
+        clusters, failures = usearch_qf(self.tmp_seq_filepath2,
+                                      output_dir = self.tmp_dir,
+                                      db_filepath = self.tmp_ref_database,
+                                      minsize = 1,
+                                      remove_usearch_logs=True,
+                                      chimeras_retention = 'intersection',
+                                      minlen=110)
+                                      
+        expected_clusters = {'0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2']}
+        expected_failures = ['Solemya', 'Solemya_seq2', 'chimera']
+        
+        self.assertEqual(clusters, expected_clusters)
+        self.assertEqual(failures, expected_failures)
         
     def test_usearch_qf_reference_otu_picking(self):
         """ Main program loop test, with reference + new clusters """
