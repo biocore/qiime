@@ -123,6 +123,7 @@ def main():
           count_better, actual_m_squared))
         f = open(output_summary_fp,'w')
         f.write('\n'.join(summary_file_lines))
+        f.write('\n')
         f.close()
 
 
