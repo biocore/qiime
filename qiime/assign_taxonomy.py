@@ -395,7 +395,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
         max_memory = self.Params['max_memory']
 
-        seq_file = open(seq_path, 'r')
+        seq_file = open(seq_path, 'U')
         if reference_sequences_fp and id_to_taxonomy_fp:
             # Train and assign taxonomy
             taxonomy_file, training_seqs_file = self._generate_training_files()
@@ -426,8 +426,8 @@ class RdpTaxonAssigner(TaxonAssigner):
         RdpTrainer application controller.
         """
         training_set = RdpTrainingSet()
-        reference_seqs_file = open(self.Params['reference_sequences_fp'], 'r')
-        id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'r')
+        reference_seqs_file = open(self.Params['reference_sequences_fp'], 'U')
+        id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'U')
 
         for seq_id, seq in MinimalFastaParser(reference_seqs_file):
             training_set.add_sequence(seq_id, seq)
