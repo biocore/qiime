@@ -14,9 +14,10 @@ __status__ = "Development"
 
 
 from qiime.util import (parse_command_line_parameters,
-                        make_option, load_qiime_config)
+                        make_option, load_qiime_config, get_qiime_temp_dir)
 from qiime.test import run_script_usage_tests
-
+from qiime.workflow import generate_log_fp
+from os.path import join
 
 qiime_config = load_qiime_config()
 
@@ -30,19 +31,28 @@ script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
              help='the directory containing input for script usage examples'),
- make_option('-l','--failure_log_fp',type="new_filepath",
-             help='log file to store record of failures'),
 ]
+
+log_fp_prefix = 'script_test_log'
+log_fp_suffix = 'txt'
+default_log_fp = generate_log_fp(get_qiime_temp_dir(),
+                    basefile_name=log_fp_prefix,
+                    suffix=log_fp_suffix,
+                    timestamp_pattern='%Y%m%d%H%M%S')
+default_log_fp_help_str = join(get_qiime_temp_dir(),
+                               '%s_TIMESTAMP.%s' % (log_fp_prefix,log_fp_suffix))
 
 script_info['optional_options'] = [\
  make_option('-t','--tests',
              help='comma-separated list of the tests to run [default: all]'),
- make_option('-w','--working_dir',default=qiime_config['temp_dir'] or '/tmp/',
+ make_option('-w','--working_dir',default=get_qiime_temp_dir(),
              help='directory where the tests should be run [default: %default]',
              type='existing_dirpath'),
  make_option('-q','--qiime_scripts_dir',default=qiime_config['qiime_scripts_dir'],
              help='directory containing scripts to test [default: %default]',
              type='existing_dirpath'),
+ make_option('-l','--failure_log_fp',type="new_filepath",default=default_log_fp,
+             help='log file to store record of failures [default: %s]' % default_log_fp_help_str)
 ]
 script_info['version'] = __version__
 
@@ -58,7 +68,7 @@ def main():
     if tests != None:
         tests = tests.split(',')
     failure_log_fp = opts.failure_log_fp
-
+    
     result_summary, num_failures = run_script_usage_tests(
                             qiime_test_data_dir,
                             qiime_scripts_dir,
