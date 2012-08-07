@@ -57,6 +57,11 @@ script_info['optional_options'] = [
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
         ' [if omitted, default values will be used]'),
+ make_option('--prefilter_refseqs_fp',
+             type='existing_filepath',
+             help='the reference sequences to use for the prefilter, if different '+\
+             'from the reference sequecnces to use for the OTU picking [default: '+\
+             'same as passed for --reference_fp]'),
  make_option('-n','--new_ref_set_id',default='New',type='string',
          help='Unique identifier for OTUs that get created in this ref set '+\
          '(this is useful to support combining of reference sets) [default:%default]'),
@@ -109,6 +114,7 @@ def main():
     print_only = False
     percent_subsample = opts.percent_subsample
     new_ref_set_id = opts.new_ref_set_id
+    prefilter_refseqs_fp = opts.prefilter_refseqs_fp
     prefilter_percent_id = opts.prefilter_percent_id
     if prefilter_percent_id == 0.0:
         prefilter_percent_id = None
@@ -168,6 +174,7 @@ def main():
                                   params=params,
                                   min_otu_size=opts.min_otu_size,
                                   qiime_config=qiime_config,
+                                  prefilter_refseqs_fp=prefilter_refseqs_fp,
                                   prefilter_percent_id=prefilter_percent_id,
                                   step1_otu_map_fp=opts.step1_otu_map_fp,
                                   step1_failures_fasta_fp=opts.step1_failures_fasta_fp,
@@ -185,6 +192,7 @@ def main():
                               params=params,
                               min_otu_size=opts.min_otu_size,
                               qiime_config=qiime_config,
+                              prefilter_refseqs_fp=prefilter_refseqs_fp,
                               prefilter_percent_id=prefilter_percent_id,
                               step1_otu_map_fp=opts.step1_otu_map_fp,
                               step1_failures_fasta_fp=opts.step1_failures_fasta_fp,
