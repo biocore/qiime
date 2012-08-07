@@ -65,6 +65,8 @@ else:
      make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
                  help='the directory containing input for script usage examples'))
 
+script_info['help_on_no_arguments'] = False
+
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
