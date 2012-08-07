@@ -28,10 +28,7 @@ script_info['script_usage'] = []
 script_info['script_usage'].append(("Run a subset of the interface tests in verbose mode","Run interface tests for the add_taxa.py and make_otu_table.py scripts. This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/qime_script_tests.log -t add_taxa,make_otu_table -v"))
 script_info['script_usage'].append(("Run all of the interface tests","Run all script interface tests.  This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/all_qime_script_tests.log"))
 script_info['output_description']= ""
-script_info['required_options'] = [
- make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
-             help='the directory containing input for script usage examples'),
-]
+script_info['required_options'] = []
 
 log_fp_prefix = 'script_test_log'
 log_fp_suffix = 'txt'
@@ -55,6 +52,18 @@ script_info['optional_options'] = [\
              help='log file to store record of failures [default: %s]' % default_log_fp_help_str)
 ]
 script_info['version'] = __version__
+
+default_qiime_test_data_dir = qiime_config['qiime_test_data_dir']
+if default_qiime_test_data_dir != None:
+    script_info['optional_options'].append(
+     make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
+                 default=default_qiime_test_data_dir,
+                 help='the directory containing input for script usage'+\
+                 ' examples [default: %default]'))
+else:
+    script_info['required_options'].append(
+     make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
+                 help='the directory containing input for script usage examples'))
 
 def main():
     option_parser, opts, args =\
