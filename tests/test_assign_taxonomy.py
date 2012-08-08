@@ -910,15 +910,15 @@ class RdpTrainingSetTests(TestCase):
         # registered.
         expected = (
             '0*Root*0*0*norank\n'
-            '1*A*0*1*domain\n'
-            '2*B*1*2*phylum\n'
-            '3*C*2*3*class\n'
-            '4*D*3*4*order\n'
-            '5*E*4*5*family\n'
+            '1*A*0*1*a\n'
+            '2*B*1*2*b\n'
+            '3*C*2*3*c\n'
+            '4*D*3*4*d\n'
+            '5*E*4*5*e\n'
             '6*F*5*6*genus\n'
-            '7*I*2*3*class\n'
-            '8*J*7*4*order\n'
-            '9*K*8*5*family\n'
+            '7*I*2*3*c\n'
+            '8*J*7*4*d\n'
+            '9*K*8*5*e\n'
             '10*L*9*6*genus\n'
             )
         self.assertEqual(s.get_rdp_taxonomy(), expected)
@@ -975,11 +975,11 @@ class RdpTreeTests(TestCase):
         t.insert_lineage(['A', 'B', 'C', 'D', 'E', 'F'])
         expected = (
             '0*Root*0*0*norank\n'
-            '1*A*0*1*domain\n'
-            '2*B*1*2*phylum\n'
-            '3*C*2*3*class\n'
-            '4*D*3*4*order\n'
-            '5*E*4*5*family\n'
+            '1*A*0*1*a\n'
+            '2*B*1*2*b\n'
+            '3*C*2*3*c\n'
+            '4*D*3*4*d\n'
+            '5*E*4*5*e\n'
             '6*F*5*6*genus\n'
             )
         self.assertEqual(t.get_rdp_taxonomy(), expected)
@@ -1066,26 +1066,26 @@ tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacga
 
 rdp_expected_taxonomy = """\
 0*Root*0*0*norank
-1*Bacteria*0*1*domain
-7*Firmicutes*1*2*phylum
-8*Clostridia*7*3*class
-9*Clostridiales*8*4*order
-10*Clostridiaceae*9*5*family
+1*Bacteria*0*1*a
+7*Firmicutes*1*2*b
+8*Clostridia*7*3*c
+9*Clostridiales*8*4*d
+10*Clostridiaceae*9*5*e
 11*Clostridium*10*6*genus
-2*Proteobacteria*1*2*phylum
-3*Alphaproteobacteria*2*3*class
-4*Rhizobiales*3*4*order
-5*Rhizobiaceae*4*5*family
+2*Proteobacteria*1*2*b
+3*Alphaproteobacteria*2*3*c
+4*Rhizobiales*3*4*d
+5*Rhizobiaceae*4*5*e
 6*Rhizobium*5*6*genus
-12*Gammaproteobacteria*2*3*class
-13*Enterobacteriales*12*4*order
-14*Enterobacteriaceae*13*5*family
+12*Gammaproteobacteria*2*3*c
+13*Enterobacteriales*12*4*d
+14*Enterobacteriaceae*13*5*e
 15*Enterobacter*14*6*genus
-16*Pseudomonadales*12*4*order
-17*Pseudomonadaceae*16*5*family
+16*Pseudomonadales*12*4*d
+17*Pseudomonadaceae*16*5*e
 18*Pseudomonas*17*6*genus
-19*Vibrionales*12*4*order
-20*Vibrionaceae*19*5*family
+19*Vibrionales*12*4*d
+20*Vibrionaceae*19*5*e
 21*Photobacterium*20*6*genus
 22*Vibrio*20*6*genus
 """

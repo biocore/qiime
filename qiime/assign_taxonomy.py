@@ -404,6 +404,7 @@ class RdpTaxonAssigner(TaxonAssigner):
                 min_confidence=min_conf,
                 classification_output_fp=result_path,
                 max_memory=max_memory)
+            
 
             if result_path is None:
                 results = self._training_set.fix_results(results)
@@ -411,10 +412,14 @@ class RdpTaxonAssigner(TaxonAssigner):
                 self._training_set.fix_output_file(result_path)
         else:
             # Just assign taxonomy, using properties file if passed
+            if training_data_properties_fp:
+                fix_ranks = False
+            else:
+                fix_ranks = True
             results = self._assign_fcn(
                 seq_file, min_confidence=min_conf, output_fp=result_path,
                 training_data_fp=training_data_properties_fp,
-                max_memory=max_memory)
+                max_memory=max_memory, fixrank=fix_ranks)
 
         if log_path:
             self.writeLog(log_path)
@@ -459,6 +464,7 @@ class RdpTrainingSet(object):
         self._tree = RdpTree()
         self.sequences = {}
         self.sequence_nodes = {}
+        self.lineage_depth = None
 
     def add_sequence(self, seq_id, seq):
         self.sequences[seq_id] = seq
@@ -476,12 +482,16 @@ class RdpTrainingSet(object):
         lineage string of an id_to_taxonomy file.
         """
         lineage = lineage_str.strip().split(';')
-        if len(lineage) != 6:
+        if self.lineage_depth is None:
+            self.lineage_depth = len(lineage)
+        if len(lineage) != self.lineage_depth:
             raise ValueError(
-                'Each reference assignment must contain 6 items, specifying '
-                'domain, phylum, class, order, family, and genus.  '
-                'Detected %s items in "%s": %s.' % \
-                (len(lineage), lineage_str, lineage))
+                'Because the RDP Classifier operates in a bottom-up manner, '
+                'each taxonomy assignment in the id-to-taxonomy file must have '
+                'the same number of ranks.  Detected %s ranks in the first '
+                'item of the file, but detected %s ranks later in the file. '
+                'Offending taxonomy string: %s' %
+                (self.lineage_depth, len(lineage), lineage_str))
         return lineage
 
     def get_training_seqs(self):
@@ -529,8 +539,7 @@ class RdpTree(object):
     """Simple, specialized tree class used to generate a taxonomy
     file for the Rdp Classifier.
     """
-    taxonomic_ranks = [
-        'norank', 'domain', 'phylum', 'class', 'order', 'family', 'genus']
+    taxonomic_ranks = ' abcdefghijklmnopqrstuvwxyz'
 
     def __init__(self, name='Root', parent=None, counter=None):
         if counter is None:
@@ -598,7 +607,13 @@ class RdpTree(object):
         else:
             parent_id = self.parent.id
 
-        rank_name = self.taxonomic_ranks[self.depth]
+        # top rank name must be norank, and bottom rank must be genus
+        if self.depth == 0:
+            rank_name = "norank"
+        elif self.children:
+            rank_name = self.taxonomic_ranks[self.depth]
+        else:
+            rank_name = "genus"
 
         fields = [
             self.id, self.name, parent_id, self.depth, rank_name]

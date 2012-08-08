@@ -3,7 +3,7 @@
 """
 
 __author__ = "Kyle Bittinger"
-__copyright__ = "Copyright 2007-2011, The Cogent Project"
+__copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Kyle Bittinger","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
@@ -396,8 +396,11 @@ def assign_taxonomy(
     app.Parameters['-o'].on(temp_output_file.name)
     if training_data_fp is not None:
         app.Parameters['-t'].on(training_data_fp)
+
     if fixrank:
         app.Parameters['-f'].on('fixrank')
+    else:
+        app.Parameters['-f'].on('allrank')
 
     app_result = app(data)
 
@@ -414,6 +417,8 @@ def assign_taxonomy(
     
     for line in app_result['Assignments']:
         rdp_id, direction, taxa = parse_rdp_assignment(line)
+        if taxa[0][0] == "Root":
+            taxa = taxa[1:]
         orig_id = seq_id_lookup[rdp_id]
         lineage, confidence = get_rdp_lineage(taxa, min_confidence)
         if lineage:
@@ -495,7 +500,7 @@ def train_rdp_classifier_and_assign_taxonomy(
     assignment_results = assign_taxonomy(
         seqs_to_classify, min_confidence=min_confidence, 
         output_fp=classification_output_fp, training_data_fp=training_data_fp,
-        max_memory=max_memory)
+        max_memory=max_memory, fixrank=False)
 
     if model_output_dir is None:
         rmtree(training_dir)
