@@ -29,7 +29,7 @@ from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
-    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, guess_rdp_version,
+    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, validate_rdp_version,
     MothurTaxonAssigner,
     )
 from sys import stderr
@@ -37,14 +37,17 @@ from sys import stderr
 
 class TopLevelFunctionTests(TestCase):
     """ """
-
-    def test_guess_rdp_version(self):
-        """check_rdp_version functions as expected"""
+    def test_validate_rdp_version(self):
+        """validate_rdp_version raises Exception if version is not valid"""
         rdp22_fp = "/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar"
-        self.assertEqual(guess_rdp_version(rdp22_fp), "rdp22")
+        self.assertEqual(validate_rdp_version(rdp22_fp), 2.2)
 
-        rdp20_fp = "/Applications/rdp_classifier/rdp_classifier-2.0.jar"
-        self.assertRaises(ValueError, guess_rdp_version, rdp20_fp)
+        invalid_fp = "/Applications/rdp_classifier_2.2/rdp_classifier.jar"
+        self.assertRaises(RuntimeError, validate_rdp_version, invalid_fp)
+
+        rdp20_fp = "/Applications/rdp_classifier_2.2/rdp_classifier-2.0.jar"
+        self.assertRaises(RuntimeError, validate_rdp_version, rdp20_fp)
+
 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""
@@ -634,16 +637,7 @@ class RdpTaxonAssignerTests(TestCase):
         self.reference_seqs_file.write(rdp_reference_seqs)
         self.reference_seqs_file.seek(0)
 
-        jar_fp = getenv("RDP_JAR_PATH")
-        jar_basename = path.basename(jar_fp)
-        if '2.2' in jar_basename:
-            self.app_class = RdpTaxonAssigner
-            self.version = 2.2
-        else:
-            raise ApplicationError(
-                "RDP_JAR_PATH does not point to version 2.2 of the "
-                "RDP Classifier.")
-        self.default_app = self.app_class({})
+        self.default_app = RdpTaxonAssigner({})
 
     def tearDown(self):
         remove_files(self._paths_to_clean_up)
@@ -663,7 +657,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         exp_assignments = rdp_trained_test1_expected_dict
 
-        app = self.app_class({
+        app = RdpTaxonAssigner({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
@@ -682,7 +676,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         exp_assignments = rdp_trained_test1_expected_dict
 
-        app = self.app_class({
+        app = RdpTaxonAssigner({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 'max_memory': '75M'
@@ -693,7 +687,7 @@ class RdpTaxonAssignerTests(TestCase):
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
     def test_generate_training_files(self):
-        app = self.app_class({
+        app = RdpTaxonAssigner({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
@@ -738,15 +732,6 @@ class RdpTaxonAssignerTests(TestCase):
         # make sure all taxonomic results were correct at least once
         self.assertFalse(unverified_seq_ids, msg='\n'.join(messages))
 
-    """
-    # THIS TEST IS NOT GOOD SINCE IT WILL LEAVE FILES IN /tmp/
-    def test_call_with_missing_properties_file(self):
-        app = self.app_class({
-            'training_data_properties_fp': '/this/file/does/not/exist.on/any.system',
-            })
-        self.assertRaises(ApplicationError, app, self.tmp_seq_filepath)
-    """
-
     def test_call_with_properties_file(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
 
@@ -758,7 +743,7 @@ class RdpTaxonAssignerTests(TestCase):
         id_to_taxonomy_file.write(rdp_id_to_taxonomy2)
         id_to_taxonomy_file.seek(0)
 
-        app1 = self.app_class({
+        app1 = RdpTaxonAssigner({
                 'id_to_taxonomy_fp': id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
@@ -770,7 +755,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         training_data_fp = training_results['properties'].name
         min_confidence = 0.80
-        app2 = self.app_class({
+        app2 = RdpTaxonAssigner({
             'training_data_properties_fp': training_data_fp,
             'Confidence': min_confidence,
             })
@@ -850,15 +835,15 @@ class RdpTaxonAssignerTests(TestCase):
     def test_log(self):
         """RdpTaxonAssigner should write correct message to log file"""
         # expected result when no result_path is provided
-        a = self.app_class({})
-        a(seq_path=self.tmp_seq_filepath,
-          result_path=None,
-          log_path=self.tmp_log_filepath)
+        self.default_app(
+            seq_path=self.tmp_seq_filepath,
+            result_path=None,
+            log_path=self.tmp_log_filepath,
+            )
 
         # open the actual log file and the expected file, and pass into lists
         obs = [l.strip() for l in list(open(self.tmp_log_filepath, 'r'))]
-        exp_log_str = rdp_test1_log_file_contents % (self.app_class.Name, self.version)
-        exp = exp_log_str.split('\n')
+        exp = rdp_test1_log_file_contents.split('\n')
         # sort the lists as the entries are written from a dict,
         # so order may vary
         obs.sort()
@@ -993,8 +978,8 @@ TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACG
 """
 
 rdp_test1_log_file_contents = \
-"""%s parameters:
-Application:RDP classfier, version %1.1f
+"""RdpTaxonAssigner parameters:
+Application:RDP classfier
 Citation:Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7.
 Taxonomy:RDP
 Confidence:0.8
@@ -1013,8 +998,8 @@ rdp_test1_expected_dict = {
 rdp_test1_expected_lines = [\
  "\t".join(["X67228 some description",\
   "Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales",\
-  "0.9"]),
- "\t".join(['EF503697','Archaea;Crenarchaeota;Thermoprotei','0.8'])]
+  "0."]),
+ "\t".join(['EF503697','Archaea;Crenarchaeota;Thermoprotei','0.'])]
 
 rdp_trained_test1_expected_dict = {
     'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),

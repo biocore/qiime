@@ -18,13 +18,13 @@ from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
-    RtaxTaxonAssigner, guess_rdp_version,
+    RtaxTaxonAssigner, validate_rdp_version,
     )
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
-    'rdp22': RdpTaxonAssigner,
+    'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
 }
 
@@ -59,12 +59,19 @@ script_info['script_usage'].append(("""Assignment with the RDP Classifier:""",""
 To assign the representative sequence set, where the output directory is "rdp_assigned_taxonomy", the you can run the following command:
 ""","""assign_taxonomy.py -i repr_set_seqs.fasta -m rdp"""))
 script_info['script_usage'].append(("""""","""Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""","""assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.85"""))
-script_info['script_usage'].append(("""""","""Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly. Due to limitations in the generation of a training set, each provided assignment must contain exactly 6 taxa in the following order: domain (level=2), phylum (level=3), class (level=4), order (5), family (level=6), and genus (level=7). Additionally, each genus name must be unique, due to the internal algorithm used by the RDP Classifier.
-""",""""""))
+script_info['script_usage'].append(("""""","""Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier's implementation, all lineages in the training dataset must contain the same number of ranks.""",""""""))
 script_info['script_usage'].append(("""Sample Assignment with RTAX:""","""
 Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
 
 To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:""","""assign_taxonomy.py repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r ref_seq_set.fna -t id_to_taxonomy.txt"""
+    ))
+script_info['script_usage'].append((
+    "Sample Assignment with Mothur:",
+    """
+The Mothur software provides a naive bayes classifier similar to the RDP Classifier.  A set of training sequences and id-to-taxonomy assignments must be provided.  Unlike the RDP Classifier, sequences in the training set may be assigned at any level of the taxonomy.
+
+To make taxonomic classifications of the representative sequences, where the results are output to default directory \"mothur_assigned_taxonomy\", you can run the following command:""",
+    "assign_taxonomy.py -i repr_set_seqs.fasta -m mothur -r ref_seq_set.fna -t id_to_taxonomy.txt"
     ))
 script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
 script_info['required_options']=[\
@@ -146,19 +153,21 @@ def main():
 
     if assignment_method == 'rdp':
         try:
-            assignment_method = guess_rdp_version()
-        except ValueError, e:
+            validate_rdp_version()
+        except RuntimeError, e:
             option_parser.error(e)
 
-        if opts.id_to_taxonomy_fp:
+        if opts.id_to_taxonomy_fp is not None:
             if opts.reference_seqs_fp is None:
-                option_parser.error('A filepath for reference sequences must be '
-                             'specified (via -r) along with the id_to_taxonomy '
-                             'file to train the Rdp Classifier.')
-        elif opts.reference_seqs_fp:
-                option_parser.error('A filepath for an id to taxonomy map must be '
-                             'specified (via -t) along with the reference '
-                             'sequences fp to train the Rdp Classifier.')
+                option_parser.error(
+                    'A filepath for reference sequences must be '
+                    'specified (via -r) along with the id_to_taxonomy '
+                    'file to train the Rdp Classifier.')
+        elif opts.reference_seqs_fp is not None:
+                option_parser.error(
+                    'A filepath for an id to taxonomy map must be '
+                    'specified (via -t) along with the reference '
+                    'sequences fp to train the Rdp Classifier.')
         else:
             pass
 
@@ -217,7 +226,7 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
-    elif assignment_method.startswith('rdp'):
+    elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp

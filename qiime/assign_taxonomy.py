@@ -9,12 +9,11 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-#import csv
+
 import logging
+import os
 import re
-from os import system, remove, path, mkdir
-from os.path import split, splitext
-from glob import glob
+from os import remove
 from itertools import count
 from string import strip
 from shutil import copy as copy_file
@@ -36,21 +35,33 @@ from qiime.util import FunctionWithParams, get_rdp_jarpath
 This module has the responsibility for taking a set of sequences and
 providing a taxon assignment for each sequence."""
 
-def guess_rdp_version(rdp_jarpath=None):
+
+def validate_rdp_version(rdp_jarpath=None):
     if rdp_jarpath is None:
         rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath is None:
-        raise ValueError(
-            "RDP classifier is not installed or "
-            "not accessible to QIIME. See install instructions here: "
-            "http://qiime.org/install/install.html#rdp-install")
-    elif "2.2" in rdp_jarpath:
-        return "rdp22"
-    else:
-        raise ValueError(
-            "RDP classifier filename does not look like version 2.2.  Only "
-            "version 2.2 is supported by QIIME. RDP jar path is:"
-            " %s" % rdp_jarpath)
+        raise RuntimeError(
+            "RDP classifier is not installed or not accessible to QIIME. "
+            "See install instructions here: "
+            "http://qiime.org/install/install.html#rdp-install"
+            )
+
+    rdp_jarname = os.path.basename(rdp_jarpath)
+    version_match = re.search("\d\.\d", rdp_jarname)
+    if version_match is None:
+        raise RuntimeError(
+            "Unable to detect RDP Classifier version in file %s" % rdp_jarname
+            )
+
+    version = float(version_match.group())
+    if version < 2.1:
+        raise RuntimeError(
+            "RDP Classifier does not look like version 2.2 or greater."
+            "Versions of the software prior to 2.2 have different "
+            "formatting conventions and are no longer supported by QIIME. "
+            "Detected version %s from file %s" % (version, rdp_jarpath)
+            )
+    return version
 
 
 class TaxonAssigner(FunctionWithParams):
@@ -134,7 +145,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         except KeyError:
             # build a temporary blast_db
             reference_seqs_path = self.Params['reference_seqs_filepath']
-            refseqs_dir, refseqs_name = split(reference_seqs_path)
+            refseqs_dir, refseqs_name = os.path.split(reference_seqs_path)
             blast_db, db_files_to_remove = \
              build_blast_db_from_fasta_path(reference_seqs_path)
 
@@ -348,7 +359,7 @@ class RdpTaxonAssigner(TaxonAssigner):
     """Assign taxon using RDP's naive Bayesian classifier
     """
     Name = "RdpTaxonAssigner"
-    Application = "RDP classfier, version 2.2"
+    Application = "RDP classfier"
     Citation = "Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7."
     Taxonomy = "RDP"
     _tracked_properties = ['Application','Citation','Taxonomy']
