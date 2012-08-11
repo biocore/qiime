@@ -50,6 +50,21 @@ def disable_timeout():
 
 ### End code for timing out tests that exceed a time limit
 
+class FakeFile(object):
+    " A class to convert a string into a file-like object"
+    def __init__(self,d=""):
+        self.s = d.split('\n')
+    
+    def __iter__(self):
+        return iter(self.s)
+    
+    def write(self,s):
+        self.s += s
+    def close(self):
+        pass
+    def seek(self,seek_position):
+        pass
+
 
 def run_script_usage_tests(qiime_test_data_dir,
                            qiime_scripts_dir,

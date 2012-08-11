@@ -53,6 +53,8 @@ def get_sample_ids(map_data, map_header, states):
     return good_ids
 
 
+
+
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
     
@@ -136,7 +138,25 @@ def filter_mapping_file(map_data, map_header, good_sample_ids,
     
     return headers, result
 
+def filter_mapping_file_from_mapping_f(mapping_f,sample_ids_to_keep,negate=False):
+    """ Filter rows from a metadata mapping file """
+    mapping_data, header, comments = parse_mapping_file(mapping_f)
+    filtered_mapping_data = []
+    sample_ids_to_keep = {}.fromkeys(sample_ids_to_keep)
+    for mapping_datum in mapping_data:
+        if mapping_datum[0] in sample_ids_to_keep:
+            filtered_mapping_data.append(mapping_datum)
+        elif negate:
+            filtered_mapping_data.append(mapping_datum)
+        else:
+            pass
+    
+    return format_mapping_file(header,filtered_mapping_data)
 
+def filter_mapping_file_by_metadata_states(mapping_f,valid_states_str):
+    sample_ids_to_keep = sample_ids_from_metadata_description(mapping_f,valid_states_str)
+    mapping_f.seek(0)
+    return filter_mapping_file_from_mapping_f(mapping_f,sample_ids_to_keep)
 
 def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
     """ Remove specified samples from distance matrix 

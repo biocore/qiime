@@ -27,7 +27,10 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           negate_tips_to_keep,
                           filter_mapping_file,filter_tree,
                           filter_fastq,filter_otus_from_otu_map,
-                          filter_otu_table_to_n_samples)
+                          filter_otu_table_to_n_samples,
+                          filter_mapping_file_from_mapping_f,
+                          filter_mapping_file_by_metadata_states)
+from qiime.test import FakeFile
 from qiime.util import load_qiime_config
 
 class fake_output_f():
@@ -60,6 +63,7 @@ class FilterTests(TestCase):
          parse_mapping_file(StringIO(self.map_str))
         self.tree1 = DndParser(tree1)
         self.tree2 = DndParser(tree2)
+        self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
         
         
     def tearDown(self):
@@ -92,7 +96,26 @@ class FilterTests(TestCase):
          ['a','b','c','d','e','f']), (self.map_headers, self.map_data))
         self.assertEqual(filter_mapping_file(self.map_data, self.map_headers, ['a']),
             (['SampleID','Description'],['a\tx'.split('\t')]))
-        
+
+    def test_filter_mapping_file_from_mapping_f(self):
+        """ filter_mapping_file_from_mapping_f functions as expected """
+        actual = filter_mapping_file_from_mapping_f(self.tutorial_mapping_f,["PC.354","PC.355"])
+        expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355"""
+        self.assertEqual(actual,expected)
+
+    def test_filter_mapping_file_by_metadata_states(self):
+        """ filter_mapping_file_by_metadata_states functions as expected """
+        actual = filter_mapping_file_by_metadata_states(self.tutorial_mapping_f,"Treatment:Control")
+        expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	20061126	Control_mouse_I.D._356
+PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
+PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593"""
+        self.assertEqual(actual,expected)
+
     def test_filter_fasta(self):
         """filter_fasta functions as expected"""
         input_seqs = [('Seq1 some comment','ACCTTGG'),
