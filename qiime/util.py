@@ -211,7 +211,7 @@ class FunctionWithParams(object):
         """returns a biom object regardless of whether path or object given"""
         try:
             if os.path.isfile(data):
-                otu_table = parse_biom_table(open(data,'U'))
+                otu_table = parse_biom_table(qiime_open(data,'U'))
                 return otu_table
         except TypeError:
             if any([type(data) in \
@@ -1315,6 +1315,19 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
             
 def gzip_open(fp):
     return gzip.open(fp,'rb')
+
+def qiime_open(fp, permission='U'):
+    """Wrapper to allow opening of gzipped or non-compressed files
+    
+    Read or write the contents of a file
+
+    file_fp : file path
+    permission : either 'r','w','a'
+    """
+    if fp.endswith('gz'):
+        return gzip_open(fp)
+    else:
+        return open(fp, permission)
     
 def make_compatible_distance_matrices(dm1,dm2,lookup=None):
     """ Intersect distance matrices and sort the values """
