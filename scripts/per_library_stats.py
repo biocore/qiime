@@ -11,11 +11,11 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from qiime.util import make_option, gzip_open
 from numpy import std
 from qiime.util import (compute_seqs_per_library_stats, 
     parse_command_line_parameters, get_options_lookup, 
-    median_absolute_deviation, guess_even_sampling_depth)
+    median_absolute_deviation, guess_even_sampling_depth, 
+    qiime_open, make_option)
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table
@@ -45,10 +45,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts,args = parse_command_line_parameters(**script_info)
     otu_table_fp = opts.otu_table_fp
-    if otu_table_fp.endswith('.gz'):
-        otu_table = parse_biom_table(gzip_open(otu_table_fp))
-    else:
-        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+    otu_table = parse_biom_table(qiime_open(otu_table_fp))
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
      compute_seqs_per_library_stats(otu_table, opts.num_otuss)
     num_otus = len(otu_table.ObservationIds)
