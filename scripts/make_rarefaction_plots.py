@@ -84,7 +84,12 @@ script_info['optional_options']=[\
          help='Calculation to perform for generating error bars. Options '+\
          'are standard deviation (stddev) or standard error (stderr). '+\
          '[default: %default]', choices=['stddev','stderr']),
-    options_lookup['output_dir']
+    options_lookup['output_dir'],
+    make_option('--output_type',default='file_creation',type="choice",
+         help='Write the HTML output as one file, images embedded, or several. Options'+\
+         ' are file_creation, multiple files, and memory. [default: %default]',
+         choices=['file_creation','memory']),
+    
 ]
 script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
                              'map_fname':'QIIME-formatted mapping filepath',
@@ -95,7 +100,8 @@ script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
                              'resolution':'Image resolution',
                              'ymax': 'Y-axis height',
                              'webpage':'Suppress HTML (Deprecated)',
-                             'suppress_html_output':'Suppress HTML'}
+                             'suppress_html_output':'Suppress HTML',
+                             'output_type': 'HTML file with embedded images'}
                              
 script_info['version'] = __version__
 
@@ -162,9 +168,10 @@ def main():
     ymax=options.ymax
     std_type=options.std_type
     suppress_webpage=options.suppress_html_output
+    output_type=options.output_type
     html_output = make_averages(prefs, data, background_color, label_color, \
-                                rares, output_dir,resolution,imagetype,ymax,
-                                suppress_webpage,std_type)
+                                rares, output_dir,resolution,imagetype,ymax, \
+                                suppress_webpage,std_type,output_type)
                                 
     if html_output:
         #Write the html file.
