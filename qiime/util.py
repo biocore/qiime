@@ -30,7 +30,7 @@ from copy import deepcopy
 from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
-from itertools import repeat
+from itertools import repeat, izip
 
 from numpy import min, max, median, mean
 import numpy
@@ -1447,7 +1447,6 @@ def subsample_fastq(input_fastq_fp,
     """
 
     input_fastq = open(input_fastq_fp, "U")
-
     output_fastq = open(output_fp, "w")
 
     for label, seq, qual in MinimalFastqParser(input_fastq,strict=False):
@@ -1456,6 +1455,33 @@ def subsample_fastq(input_fastq_fp,
 
     input_fastq.close()
     output_fastq.close()
+
+def subsample_fastqs(input_fastq1_fp,
+                    output_fastq1_fp,
+                    input_fastq2_fp,
+                    output_fastq2_fp,
+                    percent_subsample):
+    """ Writes random percent_sample of sequences from input fastq filepath
+    """
+
+    input_fastq1 = open(input_fastq1_fp, "U")
+    output_fastq1 = open(output_fastq1_fp, "w")
+    input_fastq2 = open(input_fastq2_fp, "U")
+    output_fastq2 = open(output_fastq2_fp, "w")
+
+    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1,strict=False),
+                               MinimalFastqParser(input_fastq2,strict=False)):
+        label1, seq1, qual1 = fastq1
+        label2, seq2, qual2 = fastq2
+        if random() < percent_subsample:
+            output_fastq1.write('@%s\n%s\n+%s\n%s\n' % (label1, seq1, label1, qual1))
+            output_fastq2.write('@%s\n%s\n+%s\n%s\n' % (label2, seq2, label2, qual2))
+
+    input_fastq1.close()
+    output_fastq1.close()
+    input_fastq2.close()
+    output_fastq2.close()
+
 
 def summarize_otu_sizes_from_otu_map(otu_map_f):
     """ Given an otu map file handle, summarizes the sizes of the OTUs
