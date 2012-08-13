@@ -1432,6 +1432,30 @@ def subsample_fasta(input_fasta_fp,
     for label, seq in MinimalFastaParser(input_fasta):
         if random() < percent_subsample:
             output_fasta.write('>%s\n%s\n' % (label, seq))
+    
+    input_fasta.close()
+    output_fasta.close()
+
+def subsample_fastq(input_fastq_fp,
+                    output_fp,
+                    percent_subsample):
+    """ Writes random percent_sample of sequences from input fastq filepath
+
+    input_fastq_fp: input fastq filepath
+    output_fp: output fasta filepath
+    percent_subsample: percent of sequences to write
+    """
+
+    input_fastq = open(input_fastq_fp, "U")
+
+    output_fastq = open(output_fp, "w")
+
+    for label, seq, qual in MinimalFastqParser(input_fastq,strict=False):
+        if random() < percent_subsample:
+            output_fastq.write('@%s\n%s\n+%s\n%s\n' % (label, seq, label, qual))
+
+    input_fastq.close()
+    output_fastq.close()
 
 def summarize_otu_sizes_from_otu_map(otu_map_f):
     """ Given an otu map file handle, summarizes the sizes of the OTUs
