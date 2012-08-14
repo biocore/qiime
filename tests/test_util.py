@@ -9,6 +9,7 @@ from random import seed
 from StringIO import StringIO
 from tempfile import mkdtemp
 from collections import defaultdict
+import gzip
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
 from biom.parse import parse_biom_table_str
@@ -532,6 +533,46 @@ o4	seq6	seq7""".split('\n')
         #generate fastq seqs file
         barcode_fpath=join(temp_output_dir,'barcodes.fastq')
         barcode_fopen=open(barcode_fpath,'w')
+        barcode_fopen.write('\n'.join(fastq_barcodes))
+        barcode_fopen.close()
+        
+        fastq_files.append(barcode_fpath)
+        self.files_to_remove.append(barcode_fpath)
+        
+        exp='-i %s -b %s ' % (seq_fpath,barcode_fpath)
+    
+        obs=get_split_libraries_fastq_params_and_file_types(fastq_files,
+                                                            map_fpath)
+    
+        self.assertEqual(obs,exp)
+    
+    def test_get_split_libraries_fastq_params_and_file_types_gzipped(self):
+        """get_split_libraries_fastq_params_and_file_types using gzipped files 
+           and forward barcodes computes correct values"""
+    
+        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        self.dirs_to_remove.append(temp_output_dir)
+    
+        #generate the fastq mapping file
+        map_fpath=join(temp_output_dir,'map.txt')
+        map_fopen=open(map_fpath,'w')
+        map_fopen.write('\n'.join(fastq_mapping_fwd))
+        map_fopen.close()
+        self.files_to_remove.append(map_fpath)
+        
+        fastq_files=[]
+        #generate fastq seqs file
+        seq_fpath=join(temp_output_dir,'seqs.fastq.gz')
+        seqs_fopen=gzip.open(seq_fpath,'w')
+        seqs_fopen.write('\n'.join(fastq_seqs))
+        seqs_fopen.close()
+        
+        fastq_files.append(seq_fpath)
+        self.files_to_remove.append(seq_fpath)
+        
+        #generate fastq seqs file
+        barcode_fpath=join(temp_output_dir,'barcodes.fastq.gz')
+        barcode_fopen=gzip.open(barcode_fpath,'w')
         barcode_fopen.write('\n'.join(fastq_barcodes))
         barcode_fopen.close()
         

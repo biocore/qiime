@@ -1244,7 +1244,12 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     # which file is the sequence file and which is the barcode sequence
     get_file_type_info={}
     for fastq_file in fastq_fps:
-        fastq_fp=open(fastq_file)
+        # allow for gzipped files to be used
+        if fastq_file.endswith('.gz'):
+            fastq_fp = gzip_open(fastq_file)
+        else:
+            fastq_fp = open(fastq_file,'U')
+            
         file_lines=get_top_fastq_two_lines(fastq_fp)
         parsed_fastq=MinimalFastqParser(file_lines,strict=False)
         for i,seq_data in enumerate(parsed_fastq):
@@ -1271,7 +1276,12 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     fwd_count=0
     rev_count=0
     for bfile in barcode_files:
-        fastq_fp=open(bfile)
+        # allow for gzipped files to be used
+        if fastq_file.endswith('.gz'):
+            fastq_fp = gzip_open(bfile)
+        else:
+            fastq_fp = open(bfile,'U')
+            
         parsed_fastq=MinimalFastqParser(fastq_fp,strict=False)
         for bdata in parsed_fastq:
             if bdata[1][:barcode_len] in barcode_mapping_column:
