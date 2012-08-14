@@ -126,6 +126,9 @@
     for(i in 1:length(objects)){
         if(!is.null(objects[[i]])) {
             objects[[i]] <- objects[[i]][IDs,]
+            # for mapping file, drop any empty levels from factors that might
+            # have occurred due to dropped samples
+            if(i == 1) objects[[i]] <- droplevels(objects[[i]])
             # for distance matrix, get subset of columns too
             if(i == 4) objects[[i]] <- objects[[i]][,IDs]
         }
