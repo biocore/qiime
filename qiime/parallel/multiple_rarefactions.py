@@ -76,5 +76,9 @@ class ParallelMultipleRarefactions(ParallelWrapper):
               command_suffix)
           
             commands.append(command)
-        
+            
+        commands = self._merge_to_n_commands(commands,
+                                             params['jobs_to_start'],
+                                             command_prefix=command_prefix,
+                                             command_suffix=command_suffix)
         return commands, result_filepaths

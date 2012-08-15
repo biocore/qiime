@@ -69,6 +69,7 @@ class ParallelMultipleRarefactionsTests(TestCase):
                   'max':100,
                   'step':10,
                   'num_reps':2,
+                  'jobs_to_start':2,
                   'suppress_lineages_included':False,
                   'subsample_multinomial':False}
         r(self.input1_fp,
