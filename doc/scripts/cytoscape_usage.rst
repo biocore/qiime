@@ -30,8 +30,9 @@ The following are the directions to use once Cytoscape is installed and open:
 
 * As a result, you should get successful import message. You should now see your network (as is shown below), though not in a particularly pretty format. You can use the roller button on your mouse to zoom in and out of the network. Next, we are going to import attributes for each of our nodes.
 
-.. image:: ../images/ cytoscape_initial_network.png
-   :align: center
+	.. image:: ../images/ cytoscape_initial_network.png
+		:align: center
+		:height: 400 px
 
 2) File -> Import -> Attribute from Table
 	a. Select: "real_node_table.txt" file
@@ -58,17 +59,16 @@ Formating and coloring your network
 		a. Select: Discrete
 			i. You should now see the Treatment groups of “Control”, “Fasting” or “otu” pop-up just below Node Color. Remember, the nodes in our network consist of both Samples and OTUs.
 
-.. image:: ../images/ cytoscape_nodecolor.png
-
+	.. image:: ../images/ cytoscape_nodecolor.png
+		:height: 300 px
 
 	6. Click: Control, then click on the “…” next to it
 		a. This will bring up a Pick a Color window – let’s make the Control samples a blue. Click: OK
 		b. Repeat this to make the Treatment samples bright green, and the otus white
 	7. Click inside the Defaults window to bring up a “Default Appearance for default” window. Click on the Global tab, and change the background color to black. Click Apply.
 
-
-.. image:: ../images/ cytoscape_change_background.png
-...
+	.. image:: ../images/ cytoscape_change_background.png
+		:height: 300 px
 
 	8. We can now change the Layout format. In the upper tool bar window, Select: Layout -> Cytoscape Layouts -> Edge-Weighted Spring Embedded -> eweights
 		a. This may take a moment to process depending on the size of your network. Unfortunately, if your computer freezes on this step, there’s really nothing to do but restart cytoscape and try again. Save often!
@@ -79,9 +79,8 @@ Formating and coloring your network
 		a. Mapping Type: Discrete Mapping
 		b. Change the Control color to blue, and the Fast color to bright green.
 
-
-.. image:: ../images/ cytoscape_colored_edges.png
-...
+	.. image:: ../images/ cytoscape_colored_edges.png
+		:height: 400 px
 
 	11. If you want to do anything more “custom”, you need to play around with your node and edge tables. For example, how can we color the otus that are shared between the Control and Fasting groups a different color than the otus that belong to just one treatment group? To do this, we can:
 		a. Convert your biom table to a classic otu table using convert_biom.py
@@ -89,9 +88,8 @@ Formating and coloring your network
 		c. Open up your real_edge_table.txt in Excel
 		d. Make a new excel sheet that contains where column A represents the OTUs seen in the Control group, column B represents the samples in Fasting group. In column C put your entire list of OTUs taken from the otu_table.txt. You can now use the COUNTIF function in Excel to find if each OTU is present in either the Control group only, the Fasting group only, or in both. With this information, make a new column in your real_node_table.txt where you label each OTU based on it being shared or not_shared, and each sample based on being a Control or Fasting sample. Now you can click on Node Color and color each individually. Here, we can see that the shared OTUs are colored yellow, and the not_shared OTUs are colored pink.
 
-
-.. image:: ../images/ cytoscape_colored_shared.png
-...
+	.. image:: ../images/ cytoscape_colored_shared.png
+		:height: 400 px
 
 	12. As you can see in VizMapper, there are a multitude of options for coloring and otherwise changing your network. Have fun.
 
