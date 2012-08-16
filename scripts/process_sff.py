@@ -26,11 +26,13 @@ script_info['script_description']="""This script converts a directory of sff fil
 """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual.""","""process_sff.py -i sffs/"""))
+script_info['script_usage'].append(("""""","""Convert a single sff to fasta and qual.""","""process_sff.py -i sffs/test.sff"""))
 script_info['script_usage'].append(("""Flowgram example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual, along with a flowgram file.""","""process_sff.py -i sffs/ -f"""))
+script_info['script_usage'].append(("""""","""Convert a single sff to fasta and qual, along with a flowgram file.""","""process_sff.py -i sffs/test.sff -f"""))
 script_info['script_usage'].append(("""Output example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual, along with a flowgram file and write them to another directory.""","""process_sff.py -i sffs/ -f -o output_dir"""))
 script_info['output_description']="""This script results in FASTA and QUAL formatted files."""
 script_info['required_options'] = [\
-    make_option('-i', '--input_dir', type='existing_dirpath',help='Input directory of sff files'),
+    make_option('-i', '--input_dir', type='existing_path',help='Input directory of sff files or a single sff filepath'),
 ]
 
 script_info['optional_options'] = [
