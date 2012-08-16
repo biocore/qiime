@@ -16,7 +16,7 @@ Importing the network
 The following are the directions to use once Cytoscape is installed and open:
 
 1) File -> Import -> Network from Table
-	a. Select: :file: `real_edge_table.txt` file. You’ll see a Preview of the table at the bottom of the window
+	a. Select: "real_edge_table.txt" file. You’ll see a Preview of the table at the bottom of the window
 	b. Click: Show Text File Import Options
 	c. Click: Transfer first line as attribute names
 	d. Select: Source Interaction = Column 1
@@ -57,10 +57,12 @@ Formating and coloring your network
 		a. Select: Treatment
 	5. Click: Please select a mapping type!
 		a. Select: Discrete
-			i. You should now see the Treatment groups of “Control”, “Fasting” or “otu” pop-up just below Node Color. Remember, the nodes in our network consist of both Samples and OTUs.
+			You should now see the Treatment groups of “Control”, “Fasting” or “otu” pop-up just below Node Color. Remember, the nodes in our network consist of both Samples and OTUs.
 
 	.. image:: ../images/ cytoscape_nodecolor.png
 		:height: 300 px
+
+
 
 	6. Click: Control, then click on the “…” next to it
 		a. This will bring up a Pick a Color window – let’s make the Control samples a blue. Click: OK
@@ -70,10 +72,12 @@ Formating and coloring your network
 	.. image:: ../images/ cytoscape_change_background.png
 		:height: 300 px
 
+
+
 	8. We can now change the Layout format. In the upper tool bar window, Select: Layout -> Cytoscape Layouts -> Edge-Weighted Spring Embedded -> eweights
-		a. This may take a moment to process depending on the size of your network. Unfortunately, if your computer freezes on this step, there’s really nothing to do but restart cytoscape and try again. Save often!
+		a. This may take a moment to process depending on the size of your network. Unfortunately, if your computer freezes on this step, there’s really nothing to do but restart Cytoscape and try again. Save often!
 	9. Let’s change the size of our nodes. Select: Node Size.
-		a. In more complicated datasets, it would be a very good idea to open up your real_node_table.txt in Excel and add in columns that will make it very easy to group items together, like Samples and OTUs. At the moment, we can click on LinkerPrimerSequence. This will group all the OTUs together vs. all the samples, since in this case our samples have the same LinkerPrimerSequence. 
+		a. In more complicated datasets, it would be a very good idea to open up your real_node_table.txt in Excel and add in columns that will make it very easy to group items together, like Samples and OTUs. At the moment, we can click on LinkerPrimerSequence. This will group all the OTUs together vs. all the Samples, since in this case our samples have the same LinkerPrimerSequence. 
 		b. Make the samples size 50.0, and the otus size 10.0
 	10. Let’s change the edge colors connect our Treatment samples to their otus, and our Control samples to their otus. Select: Edge Color -> Treatment
 		a. Mapping Type: Discrete Mapping
@@ -81,6 +85,8 @@ Formating and coloring your network
 
 	.. image:: ../images/ cytoscape_colored_edges.png
 		:height: 400 px
+
+
 
 	11. If you want to do anything more “custom”, you need to play around with your node and edge tables. For example, how can we color the otus that are shared between the Control and Fasting groups a different color than the otus that belong to just one treatment group? To do this, we can:
 		a. Convert your biom table to a classic otu table using convert_biom.py
@@ -90,6 +96,8 @@ Formating and coloring your network
 
 	.. image:: ../images/ cytoscape_colored_shared.png
 		:height: 400 px
+
+
 
 	12. As you can see in VizMapper, there are a multitude of options for coloring and otherwise changing your network. Have fun.
 
