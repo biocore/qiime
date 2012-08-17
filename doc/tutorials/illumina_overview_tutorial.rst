@@ -4,18 +4,18 @@
 Illumina Overview Tutorial
 ==========================
 
-This tutorial covers a variety of QIIME analyses beginning with Illumina sequencing data. It expands on the `Processing Illumina Data <>`_ tutorial, which focused primarily on demultiplexing Illumina data. This tutorial is is intended to be quick to run, and as a result is based on a small subset of a full Illumina Genome Analyzer II (GAIIx) run. 
+This tutorial covers a variety of QIIME analyses beginning with Illumina sequencing data. It expands on the :ref:`Processing Illumina Data <processing_illumina_data>` tutorial, which focused primarily on demultiplexing Illumina data. This tutorial is is intended to be quick to run, and as a result is based on a small subset of a full Illumina Genome Analyzer II (GAIIx) run. 
 
-For the sake of runtime we additionally take one big shortcut. In this tutorial, we perform *closed-reference* OTU picking, where reads are searched against a reference collection (Greengenes in this case), and reads that do not hit the reference collection are discarded. This works well for well-characterized environments such as human-associated habitats, but not as well for environments that harbor a lot of novel diversity with respect to the reference collection (e.g., the `Guerrero Negro microbial mats <>`_ are an example of where this does not work well). In general, we *highly* recommend that you use our `subsampled open-reference OTU picking protocol <>`_ for processing Illumina data.
+For the sake of runtime we additionally take one big shortcut. In this tutorial, we perform *closed-reference* OTU picking, where reads are searched against a reference collection (Greengenes in this case), and reads that do not hit the reference collection are discarded. This works well for well-characterized environments such as human-associated habitats, but not as well for environments that harbor a lot of novel diversity with respect to the reference collection (e.g., the `Guerrero Negro microbial mats <http://www.ncbi.nlm.nih.gov/pubmed/22832344>`_ are an example of where this does not work well). In general, we *highly* recommend that you use our `subsampled open-reference OTU picking protocol <open_reference_illumina_processing.html#step-2-de-novo-clustering-of-subsampled-failures-serial>`_ for processing Illumina data.
 
-The data used in this analysis is derived from the `Moving Pictures of the Human Microbiome <>`_ study, where two human subjects collected daily samples from four body sites: the tongue, the palm of the left hand, the palm of the right hand, and the gut (via fecal samples obtained by swapping used toilet paper). This data was sequenced across six lanes of an Illumina GAIIx, using the barcoding amplicon sequencing protocol described in `Global patterns of 16S rRNA diversity at a depth of millions of sequences per sample <>`_. A more recent version of this protocol that can be used with the Illumina HiSeq 2000 and MiSeq can be found `here <>`_. 
+The data used in this analysis is derived from the `Moving Pictures of the Human Microbiome <http://www.ncbi.nlm.nih.gov/pubmed/21624126>`_ study, where two human subjects collected daily samples from four body sites: the tongue, the palm of the left hand, the palm of the right hand, and the gut (via fecal samples obtained by swapping used toilet paper). This data was sequenced across six lanes of an Illumina GAIIx, using the barcoding amplicon sequencing protocol described in `Global patterns of 16S rRNA diversity at a depth of millions of sequences per sample <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_. A more recent version of this protocol that can be used with the Illumina HiSeq 2000 and MiSeq can be found `here <http://www.ncbi.nlm.nih.gov/pubmed/22402401>`_. 
 
 Obtaining the data
 ------------------
 
-The data used in this tutorial is available for download `here <>`_. You can pull this data to your system by running the following command::
+The data used in this tutorial is available for download: `moving_pictures_tutorial.tgz <https://s3.amazonaws.com/qiime-tutorial/moving_pictures_tutorial.tgz>`_. You can pull this data to your system by running the following command::
 
-	wget XXX
+	wget https://s3.amazonaws.com/qiime-tutorial/moving_pictures_tutorial.tgz
 
 .. note:: MacOS does not come with ``wget`` pre-installed. You can either install this using your preferred method, or just download the dataset directly by clicking the above link. 
 
