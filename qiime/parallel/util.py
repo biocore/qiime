@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -14,7 +14,6 @@ __status__ = "Development"
 from math import ceil
 from os.path import split, splitext, join
 from os import makedirs, mkdir
-from subprocess import check_call, CalledProcessError
 from random import choice
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import (load_qiime_config,
@@ -170,12 +169,16 @@ class ParallelWrapper(object):
         # If the poller is going to be run by the current process, 
         # start polling
         if poll_directly:
-            try:
-                check_call(poller_command.split())
-            except CalledProcessError, e:
+            # IMPORTANT: the following line MUST use qiime_system_call()
+            # instead of subprocess.call, .check_call, or .check_output in case
+            # we are invoked in a child process with PIPEs (a deadlock will
+            # occur otherwise). This can happen if this code is tested by
+            # all_tests.py, for example.
+            stdout, stderr, return_value = qiime_system_call(poller_command)
+            if return_value != 0:
                 print '**Error occuring when calling the poller directly. '+\
                 'Jobs may have been submitted, but are not being polled.'
-                print str(e)
+                print stderr
                 print poller_command
                 exit(-1)
         self.files_to_remove = []
