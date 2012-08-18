@@ -85,7 +85,7 @@ Now that we have an OTU table, and we're working with a reference phylogenetic t
 
 	beta_diversity_through_plots.py -o bdiv_even258/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -t $reference_tree -e 258
 
-The parameters used are described as follows: we're passing our OTU table as ``-i``, our metadata mapping file as ``-m``, our phylogenetic tree as ``-t``, the output directory as ``-o`` and last, ``-e`` to specify an even sampling depth that we want to apply in this analysis. The sampling depth is extremely important: in order to accurately compare our microbial communities with UniFrac, each sample must have the same number of sequences otherwise we may see samples cluster by their depth of sequencing coverage, which is not representative of the biology of the samples, but rather a technical artifact. ``-e 258`` tells QIIME to randomly subsample each of the samples in the OTU table to exactly 258 sequences per sample, without replacement. The importance of this step is discussed `here <>`_.
+The parameters used are described as follows: we're passing our OTU table as ``-i``, our metadata mapping file as ``-m``, our phylogenetic tree as ``-t``, the output directory as ``-o`` and last, ``-e`` to specify an even sampling depth that we want to apply in this analysis. The sampling depth is extremely important: in order to accurately compare our microbial communities with UniFrac, each sample must have the same number of sequences otherwise we may see samples cluster by their depth of sequencing coverage, which is not representative of the biology of the samples, but rather a technical artifact. ``-e 258`` tells QIIME to randomly subsample each of the samples in the OTU table to exactly 258 sequences per sample, without replacement.
 
 
 Generating taxonomic summaries of microbial communities
@@ -106,16 +106,18 @@ As before, be can view either bar charts or area charts by opening the correspon
 Comparing microbial communities: alpha diversity
 ----------------------------------
 
-Alpha rarefaction plots are a useful way to compare the relative alpha diversities of our samples, and also to determine if we are approaching complete coverage of our microbial communities. We can generate alpha rarefaction plots with QIIME as follows (*will run for over 10 minutes*)::
+Alpha rarefaction plots are a useful way to compare the relative alpha diversities across samples, and also to determine if we are approaching complete coverage of our microbial communities. We can generate alpha rarefaction plots with QIIME as follows (*will run for over 10 minutes*)::
 
 	alpha_rarefaction.py -o arare_max258/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -t $reference_tree -e 258
 
-Notice that we again pass ``-e 258`` here. In this case, this specifies the maximum rarefaction depth that ... **pick up here, too tired to keep going now...**
+Notice that we again pass ``-e 258`` here. In this case, this specifies the maximum rarefaction depth: in general you want to choose the same value as specified for the even sampling depth to `beta_diversity_through_plots.py` if you are interested in looking at alpha diversity and rarefaction by metadata category.
 
 Next steps
 ----------
 
-Link to Procrustes tutorial
+This illustrates some of the basic features of QIIME, and there are a lot of places to go from here. If you're interested in seeing additional visualizations, you should check out the `QIIME overview tutorial <tutorial.html>`_. We also highly recommend reviewing how to perform open-reference OTU picking on Illumina data, which you can find `here <open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking>`_. The `Procrustes analysis tutorial <procrustes_analysis.html>`_ illustrates some really cool possibilities with QIIME, and you can continue with the same data to compare against the same samples, but sequenced on Illumina rather than 454.
+
+Have fun!
 
 
 

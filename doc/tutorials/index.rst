@@ -14,6 +14,7 @@ The QIIME development team is very interested in incorporating community-contrib
    :glob:
 
    tutorial
+   illumina_overview_tutorial
    ./*
 
 
