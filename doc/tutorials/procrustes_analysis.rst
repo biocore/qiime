@@ -31,9 +31,20 @@ Do some initial set up for the tutorial. This version of the tutorial is based o
 	screen
 	cd moving_pictures_procrustes_demo
 
+Defining reference filepaths with environment variables
+-------------------------------------------------------
+
+Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
+
+	export reference_seqs /home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+	export reference_tree /home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
+	export reference_tax /home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+
+
+
 Pick OTUs on Illumina data and generate an OTU table (including taxonomic assignment of samples)::
 	
-	pick_reference_otus_through_otu_table.py -i ./subsampled_illumina_seqs.fna -o ./illumina_ucrC/ -r /software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta -t /software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt -aO8 -p ./otu_params.txt
+	pick_reference_otus_through_otu_table.py -i ./subsampled_illumina_seqs.fna -o ./illumina_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
 
 Determine the number of sequences per sample and related statistics. You'll want to choose an even sampling depth for the beta diversity analysis from these data. In this tutorial we choose the smallest number of sequences per sample (239).
 
@@ -43,13 +54,13 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
-	beta_diversity_through_plots.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t $reference_tree -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Repeat the above steps on the 454 data::
 
-	pick_reference_otus_through_otu_table.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r /software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta -t /software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt -aO8 -p ./otu_params.txt
+	pick_reference_otus_through_otu_table.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
 	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
-	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t /software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Perform Procrustes analysis::
 	
