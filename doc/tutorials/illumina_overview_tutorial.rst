@@ -127,7 +127,20 @@ Next steps
 
 This illustrates some of the basic features of QIIME, and there are a lot of places to go from here. If you're interested in seeing additional visualizations, you should check out the `QIIME overview tutorial <tutorial.html>`_. We also highly recommend reviewing how to perform open-reference OTU picking on Illumina data, which you can find `here <open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking>`_. The `Procrustes analysis tutorial <procrustes_analysis.html>`_ illustrates a really cool analysis, allowing you to continue with the same data used here, comparing against the samples sequenced on 454 (rather than Illumina, as in this analysis). If you're interested in some possibilities for statistical analyses you can try our `supervised learning <running_supervised_learning.html>`_ or `distance matrix comparison <distance_matrix_comparison.html>`_ tutorials, both of which can be adapted to use data generated in this tutorial.
 
-Have fun!
+Modified Procrustes Analysis Steps (temporary)
+----------------------------------------------
+
+We're in the process of modifying the `Procrustes analysis tutorial <procrustes_analysis.html>`_ to more directly follow from this one. In the meantime, these commands will allow you to continue::
+
+	pick_reference_otus_through_otu_table.py -o ./454_ucrC/ -i ./subsampled_454_seqs.fna -r $reference_seqs -t $reference_tax -aO8 -p ucrC_fast_params.txt
+	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
+	beta_diversity_through_plots.py -o ./454_ucrC/bdiv_even135/ -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -t $reference_tree -m ./454_map.txt --suppress_2d_plots
+	transform_coordinate_matrices.py -i bdiv_even258/unweighted_unifrac_pc.txt,./454_ucrC/bdiv_even135/unweighted_unifrac_pc.txt -s ./procrustes_sid_map.txt -r 100 -o ./454_v_illumina/
+	compare_3d_plots.py -i ./454_v_illumina/pc1_transformed.txt,./454_v_illumina/pc2_transformed.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
+
+
+
+
 
 
 
