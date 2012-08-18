@@ -28,6 +28,16 @@ Next, change to the directory that was just unzipped. We'll work there for this 
 	
 	cd moving_pictures_tutorial
 
+Defining reference filepaths with environment variables
+-------------------------------------------------------
+
+Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
+
+	export reference_seqs /home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+	export reference_tree /home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
+	export reference_tax /home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+
+
 Demultiplexing and quality filtering
 ------------------------------------
 
@@ -115,7 +125,7 @@ Notice that we again pass ``-e 258`` here. In this case, this specifies the maxi
 Next steps
 ----------
 
-This illustrates some of the basic features of QIIME, and there are a lot of places to go from here. If you're interested in seeing additional visualizations, you should check out the `QIIME overview tutorial <tutorial.html>`_. We also highly recommend reviewing how to perform open-reference OTU picking on Illumina data, which you can find `here <open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking>`_. The `Procrustes analysis tutorial <procrustes_analysis.html>`_ illustrates some really cool possibilities with QIIME, and you can continue with the same data to compare against the same samples, but sequenced on Illumina rather than 454.
+This illustrates some of the basic features of QIIME, and there are a lot of places to go from here. If you're interested in seeing additional visualizations, you should check out the `QIIME overview tutorial <tutorial.html>`_. We also highly recommend reviewing how to perform open-reference OTU picking on Illumina data, which you can find `here <open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking>`_. The `Procrustes analysis tutorial <procrustes_analysis.html>`_ illustrates a really cool analysis, allowing you to continue with the same data used here, comparing against the samples sequenced on 454 (rather than Illumina, as in this analysis). If you're interested in some possibilities for statistical analyses you can try our `supervised learning <running_supervised_learning.html>`_ or `distance matrix comparison <distance_matrix_comparison.html>`_ tutorials, both of which can be adapted to use data generated in this tutorial.
 
 Have fun!
 
