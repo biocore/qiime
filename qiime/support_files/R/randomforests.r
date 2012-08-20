@@ -60,8 +60,9 @@ data.list <- remove.nonoverlapping.samples(map=map, otus=otus)
 # run random forests
 x <- data.list$otus
 y <- factor(data.list$map[[opts$category]])
+na.ix <- which(is.na(y)) # indices of NA's
 if(opts$errortype == 'oob'){
-    result <- rf.out.of.bag(x, y, verbose=opts$verbose, ntree=opts$ntree)
+    result <- rf.out.of.bag(x[-na.ix,,drop=FALSE], y[-na.ix], verbose=opts$verbose, ntree=opts$ntree)
     result$error.type <- 'out-of-bag'
 } else {
 
@@ -71,7 +72,7 @@ if(opts$errortype == 'oob'){
     } else {
         error.type <- sprintf('%d-fold cross validation', opts$nfolds)
     }
-    result <- rf.cross.validation(x,y,nfolds=opts$nfolds,
+    result <- rf.cross.validation(x[-na.ix,,drop=FALSE],y[-na.ix],nfolds=opts$nfolds,
             verbose=opts$verbose,ntree=opts$ntree)
     result$error.type <- error.type
 }
