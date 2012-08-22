@@ -1,73 +1,80 @@
 #!/usr/bin/env python
 from __future__ import division
 
-__author__ = "Jai Rideout"
+__author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Rideout"]
+__credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
-from os import path
+from os.path import join
 from string import strip
 from cogent.util.misc import create_dir
 from qiime.colors import data_colors, data_color_order
 from qiime.group import get_field_state_comparisons
 from qiime.make_distance_histograms import matplotlib_rgb_color
-from qiime.parse import group_by_field, parse_distmat, parse_mapping_file, \
-                        QiimeParseError
-from qiime.pycogent_backports.distribution_plots import \
-        generate_comparative_plots
-from qiime.util import get_options_lookup, make_option, \
-                       parse_command_line_parameters
+from qiime.parse import (group_by_field, parse_distmat, parse_mapping_file,
+                        QiimeParseError)
+from qiime.pycogent_backports.distribution_plots import (
+        generate_comparative_plots)
+from qiime.stats import all_pairs_t_test, tail_types
+from qiime.util import (get_options_lookup, make_option,
+                        parse_command_line_parameters)
 
 script_info = {}
-script_info['brief_description'] = "Creates plots comparing distances between \
-                                    sample groupings"
+script_info['brief_description'] = "Creates plots comparing distances between sample groupings"
 
 script_info['script_description'] = """
-This script creates plots (bar charts, scatter plots, or box plots) that \
-allow for the comparison between samples grouped at different field states \
+This script creates plots (bar charts, scatter plots, or box plots) that
+allow for the comparison between samples grouped at different field states
 of a mapping file field.
 
-This script can work with any field in the mapping file, and it can compare \
-any number of field states to all other field states within that field. \
-This script may be especially useful for fields that represent a time series, \
-because a plot can be generated showing the distances between samples at \
+This script can work with any field in the mapping file, and it can compare
+any number of field states to all other field states within that field.
+This script may be especially useful for fields that represent a time series,
+because a plot can be generated showing the distances between samples at
 certain timepoints against all other timepoints.
 
-For example, a time field might contain the values 1, 2, 3, 4, and 5, which \
-label samples that are from day 1, day 2, day 3, and so on. This time field \
-can be specified when the script is run, as well as the timepoint(s) to \
-compare to every other timepoint. For example, two comparison groups \
-might be timepoints 1 and 2. The resulting plot would contain timepoints for \
-days 3, 4, and 5 along the x-axis, and at each of those timepoints, the \
-distances between day 1 and that timepoint would be plotted, as well as the \
+For example, a time field might contain the values 1, 2, 3, 4, and 5, which
+label samples that are from day 1, day 2, day 3, and so on. This time field
+can be specified when the script is run, as well as the timepoint(s) to
+compare to every other timepoint. For example, two comparison groups
+might be timepoints 1 and 2. The resulting plot would contain timepoints for
+days 3, 4, and 5 along the x-axis, and at each of those timepoints, the
+distances between day 1 and that timepoint would be plotted, as well as the
 distances between day 2 and the timepoint.
 
-For more information and examples pertaining to this script, please refer to \
-the accompanying tutorial, which can be found at \
+The script also performs two-sample t-tests for all pairs of distributions to
+help determine which distributions are significantly different from each other.
+
+For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
 http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 """
 
-script_info['script_usage'] = [("Compare distances between Native and Input "
-                                "samples for each timepoint in the Time field",
-                                "This example will generate a PDF containing "
-                                "a bar chart with the distances between "
-                                "Native samples and every other timepoint, as "
-                                "well as the distances between Input samples "
-                                "and every other timepoint. "
-                                "The output image will be put in the "
-                                "'out_files' directory.",
-                                "%prog -d dist_matrix.txt -m map.txt -f "
-                                "Time -c \"Native,Input\" -o out_files")]
+script_info['script_usage'] = []
+script_info['script_usage'].append((
+"Compare distances between Native and Input samples for each timepoint in the "
+"Time field",
+"This example will generate a PDF containing a bar chart with the distances "
+"between Native samples and every other timepoint, as well as the distances "
+"between Input samples and every other timepoint. The output image will be "
+"put in the 'out1' directory. For more details about this example input data, "
+"please refer to the accompanying tutorial.",
+"%prog -d forearm_only_unweighted_unifrac_dm.txt -m "
+"costello_timeseries_map.txt -f TIME_SINCE_TRANSPLANT -c \"Native,Input\" -o "
+"out1"))
 
-script_info['output_description'] = "An image of the plot is written to \
-                                    the specified output directory."
+script_info['output_description'] = """
+An image of the plot is written to the specified output directory. The raw data
+used in the plots and the results of significance tests can optionally be
+written into tab-delimited files that are most easily viewed in a spreadsheet
+program such as Microsoft Excel.
+"""
 
-# Get a dictionary of common QIIME options.
 options = get_options_lookup()
 
 script_info['required_options'] = [
@@ -75,28 +82,52 @@ script_info['required_options'] = [
     options['output_dir'],
     make_option('-d', '--distance_matrix_fp',
         help='input distance matrix filepath (i.e. the result of '
-             'beta_diversity.py)',
+        'beta_diversity.py). WARNING: Only symmetric, hollow distance '
+        'matrices may be used as input. Asymmetric distance matrices, such as '
+        'those obtained by the UniFrac Gain metric (i.e. beta_diversity.py '
+        '-m unifrac_g), should not be used as input',
         type='existing_filepath'),
     make_option('-f', '--field',type='string',
         help='field in the mapping file to make comparisons on'),
     make_option('-c', '--comparison_groups',type='string',
         help='comma-separated list of field states to compare to every other '
-             'field state, where the list of field states should be in quotes '
-             '(e.g. "FieldState1,FieldState2,FieldState3")')]
+        'field state, where the list of field states should be in quotes '
+        '(e.g. "FieldState1,FieldState2,FieldState3")')]
 
 script_info['optional_options'] = [
+    make_option('-t', '--plot_type',
+        help='type of plot to produce ("bar" is bar chart, "scatter" is '
+        'scatter plot, and "box" is box plot) [default: %default]',
+        default='bar', type='choice', choices=['bar', 'scatter', 'box']),
     make_option('-g', '--imagetype',
         help='type of image to produce (i.e. png, svg, pdf) '
-             '[default: %default]', default='pdf', type="choice",
+        '[default: %default]', default='pdf', type="choice",
         choices=['pdf','png','svg']),
     make_option('--save_raw_data', action='store_true',
         help='store raw data used to create plot in a tab-delimited file '
-             '[default: %default]',
+        '[default: %default]',
         default=False),
-    make_option('-t', '--plot_type',
-        help='type of plot to produce ("bar" is bar chart, "scatter" is '
-             'scatter plot, and "box" is box plot) [default: %default]',
-        default='bar', type='choice', choices=['bar', 'scatter', 'box']),
+    make_option('--suppress_significance_tests', action='store_true',
+        help='suppress performing signifance tests between each pair of '
+        'distributions [default: %default]', default=False),
+    make_option('-n', '--num_permutations', type='int',
+        help='the number of Monte Carlo permutations to perform when '
+        'calculating the nonparametric p-value in the significance tests. '
+        'Must be an integer greater than or equal to zero. If zero, the '
+        'nonparametric p-value will not be calculated and will instead be '
+        'reported as "N/A". This option has no effect if '
+        '--suppress_significance_tests is supplied [default: %default]',
+        default=0),
+    make_option('--tail_type', type='choice',
+        choices=tail_types, help='the type of tail test to compute when '
+        'calculating the p-values in the significance tests. "high" specifies '
+        'a one-tailed test for values greater than the observed t statistic, '
+        'while "low" specifies a one-tailed test for values less than the '
+        'observed t statistic. "two-sided" specifies a two-tailed test for '
+        'values greater in magnitude than the observed t statistic. This '
+        'option has no effect if --suppress_significance_tests is supplied. '
+        'Valid choices: ' + ' or '.join(tail_types) + ' [default: %default]',
+        default='two-sided'),
     make_option('--width',
         help='width of the output image in inches [default: %default]',
         default=12, type='float'),
@@ -297,6 +328,13 @@ def main():
                        for color in data_color_order]
 
     assert plot_data, "Error: there is no data to plot!"
+
+    width = opts.width
+    height = opts.height
+    if width <= 0 or height <= 0:
+        option_parser.error("The specified width and height of the image must "
+                            "be greater than zero.")
+
     plot_figure = generate_comparative_plots(opts.plot_type, plot_data,
             x_values=x_spacing, data_point_labels=plot_x_axis_labels,
             distribution_labels=comparison_field_states,
@@ -306,20 +344,32 @@ def main():
             y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
             error_bar_type=opts.error_bar_type,
             distribution_width=opts.distribution_width,
-            group_spacing=opts.group_spacing)
+            group_spacing=opts.group_spacing, figure_width=width,
+            figure_height=height)
 
-    # Save the plot in the specified format and size.
-    width = opts.width
-    height = opts.height
-    if width > 0 and height > 0:
-        plot_figure.set_size_inches(width, height)
-    else:
-        option_parser.error("The specified width and height of the image must "
-                            "be greater than zero.")
-    output_plot_fp = path.join(opts.output_dir, "%s_Distance_Comparisons.%s"
-                               % (field, opts.imagetype))
+    # Save the plot in the specified format.
+    output_plot_fp = join(opts.output_dir, "%s_Distance_Comparisons.%s" %
+                          (field, opts.imagetype))
     plot_figure.savefig(output_plot_fp, format=opts.imagetype,
             transparent=opts.transparent)
+
+    if not opts.suppress_significance_tests:
+        sig_tests_f = open(join(opts.output_dir, "%s_Stats.xls" % field), 'w')
+
+        # Rearrange the plot data into a format suitable for all_pairs_t_test.
+        sig_tests_labels = []
+        sig_tests_data = []
+        for data_point, data_point_label in zip(plot_data, plot_x_axis_labels):
+            for dist, comp_field in zip(data_point, comparison_field_states):
+                sig_tests_labels.append('%s vs %s' % (data_point_label,
+                                                      comp_field))
+                sig_tests_data.append(dist)
+
+        sig_tests_results = all_pairs_t_test(sig_tests_labels, sig_tests_data,
+                tail_type=opts.tail_type,
+                num_permutations=opts.num_permutations)
+        sig_tests_f.write(sig_tests_results)
+        sig_tests_f.close()
 
     if opts.save_raw_data:
         # Write the raw plot data into a tab-delimited file, where each line
@@ -327,8 +377,8 @@ def main():
         # 'point' along the x-axis.
         assert (len(plot_x_axis_labels) == len(plot_data)), "The number of " +\
                 "labels do not match the number of points along the x-axis."
-        raw_data_fp = path.join(opts.output_dir, "%s_Distance_Comparisons.xls"
-                                % field)
+        raw_data_fp = join(opts.output_dir,
+                           "%s_Distance_Comparisons.xls" % field)
         raw_data_f = open(raw_data_fp, 'w')
 
         raw_data_f.write("#ComparisonGroup\tFieldState\tDistances\n")

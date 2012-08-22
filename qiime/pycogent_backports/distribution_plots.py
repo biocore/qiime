@@ -1,11 +1,11 @@
 #!/usr/bin/env python 
-__author__ = "Jai Rideout"
+__author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jai Rideout"]
+__credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 """This module contains functions for plotting distributions in various ways.
@@ -23,6 +23,7 @@ use('Agg', warn=False)
 from itertools import cycle
 from math import isnan
 from matplotlib.colors import colorConverter
+from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.pyplot import boxplot, figure
 from matplotlib.transforms import Bbox
@@ -32,7 +33,7 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
                        x_tick_labels_orientation='vertical', y_min=None,
                        y_max=None, whisker_length=1.5, box_width=0.5,
-                       box_color=None):
+                       box_color=None, figure_width=None, figure_height=None):
     """Returns a matplotlib.figure.Figure object containing a boxplot for each
     distribution.
 
@@ -56,6 +57,10 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
         - box_width: The width of each box in plot units.
         - box_color: The color of the boxes. If None, boxes will be the same
           color as the plot background.
+        - figure_width: the width of the plot figure in inches. If not
+            provided, will default to matplotlib's default figure width.
+        - figure_height: the height of the plot figure in inches. If not
+            provided, will default to matplotlib's default figure height.
     """
     # Make sure our input makes sense.
     for distribution in distributions:
@@ -83,12 +88,7 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                       x_tick_labels_orientation=x_tick_labels_orientation,
                       y_min=y_min, y_max=y_max)
 
-    # We need to explicitly draw the figure before returning it because
-    # certain rendering backends don't trigger the "draw_event" for
-    # certain file formats (e.g. svg and pdf). This event needs to be
-    # fired off so that the plots can automatically resize themselves
-    # so that tick labels don't get cut off.
-    result.canvas.draw()
+    _set_figure_size(result, figure_width, figure_height)
     return result
 
 def generate_comparative_plots(plot_type, data, x_values=None,
@@ -96,9 +96,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         distribution_markers=None, x_label=None, y_label=None, title=None,
         x_tick_labels_orientation='vertical', y_min=None, y_max=None,
         whisker_length=1.5, error_bar_type='stdv', distribution_width=0.4,
-        group_spacing=0.5):
-    """Returns a matplotlib.figure.Figure object containing plots of the
-    specified type grouped at points along the x-axis.
+        group_spacing=0.5, figure_width=None, figure_height=None):
+    """Returns a Figure containing plots grouped at points along the x-axis.
 
     Arguments:
         - plot_type: A string indicating what type of plot should be created.
@@ -143,21 +142,22 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             width of each box if the plot type is a boxplot).
         - group_spacing: The gap width in plot units between each data point
             (i.e. the width between each group of distributions).
+        - figure_width: the width of the plot figure in inches. If not
+            provided, will default to matplotlib's default figure width.
+        - figure_height: the height of the plot figure in inches. If not
+            provided, will default to matplotlib's default figure height.
     """
     # Set up different behavior based on the plot type.
     if plot_type == 'bar':
         plotting_function = _plot_bar_data
-        legend_function = _create_standard_legend
         distribution_centered = False
         marker_type = 'colors'
     elif plot_type == 'scatter':
         plotting_function = _plot_scatter_data
-        legend_function = _create_standard_legend
         distribution_centered = True
         marker_type = 'symbols'
     elif plot_type == 'box':
         plotting_function = _plot_box_data
-        legend_function = _create_box_plot_legend
         distribution_centered = True
         marker_type = 'colors'
     else:
@@ -186,7 +186,6 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     # Create the figure to put the plots on, as well as a list to store an
     # example of each distribution's plot (needed for the legend).
     result, plot_axes = _create_plot()
-    legend_distribution_plots = [None] * num_distributions
 
     # Iterate over each data point, and plot each of the distributions at that
     # data point. Increase the offset after each distribution is plotted,
@@ -199,15 +198,6 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             distribution_plot_result = plotting_function(plot_axes, dist,
                     dist_marker, distribution_width, dist_location,
                     whisker_length, error_bar_type)
-            # Save off the result of the current distribution's plot, which is
-            # needed to build the legend later on. If there is no data for the
-            # current distribution, the result will be None (for bar and
-            # scatter plots) and thus we do not want to save this as an example
-            # for building the legend.
-            if (distribution_plot_result is not None and
-                legend_distribution_plots[dist_index] is None):
-                legend_distribution_plots[dist_index] = \
-                        distribution_plot_result
             dist_offset += distribution_width
 
     # Set up various plot options that are best set after the plotting is done.
@@ -219,12 +209,11 @@ def generate_comparative_plots(plot_type, data, x_values=None,
                       data_point_labels, x_tick_labels_orientation, y_min,
                       y_max)
 
-    # Add a legend for the different distribution markers.
     if distribution_labels is not None:
-        legend_function(legend_distribution_plots, plot_axes,
-                        distribution_markers, num_distributions,
-                        distribution_labels)
-    result.canvas.draw()
+        _create_legend(plot_axes, distribution_markers, distribution_labels,
+                       marker_type)
+
+    _set_figure_size(result, figure_width, figure_height)
 
     # matplotlib seems to sometimes plot points on the rightmost edge of the
     # plot without adding padding, so we need to add our own to both sides of
@@ -297,12 +286,12 @@ def _validate_x_values(x_values, x_tick_labels, num_expected_values):
 def _get_distribution_markers(marker_type, marker_choices, num_markers):
     """Returns a list of length num_markers of valid matplotlib colors or
     symbols.
-    
-    The markers will be comprised of those found in distribution_markers
-    (if not None and not empty) or a list of predefined markers (determined by
-    marker_type, which can be either 'colors' or 'symbols'). If there are not
-    enough markers, the list of markers will be reused from the beginning again
-    (as many times as are necessary).
+
+    The markers will be comprised of those found in marker_choices (if not None
+    and not empty) or a list of predefined markers (determined by marker_type,
+    which can be either 'colors' or 'symbols'). If there are not enough
+    markers, the list of markers will be reused from the beginning again (as
+    many times as are necessary).
     """
     if num_markers < 0:
         raise ValueError("num_markers must be greater than or equal to zero.")
@@ -377,16 +366,9 @@ def _calc_data_point_ticks(x_locations, num_distributions, distribution_width,
     return x_locations + ((dist_size * distribution_width) / 2)
 
 def _create_plot():
-    """Creates a plot and returns the matplotlib Figure and Axes objects
-    associated with it.
-    
-    The _on_draw() event handler is registered with the figure's canvas, as
-    this is needed to auto-resize the plot to encompass text labels that might
-    otherwise get cut off when the plot is rendered.
-    """
+    """Creates a plot and returns the associated Figure and Axes objects."""
     fig = figure()
     ax = fig.add_subplot(111)
-    fig.canvas.mpl_connect('draw_event', _on_draw)
     return fig, ax
 
 def _plot_bar_data(plot_axes, distribution, distribution_color,
@@ -394,20 +376,18 @@ def _plot_bar_data(plot_axes, distribution, distribution_color,
                    error_bar_type):
     """Returns the result of plotting a single bar in matplotlib."""
     result = None
-    avg = mean(distribution)
-    if error_bar_type == 'stdv':
-        error_bar = std(distribution)
-    elif error_bar_type == 'sem':
-        error_bar = std(distribution)
-        if len(distribution) > 0:
-            error_bar /= sqrt(len(distribution))
-    else:
-        raise ValueError("Invalid error bar type '%s'. Supported error bar "
-                "types are 'stdv' and 'sem'." % error_bar_type)
-    if not isnan(avg) and not isnan(error_bar):
-        # numpy's mean() and std() functions will return NaN for empty
-        # lists of data, and we do not want to plot these because
-        # matplotlib will not be able to render them as PDFs.
+
+    # We do not want to plot empty distributions because matplotlib will not be
+    # able to render them as PDFs.
+    if len(distribution) > 0:
+        avg = mean(distribution)
+        if error_bar_type == 'stdv':
+            error_bar = std(distribution)
+        elif error_bar_type == 'sem':
+            error_bar = std(distribution) / sqrt(len(distribution))
+        else:
+            raise ValueError("Invalid error bar type '%s'. Supported error "
+                    "bar types are 'stdv' and 'sem'." % error_bar_type)
         result = plot_axes.bar(x_position, avg, distribution_width,
                                yerr=error_bar, ecolor='black',
                                facecolor=distribution_color)
@@ -419,6 +399,7 @@ def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
     """Returns the result of plotting a single scatterplot in matplotlib."""
     result = None
     x_vals = [x_position] * len(distribution)
+
     # matplotlib's scatter function doesn't like plotting empty data.
     if len(x_vals) > 0 and len(distribution) > 0:
         result = plot_axes.scatter(x_vals, distribution,
@@ -509,91 +490,50 @@ def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
     if y_max is not None:
         plot_axes.set_ylim(top=float(y_max))
 
-def _create_standard_legend(distribution_plots, plot_axes,
-                            distribution_markers, num_distributions,
-                            distribution_labels):
-    """Creates a default matplotlib legend on the supplied axes."""
-    # We need to let matplotlib know of the first group of distributions that
-    # we plotted, as well as their labels.
-    if ((len(distribution_plots) != len(distribution_markers)) or
-            (len(distribution_markers) != num_distributions) or 
-            (num_distributions != len(distribution_labels))):
-        raise ValueError("The number of distribution markers, "
-                         "distribution labels, and distribution plots must "
-                         "equal the number of distributions.")
-    for plot in distribution_plots:
-        if plot is None:
-            raise ValueError("One of the distributions was 'None'. A legend "
-                             "cannot be created from an invalid distribution.")
-    plot_axes.legend(distribution_plots, distribution_labels, loc='best')
+def _create_legend(plot_axes, distribution_markers, distribution_labels,
+                   marker_type):
+    """Creates a legend on the supplied axes."""
+    # We have to use a proxy artist for the legend because box plots currently
+    # don't have a very useful legend in matplotlib, and using the default
+    # legend for bar/scatterplots chokes on empty/null distributions.
+    # Note: This code is based on the following examples:
+    #   http://matplotlib.sourceforge.net/users/legend_guide.html
+    #   http://stackoverflow.com/a/11423554
+    if len(distribution_markers) != len(distribution_labels):
+        raise ValueError("The number of distribution markers does not match "
+                         "the number of distribution labels.")
+    if marker_type == 'colors':
+        legend_proxy = [Rectangle((0, 0), 1, 1, fc=marker)
+                        for marker in distribution_markers]
+        plot_axes.legend(legend_proxy, distribution_labels, loc='best')
+    elif marker_type == 'symbols':
+        legend_proxy = [Line2D(range(1), range(1), color='white',
+                        markerfacecolor='black', marker=marker)
+                        for marker in distribution_markers]
+        plot_axes.legend(legend_proxy, distribution_labels, numpoints=3,
+                         scatterpoints=3, loc='best')
+    else:
+        raise ValueError("Invalid marker_type: '%s'. marker_type must be "
+                         "either 'colors' or 'symbols'." % marker_type)
 
-def _create_box_plot_legend(distribution_plots, plot_axes, distribution_colors,
-                            num_distributions, distribution_labels):
-    """Creates a custom matplotlib legend on the supplied axes.
-    
-    This function is useful for boxplots or other plots that do not have a
-    useful default legend in matplotlib. It creates rectangles of different
-    colors and pairs them up with the supplied labels.
+def _set_figure_size(fig, width=None, height=None):
+    """Sets the plot figure size and makes room for axis labels, titles, etc.
+
+    If both width and height are not provided, will use matplotlib defaults.
+
+    Making room for labels will not always work (known bug in matplotlib), and
+    if it fails, the user will be warned that their plot may have cut-off
+    labels.
     """
-    # We have to fake the legend because box plots currently don't have a very
-    # useful legend in matplotlib. Note: This code was taken from a matplotlib
-    # example:
-    # http://matplotlib.sourceforge.net/users/legend_guide.html
-    if ((len(distribution_plots) != len(distribution_colors)) or
-            (len(distribution_colors) != num_distributions) or 
-            (num_distributions != len(distribution_labels))):
-        raise ValueError("The number of distribution colors, "
-                         "distribution labels, and distribution plots must "
-                         "equal the number of distributions.")
-    legend_rects = [Rectangle((0, 0), 1, 1, fc=color) for color in
-            distribution_colors]
-    assert (len(legend_rects) == len(distribution_labels)), "The number of " +\
-            "legend color rectangles does not match the number of " +\
-            "distribution labels."
-    plot_axes.legend(legend_rects, distribution_labels, loc='best')
-
-def _on_draw(event):
-    """Makes room for vertical x-axis tick labels on the plot (if necessary) so
-    that they don't get cut off when the plot is rendered.
-    
-    This function must be connected to matplotlib's draw_event in order to be
-    called.
-    """
-    # Note: the following code is largely taken from two separate code
-    # postings. The first reference dealt with text labels being cut off when
-    # the plot was rendered, and the second showed how to prevent infinite
-    # recursion when handling a draw event that draws.
-    # (1) http://matplotlib.sourceforge.net/faq/howto_faq.html#automatically-
-    #       make-room-for-tick-labels
-    # (2) http://stackoverflow.com/questions/4018860/text-box-in-matplotlib/
-    #       4056853#4056853
-    fig = event.canvas.figure
-    for ax in fig.axes:
-        x_tick_labels = ax.get_xticklabels()
-        bboxes = []
-
-        for label in x_tick_labels:
-            bbox = label.get_window_extent()
-            # The figure transform goes from relative coords->pixels and we
-            # want the inverse of that.
-            bboxi = bbox.inverse_transformed(fig.transFigure)
-            bboxes.append(bboxi)
-
-        # This is the bbox that bounds all the bboxes, again in relative
-        # figure coords.
-        bbox = Bbox.union(bboxes)
-
-        if fig.subplotpars.bottom < bbox.height:
-            # We need to move it up to add some padding for the labels.
-            fig.subplots_adjust(bottom=min(1.2 * bbox.height,
-                    fig.subplotpars.top - 0.1))
-
-            # Temporarily disconnect any callbacks to the draw event to avoid
-            # recursion.
-            func_handles = fig.canvas.callbacks.callbacks[event.name]
-            fig.canvas.callbacks.callbacks[event.name] = {}
-
-            # Re-draw the figure and reset the draw event callbacks.
-            fig.canvas.draw()
-            fig.canvas.callbacks.callbacks[event.name] = func_handles
-    return False
+    # Set the size of the plot figure, then make room for the labels so they
+    # don't get cut off. Must be done in this order.
+    if width is not None and height is not None and width > 0 and height > 0:
+        fig.set_size_inches(width, height)
+    try:
+        fig.tight_layout()
+    except ValueError:
+        print ("Warning: could not automatically resize plot to make room for "
+               "axes labels and plot title. This can happen if the labels or "
+               "title are extremely long and the plot size is too small. Your "
+               "plot may have its labels and/or title cut-off. To fix this, "
+               "try increasing the plot's size (in inches) and try again.")

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-__author__ = "Jai Rideout"
+__author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jai Rideout"]
+__credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 """Tests public and private functions in the distribution_plots module."""
@@ -22,7 +22,7 @@ from qiime.pycogent_backports.distribution_plots import _validate_input,\
     _calc_data_point_locations, _set_axes_options, generate_box_plots,\
     generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,\
     _plot_scatter_data, _plot_box_data, _color_box_plot,\
-    _create_standard_legend, _create_box_plot_legend
+    _create_legend, _set_figure_size
 from cogent.util.unit_test import TestCase, main
 
 class DistributionPlotsTests(TestCase):
@@ -327,36 +327,24 @@ class DistributionPlotsTests(TestCase):
                           x_tick_labels=["T0", "T1", "T2"], y_min='car',
                           y_max=30)
 
-    def test_create_standard_legend_invalid_input(self):
-        """_create_standard_legend() should raise an exception when given a
-        list of distribution examples that contains one or more null values, or
-        if the lengths of the input lists don't match up."""
-        fig, ax = _create_plot()
-        self.assertRaises(ValueError, _create_standard_legend, [None, []], ax,
-                ['^', '<'], 2, ['dist1', 'dist2'])
-        self.assertRaises(ValueError, _create_standard_legend, [[], []], ax,
-                ['^', '<', '>'], 2, ['dist1', 'dist2'])
-        self.assertRaises(ValueError, _create_standard_legend, [[], []], ax,
-                ['^', '<', '>'], 3, ['dist1', 'dist2', 'dist3'])
-        self.assertRaises(ValueError, _create_standard_legend, [[], [], []],
-                ax, ['^', '<', '>'], 3, ['dist1', 'dist2'])
-
-    def test_create_box_plot_legend_invalid_input(self):
-        """_create_box_plot_legend() should raise an exception when the lengths
-        of the input lists don't match up."""
-        fig, ax = _create_plot()
-        self.assertRaises(ValueError, _create_box_plot_legend, [[], []], ax,
-                ['b', 'm', 'r'], 2, ['dist1', 'dist2'])
-        self.assertRaises(ValueError, _create_box_plot_legend, [[], []], ax,
-                ['b', 'm', 'r'], 3, ['dist1', 'dist2', 'dist3'])
-        self.assertRaises(ValueError, _create_box_plot_legend, [[], [], []],
-                ax, ['b', 'm', 'r'], 3, ['dist1', 'dist2'])
-
-    def test_create_box_plot_legend_valid_input(self):
+    def test_create_legend(self):
         """_create_box_plot_legend() should create a legend on valid input."""
         fig, ax = _create_plot()
-        _create_box_plot_legend([[], []], ax, ['b', 'r'], 2,
-                ['dist1', 'dist2'])
+        _create_legend(ax, ['b', 'r'], ['dist1', 'dist2'], 'colors')
+        self.assertEqual(len(ax.get_legend().get_texts()), 2)
+
+        fig, ax = _create_plot()
+        _create_legend(ax, ['^', '<', '>'], ['dist1', 'dist2', 'dist3'],
+                'symbols')
+        self.assertEqual(len(ax.get_legend().get_texts()), 3)
+
+    def test_create_legend_invalid_input(self):
+        """Test raises error on bad input."""
+        fig, ax = _create_plot()
+        self.assertRaises(ValueError, _create_legend, ax,
+                ['^', '<', '>'], ['dist1', 'dist2'], 'symbols')
+        self.assertRaises(ValueError, _create_legend, ax, ['^', '<', '>'],
+                ['dist1', 'dist2', 'dist3'], 'foo')
 
     def test_generate_box_plots(self):
         """generate_box_plots() should return a valid Figure object."""
@@ -477,6 +465,61 @@ class DistributionPlotsTests(TestCase):
         fig, ax = _create_plot()
         box_plot = boxplot(self.ValidTypicalBoxData)
         _color_box_plot(ax, box_plot, 'blue')
+
+    def test_set_figure_size(self):
+        """Test setting a valid figure size."""
+        fig, ax = _create_plot()
+        _set_axes_options(ax, 'foo', 'x_foo', 'y_foo',
+                          x_tick_labels=['foofoofoo', 'barbarbar'],
+                          x_tick_labels_orientation='vertical')
+        _set_figure_size(fig, 3, 4)
+        self.assertFloatEqual(fig.get_size_inches(), (3, 4))
+
+    def test_set_figure_size_defaults(self):
+        """Test setting a figure size using matplotlib defaults."""
+        fig, ax = _create_plot()
+        _set_axes_options(ax, 'foo', 'x_foo', 'y_foo',
+                          x_tick_labels=['foofoofoo', 'barbarbar'],
+                          x_tick_labels_orientation='vertical')
+        orig_fig_size = fig.get_size_inches()
+        _set_figure_size(fig)
+        self.assertFloatEqual(fig.get_size_inches(), orig_fig_size)
+
+    def test_set_figure_size_invalid(self):
+        """Test setting a figure size using invalid dimensions."""
+        fig, ax = _create_plot()
+        _set_axes_options(ax, 'foo', 'x_foo', 'y_foo',
+                          x_tick_labels=['foofoofoo', 'barbarbar'],
+                          x_tick_labels_orientation='vertical')
+        orig_fig_size = fig.get_size_inches()
+        _set_figure_size(fig, -1, 0)
+        self.assertFloatEqual(fig.get_size_inches(), orig_fig_size)
+
+    def test_set_figure_size_long_labels(self):
+        """Test setting a figure size that has really long labels."""
+        saved_stdout = sys.stdout
+        try:
+            out = StringIO()
+            sys.stdout = out
+
+            fig, ax = _create_plot()
+            _set_axes_options(ax, 'foo', 'x_foo', 'y_foo',
+                              x_tick_labels=['foofoofooooooooooooooooooooooooo'
+                              'ooooooooooooooooooooooooooooooooooooooooooooooo'
+                              'ooooooooooooooooooooo', 'barbarbar'],
+                              x_tick_labels_orientation='vertical')
+            _set_figure_size(fig, 3, 3)
+            self.assertFloatEqual(fig.get_size_inches(), (3, 3))
+            output = out.getvalue().strip()
+            self.assertEqual(output,
+            "Warning: could not automatically resize plot to make room for "
+            "axes labels and plot title. This can happen if the labels or "
+            "title are extremely long and the plot size is too small. Your "
+            "plot may have its labels and/or title cut-off. To fix this, "
+            "try increasing the plot's size (in inches) and try again.")
+        finally:
+            sys.stdout = saved_stdout
+
 
 if __name__ == '__main__':
     main()

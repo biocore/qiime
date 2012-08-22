@@ -13,13 +13,14 @@ __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
 
+from string import digits
 from cogent.util.unit_test import TestCase, main
 from numpy import array, asarray, roll
 from numpy.random import permutation
 
-from qiime.stats import (Anosim, BioEnv, CategoryStats, CorrelationStats,
-                         DistanceMatrixStats, MantelCorrelogram, Mantel,
-                         PartialMantel, Permanova)
+from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
+        Anosim, BioEnv, CategoryStats, CorrelationStats, DistanceMatrixStats,
+        MantelCorrelogram, Mantel, PartialMantel, Permanova)
 from qiime.util import DistanceMatrix, MetadataMap
 
 
@@ -145,6 +146,160 @@ class NonRandomShuffler(object):
         x = roll(x, self.num_calls)
         self.num_calls += 1
         return x
+
+
+class StatsTests(TestCase):
+    """Tests for top-level functions in the stats module."""
+
+    def setUp(self):
+        """Set up data that will be used by the tests."""
+        # For testing Monte Carlo functionality.
+
+        # Single comp.
+        self.labels1 = ['foo', 'bar']
+        self.dists1 = [[1, 2, 3], [7, 8]]
+
+        # Multiple comps.
+        self.labels2 = ['foo', 'bar', 'baz']
+        self.dists2 = [[1, 2, 3], [7, 8], [9, 10, 11]]
+
+        # Too few obs.
+        self.labels3 = ['foo', 'bar', 'baz']
+        self.dists3 = [[1], [7], [9, 10, 11]]
+
+    def remove_nums(self, text):
+        """Removes all digits from the given string.
+
+        Returns the string will all digits removed. Useful for testing strings
+        for equality in unit tests where you don't care about numeric values,
+        or if some values are random.
+
+        This code was taken from http://bytes.com/topic/python/answers/
+            850562-finding-all-numbers-string-replacing
+
+        Arguments:
+            text - the string to remove digits from
+        """
+        return text.translate(None, digits)
+
+    def test_all_pairs_t_test(self):
+        """Test performing Monte Carlo tests on valid dataset."""
+        # We aren't testing the numeric values here, as they've already been
+        # tested in the functions that compute them. We are interested in the
+        # format of the returned string.
+        exp = """# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# The nonparametric p-values were calculated using 999 Monte Carlo permutations.
+# The nonparametric p-values contain the correct number of significant digits.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in the groups).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+foo	bar	-6.6	0.00708047956412	0.0212414386924	0.095	0.285
+foo	baz	-9.79795897113	0.000608184944463	0.00182455483339	0.101	0.303
+bar	baz	-3.0	0.0576688856224	0.173006656867	0.217	0.651
+"""
+        obs = all_pairs_t_test(self.labels2, self.dists2)
+        self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
+
+    def test_all_pairs_t_test_no_perms(self):
+        """Test performing Monte Carlo tests on valid dataset with no perms."""
+        exp = """# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in the groups).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+foo	bar	-6.6	0.00708047956412	0.0212414386924	N/A	N/A
+foo	baz	-9.79795897113	0.000608184944463	0.00182455483339	N/A	N/A
+bar	baz	-3.0	0.0576688856224	0.173006656867	N/A	N/A
+"""
+        obs = all_pairs_t_test(self.labels2, self.dists2,
+                                        num_permutations=0)
+        self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
+
+    def test_all_pairs_t_test_few_perms(self):
+        """Test performing Monte Carlo tests on dataset with a few perms."""
+        exp = """# The tests of significance were performed using a one-sided (low) Student's two-sample t-test.
+# The nonparametric p-values were calculated using 5 Monte Carlo permutations.
+# The nonparametric p-values contain the correct number of significant digits.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in the groups).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+foo	bar	-6.6	0.00354023978206	0.0106207193462	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
+foo	baz	-9.79795897113	0.000304092472232	0.000912277416695	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
+bar	baz	-3.0	0.0288344428112	0.0865033284337	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
+"""
+        obs = all_pairs_t_test(self.labels2, self.dists2,
+                                        num_permutations=5, tail_type='low')
+        self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
+
+    def test_all_pairs_t_test_invalid_tests(self):
+        """Test performing Monte Carlo tests with some invalid tests."""
+        exp = """# The tests of significance were performed using a one-sided (high) Student's two-sample t-test.
+# The nonparametric p-values were calculated using 20 Monte Carlo permutations.
+# The nonparametric p-values contain the correct number of significant digits.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in the groups).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+foo	bar	N/A	N/A	N/A	N/A	N/A
+"""
+        obs = all_pairs_t_test(['foo', 'bar'], [[], [1, 2, 4]],
+                'high', 20)
+        self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
+
+    def test_all_pairs_t_test_invalid_input(self):
+        """Test performing Monte Carlo tests on invalid input."""
+        # Number of labels and distance groups do not match.
+        self.assertRaises(ValueError, all_pairs_t_test,
+                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6], [7, 8]])
+
+        # Invalid tail type.
+        self.assertRaises(ValueError, all_pairs_t_test,
+                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], 'foo')
+
+        # Invalid number of permutations.
+        self.assertRaises(ValueError, all_pairs_t_test,
+                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], num_permutations=-1)
+
+    def test_perform_pairwise_tests_single_comp(self):
+        """Test on valid dataset w/ 1 comp."""
+        # Verified with R's t.test function.
+        exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
+            0.0070804795641244006, 0.10199999999999999, 0.10199999999999999]]
+        obs = _perform_pairwise_tests(self.labels1, self.dists1, 'two-sided',
+                                      999)
+        self.assertEqual(len(obs), len(exp))
+        self.assertFloatEqual(obs[0][:5], exp[0][:5])
+        self.assertIsProb(obs[0][5])
+        self.assertFloatEqual(obs[0][5], obs[0][6])
+
+    def test_perform_pairwise_tests_multi_comp(self):
+        """Test on valid dataset w/ multiple comps."""
+        # Verified with R's t.test function.
+        exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
+            0.021241438692373202, None, None], ['foo', 'baz',
+            -9.7979589711327115, 0.00060818494446333643, 0.0018245548333900093,
+            None, None], ['bar', 'baz', -3.0, 0.05766888562243732,
+            0.17300665686731195, None, None]]
+        obs = _perform_pairwise_tests(self.labels2, self.dists2, 'two-sided',
+                                      0)
+        self.assertFloatEqual(obs, exp)
+
+    def test_perform_pairwise_tests_too_few_obs(self):
+        """Test on dataset w/ too few observations."""
+        exp = [['foo', 'bar', None, None, None, None, None], ['foo', 'baz',
+            -7.794228634059948, 0.008032650971672552, 0.016065301943345104,
+            None, None], ['bar', 'baz',
+            -2.598076211353316, 0.060844967173160069, 0.12168993434632014,
+            None, None]]
+        obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
+        self.assertFloatEqual(obs, exp)
+
+        exp = [['foo', 'bar', None, None, None, None, None]]
+        obs = _perform_pairwise_tests(['foo', 'bar'], [[], [1, 2, 4]], 'high',
+                                      20)
+        self.assertFloatEqual(obs, exp)
 
 
 class DistanceMatrixStatsTests(TestHelper):

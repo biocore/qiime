@@ -8,6 +8,8 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * New script for parallel trie otu picker
 * Made loaddata.r more robust when making mapping files, distance matrices, etc. compatible with each other. There were rare cases that caused some R functions (e.g. betadisper) to fail if empty levels were left in the parsed mapping file.
 * Fixed issue in ParallelWrapper class that could have caused a deadlock if run from within a subprocess with pipes.
+* make_distance_boxplots.py and make_distance_comparison_plots.py can now perform Student's two-sample t-tests to determine whether a pair of boxplots/distributions are significantly different (using both parametric and nonparametric Monte Carlo-based tests of significance). These changes include three new options to the two scripts (--tail_type, --num_permutations, and --suppress_significance_tests), as well as a new function all_pairs_t_test in qiime.stats. The accompanying tutorial has also been updated to cover the new statistical tests.
+
 QIIME 1.5.0 (8 May 2012)
 ==================================
 * OTU tables are now stored on disk in the BIOM file format (see http://biom-format.org). The BIOM format webpage describes the motivation for the switch, but briefly it will support interoperability of related tools (e.g., QIIME/MG-RAST/mothur/VAMPS), and is a more efficient representation of data/metadata. The biom-format projects DenseTable and SparseTable objects are now used to represent OTU tables in memory. See the convert_biom.py script in the biom-format project for converting between 'classic' and BIOM formatted OTU tables.

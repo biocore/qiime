@@ -32,9 +32,120 @@ from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 
-from qiime.pycogent_backports.test import (mantel_test, pearson, permute_2d,
-                                           spearman)
+from qiime.format import format_p_value_for_num_iters
+from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
+                                           pearson, permute_2d, spearman)
 from qiime.util import DistanceMatrix, MetadataMap
+
+# Top-level stats functions.
+
+tail_types = ['low', 'high', 'two-sided']
+tail_type_desc = {'low':'one-sided (low)', 'high':'one-sided (high)',
+                  'two-sided':'two-sided'}
+
+def all_pairs_t_test(labels, dists, tail_type='two-sided',
+                     num_permutations=999):
+    """Perform two-sample t-test on all pairs of grouped distances.
+
+    Performs Student's two-sample t-test on all pairs of distributions,
+    optionally using Monte Carlo permutations to compute the nonparametric
+    p-value in addition to the parametric p-value.
+
+    Returns a formatted string (suitable for writing to a file) containing the
+    results of the tests.
+
+    This code is based on Jeremy Widmann's
+    qiime.make_distance_histograms.monte_carlo_group_distances code.
+
+    Arguments:
+        labels - list of labels corresponding to each of the distributions
+        dists - list of lists, where each inner list is a distribution of
+            numbers (observations)
+        tail_type - type of hypothesis test to perform. One of 'two-sided',
+            'high', or 'low'
+        num_permutations - the number of Monte Carlo permutations to use. If
+            zero, the nonparametric p-value will not be calculated and will be
+            'N/A' in the returned string.
+    """
+    result = ''
+
+    if len(labels) != len(dists):
+        raise ValueError("The number of distribution labels must match the "
+                         "number of distributions.")
+    if tail_type not in tail_types:
+        raise ValueError("Invalid tail type '%s'. Must be one of %r." %
+                         (tail_type, tail_types))
+    if num_permutations < 0:
+        raise ValueError("Invalid number of permutations: %d. Must be greater "
+                         "than or equal to zero." % num_permutations)
+
+    result += '# The tests of significance were performed using a ' + \
+              tail_type_desc[tail_type] + ' Student\'s two-sample t-test.\n'
+
+    if num_permutations > 0:
+        result += '# The nonparametric p-values were calculated using ' + \
+                  '%d Monte Carlo permutations.\n' % num_permutations
+        result += '# The nonparametric p-values contain the correct ' + \
+                  'number of significant digits.\n'
+
+    result += '# Entries marked with "N/A" could not be calculated because ' + \
+              'at least one of the groups\n# of distances was empty, ' + \
+              'both groups each contained only a single distance, or\n' + \
+              '# the test could not be performed (e.g. no variance in the ' + \
+              'groups).\nGroup 1\tGroup 2\tt statistic\tParametric ' + \
+              'p-value\tParametric p-value (Bonferroni-corrected)\t' + \
+              'Nonparametric p-value\tNonparametric p-value ' + \
+              '(Bonferroni-corrected)\n'
+
+    stats = _perform_pairwise_tests(labels, dists, tail_type, num_permutations)
+    for stat in stats:
+        stat = ['N/A' if e is None else e for e in stat]
+        result += '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (stat[0], stat[1], stat[2],
+                stat[3], stat[4],
+                format_p_value_for_num_iters(stat[5], num_permutations) if
+                    stat[5] != 'N/A' else 'N/A',
+                format_p_value_for_num_iters(stat[6], num_permutations) if
+                    stat[6] != 'N/A' else 'N/A')
+    return result
+
+def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
+    """Perform t-test for all pairs of distributions.
+
+    Computes corrected p-values in addition to uncorrected.
+    """
+    result = []
+
+    # Convert our notion of tail type into the format expected by
+    # PyCogent.
+    if tail_type == 'two-sided':
+        tail_type = None
+
+    # Compare each pair of distributions, keeping track of the number of actual
+    # tests that were successfully performed so that we can correct for
+    # multiple comparisons.
+    num_tests = 0
+    for g1_idx, (g1_label, g1_dist) in enumerate(zip(labels[:-1], dists[:-1])):
+        for g2_label, g2_dist in zip(
+                labels[(g1_idx + 1):], dists[(g1_idx + 1):]):
+            if ((len(g1_dist) == 1 and len(g2_dist) == 1) or
+                (len(g1_dist) < 1 or len(g2_dist) < 1)):
+                # Not enough data to run the test.
+                obs_t, param_p_val, nonparam_p_val = None, None, None
+            else:
+                obs_t, param_p_val, _, nonparam_p_val = mc_t_two_sample(
+                        g1_dist, g2_dist, tails=tail_type,
+                        permutations=num_permutations)
+            result.append([g1_label, g2_label, obs_t, param_p_val, None,
+                           nonparam_p_val, None])
+            if obs_t is not None:
+                num_tests += 1
+
+    # Correct the p-values for multiple comparisons, now that we know how many
+    # tests succeeded.
+    for stat in result:
+        stat[4] = stat[3] if stat[3] is None else min(stat[3] * num_tests, 1)
+        stat[6] = stat[5] if stat[5] is None else min(stat[5] * num_tests, 1)
+    return result
 
 
 class DistanceMatrixStats(object):

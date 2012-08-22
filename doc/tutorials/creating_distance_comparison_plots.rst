@@ -31,6 +31,54 @@ This command will create a new output directory named :file:`tutorial_output`, w
 
 The first and second boxplots represent all within distances and all between distances, respectively. The first boxplot contains the distances within `Control` samples and the distances within `Fast` samples.  Likewise, the second boxplot contains the distances between `Control` and `Fast` samples. The next two boxplots represent the individual within distances and the final boxplot represents the individual between distances. Since there are only two possible states for the `Treatment` field (i.e. `Control` or `Fast`), the all between boxplot is the same as the individual between boxplot. If there were more possible field states, however, the all between boxplot may not always match the individual between boxplots because there will be more than one individual between boxplot contributing to the all between boxplot.  
 
+Next, open up the file :file:`Treatment_Stats.xls` in the :file:`tutorial_output` directory:
+
+.. note::
+
+    * # The tests of significance were performed using a two-sided Student's two-sample t-test.
+    * # Entries marked with "N/A" could not be calculated because at least one of the groups
+    * # of distances was empty, both groups each contained only a single distance, or
+    * # the test could not be performed (e.g. no variance in the groups).
+    * Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+    * All within Treatment	All between Treatment	-5.8262425036	1.44801388028e-06	1.44801388028e-05	N/A	N/A
+    * All within Treatment	Control vs. Control	0.0112396745597	0.991125136573	1	N/A	N/A
+    * All within Treatment	Fast vs. Fast	-0.013809784181	0.989118568483	1	N/A	N/A
+    * All within Treatment	Control vs. Fast	-5.8262425036	1.44801388028e-06	1.44801388028e-05	N/A	N/A
+    * All between Treatment	Control vs. Control	5.63749647578	4.87517414712e-06	4.87517414712e-05	N/A	N/A
+    * All between Treatment	Fast vs. Fast	4.08780199422	0.000421964667676	0.00421964667676	N/A	N/A
+    * All between Treatment	Control vs. Fast	0.0	1.0	1	N/A	N/A
+    * Control vs. Control	Fast vs. Fast	-0.0214237491729	0.983209978997	1	N/A	N/A
+    * Control vs. Control	Control vs. Fast	-5.63749647578	4.87517414712e-06	4.87517414712e-05	N/A	N/A
+    * Fast vs. Fast	Control vs. Fast	-4.08780199422	0.000421964667676	0.00421964667676	N/A	N/A
+
+This file is most easily viewed in a spreadsheet program such as Microsoft Excel. It contains the results of multiple Student's two-sample t-tests, comparing every pair of boxplots to determine if they are significantly different from each other. Note the 'N/A' cells in the file for the nonparametric p-values. By default, only the parametric p-values (from using the t-distribution) are reported (mainly because doing multiple permutation tests can take a long time on large datasets). To also compute the nonparametric p-values using Monte Carlo permutations, run the following command, which specifies 999 permutations: ::
+
+    make_distance_boxplots.py -m Fasting_Map.txt -d wf_bdiv_even146/unweighted_unifrac_dm.txt -f Treatment -o tutorial_output -n 999
+
+Open up the resulting file :file:`Treatment_Stats.xls`:
+
+.. note::
+
+    * # The tests of significance were performed using a two-sided Student's two-sample t-test.
+    * # The nonparametric p-values were calculated using 999 Monte Carlo permutations.
+    * # The nonparametric p-values contain the correct number of significant digits.
+    * # Entries marked with "N/A" could not be calculated because at least one of the groups
+    * # of distances was empty, both groups each contained only a single distance, or
+    * # the test could not be performed (e.g. no variance in the groups).
+    * Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+    * All within Treatment	All between Treatment	-5.8262425036	1.44801388028e-06	1.44801388028e-05	0.001	0.010
+    * All within Treatment	Control vs. Control	0.0112396745597	0.991125136573	1	0.986	1.000
+    * All within Treatment	Fast vs. Fast	-0.013809784181	0.989118568483	1	0.988	1.000
+    * All within Treatment	Control vs. Fast	-5.8262425036	1.44801388028e-06	1.44801388028e-05	0.001	0.010
+    * All between Treatment	Control vs. Control	5.63749647578	4.87517414712e-06	4.87517414712e-05	0.001	0.010
+    * All between Treatment	Fast vs. Fast	4.08780199422	0.000421964667676	0.00421964667676	0.002	0.020
+    * All between Treatment	Control vs. Fast	0.0	1.0	1	1.000	1.000
+    * Control vs. Control	Fast vs. Fast	-0.0214237491729	0.983209978997	1	0.980	1.000
+    * Control vs. Control	Control vs. Fast	-5.63749647578	4.87517414712e-06	4.87517414712e-05	0.001	0.010
+    * Fast vs. Fast	Control vs. Fast	-4.08780199422	0.000421964667676	0.00421964667676	0.001	0.010
+
+We now see the nonparametric p-values in addition to the parametric ones. If we look at the first comparison that was made (between 'all within' and 'all between' distances), the t-test indicates that the two distributions of distances are significantly different because of the extremely small p-values (even after the very conservative Bonferroni correction). Thus, the boxplots and significance tests seem to indicate that samples within the same `Treatment` field state (i.e. `Control` or `Fast`) are significantly more similar to each other than samples across, or between, field states (i.e. `Control` vs. `Fast` samples). In other words, `Control` samples are more similar to other `Control` samples, and `Fast` samples are more similar to other `Fast` samples than `Control` samples are to `Fast` samples.
+
 To save the data used in the plots in a text file format, specify the --save_raw_data option: ::
 
     make_distance_boxplots.py -m Fasting_Map.txt -d wf_bdiv_even146/unweighted_unifrac_dm.txt -f Treatment -o tutorial_output --save_raw_data
@@ -103,7 +151,7 @@ plotted as a bar chart:
 .. image:: ../images/ time_comparisons3.png
    :align: center
 
-The output file format can be specified in a similar fashion to that found earlier in the tutorial when we worked with `make_distance_boxplots.py <../scripts/make_distance_boxplots.html>`_. As before, the raw data used in the plots can also be saved using the --save_raw_data option.
+The output file format can be specified in a similar fashion to that found earlier in the tutorial when we worked with `make_distance_boxplots.py <../scripts/make_distance_boxplots.html>`_. As before, the raw data used in the plots can also be saved using the --save_raw_data option. The same type of statistical tests are performed as with `make_distance_boxplots.py <../scripts/make_distance_boxplots.html>`_, where each pair of distributions is compared using Student's two-sample t-test, with optional Monte Carlo permutations.
 
 References
 ------------

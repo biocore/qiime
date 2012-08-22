@@ -12,9 +12,10 @@ from cogent.maths.stats.ks import psmirnov2x, pkstwo
 from cogent.maths.stats.kendall import pkendall, kendalls_tau
 from cogent.maths.stats.special import Gamma
 
-from numpy import arctanh, array, asarray, transpose, ravel, take, nonzero, \
-        log, sum, mean, cov, corrcoef, fabs, any, reshape, tanh, clip, nan, \
-        isnan, isinf, sqrt, exp, median as _median, zeros, ones
+from numpy import absolute, arctanh, array, asarray, concatenate, transpose, \
+        ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any, \
+        reshape, tanh, clip, nan, isnan, isinf, sqrt, exp, median as _median, \
+        zeros, ones
         #, std - currently incorrect
 from numpy.random import permutation, randint
 from cogent.maths.stats.util import Numbers
@@ -507,6 +508,95 @@ def t_two_sample (a, b, tails=None, exp_diff=0):
 
     prob = t_tailed_prob(t, df, tails)
     return t, prob
+
+def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
+                    exp_diff=0):
+    """Performs a two-sample t-test with Monte Carlo permutations.
+
+    x_items and y_items must be INDEPENDENT observations (sequences of
+    numbers). They do not need to be of equal length.
+
+    Returns the observed t statistic, the parametric p-value, a list of t
+    statistics obtained through Monte Carlo permutations, and the nonparametric
+    p-value obtained from the Monte Carlo permutations test.
+
+    This code is partially based on Jeremy Widmann's
+    qiime.make_distance_histograms.monte_carlo_group_distances code.
+
+    Arguments:
+        x_items - the first list of observations
+        y_items - the second list of observations
+        tails - if None (the default), a two-sided test is performed. 'high'
+            or 'low' for one-tailed tests
+        permutations - the number of permutations to use in calculating the
+            nonparametric p-value. Must be a number greater than or equal to 0.
+            If 0, the nonparametric test will not be performed. In this case,
+            the list of t statistics obtained from permutations will be empty,
+            and the nonparametric p-value will be None
+        exp_diff - the expected difference in means (x_items - y_items)
+    """
+    if tails is not None and tails != 'high' and tails != 'low':
+        raise ValueError("Invalid tail type '%s'. Must be either None, "
+                         "'high', or 'low'." % tails)
+    if permutations < 0:
+        raise ValueError("Invalid number of permutations: %d. Must be greater "
+                         "than or equal to zero." % permutations)
+
+    if (len(x_items) == 1 and len(y_items) == 1) or \
+       (len(x_items) < 1 or len(y_items) < 1):
+        raise ValueError("At least one of the sequences of observations is "
+                "empty, or the sequences each contain only a single "
+                "observation. Cannot perform the t-test.")
+
+    # Perform t-test using original observations.
+    obs_t, param_p_val = t_two_sample(x_items, y_items, tails=tails,
+                                      exp_diff=exp_diff)
+
+    # Only perform the Monte Carlo test if we got a sane answer back from the
+    # initial t-test and we have been specified permutations.
+    nonparam_p_val = None
+    perm_t_stats = []
+    if permutations > 0 and obs_t is not None and param_p_val is not None:
+        # Permute observations between x_items and y_items the specified number
+        # of times.
+        perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
+                                                           permutations)
+        perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
+                                     tails=tails, exp_diff=exp_diff)[0]
+                        for n in range(permutations)]
+
+        # Compute nonparametric p-value based on the permuted t-test results.
+        if tails is None:
+            better = (absolute(array(perm_t_stats)) >= absolute(obs_t)).sum()
+        elif tails == 'low':
+            better = (array(perm_t_stats) <= obs_t).sum()
+        elif tails == 'high':
+            better = (array(perm_t_stats) >= obs_t).sum()
+        nonparam_p_val = (better + 1) / (permutations + 1)
+    return obs_t, param_p_val, perm_t_stats, nonparam_p_val
+
+def _permute_observations(x_items, y_items, permutations,
+                          permute_f=permutation):
+    """Returns permuted versions of the sequences of observations.
+
+    Values are permuted between x_items and y_items (i.e. shuffled between the
+    two input sequences of observations).
+
+    This code is based on Jeremy Widmann's
+    qiime.make_distance_histograms.permute_between_groups code.
+    """
+    num_x = len(x_items)
+    num_y = len(y_items)
+    num_total_obs = num_x + num_y
+    combined_obs = concatenate((x_items, y_items))
+
+    # Generate a list of all permutations.
+    perms = [permute_f(num_total_obs) for i in range(permutations)]
+
+    # Use random permutations to split into groups.
+    rand_xs = [combined_obs[perm[:num_x]] for perm in perms]
+    rand_ys = [combined_obs[perm[num_x:num_total_obs]] for perm in perms]
+    return rand_xs, rand_ys
 
 def t_one_observation(x, sample, tails=None, exp_diff=0):
     """Returns t-test for significance of single observation versus a sample.

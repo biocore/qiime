@@ -2,13 +2,13 @@
 
 """This module contains functions useful for obtaining groupings."""
 
-__author__ = "Jai Rideout"
+__author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Rideout", "Jeremy Widmann"]
+__credits__ = ["Jai Ram Rideout", "Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from numpy import array
