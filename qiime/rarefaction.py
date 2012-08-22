@@ -173,6 +173,9 @@ def get_rare_data(otu_table,
     - otu_table (input and out) is otus(rows) by samples (cols)
     - no otus are removed, even if they are absent in the rarefied table"""
 
+    if not include_small_samples:
+        otu_table = filter_samples_from_otu_table(otu_table, otu_table.SampleIds, seqs_per_sample, inf)
+
     # subsample samples that have too many sequences
     def func(x, s_id, s_md):
         if x.sum() < seqs_per_sample:
@@ -183,8 +186,6 @@ def get_rare_data(otu_table,
     subsampled_otu_table = otu_table.transformSamples(func)
     
     # remove small samples if required
-    if not include_small_samples:
-        subsampled_otu_table = filter_samples_from_otu_table(subsampled_otu_table, subsampled_otu_table.SampleIds, seqs_per_sample, inf)
 
     return subsampled_otu_table
 
