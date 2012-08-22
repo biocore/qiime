@@ -455,6 +455,11 @@ class Anosim(CategoryStats):
     def __init__(self, mdmap, dm, cat, random_fn=permutation):
         """Initializes an instance with the specified analysis parameters.
 
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
+
         Arguments:
             mdmap - the MetadataMap instance to obtain grouping info from
             dm - the DistanceMatrix instance to obtain distances from
@@ -653,6 +658,11 @@ class Permanova(CategoryStats):
     def __init__(self, mdmap, dm, cat, random_fn=permutation):
         """Initializes an instance with the specified analysis parameters.
 
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
+
         Arguments:
             mdmap - the MetadataMap instance to obtain grouping info from
             dm - the DistanceMatrix instance to obtain distances from
@@ -795,6 +805,11 @@ class BioEnv(CategoryStats):
     def __init__(self, dm, metadata_map, cats):
         """Default constructor.
 
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
+
         Arguments:
             dm - the DistanceMatrix instance to run the analysis on
             metadata_map - the MetadataMap instance to obtain category
@@ -894,6 +909,11 @@ class MantelCorrelogram(CorrelationStats):
 
     def __init__(self, eco_dm, geo_dm, alpha=0.05):
         """Constructs a new MantelCorrelogram instance.
+
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
 
         Arguments:
             eco_dm - a DistanceMatrix object representing the ecological
@@ -1183,6 +1203,11 @@ class Mantel(CorrelationStats):
     def __init__(self, dm1, dm2, tail_type='two sided'):
         """Constructs a new Mantel instance.
 
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
+
         Arguments:
             dm1 - first DistanceMatrix object to be compared
             dm2 - second DistanceMatrix object to be compared
@@ -1261,6 +1286,11 @@ class PartialMantel(CorrelationStats):
 
     def __init__(self, dm1, dm2, cdm):
         """Constructs a new PartialMantel instance.
+
+        WARNING: Only symmetric, hollow distance matrices may be used as input.
+        Asymmetric distance matrices, such as those obtained by the UniFrac
+        Gain metric (i.e. beta_diversity.py -m unifrac_g), should not be used
+        as input.
 
         Arguments:
             dm1 - first DistanceMatrix object to be compared

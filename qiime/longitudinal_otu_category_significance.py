@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Catherine Lozupone", "Jai Rideout"]
+__credits__ = ["Catherine Lozupone", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Catherine Lozupone"

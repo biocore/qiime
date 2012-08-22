@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh"]
+__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jeremy Widmann"
@@ -44,7 +45,10 @@ script_info['output_description']="""The result of this script will be a folder 
 script_info['required_options']=[\
     make_option('-d','--distance_matrix_file',
         help='Input distance matrix filepath (i.e. the result of' +\
-        ' beta_diversity.py).',
+        ' beta_diversity.py). WARNING: Only symmetric, hollow distance '
+        'matrices may be used as input. Asymmetric distance matrices, such as '
+        'those obtained by the UniFrac Gain metric (i.e. beta_diversity.py '
+        '-m unifrac_g), should not be used as input',
         type='existing_filepath'),\
     make_option('-m', '--map_fname', dest='map_fname', \
          help='Input metadata mapping filepath.',

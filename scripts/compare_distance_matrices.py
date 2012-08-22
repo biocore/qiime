@@ -95,7 +95,10 @@ script_info['required_options'] = [
         type='choice',
         choices=['mantel', 'partial_mantel', 'mantel_corr']),
     make_option('-i','--input_dms', type='existing_filepaths',
-        help='the input distance matrices, comma-separated'),
+        help='the input distance matrices, comma-separated. WARNING: Only '
+        'symmetric, hollow distance matrices may be used as input. Asymmetric '
+        'distance matrices, such as those obtained by the UniFrac Gain metric '
+        '(i.e. beta_diversity.py -m unifrac_g), should not be used as input'),
     options_lookup['output_dir']
 ]
 script_info['optional_options'] = [

@@ -210,7 +210,11 @@ script_info['required_options'] = [
         'options: [adonis, anosim, best, morans_i, mrpp, permanova, '
         'permdisp, rda]', type='choice', choices=['adonis', 'anosim', 'best',
         'morans_i', 'mrpp', 'permanova', 'permdisp', 'rda']),
-    make_option('-i', '--input_dm', type='existing_filepath',help='the input distance matrix'),
+    make_option('-i', '--input_dm', type='existing_filepath',
+        help='the input distance matrix. WARNING: Only symmetric, hollow '
+        'distance matrices may be used as input. Asymmetric distance '
+        'matrices, such as those obtained by the UniFrac Gain metric (i.e. '
+        'beta_diversity.py -m unifrac_g), should not be used as input'),
     make_option('-m', '--mapping_file', type='existing_filepath',help='the metadata mapping file'),
     make_option('-c', '--categories', type='string',help='A comma-delimited list of '
         'categories from the mapping file (NOTE: many methods take just a '

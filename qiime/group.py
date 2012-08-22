@@ -22,6 +22,10 @@ def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
     first two elements are the field values being compared, and the third
     element is a list of the distances.
 
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
+
     Arguments:
         - dist_matrix_header: The distance matrix header, obtained from
                               parse.parse_distmat()
@@ -46,6 +50,10 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
                               mapping, field, within=True):
     """Returns a list of distances for either samples within each of the
     field values or between each of the field values for the specified field.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
         - dist_matrix_header: The distance matrix header, obtained from
@@ -79,6 +87,10 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
     value at the (key, key) index is a list of distances between those two
     field states. Thus, given a field, this function will create comparisons
     between the specified comparison_field_states and all other field states.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
         - dist_matrix_header: The distance matrix header, obtained from
@@ -197,6 +209,10 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True):
     The return value is a list that contains tuples of three elements: the
     first two elements are the field values being compared, and the third
     element is a list of the distances.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
         - dist_matrix_header: The distance matrix header.

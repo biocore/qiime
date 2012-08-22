@@ -27,6 +27,10 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
     Returns a string suitable for writing out to a file containing the results
     of the test.
 
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
+
     Arguments:
         method - which Mantel test to run (either 'mantel' or 'partial_mantel')
         fps - list of filepaths of the distance matrices
@@ -132,6 +136,10 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
     of them and then be used to save each of the correlogram Figures to a file.
     Each correlogram filepath will be a combination of the two distance matrix
     filepaths that were used to create it.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
         fps - list of filepaths of the distance matrices
