@@ -521,16 +521,42 @@ def _set_figure_size(fig, width=None, height=None):
 
     If both width and height are not provided, will use matplotlib defaults.
 
-    Making room for labels will not always work (known bug in matplotlib), and
-    if it fails, the user will be warned that their plot may have cut-off
-    labels.
+    Making room for labels will not always work, and if it fails, the user will
+    be warned that their plot may have cut-off labels.
     """
     # Set the size of the plot figure, then make room for the labels so they
     # don't get cut off. Must be done in this order.
     if width is not None and height is not None and width > 0 and height > 0:
         fig.set_size_inches(width, height)
     try:
-        fig.tight_layout()
+        # This code is very similar to Figure.tight_layout() (which also fails
+        # in certain cases), but it isn't available in matplotlib 1.0.1 (1.1.0
+        # and later). Note: the following code is largely taken from:
+        #   http://matplotlib.sourceforge.net/faq/howto_faq.html#automatically-
+        #       make-room-for-tick-labels
+
+        # Must draw figure to have access to window extents.
+        fig.canvas.draw()
+        for ax in fig.axes:
+            x_tick_labels = ax.get_xticklabels()
+            bboxes = []
+
+            for label in x_tick_labels:
+                bbox = label.get_window_extent()
+                # The figure transform goes from relative coords->pixels and we
+                # want the inverse of that.
+                bboxi = bbox.inverse_transformed(fig.transFigure)
+                bboxes.append(bboxi)
+
+            # This is the bbox that bounds all the bboxes, again in relative
+            # figure coords.
+            bbox = Bbox.union(bboxes)
+            if fig.subplotpars.bottom < bbox.height:
+                # We need to move it up to add some padding for the labels.
+                fig.subplots_adjust(bottom=1.2 * bbox.height)
+
+                # Redraw the figure.
+                fig.canvas.draw()
     except ValueError:
         print ("Warning: could not automatically resize plot to make room for "
                "axes labels and plot title. This can happen if the labels or "

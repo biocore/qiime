@@ -33,6 +33,12 @@ field values. Individual within and between distances are also plotted.
 The script also performs two-sample t-tests for all pairs of boxplots to help
 determine which boxplots (distributions) are significantly different.
 
+Tip: the script tries its best to fit everything into the plot, but there are
+cases where plot elements may get cut off (e.g. if axis labels are extremely
+long), or things may appear squashed, cluttered, or too small (e.g. if
+there are many boxplots in one plot). Increasing the width and/or height of the
+plot (using --width and --height) usually fixes these problems.
+
 For more information and examples pertaining to this script, please refer to
 the accompanying tutorial, which can be found at
 http://qiime.org/tutorials/creating_distance_comparison_plots.html.
