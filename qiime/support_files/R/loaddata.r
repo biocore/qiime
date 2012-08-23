@@ -7,12 +7,12 @@
     header.index <- get.header.index(filepath)
     # read the header
     f <- file(filepath,'r')
-    header <- scan(filepath, what='character', sep='\t',comment='',skip=header.index-1,
+    header <- scan(filepath, what='character', sep='\t',comment='',skip=header.index-1,quote='"',
                     nlines=1,quiet=TRUE)
     close(f)
     
     # read the rest of the table
-    datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',
+    datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',quote='"',
                         head=F,row.names=1,check=FALSE)
     
     # set column names using header
@@ -97,12 +97,12 @@
 }
 
 "load.qiime.taxon.table" <- function(filepath){
-    taxa <- as.matrix(t(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE)))
+    taxa <- as.matrix(t(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"')))
     return(taxa)
 }
 
 "load.qiime.distance.matrix" <- function(filepath){
-    d <- as.matrix(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE))
+    d <- as.matrix(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"'))
     return(d)
 }
 
