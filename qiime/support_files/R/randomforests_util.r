@@ -122,7 +122,7 @@
 "save.rf.results.probabilities" <- function(result, filename='cv_probabilities.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     sink(filepath)
-    cat('SampleID\t')
+    cat('#SampleID\t')
     write.table(result$probabilities,sep='\t',quote=F)
     sink(NULL)
 }
@@ -131,7 +131,7 @@
 "save.rf.results.mislabeling" <- function(result, filename='mislabeling.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     sink(filepath)
-    cat('SampleID\t')
+    cat('#SampleID\t')
     write.table(get.mislabel.scores(result$y,result$probabilities),sep='\t',quote=F)
     sink(NULL)
 }

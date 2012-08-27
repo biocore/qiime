@@ -125,12 +125,12 @@ class RSupervisedLearnerTests(TestCase):
 
         # ensure that each line has five elements, and that the first one
         # is the name of one of the samples, the others are floats
-        exp = "SampleID\tP(alleged label)\tP(second best)\tP(alleged label)-P(second best)"
+        exp = "#SampleID\tP(alleged label)\tP(second best)\tP(alleged label)-P(second best)\tmislabeled_at_0.05\tmislabeled_at_0.10\tmislabeled_at_0.15\tmislabeled_at_0.20\tmislabeled_at_0.25\tmislabeled_at_0.30\tmislabeled_at_0.35\tmislabeled_at_0.40\tmislabeled_at_0.45\tmislabeled_at_0.50"
         self.assertEqual(mislabeling_output[0].strip(), exp)
         for line in mislabeling_output[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
-            self.assertEqual(line_length, 4)
+            self.assertEqual(line_length, 14)
             self.assertEqual(words[0] in test_sample_IDs, True)            
             for word in words[1:3]:
                 self.assertEqual(is_float(word),True)
