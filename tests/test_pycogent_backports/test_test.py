@@ -14,9 +14,10 @@ from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
     regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, \
     pearson, spearman, _get_rank, kendall_correlation, std, median, \
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, \
-    ANOVA_one_way, mw_test, mw_boot
+    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow
 
-from numpy import array, concatenate, reshape, arange, ones, testing, cov, sqrt
+from numpy import array, concatenate, fill_diagonal, reshape, arange, matrix, \
+        ones, testing, tril, cov, sqrt
 from cogent.util.dict2d import Dict2D
 import math
 from cogent.maths.stats.util import Numbers
@@ -792,11 +793,16 @@ class CorrelationTests(TestsHelper):
     def test_mantel(self):
         """mantel should be significant for same matrix, not for random"""
         a = reshape(arange(25), (5,5))
+        a = tril(a) + tril(a).T
+        fill_diagonal(a, 0)
         b = a.copy()
         #closely related -- should be significant
         self.assertCorrectPValue(0.0, 0.049, mantel, (a, b, 1000))
+
         c = reshape(ones(25), (5,5))
+        c[0, 1] = 3.0
         c[1, 0] = 3.0
+        fill_diagonal(c, 0)
         #not related -- should not be significant
         self.assertCorrectPValue(0.11, 1.0, mantel, (a, c, 1000))
 
@@ -869,6 +875,16 @@ class CorrelationTests(TestsHelper):
         self.assertCorrectPValue(0.2, 0.45, mantel_test, (m1, m3, 999),
                                  {'alt':'two sided'})
 
+    def test_mantel_test_invalid_distance_matrix(self):
+        """Test mantel test with invalid distance matrix."""
+        # Single asymmetric, non-hollow distance matrix.
+        self.assertRaises(ValueError, mantel_test, array([[1, 2], [3, 4]]),
+                          array([[0, 0], [0, 0]]), 999)
+
+        # Two asymmetric distance matrices.
+        self.assertRaises(ValueError, mantel_test, array([[0, 2], [3, 0]]),
+                          array([[0, 1], [0, 0]]), 999)
+
     def test_mantel_test_invalid_input(self):
         """Test mantel test with invalid input."""
         self.assertRaises(ValueError, mantel_test, array([[1]]), array([[1]]),
@@ -879,6 +895,18 @@ class CorrelationTests(TestsHelper):
             array([[1]]), 0)
         self.assertRaises(ValueError, mantel_test, array([[1]]),
             array([[1]]), -1)
+
+    def test_is_symmetric_and_hollow(self):
+        """Should correctly test for symmetry and hollowness of dist mats."""
+        self.assertTrue(is_symmetric_and_hollow(array([[0, 1], [1, 0]])))
+        self.assertTrue(is_symmetric_and_hollow(matrix([[0, 1], [1, 0]])))
+        self.assertTrue(is_symmetric_and_hollow(matrix([[0.0, 0], [0.0, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0.001, 1], [1, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0, 1.1], [1, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0.5, 1.1], [1, 0]])))
 
     def test_flatten_lower_triangle(self):
         """Test flattening various dms' lower triangulars."""

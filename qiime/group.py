@@ -12,10 +12,12 @@ __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from numpy import array
+from qiime.pycogent_backports.test import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
 def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
-                          mapping, field, within=True):
+                          mapping, field, within=True,
+                          suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distance groupings for the specified field.
 
     The return value is a list that contains tuples of three elements: the
@@ -38,16 +40,24 @@ def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
         - field: A field in the mapping file to do the grouping on.
         - within: If True, distances are grouped within a field value. If
           False, distances are grouped between field values.
+        - suppress_symmetry_and_hollowness_check: By default, the input
+          distance matrix will be checked for symmetry and hollowness. It is
+          recommended to leave this check in place for safety, as the check
+          is fairly fast. However, if you *know* you have a symmetric and
+          hollow distance matrix, you can disable this check for small
+          performance gains on extremely large distance matrices
     """
     _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field)
     mapping_data = [mapping_header]
     mapping_data.extend(mapping)
     groups = group_by_field(mapping_data, field)
-    return _get_groupings(dist_matrix_header, dist_matrix, groups, within)
+    return _get_groupings(dist_matrix_header, dist_matrix, groups, within,
+                          suppress_symmetry_and_hollowness_check)
 
 def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
-                              mapping, field, within=True):
+                              mapping, field, within=True,
+                              suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distances for either samples within each of the
     field values or between each of the field values for the specified field.
 
@@ -67,9 +77,16 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
         - field: A field in the mapping file to do the grouping on.
         - within: If True, distances are grouped within a field value. If
           False, distances are grouped between field values.
+        - suppress_symmetry_and_hollowness_check: By default, the input
+          distance matrix will be checked for symmetry and hollowness. It is
+          recommended to leave this check in place for safety, as the check
+          is fairly fast. However, if you *know* you have a symmetric and
+          hollow distance matrix, you can disable this check for small
+          performance gains on extremely large distance matrices
     """
     distances = get_grouped_distances(dist_matrix_header, dist_matrix,
-                                      mapping_header, mapping, field, within)
+                                      mapping_header, mapping, field, within,
+                                      suppress_symmetry_and_hollowness_check)
     results = []
     for group in distances:
         for distance in group[2]:
@@ -78,7 +95,8 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
 
 def get_field_state_comparisons(dist_matrix_header, dist_matrix,
                                 mapping_header, mapping, field,
-                                comparison_field_states):
+                                comparison_field_states,
+                                suppress_symmetry_and_hollowness_check=False):
     """Returns a 2D dictionary relating distances between field states.
 
     The 2D dictionary is constructed such that each top-level key is a field
@@ -104,6 +122,12 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
         - field: A field in the mapping file to do the comparisons on.
         - comparison_field_states: A list of strings specifying the field
           states to compare to all other field states. Cannot be an empty list.
+        - suppress_symmetry_and_hollowness_check: By default, the input
+          distance matrix will be checked for symmetry and hollowness. It is
+          recommended to leave this check in place for safety, as the check
+          is fairly fast. However, if you *know* you have a symmetric and
+          hollow distance matrix, you can disable this check for small
+          performance gains on extremely large distance matrices
     """
     _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field)
@@ -129,7 +153,9 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
 
     # Get between distance groupings for the field of interest.
     between_groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
-            mapping_header, mapping, field, within=False)
+            mapping_header, mapping, field, within=False,
+            suppress_symmetry_and_hollowness_check=\
+                    suppress_symmetry_and_hollowness_check)
 
     # Build up our 2D dictionary giving the distances between a field state and
     # a comparison group field state by filtering out the between_groupings
@@ -203,7 +229,8 @@ def _get_indices(input_items, wanted_items):
     return [input_items.index(item)
             for item in wanted_items if item in input_items]
 
-def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True):
+def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
+                   suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distance groupings.
 
     The return value is a list that contains tuples of three elements: the
@@ -221,12 +248,22 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True):
                   calling group_by_field().
         - within: If True, distances are grouped within a field value. If
           False, distances are grouped between field values.
+        - suppress_symmetry_and_hollowness_check: By default, the input
+          distance matrix will be checked for symmetry and hollowness. It is
+          recommended to leave this check in place for safety, as the check
+          is fairly fast. However, if you *know* you have a symmetric and
+          hollow distance matrix, you can disable this check for small
+          performance gains on extremely large distance matrices
     
     If within is True, the zeros along the diagonal of the distance matrix are
     omitted.
     """
     # Note: Much of this code is taken from Jeremy Widmann's
     # distances_by_groups() function, part of make_distance_histograms.py.
+    if not suppress_symmetry_and_hollowness_check:
+        if not is_symmetric_and_hollow(dist_matrix):
+            raise ValueError("The distance matrix must be symmetric and "
+                             "hollow.")
     result = []
     group_items = groups.items()
 

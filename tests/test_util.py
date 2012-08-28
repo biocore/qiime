@@ -1797,6 +1797,12 @@ class DistanceMatrixTests(TestCase):
         obs = self.single_ele_dm.SampleIds
         self.assertEqual(obs, ['s1'])
 
+    def test_is_symmetric_and_hollow(self):
+        """Test is_symmetric_and_hollow method with various dms."""
+        self.assertTrue(self.single_ele_dm.is_symmetric_and_hollow())
+        self.assertTrue(not self.dm.is_symmetric_and_hollow())
+        self.assertTrue(self.overview_dm.is_symmetric_and_hollow())
+
 
 class MetadataMapTests(TestCase):
     """Tests for the MetadataMap class."""

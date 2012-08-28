@@ -358,6 +358,12 @@ class DistanceMatrixStatsTests(TestHelper):
                 'DistanceMatrices', self.overview_dm)
         self.assertRaises(TypeError, setattr, self.empty_dms,
                 'DistanceMatrices', [1])
+        self.assertRaises(ValueError, setattr, self.empty_dms,
+                'DistanceMatrices',
+                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
+                ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
+                ['foo', 'bar'])])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -367,6 +373,11 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
+        self.assertRaises(ValueError, DistanceMatrixStats, 
+                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
+                ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
+                ['foo', 'bar'])])
 
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
@@ -380,6 +391,23 @@ class DistanceMatrixStatsTests(TestHelper):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.size_dms,
                 'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
+
+    def test_DistanceMatrices_setter_suppress_symmetry_check(self):
+        """Test suppressing symmetry check."""
+        dms = DistanceMatrixStats([],
+                                  suppress_symmetry_and_hollowness_check=True)
+        dms.DistanceMatrices = [
+                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
+                ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
+                ['foo', 'bar'])]
+
+        dms = DistanceMatrixStats([
+                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
+                ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
+                ['foo', 'bar'])],
+                suppress_symmetry_and_hollowness_check=True)
 
     def test_call(self):
         """Test __call__() returns an empty result set."""
@@ -733,25 +761,26 @@ class PermanovaTests(TestHelper):
         self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
                                 "sam1\t0\t1\t1\t4",
                                 "sam2\t1\t0\t3\t2",
-                                "sam3\t5\t3\t0\t3",
+                                "sam3\t1\t3\t0\t3",
                                 "sam4\t4\t2\t3\t0"]
         self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(
                 self.distmtx_tie_str)
         self.distmtx_tie_samples = self.distmtx_tie.SampleIds
 
-        self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
+        # For testing with uneven group sizes.
+        self.distmtx_uneven_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
                                     "sam1\t0\t3\t7\t2\t1",
                                     "sam2\t3\t0\t5\t4\t1",
                                     "sam3\t7\t5\t0\t2\t6",
                                     "sam4\t2\t4\t2\t0\t2",
-                                    "sam5\t1\t1\t6\t6\t0"]
-        self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(
-                self.distmtx_non_sym_str)
-        self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
+                                    "sam5\t1\t1\t6\t2\t0"]
+        self.distmtx_uneven = DistanceMatrix.parseDistanceMatrix(
+                self.distmtx_uneven_str)
+        self.distmtx_uneven_samples = self.distmtx_uneven.SampleIds
 
         # Some group maps to help test Permanova, data_map can be used with
-        # distmtx and distmtx_tie while data_map_non_sym can only be used
-        # with distmtx_non_sym.
+        # distmtx and distmtx_tie while data_map_uneven can only be used
+        # with distmtx_uneven.
         self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
                 \tTreatment\tDOB\tDescription",
                 "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
@@ -764,7 +793,8 @@ class PermanovaTests(TestHelper):
                 \tControl_mouse_I.D._481"]
         self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
 
-        self.data_map_non_sym_str=["#SampleID\tBarcodeSequence\
+        # For testing with uneven group sizes.
+        self.data_map_uneven_str=["#SampleID\tBarcodeSequence\
                 \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
                 "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
                 \tControl_mouse_I.D._354",
@@ -776,17 +806,17 @@ class PermanovaTests(TestHelper):
                 \tControl_mouse_I.D._481",
                 "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
                 \tcontrolmouseid"]
-        self.data_map_non_sym = MetadataMap.parseMetadataMap(
-                self.data_map_non_sym_str)
+        self.data_map_uneven = MetadataMap.parseMetadataMap(
+                self.data_map_uneven_str)
 
         # Formatting the two data_maps to meet permanova requirements.
         self.map = {}
         for samp_id in self.data_map.SampleIds:
             self.map[samp_id] = self.data_map.getCategoryValue(samp_id,
                                                                'Treatment')
-        self.map_non_sym = {}
-        for samp_id in self.data_map_non_sym.SampleIds:
-            self.map_non_sym[samp_id] = self.data_map_non_sym.getCategoryValue(
+        self.map_uneven = {}
+        for samp_id in self.data_map_uneven.SampleIds:
+            self.map_uneven[samp_id] = self.data_map_uneven.getCategoryValue(
                     samp_id, 'Treatment')
 
         # Creating instances of Permanova to run the tests on.
@@ -794,8 +824,8 @@ class PermanovaTests(TestHelper):
                 'Treatment')
         self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,
                 'Treatment')
-        self.permanova_non_sym = Permanova(self.data_map_non_sym,
-                self.distmtx_non_sym, 'Treatment')
+        self.permanova_uneven = Permanova(self.data_map_uneven,
+                self.distmtx_uneven, 'Treatment')
         self.permanova_overview = Permanova(self.overview_map,
                 self.overview_dm,'Treatment')
 
@@ -814,7 +844,7 @@ class PermanovaTests(TestHelper):
     def test_permanova3(self):
         """Should result in 3.58462."""
         exp = 3.58462
-        obs = self.permanova_non_sym._permanova(self.map_non_sym)
+        obs = self.permanova_uneven._permanova(self.map_uneven)
         self.assertFloatEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -845,10 +875,10 @@ class PermanovaTests(TestHelper):
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
         self.assertCorrectPValue(0.56, 0.75, self.permanova_tie)
 
-    def test_call_non_sym(self):
-        """Test __call__() on non_sym dm with no permutations."""
+    def test_call_uneven(self):
+        """Test __call__() on uneven group sizes with no permutations."""
         exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'f_value': 3.58462}
-        obs = self.permanova_non_sym(0)
+        obs = self.permanova_uneven(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
@@ -1376,17 +1406,17 @@ class PartialMantelTests(TestHelper):
 
         # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
-        self.small_pm = PartialMantel(DistanceMatrix(array([[1, 3, 2],
-            [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+        self.small_pm = PartialMantel(DistanceMatrix(array([[0, 1, 4],
+            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
-            smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
-            [10, 2, 8]]), smpl_ids, smpl_ids))
+            smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
+            [10, 2, 0]]), smpl_ids, smpl_ids))
 
-        self.small_pm_diff = PartialMantel(DistanceMatrix(array([[1, 3, 2],
-            [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[100, 25, 53], [20, 30, 87], [51, 888, 0]]),
-            smpl_ids, smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
-            [10, 2, 8]]), smpl_ids, smpl_ids))
+        self.small_pm_diff = PartialMantel(DistanceMatrix(array([[0, 1, 4],
+            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0, 20, 51], [20, 0, 888], [51, 888, 0]]),
+            smpl_ids, smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
+            [10, 2, 0]]), smpl_ids, smpl_ids))
 
         smpl_ids = ['s1', 's2', 's3', 's4', 's5']
         self.small_pm_diff2 = PartialMantel(

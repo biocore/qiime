@@ -78,6 +78,7 @@ from qiime.parse import (parse_distmat,
                          parse_mapping_file,
                          parse_denoiser_mapping,
                          MinimalFastqParser)
+from qiime.pycogent_backports.test import is_symmetric_and_hollow
 
 
 class TreeMissingError(IOError):
@@ -1621,6 +1622,10 @@ class DistanceMatrix(DenseTable):
                 else:
                     flattened.append(self[row_num][col_num])
         return flattened
+
+    def is_symmetric_and_hollow(self):
+        """Returns True if the distance matrix is symmetric and hollow."""
+        return is_symmetric_and_hollow(self._data)
 
 
 class MetadataMap():

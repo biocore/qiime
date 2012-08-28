@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh"]
+__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jeremy Widmann"
@@ -97,6 +98,10 @@ def assign_mapped_colors(mapped_labels, field_to_color_prefs):
 
 def between_sample_distances(dmat):
     """Returns all upper triangle distances from dmat.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     """
     distances = []
     dmat_len = len(dmat)
@@ -510,6 +515,10 @@ def distances_by_groups(distance_header, distance_matrix, groups):
     """Splits distances by group membership, returns vals for each pair.
     
     Omits the zeros along the diagonal.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     """
     result = []
     group_items = groups.items()
@@ -559,7 +568,12 @@ def write_distance_files(group_distance_dict,dir_prefix = '', \
 
 def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     subdir_prefix='group_distances'):
-    """Calculate all lists of distance groups."""
+    """Calculate all lists of distance groups.
+    
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
+    """
     distance_groups = {}
     mapping, header, comments = parse_mapping_file(open(mapping_file,'U'))
     header = [header]
@@ -617,6 +631,10 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     - do t test between each pair of groups
     - randomize matrix n times and find empirical value of t for each pair
     - compare the actual value of t to the randomized values
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     """
     mapping, header, comments = parse_mapping_file(open(mapping_file,'U'))
     header = [header]
@@ -699,6 +717,10 @@ def monte_carlo_group_distances_within_between(single_field, \
     - do t test between each pair of groups
     - randomize matrix n times and find empirical value of t for each pair
     - compare the actual value of t to the randomized values
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     """
 
     path_prefix = path.join(dir_prefix,subdir_prefix)
@@ -788,6 +810,10 @@ def get_random_dists(real_dists, dmat, num_iters):
             [[first_group, second_group, distancdes],...]
         - dmat: full distance matrix
         - num_iters: integer number of random dmats to make.
+
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     """
     rand_dists = []
     upper_triangle = between_sample_distances(dmat).values()[0]

@@ -14,8 +14,8 @@ from cogent.maths.stats.special import Gamma
 
 from numpy import absolute, arctanh, array, asarray, concatenate, transpose, \
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any, \
-        reshape, tanh, clip, nan, isnan, isinf, sqrt, exp, median as _median, \
-        zeros, ones
+        reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp, \
+        median as _median, zeros, ones
         #, std - currently incorrect
 from numpy.random import permutation, randint
 from cogent.maths.stats.util import Numbers
@@ -1413,24 +1413,25 @@ def mantel(m1, m2, n):
     
     The p-value is based on a two-sided test.
 
-    WARNING: The two distance matrices must be symmetric distance matrices, as
-    only the lower triangle will be used in the calculations (matching R's
-    vegan::mantel function).
+    WARNING: The two distance matrices must be symmetric, hollow distance
+    matrices, as only the lower triangle (excluding the diagonal) will be used
+    in the calculations (matching R's vegan::mantel function).
 
     This function is retained for backwards-compatibility. Please use
     mantel_test() for more control over how the test is performed.
     """
     return mantel_test(m1, m2, n)[0]
 
-def mantel_test(m1, m2, n, alt="two sided"):
+def mantel_test(m1, m2, n, alt="two sided",
+                suppress_symmetry_and_hollowness_check=False):
     """Runs a Mantel test on two distance matrices.
 
     Returns the p-value, Mantel correlation statistic, and a list of Mantel
     correlation statistics for each permutation test.
 
-    WARNING: The two distance matrices must be symmetric distance matrices, as
-    only the lower triangle will be used in the calculations (matching R's
-    vegan::mantel function).
+    WARNING: The two distance matrices must be symmetric, hollow distance
+    matrices, as only the lower triangle (excluding the diagonal) will be used
+    in the calculations (matching R's vegan::mantel function).
 
     Arguments:
         m1  - the first distance matrix to use in the test (should be a numpy
@@ -1441,6 +1442,12 @@ def mantel_test(m1, m2, n, alt="two sided"):
         alt - the type of alternative hypothesis to test (can be either
             'two sided' for a two-sided test, 'greater' or 'less' for one-sided
             tests)
+        suppress_symmetry_and_hollowness_check - by default, the input distance
+            matrices will be checked for symmetry and hollowness. It is
+            recommended to leave this check in place for safety, as the check
+            is fairly fast. However, if you *know* you have symmetric and
+            hollow distance matrices, you can disable this check for small
+            performance gains on extremely large distance matrices
     """
     # Perform some sanity checks on our input.
     if alt not in ("two sided", "greater", "less"):
@@ -1448,10 +1455,14 @@ def mantel_test(m1, m2, n, alt="two sided"):
                          "'two sided', 'greater', or 'less'.")
     m1, m2 = asarray(m1), asarray(m2)
     if m1.shape != m2.shape:
-        raise ValueError("Both matrices must be the same size.")
+        raise ValueError("Both distance matrices must be the same size.")
     if n < 1:
         raise ValueError("The number of permutations must be greater than or "
                          "equal to one.")
+    if not suppress_symmetry_and_hollowness_check:
+        if not (is_symmetric_and_hollow(m1) and is_symmetric_and_hollow(m2)):
+            raise ValueError("Both distance matrices must be symmetric and "
+                             "hollow.")
 
     # Get a flattened list of lower-triangular matrix elements (excluding the
     # diagonal) in column-major order. Use these values to calculate the
@@ -1477,6 +1488,9 @@ def mantel_test(m1, m2, n, alt="two sided"):
                 better += 1
         perm_stats.append(r)
     return (better + 1) / (n + 1), orig_stat, perm_stats
+
+def is_symmetric_and_hollow(matrix):
+    return (matrix.T == matrix).all() and (trace(matrix) == 0)
 
 def _flatten_lower_triangle(matrix):
     """Returns a list containing the flattened lower triangle of the matrix.

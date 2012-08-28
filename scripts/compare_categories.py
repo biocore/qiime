@@ -255,6 +255,14 @@ def main():
         if not category in maps[1][1:]:
             option_parser.error("Category '%s' not found in mapping file "
                                 "columns:" % category)
+
+    # Make sure the input distance matrix is symmetric and hollow. Must check
+    # here before allowing R to use it, as R will silently ignore the diagonal
+    # and upper triangle of the distance matrix.
+    if not dm.is_symmetric_and_hollow():
+        option_parser.error("The distance matrix must be symmetric and "
+                            "hollow.")
+
     # Figure out which method we need to run.
     if opts.method == 'adonis':
         command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \

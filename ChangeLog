@@ -9,6 +9,8 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * Made loaddata.r more robust when making mapping files, distance matrices, etc. compatible with each other. There were rare cases that caused some R functions (e.g. betadisper) to fail if empty levels were left in the parsed mapping file.
 * Fixed issue in ParallelWrapper class that could have caused a deadlock if run from within a subprocess with pipes.
 * make_distance_boxplots.py and make_distance_comparison_plots.py can now perform Student's two-sample t-tests to determine whether a pair of boxplots/distributions are significantly different (using both parametric and nonparametric Monte Carlo-based tests of significance). These changes include three new options to the two scripts (--tail_type, --num_permutations, and --suppress_significance_tests), as well as a new function all_pairs_t_test in qiime.stats. The accompanying tutorial has also been updated to cover the new statistical tests.
+* Checks are now in place to prevent asymmetric and non-hollow distance matrices from being used in make_distance_boxplots.py, make_distance_comparison_plots.py, make_distance_histograms.py, compare_categories.py, and compare_distance_matrices.py. The relevant script help and underlying library code has been documented to warn against their use, and the symmetry checks can be easily disabled if performance becomes an issue in the future.
+* qiime.util.DistanceMatrix has new method is_symmetric_and_hollow.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================

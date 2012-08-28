@@ -11,7 +11,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
-from numpy import array
+from numpy import array, matrix
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field
 from qiime.group import get_grouped_distances, get_all_grouped_distances,\
@@ -238,6 +238,14 @@ class GroupTests(TestCase):
                 self.mapping_header, self.mapping, self.field,
                 ['Fast', 'T0'])
 
+    def test_get_field_state_comparisons_invalid_distance_matrix(self):
+        """Handles invalid distance matrix."""
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                ['Samp.1', 'Samp.2'],
+                array([[10.0, 0.0003], [0.0003, 0.0]]),
+                self.small_mapping_header, self.small_mapping,
+                self.small_field, ['SampleFieldState1'])
+
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""
         self.assertRaises(ValueError, _validate_input,
@@ -352,6 +360,16 @@ class GroupTests(TestCase):
         be computed."""
         self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
             self.tiny_dist_matrix, self.tiny_groups, within=False), [])
+
+    def test_get_groupings_invalid_distance_matrix(self):
+        """Handles asymmetric and/or hollow distance matrices correctly."""
+        self.assertRaises(ValueError, _get_groupings, ['foo', 'bar'],
+                matrix([[0.0, 0.7], [0.7, 0.01]]), self.tiny_groups)
+
+        # Should not raise error if we suppress the check.
+        _get_groupings(['foo', 'bar'], matrix([[0.0, 0.7], [0.7, 0.01]]),
+                       self.tiny_groups,
+                       suppress_symmetry_and_hollowness_check=True)
 
 
 if __name__ == '__main__':
