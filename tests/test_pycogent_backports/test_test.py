@@ -804,7 +804,7 @@ class CorrelationTests(TestsHelper):
         c[1, 0] = 3.0
         fill_diagonal(c, 0)
         #not related -- should not be significant
-        self.assertCorrectPValue(0.11, 1.0, mantel, (a, c, 1000))
+        self.assertCorrectPValue(0.06, 1.0, mantel, (a, c, 1000))
 
     def test_mantel_test_one_sided_greater(self):
         """Test one-sided mantel test (greater)."""
