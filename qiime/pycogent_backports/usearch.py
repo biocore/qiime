@@ -29,7 +29,6 @@ from cogent.app.util import CommandLineApplication, ResultPath,\
 from cogent.util.misc import remove_files
 
 from qiime.pycogent_backports.uclust import clusters_from_uc_file
-from qiime.util import split_fasta_on_sample_ids_to_files
 
 class UsearchParseError(Exception):
     pass

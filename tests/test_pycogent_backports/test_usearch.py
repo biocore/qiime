@@ -21,7 +21,7 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationError, get_tmp_filename
 
-from qiime.util import create_dir
+from cogent.util.misc import create_dir
 
 from qiime.pycogent_backports.usearch import (Usearch,
  clusters_from_blast_uc_file, usearch_fasta_sort_from_filepath,
