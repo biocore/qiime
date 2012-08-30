@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "David Soergel"
-__copyright__ = ""
+__copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["David Soergel"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
@@ -13,7 +13,7 @@ from cogent.util.misc import remove_files
 
 from unittest import TestCase, main
 from qiime.pycogent_backports.rtax import (Rtax, assign_taxonomy)
-from qiime.util import get_tmp_filename
+from cogent.app.util import get_tmp_filename
 
 
 class RtaxClassifierTests(TestCase):
