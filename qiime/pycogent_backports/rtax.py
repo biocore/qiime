@@ -28,7 +28,6 @@ import os.path
 import re
 from sys import stderr
 
-from qiime.util import (load_qiime_config, get_tmp_filename)
 from shutil import rmtree
 
 class RtaxParseError(Exception):
@@ -147,7 +146,7 @@ class Rtax(CommandLineApplication):
 
 def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp, single_ok=False, no_single_ok_generic=False,
                     header_id_regex=None, read_id_regex = "\S+\s+(\S+)", amplicon_id_regex = "(\S+)\s+(\S+?)\/",
-                    output_fp=None, log_path=None, HALT_EXEC=False):
+                    output_fp=None, log_path=None, HALT_EXEC=False, base_tmp_dir = '/tmp'):
     """Assign taxonomy to each sequence in data with the RTAX classifier
 
         # data: open fasta file object or list of fasta lines
@@ -163,8 +162,6 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
          "Cannot find %s. Is it installed? Is it in your path?"\
          % usearch_command
 
-    qiime_config = load_qiime_config()
-    base_tmp_dir = qiime_config['temp_dir'] or '/tmp/'
     my_tmp_dir = get_tmp_filename(tmp_dir=base_tmp_dir,prefix='rtax_',suffix='',result_constructor=str)
     os.makedirs(my_tmp_dir)
 

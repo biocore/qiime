@@ -27,7 +27,7 @@ from qiime.pycogent_backports import rdp_classifier
 from qiime.pycogent_backports import rtax
 from qiime.pycogent_backports import mothur
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import FunctionWithParams, get_rdp_jarpath
+from qiime.util import FunctionWithParams, get_rdp_jarpath, load_qiime_config
 
 
 """Contains code for assigning taxonomy, using several techniques.
@@ -415,7 +415,7 @@ class RdpTaxonAssigner(TaxonAssigner):
                 min_confidence=min_conf,
                 classification_output_fp=result_path,
                 max_memory=max_memory)
-            
+
 
             if result_path is None:
                 results = self._training_set.fix_results(results)
@@ -709,11 +709,15 @@ class RtaxTaxonAssigner(TaxonAssigner):
         amplicon_id_regex=self.Params['amplicon_id_regex']
 
         # seq_file = open(seq_path, 'r')
+
+        qiime_config = load_qiime_config()
+        base_tmp_dir = qiime_config['temp_dir'] or '/tmp/'   # qiime.util.get_qiime_temp_dir ??
+
         results = rtax.assign_taxonomy(seq_path, reference_sequences_fp, id_to_taxonomy_fp,
                                        read_1_seqs_fp, read_2_seqs_fp, single_ok=single_ok, no_single_ok_generic=no_single_ok_generic,
                                        header_id_regex=header_id_regex, read_id_regex=read_id_regex,
                                        amplicon_id_regex=amplicon_id_regex, output_fp=result_path,
-                                       log_path=log_path)
+                                       log_path=log_path,base_tmp_dir=base_tmp_dir)
 
 
         return results

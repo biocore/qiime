@@ -4,7 +4,7 @@
 Taxonomic classifications of single- and paired-end sequences with RTAX
 =======================================================================
 
-The RTAX procedure takes advantage of mate-pair information when performing taxonomic classification.  The additional information from a second read may allow a more precise taxonomy assignment to be made.  Conversely may reveal greater uncertainty in the assignment than would have been inferred from one read alone, leading to a less precise (but more accurate) assignment.
+The RTAX procedure takes advantage of mate-pair information when performing taxonomic classification.  The additional information from a second read may allow a more precise taxonomy assignment to be made.  Conversely, the second read may reveal greater uncertainty in the assignment than would have been inferred from one read alone, leading to a less precise (but more accurate) assignment.
 
 RTAX may also be used to classify single reads.  Here too it attempts to avoid overprediction by considering a range of best hits (something like a k-nearest-neighbor classifier), in contrast to the single best hit approach used by the Blast classifier.
 
