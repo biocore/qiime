@@ -22,7 +22,7 @@ from cogent import LoadSeqs, DNA
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
 #app controllers that implement align_unaligned_seqs
-import cogent.app.muscle
+import qiime.pycogent_backports.muscle_v38
 import cogent.app.clustalw
 import cogent.app.mafft
 import cogent.app.raxml
@@ -115,7 +115,7 @@ class CogentTreeBuilder(TreeBuilder):
                                            log_path=log_path, *args, **kwargs)
 
 tree_method_constructors = {}
-tree_module_names = {'muscle':cogent.app.muscle, 
+tree_module_names = {'muscle':qiime.pycogent_backports.muscle_v38,
     'clustalw':cogent.app.clustalw,
     #'mafft':cogent.app.mafft,   
     # current version of Mafft does not support tree building
