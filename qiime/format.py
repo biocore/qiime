@@ -17,9 +17,10 @@ from StringIO import StringIO
 from cogent import Sequence
 from re import compile, sub
 from os import walk
-from os.path import join, splitext, exists, isfile
+from os.path import join, splitext, exists, isfile, abspath
 from biom.table import DenseOTUTable
-from qiime.util import get_qiime_library_version
+from qiime.util import get_qiime_library_version, load_qiime_config
+from qiime.colors import data_color_hsv
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
 
@@ -843,6 +844,95 @@ def format_mapping_html_data(header,
     html_lines += HTML_LINES_DATA % formatted_data
     
     return html_lines
+
+def format_te_prefs(prefs_dict):
+    """ Format a preferences file for use with TopiaryExplorer tep file """
+
+    # get the sample colors
+    sample_coloring = prefs_dict['sample_coloring']
+    lines = []
+    
+    # for each sample get the color as hsv and write preference lines
+    for k in sample_coloring:
+        for t in sample_coloring[k]['colors']:
+            if(type(t) == tuple):
+                lines.append(''.join([str(i) + ',' for i in t[1]]) + '\n')
+            if(type(t) == str):
+                lines.append(t + ':' + 
+                    ''.join([str(i) + ',' for i in data_color_hsv[sample_coloring[k]['colors'][t]]]) + '\n')
+        lines.append('>default' + k + ':' + k + '\n')
+    
+    return lines
+
+def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines, 
+                          prefs_dict):
+    """ Format the tep file for TopiaryExplorer """
+    
+    # write tree file lines
+    lines = ['>>tre\n']
+    lines += [tree_lines.read()] 
+    lines += '\n'
+    
+    # get otu table data
+    if(otu_table_data.ObservationMetadata):
+        lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
+        for i in range(len(otu_table_data.ObservationIds)):
+            new_string = otu_table_data.ObservationIds[i] + '\t'
+            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
+                new_string += m + ';'
+            lines += [new_string]
+            lines += '\n'
+    
+    # format and write otu table and taxonomy lines
+    lines += ['>>osm\n']
+    if otu_table_data.ObservationMetadata is None:
+        lines += [str(otu_table_data.delimitedSelf())]
+    elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
+        lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy", 
+                                       header_value="Consensus Lineage",
+                                       metadata_formatter=lambda x: ';'.join(x)))]
+    
+    # write mapping file lines
+    lines += ['\n>>sam\n']
+    lines += mapping_lines.readlines()
+    
+    # if prefs file supplied, write pref lines
+    if prefs_dict:
+        te_prefs = format_te_prefs(prefs_dict)
+        lines += ['\n>>pre\n']
+        lines += te_prefs
+
+    return lines
+
+def format_jnlp_file_lines(web_flag, url, tep_fp):
+    """ Format the jnlp file for TopiaryExplorer """
+    
+    # write the jnlp header
+    lines = [jnlp_top_block]
+    
+    # write the location of TopiaryExplorer location
+    if(web_flag):
+        lines += ['http://topiaryexplorer.sourceforge.net/app/']
+    else:
+        topiaryexplorer_project_dir =\
+         load_qiime_config()['topiaryexplorer_project_dir']
+        if topiaryexplorer_project_dir:
+            lines += ['file:' + topiaryexplorer_project_dir]
+        else:
+            print "WARNING: Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully."
+    
+    # write the jnlp body text
+    lines += [jnlp_middle_block]
+    if(url):
+        lines += [url]
+    else:
+        lines += [abspath(tep_fp)]
+    
+    # write the jnlp footer
+    lines += [jnlp_bottom_block]
+    
+    return lines
+    
     
 HTML_LINES_INIT = """<html>
 <head>
@@ -888,3 +978,46 @@ HTML_LINES_DATA = """
 </html>"""
 
 
+jnlp_top_block = """
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp codebase=\""""
+
+jnlp_middle_block = """\">
+    
+    <information>
+    <title>TopiaryExplorer</title>
+    <vendor>University of Colorado</vendor>
+    <description>TopiaryExplorer</description>
+
+    <offline-allowed/>
+
+    </information>
+
+    <security>
+        <all-permissions/>
+    </security>
+
+    <resources>
+        <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
+
+        <jar href="topiaryexplorer0.9.6.jar" />
+        <jar href="lib/core.jar" />
+        <jar href="lib/itext.jar" />
+        <jar href="lib/pdf.jar" />
+        <jar href="lib/ojdbc14.jar" />
+        <jar href="lib/opengl.jar" />
+        <jar href="lib/mysql-connector-java-5.1.10-bin.jar" />
+        <jar href="lib/javaws.jar" />
+        <jar href="lib/classes12.jar" />
+        <jar href="lib/jogl.jar" />
+        <jar href="lib/guava-r09.jar" />
+    </resources>
+
+    <application-desc main-class="topiaryexplorer.TopiaryExplorer">
+    <argument>"""
+
+jnlp_bottom_block = """</argument>
+    </application-desc>
+</jnlp>
+"""

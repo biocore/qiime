@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #unit tests for format.py
+from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
@@ -29,8 +30,10 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_taxa_summary, format_correlation_vector,
     format_correlation_info, format_qiime_parameters,
     format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
-    format_biom_table, format_mapping_html_data)
+    format_biom_table, format_mapping_html_data, format_te_prefs, 
+    format_tep_file_lines, format_jnlp_file_lines)
 from biom.parse import parse_biom_table
+from StringIO import StringIO
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -572,6 +575,64 @@ y\t5\t6\tsample y""")
         
         self.assertEqual(actual_formatted_html_data,
          self.expected_formatted_html_data_nonloc_error)
+    
+    def test_format_te_prefs(self):
+        """ format_te_prefs: this takes a prefs file and generates te lines """
+        
+        # define variables
+        prefs_dict1 = {'sample_coloring': {'TEST1': {'column': 'TEST1', 
+            'colors': (('red', (0, 100, 100)), ('blue', (240, 100, 100)))}}}
+        prefs_dict2 = {'sample_coloring': {'TEST1': {'column': 'TEST1', 
+            'colors': {'Sample1':'red1','Sample2':'blue1'}}}}
+
+        # list expected results
+        exp_lines1 = ['0,100,100,\n', '240,100,100,\n', '>defaultTEST1:TEST1\n']
+        exp_lines2 = ['Sample1:0,100,100,\n', 'Sample2:240,100,100,\n', 
+                      '>defaultTEST1:TEST1\n']
+        
+        obs_lines1 = format_te_prefs(prefs_dict1)
+        self.assertEqual(obs_lines1,exp_lines1)
+
+        obs_lines2 = format_te_prefs(prefs_dict2)
+        self.assertEqual(obs_lines1,exp_lines1)
+
+    
+    def test_format_tep_file_lines(self):
+        """ format_tep_file_lines: this converts files into tep lines """
+        
+        # set variables
+        prefs_dict1 = {'sample_coloring': {'TEST1': {'column': 'TEST1', 
+            'colors': (('red', (0, 100, 100)), ('blue', (240, 100, 100)))}}}
+        test_biom2 = parse_biom_table(biom2)
+        
+        # test with prefs file
+        exp1 = ['>>tre\n', "['(tax1:0.00000043418318065054,((tax2:0.01932550067944402081,tax3:0.08910446960529855298):0.00000043418318065054,tax4:0.17394765077611337722):0.00000043418318065054,tax5:0.00000043418318065054):0.0;']", '\n', '>>otm\n#OTU ID\tOTU Metadata\n', u'tax1\tk__Bacteria;p__Proteobacteria;', '\n', u'tax2\tk__Bacteria;p__Cyanobacteria;', '\n', '>>osm\n', '# Constructed from biom file\n#OTU ID\tsam1\tsam2\tConsensus Lineage\ntax1\t7.0\t4.0\tk__Bacteria;p__Proteobacteria\ntax2\t1.0\t2.0\tk__Bacteria;p__Cyanobacteria', '\n>>sam\n', "['#SampleID\\tcol1\\tcol0\\tDescription', 'sam1\\tv1_3\\tv0_3\\td1', 'sam2\\taval\\tanother\\td2']", '\n>>pre\n', '0,100,100,\n', '240,100,100,\n', '>defaultTEST1:TEST1\n']
+        obs1 = format_tep_file_lines(test_biom2, 
+                             StringIO(example_mapping_file2.split('\n')), 
+                             StringIO(example_tree.split('\n')), 
+                             prefs_dict1)
+        
+        self.assertEqual(obs1,exp1)
+        
+        # test without prefs file
+        exp2 = ['>>tre\n', "['(tax1:0.00000043418318065054,((tax2:0.01932550067944402081,tax3:0.08910446960529855298):0.00000043418318065054,tax4:0.17394765077611337722):0.00000043418318065054,tax5:0.00000043418318065054):0.0;']", '\n', '>>otm\n#OTU ID\tOTU Metadata\n', u'tax1\tk__Bacteria;p__Proteobacteria;', '\n', u'tax2\tk__Bacteria;p__Cyanobacteria;', '\n', '>>osm\n', '# Constructed from biom file\n#OTU ID\tsam1\tsam2\tConsensus Lineage\ntax1\t7.0\t4.0\tk__Bacteria;p__Proteobacteria\ntax2\t1.0\t2.0\tk__Bacteria;p__Cyanobacteria', '\n>>sam\n', "['#SampleID\\tcol1\\tcol0\\tDescription', 'sam1\\tv1_3\\tv0_3\\td1', 'sam2\\taval\\tanother\\td2']"]
+        obs2 = format_tep_file_lines(test_biom2, 
+                             StringIO(example_mapping_file2.split('\n')), 
+                             StringIO(example_tree.split('\n')), 
+                             {})
+        
+        self.assertEqual(obs2,exp2)
+        
+        
+    def test_format_jnlp_file_lines(self):
+        """ format_jnlp_file_lines: this converts files into jnlp lines """
+        
+        # This can only test the web-based and url listed, since
+        # if local, TopiaryExplorer would need to be installed in the same
+        # directory on everyones computer
+        obs1 = format_jnlp_file_lines(True,'test','test.tep')
+        
+        self.assertEqual(''.join(obs1),exp_jnlp_web_url)
          
 example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
 #this goes after headers
@@ -724,6 +785,53 @@ General issues with your mapping file (i.e., those that do not pertain to a part
 </html>"""
 
 biom1 = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2", "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata": {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}}, {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9", "metadata": {}}], "format": "Biological Observation Matrix 0.9.0-dev", "data": [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0], [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0], [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0], [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0], [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0], [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0], [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0], [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null}, {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id": "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9", "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11", "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13", "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15", "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17", "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [9, 19], "format_url": "http://biom-format.org", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+
+biom2 = """{"rows": [{"id": "tax1", "metadata": {"taxonomy":["k__Bacteria", "p__Proteobacteria"]}}, {"id": "tax2", "metadata": {"taxonomy":["k__Bacteria", "p__Cyanobacteria"]}}], "format": "Biological Observation Matrix 0.9.0-dev", "data": [[0, 0, 7.0], [0, 1, 4.0],  [1, 0, 1.0], [1, 1, 2.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [2, 2], "format_url": "http://biom-format.org", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+
+example_tree = """(tax1:0.00000043418318065054,((tax2:0.01932550067944402081,tax3:0.08910446960529855298):0.00000043418318065054,tax4:0.17394765077611337722):0.00000043418318065054,tax5:0.00000043418318065054):0.0;"""
+example_mapping_file2 = """#SampleID\tcol1\tcol0\tDescription
+sam1\tv1_3\tv0_3\td1
+sam2\taval\tanother\td2"""
+
+exp_jnlp_web_url="""
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp codebase="http://topiaryexplorer.sourceforge.net/app/">
+    
+    <information>
+    <title>TopiaryExplorer</title>
+    <vendor>University of Colorado</vendor>
+    <description>TopiaryExplorer</description>
+
+    <offline-allowed/>
+
+    </information>
+
+    <security>
+        <all-permissions/>
+    </security>
+
+    <resources>
+        <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
+
+        <jar href="topiaryexplorer0.9.6.jar" />
+        <jar href="lib/core.jar" />
+        <jar href="lib/itext.jar" />
+        <jar href="lib/pdf.jar" />
+        <jar href="lib/ojdbc14.jar" />
+        <jar href="lib/opengl.jar" />
+        <jar href="lib/mysql-connector-java-5.1.10-bin.jar" />
+        <jar href="lib/javaws.jar" />
+        <jar href="lib/classes12.jar" />
+        <jar href="lib/jogl.jar" />
+        <jar href="lib/guava-r09.jar" />
+    </resources>
+
+    <application-desc main-class="topiaryexplorer.TopiaryExplorer">
+    <argument>test</argument>
+    </application-desc>
+</jnlp>
+"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
