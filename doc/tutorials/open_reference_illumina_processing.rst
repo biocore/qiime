@@ -123,6 +123,15 @@ After choosing an even sampling depth you can use the ``beta_diversity_through_p
 
 Again the ``-aO8`` specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file ``bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` in a web browser. This may take a minute to load for very large sets of samples.
 
+---------------------------------------------------------------
+Filtering an open-reference OTU table to reference OTUs only
+---------------------------------------------------------------
+
+There are cases where you may be interested in working with the closed reference subset of your open reference OTU table (meaning only those OTUs that hit the reference collection, excluding the new OTUs). Following from the above commands, to do that you can filter the new OTUs from the OTU table with the following command::
+
+	filter_otus_from_otu_table.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom -o $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.reference_only.biom --negate_ids_to_exclude -e $PWD/refseqs.fna
+
+What this does is filter exclude all OTUs with identifiers that are not present in ``$PWD/refseqs.fna``, so all of the new OTUs.
 
 --------------------------------------------
  Subsampled OTU picking workflow evaluation
