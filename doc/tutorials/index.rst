@@ -15,6 +15,7 @@ The QIIME development team is very interested in incorporating community-contrib
 
    tutorial
    illumina_overview_tutorial
+   open_reference_illumina_processing
    ./*
 
 

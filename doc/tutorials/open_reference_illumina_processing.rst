@@ -21,7 +21,6 @@ Your parameters file should look like the following::
 	pick_otus:otu_picking_method uclust_ref
 	pick_otus:refseqs_fp <PATH TO REFERENCE COLLECTION>
 	pick_otus:enable_rev_strand_match True
-	align_seqs:min_length 75
 
 Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the reference data set you'd like to pick OTUs against. The QIIME development group frequently used the Greengenes reference OTUs. On the QIIME EC2 instance, this path would be ``/software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta``. 
 
@@ -101,7 +100,6 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 	pick_otus:otu_picking_method uclust_ref
 	pick_otus:enable_rev_strand_match True
-	align_seqs:min_length 75
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
@@ -397,7 +395,6 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 	pick_otus:otu_picking_method uclust_ref
 	pick_otus:enable_rev_strand_match True
-	align_seqs:min_length 75
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
