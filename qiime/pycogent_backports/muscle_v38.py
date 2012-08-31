@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Application controller for muscle 3.6
+"""Application controller for muscle 3.8
 """
 from os import remove
 from cogent.app.parameters import FlagParameter, ValuedParameter
@@ -12,9 +12,10 @@ from cogent.core.tree import PhyloNode
 from cogent.parse.fasta import MinimalFastaParser
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2007-2011, The Cogent Project"
+__copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Micah Hamady", "Zongzhi Liu", "Mike Robeson",
-       "Catherine Lozupone", "Rob Knight", "Daniel McDonald", "Jeremy Widmann"]
+               "Catherine Lozupone", "Rob Knight", "Daniel McDonald",
+               "Jeremy Widmann", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Micah Hamady"

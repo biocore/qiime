@@ -33,7 +33,7 @@ import cogent.app.clustalw
 import cogent.app.mafft
 
 from qiime.util import get_tmp_filename, FunctionWithParams
-import qiime.pycogent_backports.muscle
+import qiime.pycogent_backports.muscle_v38
 
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -290,7 +290,7 @@ alignment_method_constructors ={'pynast':PyNastAligner,\
     'infernal':InfernalAligner}
 
 alignment_module_names = {
-    'muscle': qiime.pycogent_backports.muscle, 
+    'muscle': qiime.pycogent_backports.muscle_v38,
     'clustalw': cogent.app.clustalw,
     'mafft': cogent.app.mafft,
     'infernal': cogent.app.infernal,

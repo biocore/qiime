@@ -1,27 +1,46 @@
 #!/usr/bin/env python
 
 from os import getcwd, remove, rmdir, mkdir, path
+from subprocess import Popen, PIPE, STDOUT
 import tempfile, shutil
 from cogent.core.moltype import RNA, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import flatten
-from qiime.pycogent_backports.muscle import Muscle, muscle_seqs, aln_tree_seqs, \
+from qiime.pycogent_backports.muscle_v38 import Muscle, muscle_seqs, aln_tree_seqs, \
         align_unaligned_seqs, build_tree_from_alignment, \
         align_and_build_tree, add_seqs_to_alignment, align_two_alignments
 
 __author__ = "Catherine Lozupone"
-__copyright__ = "Copyright 2007-2011, The Cogent Project"
-__credits__ = ["Catherine Lozupone", "Rob Knight", "Daniel McDonald"]
+__copyright__ = "Copyright 2007-2012, The Cogent Project"
+__credits__ = ["Catherine Lozupone", "Rob Knight", "Daniel McDonald",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.6.0dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Production"
 
 class GeneralSetUp(TestCase):
 
     def setUp(self):
         """Muscle general setUp method for all tests"""
+        # Check if muscle version is supported for this test
+        acceptable_version = (3,8)
+        command = "muscle -version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                     stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[1].strip()[1:]
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version[:2] == acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported muscle version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+
         self.seqs1 = ['ACUGCUAGCUAGUAGCGUACGUA','GCUACGUAGCUAC',
             'GCGGCUAUUAGAUCGUA']
         
