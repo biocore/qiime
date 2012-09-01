@@ -202,12 +202,15 @@ class ParallelWrapperTests(TestCase):
         self.assertEqual(actual_5,5)
         self.assertEqual(actual_40,1)
 
-class FunctionTests(ParallelWrapperTests):
+class FunctionTests(TestCase):
 
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
-        filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
+        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
+                                           prefix='split_fasta_tests',
+                                           suffix='',
+                                           result_constructor=str)
         infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
          '>seq3','CCTT--AA']
          
@@ -228,7 +231,10 @@ class FunctionTests(ParallelWrapperTests):
     def test_split_fasta_diff_num_seqs_per_file(self):
         """split_fasta funcs as expected when diff num seqs go to each file
         """
-        filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
+        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
+                                           prefix='split_fasta_tests',
+                                           suffix='',
+                                           result_constructor=str)
         infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
          '>seq3','CCTT--AA']
          
@@ -258,7 +264,10 @@ class FunctionTests(ParallelWrapperTests):
         
         # test seqs_per_file from 1 to 1000
         for i in range(1,1000):
-            filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
+            filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
+                                               prefix='split_fasta_tests',
+                                               suffix='',
+                                               result_constructor=str)
          
             actual = split_fasta(infile, i, filename_prefix)
         
