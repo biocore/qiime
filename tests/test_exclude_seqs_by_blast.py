@@ -31,6 +31,9 @@ from qiime.exclude_seqs_by_blast import blast_genome,\
                                         id_from_fasta_label_line,\
                                         seqs_from_file,\
                                         ids_to_seq_file
+from qiime.util import get_tmp_filename, remove_files
+
+
 class ExcludeHumanTests(TestCase):
     
     def setUp(self):
@@ -38,12 +41,18 @@ class ExcludeHumanTests(TestCase):
         self.blast_lines = BLAST_LINES
         self.blast_result=BlastResult(self.blast_lines)
         
-        self.subjectdb_fp = get_tmp_filename_as_str(\
-                          prefix='ExcludeByBlastTests_',suffix='.fasta')
-        self.query_fp = get_tmp_filename_as_str(\
-                          prefix='ExcludeByBlastTests_',suffix='.fasta')
-        self.query2_fp = get_tmp_filename_as_str(\
-                          prefix='ExcludeByBlastTests_',suffix='.fasta')
+        self.subjectdb_fp = get_tmp_filename(\
+                          prefix='ExcludeByBlastTests_',
+                          suffix='.fasta',
+                          result_constructor=str)
+        self.query_fp = get_tmp_filename(\
+                          prefix='ExcludeByBlastTests_',
+                          suffix='.fasta',
+                          result_constructor=str)
+        self.query2_fp = get_tmp_filename(\
+                          prefix='ExcludeByBlastTests_',
+                          suffix='.fasta',
+                          result_constructor=str)
         
         open(self.subjectdb_fp,"w").writelines(TEST_BLAST_DB_LINES)
         open(self.query_fp,"w").writelines(TEST_BLAST_DB_LINES)
@@ -130,8 +139,10 @@ class ExcludeHumanTests(TestCase):
     def test_sequences_to_file(self):
         """sequences_to_file should write a standard format FASTA file."""
         
-        self.seq_test_fp = get_tmp_filename_as_str(\
-                          prefix='ExcludeByBlastTests_',suffix='.fasta')
+        self.seq_test_fp = get_tmp_filename(
+                          prefix='ExcludeByBlastTests_',
+                          suffix='.fasta',
+                          result_constructor=str)
         self._paths_to_clean_up.append(self.seq_test_fp)        
         
         ids = ["bth:BT_0001","hsa:8355"]
@@ -232,8 +243,10 @@ class ExcludeHumanTests(TestCase):
      
     def test_ids_to_seq_file(self):
         """ids_to_seq_file should lookup and write out seqs for given ids"""
-        self.id_test_fp = get_tmp_filename_as_str(\
-                          prefix='ExcludeByBlastTests_',suffix='.fasta')
+        self.id_test_fp = get_tmp_filename(\
+                          prefix='ExcludeByBlastTests_',
+                          suffix='.fasta',
+                          result_constructor=str)
         
         self._paths_to_clean_up.append(self.id_test_fp)        
               
@@ -243,44 +256,8 @@ class ExcludeHumanTests(TestCase):
  
         exp_lines=open(self.query_fp).readlines()[2:] #this is the bth entry
         self.assertEqual(open(self.id_test_fp).readlines(), exp_lines)
-        
 
-    
-# Helper IO functions    
 
-def remove_files(list_of_filepaths,error_on_missing=True,DEBUG=False):
-    missing = []
-    for fp in list_of_filepaths:
-        if DEBUG:
-            print "REMOVING TEMP FILE: %s" %fp
-        try:
-            remove(fp)
-        except OSError:
-            missing.append(fp)
-
-    if error_on_missing and missing:
-        raise OSError,\
-         "Some filepaths were not accessible: %s" % '\t'.join(missing)
-
-def get_tmp_filename_as_str(tmp_dir="/tmp", prefix='tmp',tmp_name_len=20,\
-                                                            suffix='.txt'):
-    """Returns a temporary filename as a string""" 
-    chars = "abcdefghigklmnopqrstuvwxyz"
-    all_chars = chars + chars.upper() + "0123456790"
-    # check not none
-    if not tmp_dir:
-        tmp_dir = ""
-    # if not current directory, append "/" if not already on path
-    elif not tmp_dir.endswith("/"):
-        tmp_dir += "/"
-    try:
-            mkdir(tmp_dir)
-    except OSError:
-            # Directory already exists
-            pass
-
-    return ''.join([tmp_dir, prefix, \
-        ''.join([choice(all_chars) for i in range(tmp_name_len)]),suffix])
 
 # Predefined Test strings
 

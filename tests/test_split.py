@@ -13,11 +13,12 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
-from cogent.app.util import get_tmp_filename
 from qiime.split import (split_mapping_file_on_field, 
                          split_otu_table_on_sample_metadata,
                          split_fasta)
-from qiime.util import get_qiime_temp_dir, remove_files
+from qiime.util import (get_qiime_temp_dir, 
+                        remove_files, 
+                        get_tmp_filename)
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
 from biom.table import DenseOTUTable

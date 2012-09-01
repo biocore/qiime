@@ -12,11 +12,11 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
-    get_tmp_filename, ApplicationError, ApplicationNotFoundError
+    ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
 
 from qiime.util import FunctionWithParams, degap_fasta_aln, \
-    write_degapped_fasta_to_file
+    write_degapped_fasta_to_file, get_tmp_filename
 from qiime.assign_taxonomy import BlastTaxonAssigner
 
 __author__ = "Greg Caporaso"

@@ -18,9 +18,8 @@ from shutil import rmtree
 from numpy import array
 from cogent import LoadTree, LoadSeqs
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
-from qiime.util import load_qiime_config, count_seqs
+from qiime.util import load_qiime_config, count_seqs, get_tmp_filename
 from qiime.workflow import (call_commands_serially,no_status_updates)
 from qiime.parse import (parse_qiime_parameters,
                          fields_to_dict)

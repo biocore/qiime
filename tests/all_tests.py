@@ -7,10 +7,9 @@ from os.path import join, abspath, dirname, split
 from glob import glob
 import re
 from sys import exit
-from cogent.app.util import get_tmp_filename
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
-                       make_option)
+                       make_option, get_tmp_filename)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"

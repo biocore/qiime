@@ -17,7 +17,6 @@ from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
 from biom.parse import parse_biom_table_str
 from qiime.parse import (parse_distmat, parse_mapping_file, 
                          parse_metadata_state_descriptions)
@@ -31,7 +30,7 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_mapping_file_from_mapping_f,
                           filter_mapping_file_by_metadata_states)
 from qiime.test import FakeFile
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, get_tmp_filename
 
 class fake_output_f():
     
