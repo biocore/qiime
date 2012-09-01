@@ -144,8 +144,6 @@ class ParallelWrapperTests(TestCase):
         actual = self.pw._merge_to_n_commands(commands,2)
         self.assertEqual(actual,expected)
 
-class FunctionTests(ParallelWrapperTests):
-
     def test_get_random_job_prefix(self):
         """ get_random_job_prefix functions as expected """
         
@@ -203,6 +201,8 @@ class FunctionTests(ParallelWrapperTests):
         self.assertEqual(actual_10,3)
         self.assertEqual(actual_5,5)
         self.assertEqual(actual_40,1)
+
+class FunctionTests(ParallelWrapperTests):
 
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
