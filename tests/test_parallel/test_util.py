@@ -17,8 +17,7 @@ from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from qiime.util import (get_tmp_filename,
                         get_qiime_temp_dir) 
-from qiime.parallel.util import (ParallelWrapper, 
-                                 compute_seqs_per_file,
+from qiime.parallel.util import (ParallelWrapper,
                                  split_fasta,
                                  BufferedWriter)
 
@@ -191,11 +190,11 @@ class FunctionTests(ParallelWrapperTests):
         temp_fasta = ['>seq','AAACCCCAAATTGG'] * 25
         open(temp_fasta_fp,'w').write('\n'.join(temp_fasta))
         
-        actual_25 = compute_seqs_per_file(temp_fasta_fp,25)
-        actual_2 = compute_seqs_per_file(temp_fasta_fp,2)
-        actual_10 = compute_seqs_per_file(temp_fasta_fp,10)
-        actual_5 = compute_seqs_per_file(temp_fasta_fp,5)
-        actual_40 = compute_seqs_per_file(temp_fasta_fp,40)
+        actual_25 = self.pw._compute_seqs_per_file(temp_fasta_fp,25)
+        actual_2 = self.pw._compute_seqs_per_file(temp_fasta_fp,2)
+        actual_10 = self.pw._compute_seqs_per_file(temp_fasta_fp,10)
+        actual_5 = self.pw._compute_seqs_per_file(temp_fasta_fp,5)
+        actual_40 = self.pw._compute_seqs_per_file(temp_fasta_fp,40)
         
         remove_files([temp_fasta_fp])
         

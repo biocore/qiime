@@ -423,6 +423,24 @@ class ParallelWrapper(object):
     
         return result
     
+    def _compute_seqs_per_file(self,
+                               input_fasta_fp,
+                               num_jobs_to_start):
+        """ Compute the number of sequences to include in each split file
+        """
+        # count the number of sequences in the fasta file
+        num_input_seqs = count_seqs(input_fasta_fp)[0]
+     
+        # divide the number of sequences by the number of jobs to start
+        result = num_input_seqs/num_jobs_to_start
+    
+        # if we don't have a perfect split, round up
+        if result % 1 != 0:
+            result += 1
+        
+        # return the result as an integer
+        return int(result)
+    
     ####
     # General purpose _input_splitter functions
     ####
@@ -434,7 +452,7 @@ class ParallelWrapper(object):
                      output_dir):
         # compute the number of sequences that should be included in
         # each file after splitting the input fasta file   
-        num_seqs_per_file = compute_seqs_per_file(input_fp,jobs_to_start)
+        num_seqs_per_file = self._compute_seqs_per_file(input_fp,jobs_to_start)
      
         # split the fasta files and get the list of resulting files
         tmp_fasta_fps =\
@@ -487,22 +505,6 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
             seq_counter = 0
             
     return out_files
-
-def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
-    """ Compute the number of sequences to include in each split file
-    """
-    # count the number of sequences in the fasta file
-    num_input_seqs = count_seqs(input_fasta_fp)[0]
-     
-    # divide the number of sequences by the number of jobs to start
-    result = num_input_seqs/num_jobs_to_start
-    
-    # if we don't have a perfect split, round up
-    if result % 1 != 0:
-        result += 1
-        
-    # return the result as an integer
-    return int(result)
 
 class BufferedWriter():
     """A file like object that delays writing to file without keeping an open filehandle
