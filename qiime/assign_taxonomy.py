@@ -714,7 +714,7 @@ class RtaxTaxonAssigner(TaxonAssigner):
                                        read_1_seqs_fp, read_2_seqs_fp, single_ok=single_ok, no_single_ok_generic=no_single_ok_generic,
                                        header_id_regex=header_id_regex, read_id_regex=read_id_regex,
                                        amplicon_id_regex=amplicon_id_regex, output_fp=result_path,
-                                       log_path=log_path,base_tmp_dir=get_qiime_temp_dir)
+                                       log_path=log_path,base_tmp_dir=get_qiime_temp_dir())
 
 
         return results
