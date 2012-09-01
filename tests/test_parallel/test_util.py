@@ -18,7 +18,6 @@ from cogent.util.misc import remove_files
 from qiime.util import (get_tmp_filename,
                         get_qiime_temp_dir) 
 from qiime.parallel.util import (ParallelWrapper,
-                                 split_fasta,
                                  BufferedWriter)
 
 class ParallelWrapperTests(TestCase):
@@ -201,89 +200,6 @@ class ParallelWrapperTests(TestCase):
         self.assertEqual(actual_10,3)
         self.assertEqual(actual_5,5)
         self.assertEqual(actual_40,1)
-
-class FunctionTests(TestCase):
-
-    def test_split_fasta_equal_num_seqs_per_file(self):
-        """split_fasta funcs as expected when equal num seqs go to each file
-        """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
-        infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
-         '>seq3','CCTT--AA']
-         
-        actual = split_fasta(infile, 1, filename_prefix)
-        actual_seqs = []
-        for fp in actual:
-            actual_seqs += list(open(fp))
-        remove_files(actual)
-        
-        expected = ['%s.%d.fasta' % (filename_prefix,i) for i in range(3)]
-        
-        self.assertEqual(actual,expected)
-        self.assertEqual(\
-         LoadSeqs(data=infile,aligned=False),\
-         LoadSeqs(data=actual_seqs,aligned=False))
-        
-        
-    def test_split_fasta_diff_num_seqs_per_file(self):
-        """split_fasta funcs as expected when diff num seqs go to each file
-        """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
-        infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
-         '>seq3','CCTT--AA']
-         
-        actual = split_fasta(infile, 2, filename_prefix)
-        
-        actual_seqs = []
-        for fp in actual:
-            actual_seqs += list(open(fp))
-        remove_files(actual)
-        
-        expected = ['%s.%d.fasta' % (filename_prefix,i) for i in range(2)]
-        # list of file paths is as expected
-        self.assertEqual(actual,expected)
-        # building seq collections from infile and the split files result in
-        # equivalent seq collections
-        self.assertEqual(\
-         LoadSeqs(data=infile,aligned=False),\
-         LoadSeqs(data=actual_seqs,aligned=False))
-         
-    def test_split_fasta_diff_num_seqs_per_file_alt(self):
-        """split_fasta funcs always catches all seqs
-        """
-        # start with 59 seqs (b/c it's prime, so should make more 
-        # confusing splits)
-        in_seqs = LoadSeqs(data=[('seq%s' % k,'AACCTTAA') for k in range(59)])
-        infile = in_seqs.toFasta().split('\n')
-        
-        # test seqs_per_file from 1 to 1000
-        for i in range(1,1000):
-            filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix='split_fasta_tests',
-                                               suffix='',
-                                               result_constructor=str)
-         
-            actual = split_fasta(infile, i, filename_prefix)
-        
-            actual_seqs = []
-            for fp in actual:
-                actual_seqs += list(open(fp))
-            # remove the files now, so if the test fails they still get 
-            # cleaned up
-            remove_files(actual)
-            
-            # building seq collections from infile and the split files result in
-            # equivalent seq collections
-            self.assertEqual(\
-             LoadSeqs(data=infile,aligned=False),\
-             LoadSeqs(data=actual_seqs,aligned=False))
-
 
 class BufferedWriterTests(TestCase):
     

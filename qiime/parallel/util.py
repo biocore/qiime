@@ -16,6 +16,7 @@ from os.path import split, splitext, join
 from os import makedirs, mkdir
 from random import choice
 from cogent.parse.fasta import MinimalFastaParser
+from qiime.split import split_fasta
 from qiime.util import (load_qiime_config,
                         get_qiime_scripts_dir,
                         qiime_system_call,
@@ -468,43 +469,6 @@ class ParallelWrapper(object):
                                   job_prefix,
                                   output_dir):
         return input_fps, False
-
-def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
-    """ Split infile into files with seqs_per_file sequences in each
-    
-        infile: list of fasta lines or open file object
-        seqs_per_file: the number of sequences to include in each file
-        out_fileprefix: string used to create output filepath - output filepaths
-         are <out_prefix>.<i>.fasta where i runs from 0 to number of output files
-        working_dir: directory to prepend to temp filepaths (defaults to 
-         empty string -- files written to cwd)
-         
-        List of output filepaths is returned.
-    
-    """
-    seq_counter = 0
-    out_files = []
-    if working_dir and not working_dir.endswith('/'):
-        working_dir += '/'
-        try:
-            mkdir(working_dir)
-        except OSError:
-            pass
-    
-    for seq_id,seq in MinimalFastaParser(infile):
-        if seq_counter == 0:
-            current_out_fp = '%s%s.%d.fasta' \
-              % (working_dir,outfile_prefix,len(out_files))
-            current_out_file = open(current_out_fp, 'w')
-            out_files.append(current_out_fp)
-        current_out_file.write('>%s\n%s\n' % (seq_id, seq))
-        seq_counter += 1
-        
-        if seq_counter == seqs_per_file:
-            current_out_file.close()
-            seq_counter = 0
-            
-    return out_files
 
 class BufferedWriter():
     """A file like object that delays writing to file without keeping an open filehandle

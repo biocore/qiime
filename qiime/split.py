@@ -11,6 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from cogent.parse.fasta import MinimalFastaParser
+from cogent.util.misc import create_dir
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
 from qiime.format import format_mapping_file, format_biom_table
@@ -83,5 +85,37 @@ def split_otu_table_on_sample_metadata(otu_table_f,mapping_f,mapping_field):
             continue
         yield v_fp_str, format_biom_table(filtered_otu_table)
 
-
+def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
+    """ Split infile into files with seqs_per_file sequences in each
+    
+        infile: list of fasta lines or open file object
+        seqs_per_file: the number of sequences to include in each file
+        out_fileprefix: string used to create output filepath - output filepaths
+         are <out_prefix>.<i>.fasta where i runs from 0 to number of output files
+        working_dir: directory to prepend to temp filepaths (defaults to 
+         empty string -- files written to cwd)
+         
+        List of output filepaths is returned.
+    
+    """
+    seq_counter = 0
+    out_files = []
+    if working_dir and not working_dir.endswith('/'):
+        working_dir += '/'
+        create_dir(working_dir)
+    
+    for seq_id,seq in MinimalFastaParser(infile):
+        if seq_counter == 0:
+            current_out_fp = '%s%s.%d.fasta' \
+              % (working_dir,outfile_prefix,len(out_files))
+            current_out_file = open(current_out_fp, 'w')
+            out_files.append(current_out_fp)
+        current_out_file.write('>%s\n%s\n' % (seq_id, seq))
+        seq_counter += 1
+        
+        if seq_counter == seqs_per_file:
+            current_out_file.close()
+            seq_counter = 0
+            
+    return out_files
     
