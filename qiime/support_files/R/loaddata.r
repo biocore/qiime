@@ -10,7 +10,6 @@
     header <- scan(filepath, what='character', sep='\t',comment='',skip=header.index-1,quote='"',
                     nlines=1,quiet=TRUE)
     close(f)
-    
     # read the rest of the table
     datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',quote='"',
                         head=F,row.names=1,check=FALSE)
@@ -70,8 +69,9 @@
         f <- file(filepath,'r') # open file in read mode
         line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t', quiet=TRUE)
         close(f)
-        # ncolumns is the number of non-empty entries in this line
-        ncolumns <- sum(sapply(line,nchar) > 0)
+        # ncolumns is the number of entries in this line
+        # not including trailing empties
+        ncolumns <- max(which(sapply(line,nchar) > 0))
         ncolumns.per.line <- c(ncolumns.per.line, ncolumns)
         start.character <- substring(line[1],1,1)
     }
