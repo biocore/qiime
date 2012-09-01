@@ -132,7 +132,7 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     order = list(set(sample_ids1) & set(sample_ids2)) 
     coords1 = reorder_coords(coords1,sample_ids1,order)
     coords2 = reorder_coords(coords2,sample_ids2,order)
-    if not coords1 and not coords1:
+    if len(order) == 0:
         raise ValueError, 'No overlapping samples in the two files'
         
     # If this is a random trial, apply the shuffling function passed as 
