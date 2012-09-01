@@ -19,7 +19,6 @@ from qiime.util import (get_tmp_filename,
                         get_qiime_temp_dir) 
 from qiime.parallel.util import (ParallelWrapper, 
                                  compute_seqs_per_file,
-                                 get_random_job_prefix,
                                  split_fasta,
                                  BufferedWriter)
 
@@ -146,24 +145,24 @@ class ParallelWrapperTests(TestCase):
         actual = self.pw._merge_to_n_commands(commands,2)
         self.assertEqual(actual,expected)
 
-class FunctionTests(TestCase):
+class FunctionTests(ParallelWrapperTests):
 
     def test_get_random_job_prefix(self):
         """ get_random_job_prefix functions as expected """
         
-        s1 = get_random_job_prefix()
-        s2 = get_random_job_prefix()
+        s1 = self.pw._get_random_job_prefix()
+        s2 = self.pw._get_random_job_prefix()
         self.assertNotEqual(s1,s2)
         self.assertEqual(len(s1),10)
         self.assertEqual(len(s2),10)
         
         # different max len
-        s1 = get_random_job_prefix(max_job_prefix_len=22)
+        s1 = self.pw._get_random_job_prefix(max_job_prefix_len=22)
         self.assertEqual(len(s1),22)
         
         # fixed_prefix added
-        s1 = get_random_job_prefix(fixed_prefix='TEST')
-        s2 = get_random_job_prefix(fixed_prefix='TEST')
+        s1 = self.pw._get_random_job_prefix(fixed_prefix='TEST')
+        s2 = self.pw._get_random_job_prefix(fixed_prefix='TEST')
         self.assertNotEqual(s1,s2)
         self.assertEqual(len(s1),10)
         self.assertTrue(s1.startswith('TEST'))
@@ -173,12 +172,12 @@ class FunctionTests(TestCase):
         self.assertTrue(s1.endswith('_'))
         
         # no leading/trailing underscores
-        s1 = get_random_job_prefix(leading_trailing_underscores=False)
+        s1 = self.pw._get_random_job_prefix(leading_trailing_underscores=False)
         self.assertFalse(s1.startswith('_'))
         self.assertFalse(s1.endswith('_'))
         
         # combo of all parameters
-        s1 = get_random_job_prefix(leading_trailing_underscores=False,\
+        s1 = self.pw._get_random_job_prefix(leading_trailing_underscores=False,\
          fixed_prefix='HELLO',max_job_prefix_len=12)
         self.assertEqual(len(s1),12)
         self.assertTrue(s1.startswith('HELLO'))
@@ -209,7 +208,7 @@ class FunctionTests(TestCase):
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
-        filename_prefix = get_random_job_prefix(fixed_prefix='/tmp/')
+        filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
         infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
          '>seq3','CCTT--AA']
          
@@ -230,7 +229,7 @@ class FunctionTests(TestCase):
     def test_split_fasta_diff_num_seqs_per_file(self):
         """split_fasta funcs as expected when diff num seqs go to each file
         """
-        filename_prefix = get_random_job_prefix(fixed_prefix='/tmp/')
+        filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
         infile = ['>seq1','AACCTTAA','>seq2','TTAACC','AATTAA',\
          '>seq3','CCTT--AA']
          
@@ -260,7 +259,7 @@ class FunctionTests(TestCase):
         
         # test seqs_per_file from 1 to 1000
         for i in range(1,1000):
-            filename_prefix = get_random_job_prefix(fixed_prefix='/tmp/')
+            filename_prefix = self.pw._get_random_job_prefix(fixed_prefix='/tmp/')
          
             actual = split_fasta(infile, i, filename_prefix)
         

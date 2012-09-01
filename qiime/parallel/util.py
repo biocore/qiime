@@ -94,7 +94,7 @@ class ParallelWrapper(object):
         # Allow the user to override the default job_prefix (defined by the 
         # base classes)
         if job_prefix is None:
-            job_prefix = get_random_job_prefix(self._job_prefix)
+            job_prefix = self._get_random_job_prefix(self._job_prefix)
         # A temporary output directory is created in output_dir named
         # job_prefix. Output files are then moved from the temporary
         # directory to the output directory when they are complete,
@@ -256,6 +256,21 @@ class ParallelWrapper(object):
         """
         open(merge_map_filepath,'w').close()
 
+    def _get_random_job_prefix(self, 
+                               fixed_prefix='',
+                               max_job_prefix_len=10,\
+                               leading_trailing_underscores=True):
+        """ Return a string to use as job prefix """
+
+        length = max_job_prefix_len - len(fixed_prefix)
+        if leading_trailing_underscores:
+            length -= 2 
+    
+        result = [choice(RANDOM_JOB_PREFIX_CHARS) for i in range(length)]
+        if leading_trailing_underscores:
+            return fixed_prefix + '_' + ''.join(result) + '_'
+        else:
+            return fixed_prefix + ''.join(result)
 
     def _get_job_commands(self,
                           input_fps,
@@ -472,22 +487,6 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
             seq_counter = 0
             
     return out_files
-    
-def get_random_job_prefix(fixed_prefix='',max_job_prefix_len=10,\
-    leading_trailing_underscores=True):
-    """ Return a string to use as job prefix
-    
-    """
-
-    length = max_job_prefix_len - len(fixed_prefix)
-    if leading_trailing_underscores:
-        length -= 2 
-    
-    result = [choice(RANDOM_JOB_PREFIX_CHARS) for i in range(length)]
-    if leading_trailing_underscores:
-        return fixed_prefix + '_' + ''.join(result) + '_'
-    else:
-        return fixed_prefix + ''.join(result)
 
 def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
     """ Compute the number of sequences to include in each split file
