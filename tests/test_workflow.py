@@ -18309,7 +18309,6 @@ parallel:retain_temp_files	False
 parallel:seconds_to_sleep	1"""
 
 run_core_qiime_analyses_params1 = """
-otu_category_significance:filter	3
 parallel:jobs_to_start	2
 parallel:seconds_to_sleep	2"""
 

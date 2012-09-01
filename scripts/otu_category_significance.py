@@ -132,14 +132,13 @@ script_info['optional_options']=[\
         default= 'otu_category_significance_results.txt',\
         help='path to output file. [default: %default]',
         type='new_filepath'),\
-    make_option('-f','--filter', dest='filter', type='int', \
+    make_option('-f','--filter', dest='filter', type='float', \
         default= 0.25, \
         help='minimum fraction of samples that must contain the OTU for the ' +\
         'OTU to be included in the analysis. For longitudinal options, is ' +\
         'the fraction of individuals/sites that were not ' +\
         'ignored because of the OTU not being observed in any of the ' +\
-        'samples from that individual/site. ' +\
-        'The default value=0.25.'),\
+        'samples from that individual/site. [default: %default]'),\
     make_option('-t','--threshold', dest='threshold', default=None, type='float', \
         help='threshold under which to consider something absent: ' +\
         'Only used if you have numerical data that should be converted to ' +\
