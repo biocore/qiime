@@ -11,6 +11,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * make_distance_boxplots.py and make_distance_comparison_plots.py can now perform Student's two-sample t-tests to determine whether a pair of boxplots/distributions are significantly different (using both parametric and nonparametric Monte Carlo-based tests of significance). These changes include three new options to the two scripts (--tail_type, --num_permutations, and --suppress_significance_tests), as well as a new function all_pairs_t_test in qiime.stats. The accompanying tutorial has also been updated to cover the new statistical tests.
 * Checks are now in place to prevent asymmetric and non-hollow distance matrices from being used in make_distance_boxplots.py, make_distance_comparison_plots.py, make_distance_histograms.py, compare_categories.py, and compare_distance_matrices.py. The relevant script help and underlying library code has been documented to warn against their use, and the symmetry checks can be easily disabled if performance becomes an issue in the future.
 * qiime.util.DistanceMatrix has new method is_symmetric_and_hollow.
+* Added the new Illumina Overview Tutorial which was developed for the ISME 14 Bioinformatics Workshop. Also added the IPython notebook files that were used in the ISME 14 workshop under the new examples/ipynb directory. These can be used by changing to the ipynb directory and running "ipython notebook" on a system with IPython and the IPython notebook dependencies installed.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
