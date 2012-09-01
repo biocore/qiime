@@ -44,6 +44,10 @@ script_info['optional_options'] = [
              type='int',
              default=0,
              help="the minimum total observation count of an otu for that otu to be retained [default: %default]"),
+ make_option('--min_count_fraction',
+             type='float',
+             default=0,
+             help="fraction of the total observation (sequence) count to apply as the minimum total observation count of an otu for that otu to be retained. this is a fraction, not percent, so if you want to filter to 1%, you specify 0.01. [default: %default]"),
  make_option('-x', 
              '--max_count',
              type='int',
@@ -79,6 +83,11 @@ def main():
     
     min_count = opts.min_count
     max_count = opts.max_count
+    min_count_fraction = opts.min_count_fraction
+    if min_count_fraction < 0. or min_count_fraction > 1.:
+        option_parser.error("min_count_fraction must be between 0 and 1")
+    if min_count != 0 and min_count_fraction != 0:
+        option_parser.error("cannot specify both min_count and min_count_fraction")
     
     min_samples = opts.min_samples
     max_samples = opts.max_samples
@@ -86,11 +95,22 @@ def main():
     otu_ids_to_exclude_fp = opts.otu_ids_to_exclude_fp
     negate_ids_to_exclude = opts.negate_ids_to_exclude
     
-    if not (min_count != 0 or not isinf(max_count) or otu_ids_to_exclude_fp != None or min_samples !=0 or not isinf(max_samples)):
+    if not (min_count != 0 or \
+            min_count_fraction != 0 or \
+            not isinf(max_count) or \
+            otu_ids_to_exclude_fp != None or \
+            min_samples !=0 or not isinf(max_samples)):
         option_parser.error("No filtering requested. Must provide either "
-                     "min counts, max counts, min samples, max samples, or exclude_fp (or some combination of those).")
+            "min counts, max counts, min samples, max samples, min_count_fraction, "
+            "or exclude_fp (or some combination of those).")
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
+    
+    
+    if min_count_fraction > 0:
+        min_count = otu_table.sum() * min_count_fraction
+        print otu_table.sum(), min_count
+    
     output_f = open(opts.output_fp,'w')
     
     otu_ids_to_keep = set(otu_table.ObservationIds)
