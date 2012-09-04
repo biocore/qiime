@@ -139,7 +139,8 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
 
     is_con = False
     # This could be moved to OTU table sub-class
-    if otu_table.ObservationMetadata[0] and 'taxonomy' in otu_table.ObservationMetadata[0]:
+    if (otu_table.ObservationMetadata is not None and
+        'taxonomy' in otu_table.ObservationMetadata[0]):
         is_con = True
 
     for (otu_values, otu_id, otu_metadata) in otu_table.iterObservations():
