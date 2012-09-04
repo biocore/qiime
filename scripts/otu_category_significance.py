@@ -239,7 +239,7 @@ def main():
                 #deactivates the filter for correlation, because the filtered OTU_list is
                 #rewritten with the otu_include list in the test_wrapper
                 if not otu_include:
-                    otu_include = otu_table.ObservationIDs
+                    otu_include = set(otu_table.ObservationIds)
                 output = test_wrapper('correlation', converted_otu_table, \
                     category_mapping, category, threshold, filter, otu_include, \
                     999999999.0, True)
