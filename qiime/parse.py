@@ -816,7 +816,7 @@ def parse_fastq_qual_score(fastq_lines):
         results[header] = array(map(ascii_to_phred_f,qual))
     return results
 
-def MinimalQualParser(infile,value_cast_f=int):
+def MinimalQualParser(infile,value_cast_f=int, full_header=False):
     """Yield quality scores"""
     for rec in FastaFinder(infile):
         curr_id = rec[0][1:]
@@ -825,7 +825,10 @@ def MinimalQualParser(infile,value_cast_f=int):
             parts = array(map(value_cast_f, curr_qual.split()))
         except ValueError:
             raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
-        curr_pid = curr_id.split()[0]
+        if full_header:
+            curr_pid = curr_id
+        else:
+            curr_pid = curr_id.split()[0]
         yield (curr_pid, parts)
 
 def parse_qual_scores(qual_files):

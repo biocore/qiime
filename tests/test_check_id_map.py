@@ -149,7 +149,7 @@ class CheckIdMapTests(TestCase):
         # same valid input data
         check_mapping_file(mapping_fp = self.correct_mapping_fp,
                            output_dir = self.output_dir,
-                           has_barcodes=False,
+                           has_barcodes=True,
                            char_replace="A",
                            verbose=False,
                            variable_len_barcodes=True,
@@ -638,7 +638,7 @@ class CheckIdMapTests(TestCase):
         self.assertEqual(errors, expected_errors)
         
     def test_check_bc_duplicates_disable_bcs_dups(self):
-        """ Handles duplicate checks of barcodes and added demultiplex data """
+        """ Handles duplicate checks of no barcodes or added demultiplex data """
         
         header =\
          ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
@@ -654,8 +654,27 @@ class CheckIdMapTests(TestCase):
                         variable_len_barcodes=False,
                         added_demultiplex_field=None)
         
-        # should not find dups with has_barcodes = False and no other checks
-        # performed         
+        # Should return an error if more than one SampleID present and 
+        # barcodes disabled and no added_demultiplex_field      
+        expected_errors = ["If no barcodes are present, and the added_demultiplex_field option isn't used, only a single SampleID can be present.\t-1,-1"]
+        
+        self.assertEqual(errors, expected_errors)
+        
+        # If a single sample present, should not raise any errors
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'ACGT', 'AAAA', '1', 's1&data']]
+        errors = []
+        
+        errors = check_bc_duplicates(header,
+                        mapping_data,
+                        errors,
+                        has_barcodes=False,
+                        variable_len_barcodes=False,
+                        added_demultiplex_field=None)
+              
         expected_errors = []
         
         self.assertEqual(errors, expected_errors)
@@ -1327,51 +1346,8 @@ Warnings ---------------------------
 Barcode AGCACGAGCCxTA differs than length 12	1,1
 """
 
-expected_html_errors_suppressed_bcs = """<html>
-<head>
-
-<script type="text/javascript" src="./overlib.js"></script>
-</head>
-<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>
-Notes for interpreting this report:
-<ul>
-    <li>Errors will be listed in red, warnings in yellow.  
-    <li>Mouse over an error or warning in a cell for more details.
-    <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
-</ul>
-<p>
-Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
-<ul> 
-    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
-    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
-    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
-</ul>
-General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
-<table border="2" cellspacing="0" cellpadding="5">
-
-<tr></tr>
-<tr>
-<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Found header field NotDescription, last field should be Description<br>');" onmouseout="return nd();"><font color=white>NotDescription</a></th>
-</tr>
-
-<tr>
-<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AGCACGAGCCxTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
-</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
-</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
-</tr>
-</table>
-
-</body>
-</html>"""
-
-expected_output_log_errors_bcs_suppressed = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.
-Errors -----------------------------
-Found header field NotDescription, last field should be Description	0,5
-Duplicate SampleID PC.355 found.	1,0
-Duplicate SampleID PC.355 found.	2,0
-Warnings ---------------------------
-"""
+expected_html_errors_suppressed_bcs = """<html>\n<head>\n\n<script type="text/javascript" src="./overlib.js"></script>\n</head>\n<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>\nNotes for interpreting this report:\n<ul>\n    <li>Errors will be listed in red, warnings in yellow.  \n    <li>Mouse over an error or warning in a cell for more details.\n    <li>Errors in the header row may mask other errors, so these should be corrected first.\n    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.\n</ul>\n<p>\nSome general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):\n<ul> \n    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.\n    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>\n    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.\n</ul>\nGeneral issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr><td bgcolor="red"><font color="white">If no barcodes are present, and the added_demultiplex_field option isn\'t used, only a single SampleID can be present.<font color="black"></td></tr></table><br>\n<table border="2" cellspacing="0" cellpadding="5">\n\n<tr></tr>\n<tr>\n<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Found header field NotDescription, last field should be Description<br>\');" onmouseout="return nd();"><font color=white>NotDescription</a></th>\n</tr>\n\n<tr>\n<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AGCACGAGCCxTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354\n</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355\n</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>\n</tr>\n</table>\n\n</body>\n</html>"""
+expected_output_log_errors_bcs_suppressed = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.\nErrors -----------------------------\nFound header field NotDescription, last field should be Description\t0,5\nIf no barcodes are present, and the added_demultiplex_field option isn't used, only a single SampleID can be present.\tno location\nDuplicate SampleID PC.355 found.\t1,0\nDuplicate SampleID PC.355 found.\t2,0\nWarnings ---------------------------\n"""
 
 expected_html_output_warnings = """<html>
 <head>

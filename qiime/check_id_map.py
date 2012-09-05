@@ -49,7 +49,7 @@ __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
 from collections import defaultdict
-from string import letters, digits
+from string import letters, digits, upper
 from os.path import basename, join
 from operator import itemgetter
 from copy import deepcopy
@@ -327,7 +327,7 @@ def check_dna_chars_primers(header,
     disable_primer_check:  If True, disables tests for valid primer sequences.
     """
     
-    valid_dna_chars = "ACBDGHKMNSRTWVY,"
+    valid_dna_chars = "ACBDGHKMNSRTWVY,acbdghkmnsrtwvy"
     
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
@@ -378,7 +378,7 @@ def check_dna_chars_bcs(header,
      uniqueness, valid IUPAC DNA chars).
     """
     
-    valid_dna_chars = "ACTG"
+    valid_dna_chars = "ACTGactg"
     
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
@@ -484,8 +484,16 @@ def check_bc_duplicates(header,
         errors = check_variable_len_bcs_dups(header, mapping_data, errors)
     if added_demultiplex_field:
         errors = check_added_demultiplex_dups(header, mapping_data, errors,
-         has_barcodes, added_demultiplex_field) 
-    
+         has_barcodes, added_demultiplex_field)
+    # Special case of has_barcodes = False and no added_demultiplex_field,
+    # need to check that only a single SampleID is passed in this case so
+    # we have "unique" demultiplexing.
+    if (not has_barcodes and not added_demultiplex_field):
+        # only one line of mapping data for one sample
+        if len(mapping_data) != 1:
+            errors.append("If no barcodes are present, and the "+\
+             "added_demultiplex_field option isn't used, only a single "+\
+             "SampleID can be present.\t-1,-1")
     return errors
     
 def check_fixed_len_bcs_dups(header,
