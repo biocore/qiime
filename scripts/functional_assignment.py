@@ -11,20 +11,20 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os.path import splitext, split, exists, abspath, join
-from cogent.app.blat import assign_dna_reads_to_protein_database
 from qiime.util import (make_option, 
                         parse_command_line_parameters, 
                         create_dir, 
                         load_qiime_config,
                         get_qiime_temp_dir)
 from qiime.pick_otus  import BlastxOtuPicker
-from qiime.functional_assignment import usearch_function_assigner
+from qiime.functional_assignment import (usearch_function_assigner, 
+                                         blat_function_assigner)
 
 qiime_config = load_qiime_config()
 
 assignment_constructors = {'blastx':BlastxOtuPicker,
                            'usearch':usearch_function_assigner,
-                           'blat':assign_dna_reads_to_protein_database}
+                           'blat':blat_function_assigner}
 
 script_info={}
 script_info['brief_description'] = """ Script for performing functional assignment of reads against a reference database """
@@ -165,10 +165,17 @@ def main():
     elif assignment_method == 'blat':
         blast9_path = '%s/%s.bl9' % (output_dir,input_seqs_basename)
         
-        assignment_constructor(query_fasta_fp=input_seqs_filepath,
-                               database_fasta_fp=refseqs_fp,
-                               output_fp=blast9_path,
-                               temp_dir=get_qiime_temp_dir())
+        assignment_constructor(query_fp=input_seqs_filepath,
+                               refseqs_fp=refseqs_fp,
+                               output_fp=result_path,
+                               failure_fp=failure_path,
+                               blat_fp=blast9_path,
+                               log_fp=log_path,
+                               evalue=opts.evalue,
+                               min_id=opts.min_percent_id,
+                               min_aligned_percent=opts.min_aligned_percent,
+                               temp_dir=get_qiime_temp_dir(),
+                               HALT_EXEC=False)
         
     else:
         ## other -- shouldn't be able to get here as a KeyError would have

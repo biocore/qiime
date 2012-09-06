@@ -11,6 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from cogent.parse.blast import MinimalBlatParser9
+from cogent.app.blat import assign_dna_reads_to_protein_database
 from qiime.pycogent_backports.usearch import Usearch, clusters_from_blast_uc_file
 from qiime.format import format_otu_map
 
@@ -98,3 +100,56 @@ def usearch_function_assigner(query_fp,
             failure_f.write(failure)
             failure_f.write('\n')
         failure_f.close()
+
+def blat_function_assigner(query_fp,
+                           refseqs_fp,
+                           output_fp,
+                           failure_fp,
+                           blat_fp,
+                           log_fp,
+                           evalue,
+                           min_id,
+                           min_aligned_percent,
+                           temp_dir,
+                           HALT_EXEC=False):
+    print "\n***\nWARNING: THIS CODE IS UNTESTED - DO NOT USE\n***\n"
+    result = {}
+    pct_id_field = 2
+    aln_len_field = 3
+    evalue_field = 10
+    assign_dna_reads_to_protein_database(
+                           query_fasta_fp=query_fp,
+                           database_fasta_fp=refseqs_fp,
+                           output_fp=blat_fp,
+                           temp_dir=temp_dir,
+                           alter_params={})
+    #max_alignment_length /= 3
+    function_map_f = open(output_fp,'w')
+    log_f = open(log_fp,'w')
+    for summary, blat_results in MinimalBlatParser9(open(blat_fp,'U'),
+                                 include_column_names=False):
+        for e in blat_results:
+            if (float(e[evalue_field]) <= evalue and\
+                float(e[pct_id_field]) / 100. >= min_id and\
+                int(e[aln_len_field]) >= min_aligned_percent):
+                query_id = e[0]
+                subject_id = e[1]
+                try:
+                    result[subject_id].append(query_id)
+                except KeyError:
+                    result[subject_id] = [query_id]
+                log_f.write('\t'.join(e))
+                log_f.write('\n')
+                break
+    log_f.close()
+    for e in result.items():
+        function_map_f.write('%s\t%s\n' % (e[0],'\t'.join(e[1])))
+    function_map_f.close()
+    return result
+
+
+
+
+
+
+
