@@ -293,6 +293,7 @@ def format_otu_map(otu_map,otu_id_prefix):
                               otu_id,
                               '\t'.join(seq_ids))
     return
+format_observation_map = format_otu_map
 
 def format_distance_matrix(labels, data):
     """Writes distance matrix as tab-delimited text, uses format_matrix"""
