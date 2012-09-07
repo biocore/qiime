@@ -11,19 +11,34 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from os.path import join
+from qiime.make_otu_table import make_otu_table
 from qiime.parallel.pick_otus import ParallelPickOtus
 
-class ParallelFunctionAssignerUsearch(ParallelPickOtus):
-    _script_name = 'functional_assignment.py'
-    _job_prefix = 'FUAS'
-
-    def _identify_files_to_remove(self,job_result_filepaths,params):
-        """ Select the files to remove: by default remove all files
+class ParallelDatabaseMapperUsearch(ParallelPickOtus):
+    _script_name = 'assign_reads_to_database.py'
+    _job_prefix = 'DBMAP'
+    
+    def _call_cleanup(self,
+                      input_fp,
+                      output_dir,
+                      params,
+                      job_prefix,
+                      poll_directly,
+                      suppress_submit_jobs):
+        """ Called as the last step in __call__.
         """
-        # save the .uc files
-        result =\
-             [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
-        return result
+        
+        if params['observation_metadata_fp'] != None:
+            observation_metadata = \
+             parse_taxonomy(open(params['observation_metadata_fp'],'U'))
+        else:
+            observation_metadata = None
+        biom_fp = join(output_dir,'observation_table.biom')
+        biom_f = open(biom_fp,'w')
+        biom_f.write(make_otu_table(open(join(output_dir,'observation_map.txt'),'U'),
+                                    observation_metadata))
+        biom_f.close()
     
     def _get_job_commands(self,
                           fasta_fps,
@@ -33,12 +48,10 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
                           working_dir,
                           command_prefix='/bin/bash; ',
                           command_suffix='; exit'):
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = [job_prefix + '.%d_fmap.txt',
-                         job_prefix + '.%s_failures.txt',
-                         job_prefix + '.%s.uc',
-                         job_prefix + '.%s.bl6']
+        out_filenames = ['observation_map.txt',
+                         'out.uc',
+                         'out.bl6',
+                         'observation_table.biom']
     
         # Create lists to store the results
         commands = []
@@ -48,9 +61,10 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
         for i,fasta_fp in enumerate(fasta_fps):
             # Each run ends with moving the output file from the tmp dir to
             # the output_dir. Build the command to perform the move here.
+            run_output_dir = join(working_dir,str(i))
             rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % i for fn in out_filenames],
-                working_dir,
+                [join(job_prefix,str(i),o) for o in out_filenames],
+                run_output_dir,
                 output_dir)
             result_filepaths += current_result_filepaths
             
@@ -60,7 +74,7 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
               self._script_name,
               fasta_fp,
               params['refseqs_fp'],
-              working_dir,
+              run_output_dir,
               params['min_percent_id'],
               params['max_accepts'],
               params['max_rejects'],
@@ -83,25 +97,21 @@ class ParallelFunctionAssignerUsearch(ParallelPickOtus):
         """
         f = open(merge_map_filepath,'w')
     
-        otus_fps = []
-        log_fps = []
-        failures_fps = []
+        observation_fps = []
+        uc_fps = []
         blast6_fps = []
     
         out_filepaths = [
-         '%s/%s_fmap.txt' % (output_dir,input_file_basename),
-         '%s/%s_fmap.log' % (output_dir,input_file_basename),
-         '%s/%s_failures.txt' % (output_dir,input_file_basename),
-         '%s/%s.bl6' % (output_dir,input_file_basename)]
-        in_filepaths = [otus_fps,log_fps,failures_fps,blast6_fps]
+         '%s/observation_map.txt' % output_dir,
+         '%s/out.uc' % output_dir,
+         '%s/out.bl6' % output_dir]
+        in_filepaths = [observation_fps,uc_fps,blast6_fps]
     
         for fp in job_result_filepaths:
-            if fp.endswith('_fmap.txt'):
-                otus_fps.append(fp)
-            elif fp.endswith('_fmap.log'):
-                log_fps.append(fp)
-            elif fp.endswith('_failures.txt'):
-                failures_fps.append(fp)
+            if fp.endswith('observation_map.txt'):
+                observation_fps.append(fp)
+            if fp.endswith('.uc'):
+                uc_fps.append(fp)
             elif fp.endswith('.bl6'):
                 blast6_fps.append(fp)
             else:

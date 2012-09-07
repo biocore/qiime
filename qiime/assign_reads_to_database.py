@@ -1,0 +1,238 @@
+#!/usr/bin/env python
+# File created on 13 Jul 2012
+from __future__ import division
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
+__license__ = "GPL"
+__version__ = "1.5.0-dev"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Development"
+
+from os.path import join, splitext, exists
+from cogent.parse.blast import MinimalBlatParser9
+from cogent.app.blat import (
+  assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database)
+from cogent.app.usearch import (Usearch, clusters_from_blast_uc_file,
+  assign_dna_reads_to_database as usearch_assign_dna_reads_to_database)
+from qiime.format import format_observation_map
+from qiime.parse import parse_taxonomy
+from qiime.make_otu_table import make_otu_table
+from qiime.util import get_qiime_temp_dir, create_dir
+
+class DatabaseMapper(object):
+    
+    def __call__(self,
+                 query_fasta_fp,
+                 database_fasta_fp,
+                 output_dir,
+                 observation_metadata_fp=None,
+                 params={},
+                 HALT_EXEC=False):
+        """ Call the DatabaseMapper """
+        create_dir(output_dir)
+        raw_output_fp = self._get_raw_output_fp(output_dir,
+                                                params)
+        output_observation_map_fp = '%s/observation_map.txt' % output_dir
+        output_biom_fp = '%s/observation_table.biom' % output_dir
+        log_fp = '%s/observation_table.log' % output_dir
+        
+        self._assign_dna_reads_to_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 raw_output_fp=raw_output_fp,
+                 temp_dir=get_qiime_temp_dir(), 
+                 params=params,
+                 HALT_EXEC=HALT_EXEC)
+        
+        self._process_raw_output(raw_output_fp,
+                                 log_fp,
+                                 output_observation_map_fp)
+                                 
+        self._generate_biom_output(output_observation_map_fp,
+                                   output_biom_fp,
+                                   observation_metadata_fp)
+    
+    def _generate_biom_output(self,
+                              observation_map_fp,
+                              output_biom_fp,
+                              observation_metadata_fp):
+        if observation_metadata_fp != None:
+            observation_metadata = \
+             parse_taxonomy(open(observation_metadata_fp,'U'))
+        else:
+            observation_metadata = None
+        
+        biom_table_f = open(output_biom_fp,'w')
+        biom_table_f.write(make_otu_table(open(observation_map_fp,'U'),
+                                          observation_metadata))
+        biom_table_f.close()
+    
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      observation_metadata_fp,
+                                      params,
+                                      HALT_EXEC):
+        raise NotImplementedError(
+         "DatabaseMapper subclasses must override _assign_dna_reads_to_database")
+        
+    def _get_raw_output_fp(self, output_dir, params):
+        """ Generate filepath for raw output
+        
+            subclasses will generally want to override this method
+        
+        """
+        return join(output_dir,'raw_output.txt')
+    
+    def _process_raw_output(self,
+                            raw_output_fp,
+                            log_fp,
+                            output_observation_map_fp):
+        raise NotImplementedError(
+         "DatabaseMapper subclasses must override _process_raw_output")
+
+
+
+class UsearchDatabaseMapper(DatabaseMapper):
+    
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      temp_dir,
+                                      params,
+                                      HALT_EXEC):
+        usearch_assign_dna_reads_to_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 output_fp=raw_output_fp,
+                 temp_dir=temp_dir,
+                 params=params,
+                 HALT_EXEC=HALT_EXEC)
+    
+    def _get_raw_output_fp(self,
+                           output_dir,
+                           params):
+        """ Generate filepath for .uc file """
+        return join(output_dir,'out.uc')
+
+    def _process_raw_output(self,
+                            raw_output_fp,
+                            log_fp,
+                            output_observation_map_fp):
+        """ Generate observation map and biom table from .uc file
+        """
+        hits, failures = clusters_from_blast_uc_file(\
+         open(raw_output_fp,'U'),9)
+        observation_map_f = open(output_observation_map_fp,'w')
+        for line in format_observation_map(hits.items(),''):
+            observation_map_f.write(line)
+        observation_map_f.close()
+
+
+class BlatDatabaseMapper(DatabaseMapper):
+
+    MaxEvalue = 1e-10
+    MinId = 0.97
+    
+    def _get_raw_output_fp(self,
+                           output_dir,
+                           params):
+        """ Generate filepath for .bl9 (blast9) file """
+        return join(output_dir,'out.bl9')
+
+    def _process_raw_output(self,
+                            raw_output_fp,
+                            log_fp,
+                            output_observation_map_fp):
+        """ Generate observation map and biom table from .bl9 file
+        """
+        result = {}
+        pct_id_field = 2
+        evalue_field = 10
+        output_observation_map_f = open(output_observation_map_fp,'w')
+        log_f = open(log_fp,'w')
+        for summary, blat_results in MinimalBlatParser9(open(raw_output_fp,'U'),
+                                     include_column_names=False):
+            for e in blat_results:
+                if (float(e[evalue_field]) <= self.MaxEvalue and\
+                    float(e[pct_id_field]) / 100. >= self.MinId):
+                    query_id = e[0]
+                    subject_id = e[1]
+                    try:
+                        result[subject_id].append(query_id)
+                    except KeyError:
+                        result[subject_id] = [query_id]
+                    log_f.write('\t'.join(e))
+                    log_f.write('\n')
+                    break
+        log_f.close()
+        for e in result.items():
+            output_observation_map_f.write('%s\t%s\n' % (e[0],'\t'.join(e[1])))
+        output_observation_map_f.close()
+        return result
+
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      temp_dir,
+                                      params,
+                                      HALT_EXEC):
+        blat_assign_dna_reads_to_protein_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 output_fp=raw_output_fp,
+                 temp_dir=temp_dir,
+                 params=params)
+
+
+def usearch_database_mapper(query_fp,
+                            refseqs_fp,
+                            output_dir,
+                            evalue,
+                            min_id,
+                            queryalnfract,
+                            targetalnfract,
+                            maxaccepts,
+                            maxrejects,
+                            HALT_EXEC=False):
+        
+        params = {}
+        params['--evalue'] = evalue
+        params['--id'] = min_id
+        params['--queryalnfract'] = queryalnfract
+        params['--targetalnfract'] = targetalnfract
+        params['--maxaccepts'] = maxaccepts
+        params['--maxrejects'] = maxrejects
+        
+        usearch_db_mapper = UsearchDatabaseMapper()
+        usearch_db_mapper(query_fp,
+                          refseqs_fp,
+                          output_dir,
+                          params = params,
+                          HALT_EXEC = HALT_EXEC)
+
+def blat_database_mapper(query_fp,
+                         refseqs_fp,
+                         output_dir,
+                         evalue,
+                         min_id,
+                         HALT_EXEC=False):
+
+    params = {'-minIdentity':min_id}
+    
+    blat_db_mapper = BlatDatabaseMapper()
+    blat_db_mapper.MinId = min_id
+    blat_db_mapper.MaxEvalue = evalue
+    blat_db_mapper(query_fp,
+                   refseqs_fp,
+                   output_dir,
+                   params = params,
+                   HALT_EXEC=HALT_EXEC)
+
+

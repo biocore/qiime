@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# File created on 13 Jul 2012
+# File created on 07 Jul 2012
 from __future__ import division
 
 __author__ = "Greg Caporaso"
@@ -11,38 +11,30 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-
+from glob import glob
 from shutil import rmtree
 from os.path import exists, join
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from qiime.util import get_qiime_temp_dir, get_tmp_filename
-from qiime.functional_assignment import usearch_function_assigner
-from qiime.parse import parse_otu_map
+from cogent.util.misc import create_dir, remove_files
 from qiime.test import initiate_timeout, disable_timeout
+from qiime.util import get_qiime_temp_dir, get_tmp_filename
+from qiime.parse import parse_otu_map
+from qiime.parallel.assign_reads_to_database import ParallelDatabaseMapperUsearch
 
-class FunctionalAssignmentTests(TestCase):
-    """
-    """
+class ParallelDatabaseMapperTests(TestCase):
     
     def setUp(self):
-        """
-        """
+        """ """
+        self.files_to_remove = []
+        self.dirs_to_remove = []
+        
         tmp_dir = get_qiime_temp_dir()
         self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
                                          prefix='qiime_parallel_tests_',
                                          suffix='',
                                          result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
         create_dir(self.test_out)
-        self.dirs_to_remove = [self.test_out]
-        
-        self.output_fp = join(self.test_out,'fmap.txt')
-        self.failure_fp = join(self.test_out,'fail.txt')
-        self.usearch_fp = join(self.test_out,'out.uc')
-        self.bl6_fp = join(self.test_out,'out.bl6')
-        self.log_fp = join(self.test_out,'fmap.log')
-        self.files_to_remove = [self.output_fp, self.failure_fp, 
-                                self.usearch_fp, self.log_fp, self.bl6_fp]
         
         self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                             prefix='qiime_refseqs',
@@ -59,42 +51,47 @@ class FunctionalAssignmentTests(TestCase):
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
+        
         initiate_timeout(60)
+
     
     def tearDown(self):
         """ """
         disable_timeout()
-        remove_files(self.files_to_remove,error_on_missing=False)
+        remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
 
-class UsearchFunctionalAssignmentTests(FunctionalAssignmentTests):
-    
-    def test_usearch_function_assigner(self):
-        """usearch_function_assigner functions as expected """
-        usearch_function_assigner(query_fp=self.inseqs1_fp,
-                              refseqs_fp=self.refseqs1_fp,
-                              output_fp=self.output_fp,
-                              failure_fp=self.failure_fp,
-                              usearch_fp=self.usearch_fp,
-                              blast6_fp=self.bl6_fp,
-                              log_fp=self.log_fp,
-                              evalue=1e-10,
-                              min_id=0.75,
-                              queryalnfract=0.35,
-                              targetalnfract=0.0,
-                              maxaccepts=1,
-                              maxrejects=8,
-                              temp_dir=get_qiime_temp_dir(),
-                              HALT_EXEC=False)
-        fmap = parse_otu_map(open(self.output_fp,'U'))
-        self.assertEqual(len(fmap[0]),2)
-        self.assertEqualItems(fmap[1],['eco:b0015', 'eco:b0122'])
-        self.assertEqualItems(fmap[2],['eco:b0015-pr', 'eco:b0122-pr'])
+class ParallelDatabaseMapperUsearchTests(ParallelDatabaseMapperTests):
+
+    def test_parallel_database_mapper_usearch(self):
+        """ parallel_database_mapper_usearch functions as expected """
         
+        params = {'refseqs_fp':self.refseqs1_fp,
+          'min_percent_id':0.97,
+          'evalue':1e-10,
+          'max_accepts':1,
+          'max_rejects':32,
+          'queryalnfract':0.35,
+          'targetalnfract':0.0,
+          'observation_metadata_fp':None
+        }
+        
+        app = ParallelDatabaseMapperUsearch()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='PTEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        observation_map_fp = glob(join(self.test_out,'observation_map.txt'))[0]
+        omap = parse_otu_map(open(observation_map_fp,'U'))
+        self.assertEqual(len(omap[0]),3)
+        self.assertEqualItems(omap[1],['eco:b0015', 'eco:b0122','eco:b0015:duplicate'])
+        self.assertEqualItems(omap[2],['eco:b0015-pr', 'eco:b0122-pr'])
 
 refseqs1 = """>eco:b0001-pr
 MKRISTTITTTITITTGNGAG
@@ -141,8 +138,27 @@ ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
 tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
 ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
 aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>eco:b0015:duplicate
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 """
-
 
 if __name__ == "__main__":
     main()

@@ -61,6 +61,17 @@ class ParallelWrapper(object):
         """
         pass
 
+    def _call_cleanup(self,
+                      input_fp,
+                      output_dir,
+                      params,
+                      job_prefix,
+                      poll_directly,
+                      suppress_submit_jobs):
+        """ Called as the last step in __call__.
+        """
+        pass
+
     def __call__(self,
                  input_fp,
                  output_dir,
@@ -183,6 +194,15 @@ class ParallelWrapper(object):
                 print poller_command
                 exit(-1)
         self.files_to_remove = []
+
+        # Perform any method-specific cleanup. This should prevent the need to 
+        # overwrite __call__
+        self._call_cleanup(input_fp,
+                           output_dir,
+                           params,
+                           job_prefix,
+                           poll_directly,
+                           suppress_submit_jobs)
 
     def _initialize_output_cleanup_files(self,
                                          job_result_filepaths,

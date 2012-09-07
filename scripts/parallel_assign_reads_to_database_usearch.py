@@ -14,7 +14,7 @@ __status__ = "Development"
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option)
-from qiime.parallel.functional_assignment import ParallelFunctionAssignerUsearch
+from qiime.parallel.assign_reads_to_database import ParallelDatabaseMapperUsearch
 
 options_lookup = get_options_lookup()
 
@@ -32,6 +32,9 @@ script_info['required_options'] = [
         help='Path to reference sequences'),
 ]
 script_info['optional_options'] = [
+    make_option('-t', '--observation_metadata_fp',type='existing_filepath',
+        help='Path to observation metadata map, if applicable [default: %default]'),
+        
     make_option('--min_aligned_percent',
         help=('Minimum percent of query sequence that can be aligned to consider a match'
               ' [default: %default]'),default=0.50,type='float'),
@@ -76,7 +79,7 @@ def main():
     params['save_uc_files'] = True
 
 
-    parallel_runner = ParallelFunctionAssignerUsearch(
+    parallel_runner = ParallelDatabaseMapperUsearch(
                                         cluster_jobs_fp=opts.cluster_jobs_fp,
                                         jobs_to_start=opts.jobs_to_start,
                                         retain_temp_files=opts.retain_temp_files,
