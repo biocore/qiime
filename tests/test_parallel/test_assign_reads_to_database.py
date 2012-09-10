@@ -19,7 +19,8 @@ from cogent.util.misc import create_dir, remove_files
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.parse import parse_otu_map
-from qiime.parallel.assign_reads_to_database import ParallelDatabaseMapperUsearch
+from qiime.parallel.assign_reads_to_database import \
+ (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat)
 
 class ParallelDatabaseMapperTests(TestCase):
     
@@ -81,6 +82,34 @@ class ParallelDatabaseMapperUsearchTests(ParallelDatabaseMapperTests):
         }
         
         app = ParallelDatabaseMapperUsearch()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='PTEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        observation_map_fp = glob(join(self.test_out,'observation_map.txt'))[0]
+        omap = parse_otu_map(open(observation_map_fp,'U'))
+        self.assertEqual(len(omap[0]),3)
+        self.assertEqualItems(omap[1],['eco:b0015', 'eco:b0122','eco:b0015:duplicate'])
+        self.assertEqualItems(omap[2],['eco:b0015-pr', 'eco:b0122-pr'])
+
+class ParallelDatabaseMapperBlatTests(ParallelDatabaseMapperTests):
+
+    def test_parallel_database_mapper_blat(self):
+        """ parallel_database_mapper_blat functions as expected """
+        
+        params = {'refseqs_fp':self.refseqs1_fp,
+          'min_percent_id':0.97,
+          'evalue':1e-10,
+          'max_accepts':1,
+          'max_rejects':32,
+          'queryalnfract':0.35,
+          'targetalnfract':0.0,
+          'observation_metadata_fp':None
+        }
+        
+        app = ParallelDatabaseMapperBlat()
         r = app(self.inseqs1_fp,
                 self.test_out,
                 params,

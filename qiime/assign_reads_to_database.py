@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
-from cogent.app.blat import (
+from qiime.pycogent_backports.blat import (
   assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database)
 from cogent.app.usearch import (Usearch, clusters_from_blast_uc_file,
   assign_dna_reads_to_database as usearch_assign_dna_reads_to_database)

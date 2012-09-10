@@ -15,7 +15,7 @@ from os.path import join
 from qiime.make_otu_table import make_otu_table
 from qiime.parallel.pick_otus import ParallelPickOtus
 
-class ParallelDatabaseMapperUsearch(ParallelPickOtus):
+class ParallelDatabaseMapper(ParallelPickOtus):
     _script_name = 'assign_reads_to_database.py'
     _job_prefix = 'DBMAP'
     
@@ -39,6 +39,8 @@ class ParallelDatabaseMapperUsearch(ParallelPickOtus):
         biom_f.write(make_otu_table(open(join(output_dir,'observation_map.txt'),'U'),
                                     observation_metadata))
         biom_f.close()
+
+class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
     
     def _get_job_commands(self,
                           fasta_fps,
@@ -122,4 +124,91 @@ class ParallelDatabaseMapperUsearch(ParallelPickOtus):
             f.write('\t'.join(in_files + [out_file]))
             f.write('\n')
         f.close()
+
+
+class ParallelDatabaseMapperBlat(ParallelDatabaseMapper):
+    
+    def _get_job_commands(self,
+                          fasta_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        out_filenames = ['observation_map.txt',
+                         'out.bl9',
+                         'observation_table.log',
+                         'observation_table.biom']
+    
+        # Create lists to store the results
+        commands = []
+        result_filepaths = []
+        
+        # Iterate over the input files
+        for i,fasta_fp in enumerate(fasta_fps):
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            run_output_dir = join(working_dir,str(i))
+            rename_command, current_result_filepaths = self._get_rename_command(
+                [join(job_prefix,str(i),o) for o in out_filenames],
+                run_output_dir,
+                output_dir)
+            result_filepaths += current_result_filepaths
+            
+            command = \
+             '%s %s -i %s -r %s -m blat -o %s --min_percent_id %s --evalue %e %s %s' %\
+             (command_prefix,
+              self._script_name,
+              fasta_fp,
+              params['refseqs_fp'],
+              run_output_dir,
+              params['min_percent_id'],
+              params['evalue'],
+              rename_command,
+              command_suffix)
+
+            commands.append(command)
+        return commands, result_filepaths
+
+    def _write_merge_map_file(self,
+                              input_file_basename,
+                              job_result_filepaths,
+                              params,
+                              output_dir,
+                              merge_map_filepath):
+        """ 
+        """
+        f = open(merge_map_filepath,'w')
+    
+        observation_fps = []
+        log_fps = []
+        blast9_fps = []
+    
+        out_filepaths = [
+         '%s/observation_map.txt' % output_dir,
+         '%s/observation_table.log' % output_dir,
+         '%s/out.bl9' % output_dir]
+        in_filepaths = [observation_fps,log_fps,blast9_fps]
+    
+        for fp in job_result_filepaths:
+            if fp.endswith('observation_map.txt'):
+                observation_fps.append(fp)
+            if fp.endswith('.log'):
+                log_fps.append(fp)
+            elif fp.endswith('.bl9'):
+                blast9_fps.append(fp)
+            else:
+                pass
+    
+        for in_files, out_file in\
+         zip(in_filepaths,out_filepaths):
+            f.write('\t'.join(in_files + [out_file]))
+            f.write('\n')
+        f.close()
+
+
+
+
+
 
