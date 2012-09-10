@@ -22,11 +22,11 @@ from cogent import LoadSeqs, DNA
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
 #app controllers that implement align_unaligned_seqs
-import qiime.pycogent_backports.muscle_v38
+import cogent.app.muscle_v38
 import cogent.app.clustalw
 import cogent.app.mafft
 import cogent.app.raxml
-import qiime.pycogent_backports.raxml_v730
+import cogent.app.raxml_v730
 import cogent.app.fasttree
 import cogent.app.fasttree_v1
 import cogent.app.clearcut
@@ -115,12 +115,12 @@ class CogentTreeBuilder(TreeBuilder):
                                            log_path=log_path, *args, **kwargs)
 
 tree_method_constructors = {}
-tree_module_names = {'muscle':qiime.pycogent_backports.muscle_v38,
+tree_module_names = {'muscle':cogent.app.muscle_v38,
     'clustalw':cogent.app.clustalw,
     #'mafft':cogent.app.mafft,   
     # current version of Mafft does not support tree building
     'fasttree':cogent.app.fasttree,'fasttree_v1':cogent.app.fasttree_v1,
-    'raxml':cogent.app.raxml, 'raxml_v730':qiime.pycogent_backports.raxml_v730,'clearcut':cogent.app.clearcut
+    'raxml':cogent.app.raxml, 'raxml_v730':cogent.app.raxml_v730,'clearcut':cogent.app.clearcut
     }
     
 #def maxTipTipDistance(tree):

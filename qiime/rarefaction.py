@@ -21,7 +21,7 @@ replacement) otu tables.
 import os.path
 import numpy
 from numpy import inf
-from qiime.pycogent_backports.rarefaction import (subsample,
+from cogent.maths.stats.rarefaction import (subsample,
                                                   subsample_freq_dist_nonzero,
                                                   subsample_random,
                                                   subsample_multinomial)

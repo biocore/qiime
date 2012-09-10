@@ -335,7 +335,7 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
     comment=None, skip_empty=False,legacy=True):
     """Returns string representing OTU table as biom file
     """
-    print "Deprecation Warning: you should not be using format_otu_table. Instead use qiime.pycogent_backports.rich_otu_table.table_factory().getBiomFormatJsonString()."
+    print "Deprecation Warning: you should not be using format_otu_table. Instead use qiime.format.format_biom_table"
     if taxonomy != None:
         def strip_f(s):
             return s.strip()

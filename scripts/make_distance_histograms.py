@@ -24,7 +24,7 @@ from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
 from qiime.parse import (parse_mapping_file, parse_distmat, 
     parse_prefs_file, QiimeParseError)
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+from cogent.maths.stats.test import is_symmetric_and_hollow
 from os import mkdir,path
 from string import strip
 

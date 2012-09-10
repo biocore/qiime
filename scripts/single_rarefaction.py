@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-from qiime.pycogent_backports.rarefaction import subsample, subsample_multinomial
+from cogent.maths.stats.rarefaction import subsample, subsample_multinomial
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.rarefaction import SingleRarefactionMaker

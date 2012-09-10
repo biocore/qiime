@@ -22,9 +22,9 @@ from os.path import abspath,join,split,splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
                                     write_updated_tree_file, \
                                     strip_and_rename_unwanted_labels_from_tree
-import qiime.pycogent_backports.raxml_v730
-import qiime.pycogent_backports.parsinsert
-import qiime.pycogent_backports.pplacer
+import cogent.app.raxml_v730
+import cogent.app.parsinsert
+import cogent.app.pplacer
 from StringIO import StringIO
 
 options_lookup = get_options_lookup()

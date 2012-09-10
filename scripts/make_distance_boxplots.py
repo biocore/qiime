@@ -17,7 +17,7 @@ from cogent.util.misc import create_dir
 from numpy import median
 from qiime.group import get_all_grouped_distances, get_grouped_distances
 from qiime.parse import parse_distmat, parse_mapping_file, QiimeParseError
-from qiime.pycogent_backports.distribution_plots import generate_box_plots
+from cogent.draw.distribution_plots import generate_box_plots
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
                         parse_command_line_parameters)

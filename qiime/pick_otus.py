@@ -23,7 +23,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
-from qiime.pycogent_backports.mothur import Mothur
+from cogent.app.mothur import Mothur
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.core.sequence import DnaSequence
@@ -34,8 +34,8 @@ from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
-from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
-from qiime.pycogent_backports.usearch import usearch_qf
+from cogent.app.uclust import get_clusters_from_fasta_filepath
+from cogent.app.usearch import usearch_qf
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.

@@ -13,7 +13,7 @@ __status__ = "Development"
 """Contains functions used in the compare_taxa_summaries.py script."""
 
 from numpy import array, sqrt
-from qiime.pycogent_backports.test import correlation_test
+from cogent.maths.stats.test import correlation_test
 from qiime.format import (format_correlation_info, format_correlation_vector,
                           format_taxa_summary)
 

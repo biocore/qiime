@@ -23,9 +23,9 @@ from cogent import LoadSeqs, DNA
 from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from qiime.pycogent_backports import rdp_classifier
-from qiime.pycogent_backports import rtax
-from qiime.pycogent_backports import mothur
+from cogent.app import rdp_classifier
+from cogent.app import rtax
+from cogent.app import mothur
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 

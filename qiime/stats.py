@@ -23,7 +23,7 @@ create new statistical method implementations.
 
 from types import ListType
 
-from cogent.util.misc import combinate
+
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
@@ -31,10 +31,10 @@ from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
                    ones, sqrt, tri, unique, zeros)
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
-
-from qiime.format import format_p_value_for_num_iters
-from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
+from cogent.util.misc import combinate
+from cogent.maths.stats.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
+from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
 
 # Top-level stats functions.

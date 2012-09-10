@@ -65,9 +65,11 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir, 
                               handle_error_codes)
-from qiime import __version__ as qiime_library_version
 from cogent.util.option_parsing import (parse_command_line_parameters,
                                         make_option)
+from cogent.maths.stats.test import is_symmetric_and_hollow
+
+from qiime import __version__ as qiime_library_version
 from qiime.parse import (parse_distmat,
                          parse_mapping_file_to_dict,
                          parse_qiime_config_files,
@@ -78,7 +80,7 @@ from qiime.parse import (parse_distmat,
                          parse_mapping_file,
                          parse_denoiser_mapping,
                          MinimalFastqParser)
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+
 
 
 class TreeMissingError(IOError):
