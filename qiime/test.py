@@ -161,8 +161,11 @@ def run_script_usage_tests(qiime_test_data_dir,
         print ''
     
     result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (total_tests,len(tests),len(failed_tests))
+    if len(failed_tests) > 0:
+        failed_scripts = set([split(e[0].split()[0])[1] for e in failed_tests])
+        result_summary += '\nFailed scripts were: %s' % " ".join(failed_scripts)
     if failure_log_fp:
-        result_summary += " Failures are summarized in %s." % failure_log_fp
+        result_summary += "\nFailures are summarized in %s." % failure_log_fp
     
     rmtree(working_dir)
     
