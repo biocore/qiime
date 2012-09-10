@@ -18,7 +18,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from biom.parse import parse_biom_table
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
-from qiime.assign_reads_to_database import usearch_database_mapper, blat_database_mapper
+from qiime.map_reads_to_reference import usearch_database_mapper, blat_database_mapper
 from qiime.parse import parse_otu_map
 from qiime.test import initiate_timeout, disable_timeout
 

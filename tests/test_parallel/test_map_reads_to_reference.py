@@ -19,7 +19,7 @@ from cogent.util.misc import create_dir, remove_files
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.parse import parse_otu_map
-from qiime.parallel.assign_reads_to_database import \
+from qiime.parallel.map_reads_to_reference import \
  (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat)
 
 class ParallelDatabaseMapperTests(TestCase):

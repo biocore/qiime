@@ -16,7 +16,7 @@ from qiime.make_otu_table import make_otu_table
 from qiime.parallel.pick_otus import ParallelPickOtus
 
 class ParallelDatabaseMapper(ParallelPickOtus):
-    _script_name = 'assign_reads_to_database.py'
+    _script_name = 'map_reads_to_reference.py'
     _job_prefix = 'DBMAP'
     
     def _call_cleanup(self,

@@ -16,7 +16,7 @@ from qiime.util import (make_option,
                         create_dir, 
                         load_qiime_config,
                         get_qiime_temp_dir)
-from qiime.assign_reads_to_database import (usearch_database_mapper, 
+from qiime.map_reads_to_reference import (usearch_database_mapper, 
                                             blat_database_mapper)
 
 qiime_config = load_qiime_config()

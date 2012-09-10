@@ -14,7 +14,7 @@ __status__ = "Development"
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option)
-from qiime.parallel.assign_reads_to_database import \
+from qiime.parallel.map_reads_to_reference import \
  (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat)
 
 options_lookup = get_options_lookup()
