@@ -44,6 +44,14 @@ def is_casava_v180_or_later(header_line):
         return True
     return False
 
+def MinimalSamParser(data):
+    for line in data:
+        line = line.strip()
+        if not line or line.startswith('@'):
+            continue
+        else:
+            yield line.strip().split('\t')
+
 class QiimeParseError(Exception):
     pass
 
