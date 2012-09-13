@@ -17,12 +17,16 @@ from qiime.util import (make_option,
                         load_qiime_config,
                         get_qiime_temp_dir)
 from qiime.map_reads_to_reference import (usearch_database_mapper, 
-                                            blat_database_mapper)
+                                            blat_database_mapper,
+                                            bwa_sw_database_mapper,
+                                            bwa_short_database_mapper)
 
 qiime_config = load_qiime_config()
 
 assignment_functions = {'usearch':usearch_database_mapper,
-                        'blat':blat_database_mapper}
+                        'blat':blat_database_mapper,
+                        'bwa-short':bwa_short_database_mapper,
+                        'bwa-sw':bwa_sw_database_mapper}
 
 script_info={}
 script_info['brief_description'] = """ Script for performing assignment of reads against a reference database """
@@ -35,6 +39,10 @@ script_info['script_usage'].append(("""""","""Run assignment with usearch using 
 script_info['script_usage'].append(("""""","""Run assignment with BLAT using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -m blat"""))
 
 script_info['script_usage'].append(("""""","""Run assignment with BLAT using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blat_mapped_strict/ -e 1e-70  -m blat"""))
+
+script_info['script_usage'].append(("""""","""Run assignment with bwa-short using default parameters. bwa-short is intended to be used for reads up to 200bp. WARNING: reference sequences must be dereplicated! No matches will be found to reference sequences which show up multiple times (even if their sequence identifiers are different)!""","""%prog -i query_nt.fasta -r refseqs_nt.fasta -m bwa-short"""))
+
+script_info['script_usage'].append(("""""","""Run assignment with bwa-sw using default parameters.  WARNING: reference sequences must be dereplicated! No matches will be found to reference sequences which show up multiple times (even if their sequence identifiers are different)!""","""%prog -i query_nt.fasta -r refseqs_nt.fasta -m bwa-sw"""))
 
 script_info['output_description'] = """ """
 
@@ -62,6 +70,10 @@ script_info['optional_options'] = [
               
     make_option('-s', '--min_percent_id', type='float', default=0.75,
         help=('Min percent id to consider a match [default: %default]')),
+              
+    make_option('-q', '--min_map_quality', type='int', default=3,
+        help=('Min "map quality" to consider a match (applicable for -m bwa)'
+              ' [default: %default]')),
               
     make_option('--queryalnfract', type='float', default=0.35,
         help=('Min percent of the query seq that must match to consider a match (usearch only) [default: %default]')),
@@ -115,6 +127,12 @@ def main():
                                output_dir=output_dir,
                                evalue=opts.evalue,
                                min_id=opts.min_percent_id,
+                               HALT_EXEC=False)
+    elif assignment_method == 'bwa-sw' or assignment_method == 'bwa-short':
+        assignment_function(query_fp=input_seqs_filepath,
+                               refseqs_fp=refseqs_fp,
+                               output_dir=output_dir,
+                               min_map_quality=opts.min_map_quality,
                                HALT_EXEC=False)
         
     else:

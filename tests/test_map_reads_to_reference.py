@@ -18,7 +18,9 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from biom.parse import parse_biom_table
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
-from qiime.map_reads_to_reference import usearch_database_mapper, blat_database_mapper
+from qiime.map_reads_to_reference import (
+ usearch_database_mapper, blat_database_mapper, bwa_short_database_mapper,
+ bwa_sw_database_mapper)
 from qiime.parse import parse_otu_map
 from qiime.test import initiate_timeout, disable_timeout
 
@@ -52,6 +54,14 @@ class DatabaseAssignmentTests(TestCase):
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
+        
+        self.refseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='qiime_refseqs',
+                                            suffix='.fasta')
+        refseqs2_f = open(self.refseqs2_fp,'w')
+        refseqs2_f.write(refseqs2)
+        refseqs2_f.close()
+        self.files_to_remove.append(self.refseqs2_fp)
         
         self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                             prefix='qiime_inseqs',
@@ -129,6 +139,70 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
                               ['eco:b0122-pr','eco:b0015-pr','eco:b0001-pr'])
         self.assertEqual(table.sum(),6)
 
+class BwaShortAssignmentTests(DatabaseAssignmentTests):
+    
+    def test_bwa_short_database_mapper(self):
+        """bwa_short_database_mapper functions as expected """
+        bwa_short_database_mapper(query_fp=self.inseqs1_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              min_map_quality=3,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),6)
+
+    def test_bwa_short_database_mapper_alt_params(self):
+        """bwa_short_database_mapper functions as expected """
+        bwa_short_database_mapper(query_fp=self.inseqs1_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              min_map_quality=35,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),5)
+
+class BwaSwAssignmentTests(DatabaseAssignmentTests):
+    
+    def test_bwa_sw_database_mapper(self):
+        """bwa_sw_database_mapper functions as expected """
+        bwa_sw_database_mapper(query_fp=self.inseqs1_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              min_map_quality=3,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r3','r4'])
+        self.assertEqual(table.sum(),3)
+
+    def test_bwa_sw_database_mapper_alt_params(self):
+        """bwa_sw_database_mapper functions as expected """
+        bwa_sw_database_mapper(query_fp=self.inseqs1_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              min_map_quality=1,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),5)
+
 
 refseqs1 = """>eco:b0001-pr
 MKRISTTITTTITITTGNGAG
@@ -143,6 +217,65 @@ KSFFDGVKKFFDDLTR
 >eco:b0122-pr
 MKTFFRTVLFGSLMAVCANSYALSESEAEDMADLTAVFVFLKNDCGYQNLPNGQIRRALV
 FFAQQNQWDLSNYDTFDMKALGEDSYRDLSGIGIPVAKKCKALARDSLSLLAYVK
+"""
+
+refseqs2 = """>r1
+atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+ggctga
+>r2 some comments...
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgagaa
+>r3
+atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>r4
+atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc
+>r5 some comments...
+aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 """
 
 inseqs1 = """>s1_1
@@ -167,7 +300,7 @@ gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
 aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
 ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
 ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
-aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgagaa
 >s1_3
 atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
 tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt

@@ -15,10 +15,12 @@ from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
 from qiime.pycogent_backports.blat import (
   assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database)
-from cogent.app.usearch import (Usearch, clusters_from_blast_uc_file,
+from cogent.app.usearch import (clusters_from_blast_uc_file,
   assign_dna_reads_to_database as usearch_assign_dna_reads_to_database)
+from cogent.app.bwa import (
+  assign_dna_reads_to_dna_database as bwa_assign_dna_reads_to_dna_database)
 from qiime.format import format_observation_map
-from qiime.parse import parse_taxonomy
+from qiime.parse import parse_taxonomy, MinimalSamParser
 from qiime.make_otu_table import make_otu_table
 from qiime.util import get_qiime_temp_dir, create_dir
 
@@ -190,6 +192,85 @@ class BlatDatabaseMapper(DatabaseMapper):
                  temp_dir=temp_dir,
                  params=params)
 
+class BwaSwDatabaseMapper(DatabaseMapper):
+    
+    # From http://samtools.sourceforge.net/SAM1.pdf
+    # -10 log10 Pr{fmapping position is wrong}, rounded to the
+    # nearest integer. A value 255 indicates that the mapping 
+    # quality is not available.
+    MinMapQuality = 3
+    
+    def _get_raw_output_fp(self,
+                           output_dir,
+                           params):
+        """ Generate filepath for .bl9 (blast9) file """
+        return join(output_dir,'bwa_raw_out.sam')
+
+    def _process_raw_output(self,
+                            raw_output_fp,
+                            log_fp,
+                            output_observation_map_fp):
+        """ Generate observation map and biom table from .bl9 file
+        """
+        result = {}
+        query_id_field = 0
+        subject_id_field = 2
+        map_quality_field = 4
+        output_observation_map_f = open(output_observation_map_fp,'w')
+        log_f = open(log_fp,'w')
+        for e in MinimalSamParser(open(raw_output_fp,'U')):            
+            query_id = e[query_id_field]
+            subject_id = e[subject_id_field]
+            map_quality = int(e[map_quality_field])
+            if (map_quality >= self.MinMapQuality and\
+                map_quality != 255):
+                try:
+                    result[subject_id].append(query_id)
+                except KeyError:
+                    result[subject_id] = [query_id]
+                log_f.write('\t'.join(e))
+                log_f.write('\n')
+                
+        log_f.close()
+        for e in result.items():
+            output_observation_map_f.write('%s\t%s\n' % (e[0],'\t'.join(e[1])))
+        output_observation_map_f.close()
+        return result
+
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      temp_dir,
+                                      params,
+                                      HALT_EXEC):
+        _params = {}
+        _params.update(params)
+        bwa_assign_dna_reads_to_dna_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 out_fp=raw_output_fp,
+                 params=_params)
+
+class BwaShortDatabaseMapper(BwaSwDatabaseMapper):
+    
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      temp_dir,
+                                      params,
+                                      HALT_EXEC):
+        aln_params = {'-f': splitext(raw_output_fp)[0] + '.sai'}
+        _params = {'algorithm': 'bwa-short', 
+                   'aln_params': aln_params}
+        _params.update(params)
+        bwa_assign_dna_reads_to_dna_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 out_fp=raw_output_fp,
+                 params=_params)
+
 
 def usearch_database_mapper(query_fp,
                             refseqs_fp,
@@ -234,5 +315,34 @@ def blat_database_mapper(query_fp,
                    output_dir,
                    params = params,
                    HALT_EXEC=HALT_EXEC)
+
+def bwa_sw_database_mapper(query_fp,
+                        refseqs_fp,
+                        output_dir,
+                        min_map_quality,
+                        HALT_EXEC=False):
+    
+    bwa_db_mapper = BwaSwDatabaseMapper()
+    bwa_db_mapper.MinMapQuality = min_map_quality
+    bwa_db_mapper(query_fp,
+                  refseqs_fp,
+                  output_dir,
+                  params = {},
+                  HALT_EXEC=HALT_EXEC)
+
+def bwa_short_database_mapper(query_fp,
+                        refseqs_fp,
+                        output_dir,
+                        min_map_quality,
+                        HALT_EXEC=False):
+    
+    bwa_db_mapper = BwaShortDatabaseMapper()
+    bwa_db_mapper.MinMapQuality = min_map_quality
+    bwa_db_mapper(query_fp,
+                  refseqs_fp,
+                  output_dir,
+                  params = {},
+                  HALT_EXEC=HALT_EXEC)
+
 
 
