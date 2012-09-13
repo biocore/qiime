@@ -1083,11 +1083,18 @@ def flowgram_id_to_seq_id_map(seqs):
         flowgram_id = fields[1]
         result[flowgram_id] = seq_id
     return result
-    
-def qiime_system_call(cmd):
-    """ Call cmd and return (stdout, stderr, return_value)"""
-    proc = Popen(cmd,shell=True,universal_newlines=True,\
-                 stdout=PIPE,stderr=PIPE)
+
+def qiime_system_call(cmd, shell=True):
+    """Call cmd and return (stdout, stderr, return_value).
+
+    cmd can be either a string containing the command to be run, or a sequence
+    of strings that are the tokens of the command.
+
+    Please see Python's subprocess.Popen for a description of the shell
+    parameter and how cmd is interpreted differently based on its value.
+    """
+    proc = Popen(cmd, shell=shell, universal_newlines=True, stdout=PIPE,
+                 stderr=PIPE)
     # communicate pulls all stdout/stderr from the PIPEs to 
     # avoid blocking -- don't remove this line!
     stdout, stderr = proc.communicate()
