@@ -20,7 +20,7 @@ from biom.parse import parse_biom_table
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.map_reads_to_reference import (
  usearch_database_mapper, blat_database_mapper, bwa_short_database_mapper,
- bwa_sw_database_mapper)
+ bwa_sw_database_mapper, blat_nt_database_mapper)
 from qiime.parse import parse_otu_map
 from qiime.test import initiate_timeout, disable_timeout
 
@@ -137,6 +137,24 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertEqualItems(table.SampleIds,['s2','s1'])
         self.assertEqualItems(table.ObservationIds,
                               ['eco:b0122-pr','eco:b0015-pr','eco:b0001-pr'])
+        self.assertEqual(table.sum(),6)
+
+class BlatNtAssignmentTests(DatabaseAssignmentTests):
+    
+    def test_blat_nt_database_mapper(self):
+        """blat_nt_database_mapper functions as expected """
+        blat_nt_database_mapper(query_fp=self.inseqs1_fp,
+                                refseqs_fp=self.refseqs2_fp,
+                                output_dir=self.test_out,
+                                evalue=1e-10,
+                                min_id=0.75,
+                                HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
         self.assertEqual(table.sum(),6)
 
 class BwaShortAssignmentTests(DatabaseAssignmentTests):

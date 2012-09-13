@@ -14,7 +14,8 @@ __status__ = "Development"
 from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
 from qiime.pycogent_backports.blat import (
-  assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database)
+  assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database,
+  assign_dna_reads_to_dna_database as blat_assign_dna_reads_to_dna_database)
 from cogent.app.usearch import (clusters_from_blast_uc_file,
   assign_dna_reads_to_database as usearch_assign_dna_reads_to_database)
 from cogent.app.bwa import (
@@ -192,6 +193,21 @@ class BlatDatabaseMapper(DatabaseMapper):
                  temp_dir=temp_dir,
                  params=params)
 
+class BlatNtDatabaseMapper(BlatDatabaseMapper):
+    
+    def _assign_dna_reads_to_database(self,
+                                      query_fasta_fp,
+                                      database_fasta_fp,
+                                      raw_output_fp,
+                                      temp_dir,
+                                      params,
+                                      HALT_EXEC):
+        blat_assign_dna_reads_to_dna_database(
+                 query_fasta_fp=query_fasta_fp,
+                 database_fasta_fp=database_fasta_fp,
+                 output_fp=raw_output_fp,
+                 params=params)
+
 class BwaSwDatabaseMapper(DatabaseMapper):
     
     # From http://samtools.sourceforge.net/SAM1.pdf
@@ -308,6 +324,24 @@ def blat_database_mapper(query_fp,
     params = {'-minIdentity':min_id}
     
     blat_db_mapper = BlatDatabaseMapper()
+    blat_db_mapper.MinId = min_id
+    blat_db_mapper.MaxEvalue = evalue
+    blat_db_mapper(query_fp,
+                   refseqs_fp,
+                   output_dir,
+                   params = params,
+                   HALT_EXEC=HALT_EXEC)
+
+def blat_nt_database_mapper(query_fp,
+                           refseqs_fp,
+                           output_dir,
+                           evalue,
+                           min_id,
+                           HALT_EXEC=False):
+
+    params = {'-minIdentity':min_id}
+    
+    blat_db_mapper = BlatNtDatabaseMapper()
     blat_db_mapper.MinId = min_id
     blat_db_mapper.MaxEvalue = evalue
     blat_db_mapper(query_fp,

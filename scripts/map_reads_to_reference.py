@@ -18,6 +18,7 @@ from qiime.util import (make_option,
                         get_qiime_temp_dir)
 from qiime.map_reads_to_reference import (usearch_database_mapper, 
                                             blat_database_mapper,
+                                            blat_nt_database_mapper,
                                             bwa_sw_database_mapper,
                                             bwa_short_database_mapper)
 
@@ -25,6 +26,7 @@ qiime_config = load_qiime_config()
 
 assignment_functions = {'usearch':usearch_database_mapper,
                         'blat':blat_database_mapper,
+                        'blat-nt':blat_nt_database_mapper,
                         'bwa-short':bwa_short_database_mapper,
                         'bwa-sw':bwa_sw_database_mapper}
 
@@ -36,9 +38,11 @@ script_info['script_usage'] = []
 
 script_info['script_usage'].append(("""""","""Run assignment with usearch using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta"""))
 
-script_info['script_usage'].append(("""""","""Run assignment with BLAT using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -m blat"""))
+script_info['script_usage'].append(("""""","""Run nucleotide versus protein BLAT using default parameters""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -m blat"""))
 
-script_info['script_usage'].append(("""""","""Run assignment with BLAT using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blat_mapped_strict/ -e 1e-70  -m blat"""))
+script_info['script_usage'].append(("""""","""Run nucleotide versus protein BLAT using scricter e-value threshold""","""%prog -i query_nt.fasta -r refseqs_pr.fasta -o blat_mapped_strict/ -e 1e-70  -m blat"""))
+
+script_info['script_usage'].append(("""""","""Run nucleotide versus nucleotide BLAT with default parameters""","""%prog -i query_nt.fasta -r refseqs_nt.fasta -m blat-nt"""))
 
 script_info['script_usage'].append(("""""","""Run assignment with bwa-short using default parameters. bwa-short is intended to be used for reads up to 200bp. WARNING: reference sequences must be dereplicated! No matches will be found to reference sequences which show up multiple times (even if their sequence identifiers are different)!""","""%prog -i query_nt.fasta -r refseqs_nt.fasta -m bwa-short"""))
 
@@ -121,7 +125,7 @@ def main():
                                maxaccepts=opts.max_accepts,
                                maxrejects=opts.max_rejects,
                                HALT_EXEC=False)
-    elif assignment_method == 'blat':
+    elif assignment_method == 'blat' or assignment_method == 'blat-nt':
         assignment_function(query_fp=input_seqs_filepath,
                                refseqs_fp=refseqs_fp,
                                output_dir=output_dir,
