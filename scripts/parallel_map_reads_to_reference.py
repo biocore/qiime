@@ -15,7 +15,7 @@ from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option)
 from qiime.parallel.map_reads_to_reference import \
- (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat)
+ (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat, ParallelDatabaseMapperBwaShort)
 
 options_lookup = get_options_lookup()
 
@@ -23,7 +23,8 @@ script_info = {}
 script_info['brief_description'] = ""
 script_info['script_description'] = ""
 script_info['script_usage'] = [("","","%prog -i $PWD/query_nt.fasta -r $PWD/refseqs_pr.fasta -o $PWD/usearch_mapped"),
-("","","%prog -i $PWD/query_nt.fasta -r $PWD/refseqs_pr.fasta -o $PWD/blat_mapped -m blat")]
+("","","%prog -i $PWD/query_nt.fasta -r $PWD/refseqs_pr.fasta -o $PWD/blat_mapped -m blat"),
+("","","%prog -i $PWD/query_nt.fasta -r $PWD/refseqs_nt.fasta -o $PWD/bwa-short_mapped -m bwa-short")]
 script_info['output_description']= ""
 script_info['required_options'] = [
     make_option('-i', '--input_seqs_filepath',type='existing_filepath',
@@ -38,9 +39,9 @@ script_info['optional_options'] = [
         help='Path to observation metadata map, if applicable [default: %default]'),
         
     make_option('-m', '--assignment_method', type='choice',
-        choices=['usearch','blat'], default = "usearch",
+        choices=['usearch','blat','bwa-short'], default = "usearch",
         help=('Method for picking OTUs.  Valid choices are: ' +\
-              ' '.join(['usearch','blat']) +\
+              ' '.join(['usearch','blat','bwa-short']) +\
               '. [default: %default]')),
     
     make_option('-e', '--evalue', type='float', default=1e-10,
@@ -48,7 +49,11 @@ script_info['optional_options'] = [
               
     make_option('-s', '--min_percent_id', type='float', default=0.75,
         help=('Min percent id to consider a match [default: %default]')),
-              
+        
+    make_option('-q', '--min_map_quality', type='int', default=3,
+        help=('Min "map quality" to consider a match (applicable for -m bwa)'
+              ' [default: %default]')),
+
     make_option('--queryalnfract', type='float', default=0.35,
         help=('Min percent of the query seq that must match to consider a match (usearch only) [default: %default]')),
               
@@ -95,6 +100,19 @@ def main():
                         suppress_submit_jobs=False)
     elif opts.assignment_method == 'blat':
         parallel_runner = ParallelDatabaseMapperBlat(
+                                            cluster_jobs_fp=opts.cluster_jobs_fp,
+                                            jobs_to_start=opts.jobs_to_start,
+                                            retain_temp_files=opts.retain_temp_files,
+                                            suppress_polling=opts.suppress_polling,
+                                            seconds_to_sleep=opts.seconds_to_sleep)
+        parallel_runner(opts.input_seqs_filepath,
+                        opts.output_dir,
+                        params,
+                        job_prefix=opts.job_prefix,
+                        poll_directly=opts.poll_directly,
+                        suppress_submit_jobs=False)
+    elif opts.assignment_method == 'bwa-short':
+        parallel_runner = ParallelDatabaseMapperBwaShort(
                                             cluster_jobs_fp=opts.cluster_jobs_fp,
                                             jobs_to_start=opts.jobs_to_start,
                                             retain_temp_files=opts.retain_temp_files,

@@ -16,11 +16,13 @@ from shutil import rmtree
 from os.path import exists, join
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import create_dir, remove_files
+from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.parse import parse_otu_map
 from qiime.parallel.map_reads_to_reference import \
- (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat)
+ (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat,
+  ParallelDatabaseMapperBwaShort)
 
 class ParallelDatabaseMapperTests(TestCase):
     
@@ -44,6 +46,14 @@ class ParallelDatabaseMapperTests(TestCase):
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
+
+        self.refseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='qiime_refseqs',
+                                            suffix='.fasta')
+        refseqs2_f = open(self.refseqs2_fp,'w')
+        refseqs2_f.write(refseqs2)
+        refseqs2_f.close()
+        self.files_to_remove.append(self.refseqs2_fp)
         
         self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                             prefix='qiime_inseqs',
@@ -52,7 +62,15 @@ class ParallelDatabaseMapperTests(TestCase):
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
-        
+
+        self.inseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='qiime_inseqs',
+                                            suffix='.fasta')
+        inseqs2_f = open(self.inseqs2_fp,'w')
+        inseqs2_f.write(inseqs2)
+        inseqs2_f.close()
+        self.files_to_remove.append(self.inseqs2_fp)
+
         initiate_timeout(60)
 
     
@@ -122,6 +140,27 @@ class ParallelDatabaseMapperBlatTests(ParallelDatabaseMapperTests):
         self.assertEqualItems(omap[1],['eco:b0015', 'eco:b0122','eco:b0015:duplicate'])
         self.assertEqualItems(omap[2],['eco:b0015-pr', 'eco:b0122-pr'])
 
+class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
+    
+    def test_bwa_short_database_mapper(self):
+        """bwa_short_database_mapper functions as expected """
+        params = {'refseqs_fp':self.refseqs2_fp,
+                  'min_map_quality':3,
+                  'observation_metadata_fp':None}
+        app = ParallelDatabaseMapperBwaShort()
+        r = app(self.inseqs2_fp,
+                self.test_out,
+                params,
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),6)
+
 refseqs1 = """>eco:b0001-pr
 MKRISTTITTTITITTGNGAG
 >eco:b0015-pr dnaJ
@@ -135,6 +174,65 @@ KSFFDGVKKFFDDLTR
 >eco:b0122-pr
 MKTFFRTVLFGSLMAVCANSYALSESEAEDMADLTAVFVFLKNDCGYQNLPNGQIRRALV
 FFAQQNQWDLSNYDTFDMKALGEDSYRDLSGIGIPVAKKCKALARDSLSLLAYVK
+"""
+
+refseqs2 = """>r1
+atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+ggctga
+>r2 some comments...
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgagaa
+>r3
+atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>r4
+atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc
+>r5 some comments...
+aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 """
 
 inseqs1 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (N)
@@ -169,6 +267,85 @@ ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
 aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
 >eco:b0015:duplicate
 atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+"""
+
+inseqs2 = """>s1_1
+atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+ggctga
+>s2_2 some comments...
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgagaa
+>s1_3
+atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>s1_4
+atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc
+>s1_5
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+>s1_6 some comments...
+aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
 atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
 aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
 caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
