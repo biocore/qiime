@@ -17,7 +17,7 @@ from qiime.parallel.pick_otus import ParallelPickOtus
 
 class ParallelDatabaseMapper(ParallelPickOtus):
     _script_name = 'map_reads_to_reference.py'
-    _job_prefix = 'DBMAP'
+    _job_prefix = 'RMAP'
     
     def _call_cleanup(self,
                       input_fp,
