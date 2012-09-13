@@ -31,4 +31,5 @@ Installing QIIME in Ubuntu 11.10 and Ubuntu LTS (12.04)
      tar zxvf app-deploy-qiime-1.5.0.tgz
      cd app-deploy-qiime-1.5.0
      python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.5.0.conf --force-remove-failed-dirs
+     source $HOME/.bashrc
 * Happy QIIME-ing!
