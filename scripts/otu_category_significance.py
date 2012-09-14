@@ -50,11 +50,11 @@ With the exception of longitudinal correlation and paired_T, this script can be 
 """
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("G-test","""Perform a G test on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -f 4 -o single_g_test.txt"""))
+script_info['script_usage'].append(("G-test","""Perform a G test on otu_table.biom testing OTUs for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -o single_g_test.txt"""))
 
-script_info['script_usage'].append(("ANOVA","""Perform an ANOVA on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o single_anova.txt"""))
+script_info['script_usage'].append(("ANOVA","""Perform an ANOVA on otu_table.biom testing OTUs for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -o single_anova.txt"""))
 
-script_info['script_usage'].append(("ANOVA on mutliple OTU tables","""Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o multiple_anova.txt"""))
+script_info['script_usage'].append(("ANOVA on mutliple OTU tables","""Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs for differences in the abundance across the category "Treatment":""","""%prog -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -o multiple_anova.txt"""))
 
 # do we have good input data for this? 
 # script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""%prog -i otu_table.biom -m Mapping_file.txt -s g_test -c Treatment -t 0.16"""))
