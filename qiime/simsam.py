@@ -69,7 +69,7 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
 
     res_otu_metadata = []
     if otu_metadata == None or otu_metadata == []:
-        pass #leave res_otu_metadata as []
+        res_otu_metadata = None
     else:
         for otu_id in res_otus:
             # if otu was in original table, just copy it's metadata
@@ -78,6 +78,7 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
             except ValueError:
             # else just append the empty string
                 res_otu_metadata.append('')
+    
     return res_sam_names, res_otus, res_otu_mtx, res_otu_metadata
 
 def get_new_otu_id(old_otu_id, tree, dissim):
