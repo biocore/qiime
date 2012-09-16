@@ -20,7 +20,7 @@ from cogent.util.misc import remove_files, create_dir
 from qiime.util import (get_qiime_temp_dir, 
                         get_tmp_filename)
 from qiime.test import initiate_timeout, disable_timeout
-from qiime.simulation_code import (null_from_normal, null_from_exponential,
+from qiime.simulate_samples import (null_from_normal, null_from_exponential,
     null_from_data)
 from numpy.random import seed
 from numpy import array
