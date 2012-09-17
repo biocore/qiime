@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# File created on 11 Sep 2012
+from __future__ import division
+
+__author__ = "Will Van Treuren"
+__copyright__ = "Copyright 2012, The QIIME project"
+__credits__ = ["Will Van Treuren"]
+__license__ = "GPL"
+__version__ = "1.5.0-dev"
+__maintainer__ = "Will Van Treuren"
+__email__ = "wdwvt1@gmail.com"
+__status__ = "Development"
 
 from commands import getstatusoutput
 from numpy import arange, array
@@ -22,25 +34,27 @@ for (i in 1:samples){
 write.table(d, file=%s, sep=',', quote=FALSE, col.names=FALSE, row.names=FALSE)
 """
 
-def null_from_normal(samples, otus, mean, std, ints=True, clip_on=True,
-    sparsity=None):
+def null_from_normal(samples, otus, mean, std, sparsity=0.0, floats=True, no_clip=False):
     """create null from a normal distribution"""
     data = normal(mean, std, samples*otus).reshape(otus, samples)
-    if clip_on:
+    if not no_clip:
         data = data.clip(0) #replace entries less than 0 with 0
-    if ints:
+    if not floats:
         data = data.round() #default is rounding to nearest int
-    if sparsity:
+    
+    if sparsity>0:
         sparse_inds = arange(otus*samples)
         shuffle(sparse_inds)
-        data.flatten()[sparse_inds[:int(otus*samples*sparsity)]] = 0.
-        data.reshape(otus, samples)
+        data = data.flatten()
+        data[sparse_inds[:int(otus*samples*sparsity)]] = 0
+        data = data.reshape(otus, samples)
+    
     return data
 
-def null_from_exponential(samples, otus, scale, ints=True):
+def null_from_exponential(samples, otus, scale, floats=True):
     """create null from exponential distribution"""
     data = exponential(scale, samples*otus).reshape(otus, samples)
-    if ints:
+    if not floats:
         data = data.round() #default is rounding to nearest int
     return data
 
@@ -69,7 +83,7 @@ def null_from_data(data, tpk, Rseed=None):
     if cmd_status==32512:
         raise ValueError, 'Most likely you do not have R installed, ' +\
             'which is a dependency for QIIME'
-    elif cmd_status==256:
+    elif cmd_status==256:	
         raise ValueError, 'Most likely you do not have gtools library ' +\
             'installed in R installed, which is a dependency for QIIME'
                 

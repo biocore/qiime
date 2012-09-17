@@ -35,14 +35,15 @@ class TopLevelTests(TestCase):
         seed(0) # this will seed numpy prng at 0 before each test
 
     def test_null_from_normal(self):
+      
         """test that null from normal performs as expected when seeded"""
         test_mean = 10
         test_std = 5
-        clip_on = True
-        ints = True
+        clip_on = False
+        floats = False
         sparsity = None
         actual_out = null_from_normal(self.samples, self.otus, test_mean,
-            test_std, ints, clip_on, sparsity)
+            test_std, sparsity, floats, clip_on)
         expected_out = \
                array([[ 19.,  12.,  15.,  21.,  19.],
                       [  5.,  15.,   9.,   9.,  12.],
@@ -59,7 +60,7 @@ class TopLevelTests(TestCase):
         test_mean = 5
         test_std = 5
         actual_out = null_from_normal(self.samples, self.otus, test_mean,
-            test_std, ints, clip_on, sparsity)
+            test_std, sparsity, floats, clip_on)
         expected_out = \
             array([[  1.,   7.,   2.,   0.,   5.],
                    [  7.,   5.,   7.,   2.,   3.],
@@ -73,9 +74,9 @@ class TopLevelTests(TestCase):
                    [  9.,   5.,  14.,   6.,   7.]])
         self.assertEqual(expected_out, actual_out)
         # test without clipping
-        clip_on = False
+        clip_on = True
         actual_out = null_from_normal(self.samples, self.otus, test_mean,
-            test_std, ints, clip_on, sparsity)
+            test_std, sparsity, floats, clip_on)
         expected_out = \
             array([[ 14.,  -2.,  -1.,  10.,  -1.],
                    [ 15.,   3.,   1.,  15.,  12.],
@@ -89,42 +90,33 @@ class TopLevelTests(TestCase):
                    [ 10.,   0.,  11.,  -2.,   3.]])
         self.assertEqual(expected_out, actual_out)
         # test with sparsity and ints off
+        seed(0)
         clip_on = True
-        ints = False
+        floats = True
         sparsity = .8
         test_mean = 10.4
         test_std = 1.4
         actual_out = null_from_normal(self.samples, self.otus, test_mean,
-            test_std, ints, clip_on, sparsity)
+            test_std, sparsity, floats, clip_on)
         expected_out = \
-            array([[ 10.30446175,  12.79867981,   9.35734325,   9.24298605,
-                     10.26216647],
-                   [  9.4711304 ,  11.97729029,   8.88809589,   8.79354389,
-                      9.78705194],
-                   [  9.70275457,  13.10134488,  11.72918913,  10.52257174,
-                      8.68439027],
-                   [ 11.58210817,   8.99969851,   8.23732046,  12.06324171,
-                     10.84371966],
-                   [ 11.68920235,  10.84621871,  11.59956286,   9.48856417,
-                      8.95206002],
-                   [ 11.35423233,   9.27522647,   9.43463031,   9.7622545 ,
-                     10.42447082],
-                   [  9.90440852,   8.47506819,   9.49893424,   7.28723559,
-                     11.27532403],
-                   [  8.15711928,   8.85386332,  10.47303111,   9.36461181,
-                     12.56022043],
-                   [  8.59000033,  10.77387122,  10.34500405,   8.7646691 ,
-                     11.13258732],
-                   [ 10.15983514,  11.48050677,  11.55290582,  13.42853033,
-                     12.27113913]])
+            array([[ 12.86967328,   0.        ,   0.        ,   0.        ,   0.        ],
+                   [  9.03181097,   0.        ,   0.        ,   0.        ,   0.        ],
+                   [  0.        ,   0.        ,   0.        ,  10.57034502,   0.        ],
+                   [ 10.86714406,   0.        ,   0.        ,   0.        ,   0.        ],
+                   [  0.        ,  11.31506603,   0.        ,   9.36096897,   0.        ],
+                   [  0.        ,   0.        ,   0.        ,   0.        ,   0.        ],
+                   [  0.        ,  10.92942753,   0.        ,   0.        ,   0.        ],
+                   [ 10.61888856,   0.        ,   0.        ,   0.        ,   0.        ],
+                   [  0.        ,   8.41197489,   0.        ,   0.        ,   0.        ],
+                   [  9.78669598,   0.        ,   0.        ,   0.        ,   0.        ]])
         assert_allclose(expected_out, actual_out)
         # using assert_allclose because floats are truncated
 
     def test_null_from_exponential(self):
         """tests null_from_exponential works properly when seeded"""
         scale = 5
-        ints = True
-        actual_out = null_from_exponential(self.samples, self.otus, scale, ints)
+        floats = False
+        actual_out = null_from_exponential(self.samples, self.otus, scale, floats)
         expected_out = \
             array([[  4.,   6.,   5.,   4.,   3.],
                    [  5.,   3.,  11.,  17.,   2.],
@@ -138,8 +130,8 @@ class TopLevelTests(TestCase):
                    [  6.,   1.,   1.,   2.,   2.]])
         self.assertEqual(expected_out, actual_out)
         #test with ints off
-        ints = False
-        actual_out = null_from_exponential(self.samples, self.otus, scale, ints)
+        floats = True
+        actual_out = null_from_exponential(self.samples, self.otus, scale, floats)
         expected_out = \
             array([[  4.2221389 ,   2.88662155,  22.2724869 ,   0.53817556,
                       1.17150758],
