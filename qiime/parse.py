@@ -411,6 +411,7 @@ def parse_taxonomy(infile):
         res[otu] = fields[1]
 
     return res
+parse_observation_metadata = parse_taxonomy
 
 def taxa_split(taxa_string):
     return [t.strip() for t in taxa_string.split(';')]

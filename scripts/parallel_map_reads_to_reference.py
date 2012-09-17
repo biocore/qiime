@@ -36,7 +36,7 @@ script_info['required_options'] = [
 ]
 script_info['optional_options'] = [
     make_option('-t', '--observation_metadata_fp',type='existing_filepath',
-        help='Path to observation metadata map, if applicable [default: %default]'),
+        help=('Path to observation metadata (e.g., taxonomy, EC, etc) [default: %default]')),
         
     make_option('-m', '--assignment_method', type='choice',
         choices=['usearch','blat','bwa-short'], default = "usearch",

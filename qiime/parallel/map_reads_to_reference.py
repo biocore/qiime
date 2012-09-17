@@ -13,6 +13,7 @@ __status__ = "Development"
 
 from os.path import join
 from qiime.make_otu_table import make_otu_table
+from qiime.parse import parse_observation_metadata
 from qiime.parallel.pick_otus import ParallelPickOtus
 
 class ParallelDatabaseMapper(ParallelPickOtus):
@@ -31,7 +32,7 @@ class ParallelDatabaseMapper(ParallelPickOtus):
         
         if params['observation_metadata_fp'] != None:
             observation_metadata = \
-             parse_taxonomy(open(params['observation_metadata_fp'],'U'))
+             parse_observation_metadata(open(params['observation_metadata_fp'],'U'))
         else:
             observation_metadata = None
         biom_fp = join(output_dir,'observation_table.biom')
