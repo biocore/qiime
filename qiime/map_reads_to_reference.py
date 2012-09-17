@@ -297,6 +297,7 @@ def usearch_database_mapper(query_fp,
                             targetalnfract,
                             maxaccepts,
                             maxrejects,
+                            observation_metadata_fp=None,
                             HALT_EXEC=False):
         
         params = {}
@@ -312,6 +313,7 @@ def usearch_database_mapper(query_fp,
                           refseqs_fp,
                           output_dir,
                           params = params,
+                          observation_metadata_fp=observation_metadata_fp,
                           HALT_EXEC = HALT_EXEC)
 
 def blat_database_mapper(query_fp,
@@ -319,6 +321,7 @@ def blat_database_mapper(query_fp,
                          output_dir,
                          evalue,
                          min_id,
+                         observation_metadata_fp=None,
                          HALT_EXEC=False):
 
     params = {'-minIdentity':min_id}
@@ -330,6 +333,7 @@ def blat_database_mapper(query_fp,
                    refseqs_fp,
                    output_dir,
                    params = params,
+                   observation_metadata_fp=observation_metadata_fp,
                    HALT_EXEC=HALT_EXEC)
 
 def blat_nt_database_mapper(query_fp,
@@ -337,6 +341,7 @@ def blat_nt_database_mapper(query_fp,
                            output_dir,
                            evalue,
                            min_id,
+                           observation_metadata_fp=None,
                            HALT_EXEC=False):
 
     params = {'-minIdentity':min_id}
@@ -348,12 +353,14 @@ def blat_nt_database_mapper(query_fp,
                    refseqs_fp,
                    output_dir,
                    params = params,
+                   observation_metadata_fp=observation_metadata_fp,
                    HALT_EXEC=HALT_EXEC)
 
 def bwa_sw_database_mapper(query_fp,
                         refseqs_fp,
                         output_dir,
                         min_map_quality,
+                        observation_metadata_fp=None,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaSwDatabaseMapper()
@@ -362,12 +369,14 @@ def bwa_sw_database_mapper(query_fp,
                   refseqs_fp,
                   output_dir,
                   params = {},
+                  observation_metadata_fp=observation_metadata_fp,
                   HALT_EXEC=HALT_EXEC)
 
 def bwa_short_database_mapper(query_fp,
                         refseqs_fp,
                         output_dir,
                         min_map_quality,
+                        observation_metadata_fp=None,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaShortDatabaseMapper()
@@ -376,6 +385,7 @@ def bwa_short_database_mapper(query_fp,
                   refseqs_fp,
                   output_dir,
                   params = {},
+                  observation_metadata_fp=observation_metadata_fp,
                   HALT_EXEC=HALT_EXEC)
 
 

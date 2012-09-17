@@ -65,6 +65,9 @@ script_info['optional_options'] = [
               ', '.join(assignment_functions.keys()) +\
               '. [default: %default]')),
 
+    make_option('-t', '--observation_metadata_fp',type='existing_filepath',
+        help=('Path to observation metadata (e.g., taxonomy, EC, etc) [default: %default]')),
+
     make_option('-o', '--output_dir',type='new_dirpath',\
         help=('Path to store result file '
               '[default: ./<METHOD>_mapped/]')),
@@ -124,6 +127,7 @@ def main():
                                targetalnfract=opts.targetalnfract,
                                maxaccepts=opts.max_accepts,
                                maxrejects=opts.max_rejects,
+                               observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
     elif assignment_method == 'blat' or assignment_method == 'blat-nt':
         assignment_function(query_fp=input_seqs_filepath,
@@ -131,12 +135,14 @@ def main():
                                output_dir=output_dir,
                                evalue=opts.evalue,
                                min_id=opts.min_percent_id,
+                               observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
     elif assignment_method == 'bwa-sw' or assignment_method == 'bwa-short':
         assignment_function(query_fp=input_seqs_filepath,
                                refseqs_fp=refseqs_fp,
                                output_dir=output_dir,
                                min_map_quality=opts.min_map_quality,
+                               observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
         
     else:
