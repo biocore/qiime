@@ -40,8 +40,6 @@ script_info['output_description']="""The results of this script is a folder (spe
 script_info['required_options']=[\
     make_option('-i','--otu_table_fp',type='existing_filepath',\
         help='the input otu table [REQUIRED]'),\
-    make_option('-m','--mapping_fp',type='existing_filepath',\
-        help='path to the mapping file [REQUIRED]'),\
     make_option('-o','--output_dir',type='new_dirpath',\
         help='the output directory [REQUIRED]'),
 ]
@@ -51,6 +49,8 @@ script_info['optional_options']=[\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
         ' [if omitted, default values will be used]'),
+    make_option('-m','--mapping_fp',type='existing_filepath',\
+        help='path to the mapping file [REQUIRED if passing -c]'),\
     make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -77,6 +77,9 @@ def main():
     print_only = opts.print_only
     mapping_cat = opts.mapping_category
     sort=opts.sort
+    
+    if mapping_cat != None and mapping_fp == None:
+        option_parser.error("If passing -c must also pass -m.")
     
     if opts.parameter_fp:
         try:
