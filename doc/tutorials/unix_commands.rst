@@ -40,12 +40,12 @@ Rename ``old_filename`` to ``new_filename``::
 
 	mv old_filename new_filename
 
-wget: pull a file from a remote location
+curl: pull a file from a remote location
 ========================================
 
-Pull the greengenes reference OTU file (4feb2011)::
+Pull the greengenes reference OTU file (4feb2011) and write it to a file with the same name::
 
-	wget http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz
+	curl http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz > gg_otus_4feb2011.tgz
 
 cp: copy a file
 ===============
