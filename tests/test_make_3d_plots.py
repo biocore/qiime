@@ -32,7 +32,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     run_ANOVA_trajetories,
                                     generate_3d_plots, 
                                     can_run_ANOVA_trajectories,
-                                    avg_vector_for_group)
+                                    avg_vector_for_group,
+                                    weight_by_vector)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -85,7 +86,8 @@ class TopLevelTests(TestCase):
         self.add_vectors = {'vectors_algorithm': 'trajectory', 'vectors_axes': 3, \
                                 'vectors': ['Height'], 'vectors_path': 'vectors_test', \
                                 'eigvals': array([ 0, 2.44923871, 1.11678013, 1.01533255]), \
-                                'vectors_output': {}}
+                                'vectors_output': {},\
+                                'weight_by_vector' : False}
         self.filename_vectors = 'vectors_test'
         self.file_path_vectors = 'vectors_test_dir'
 
@@ -132,6 +134,27 @@ class TopLevelTests(TestCase):
             'vectors':\
             {'14655': [('0', '14424'),\
             ('1', '14435')]}}
+
+        # data for test_weight_by_vector
+        self.in_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.in_weighting_vector = array([1, 5, 8, 12, 45, 80, 85, 90])
+        self.out_weighted_vector = array([1, 6.3571428571428568,\
+            12.714285714285714, 12.714285714285714, 1.9264069264069263,\
+            2.1795918367346938, 17.800000000000001, 20.342857142857142])
+
+        self.in_flat_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.in_flat_weighting_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.out_flat_weighted_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
+
+        self.in_second_flat_vector_to_weight = array([2, 3, 4, 5, 6])
+        self.in_second_flat_weighting_vector = array([25, 30, 35, 40, 45])
+        self.out_second_flat_weighted_vector = array([2, 3, 4, 5, 6])
+
+        self.in_nd_array_vector_to_weight = array([[1, 2, 3],[2, 3, 4],\
+            [5, 6, 7],[8, 9, 10]])
+        self.in_nd_array_weighting_vector = array([1, 2, 3, 4])
+        self.out_nd_array_flat_vector = array([[1, 2, 3],[2, 3, 4],\
+            [5, 6, 7],[8, 9, 10]])
 
     def tearDown(self):
         map(remove,self._paths_to_clean_up)
@@ -367,17 +390,20 @@ class TopLevelTests(TestCase):
 
         # Testing rms
         exp_result = {'calc': {'avg':5.32480386489972}, \
-                      'vector': [6.995474752449276, 1.5180408981614073, 7.4608959440884766] }
+                        'vector': [6.995474752449276, 1.5180408981614073, 7.4608959440884766],\
+                        'message': None }
         self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids), exp_result)
         
         # Testing trajectory
         exp_result = {'calc': {'trajectory':15.92846773878855}, \
-                      'vector': [14.383977976653455, 6.8423140875566384] }
+                        'vector': [14.383977976653455, 6.8423140875566384],\
+                        'message': None }
         self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids, 'trajectory'), exp_result)
 
         # Testing first difference 
         exp_result = {'vector': array([-7.54166389]) , \
-                        'calc': {'mean': [-7.541663889096816], 'std': [0.0]}}
+                        'calc': {'mean': [-7.541663889096816], 'std': [0.0]},\
+                        'message': None }
         self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids, 'diff'), exp_result)
                       
     def test_run_ANOVA_trajetories(self):
@@ -735,6 +761,21 @@ Removes any samples not present in mapping file"""
                 self.in_avg_add_vectors)
         self.assertEqual(test_avg_coord_dict, self.out_avg_coord_dict)
         self.assertEqual(test_avg_add_vectors, self.out_avg_add_vectors)
+
+    def test_weight_by_vector(self):
+        """ Test that the vector is weighted by the given vector"""
+        test_weighted_output = weight_by_vector(self.in_vector_to_weight,\
+            self.in_weighting_vector)
+        self.assertEqual(test_weighted_output, self.out_weighted_vector)
+
+        flat_test_weighted_output = weight_by_vector(\
+            self.in_flat_vector_to_weight,self.in_flat_weighting_vector)
+        self.assertEqual(flat_test_weighted_output, self.out_flat_weighted_vector)
+
+        second_flat_test_weighted_output = weight_by_vector(\
+            self.in_second_flat_vector_to_weight,self.in_second_flat_weighting_vector)
+        self.assertEqual(second_flat_test_weighted_output, self.out_second_flat_weighted_vector)
+
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@labellist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '0.08452953915 -0.22261522815 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0887560161075 -0.22261522815 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 0.0836582103 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.2299972416 0.087841120815 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.2299972416 -0.22261522815 0.101801355075 white', '@kinemage {Day_scaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.156460708571 0.0575030878571 -0.181726716857 0.0682924165714 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@labellist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '0.06037824225 -0.1908130527 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0633971543625 -0.1908130527 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 0.0717070374 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.164283744 0.07529238927 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.1908130527 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.164283744 -0.1908130527 0.101801355075 white']

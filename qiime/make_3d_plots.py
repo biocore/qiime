@@ -16,7 +16,8 @@ from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
 from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std
+from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std, concatenate, ones
+from numpy import abs as numpy_abs
 from numpy.linalg import norm
 import numpy as np
 import os
@@ -100,6 +101,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     with NF, colors with the next gradient.
     
     """
+    sorting_column = {}
     result = []
     #Iterate through prefs and color by given mapping labels
     #Sort by the column name first
@@ -108,19 +110,14 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     
     # processing the vectors
     if add_vectors:
-        # validating the values in add_vectors
-        for label in add_vectors['vectors']:
-            if label not in mapping[0]:
-                raise ValueError, "Couldn't find name %s in headers: %s" \
-                    % (label, mapping[0])
-                    
+
         # getting the index of the columns in the mapping file
         ind_group = mapping[0].index(add_vectors['vectors'][0])
         if len(add_vectors['vectors'])>=2:
             ind_sort = mapping[0].index(add_vectors['vectors'][1])
         else: 
             ind_sort = 0
-        
+
         # creating groups 
         groups = {}
         for l in mapping[1:]:
@@ -133,8 +130,21 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
         for g in groups:
             groups[g] = natsort(groups[g])
         add_vectors['vectors'] = groups
-    
-    
+
+        # managing the options to weight the vectors by a given metadata column
+        if add_vectors['weight_by_vector'] and ind_sort == 0:
+            raise ValueError, "The weighting_vector can't be the SampleID, "+\
+                "please specify a numeric column in the --add_vectors option."
+        elif add_vectors['weight_by_vector']:
+            # if we can sort the column, try to create a dictionary with the
+            # value of this sorting column as values and the SampleID as key
+            for mapping_row in mapping[1:]:
+                try:
+                    sorting_column[mapping_row[0]] = float(mapping_row[ind_sort])
+                except ValueError:
+                    raise ValueError, "The sorting column for --add_vectors "+\
+                        "must be numeric, i. e. DOB or days_since_epoch"
+
     for i in range(len(groups_and_colors)):  
         #Write to kinemage file using the groups, colors and coords 
         labelname=groups_and_colors[i][0]
@@ -152,7 +162,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                 ellipsoid_prefs=ellipsoid_prefs, \
                 user_supplied_edges=user_supplied_edges, \
                 ball_scale=ball_scale, arrow_colors=arrow_colors, \
-                add_vectors=add_vectors))
+                add_vectors=add_vectors, sorting_column=sorting_column))
         if plot_scaled:
             result.extend(make_mage_output(groups, colors, coord_header, coords, \
                 pct_var,background_color,label_color,data_colors, \
@@ -162,7 +172,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                 ellipsoid_prefs=ellipsoid_prefs, \
                 user_supplied_edges=user_supplied_edges, \
                 ball_scale=ball_scale, arrow_colors=arrow_colors, \
-                add_vectors=add_vectors))
+                add_vectors=add_vectors, sorting_column=sorting_column))
                 
     return result
 
@@ -185,8 +195,11 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      coords_high=None, ellipsoid_prefs=None,
                      user_supplied_edges=False, ball_scale=1.0, \
                      arrow_colors={'line_color': 'white', 'head_color': 'red'},
-                     add_vectors=None):
-    """Convert groups, colors, coords and percent var into mage format"""
+                     add_vectors=None, sorting_column=None):
+    """Convert groups, colors, coords and percent var into mage format
+        weighting_colum: is a dictionary with SampleIDs as keys and the 
+        corresponding values for the column selected to sort the vectors.
+    """
     result = []
 
     #Scale the coords and generate header labels
@@ -297,9 +310,25 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
             avg_ids = {}
 
             if not scaled and add_vectors['vectors_path'] and add_vectors['vectors_algorithm']:
-                vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'], \
-                                                ids, add_vectors['vectors_algorithm'], \
-                                                add_vectors['vectors_axes'], custom_axes)
+
+                # the sorting_column dict is optional, so get it if possible
+                try:
+                    # for the current group of ids, get the needed values, only
+                    # if they are in coord_dict
+                    weighting_vector = array([sorting_column[single_id] for single_id in ids if single_id in coord_dict])
+                except KeyError:
+                    weighting_vector = None
+
+                try:
+                    vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'], \
+                                                    ids, add_vectors['vectors_algorithm'], \
+                                                    add_vectors['vectors_axes'], custom_axes, \
+                                                    weight=add_vectors['weight_by_vector'], \
+                                                    weighting_vector=weighting_vector,
+                                                    group_name = group_name)
+                except TypeError:
+                    continue
+
                 if type(vector_result['calc']) is dict or not isnan(vector_result['calc']):
                     if name not in add_vectors['vectors_output']:
                         add_vectors['vectors_output'][name] = {}
@@ -308,6 +337,7 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
                     
                     add_vectors['vectors_output'][name][group_name]['vectors_vector'] = vector_result['vector']
                     add_vectors['vectors_output'][name][group_name]['vectors_result'] = vector_result['calc']
+                    add_vectors['vectors_output'][name][group_name]['vectors_message'] = vector_result['message']
 
     if not taxa is None:
         result += make_mage_taxa(taxa, num_coords, pct_var,
@@ -356,7 +386,8 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     
     return result
 
-def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3, custom_axes=None):
+def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3,\
+                            custom_axes=None, weight=False, weighting_vector=None):
     """Creates either the first difference or the rms value, vector, of a subgroup (ids) of coord_dict
     
        Params: 
@@ -366,6 +397,8 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         from coord_dict
         method: 'avg', 'trajectory' or 'diff'
         custom_axes: the list of custom axis used in other methods
+        weight: whether or not the vector should be weighted using the
+        qiime.make_3d_plots.weight_by_vector function
         
        Returns:
         a dict with 2 members: 'vector', the vector representing from which the first 
@@ -373,36 +406,54 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         difference or the RMS value with the selected algorithm.
     """
     result = {}
-    
+    result['message'] = None
+
     # We multiply the coord values with the value of the eigvals represented
     if custom_axes:
         vectors = [coord_dict[id][1:][:vectors_axes]*eigvals[:vectors_axes] for id in ids if id in coord_dict]
     else:
         vectors = [coord_dict[id][:vectors_axes]*eigvals[:vectors_axes] for id in ids if id in coord_dict]
 
+    if len(vectors) <= 0:
+        raise TypeError, "No samples to process, an empty list cannot be processed"
+
+    # the weighting can only be done over vectors with a lenght greater than 1
+    if weight and weighting_vector is not None and len(ids) > 1:
+        try:
+            vectors_copy = deepcopy(vectors)
+            vectors = weight_by_vector(vectors_copy, weighting_vector)
+        except (FloatingPointError, ValueError):
+            result['message'] = "Could not weight group, no gradient in "+\
+                "the weighting vector.\n"
+            vectors = vectors_copy
+    elif weight and weighting_vector is None:
+        raise ValueError, "You must pass a weighting vector if you want to"+\
+            "weight your data"
+
+    # to check for the length, look at vectors, ids might be misleading
     if method=='avg':
         center = average(vectors,axis=0)
-        if len(ids)==1:
+        if len(vectors)==1:
             result['vector'] = [norm(center)]
             result['calc'] = {'avg':result['vector']}
         else:
             result['vector'] = [norm(i) for i in vectors-center]
             result['calc'] = {'avg':average(result['vector'])}
     elif method=='trajectory':
-        if len(ids)==1:
+        if len(vectors)==1:
             result['vector'] = [norm(vectors)]
             result['calc'] = {'trajectory':result['vector']}
         else:
             result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
             result['calc'] = {'trajectory':norm(result['vector'])}
     elif method=='diff':
-        if len(ids)==1:
+        if len(vectors)==1:
             result['vector'] = [norm(vectors)]
             result['calc'] = {'mean':result['vector'], 'std':0}
-        elif len(ids)==2:
+        elif len(vectors)==2:
             result['vector'] = [norm(vectors[1]-vectors[0])]
             result['calc'] = {'mean':result['vector'], 'std':0}
-        else:   
+        else:
             vec_norm = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
             vec_diff = diff(vec_norm)
             result['calc'] = {'mean':mean(vec_diff), 'std':std(vec_diff)}
@@ -410,8 +461,8 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
     elif method==None:
         result['calc'] = nan
     else:
-       raise ValueError, 'The method "%s" for Vectors does not exist' % method
-       
+        raise ValueError, 'The method "%s" for Vectors does not exist' % method
+
     return result
 
 
@@ -1032,8 +1083,13 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
         f_vectors = open(os.path.join(htmlpath,add_vectors['vectors_path']), 'w')
         f_vectors_raw_values = open(os.path.join(htmlpath, 'vectors_raw_values.txt'), 'w')
 
-        f_vectors.write('Method to calculate the vectors: %s\n' % add_vectors['vectors_algorithm'])
-        f_vectors_raw_values.write('Method to calculate the vectors: %s\n' % add_vectors['vectors_algorithm'])
+        f_vectors.write('Vectors algorithm: %s\n' % add_vectors['vectors_algorithm'])
+        f_vectors_raw_values.write('Vectors algorithm: %s\n' % add_vectors['vectors_algorithm'])
+
+        if add_vectors['weight_by_vector']:
+            f_vectors.write('** This output is weighted **\n')
+            f_vectors_raw_values.write('** This output is weighted **\n')
+
 
         # Each group has different categories, output the
         # information per group and per category 
@@ -1052,8 +1108,10 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                     if len(add_vectors['vectors_output'][group][cat]['vectors_vector']) != 0:
                         to_test[cat] = add_vectors['vectors_output'][group][cat]['vectors_vector']
                         per_category_information.append(add_vectors['vectors_output'][group][cat]['vectors_result'])
+                        #add_vectors['vectors_output'][name][group_name]
                     else:
                         add_vectors['vectors_output'][group][cat]['vectors_result'] = nan
+                        #add_vectors['vectors_output'][name][group_name]
                 
                 # Not all dicts can be tested
                 if can_run_ANOVA_trajectories(to_test):
@@ -1064,16 +1122,21 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         
                         # Each category of the current group has its own values
                         for i in range(len(labels)): 
-                            # print the calculated mean for the group
+                            
+                            # print the per group header
                             f_vectors.write('For group: "{0}", the group means is: {1}\n'\
                                             .format(labels[i], group_means[i]))
+                            f_vectors_raw_values.write('For group: "%s"\n' % labels[i])
+
+                            # the corresponding message if there is one
+                            if add_vectors['vectors_output'][group][cat]['vectors_message'] is not None:
+                                f_vectors.write('%s' % add_vectors['vectors_output'][group][cat]['vectors_message'])
+                                f_vectors_raw_values.write('%s' % add_vectors['vectors_output'][group][cat]['vectors_message'])
 
                             # print the extra information (diff, avg, rms ...)
                             f_vectors.write('The info is: {0}\n'.format(per_category_information[i]))
+                            f_vectors_raw_values.write('The vector is:\n %s\n' % to_test[labels[i]])
 
-                            # on the other file print the raw vectors
-                            f_vectors_raw_values.write('For group: "{0}", the vector is:\n{1}\n'\
-                                .format(labels[i], to_test[labels[i]]))
                     else:
                         f_vectors.write('\nGrouped by %s: this value can not be used\n' % (group))
                 else:
@@ -1176,3 +1239,54 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
         for i, avg_id in enumerate(natsort(avg_coord_dict.keys())) ]}   
 
     return avg_coord_dict, avg_add_vectors
+
+def weight_by_vector(vector, w_vector):
+    """
+    weight_by_vector: weights the values of 'vector' given a weighting vector
+    'w_vector'. Each value in 'vector' will be weighted by the 'rate of change'
+    to 'optimal rate of change' ratio, meaning that when calling this function 
+    over evenly spaced 'w_vector' values, no change will be reflected on the 
+    output.
+
+    Input:
+    vector: numpy array of values to weight
+    w_vector: numpy array used to weight 'vector'.
+
+    Output:
+    op_vector: numpy array representing a weighted version of 'vector'.
+    """
+
+    try: 
+        if len(vector) != len(w_vector):
+            raise ValueError,"vector (%d) & w_vector (%d) must be equal lengths"\
+                % (len(vector), len(w_vector))
+    except TypeError:
+        raise TypeError, "vector and w_vector must be iterables"
+
+    # check no repeated values are passed in the weighting vector
+    if len(list(set(w_vector))) != len(w_vector):
+        raise ValueError, "The weighting vector must be a gradient"
+
+    # no need to weight in case of a one element vector 
+    if len(w_vector) == 1:
+        return vector
+
+    op_vector = []
+
+    # Cast to float so divisions have a floating point resolution
+    total_length = float(max(w_vector) - min (w_vector))
+
+    # reflects the expected gradient between subsequent values in w_vector
+    # the first value isn't weighted so subtract one from the number of elements
+    optimal_gradient = total_length/(len(w_vector)-1)
+
+    for n, vector_value in enumerate(vector):
+        # for all elements apply the weighting function
+        if n != 0:
+            op_vector.append(\
+                vector_value*(optimal_gradient)/numpy_abs((w_vector[n]-w_vector[n-1])))
+        # if it's the first element, just return it as is, no weighting to do
+        else:
+            op_vector.append(vector_value)
+
+    return op_vector

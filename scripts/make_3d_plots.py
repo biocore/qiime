@@ -189,6 +189,10 @@ script_info['optional_options']=[\
         ' function. Note that this option only works with --add_vectors. The file is' +\
         ' going to be created inside the output_dir and its name will start with "Vectors".' +\
         ' [default: %default]'),
+    make_option('-w', '--weight_by_vector', default=False, action='store_true',
+        help='Use -w when you want the output created in the --vectors_path' +\
+        ' to be weighted by the space between samples in the --add_vectors, ' +\
+        'sorting column, i. e. days between samples [default: %default]'),
     options_lookup['output_dir'],
 ]
 
@@ -342,6 +346,7 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     if opts.add_vectors:
         add_vectors={}
         add_vectors['vectors'] = opts.add_vectors.split(',')
+        add_vectors['weight_by_vector'] = opts.weight_by_vector
         if len(add_vectors)>3:
             raise ValueError, 'You must add maximum 3 columns but %s' % opts.add_vectors
         
