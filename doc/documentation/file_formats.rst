@@ -116,11 +116,11 @@ However, this corrected mapping file is still not usable.  The log file generate
 Mapping Files Without Barcodes and/or Primers
 +++++++++++++++++++++++++++++++++++++++++++++
 
-In some circumstances, users may need to generate a mapping file that does not contain barcodes and/or primers.  To generate such a mapping file, the header and column for "BarcodeSequence" is removed and "LinkerPrimerSequence" fields can be left empty.  An example of such a file is below (note that the tabs are still present for the empty "LinkerPrimerSequence" field):
+In some circumstances, users may need to generate a mapping file that does not contain barcodes and/or primers.  To generate such a mapping file, fields for "BarcodeSequence" and "LinkerPrimerSequence" can be left empty.  An example of such a file is below (note that the tabs are still present for the empty "BarcodeSequence" and "LinkerPrimerSequence" fields):
 
 .. note::
 
-   * #SampleID	LinkerPrimerSequence	Treatment DOB	Description
+   * #SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment DOB	Description
    * #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
    * #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
    * PC.354		Control	20061218	Control_mouse__I.D._354
