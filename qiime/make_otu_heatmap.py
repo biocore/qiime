@@ -42,7 +42,7 @@ def get_overlapping_samples(map_rows, otu_table):
     new_map = []
     for sam_id in map_sample_ids:
         if sam_id in shared_ids:
-            ix = map_sample_ids.index(id)
+            ix = map_sample_ids.index(sam_id)
             new_map.append(map_rows[ix])
     
     return new_map, otu_table
