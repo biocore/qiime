@@ -38,7 +38,7 @@ script_info['optional_options']=[
 make_option('-m','--mapping_fp',type='existing_filepath',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
 
 make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written', type='new_filepath'),
-make_option('--num_otuss',action='store_true',help='Counts are presented as number of observed OTUs per sample, rather than counts of sequences per sample [default: %default]',default=False)
+make_option('--num_otus',action='store_true',help='Counts are presented as number of observed OTUs per sample, rather than counts of sequences per sample [default: %default]',default=False)
 ]
 script_info['version'] = __version__
 
@@ -47,7 +47,7 @@ def main():
     otu_table_fp = opts.otu_table_fp
     otu_table = parse_biom_table(qiime_open(otu_table_fp))
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
-     compute_seqs_per_library_stats(otu_table, opts.num_otuss)
+     compute_seqs_per_library_stats(otu_table, opts.num_otus)
     num_otus = len(otu_table.ObservationIds)
     
     counts_per_sample_values = counts_per_sample.values()
@@ -57,13 +57,15 @@ def main():
     num_samples = len(counts_per_sample)
     print 'Num samples: %s' % str(num_samples)
     print 'Num otus: %s' % str(num_otus)
-    if not opts.num_otuss:
+    if not opts.num_otus:
         num_observations = sum(counts_per_sample_values)
         print 'Num observations (sequences): %s' % str(num_observations)
-        print 'Table density (fraction of non-zero values): %1.4f' % (num_observations/(num_samples * num_otus))
+        # port denisty functionality to a tested function. the following is broken (should be 
+        # count of non-zero cells rather than number of observations in the numerator)
+        #print 'Table density (fraction of non-zero values): %1.4f' % (num_observations/(num_samples * num_otus))
     print
 
-    if opts.num_otuss:
+    if opts.num_otus:
         print 'OTUs/sample summary:'
     else:
         print 'Seqs/sample summary:' 
@@ -76,7 +78,7 @@ def main():
     print ' Default even sampling depth in\n  core_qiime_analyses.py (just a suggestion): %s' %\
      str(even_sampling_depth)
     print ''
-    if opts.num_otuss:
+    if opts.num_otus:
         print 'OTUs/sample detail:'
     else:
         print 'Seqs/sample detail:'
