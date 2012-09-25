@@ -29,17 +29,21 @@ class ParallelDatabaseMapper(ParallelPickOtus):
                       suppress_submit_jobs):
         """ Called as the last step in __call__.
         """
-        
-        if params['observation_metadata_fp'] != None:
-            observation_metadata = \
-             parse_observation_metadata(open(params['observation_metadata_fp'],'U'))
+        if poll_directly:
+            if params['observation_metadata_fp'] != None:
+                observation_metadata = \
+                 parse_observation_metadata(open(params['observation_metadata_fp'],'U'))
+            else:
+                observation_metadata = None
+            biom_fp = join(output_dir,'observation_table.biom')
+            biom_f = open(biom_fp,'w')
+            biom_f.write(make_otu_table(open(join(output_dir,'observation_map.txt'),'U'),
+                                        observation_metadata))
+            biom_f.close()
         else:
-            observation_metadata = None
-        biom_fp = join(output_dir,'observation_table.biom')
-        biom_f = open(biom_fp,'w')
-        biom_f.write(make_otu_table(open(join(output_dir,'observation_map.txt'),'U'),
-                                    observation_metadata))
-        biom_f.close()
+            # can't construct the final biom file if not polling
+            # directly as the final observation map won't have been created yet
+            pass
 
 class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
     
