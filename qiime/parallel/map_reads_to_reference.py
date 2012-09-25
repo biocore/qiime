@@ -65,10 +65,11 @@ class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
             # Each run ends with moving the output file from the tmp dir to
             # the output_dir. Build the command to perform the move here.
             run_output_dir = join(working_dir,str(i))
+            tmp_output_dir = join(working_dir,str(i),'tmp')
             rename_command, current_result_filepaths = self._get_rename_command(
-                [join(job_prefix,str(i),o) for o in out_filenames],
-                run_output_dir,
-                output_dir)
+                out_filenames,
+                tmp_output_dir,
+                run_output_dir)
             result_filepaths += current_result_filepaths
             
             command = \
@@ -77,7 +78,7 @@ class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
               self._script_name,
               fasta_fp,
               params['refseqs_fp'],
-              run_output_dir,
+              tmp_output_dir,
               params['min_percent_id'],
               params['max_accepts'],
               params['max_rejects'],
@@ -145,16 +146,16 @@ class ParallelDatabaseMapperBlat(ParallelDatabaseMapper):
         # Create lists to store the results
         commands = []
         result_filepaths = []
-        
         # Iterate over the input files
         for i,fasta_fp in enumerate(fasta_fps):
             # Each run ends with moving the output file from the tmp dir to
             # the output_dir. Build the command to perform the move here.
             run_output_dir = join(working_dir,str(i))
+            tmp_output_dir = join(working_dir,str(i),'tmp')
             rename_command, current_result_filepaths = self._get_rename_command(
-                [join(job_prefix,str(i),o) for o in out_filenames],
-                run_output_dir,
-                output_dir)
+                out_filenames,
+                tmp_output_dir,
+                run_output_dir)
             result_filepaths += current_result_filepaths
             
             command = \
@@ -163,7 +164,7 @@ class ParallelDatabaseMapperBlat(ParallelDatabaseMapper):
               self._script_name,
               fasta_fp,
               params['refseqs_fp'],
-              run_output_dir,
+              tmp_output_dir,
               params['min_percent_id'],
               params['evalue'],
               rename_command,
@@ -233,10 +234,11 @@ class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
             # Each run ends with moving the output file from the tmp dir to
             # the output_dir. Build the command to perform the move here.
             run_output_dir = join(working_dir,str(i))
+            tmp_output_dir = join(working_dir,str(i),'tmp')
             rename_command, current_result_filepaths = self._get_rename_command(
-                [join(job_prefix,str(i),o) for o in out_filenames],
-                run_output_dir,
-                output_dir)
+                out_filenames,
+                tmp_output_dir,
+                run_output_dir)
             result_filepaths += current_result_filepaths
             
             command = \
@@ -245,7 +247,7 @@ class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
               self._script_name,
               fasta_fp,
               params['refseqs_fp'],
-              run_output_dir,
+              tmp_output_dir,
               params['min_map_quality'],
               rename_command,
               command_suffix)
