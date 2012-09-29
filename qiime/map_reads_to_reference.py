@@ -210,12 +210,6 @@ class BlatNtDatabaseMapper(BlatDatabaseMapper):
 
 class BwaSwDatabaseMapper(DatabaseMapper):
     
-    # From http://samtools.sourceforge.net/SAM1.pdf
-    # -10 log10 Pr{fmapping position is wrong}, rounded to the
-    # nearest integer. A value 255 indicates that the mapping 
-    # quality is not available.
-    MinMapQuality = 3
-    
     def _get_raw_output_fp(self,
                            output_dir,
                            params):
@@ -230,16 +224,15 @@ class BwaSwDatabaseMapper(DatabaseMapper):
         """
         result = {}
         query_id_field = 0
+        flag_field = 1
         subject_id_field = 2
-        map_quality_field = 4
         output_observation_map_f = open(output_observation_map_fp,'w')
         log_f = open(log_fp,'w')
         for e in MinimalSamParser(open(raw_output_fp,'U')):            
             query_id = e[query_id_field]
             subject_id = e[subject_id_field]
-            map_quality = int(e[map_quality_field])
-            if (map_quality >= self.MinMapQuality and\
-                map_quality != 255):
+            flag = int(e[flag_field])
+            if (flag != 4):
                 try:
                     result[subject_id].append(query_id)
                 except KeyError:
@@ -359,32 +352,36 @@ def blat_nt_database_mapper(query_fp,
 def bwa_sw_database_mapper(query_fp,
                         refseqs_fp,
                         output_dir,
-                        min_map_quality,
+                        max_diff,
                         observation_metadata_fp=None,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaSwDatabaseMapper()
-    bwa_db_mapper.MinMapQuality = min_map_quality
+    params = {}
+    if max_diff:
+        params['-n'] = max_diff
     bwa_db_mapper(query_fp,
                   refseqs_fp,
                   output_dir,
-                  params = {},
+                  params = params,
                   observation_metadata_fp=observation_metadata_fp,
                   HALT_EXEC=HALT_EXEC)
 
 def bwa_short_database_mapper(query_fp,
                         refseqs_fp,
                         output_dir,
-                        min_map_quality,
+                        max_diff,
                         observation_metadata_fp=None,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaShortDatabaseMapper()
-    bwa_db_mapper.MinMapQuality = min_map_quality
+    params = {}
+    if max_diff:
+        params['-n'] = max_diff
     bwa_db_mapper(query_fp,
                   refseqs_fp,
                   output_dir,
-                  params = {},
+                  params = params,
                   observation_metadata_fp=observation_metadata_fp,
                   HALT_EXEC=HALT_EXEC)
 

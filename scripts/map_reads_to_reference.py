@@ -78,9 +78,10 @@ script_info['optional_options'] = [
     make_option('-s', '--min_percent_id', type='float', default=0.75,
         help=('Min percent id to consider a match [default: %default]')),
               
-    make_option('-q', '--min_map_quality', type='int', default=3,
-        help=('Min "map quality" to consider a match (applicable for -m bwa)'
-              ' [default: %default]')),
+    make_option('--max_diff', type='float', default=None,
+        help=('maxDiff to consider a match (applicable for -m bwa) -- '
+              'see the aln section of "man bwa" for details '
+              '[default (defined by bwa): 0.04]')),
               
     make_option('--queryalnfract', type='float', default=0.35,
         help=('Min percent of the query seq that must match to consider a match (usearch only) [default: %default]')),
@@ -141,7 +142,7 @@ def main():
         assignment_function(query_fp=input_seqs_filepath,
                                refseqs_fp=refseqs_fp,
                                output_dir=output_dir,
-                               min_map_quality=opts.min_map_quality,
+                               max_diff=opts.max_diff,
                                observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
         

@@ -232,6 +232,10 @@ class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
         # Create lists to store the results
         commands = []
         result_filepaths = []
+        if params['max_diff'] != None:
+            max_diff_str = "--max_diff %s" % params['max_diff']
+        else:
+            max_diff_str = ""
         
         # Iterate over the input files
         for i,fasta_fp in enumerate(fasta_fps):
@@ -246,13 +250,13 @@ class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
             result_filepaths += current_result_filepaths
             
             command = \
-             '%s %s -i %s -r %s -m bwa-short -o %s --min_map_quality %s %s %s' %\
+             '%s %s -i %s -r %s -m bwa-short -o %s %s %s %s' %\
              (command_prefix,
               self._script_name,
               fasta_fp,
               params['refseqs_fp'],
               tmp_output_dir,
-              params['min_map_quality'],
+              max_diff_str,
               rename_command,
               command_suffix)
 

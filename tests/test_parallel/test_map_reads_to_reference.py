@@ -145,7 +145,7 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
     def test_bwa_short_database_mapper(self):
         """bwa_short_database_mapper functions as expected """
         params = {'refseqs_fp':self.refseqs2_fp,
-                  'min_map_quality':3,
+                  'max_diff':None,
                   'observation_metadata_fp':None}
         app = ParallelDatabaseMapperBwaShort()
         r = app(self.inseqs2_fp,
