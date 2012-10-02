@@ -439,13 +439,20 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
         user_ymax=True
     else:
         user_ymax=False
-    
-    all_output_dir = os.path.join(output_dir, 'html_plots')
+
     if not suppress_webpage and output_type=="file_creation":
+        # in this option the path must include the output directory
+        all_output_dir = os.path.join(output_dir, 'html_plots')
+        ave_output_dir = os.path.join(output_dir, 'average_plots')
+
         #Create the directories, where plots and data will be written
         create_dir(all_output_dir)
-    
-    ave_output_dir = os.path.join(output_dir, 'average_plots')
+
+    elif output_type == 'memory':
+        # this is rather an artificial path to work with the javascript code
+        all_output_dir = 'plot/html_plots'
+        ave_output_dir = 'plot/average_plots'
+
     ave_data_file_path=os.path.join(output_dir,'average_tables')
     if output_type=="file_creation":
         create_dir(ave_output_dir)
@@ -783,10 +790,8 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
         plots_html = ['all_plots = {}']
         for elements in all_plots:
             for k,v in elements.items():
-
-                # correct the path so it matches the expected output
-                save_to_path = ''.join(['plot/','/'.join(k.split('/')[1:])])
-                plots_html.append('all_plots["%s"] = "%s"' % (save_to_path, \
+                # the path is compatible with the javascript, see make_averages
+                plots_html.append('all_plots["%s"] = "%s"' % (k, \
                    "data:image/png;base64," + urllib.quote(base64.b64encode(v.buf))))
                    
         #insert the formatted rows into the html string at the bottom of this file 
