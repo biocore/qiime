@@ -783,7 +783,10 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
         plots_html = ['all_plots = {}']
         for elements in all_plots:
             for k,v in elements.items():
-                plots_html.append('all_plots["%s"] = "%s"' % (k, \
+
+                # correct the path so it matches the expected output
+                save_to_path = ''.join(['plot/','/'.join(k.split('/')[1:])])
+                plots_html.append('all_plots["%s"] = "%s"' % (save_to_path, \
                    "data:image/png;base64," + urllib.quote(base64.b64encode(v.buf))))
                    
         #insert the formatted rows into the html string at the bottom of this file 
