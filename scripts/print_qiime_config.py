@@ -693,7 +693,7 @@ class Qiime_config(TestCase):
         """R is in path and version is supported """
         acceptable_version = [(2,12,0),(2,12,0)]
         self.assertTrue(app_path('R'),
-         "usearch not found. This may or may not be a problem depending on "+\
+         "R not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         command = "R --version | grep 'R version' | awk '{print $3}'"
         proc = Popen(command,shell=True,universal_newlines=True,\

@@ -70,6 +70,13 @@ class DatabaseAssignmentTests(TestCase):
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
+        self.inseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='qiime_inseqs',
+                                            suffix='.fasta')
+        inseqs2_f = open(self.inseqs2_fp,'w')
+        inseqs2_f.write(inseqs2)
+        inseqs2_f.close()
+        self.files_to_remove.append(self.inseqs2_fp)
         initiate_timeout(60)
     
     def tearDown(self):
@@ -143,7 +150,7 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
     
     def test_blat_nt_database_mapper(self):
         """blat_nt_database_mapper functions as expected """
-        blat_nt_database_mapper(query_fp=self.inseqs1_fp,
+        blat_nt_database_mapper(query_fp=self.inseqs2_fp,
                                 refseqs_fp=self.refseqs2_fp,
                                 output_dir=self.test_out,
                                 evalue=1e-10,
@@ -157,11 +164,27 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
         self.assertEqual(table.sum(),6)
 
+    def test_blat_nt_database_mapper_alt_min_id(self):
+        """blat_nt_database_mapper functions as expected """
+        blat_nt_database_mapper(query_fp=self.inseqs2_fp,
+                                refseqs_fp=self.refseqs2_fp,
+                                output_dir=self.test_out,
+                                evalue=1e-10,
+                                min_id=1.0,
+                                HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),5)
+
 class BwaShortAssignmentTests(DatabaseAssignmentTests):
     
     def test_bwa_short_database_mapper(self):
         """bwa_short_database_mapper functions as expected """
-        bwa_short_database_mapper(query_fp=self.inseqs1_fp,
+        bwa_short_database_mapper(query_fp=self.inseqs2_fp,
                               refseqs_fp=self.refseqs2_fp,
                               output_dir=self.test_out,
                               max_diff=None,
@@ -174,22 +197,29 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
         self.assertEqual(table.sum(),6)
 
-    # max_diff is currently broken in the BWA app controller, so 
-    # can't change it from the default
-    # def test_bwa_short_database_mapper_alt_params(self):
-    #     """bwa_short_database_mapper functions as expected """
-    #     bwa_short_database_mapper(query_fp=self.inseqs1_fp,
-    #                           refseqs_fp=self.refseqs2_fp,
-    #                           output_dir=self.test_out,
-    #                           max_diff=0.01,
-    #                           HALT_EXEC=False)
-    #     observation_map_fp = join(self.test_out,'observation_map.txt')
-    #     self.assertTrue(exists(observation_map_fp))
-    #     observation_table_fp = join(self.test_out,'observation_table.biom')
-    #     table = parse_biom_table(open(observation_table_fp,'U'))
-    #     self.assertEqualItems(table.SampleIds,['s2','s1'])
-    #     self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
-    #     self.assertEqual(table.sum(),5)
+    def test_bwa_short_database_mapper_alt_params(self):
+        """bwa_short_database_mapper functions as expected """
+        bwa_short_database_mapper(query_fp=self.inseqs2_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              max_diff=1,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),5)
+        # float can also be passed for max_diff
+        bwa_short_database_mapper(query_fp=self.inseqs2_fp,
+                              refseqs_fp=self.refseqs2_fp,
+                              output_dir=self.test_out,
+                              max_diff=0.01,
+                              HALT_EXEC=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
 
 class BwaSwAssignmentTests(DatabaseAssignmentTests):
     
@@ -198,7 +228,6 @@ class BwaSwAssignmentTests(DatabaseAssignmentTests):
         bwa_sw_database_mapper(query_fp=self.inseqs1_fp,
                               refseqs_fp=self.refseqs2_fp,
                               output_dir=self.test_out,
-                              max_diff=None,
                               HALT_EXEC=False)
         observation_map_fp = join(self.test_out,'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
@@ -207,23 +236,6 @@ class BwaSwAssignmentTests(DatabaseAssignmentTests):
         self.assertEqualItems(table.SampleIds,['s2','s1'])
         self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
         self.assertEqual(table.sum(),6)
-
-    # max_diff is currently broken in the BWA app controller, so 
-    # can't change it from the default
-    # def test_bwa_sw_database_mapper_alt_params(self):
-    #     """bwa_sw_database_mapper functions as expected """
-    #     bwa_sw_database_mapper(query_fp=self.inseqs1_fp,
-    #                           refseqs_fp=self.refseqs2_fp,
-    #                           output_dir=self.test_out,
-    #                           min_map_quality=0.01,
-    #                           HALT_EXEC=False)
-    #     observation_map_fp = join(self.test_out,'observation_map.txt')
-    #     self.assertTrue(exists(observation_map_fp))
-    #     observation_table_fp = join(self.test_out,'observation_table.biom')
-    #     table = parse_biom_table(open(observation_table_fp,'U'))
-    #     self.assertEqualItems(table.SampleIds,['s2','s1'])
-    #     self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
-    #     self.assertEqual(table.sum(),5)
 
 
 refseqs1 = """>eco:b0001-pr
@@ -302,6 +314,85 @@ aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 
 inseqs1 = """>s1_1
 atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+ggctga
+>s2_2 some comments...
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgagaa
+>s1_3
+atgaagacgtttttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaataa
+>s1_4
+atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagt
+tacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtcttt
+ctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtc
+tttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagcc
+ctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgc
+aaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc
+>s1_5
+atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+>s1_6 some comments...
+aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
+atcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgac
+aaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcg
+caaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggc
+ggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgat
+atttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataac
+atggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgact
+ctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagact
+tgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacag
+cagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgt
+catggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtg
+gacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccg
+gcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggc
+aacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatc
+gaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggt
+aagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgat
+ttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctg
+ctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctca
+aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
+"""
+
+inseqs2 = """>s1_1
+atgaaacgcattagcaccaccattaccaccattatcaccattaccacaggtaacggtgcg
 ggctga
 >s2_2 some comments...
 atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa

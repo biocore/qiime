@@ -270,15 +270,16 @@ class BwaShortDatabaseMapper(BwaSwDatabaseMapper):
                                       temp_dir,
                                       params,
                                       HALT_EXEC):
-        aln_params = {'-f': splitext(raw_output_fp)[0] + '.sai'}
-        _params = {'algorithm': 'bwa-short', 
-                   'aln_params': aln_params}
-        _params.update(params)
+        _aln_params = {'-f': splitext(raw_output_fp)[0] + '.sai'}
+        if 'aln_params' in params:
+            _aln_params.update(params['aln_params'])
+        params['algorithm'] = 'bwa-short' 
+        params['aln_params'] = _aln_params
         bwa_assign_dna_reads_to_dna_database(
                  query_fasta_fp=query_fasta_fp,
                  database_fasta_fp=database_fasta_fp,
                  out_fp=raw_output_fp,
-                 params=_params)
+                 params=params)
 
 
 def usearch_database_mapper(query_fp,
@@ -352,14 +353,11 @@ def blat_nt_database_mapper(query_fp,
 def bwa_sw_database_mapper(query_fp,
                         refseqs_fp,
                         output_dir,
-                        max_diff,
                         observation_metadata_fp=None,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaSwDatabaseMapper()
     params = {}
-    if max_diff:
-        params['-n'] = max_diff
     bwa_db_mapper(query_fp,
                   refseqs_fp,
                   output_dir,
@@ -375,9 +373,10 @@ def bwa_short_database_mapper(query_fp,
                         HALT_EXEC=False):
     
     bwa_db_mapper = BwaShortDatabaseMapper()
-    params = {}
-    if max_diff:
-        params['-n'] = max_diff
+    if max_diff != None:
+        params = {'aln_params':{'-n':max_diff}}
+    else:
+        params = {}
     bwa_db_mapper(query_fp,
                   refseqs_fp,
                   output_dir,

@@ -79,7 +79,7 @@ script_info['optional_options'] = [
         help=('Min percent id to consider a match [default: %default]')),
               
     make_option('--max_diff', type='float', default=None,
-        help=('maxDiff to consider a match (applicable for -m bwa) -- '
+        help=('maxDiff to consider a match (applicable for -m bwa-short) -- '
               'see the aln section of "man bwa" for details '
               '[default (defined by bwa): 0.04]')),
               
@@ -138,13 +138,24 @@ def main():
                                min_id=opts.min_percent_id,
                                observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
-    elif assignment_method == 'bwa-sw' or assignment_method == 'bwa-short':
+    elif assignment_method == 'bwa-sw':
         assignment_function(query_fp=input_seqs_filepath,
                                refseqs_fp=refseqs_fp,
                                output_dir=output_dir,
-                               max_diff=opts.max_diff,
                                observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
+    elif assignment_method == 'bwa-short':
+        # cast max_diff to an int if it's being passed as an int
+        if opts.max_diff != None and opts.max_diff > 1.0:
+            max_diff = int(opts.max_diff)
+        else:
+            max_diff = opts.max_diff
+        assignment_function(query_fp=input_seqs_filepath,
+                               refseqs_fp=refseqs_fp,
+                               output_dir=output_dir,
+                               max_diff=max_diff,
+                               observation_metadata_fp=opts.observation_metadata_fp,
+                               HALT_EXEC=True)
         
     else:
         ## other -- shouldn't be able to get here as a KeyError would have

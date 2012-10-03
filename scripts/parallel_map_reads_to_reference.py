@@ -113,6 +113,9 @@ def main():
                         poll_directly=opts.poll_directly,
                         suppress_submit_jobs=False)
     elif opts.assignment_method == 'bwa-short':
+        # cast max_diff to an int if it's being passed as an int
+        if params['max_diff'] != None and params['max_diff'] > 1.0:
+            params['max_diff'] = int(params['max_diff'])
         parallel_runner = ParallelDatabaseMapperBwaShort(
                                             cluster_jobs_fp=opts.cluster_jobs_fp,
                                             jobs_to_start=opts.jobs_to_start,

@@ -161,6 +161,25 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         self.assertEqualItems(table.ObservationIds,['r1','r2','r3','r4','r5'])
         self.assertEqual(table.sum(),6)
 
+    def test_bwa_short_database_mapper_alt_params(self):
+        """bwa_short_database_mapper functions as expected """
+        params = {'refseqs_fp':self.refseqs2_fp,
+                  'max_diff':1,
+                  'observation_metadata_fp':None}
+        app = ParallelDatabaseMapperBwaShort()
+        r = app(self.inseqs2_fp,
+                self.test_out,
+                params,
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        observation_map_fp = join(self.test_out,'observation_map.txt')
+        self.assertTrue(exists(observation_map_fp))
+        observation_table_fp = join(self.test_out,'observation_table.biom')
+        table = parse_biom_table(open(observation_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['s2','s1'])
+        self.assertEqualItems(table.ObservationIds,['r2','r3','r4','r5'])
+        self.assertEqual(table.sum(),5)
+
 refseqs1 = """>eco:b0001-pr
 MKRISTTITTTITITTGNGAG
 >eco:b0015-pr dnaJ
@@ -288,7 +307,7 @@ aagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa
 """
 
 inseqs2 = """>s1_1
-atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
+atgttacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
 ggctga
 >s2_2 some comments...
 atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaa
