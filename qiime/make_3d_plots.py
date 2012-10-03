@@ -324,8 +324,7 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
                                                     ids, add_vectors['vectors_algorithm'], \
                                                     add_vectors['vectors_axes'], custom_axes, \
                                                     weight=add_vectors['weight_by_vector'], \
-                                                    weighting_vector=weighting_vector,
-                                                    group_name = group_name)
+                                                    weighting_vector=weighting_vector)
                 except TypeError:
                     continue
 
