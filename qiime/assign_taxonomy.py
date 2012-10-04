@@ -20,7 +20,6 @@ from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
 from cogent import LoadSeqs, DNA
-from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app import rdp_classifier
@@ -381,14 +380,6 @@ class RdpTaxonAssigner(TaxonAssigner):
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
 
-    @property
-    def _assign_fcn(self):
-        return rdp_classifier.assign_taxonomy
-
-    @property
-    def _train_fcn(self):
-        return rdp_classifier.train_rdp_classifier_and_assign_taxonomy
-
     def __call__(self, seq_path, result_path=None, log_path=None):
         """Returns dict mapping {seq_id:(taxonomy, confidence)} for
         each seq.
@@ -399,7 +390,7 @@ class RdpTaxonAssigner(TaxonAssigner):
             result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
         """
-
+        tmp_dir = get_qiime_temp_dir()
         min_conf = self.Params['Confidence']
         training_data_properties_fp = self.Params['training_data_properties_fp']
         reference_sequences_fp = self.Params['reference_sequences_fp']
@@ -410,11 +401,11 @@ class RdpTaxonAssigner(TaxonAssigner):
         if reference_sequences_fp and id_to_taxonomy_fp:
             # Train and assign taxonomy
             taxonomy_file, training_seqs_file = self._generate_training_files()
-            results = self._train_fcn(
+            results = rdp_classifier.train_rdp_classifier_and_assign_taxonomy(
                 training_seqs_file, taxonomy_file, seq_file,
                 min_confidence=min_conf,
                 classification_output_fp=result_path,
-                max_memory=max_memory)
+                max_memory=max_memory, tmp_dir=tmp_dir)
 
 
             if result_path is None:
@@ -427,10 +418,10 @@ class RdpTaxonAssigner(TaxonAssigner):
                 fix_ranks = False
             else:
                 fix_ranks = True
-            results = self._assign_fcn(
+            results = rdp_classifier.assign_taxonomy(
                 seq_file, min_confidence=min_conf, output_fp=result_path,
                 training_data_fp=training_data_properties_fp,
-                max_memory=max_memory, fixrank=fix_ranks)
+                max_memory=max_memory, fixrank=fix_ranks, tmp_dir=tmp_dir)
 
         if log_path:
             self.writeLog(log_path)
@@ -441,6 +432,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         """Returns a tuple of file objects suitable for passing to the
         RdpTrainer application controller.
         """
+        tmp_dir = get_qiime_temp_dir()
         training_set = RdpTrainingSet()
         reference_seqs_file = open(self.Params['reference_sequences_fp'], 'U')
         id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'U')
@@ -455,12 +447,13 @@ class RdpTaxonAssigner(TaxonAssigner):
         training_set.dereplicate_taxa()
 
         rdp_taxonomy_file = NamedTemporaryFile(
-            prefix='RdpTaxonAssigner_taxonomy_', suffix='.txt')
+            prefix='RdpTaxonAssigner_taxonomy_', suffix='.txt', dir=tmp_dir)
         rdp_taxonomy_file.write(training_set.get_rdp_taxonomy())
         rdp_taxonomy_file.seek(0)
 
         rdp_training_seqs_file = NamedTemporaryFile(
-            prefix='RdpTaxonAssigner_training_seqs_', suffix='.fasta')
+            prefix='RdpTaxonAssigner_training_seqs_', suffix='.fasta',
+            dir=tmp_dir)
         for rdp_id, seq in training_set.get_training_seqs():
             rdp_training_seqs_file.write('>%s\n%s\n' % (rdp_id, seq))
         rdp_training_seqs_file.seek(0)
