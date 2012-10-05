@@ -22,7 +22,7 @@ from cStringIO import StringIO
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.app import rdp_classifier
+from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
 from qiime.pycogent_backports import mothur
 from cogent.parse.fasta import MinimalFastaParser
