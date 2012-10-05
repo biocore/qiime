@@ -474,6 +474,8 @@ class RdpTrainingSet(object):
         self.sequences[seq_id] = seq
 
     def add_lineage(self, seq_id, lineage_str):
+        for char, escape_str in _QIIME_RDP_ESCAPES:
+            lineage_str = re.sub(char, escape_str, lineage_str)
         lineage = self._parse_lineage(lineage_str)
         seq_node = self._tree.insert_lineage(lineage)
         self.sequence_nodes[seq_id] = seq_node
@@ -525,17 +527,21 @@ class RdpTrainingSet(object):
         # Ultimate hack to replace mangled taxa names
         temp_results = StringIO()
         for line in open(result_path):
-            untagged_line = re.sub(
+            line = re.sub(
                 _QIIME_RDP_TAXON_TAG + "[^;\n\t]*", '', line)
-            temp_results.write(untagged_line)
+            for char, escape_str in _QIIME_RDP_ESCAPES:
+                line = re.sub(escape_str, char, line)
+            temp_results.write(line)
         open(result_path, 'w').write(temp_results.getvalue())
 
     def fix_results(self, results_dict):
         for seq_id, assignment in results_dict.iteritems():
             lineage, confidence = assignment
-            revised_lineage = re.sub(
+            lineage = re.sub(
                 _QIIME_RDP_TAXON_TAG + "[^;\n\t]*", '', lineage)
-            results_dict[seq_id] = (revised_lineage, confidence)
+            for char, escape_str in _QIIME_RDP_ESCAPES:
+                lineage = re.sub(escape_str, char, lineage)
+            results_dict[seq_id] = (lineage, confidence)
         return results_dict
 
 
@@ -633,6 +639,11 @@ class RdpTree(object):
 
 
 _QIIME_RDP_TAXON_TAG = "_qiime_unique_taxon_tag_"
+_QIIME_RDP_ESCAPES = [
+    ("&", "_qiime_ampersand_escape_"),
+    (">", "_qiime_greaterthan_escape_"),
+    ("<", "_qiime_lessthan_escape_"),
+    ]
 
 
 class RtaxTaxonAssigner(TaxonAssigner):

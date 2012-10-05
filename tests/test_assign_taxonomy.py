@@ -666,6 +666,27 @@ class RdpTaxonAssignerTests(TestCase):
         key = 'X67228 some description'
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
+    def test_taxa_with_special_characters(self):
+        """Special characters in taxa do not cause RDP errors
+        """
+        taxonomy_fp = get_tmp_filename()
+        f = open(taxonomy_fp, "w")
+        f.write(rdp_id_to_taxonomy_special_chars)
+        f.close()
+        self._paths_to_clean_up.append(taxonomy_fp)
+
+        app = RdpTaxonAssigner({
+                'id_to_taxonomy_fp': taxonomy_fp,
+                'reference_sequences_fp': self.reference_seqs_file.name,
+                })
+        res = app(self.tmp_seq_filepath)
+        obs_lineage, obs_confidence = res['X67228 some description']
+
+        self.assertEqual(obs_lineage, (
+            "Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales<What;"
+            "Rhizobiaceae&Huh?;Rhizobium"))
+        self.assertEqual(obs_confidence, 1.0)
+
     def test_train_on_the_fly_low_memory(self):
         """Training on-the-fly with lower heap size classifies reference sequence correctly with 100% certainty
         """
@@ -920,10 +941,12 @@ class RdpTrainingSetTests(TestCase):
         self.assertEqual(obs, self.untagged_str)
 
     def test_fix_results(self):
+        tagged_lineage = self.tagged_str[4:]
+        untagged_lineage = self.untagged_str[4:]
+        
         s = RdpTrainingSet()
-        results = {'a1': (self.tagged_str, 1.00)}
-        obs = s.fix_results({'a1': (self.tagged_str, 1.00)})
-        self.assertEqual(obs, {'a1': (self.untagged_str, 1.00)})
+        obs = s.fix_results({'a1': (tagged_lineage, 1.00)})
+        self.assertEqual(obs, {'a1': (untagged_lineage, 1.00)})
 
 
 class RdpTreeTests(TestCase):
@@ -1029,6 +1052,16 @@ xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria2;Pseudomonadales;Pseudomonada
 AB004748	Bacteria;Proteobacteria;Gammaproteobacteria2;Enterobacteriales;Enterobacteriaceae;Enterobacter
 AB000278	Bacteria;Proteobacteria;Gammaproteobacteria2;Vibrionales;Vibrionaceae;Photobacterium
 AB000390	Bacteria;Proteobacteria;Gammaproteobacteria2;Vibrionales;Vibrionaceae;Vibrio
+"""
+
+rdp_id_to_taxonomy_special_chars = \
+"""X67228	Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales<What;Rhizobiaceae&Huh?;Rhizobium
+X73443	Bacteria;Firmicutes;Clostridia2;Clostridiales;Clostridiaceae;Clostridium
+AB004750	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria2;Pseudomonadales;Pseudomonadaceae;Pseudomonas
+AB004748	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+AB000278	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Photobacterium
+AB000390	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Vibrio
 """
 
 rdp_reference_seqs = \
