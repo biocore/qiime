@@ -1,9 +1,10 @@
-# Runs vegan function capscale (DB-RDA) on QIIME distance matrix
+# Runs vegan function capscale (db-RDA) on QIIME distance matrix
 # usage:
-# R --slave --args --source_dir $QIIME_HOME/qiime/support_files/R/ -d unifrac.txt -m Fasting_Map.txt -c Treatment -o rda < rda.r
+# R --slave --args --source_dir $QIIME_HOME/qiime/support_files/R/ -d
+# unifrac.txt -m Fasting_Map.txt -c Treatment -o dbrda < dbrda.r
 #
 # print help string:
-# R --slave --args -h --source_dir $QIIME_HOME/qiime/support_files/R/ < rda.r
+# R --slave --args -h --source_dir $QIIME_HOME/qiime/support_files/R/ < dbrda.r
 #
 # Requires command-line param --source_dir pointing to QIIME R source dir
 
@@ -28,6 +29,8 @@ option_list <- list(
         help="Input metadata mapping file [required]."),
     make_option(c("-c", "--category"), type="character",
         help="Metadata column header giving cluster IDs [required]"),
+    make_option(c("-n", "--num_permutations"), type="integer", default=999,
+        help="Number of permutations [default %default]."),
     make_option(c("-o", "--outdir"), type="character", default='.',
         help="Output directory [default %default]")
 )
@@ -52,15 +55,22 @@ if (nrow(qiime.data$map) == 0)
 if (!is.element(opts$category, colnames(qiime.data$map)))
     stop(sprintf('\n\nHeader %s not found in mapping file.\n\n', opts$category))
 
-# Run DB-RDA and create a plot of the results.
+# Run db-RDA and create a plot of the results.
 factor = as.factor((qiime.data$map[[opts$category]]))
 factors.frame <- data.frame(factor)
 capscale.results <- capscale(as.dist(qiime.data$distmat) ~ factor, factors.frame)
-capscale.results.filepath <- sprintf('%s/rda_results.txt', opts$outdir)
+
+# Perform significance test.
+sig.test.results <- permutest(capscale.results,
+                              permutations=opts$num_permutations)
+
+# Write out results files.
+capscale.results.filepath <- sprintf('%s/dbrda_results.txt', opts$outdir)
 sink(capscale.results.filepath)
 print(capscale.results)
+print(sig.test.results)
 sink(NULL)
 
-plot.filepath <- sprintf('%s/rda_plot.pdf', opts$outdir)
+plot.filepath <- sprintf('%s/dbrda_plot.pdf', opts$outdir)
 pdf(plot.filepath)
 plot(capscale.results, display=c("wa", "bp"))

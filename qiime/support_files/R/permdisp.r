@@ -1,9 +1,9 @@
 # Runs vegan function betadisper on QIIME distance matrix
 # usage:
-# R --slave --args --source_dir $QIIME_HOME/qiime/support_files/R/ -d unifrac.txt -m Fasting_Map.txt -c Treatment -o betadisper < betadisper.r
+# R --slave --args --source_dir $QIIME_HOME/qiime/support_files/R/ -d unifrac.txt -m Fasting_Map.txt -c Treatment -o permdisp < permdisp.r
 #
 # print help string:
-# R --slave --args -h --source_dir $QIIME_HOME/qiime/support_files/R/ < betadisper.r
+# R --slave --args -h --source_dir $QIIME_HOME/qiime/support_files/R/ < permdisp.r
 #
 # Requires command-line param --source_dir pointing to QIIME R source dir
 
@@ -28,6 +28,8 @@ option_list <- list(
         help="Input metadata mapping file [required]."),
     make_option(c("-c", "--category"), type="character",
         help="Metadata column header giving cluster IDs [required]."),
+    make_option(c("-n", "--num_permutations"), type="integer", default=999,
+        help="Number of permutations [default %default]."),
     make_option(c("-o", "--outdir"), type="character", default='.',
         help="Output directory [default %default]")
 )
@@ -46,17 +48,18 @@ map <- load.qiime.mapping.file(opts$mapfile)
 distmat <- load.qiime.distance.matrix(opts$distmat)
 qiime.data <- remove.nonoverlapping.samples(map=map, distmat=distmat)
 
-# run betadisper
+# Run betadisper.
 mod <- betadisper(as.dist(qiime.data$distmat), qiime.data$map[[opts$category]])
 
-# Perform test
+# Perform parametric test.
 results1 <- anova(mod)
 
-# Permutation test for F
-results2 <- permutest(mod, pairwise = TRUE)
+# Perform nonparametric test.
+results2 <- permutest(mod, pairwise=TRUE,
+                      control=permControl(nperm=opts$num_permutations))
 
 # write output file
-filepath <- sprintf('%s/betadisper_results.txt',opts$outdir)
+filepath <- sprintf('%s/permdisp_results.txt',opts$outdir)
 sink(filepath)
 print(results1)
 print(results2)
