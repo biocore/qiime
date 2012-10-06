@@ -29,7 +29,7 @@ Because this tutorial can take a long time to run, we provide the output from al
 Reference databases
 -------------------
 
-A key step in assigning reads is deciding on a reference database, and this is an active area of research. Several choices are IMG, KEGG, and M5nr. To use one of these databases with QIIME, you'll need a single fasta file with all sequence records. If you'd like to associate metadata with these records you'll also need an observation metadata file. In this tutorial we work with the IMG database and EC codes associated with all records. You can download that file from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_ (see IMG reference protein sequences).
+A key step in assigning reads is deciding on a reference database, and this is an active area of research. Several choices are IMG, KEGG, and M5nr. To use one of these databases with QIIME, you'll need a single fasta file with all sequence records. If you'd like to associate metadata with these records you'll also need an observation metadata file. In this tutorial we work with the IMG database and KEGG ortholog (KO) codes associated with all records. You can download that file from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_ (see IMG reference protein sequences).
 
 Defining environment variables for use in this tutorial
 -------------------------------------------------------
@@ -37,7 +37,7 @@ Defining environment variables for use in this tutorial
 Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this::
 
 	export reference_seqs /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_aa_seqs.faa
-	export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ec.txt
+	export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ko_pathway.txt
 
 Assigning nucleotide reads to protein reference sequences
 ---------------------------------------------------------
@@ -75,17 +75,17 @@ Collapsing functions for computation of beta diversity
 
 One thing that can be useful in comparing samples is to collapse genes by their metadata categories so, for example, all counts of genes in the same level 3 EC category are collapsed to a single category, and then compute beta diversity. This gives a coarser view of the data by collapsing related genes to observations of functions (rather than observations of specific genes). This can be achieved with the following steps::
 
-	summarize_taxa.py -i blat_mapped/observation_table.biom -o blat_mapped/ec_tables/ -L 2,3,4 -a
-	convert_biom.py -i blat_mapped/ec_tables/observation_table_L3.txt -o blat_mapped/ec_tables/observation_table_L3.biom --biom_table_type "function table"
-	beta_diversity_through_plots.py -i blat_mapped/ec_tables/observation_table_L3.biom -e 2159 -o blat_mapped/bdiv_l3_even2159/ -p shotgun_bdiv_params.txt -m map.txt
+	summarize_taxa.py -i blat_mapped/observation_table.biom -o blat_mapped/ko_tables/ -L 2,3,4 -a
+	convert_biom.py -i blat_mapped/ko_tables/observation_table_L3.txt -o blat_mapped/ko_tables/observation_table_L3.biom --biom_table_type "function table"
+	beta_diversity_through_plots.py -i blat_mapped/ko_tables/observation_table_L3.biom -e 2159 -o blat_mapped/bdiv_l3_even2159/ -p shotgun_bdiv_params.txt -m map.txt
 
-Generating summaries of samples by EC category
+Generating summaries of samples by KO category
 ----------------------------------------------
 
-Finally, you may want to generate summaries of the samples based on their EC composition. We first sort the BIOM table so samples will be ordered by the ``Layer`` metadata field (corresponding to depth in the microbial mat). We can then generate area and box plots showing the Level 2, 3, and 4 composition of each metagenome::
+Finally, you may want to generate summaries of the samples based on their KO composition. We first sort the BIOM table so samples will be ordered by the ``Layer`` metadata field (corresponding to depth in the microbial mat). We can then generate area and box plots showing the Level 2, 3, and 4 composition of each metagenome::
 
 	sort_otu_table.py -i blat_mapped/observation_table.biom -o blat_mapped/observation_table.Layer_sorted.biom -m map.txt -s Layer
-	summarize_taxa_through_plots.py -i blat_mapped/observation_table.Layer_sorted.biom -o blat_mapped/ec_summary_plots
+	summarize_taxa_through_plots.py -i blat_mapped/observation_table.Layer_sorted.biom -o blat_mapped/ko_summary_plots
 
 .. image:: ../images/shotgun_analysis_gn_ec_summary.png
 	:height: 400 px
@@ -93,7 +93,7 @@ Finally, you may want to generate summaries of the samples based on their EC com
 .. image:: ../images/shotgun_analysis_gn_ec_summary_legend.png
 	:height: 400 px
 
-Above is an summary of EC by layer, collapsed at EC Level 2. 
+Above is an summary of EC by layer (which could be achieved by running ``export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ko_pathway.txt`` prior to the ``map_reads_to_reference.py`` step of this tutorial), collapsed at EC Level 2. 
 
 =====
 Notes
@@ -117,4 +117,4 @@ The following articles describe to the data used in this tutorial:
 
 Ley RE, Harris JK, Wilcox J, Spear JR, Miller SR, Bebout BM et al. (2006). Unexpected diversity and complexity of the Guerrero Negro hypersaline microbial mat. Appl Environ Microbio 72: 3685–3695.
 
-Harris JK, Caporaso JG, Walker JJ, Spear JR, Gold NJ, Robertson CE, Hugenholtz, P, et al. (2012). Phylogenetic stratigraphy in the Guerrero Negro hypersaline microbial mat. The ISME Journal, 1–11. doi:10.1038/ismej.
+Harris JK, Caporaso JG, Walker JJ, Spear JR, Gold NJ, Robertson CE, Hugenholtz, P, et al. (2012). Phylogenetic stratigraphy in the Guerrero Negro hypersaline microbial mat. The ISME Journal, doi:10.1038/ismej.

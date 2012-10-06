@@ -417,8 +417,20 @@ def taxa_split(taxa_string):
     return [t.strip() for t in taxa_string.split(';')]
     
 def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score'],process_fs=[taxa_split,float]):
-    """ """
+    """ Return a dict mapping otu identifier to dict of otu metadata
+    
+         lines: file handle or list of lines - format should be:
+          otu_id <tab> metadata entry 1 <tab> metadata entry 2 <tab> ...
+         labels: list of lables for metadata entrys to be used in the 
+          internal dicts. each internal dict will have only as many entries 
+          as there are labels (extra metadata entries in the input file 
+          will be ignored)
+         process_fs: functions which are applied to each metadata entry - 
+          if there are more process_fs than labels, the additional ones 
+          will be ignored
+    """
     result = {}
+    
     for line in lines:
         line = line.strip()
         fields = line.split('\t')
@@ -426,16 +438,13 @@ def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score'],process_fs=
         result[id_] = {}
         for i,field in enumerate(fields[1:]):
             try:
-                value = process_fs[i](field)
-            except IndexError:
-                raise ValueError, "Too few process functions provided (n=%d), or too many metadata entries for OTU %s."\
-                  % (len(process_fs),id_)
-            try:
                 label = labels[i]
             except IndexError:
-                raise ValueError, "Too few labels provided (n=%d), or too many metadata entries for OTU %s."\
-                  % (len(labels),id_)
-            
+                continue
+            try:
+                value = process_fs[i](field)
+            except IndexError:
+                raise ValueError, "Too few process functions provided (n=%d)." % len(process_fs)
             result[id_][label] = value
     return result
 

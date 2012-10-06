@@ -715,10 +715,27 @@ eigvals\t4.94\t1.79\t1.50
  '338':{'something':1.990}}
         self.assertEqual(actual,expected)
 
-
+    def test_parse_taxonomy_to_otu_metadata_extra_fields_ignored(self):
+        """parsing of taxonomy file to otu metadata format functions as expected
+        """
+        example_tax = \
+"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes	some text
+353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
+13	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
+338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
+        expected = {'412':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales']},
+                    '319':{'taxonomy':['Root','Bacteria','Bacteroidetes']},
+                    '353':{'taxonomy':['Root','Bacteria','Bacteroidetes']},
+                    '17':{'taxonomy':['Root','Bacteria','Bacteroidetes']},
+                    '13':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales']},
+                    '338':{'taxonomy':['Root','Bacteria']}}
+        actual = parse_taxonomy_to_otu_metadata(example_tax.split('\n'),labels=['taxonomy'])
+        self.assertEqual(actual,expected)
 
     def test_parse_taxonomy_to_otu_metadata_invalid_input(self):
-        """parsing of taxonomy file to otu metadata format functions as expected
+        """parsing of taxonomy file to otu metadata format fails when too few functions
         """
         example_tax = \
 """412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
@@ -726,8 +743,8 @@ eigvals\t4.94\t1.79\t1.50
 353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
-338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields raise error"""
-        self.assertRaises(ValueError,parse_taxonomy_to_otu_metadata,example_tax.split('\n'))
+338 PC.593_1314	Root;Bacteria	0.990"""
+        self.assertRaises(ValueError,parse_taxonomy_to_otu_metadata,example_tax.split('\n'),labels=['taxonomy','score'],process_fs=[str])
  
     def test_parse_qiime_config_files(self):
         """ parse_qiime_config_files functions as expected """

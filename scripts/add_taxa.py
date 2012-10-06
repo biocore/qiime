@@ -40,8 +40,8 @@ script_info['required_options']=[\
 ]
 
 script_info['optional_options']=[
-    make_option('-l','--labels',type='string',default='taxonomy,score',
-                help='labels to be assigned to metadata in taxonomy_fp'),
+    make_option('-l','--labels',type='string',default='taxonomy',
+                help='labels to be assigned to metadata in taxonomy_fp (if there are more fields in the taxonomy_fp than listed here, the additional fields in the taxonomy_fp will be ignored) [default:%default]'),
     make_option('--all_strings',action='store_true',default=False,
                 help='treat all metadata as strings, rather than casting to lists/floats (useful with --labels for adding arbitrary observation metadata) [default:%default]')]
 script_info['version'] = __version__
