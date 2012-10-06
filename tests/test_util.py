@@ -2116,7 +2116,7 @@ class RExecutorTests(TestCase):
 
         mkdir(join(output_dir, 'rex_test'))
         rex = RExecutor()
-        results = rex(args, "betadisper.r", output_dir)
+        results = rex(args, "permdisp.r", output_dir)
 
         self.files_to_remove.append(join(self.TmpDir,'R.stdout'))
         self.files_to_remove.append(join(self.TmpDir,'R.stderr'))
