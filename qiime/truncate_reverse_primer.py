@@ -24,11 +24,13 @@ def get_rev_primer_seqs(mapping_fp):
     mapping_fp:  mapping filepath
     """
     hds, mapping_data, run_description, errors, warnings = \
-        process_id_map(mapping_fp)
+        process_id_map(mapping_fp, disable_primer_check=True)
         
     if errors:
-        raise ValueError,('Errors were found with mapping file, '+\
-         'please run check_id_map.py to identify problems.')
+        for curr_err in errors:
+            if curr_err.startswith("Duplicate SampleID"):
+                raise ValueError,('Errors were found with mapping file, '+\
+                 'please run check_id_map.py to identify problems.')
          
     # create dict of dicts with SampleID:{each header:mapping data}
     
@@ -43,7 +45,6 @@ def get_rev_primer_seqs(mapping_fp):
             id_map[curr_data[0]][hds[header]] = curr_data[header]
     
     reverse_primers = {}
-
     
     for curr_id in id_map.keys():
         try:
@@ -57,8 +58,8 @@ def get_rev_primer_seqs(mapping_fp):
              
     # Check for valid reverse primers
     # Will have been detected as warnings from mapping file
-    for curr_warning in warnings:
-        if curr_warning.startswith("reverse primer"):
+    for curr_err in errors:
+        if curr_err.startswith("Invalid DNA sequence detected"):
             raise ValueError,("Problems found with reverse primers, please "+\
              "check mapping file with check_id_map.py")
     

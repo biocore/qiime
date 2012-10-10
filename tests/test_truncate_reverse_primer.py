@@ -307,7 +307,7 @@ sample_mapping_file1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatme
 "#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009)."						
 PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	CTGAGAG,CYGAGAA	Control_mouse_I.D._354
 PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	CGGAGAG	Control_mouse_I.D._481
-PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._634
+PC.634	ACAGAGTCGGCT	&&&YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._634
 PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._635
 PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	CTGAGAG	Fasting_mouse_I.D._636"""
 
