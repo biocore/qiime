@@ -33,9 +33,9 @@ Defining reference filepaths with environment variables
 
 Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
 
-	export reference_seqs /home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
-	export reference_tree /home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
-	export reference_tax /home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+	export reference_seqs=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+	export reference_tree=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
+	export reference_tax=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
 
 
 Demultiplexing and quality filtering
@@ -114,7 +114,7 @@ You may alternatively be interesting in a taxonomic summary of your samples coll
 As before, be can view either bar charts or area charts by opening the corresponding file.
 
 Comparing microbial communities: alpha diversity
-----------------------------------
+-------------------------------------------------
 
 Alpha rarefaction plots are a useful way to compare the relative alpha diversities across samples, and also to determine if we are approaching complete coverage of our microbial communities. We can generate alpha rarefaction plots with QIIME as follows (*will run for over 10 minutes*)::
 
