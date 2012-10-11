@@ -97,6 +97,8 @@ Now that we have an OTU table, and we're working with a reference phylogenetic t
 
 The parameters used are described as follows: we're passing our OTU table as ``-i``, our metadata mapping file as ``-m``, our phylogenetic tree as ``-t``, the output directory as ``-o`` and last, ``-e`` to specify an even sampling depth that we want to apply in this analysis. The sampling depth is extremely important: in order to accurately compare our microbial communities with UniFrac, each sample must have the same number of sequences otherwise we may see samples cluster by their depth of sequencing coverage, which is not representative of the biology of the samples, but rather a technical artifact. ``-e 258`` tells QIIME to randomly subsample each of the samples in the OTU table to exactly 258 sequences per sample, without replacement.
 
+ .. warning:: If you're working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you'll need to download the whole directory for the plots to be viewable. You can zip this directory (``tar -czf bdiv_even258.tgz bdiv_even258``) and then `download it using Cyberduck <./working_with_aws.html#working-with-cyberduck>`_ or `via the command line <http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools>`_. 
+
 
 Generating taxonomic summaries of microbial communities
 -------------------------------------------------------
@@ -113,14 +115,20 @@ You may alternatively be interesting in a taxonomic summary of your samples coll
 
 As before, be can view either bar charts or area charts by opening the corresponding file.
 
+ .. warning:: If you're working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you'll need to download the whole directory for the plots to be viewable. You can zip this directory (``tar -czf taxa_summaries.tgz taxa_summaries``) and then `download it using Cyberduck <./working_with_aws.html#working-with-cyberduck>`_ or `via the command line <http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools>`_. 
+
 Comparing microbial communities: alpha diversity
 -------------------------------------------------
+
+**WARNING: This step can be require approximately 20 minutes to run.**
 
 Alpha rarefaction plots are a useful way to compare the relative alpha diversities across samples, and also to determine if we are approaching complete coverage of our microbial communities. We can generate alpha rarefaction plots with QIIME as follows (*will run for over 10 minutes*)::
 
 	alpha_rarefaction.py -o arare_max258/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -t $reference_tree -e 258
 
 Notice that we again pass ``-e 258`` here. In this case, this specifies the maximum rarefaction depth: in general you want to choose the same value as specified for the even sampling depth to `beta_diversity_through_plots.py` if you are interested in looking at alpha diversity and rarefaction by metadata category.
+
+ .. warning:: If you're working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you'll need to download the whole directory for the plots to be viewable. You can zip this directory (``tar -czf arare_max258.tgz arare_max258``) and then `download it using Cyberduck <./working_with_aws.html#working-with-cyberduck>`_ or `via the command line <http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools>`_. 
 
 Next steps
 ----------
@@ -138,6 +146,9 @@ We're in the process of modifying the `Procrustes analysis tutorial <procrustes_
 	transform_coordinate_matrices.py -i bdiv_even258/unweighted_unifrac_pc.txt,./454_ucrC/bdiv_even135/unweighted_unifrac_pc.txt -s ./procrustes_sid_map.txt -r 100 -o ./454_v_illumina/
 	compare_3d_plots.py -i ./454_v_illumina/pc1_transformed.txt,./454_v_illumina/pc2_transformed.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
 
+
+
+.. warning:: If you're working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you'll need to download the whole directory for the plots to be viewable. You can zip this directory (``tar -czf 454_v_illumina.tgz 454_v_illumina``) and then `download it using Cyberduck <./working_with_aws.html#working-with-cyberduck>`_ or `via the command line <http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools>`_. 
 
 
 
