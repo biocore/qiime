@@ -24,7 +24,8 @@ def get_rev_primer_seqs(mapping_fp):
     mapping_fp:  mapping filepath
     """
     hds, mapping_data, run_description, errors, warnings = \
-        process_id_map(mapping_fp, disable_primer_check=True)
+        process_id_map(mapping_fp, has_barcodes=False,
+         disable_primer_check=True)
         
     if errors:
         for curr_err in errors:
