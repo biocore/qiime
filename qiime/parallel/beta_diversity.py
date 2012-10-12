@@ -37,6 +37,11 @@ class ParallelBetaDiversity(ParallelWrapper):
 
 class ParallelBetaDiversitySingle(ParallelBetaDiversity):
 
+    def _identify_files_to_remove(self,job_result_filepaths,params):
+        """ The output of the individual jobs are the files we want to keep
+        """
+        return job_result_filepaths
+
     def _write_merge_map_file(self,
                               input_file_basename,
                               job_result_filepaths,
@@ -97,6 +102,7 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
             create_dir(working_dir_i)
             output_dir_i = join(output_dir, str(i))
             create_dir(output_dir_i)
+            result_filepaths.append(output_dir_i)
             input_dir, input_fn = split(input_fp)
             input_basename, input_ext = splitext(input_fn)
             sample_id_desc = sample_id_group.replace(',','_')
@@ -194,7 +200,6 @@ class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
                             command_suffix='; exit'):
         """Generate command to initiate a poller to monitior/process completed runs
         """
-    
         result = '%s poller.py -f %s -m %s -d %s -t %d -p %s %s' % \
          (command_prefix,
           expected_files_filepath,
