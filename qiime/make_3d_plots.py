@@ -16,7 +16,7 @@ from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
 from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std, concatenate, ones
+from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std, concatenate, ones, append, zeros
 from numpy import abs as numpy_abs
 from numpy.linalg import norm
 import numpy as np
@@ -320,11 +320,12 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
                     weighting_vector = None
 
                 try:
-                    vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'], \
-                                                    ids, add_vectors['vectors_algorithm'], \
-                                                    add_vectors['vectors_axes'], custom_axes, \
-                                                    weight=add_vectors['weight_by_vector'], \
-                                                    weighting_vector=weighting_vector)
+                    vector_result = make_subgroup_vectors(coord_dict, add_vectors['eigvals'],\
+                                                    ids, add_vectors['vectors_algorithm'],\
+                                                    add_vectors['vectors_axes'], custom_axes,\
+                                                    weight=add_vectors['weight_by_vector'],\
+                                                    weighting_vector=weighting_vector,\
+                                                    window_size = add_vectors['window_size'])
                 except TypeError:
                     continue
 
@@ -386,7 +387,8 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     return result
 
 def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3,\
-                            custom_axes=None, weight=False, weighting_vector=None):
+                            custom_axes=None, weight=False, weighting_vector=None,\
+                            window_size=None):
     """Creates either the first difference or the rms value, vector, of a subgroup (ids) of coord_dict
     
        Params: 
@@ -394,10 +396,11 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         eigvals: the eigvals of the coords
         ids: the list of ids that should be used to caclulate the first difference or the rms 
         from coord_dict
-        method: 'avg', 'trajectory' or 'diff'
+        method: 'avg', 'trajectory', 'diff' or 'wdiff'
         custom_axes: the list of custom axis used in other methods
         weight: whether or not the vector should be weighted using the
         qiime.make_3d_plots.weight_by_vector function
+        window_size: required only if 'wdiff' is selected as a method.
         
        Returns:
         a dict with 2 members: 'vector', the vector representing from which the first 
@@ -405,7 +408,7 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         difference or the RMS value with the selected algorithm.
     """
     result = {}
-    result['message'] = None
+    message_buffer = ''
 
     # We multiply the coord values with the value of the eigvals represented
     if custom_axes:
@@ -422,9 +425,10 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
             vectors_copy = deepcopy(vectors)
             vectors = weight_by_vector(vectors_copy, weighting_vector)
         except (FloatingPointError, ValueError):
-            result['message'] = "Could not weight group, no gradient in "+\
+            message_buffer = "Could not weight group, no gradient in the "+\
                 "the weighting vector.\n"
             vectors = vectors_copy
+
     elif weight and weighting_vector is None:
         raise ValueError, "You must pass a weighting vector if you want to"+\
             "weight your data"
@@ -438,6 +442,7 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         else:
             result['vector'] = [norm(i) for i in vectors-center]
             result['calc'] = {'avg':average(result['vector'])}
+
     elif method=='trajectory':
         if len(vectors)==1:
             result['vector'] = [norm(vectors)]
@@ -445,6 +450,7 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
         else:
             result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
             result['calc'] = {'trajectory':norm(result['vector'])}
+
     elif method=='diff':
         if len(vectors)==1:
             result['vector'] = [norm(vectors)]
@@ -453,17 +459,44 @@ def make_subgroup_vectors(coord_dict, eigvals, ids, method='avg', vectors_axes=3
             result['vector'] = [norm(vectors[1]-vectors[0])]
             result['calc'] = {'mean':result['vector'], 'std':0}
         else:
-            vec_norm = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
+            vec_norm = [norm(vectors[i-1]-vectors[i]) for i in range(len(vectors)-1)]
             vec_diff = diff(vec_norm)
             result['calc'] = {'mean':mean(vec_diff), 'std':std(vec_diff)}
             result['vector'] = vec_diff
+    elif method=='wdiff':
+        if len(vectors)==1:
+            result['vector'] = [norm(vectors)]
+            result['calc'] = {'mean':result['vector'], 'std':0}
+        elif len(vectors)==2:
+            result['vector'] = [norm(vectors[1]-vectors[0])]
+            result['calc'] = {'mean':result['vector'], 'std':0}
+        else:
+            vec_norm = [norm(vectors[i-1]-vectors[i]) for i in range(len(vectors)-1)]
+
+            # windowed first differences won't be able on every group, specially
+            # given the variation of size that a vector tends to have 
+            try:
+                vec_diff = windowed_diff(vec_norm, window_size)
+            except ValueError:
+                vec_diff = vec_norm
+                message_buffer = message_buffer + 'Cannot calculate the '+\
+                    'first difference with a window of size (%d).\n' % window_size
+
+            result['calc'] = {'mean':mean(vec_diff), 'std':std(vec_diff)}
+            result['vector'] = vec_diff
+
+
     elif method==None:
         result['calc'] = nan
     else:
         raise ValueError, 'The method "%s" for Vectors does not exist' % method
 
-    return result
+    # If there is no message to write, then just set it to None
+    if message_buffer == '':
+        message_buffer = None
+    result['message'] = message_buffer
 
+    return result
 
 def run_ANOVA_trajetories(groups):
     """Run ANOVA on trajectories categories
@@ -1287,5 +1320,40 @@ def weight_by_vector(vector, w_vector):
         # if it's the first element, just return it as is, no weighting to do
         else:
             op_vector.append(vector_value)
+
+    return op_vector
+
+def windowed_diff(vector, window_size):
+    """
+    windowed_diff: perform the first difference algorithm between windows of 
+    values in a vector and each value.
+
+    Input:
+    vector: numpy array of values to calculate the windowed_diff 
+    window_size: size of the window
+
+    Output:
+    op_vector: a vector where the Nth value is the difference between the mean
+    of vector[N+1:N+1+window_size] and vector[N]. By definition this vector will
+    have 'window_size' less elements than 'vector'.
+    """
+
+    # check for consistency in window size and vector size
+    if window_size < 1 or not isinstance(window_size, (long, int)):
+        raise ValueError, "The window_size must be a positive integer"
+
+    if len(vector) <= window_size:
+        raise ValueError, "The window_size must be smaller than the vector"
+
+    # replicate the last element as many times as required
+    for index in range(0, window_size):
+        vector = append(vector, vector[-1:], axis=0)
+
+    op_vector = []
+
+    for index in range(0, len(vector)-window_size):
+        # mean has to be over axis 0 so it handles vectors of vectors
+        element = mean(vector[(index+1):(index+1+window_size)], axis=0)
+        op_vector.append(element-vector[index])
 
     return op_vector

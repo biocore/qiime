@@ -167,32 +167,44 @@ script_info['optional_options']=[\
         ' by DOB you will pass --add_vectors=Species,DOB; this is useful when you use' +\
         ' --custom_axes param [default: %default]'),
     make_option('--vectors_algorithm', type='string', dest='vectors_algorithm', default=None,
-        help='The algorithm used to create the vectors. The method used can' +\
-        ' be RMS (either using \'avg\' or \'trajectory\'); or the first difference (using \'diff\'),' +\
-        ' the aforementioned options use all the dimensions and weights them' +\
-        ' using their percentage explained; returns the norm of the created' +\
-        ' vectors; and their confidence using ANOVA. The Vectors are created as' +\
-        ' follows: for \'avg\' it calculates the average at each timepoint (averaging' +\
-        ' within a group), then calculates the norm of each point; for \'trajectory\'' +\
-        ' calculates the norm for the 1st-2nd, 2nd-3rd, etc.; for \'diff\', it calculates' +\
-        ' the norm for all the time-points and then calculates the first difference for' +\
-        ' each resulting point, it will also include the mean and the standard' +\
-        ' deviation of the calculations [defautl: %default]'),
+        help='The algorithm used to create the vectors. The method used can'+\
+        ' be RMS (either using \'avg\' or \'trajectory\'); or the first '+\
+        'difference (using \'diff\'), or \'wdiff\' for a modified first '+\
+        'difference algorithm (see --window_size) the aforementioned '+\
+        'use all the dimensions and weights them using their percentage '+\
+        'explained; returns the norm of the created vectors; and their '+\
+        'confidence using ANOVA. The Vectors are created as follows: for '+\
+        '\'avg\' it calculates the average at each timepoint (averaging '+\
+        'within a group), then calculates the norm of each point; for '+\
+        '\'trajectory\' calculates the norm for the 1st-2nd, 2nd-3rd, etc.; '+\
+        'for \'diff\', it calculates the norm for all the time-points and '+\
+        'then calculates the first difference for each resulting point; for '+\
+        'for \'wdiff\' it uses the same procedure as the previous method '+\
+        'but the subtraction will be between the mean of the next number of '+\
+        'elements specified in --window_size and the current element, both '+\
+        'methods (\'wdiff\' and \'diff\') will also include the mean and the '+\
+        'standard deviation of the calculations [defautl: %default]'),
     make_option('--vectors_axes', dest='vectors_axes', type='int', default=3,
         help='The number of axes to account while doing the vector specific' +\
-        ' calculations. We suggest using 3 because those are the ones being displayed' +\
-        ' in the plots but you could use any number between 1 and number of samples' +\
-        ' - 1. To use all of them pass 0. [default: %default]'),
+        'calculations. We suggest using 3 because those are the ones being ' +\
+        'displayed in the plots but you could use any number between 1 and ' +\
+        'number of samples- 1. To use all of them pass 0. [default: %default]'),
     make_option('--vectors_path', dest='vectors_path', default='vectors_output.txt', type='new_filepath',
-        help='Name of the file to save the first difference, or the root mean' +\
-        ' square (RMS) of the vectors grouped by the column used with the --add_vectors' +\
-        ' function. Note that this option only works with --add_vectors. The file is' +\
-        ' going to be created inside the output_dir and its name will start with "Vectors".' +\
-        ' [default: %default]'),
+        help='Name of the file to save the first difference, or the root ' +\
+        'mean square (RMS) of the vectors grouped by the column used with ' +\
+        'the --add_vectors function. Note that this option only works with ' +\
+        '--add_vectors. The file is going to be created inside the '+\
+        'output_dir and its name will start with the word \'Vectors\'.' +\
+        '[default: %default]'),
     make_option('-w', '--weight_by_vector', default=False, action='store_true',
         help='Use -w when you want the output created in the --vectors_path' +\
         ' to be weighted by the space between samples in the --add_vectors, ' +\
         'sorting column, i. e. days between samples [default: %default]'),
+    make_option('--window_size', type='int', default=None,
+        help='Use --window_size, when selecting the modified first difference '+\
+        '(\'wdiff\') option for --vectors_algorithm. This integer determines '+\
+        'the number of elements to be averaged per element subtraction, the '+\
+        'resulting vector. [default: %default]'),
     options_lookup['output_dir'],
 ]
 
@@ -275,7 +287,7 @@ def main():
             filename = os.path.split(coord_files[0])[-1]
         else:
             filename = os.path.split(filepath)[-1]
-	
+
         generate_3d_plots_invue(prefs, data, dir_path, filename, \
             opts.interpolation_points, opts.polyhedron_points, \
             opts.polyhedron_offset)
@@ -335,14 +347,14 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
     # process custom axes, if present.
     custom_axes = None
-    if opts.custom_axes:	
+    if opts.custom_axes:
         custom_axes = process_custom_axes(opts.custom_axes)
 
         get_custom_coords(custom_axes, data['map'], data['coord'])
         remove_nans(data['coord'])
         scale_custom_coords(custom_axes,data['coord'])
 
-    # process vectors if requeted
+    # process vectors if requested
     if opts.add_vectors:
         add_vectors={}
         add_vectors['vectors'] = opts.add_vectors.split(',')
@@ -366,11 +378,25 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
             add_vectors['vectors_output'] = {}
             add_vectors['vectors_algorithm']=opts.vectors_algorithm
             add_vectors['eigvals'] = data['coord'][3]
+            add_vectors['window_size'] = None
+
+            # checks specific for the modified first difference algorithm
+            if add_vectors['vectors_algorithm'] == 'wdiff':
+                try:
+                    add_vectors['window_size'] = int(opts.window_size)
+                except TypeError:
+                    raise TypeError, 'Specify --window_size as an integer'
+
+                # sanity check as the value can only be greater or equal to one
+                if add_vectors['window_size'] < 1:
+                    raise ValueError, 'The value of window_size is invalid, '+\
+                        'the value must be greater than zero, not %d' % add_vectors['window_size']
+
         else:
             add_vectors['vectors_algorithm'] = None
         add_vectors['vectors_path'] = opts.vectors_path
     else:
-    	add_vectors = None
+        add_vectors = None
 
     if opts.taxa_fname != None:
         # get taxonomy counts
@@ -396,7 +422,6 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
             fout = open(opts.biplot_output_file,'w')
             fout.write('\n'.join(output))
             fout.close()
-
 
     if opts.output_dir:
         create_dir(opts.output_dir,False)

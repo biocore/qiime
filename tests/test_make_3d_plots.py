@@ -11,7 +11,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-from numpy import array, nan
+from numpy import array, nan, diff
 from StringIO import StringIO
 from os.path import exists
 from cogent.util.unit_test import TestCase, main
@@ -33,7 +33,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     generate_3d_plots, 
                                     can_run_ANOVA_trajectories,
                                     avg_vector_for_group,
-                                    weight_by_vector)
+                                    weight_by_vector,
+                                    windowed_diff)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -46,11 +47,11 @@ class TopLevelTests(TestCase):
                             [-0.04,0.2]]),array([0.7,0.6]),\
                             array([25.00,30.00])]
         self.data['map']=[['#Sample-ID','Day'],['Sample1','Day1'],['Sample2',\
-                          'Day1']]
+                            'Day1']]
         self.coord_header=["Sample1","Sample2","Sample3"]
         self.coords=array([[-0.219044992,0.079674486,0.09233683],[-0.042258081,\
-                       0.000204041,0.024837603],[0.080504323,-0.212014503,\
-                       -0.088353435]])
+                        0.000204041,0.024837603],[0.080504323,-0.212014503,\
+                        -0.088353435]])
         self.groups={}
         self.groups['Day1']=['Sample1','Sample2','Sample3']
         self.colors={}
@@ -66,11 +67,11 @@ class TopLevelTests(TestCase):
         self.background_color='black'
         self.label_color='white'
         self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
-                      ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
+                    ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
         self.mapping2=[["Sample-ID","Day","Type","Height","Weight"],\
-                               ["Sample1","Day1","Soil","10","60"],\
-                               ["Sample2","Day1","Soil","20","55"],\
-                               ["Sample3","Day1","Soil","30","50"]]
+                        ["Sample1","Day1","Soil","10","60"],\
+                        ["Sample2","Day1","Soil","20","55"],\
+                        ["Sample3","Day1","Soil","30","50"]]
         self.axis_names = 'Height,Weight'
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
@@ -79,15 +80,16 @@ class TopLevelTests(TestCase):
         self.prefs_vectors['Sample']={}   
         self.prefs_vectors['Sample']['column']="Type"
         self.coords2 = array([[0, -0.219044992,0.079674486,0.09233683], \
-                                [1, -0.042258081, 0.000204041, 0.024837603], \
-                                [2, 0.080504323, -0.212014503, -0.088353435], \
+                                [1, -0.042258081, 0.000204041, 0.024837603],\
+                                [2, 0.080504323, -0.212014503, -0.088353435],\
                                 [3, 0.012345551, -0.124512513, -01142356135]])
         self.custom_axes = ['Height']
-        self.add_vectors = {'vectors_algorithm': 'trajectory', 'vectors_axes': 3, \
-                                'vectors': ['Height'], 'vectors_path': 'vectors_test', \
-                                'eigvals': array([ 0, 2.44923871, 1.11678013, 1.01533255]), \
+        self.add_vectors = {'vectors_algorithm': 'trajectory', 'vectors_axes': 3,\
+                                'vectors': ['Height'], 'vectors_path': 'vectors_test',\
+                                'eigvals': array([ 0, 2.44923871, 1.11678013, 1.01533255]),\
                                 'vectors_output': {},\
-                                'weight_by_vector' : False}
+                                'weight_by_vector' : False,\
+                                'window_size': 1}
         self.filename_vectors = 'vectors_test'
         self.file_path_vectors = 'vectors_test_dir'
 
@@ -125,7 +127,6 @@ class TopLevelTests(TestCase):
             ('14435', 'FL.3.16a.281888')],\
             'FL_R18': [('14424', 'FL.3.16a.281890'),\
             ('14435', 'FL.3.16a.281891')]}}
-
         self.out_avg_coord_dict = {\
             '14435' : array([2, 5.5, 4.0, 4.5]),\
             '14424' : array([1, 4.5, 2.5, 2.5])}
@@ -135,27 +136,6 @@ class TopLevelTests(TestCase):
             {'14655': [('0', '14424'),\
             ('1', '14435')]}}
 
-        # data for test_weight_by_vector
-        self.in_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
-        self.in_weighting_vector = array([1, 5, 8, 12, 45, 80, 85, 90])
-        self.out_weighted_vector = array([1, 6.3571428571428568,\
-            12.714285714285714, 12.714285714285714, 1.9264069264069263,\
-            2.1795918367346938, 17.800000000000001, 20.342857142857142])
-
-        self.in_flat_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
-        self.in_flat_weighting_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
-        self.out_flat_weighted_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
-
-        self.in_second_flat_vector_to_weight = array([2, 3, 4, 5, 6])
-        self.in_second_flat_weighting_vector = array([25, 30, 35, 40, 45])
-        self.out_second_flat_weighted_vector = array([2, 3, 4, 5, 6])
-
-        self.in_nd_array_vector_to_weight = array([[1, 2, 3],[2, 3, 4],\
-            [5, 6, 7],[8, 9, 10]])
-        self.in_nd_array_weighting_vector = array([1, 2, 3, 4])
-        self.out_nd_array_flat_vector = array([[1, 2, 3],[2, 3, 4],\
-            [5, 6, 7],[8, 9, 10]])
-
     def tearDown(self):
         map(remove,self._paths_to_clean_up)
         if self._dir_to_clean_up != '':
@@ -164,29 +144,29 @@ class TopLevelTests(TestCase):
     def test_make_3d_plots(self):
         """make_3d_plots: main script to create kinemage and html file"""
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,self.prefs,self.background_color, \
-                          self.label_color,plot_scaled=True,plot_unscaled=True)
+                        self.mapping,self.prefs,self.background_color, \
+                        self.label_color,plot_scaled=True,plot_unscaled=True)
 
         self.assertEqual(obs_kin,exp_kin_full)
 
         # test with custom axes
         custom_axes = ['Height','Weight']
         coord_data = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [20,55,-0.042258081, 0.000204041,0.024837603],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [20,55,-0.042258081, 0.000204041,0.024837603],
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         coords = [self.coord_header, coord_data]
         scale_custom_coords(custom_axes,coords) 
         obs_kin=make_3d_plots(self.coord_header,coords[1],self.pct_var, \
-                          self.mapping2,self.prefs,self.background_color,\
-                          self.label_color,custom_axes=custom_axes, \
-                          plot_scaled=True,plot_unscaled=True)
+                            self.mapping2,self.prefs,self.background_color,\
+                            self.label_color,custom_axes=custom_axes, \
+                            plot_scaled=True,plot_unscaled=True)
         self.assertEqual(obs_kin, exp_kin_full_axes)
         
         # test with custom axes and vector creation
         obs_kin = make_3d_plots(self.coord_header, self.coords2, self.pct_var, \
-                          self.mapping2, self.prefs, self.background_color, \
-                          self.label_color, custom_axes=self.custom_axes, \
-                          add_vectors=self.add_vectors)
+                            self.mapping2, self.prefs, self.background_color, \
+                            self.label_color, custom_axes=self.custom_axes, \
+                            add_vectors=self.add_vectors)
         self.assertEqual(obs_kin, exp_kin_vectors)
 
         # test with multiple 'colorby' columns to ensure sorting
@@ -196,16 +176,16 @@ class TopLevelTests(TestCase):
         newprefs['Day']={}   
         newprefs['Day']['column']="Day"
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,newprefs,self.background_color, \
-                          self.label_color,plot_scaled=True,plot_unscaled=True)
+                            self.mapping,newprefs,self.background_color, \
+                            self.label_color,plot_scaled=True,plot_unscaled=True)
         text = '\n'.join(obs_kin)
         
         self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
         
         # test with unscaled only
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,newprefs,self.background_color, \
-                          self.label_color,plot_scaled=False,plot_unscaled=True)
+                        self.mapping,newprefs,self.background_color, \
+                        self.label_color,plot_scaled=False,plot_unscaled=True)
         text = '\n'.join(obs_kin)
         
         self.assertTrue(text.find('Day_unscaled')>0)
@@ -213,8 +193,8 @@ class TopLevelTests(TestCase):
         
         # test with scaled only
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,newprefs,self.background_color, \
-                          self.label_color,plot_scaled=True,plot_unscaled=False)
+                        self.mapping,newprefs,self.background_color, \
+                        self.label_color,plot_scaled=True,plot_unscaled=False)
         text = '\n'.join(obs_kin)
         
         self.assertFalse(text.find('Day_unscaled')>0)
@@ -223,50 +203,50 @@ class TopLevelTests(TestCase):
  
         """make_3d_plots_invue: main script to create invue files"""
         data = {'map': [
-                  ['SampleID', 'Treatment'], ['PC.354', 'Control'], ['PC.355', 'Control'], 
-                  ['PC.607', 'Fast']], 
+                    ['SampleID', 'Treatment'], ['PC.354', 'Control'], ['PC.355', 'Control'], 
+                    ['PC.607', 'Fast']], 
                 'coord': [['PC.354', 'PC.355', 'PC.607',],
                 array([[ -2.93088213e-01,   4.31583200e-02,  -6.10931011e-02, 
-                     -4.45457646e-02,   1.83903403e-01,   5.62150139e-02, 
-                     1.05297152e-01,   2.13883515e-01,  -5.71356497e-09],
-                   [ -2.09986576e-01,  -2.20253966e-01,   3.20511936e-02,
-                     8.55386819e-02,  -2.25272826e-01,  -4.17365121e-02,
-                     1.99893660e-01,  -4.00712898e-02,  -5.71356497e-09],
-                   [  1.08572516e-01,   3.82643187e-01,   2.15202408e-01,
-                     1.05970644e-01,  -1.22775938e-01,  -2.16486387e-02, 
-                     7.14806423e-03,   5.56601903e-02,  -5.71356497e-09]]), 
+                    -4.45457646e-02,   1.83903403e-01,   5.62150139e-02, 
+                    1.05297152e-01,   2.13883515e-01,  -5.71356497e-09],
+                    [-2.09986576e-01,  -2.20253966e-01,   3.20511936e-02,
+                    8.55386819e-02,  -2.25272826e-01,  -4.17365121e-02,
+                    1.99893660e-01,  -4.00712898e-02,  -5.71356497e-09],
+                    [1.08572516e-01,   3.82643187e-01,   2.15202408e-01,
+                    1.05970644e-01,  -1.22775938e-01,  -2.16486387e-02, 
+                    7.14806423e-03,   5.56601903e-02,  -5.71356497e-09]]), 
                 array([  4.95533900e-01,   2.89252050e-01,   1.52106359e-01]),
                 array([  2.72623936e+01,   1.59135495e+01,   8.36831432e+00,]), None, None]}
         groups_and_colors = [('Treatment', {'Control': ['PC.354', 'PC.355'], 'Fast': ['PC.607']}, 
-           {'Control': 'blue1', 'Fast': 'red1'}, data_colors, data_colors.keys())]
+            {'Control': 'blue1', 'Fast': 'red1'}, data_colors, data_colors.keys())]
         intp_pts = 2
         
         smp_lbl_exp = {'Treatment': {
-                         'coords': [array([ -2.93088213e-01,   4.31583200e-02,  -6.10931011e-02,
-                                   2.55000000e+02]), array([ -2.09986576e-01,  -2.20253966e-01,   
-                                   3.20511936e-02, 2.55000000e+02]), array([  1.08572516e-01,
-                                   3.82643187e-01,   2.15202408e-01, 6.52800000e+04])], 
-                         'headrs': ['PC.354', 'PC.355', 'PC.607']}
+                        'coords': [array([ -2.93088213e-01,   4.31583200e-02,  -6.10931011e-02,
+                                    2.55000000e+02]), array([ -2.09986576e-01,  -2.20253966e-01,   
+                                    3.20511936e-02, 2.55000000e+02]), array([  1.08572516e-01,
+                                    3.82643187e-01,   2.15202408e-01, 6.52800000e+04])], 
+                        'headrs': ['PC.354', 'PC.355', 'PC.607']}
                       }
         smp_lbl_grp_exp = {'Treatment': {
-                         'Control': {
+                        'Control': {
                             'coords': [array([-0.29308821,  0.04315832, -0.0610931 ]), 
-                                       array([-0.26538767, -0.04464578, -0.030045  ]),
-                                       array([-0.23768712, -0.13244987,  0.0010031 ]), 
-                                       array([-0.20998658, -0.22025397,  0.03205119])], 
+                                    array([-0.26538767, -0.04464578, -0.030045  ]),
+                                    array([-0.23768712, -0.13244987,  0.0010031 ]), 
+                                    array([-0.20998658, -0.22025397,  0.03205119])], 
                             'headrs': ['PC.354', 'PC.355.0', 'PC.355.1', 'PC.355.2']}, 
-                         'Fast': {
+                        'Fast': {
                             'coords': [array([ 0.10857252,  0.38264319,  0.21520241])], 
                             'headrs': ['PC.607']
-                                 }
-                      }}
+                                }
+                        }}
         poly_pts_exp = array([[0.16285877,0.57396478,0.32280361],\
-           [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679],\
-           [0.16285877,0.57396478,0.32280361],[0.16285877,0.57396478,0.32280361],\
-           [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679]])
+            [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679],\
+            [0.16285877,0.57396478,0.32280361],[0.16285877,0.57396478,0.32280361],\
+            [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679]])
                       
         smp_lbl, smp_lbl_grp, poly_pts = make_3d_plots_invue(data, groups_and_colors, intp_pts, \
-           polyh_pts=4, offset=1.5)
+            polyh_pts=4, offset=1.5)
         
         self.assertFloatEqual(smp_lbl['Treatment']['coords'],smp_lbl_exp['Treatment']['coords'], 16711680.0)
         self.assertFloatEqual(smp_lbl_grp['Treatment']['Control']['coords'],\
@@ -289,8 +269,8 @@ class TopLevelTests(TestCase):
         mkdir(self.file_path_vectors)
 
         generate_3d_plots(self.prefs_vectors, self.data_vectors, self.custom_axes, self.background_color, \
-                          self.label_color, data_file_path=self.file_path_vectors, \
-                          filename=self.filename_vectors, add_vectors=self.add_vectors)
+                        self.label_color, data_file_path=self.file_path_vectors, \
+                        filename=self.filename_vectors, add_vectors=self.add_vectors)
 
         # Check that the files are created
         self.assertTrue(exists(self.filename_vectors))
@@ -305,8 +285,8 @@ class TopLevelTests(TestCase):
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
         exp=array([[-1.56460709e-01,6.82924166e-02,9.23368300e-02],\
-                   [-3.01843436e-02,1.74892286e-04,2.48376030e-02],\
-                   [5.75030879e-02,-1.81726717e-01,-8.83534350e-02]])
+                    [-3.01843436e-02,1.74892286e-04,2.48376030e-02],\
+                    [5.75030879e-02,-1.81726717e-01,-8.83534350e-02]])
 
         obs=scale_pc_data_matrix(self.coords, self.pct_var)
 
@@ -324,21 +304,21 @@ class TopLevelTests(TestCase):
         """make_mage_output: Create kinemage string given the data"""
         # test without custom axes
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
-                                 self.coords,self.pct_var,self.background_color,\
-                                 self.label_color,data_colors)
+                                self.coords,self.pct_var,self.background_color,\
+                                self.label_color,data_colors)
         self.assertEqual(obs_kin,exp_kin_partial)
 
         # test with custom axes
         custom_axes = ['Height','Weight']
         coord_data = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [20,55,-0.042258081, 0.000204041,0.024837603],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [20,55,-0.042258081, 0.000204041,0.024837603],
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         coords = [self.coord_header, coord_data]
         scale_custom_coords(custom_axes,coords)
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
-                                 coords[1],self.pct_var,self.background_color, \
-                                 self.label_color,data_colors,
-                                 custom_axes=custom_axes)
+                                coords[1],self.pct_var,self.background_color, \
+                                self.label_color,data_colors,
+                                custom_axes=custom_axes)
         self.assertEqual(obs_kin, exp_kin_partial_axes)
 
     def test_make_edge_output(self):
@@ -405,6 +385,17 @@ class TopLevelTests(TestCase):
                         'calc': {'mean': [-7.541663889096816], 'std': [0.0]},\
                         'message': None }
         self.assertFloatEqual(make_subgroup_vectors(coord_dict, eigvals, ids, 'diff'), exp_result)
+
+        # this test should return a message to print in the output file
+        exp_result ={'vector': [-7.5416638890968164, 0.0], \
+                        'message': None,
+                        'calc': {
+                            'std': 3.7708319445484082, 
+                            'mean': -3.7708319445484082
+                        }
+                    }
+        calc_result = make_subgroup_vectors(coord_dict, eigvals, ids, 'wdiff', window_size=1)
+        self.assertEquals(calc_result, exp_result)
                       
     def test_run_ANOVA_trajetories(self):
         """run_ANOVA_trajetories: should return the same value
@@ -421,7 +412,7 @@ class TopLevelTests(TestCase):
     
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
-option from the command line"""
+        option from the command line"""
         exp = ['Height','Weight']
         obs=process_custom_axes(self.axis_names)
         self.assertEqual(obs,exp)
@@ -439,11 +430,11 @@ option from the command line"""
 
     def test_scale_custom_coords(self):
         """scale_custom_coords: \
-Scales custom coordinates to match min/max of PC1"""        
+        Scales custom coordinates to match min/max of PC1"""
         custom_axes = ['Height','Weight']
         coord_data = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [20,55,-0.042258081, 0.000204041,0.024837603],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [20,55,-0.042258081, 0.000204041,0.024837603],
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         coords = [self.coord_header, coord_data]
         scale_custom_coords(custom_axes,coords)
         # calculate results
@@ -456,31 +447,31 @@ Scales custom coordinates to match min/max of PC1"""
         w = (w-min(w))/(max(w)-min(w))
         w = w * (mx-mn) + mn
         exp = array([[h[0],w[0],-0.219044992,0.079674486,0.09233683],
-                           [h[1],w[1],-0.042258081, 0.000204041,0.024837603],
-                           [h[2],w[2],0.080504323,-0.212014503,-0.088353435]])
+                            [h[1],w[1],-0.042258081, 0.000204041,0.024837603],
+                            [h[2],w[2],0.080504323,-0.212014503,-0.088353435]])
         self.assertEqual(coords[1],exp)
 
     def test_remove_nans(self):
         """remove_nans: Deletes any samples with NANs in their coordinates"""
         coord_data = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [20,55,-0.042258081, nan,0.024837603],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [20,55,-0.042258081, nan,0.024837603],
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         coords = [self.coord_header, coord_data]
         remove_nans(coords)
 
         exp_header = ["Sample1","Sample3"]
         exp_coords = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         self.assertEqual(coords[0],exp_header)
         self.assertEqual(coords[1],exp_coords)
 
 
     def test_remove_unmapped_samples(self):
         """remove_unmapped_samples: \
-Removes any samples not present in mapping file"""
+        Removes any samples not present in mapping file"""
         coord_data = array([[10,60,-0.219044992,0.079674486,0.09233683],
-                           [20,55,-0.042258081, nan,0.024837603],
-                           [30,50,0.080504323,-0.212014503,-0.088353435]])
+                            [20,55,-0.042258081, nan,0.024837603],
+                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         coords = [self.coord_header, coord_data]
         # mapping without sample2
         mapping=[["Sample-ID","Day","Type","Height","Weight"],\
@@ -597,23 +588,23 @@ Removes any samples not present in mapping file"""
     def test_get_multiple_coords_serial(self):
         # create the temporary pc files
         pc_file_1 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t1.1\t2.2',
-                               'B\t4.1\t4.2',
-                               'C\t-.1\t-.2',
-                               'eigvals\t0.52\t0.24',
-                               '% variation explained\t25.12\t13.29'])
+                                'A\t1.1\t2.2',
+                                'B\t4.1\t4.2',
+                                'C\t-.1\t-.2',
+                                'eigvals\t0.52\t0.24',
+                                '% variation explained\t25.12\t13.29'])
         pc_file_2 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t2.1\t3.2',
-                               'B\t5.1\t6.2',
-                               'C\t-1.1\t-2.2',
-                               'eigvals\t0.32\t0.14',
-                               '% variation explained\t20.11\t12.28'])
+                                'A\t2.1\t3.2',
+                                'B\t5.1\t6.2',
+                                'C\t-1.1\t-2.2',
+                                'eigvals\t0.32\t0.14',
+                                '% variation explained\t20.11\t12.28'])
         pc_file_3 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t2.2\t3.3',
-                               'B\t5.2\t6.3',
-                               'C\t-1.2\t-2.3',
-                               'eigvals\t0.34\t0.15',
-                               '% variation explained\t10.11\t2.28'])
+                                'A\t2.2\t3.3',
+                                'B\t5.2\t6.3',
+                                'C\t-1.2\t-2.3',
+                                'eigvals\t0.34\t0.15',
+                                '% variation explained\t10.11\t2.28'])
 
         fp1 = get_tmp_filename()
         fp2 = get_tmp_filename()
@@ -634,74 +625,72 @@ Removes any samples not present in mapping file"""
         
         # test without serial
         exp_edges = [('A_0', 'A_1'), ('A_0', 'A_2'), 
-                     ('B_0', 'B_1'), ('B_0', 'B_2'),
-                     ('C_0', 'C_1'),('C_0', 'C_2')
+                    ('B_0', 'B_1'), ('B_0', 'B_2'),
+                    ('C_0', 'C_1'),('C_0', 'C_2')
                     ]
         exp_coords = [['A_0', 'B_0', 'C_0',
                        'A_1', 'B_1', 'C_1',
                        'A_2', 'B_2', 'C_2'], 
-                      array([[ 1.1,  2.2],
-                             [ 4.1,  4.2],
-                             [-0.1, -0.2],
-                             [ 2.1,  3.2],
-                             [ 5.1,  6.2],
-                             [-1.1, -2.2],
-                             [ 2.2,  3.3],
-                             [ 5.2,  6.3],
-                             [-1.2, -2.3]]), 
-                      array([ 0.52,  0.24]), array([ 25.12,  13.29]),
-                      None, None]
+                        array([[ 1.1,  2.2],
+                            [ 4.1,  4.2],
+                            [-0.1, -0.2],
+                            [ 2.1,  3.2],
+                            [ 5.1,  6.2],
+                            [-1.1, -2.2],
+                            [ 2.2,  3.3],
+                            [ 5.2,  6.3],
+                            [-1.2, -2.3]]), 
+                        array([ 0.52,  0.24]), array([ 25.12,  13.29]),
+                        None, None]
         edges, coords = get_multiple_coords([fp1,fp2,fp3],serial=False)
         self.assertEqual(edges, exp_edges)
         self.assertEqual(coords, exp_coords)
 
         # test with serial
         exp_edges = [('A_0', 'A_1'), ('A_1', 'A_2'),
-                     ('B_0', 'B_1'), ('B_1', 'B_2'),
-                     ('C_0', 'C_1'),('C_1', 'C_2')
+                    ('B_0', 'B_1'), ('B_1', 'B_2'),
+                    ('C_0', 'C_1'),('C_1', 'C_2')
                     ]
         edges, coords = get_multiple_coords([fp1,fp2,fp3],serial=True)
         self.assertEqual(edges, exp_edges)
         self.assertEqual(coords, exp_coords)
 
-
         # clean up
         remove(fp1)
         remove(fp2)
         remove(fp3)
- 
 
     def test_validate_coord_files(self):
         """Verifies that validate_coord_files works correctly"""
         # create the temporary pc files
         # one line has 4 columns
         pc_file_1 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t1.1\t2.2',
-                               'B\t4.1\t4.2',
-                               'C\t-.1\t-.2',
-                               'eigvals\t0.52\t0.24\t0.11',
-                               '% variation explained\t25.12\t13.29'])
+                                'A\t1.1\t2.2',
+                                'B\t4.1\t4.2',
+                                'C\t-.1\t-.2',
+                                'eigvals\t0.52\t0.24\t0.11',
+                                '% variation explained\t25.12\t13.29'])
         # all lines have 3 columns
         pc_file_2 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t2.1\t3.2',
-                               'B\t5.1\t6.2',
-                               'C\t-1.1\t-2.2',
-                               'eigvals\t0.32\t0.14',
-                               '% variation explained\t20.11\t12.28'])
+                                'A\t2.1\t3.2',
+                                'B\t5.1\t6.2',
+                                'C\t-1.1\t-2.2',
+                                'eigvals\t0.32\t0.14',
+                                '% variation explained\t20.11\t12.28'])
         # all lines have two columns
         pc_file_3 = '\n'.join(['pc vector number\t1',
-                               'A\t2.1',
-                               'B\t5.1',
-                               'C\t-1.1',
-                               'eigvals\t0.32',
-                               '% variation explained\t20.11'])
+                                'A\t2.1',
+                                'B\t5.1',
+                                'C\t-1.1',
+                                'eigvals\t0.32',
+                                '% variation explained\t20.11'])
         # all lines have 3 columns
         pc_file_4 = '\n'.join(['pc vector number\t1\t2',
-                               'A\t1.1\t2.2',
-                               'B\t4.1\t4.2',
-                               'C\t-.1\t-.2',
-                               'eigvals\t0.52\t0.24',
-                               '% variation explained\t25.12\t13.29'])
+                                'A\t1.1\t2.2',
+                                'B\t4.1\t4.2',
+                                'C\t-.1\t-.2',
+                                'eigvals\t0.52\t0.24',
+                                '% variation explained\t25.12\t13.29'])
 
         fp1 = get_tmp_filename()
         fp2 = get_tmp_filename()
@@ -751,7 +740,6 @@ Removes any samples not present in mapping file"""
         self.assertTrue(can_run_ANOVA_trajectories(self.anova_dict_true))
         self.assertFalse(can_run_ANOVA_trajectories(self.anova_dict_false))
 
-
     def test_avg_vector_for_group(self):
         """ Create an average set of coordinates """
 
@@ -764,6 +752,28 @@ Removes any samples not present in mapping file"""
 
     def test_weight_by_vector(self):
         """ Test that the vector is weighted by the given vector"""
+        # data for test_weight_by_vector
+        self.in_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.in_weighting_vector = array([1, 5, 8, 12, 45, 80, 85, 90])
+        self.out_weighted_vector = array([1, 6.3571428571428568,\
+            12.714285714285714, 12.714285714285714, 1.9264069264069263,\
+            2.1795918367346938, 17.800000000000001, 20.342857142857142])
+
+        self.in_flat_vector_to_weight = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.in_flat_weighting_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
+        self.out_flat_weighted_vector = array([1, 2, 3, 4, 5, 6, 7, 8])
+
+        self.in_second_flat_vector_to_weight = array([2, 3, 4, 5, 6])
+        self.in_second_flat_weighting_vector = array([25, 30, 35, 40, 45])
+        self.out_second_flat_weighted_vector = array([2, 3, 4, 5, 6])
+
+        self.in_nd_array_vector_to_weight = array([[1, 2, 3],[2, 3, 4],\
+            [5, 6, 7],[8, 9, 10]])
+        self.in_nd_array_weighting_vector = array([1, 2, 3, 4])
+        self.out_nd_array_flat_vector = array([[1, 2, 3],[2, 3, 4],\
+            [5, 6, 7],[8, 9, 10]])
+
+
         test_weighted_output = weight_by_vector(self.in_vector_to_weight,\
             self.in_weighting_vector)
         self.assertEqual(test_weighted_output, self.out_weighted_vector)
@@ -776,6 +786,44 @@ Removes any samples not present in mapping file"""
             self.in_second_flat_vector_to_weight,self.in_second_flat_weighting_vector)
         self.assertEqual(second_flat_test_weighted_output, self.out_second_flat_weighted_vector)
 
+    def test_windowed_diff(self):
+        """Test correct functioning of the modified first difference """
+
+        in_array_windowed_diff = array([24, 15, 28, 16, 28, 43, 12, 53])
+
+        # check all the disallowed beahviours
+        with self.assertRaises(ValueError):
+            windowed_diff(in_array_windowed_diff, -10)
+        with self.assertRaises(ValueError):
+            windowed_diff(in_array_windowed_diff, 8)
+        with self.assertRaises(ValueError):
+            windowed_diff(in_array_windowed_diff, 50)
+
+        # checks for correct behaviour with a 1-d vector
+        exp_resutl = array([-4.3333333333333321, 9.0, 1.0, \
+            11.666666666666668, 8.0, -3.6666666666666643, 41.0, 0.0])
+        calc_result = windowed_diff(in_array_windowed_diff, 3)
+        self.assertEqual(calc_result, exp_resutl)
+
+        exp_resutl = [-9.0, 13.0, -12.0, 12.0, 15.0, -31.0,\
+            41.0, 0.0]
+        calc_result = windowed_diff(in_array_windowed_diff, 1)
+        self.assertEqual(calc_result, exp_resutl)
+
+        # checks for correct behaviour with an n-d vector
+        in_nd_array_windowed_diff = array([array([2, 5, 1, 6]),\
+            array([7, 1, 6, 3]), array([1, 8, 3, 5]), array([7, 3, 2, 6]),\
+            array([8, 1, 6, 1]), array([15, 5, 4, 1]), array([1, 5, 1, 2]),\
+            array([33, 5, 67, 12])])
+        exp_result = [array([ 2. , -0.5,  3.5, -2. ]),\
+            array([-3. ,  4.5, -3.5,  2.5]), array([ 6.5, -6. ,  1. , -1.5]),\
+            array([ 4.5,  0. ,  3. , -5. ]), array([ 0. ,  4. , -3.5,  0.5]),\
+            array([  2.,   0.,  30.,   6.]), array([ 32.,   0.,  66.,  10.]),\
+            array([ 0.,  0.,  0.,  0.])]
+        calc_result = windowed_diff(in_nd_array_windowed_diff, 2)
+        self.assertEqual(calc_result, exp_result)
+
+        return
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@labellist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '0.08452953915 -0.22261522815 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0887560161075 -0.22261522815 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 0.0836582103 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.2299972416 0.087841120815 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.2299972416 -0.22261522815 0.101801355075 white', '@kinemage {Day_scaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.156460708571 0.0575030878571 -0.181726716857 0.0682924165714 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@labellist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '0.06037824225 -0.1908130527 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0633971543625 -0.1908130527 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 0.0717070374 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.164283744 0.07529238927 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.1908130527 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.164283744 -0.1908130527 0.101801355075 white']
