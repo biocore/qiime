@@ -104,7 +104,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
         dm_fps = glob(join(self.test_out,'*weighted_unifrac*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
-            self.assertEqual(dm_sample_ids,input_sample_ids)
+            self.assertEqualItems(dm_sample_ids,input_sample_ids)
 
     def test_parallel_beta_diversity_wo_tree(self):
         """ parallel beta diveristy functions in single file mode """
@@ -124,7 +124,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
         dm_fps = glob(join(self.test_out,'bray_curtis*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
-            self.assertEqual(dm_sample_ids,input_sample_ids)
+            self.assertEqualItems(dm_sample_ids,input_sample_ids)
 
 class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):
 

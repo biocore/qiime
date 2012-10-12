@@ -15,6 +15,7 @@ from os.path import join, split, splitext
 from cogent.util.misc import create_dir
 from biom.parse import parse_biom_table
 from qiime.parallel.util import ParallelWrapper
+from qiime.format import format_distance_matrix
 
 class ParallelBetaDiversity(ParallelWrapper):
     _script_name = "beta_diversity.py"
@@ -135,6 +136,26 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
         
         return commands, result_filepaths
 
+
+    def _get_poller_command(self,
+                            expected_files_filepath,
+                            merge_map_filepath,
+                            deletion_list_filepath,
+                            command_prefix='/bin/bash; ',
+                            command_suffix='; exit'):
+        """Generate command to initiate a poller to monitior/process completed runs
+        """
+        result = '%s poller.py -f %s -m %s -d %s -t %d -p %s %s' % \
+         (command_prefix,
+          expected_files_filepath,
+          merge_map_filepath,
+          deletion_list_filepath,
+          self._seconds_to_sleep,
+          'qiime.parallel.beta_diversity.parallel_beta_diversity_process_run_results_f',
+          command_suffix)
+      
+        return result, []
+
 class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
 
     def _get_job_commands(self,
@@ -192,27 +213,8 @@ class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
         
         return commands, result_filepaths
 
-    def _get_poller_command(self,
-                            expected_files_filepath,
-                            merge_map_filepath,
-                            deletion_list_filepath,
-                            command_prefix='/bin/bash; ',
-                            command_suffix='; exit'):
-        """Generate command to initiate a poller to monitior/process completed runs
-        """
-        result = '%s poller.py -f %s -m %s -d %s -t %d -p %s %s' % \
-         (command_prefix,
-          expected_files_filepath,
-          merge_map_filepath,
-          deletion_list_filepath,
-          self._seconds_to_sleep,
-          'qiime.parallel.beta_diversity.parallel_beta_diversity_process_run_results_f',
-          command_suffix)
-      
-        return result, []
-
 def parallel_beta_diversity_process_run_results_f(f):
-    """ Handles re-assembling of an OTU table from component vectors
+    """ Handles re-assembling of a distance matrix from component vectors
     """
     # iterate over component, output fp lines
     for line in f:
@@ -232,6 +234,7 @@ def assemble_distance_matrix(dm_components):
     """ assemble distance matrix components into a complete dm string
 
     """
+    print "I get called."
     data = {}
     # iterate over compenents
     for c in dm_components:
