@@ -126,7 +126,7 @@ script_info['optional_options']=[\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
- make_option('--rdp_max_memory', default=1000, type='int',
+ make_option('--rdp_max_memory', default=1500, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
  make_option('-e', '--e_value', type='float',
