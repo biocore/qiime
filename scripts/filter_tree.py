@@ -87,7 +87,6 @@ def main():
     tips_fp = opts.tips_fp
     fasta_fp = opts.fasta_fp
     output_tree_fp = opts.output_tree_fp
-    print opts
     
     if tips_fp != None:
         tips_to_keep = get_seqs_to_keep_lookup_from_seq_id_file(open(tips_fp,'U'))
