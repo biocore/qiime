@@ -37,7 +37,7 @@ script_info['script_usage'].append(("""Default Example:""",
         """%prog -i alpha_div_collated/ -m Fasting_Map.txt"""))
 
 script_info['script_usage'].append(("""Specify Image Type and Resolution:""",
-        "Optionally, you can change the resolution ('-d') and the type of image created"
+        "Optionally, you can change the resolution ('-d') and the type of image created "
         "('-i'), by using the following command:",
         """%prog -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -g pdf"""))
 
@@ -46,12 +46,11 @@ script_info['script_usage'].append(("""Use Prefs File:""",
         "%prog -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -p prefs.txt"))
 
 script_info['script_usage'].append(("""Set Background Color:""",
-        "Alternatively, you can set the plot background '-k', as follows: a preferences" 
-        "file '-p', as follows",
+        "Alternatively, you can set the plot background '-k'",
         """%prog -i alpha_div_collated/ -m Fasting_Map.txt -k black"""))
 
 script_info['script_usage'].append(("""Generate raw data without interactive webpages:""",
-        "The user can choose to not create an interactive webpage ('-w' option)."  
+        "The user can choose to not create an interactive webpage ('-w' option). "  
         "This is for the case, where the user just wants the average plots and the"
         "raw average data.",
         """%prog -i alpha_div_collated/ -m Fasting_Map.txt -w"""))
