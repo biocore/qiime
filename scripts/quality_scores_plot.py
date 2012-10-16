@@ -34,7 +34,7 @@ position, so that one may easily visualize how sequence length drops off.
 A dotted line shows the cut-off point for a score to be acceptable (default
 is 25).
 
-An text file logging the average, standard deviation, and base count 
+A text file logging the average, standard deviation, and base count 
 for each base position is also generated.  These three sections are comma 
 separated.
 
@@ -43,7 +43,7 @@ versions of the input fasta and quality score files.  By using this module
 to assess the beginning of poor quality base calls, one can determine 
 the base position to begin truncating sequences at."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Generate plots and output to the quality_histograms folder""","""quality_score_plot.py -q seqs.qual -o quality_histograms/"""))
+script_info['script_usage'].append(("""Example:""","""Generate plots and output to the quality_histograms folder""","""%prog -q seqs.qual -o quality_histograms/"""))
 script_info['output_description']="""A .pdf file with the two plots will be created in the output directory"""
 script_info['required_options']= [\
       
