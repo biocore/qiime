@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -26,17 +26,17 @@ qiime_config = load_qiime_config()
 
 script_info = {}
 script_info['brief_description'] = "Starts multiple jobs in parallel on multicore or multiprocessor systems."
-script_info['script_description'] = "This script is designed to start multiple jobs in parallel on systems with no queueing system, for example a multiple processor or multiple core laptop/desktop machine. This also serves as an example 'cluster_jobs' which users can use a template to define scripts to start parallel jobs in their environment."
-script_info['script_usage'] = [\
- ("Example",\
- "Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. ",\
+script_info['script_description'] = "This script is designed to start multiple jobs in parallel on systems with no queueing system, for example a multiple processor or multiple core laptop/desktop machine. This also serves as an example 'cluster_jobs' which users can use as a template to define scripts to start parallel jobs in their environment."
+script_info['script_usage'] = [
+ ("Example",
+ "Start each command listed in test_jobs.txt in parallel. The run ID for these jobs will be RUNID.",
  "%prog -ms test_jobs.txt RUNID")]
 script_info['output_description']= "No output is created."
 script_info['required_options'] = []
-script_info['optional_options'] = [\
- make_option('-m','--make_jobs',action='store_true',\
-         help='make the job files [default: %default]'),\
- make_option('-s','--submit_jobs',action='store_true',\
+script_info['optional_options'] = [
+ make_option('-m','--make_jobs',action='store_true',
+         help='make the job files [default: %default]'),
+ make_option('-s','--submit_jobs',action='store_true',
          help='submit the job files [default: %default]')
 ]
 script_info['version'] = __version__
