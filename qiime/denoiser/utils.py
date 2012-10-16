@@ -12,6 +12,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
 
+import sys
 from os import remove, makedirs,\
     access, X_OK, R_OK
 from os.path import exists, isdir
@@ -41,7 +42,7 @@ def get_denoiser_data_dir():
 def get_flowgram_ali_exe():
     """Return the path to the flowgram alignment prog
     """
-    fp = get_qiime_project_dir() +\
+    fp = sys.prefix +\
         "/qiime/support_files/denoiser/bin/FlowgramAli_4frame"
     return fp
 
