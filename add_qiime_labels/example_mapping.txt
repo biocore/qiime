@@ -1,0 +1,2 @@
+Sample.1	fasta_dir/seqs1.fna
+Sample.2	fasta_dir/seqs2.fna
