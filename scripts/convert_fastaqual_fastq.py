@@ -37,7 +37,7 @@ the fastq_files directory:", "convert_fastaqual_fastq.py \
 -f seqs.fna -q seqs.qual -o fastq_files/"))
 script_info['script_usage'].append(("Example:",\
 "Using input seqs.fastq generate fasta and qual files in fastaqual \
-directory:", "convert_fastaqual_fastq.py -c fastq_to_fastaqual \
+directory:", "%prog -c fastq_to_fastaqual \
 -f seqs.fastq -o fastaqual"))
 script_info['output_description'] = """Outputs a complete or minimal FASTQ \
 file, which omits the redundant sequence label on the quality scores, or splits\
