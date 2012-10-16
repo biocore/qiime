@@ -25,6 +25,10 @@ and fasta file names (just the file name itself, not the full or relative
 filepath) is used to generate a combined fasta file with valid
 QIIME labels based upon the SampleIDs specified in the mapping file.
 
+Example mapping file:
+Sample.1	fasta_dir/seqs1.fna
+Sample.2	fasta_dir/seqs2.fna
+
 This script is to handle situations where fasta data comes already 
 demultiplexed into a one fasta file per sample basis.  Apart from altering
 the fasta label to add a QIIME compatible label at the beginning (example:
@@ -41,7 +45,7 @@ No changes are made to the sequences.
 """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Specify fasta_dir as the input directory of fasta files, use the SampleID to fasta file mapping file example_mapping.txt, start enumerating with 1000000 following SampleIDs, and output the data to the directory combined_fasta""","""add_qiime_labels.py -i fasta_dir -m example_mapping.txt -n 1000000 -o combined_fasta"""))
-script_info['output_description']="""A combined_seqs.fasta file will be created in the output directory"""
+script_info['output_description']="""A combined_seqs.fasta file will be created in the output directory, with the sequences assigned to Sample.1 and Sample.2."""
 script_info['required_options']= [\
     make_option('-m', '--mapping_fp',type='existing_filepath',
                 help='SampleID to fasta file name mapping file filepath'),
