@@ -19,12 +19,12 @@ from qiime.compare_alpha_diversity import compare_alpha_diversities,\
 script_info = {}
 script_info['brief_description'] = """This script compares alpha diversities based on a t_two_sample test"""
  
-script_info['script_description'] = """This script compares the alpha diversity of entries in a rarefaction file after they have been grouped based on some category found in the mapping file based on a t_two_sample test."""
+script_info['script_description'] = """This script compares the alpha diversity of entries in a rarefaction file after they have been grouped based on some category found in the mapping file based on a t_two_sample test. The output file contains the (Category: (Subcategories): t, prob)"""
  
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Explanation:\ Inputs: mapping file lines (lines of a mapping file which associates to each OTU/sample a number of characteristics, given as file path), rarefaction file lines (lines of a rarefaction file that has scores for each OTU/sample based on a certain rarefaction depth, given as a file path), depth (the depth score of the rarefaction file to use), category (the category to compare OTU/samples on), output file path (a path to the output file).""",\
+script_info['script_usage'].append(("""Explanation:\ Inputs: A mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), output file path (a path to the output file).""",\
     """""",\
-    """%prog -i PD_whole_tree.txt -m map.txt -c Treatment -d 100 -o PD_d100.txt"""))
+    """%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100.txt"""))
 script_info['output_description']= \
  """Script generates an output nested dictionary which has as a first 
     key:value pair the category passed, and a dictionary which gives the
