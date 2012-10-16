@@ -24,7 +24,7 @@ script_info['brief_description']="""Blast Interface"""
 script_info['script_description']="""This script is a functionally-limited interface to the qiime.util.qiime_blast_seqs function, primarily useful for testing purposes. Once that function has been integrated into qiime as the primary blast interface it will move to PyCogent. An expanded version of this command line interface may replace the script functionality of cogent.app.blast at that point."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Blast all sequences in inseqs.fasta (-i) against a BLAST db constructed \
-from refseqs.fasta (-r).""","""%prog -i inseqs.fasta -r refseqs.fasta"""))
+from refseqs.fasta (-r).""","""%prog -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta"""))
 script_info['output_description']="""This is a utility program, which returns BLAST results."""
 script_info['required_options']=[\
 options_lookup['fasta_as_primary_input'],
