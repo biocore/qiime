@@ -28,7 +28,14 @@ script_info={}
 script_info['brief_description']="""Fits a model between two distance matrices and plots the result"""
 script_info['script_description']="""Fits a spatial autocorrelation model between two matrices and plots the result. This script will work with two distance matrices but will ignore the 0s at the diagonal and the values that go to N/A"""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Fitting""","""For this script, the user supplies two distance matrices (i.e. resulting file from beta_diversity.py), along with the output filename (e.g. semivariogram), and the model to fit, as follows:""","""plot_semivariogram.py -x distance.txt -y unifrac.txt -m exponential -o semivariogram.png"""))
+script_info['script_usage'].append(
+      ("Fitting",
+       "For this script, the user supplies two distance matrices (i.e. resulting file from beta_diversity.py), along with the output filename (e.g. semivariogram), and the model to fit, as follows:",
+       "%prog -x distance.txt -y unifrac.txt -o semivariogram_exponential.png"))
+script_info['script_usage'].append(
+      ("",
+       "Modify the the default method to gaussian",
+       "%prog -x distance.txt -y unifrac.txt -m gaussian -o semivariogram_gaussian.png"))
 script_info['output_description']="""The resulting output file consists of a pdf image containing the plot between the two distances matrices and the fitted model"""
 
 script_info['required_options']=[\
