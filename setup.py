@@ -101,7 +101,7 @@ setup(name='QIIME',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*']},
       data_files=[('qiime/support_files/denoiser/bin/',
-       ['qiime/support_files/denoiser/bin/FlowgramAli_4frame'])],
+       ['qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame'])],
       long_description=long_description,
 )
 
