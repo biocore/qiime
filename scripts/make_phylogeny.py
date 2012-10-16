@@ -25,9 +25,8 @@ script_info={}
 script_info['brief_description']="""Make Phylogeny"""
 script_info['script_description']="""Many downstream analyses require that the phylogenetic tree relating the OTUs in a study be present. The script make_phylogeny.py produces this tree from a multiple sequence alignment. Trees are constructed with a set of sequences representative of the OTUs, by default using FastTree (Price, Dehal, & Arkin, 2009)."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""A simple example of make_phylogeny.py is shown by the following command, where we use the default tree building method (fasttree) and write the file to the current working directory without a log file:""","""make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -o rep_phylo.tre"""))
-script_info['script_usage'].append(("""""","""Alternatively, if the user would prefer using another tree building method (i.e. clearcut (Sheneman, Evans, & Foster, 2006)), then they could use the following command:""","""make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -t clearcut"""))
-script_info['script_usage'].append(("""""","""Note: For whichever method used, the 3rd party program must be properly installed on the user's computer.""",""""""))
+script_info['script_usage'].append(("""Examples:""","""A simple example of make_phylogeny.py is shown by the following command, where we use the default tree building method (fasttree) and write the file to the current working directory without a log file:""","""%prog -i $PWD/aligned.fasta -o $PWD/rep_phylo.tre"""))
+script_info['script_usage'].append(("""""","""Alternatively, if the user would prefer using another tree building method (i.e. clearcut (Sheneman, Evans, & Foster, 2006)), then they could use the following command:""","""%prog -i $PWD/aligned.fasta -t clearcut"""))
 script_info['output_description']="""The result of make_phylogeny.py consists of a newick formatted tree file (.tre) and optionally a log file. The tree file is formatted using the Newick format and this file can be viewed using most tree visualization tools, such as TopiaryTool, FigTree, etc.
 
 The tips of the tree are the first word from the input sequences from the fasta file, e.g.: '>101 PC.481_71 RC:1..220' is represented in the tree as '101'."""
