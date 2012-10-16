@@ -29,7 +29,10 @@ script_info['script_description']="""The input for this script is a mapping file
 
 As this is a univariate procedure only one metric is supported: d = c-b."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Pairwise dissimilarity:""","""To calculate the distance matrix (using euclidean distance) on a column of the mapping file, where the results are output to DOB.txt, use the following command:""","""distance_matrix_from_mapping.py -i Fasting_Map.txt -c DOB"""))
+script_info['script_usage'].append(
+    ("Pairwise dissimilarity:",
+     "To calculate the distance matrix (using euclidean distance) on a column of the mapping file, where the results are output to DOB.txt, use the following command:",
+     "%prog -i Fasting_Map.txt -c DOB"))
 script_info['output_description']="""The output of distance_matrix_from_mapping.py is a file containing a distance matrix between rows corresponding to a column in a mapping file."""
 script_info['required_options']=[
  make_option('-i', '--input_path',
