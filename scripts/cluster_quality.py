@@ -24,9 +24,14 @@ from qiime.cluster_quality import clust_qual_ratio
 script_info={}
 script_info['brief_description']="""compute the quality of a cluster"""
 script_info['script_description']="""The input is a distance matrix (i.e. resulting file from beta_diversity.py)."""
+
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""cluster quality based on the treatment category:""","""to compute the quality of clusters, and print to stdout, use the following idiom:""","""cluster_quality.py -i unweighted_unifrac_distance_matrix.txt -m Fasting_Map.txt -c Treatment"""))
-script_info['script_usage'].append(('','',''))
+
+script_info['script_usage'].append(("""cluster quality based on the treatment category:""","""to compute the quality of clusters, and print to stdout, use the following idiom:""","""%prog -i weighted_unifrac_otu_table.txt -m Fasting_Map.txt -c Treatment"""))
+
+script_info['script_usage'].append(("""cluster quality based on the DOB category:""","""to compute the quality of clusters, and print to stdout, use the following idiom:""","""%prog -i weighted_unifrac_otu_table.txt -m Fasting_Map.txt -c DOB"""))
+
+
 script_info['output_description']="""The output is either a single number (with -s), or a more detailed output of the similarity between and within clusters."""
 script_info['required_options']=[
 make_option('-i', '--input_path', type='existing_filepath',
