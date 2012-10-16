@@ -33,11 +33,11 @@ designated output directory."
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Example:",\
 "Using the input files seqs.fna and seqs.qual, generate seqs.fastq in \
-the fastq_files directory:", "python convert_fastaqual_fastq.py \
+the fastq_files directory:", "convert_fastaqual_fastq.py \
 -f seqs.fna -q seqs.qual -o fastq_files/"))
 script_info['script_usage'].append(("Example:",\
 "Using input seqs.fastq generate fasta and qual files in fastaqual \
-directory:", "python convert_fastaqual_fastq.py -c fastq_to_fastaqual \
+directory:", "convert_fastaqual_fastq.py -c fastq_to_fastaqual \
 -f seqs.fastq -o fastaqual"))
 script_info['output_description'] = """Outputs a complete or minimal FASTQ \
 file, which omits the redundant sequence label on the quality scores, or splits\
