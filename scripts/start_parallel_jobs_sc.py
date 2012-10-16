@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -22,12 +22,16 @@ from qiime.util import load_qiime_config, qiime_system_call
 qiime_config = load_qiime_config()
 
 script_info = {}
-script_info['brief_description'] = "Starts multiple jobs in parallel on Sun GridEngine systems. This is designed to work with StarCluster EC2 instances, but may be applicable beyond there."
-script_info['script_description'] = ""
-script_info['script_usage'] = [\
- ("Example",\
- "Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. ",\
- "%prog -ms test_jobs.txt RUNID")]
+script_info['brief_description'] = "Starts parallel jobs on Sun GridEngine queueing systems."
+script_info['script_description'] = "Starts multiple jobs in parallel on Sun GridEngine systems. This is designed to work with StarCluster EC2 instances, but may be applicable beyond there."
+script_info['script_usage'] = [
+ ("Job submission example",
+ "Start each command listed in test_jobs.txt in parallel. The run ID for these jobs will be RUNID.",
+ "%prog -ms test_jobs.txt RUNID"),
+ ("Queue specification example",
+ "Submit the commands listed in test_jobs.txt to the specified queue.",
+ "%prog -ms test_jobs.txt -q all.q RUNID")
+ ]
 script_info['output_description']= "No output is created."
 script_info['required_options'] = []
 script_info['optional_options'] = [
@@ -70,8 +74,8 @@ def write_job_files(output_dir,commands,run_id,queue_name):
     for i,command in enumerate(commands):
         job_fp = '%s/%s%d' % (jobs_dir, run_id, i)
         f = open(job_fp,'w')
-        f.write(QSUB_TEXT % \
-         (queue_name, run_id + str(i), '\n'.join(command.split(';'))))
+        f.write(QSUB_TEXT %
+                (queue_name, run_id + str(i), '\n'.join(command.split(';'))))
         f.close()
         job_fps.append(job_fp)
     
@@ -99,12 +103,11 @@ def run_commands(output_dir,commands,run_id,submit_jobs,keep_temp,queue_name):
     return
 
 def main():
-    option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
        
     if opts.submit_jobs and not opts.make_jobs:
-        option_parser.error('Must pass -m if passing -s. (Sorry about this, '+\
-        'it\'s for backwards-compatibility.)') 
+        option_parser.error('Must pass -m if passing -s. (Sorry about this, '
+                            'it\'s for backwards-compatibility.)')
 
     min_args = 2
     if len(args) < min_args:
@@ -113,7 +116,7 @@ def main():
     output_dir = qiime_config['working_dir'] or './'
     run_commands(output_dir,
                  open(args[0]),
-                 args[1],\
+                 args[1],
                  submit_jobs=opts.submit_jobs,
                  keep_temp=True,
                  queue_name=opts.queue_name)
