@@ -32,60 +32,101 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Make distance histograms"""
-script_info['script_description']="""To visualize the distance between samples and/or categories in the metadata mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the metadata mapping file. """
+script_info['script_description']="""
+To visualize the distance between samples and/or categories in the metadata
+mapping file, the user can generate histograms to represent the distances
+between samples. This script generates an HTML file, where the user can compare
+the distances between samples based on the different categories associated to
+each sample in the metadata mapping file.
+
+Distance histograms provide a way to compare different categories and see which
+tend to have larger/smaller distances than others. For example, in a hand
+study, you may want to compare the distances between hands to the distances
+between individuals (with the file "hand_distances.txt" using the parameter -d
+hand_distances.txt). The categories are defined in the metadata mapping file
+(specified using the parameter -m hand_map.txt). If you want to look at the
+distances between hands and individuals, choose the "Hand" field and
+"Individual" field (using the parameter --fields Hand,Individual (notice the
+fields are comma-delimited)). For each of these groups of distances a
+histogram is made. The output is an HTML file which is created in the
+"Distance_Histograms" directory (using the parameter -o Distance_Histograms to
+specify output directory) where you can look at all the distance histograms
+individually, and compare them between each other.
+"""
+
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
+script_info['script_usage'].append(("Distance histograms example",
+"In the following command, the user supplies a distance matrix (i.e. the "
+"resulting file from beta_diversity.py), the user-generated metadata mapping "
+"file and one category \"Treatment\" to generate distance histograms.",
+"%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields Treatment "
+"-o example1"))
+script_info['script_usage'].append(("Multiple categories",
+"For comparison of multiple categories (e.g. Treatment, DOB), you can use the "
+"following command (separating each category with a comma).",
+"%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields "
+"Treatment,DOB -o example2"))
+script_info['script_usage'].append(("Suppress HTML output",
+"By default, HTML output is automatically generated. If the user would like "
+"to suppress the HTML output, you can use the following command.",
+"%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields Treatment "
+"--suppress_html_output -o example3"))
+script_info['script_usage'].append(("Preferences file",
+"You can provide your own preferences file (prefs.txt) with the following "
+"command. If a preferences file is supplied, you do not need to supply fields "
+"on the command-line.",
+"%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -p prefs.txt -o "
+"example4"))
 
-In the following command, the user only supplies a distance matrix (i.e. resulting file from beta_diversity.py), the user-generated metadata mapping file and one category (e.g. pH):""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH"""))
-script_info['script_usage'].append(("""""","""For comparison of multiple categories (e.g. pH, salinity), you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity"""))
-script_info['script_usage'].append(("""""","""HTML output is automatically generated. If the user would like to suppress the HTML output, you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --suppress_html_output"""))
-script_info['script_usage'].append(("""""","""In the case that the user generates their own preferences file (prefs.txt), they can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt -p prefs.txt"""))
-script_info['script_usage'].append(("""""","""Note: In the case that a preferences file is passed, the user does not need to supply fields in the command-line.""",""""""))
-script_info['output_description']="""The result of this script will be a folder containing images and/or an html file (with appropriate javascript files), depending on the user-defined parameters."""
+script_info['output_description']="""
+The result of this script will be a folder containing images and/or an HTML
+file (with appropriate javascript files), depending on the user-defined
+parameters.
+"""
 
-script_info['required_options']=[\
+script_info['required_options']=[
     make_option('-d','--distance_matrix_file',
-        help='Input distance matrix filepath (i.e. the result of' +\
-        ' beta_diversity.py). WARNING: Only symmetric, hollow distance '
+        help='Input distance matrix filepath (i.e. the result of '
+        'beta_diversity.py). WARNING: Only symmetric, hollow distance '
         'matrices may be used as input. Asymmetric distance matrices, such as '
         'those obtained by the UniFrac Gain metric (i.e. beta_diversity.py '
         '-m unifrac_g), should not be used as input',
-        type='existing_filepath'),\
-    make_option('-m', '--map_fname', dest='map_fname', \
+        type='existing_filepath'),
+    make_option('-m', '--map_fname', dest='map_fname',
          help='Input metadata mapping filepath.',
-         type='existing_filepath'), \
+         type='existing_filepath')
 ]
 
-script_info['optional_options']=[\
+script_info['optional_options']=[
     make_option('-p', '--prefs_path',
-        help='Input user-generated preferences filepath. NOTE: This is a' +\
-        ' file with a dictionary containing preferences for the analysis.' +\
-        ' This dictionary must have a "Fields" key mapping to a list of' +\
-        ' desired fields. [default: %default]',
+        help='Input user-generated preferences filepath. NOTE: This is a '
+        'file with a dictionary containing preferences for the analysis. '
+        'This dictionary must have a "Fields" key mapping to a list of '
+        'desired fields. [default: %default]',
         type='existing_filepath'),
     make_option('-o', '--dir_path',
         default='./',help='Output directory. [default: %default]',
-        type='new_dirpath'),\
-    make_option('-k', '--background_color', dest='background_color',\
+        type='new_dirpath'),
+    make_option('-k', '--background_color', dest='background_color',
         default='white', type='choice',choices=['black','white'],
-        help='Background color for use in the plots' +\
-        ' (black or white) [default: %default]'),
-    make_option('--monte_carlo',dest='monte_carlo',default=None,\
+        help='Background color for use in the plots '
+        '(black or white) [default: %default]'),
+    make_option('--monte_carlo',dest='monte_carlo',default=None,
         action='store_true',
-        help='Deprecated: pass --monte_carlo_iters > 0 to enable'),\
-    make_option('--suppress_html_output',dest='suppress_html_output',\
+        help='Deprecated: pass --monte_carlo_iters > 0 to enable'),
+    make_option('--suppress_html_output',dest='suppress_html_output',
         default=False,action='store_true',
-        help='Suppress HTML output. [default: %default]'),\
+        help='Suppress HTML output. [default: %default]'),
     make_option('-f','--fields', default=None, type='string',
-        help='Comma-separated list of fields to compare, where the list of' +\
-        ' fields should be in quotes (e.g. "Field1,Field2,Field3").' +\
-        ' Note: if this option is passed on the' +\
-        ' command-line, it will overwrite the fields in prefs file.'+\
-        ' [default:%default; first field in mapping file is used]'),\
-    make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",\
+        help='Comma-separated list of fields to compare, where the list of '
+        'fields should be in quotes (e.g. "Field1,Field2,Field3"). '
+        'Note: if this option is passed on the command-line, it will '
+        'overwrite the fields in prefs file. [default: first field in mapping '
+        'file is used]'),
+    make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",
         default=0,
-        help='Number of iterations to perform for Monte Carlo analysis.' +\
-        ' [default: %default; No monte carlo simulation performed]'),\
+        help='Number of iterations to perform for Monte Carlo analysis. '
+        '[default: %default; No monte carlo simulation performed]')
 ]
 script_info['option_label']={'distance_matrix_file':'Distance matrix filepath',
                              'map_fname':'QIIME-formatted mapping filepath',
