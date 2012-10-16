@@ -64,7 +64,7 @@ def main():
             all_ids.index(i)
         except ValueError:
             option_parser.error('Taxa '+i+' not found in the tree. You may'+\
-                ' specified an internal node.')
+                ' have specified an internal node.')
 
     if len(all_ids)==len(group_ids): #m ust be the same set of ids if above check passes
         option_parser.error('The taxa_ids you specified contain every tip'+\
