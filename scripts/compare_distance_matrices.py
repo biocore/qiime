@@ -57,24 +57,24 @@ http://qiime.org/tutorials/distance_matrix_comparison.html.
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Partial Mantel",
 "Performs a partial Mantel test on two distance matrices, "
-"using a third matrix as a control. Runs 100 permutations to calculate the "
+"using a third matrix as a control. Runs 99 permutations to calculate the "
 "p-value.",
 "%prog --method partial_mantel -i "
 "weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt "
-"-o mantel_out -n 100"))
+"-o partial_mantel_out -n 99"))
 script_info['script_usage'].append(("Mantel",
 "Performs a Mantel test on all pairs of four distance matrices, "
-"including 1000 permutations for each test.",
+"including 999 permutations for each test.",
 "%prog --method mantel "
 "-i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,"
 "weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt "
-"-o mantel_out -n 1000"))
+"-o mantel_out -n 999"))
 script_info['script_usage'].append(("Mantel Correlogram",
 "This example computes a Mantel correlogram on two distance matrices "
 "using 999 permutations in each Mantel test. Output is written to the "
-"mantel_output directory.",
+"mantel_correlogram_out directory.",
 "%prog --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o "
-"mantel_output -n 999"))
+"mantel_correlogram_out -n 999"))
 
 script_info['output_description']= """
 Mantel: One file is created containing the Mantel 'r' statistic and p-value.
