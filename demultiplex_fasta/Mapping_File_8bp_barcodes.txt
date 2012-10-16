@@ -1,0 +1,11 @@
+#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
+PC.355	AACTCGTC	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
+PC.356	ACAGACCA	YATGCTGCCTCCCGTAGGAGT	Control	20061126	Control_mouse_I.D._356
+PC.481	ACCAGCGA	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
+PC.593	AGCAGCAC	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
+PC.607	AACTGTGC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
+PC.634	ACAGAGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
+PC.635	ACCGCAGA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
+PC.636	ACGGTGAG	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
