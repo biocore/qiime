@@ -40,12 +40,11 @@ script_info['script_description']="""This script generates a 3D plot comparing t
 
 The principal_coordinates coordinates files are obtained by applying "principal_coordinates.py" to a file containing beta diversity measures. The beta diversity files are optained by applying "beta_diversity.py" to an OTU table. One may apply "transform_coordinate_matrices.py" to the principal_coordinates coordinates files before using this script to compare them."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("Example 1","""Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'"""))
-script_info['script_usage'].append(("Example 2","""Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'"""))
-script_info['script_usage'].append(("Example 3","""Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/"""))
-script_info['script_usage'].append(("Example 4","""Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/"""))
-script_info['script_usage'].append(("Example 5","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
-script_info['script_usage'].append(("Example 6","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
+script_info['script_usage'].append(("Example 1","""Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:""","""%prog -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt"""))
+script_info['script_usage'].append(("Example 2","""Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Treatment and DOB):""","""%prog -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment,DOB'"""))
+script_info['script_usage'].append(("Example 3","""Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: ""","""%prog -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test/"""))
+script_info['script_usage'].append(("Example 4","""Pass in a list of desired edges and only one pca/pcoa file: ""","""%prog -i $PWD/raw_pca_data1.txt -e $PWD/edges.txt -m Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test2/"""))
+script_info['script_usage'].append(("Example 5","""Pass in a list of desired edges and only one pca/pcoa file: ""","""%prog -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -e $PWD/edges.txt -m $PWD/Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test3/"""))
 script_info['output_description']="""This script results in a folder containing an html file which displays the 3D Plots generated."""
 script_info['required_options']= [\
     make_option('-i', '--coord_fnames',type='string',\
