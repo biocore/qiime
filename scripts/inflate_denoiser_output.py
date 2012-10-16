@@ -26,9 +26,15 @@ script_info['script_description'] = """Inflate denoiser results so they can be p
 
 The inflation process writes each centroid sequence n times, where n is the number of reads that cluster to that centroid, and writes each singleton once. Flowgram identifiers are mapped back to post-split_libraries identifiers in this process (i.e., identifiers in fasta fps).
 """
-script_info['script_usage'] = [
- ("","Inflate the results of a single denoiser run.","inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna"),
- ("","Inflate the results of multiple denoiser runs to a single denoised_seqs.fna file.","inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna")]
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(
+ ("","Inflate the results of a single denoiser run.","%prog -c centroids.fasta -s singletons.fasta -f seqs.fna -d denoiser_mapping.txt -o inflated_seqs.fna"))
+
+script_info['script_usage'].append(
+ ("","Inflate the results of multiple denoiser runs to a single inflated_seqs.fna file.","%prog -c centroids1.fasta,centroids2.fasta -s singletons1.fasta,singletons2.fasta -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o inflated_seqs_combined.fna"))
+
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
