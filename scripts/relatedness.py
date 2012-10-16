@@ -23,13 +23,13 @@ script_info['script_description'] = "This script calculates NRI and NTI from a p
 script_info['script_usage'] = [\
     ("Calculate both NRI and NTI from the given tree and group of taxa:",
      "",
-     "%prog -t gg_tree.tre -i ids.txt -m nri,nti"),
+     "%prog -t reference.tre -g group1_otus.txt -m nri,nti"),
     ("Calculate only NRI:",
      "",
-     "%prog -t gg_tree.tre -i ids.txt -m nri"),
+     "%prog -t reference.tre -g group1_otus.txt -m nri"),
     ("Calculate only NTI using a different number of iterations:",
      "",
-     "%prog -t gg_tree.tre -i ids.txt -m nti -i 100")]
+     "%prog -t reference.tre -g group1_otus.txt -m nti -i 100")]
 script_info['output_description']= "Outputs a value for specified tests"
 script_info['required_options'] = [\
  make_option('-t','--tree_fp',type="existing_filepath",help='the tree filepath'),
@@ -63,7 +63,8 @@ def main():
         try:
             all_ids.index(i)
         except ValueError:
-            option_parser.error('taxa '+i+' not found in the tree')
+            option_parser.error('Taxa '+i+' not found in the tree. You may'+\
+                ' specified an internal node.')
 
     if len(all_ids)==len(group_ids): #m ust be the same set of ids if above check passes
         option_parser.error('The taxa_ids you specified contain every tip'+\
