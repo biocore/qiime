@@ -1,0 +1,2 @@
+Method Name	R-value	P-value
+ANOSIM	0.8125	0.03	
