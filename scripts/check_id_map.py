@@ -40,17 +40,17 @@ script_info['script_description']="""Specifically, we check that:
        barcodes are appended (error)
     - There are no duplicates when barcodes and added demultiplex 
        fields (-j option) are combined (error)
-    - Data fields are not found passed the Description column (warning)
+    - Data fields are not found beyond the Description column (warning)
       
     Details about the metadata mapping file format can be found here:
     http://www.qiime.org/documentation/file_formats.html#metadata-mapping-files
     
-    Errors and warnings are saved to a log file.  Errors are generally caused 
-    by problems with the headers, and should be resolved before attempting to 
-    correct any warnings.  Duplicate SampleIDs will also create errors.
+    Errors and warnings are saved to a log file.  Errors can be caused by
+    problems with the headers, invalid characters in barcodes or primers, or
+    by duplications in SampleIDs or barcodes.
     
-    Warnings can arise from invalid characters, non-DNA characters,
-    duplicate sample descriptions/barcodes, or missing data fields.
+    Warnings can arise from invalid characters and variable length barcodes that
+    are not specified with the --variable_len_barcode.
     Warnings will contain a reference to the cell (row,column) that the 
     warning arose from.
     
@@ -72,17 +72,17 @@ script_info['script_description']="""Specifically, we check that:
     AGGGTTCGATTCTGGCTCAG,AGAGTTTGATCCTGGCTTAG,AGAATTTGATCTTGGTTCAG
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Check the test_mapping.txt mapping file for problems, supplying the required mapping file.""","""check_id_map.py -m test_mapping.txt"""))
-script_info['output_description']="""A log file, html file, and corrected_mapping.txt file will be written to the current directory directory."""
+script_info['script_usage'].append(("""Example:""","""Check the Fasting_Map.txt mapping file for problems, supplying the required mapping file, and output the results in the check_id_map_output directory""","""check_id_map.py -m Fasting_Map.txt -o check_id_map_output"""))
+script_info['output_description']="""A log file, html file, and corrected_mapping.txt file will be written to the current output directory."""
 script_info['required_options']= [\
     make_option('-m', '--mapping_fp',type='existing_filepath',
-                help='Metadata mapping file filepath')
+                help='Metadata mapping filepath')
     
 ]
 script_info['optional_options']= [\
     make_option('-o', '--output_dir',type='new_dirpath',
-        help='Required output directory for log file and corrected mapping '+\
-        'file, log file, and html file. [default: %default]', default="./"),
+        help='Required output directory for log file, corrected mapping '+\
+        'file, and html file. [default: %default]', default="./"),
     make_option('-v', '--verbose',
         help='Enable printing information to standard out '+\
         '[default: %default]', default=True,action='store_false'),
@@ -93,17 +93,20 @@ script_info['optional_options']= [\
         '[default: %default]', default="_"),
     make_option('-b', '--not_barcoded',
         action='store_true', default=False,
-        help='Use -b if barcodes are not present. [default: %default]'),
+        help='Use -b if barcodes are not present.  BarcodeSequence header '+\
+        'still required.  [default: %default]'),
     make_option('-B', '--variable_len_barcodes',
         action='store_true', default=False,
         help='Use -B if variable length barcodes are present to suppress '+\
         'warnings about barcodes of unequal length. [default: %default]'),
     make_option('-p', '--disable_primer_check',
         action='store_true', default=False,
-        help='Use -p to disable checks for primers. [default: %default]'),
+        help='Use -p to disable checks for primers.  LinkerPrimerSequence '+\
+        'header still required.  [default: %default]'),
     make_option('-j', '--added_demultiplex_field',type='string',
-        help='Use -j to add a field to use in the mapping file as an '+\
-        'additional demultiplexing option to the barcode.  All combinations '+\
+        help='Use -j to add a field to use in the mapping file as '+\
+        'additional demultiplexing (can be used with or without barcodes).  '+\
+        'All combinations '+\
         'of barcodes/primers and the these fields must be unique. The '+\
         'fields must contain values that can be parsed from the fasta labels '+\
         'such as "plate=R_2008_12_09".  In this case, "plate" would be the '+\
