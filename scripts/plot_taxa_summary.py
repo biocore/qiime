@@ -36,10 +36,10 @@ or category counts from summarize_taxa.py for combined samples by level (-i) and
  'other category' using the (-n) option, default is 20.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:""","""plot_taxa_summary.py -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/"""))
-script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/"""))
-script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""plot_taxa_summary.py -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/"""))
-script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for specific samples, i.e. sample 'PC.636' and sample 'PC.635' that are in the counts file header, you can use the following command:""","""plot_taxa_summary.py -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/"""))
+script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:""","""%prog -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/"""))
+script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""%prog -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/"""))
+script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""%prog -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/"""))
+script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for specific samples, i.e. sample 'PC.636' and sample 'PC.635' that are in the counts file header, you can use the following command:""","""%prog -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/"""))
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 
 script_info['required_options']=[\
