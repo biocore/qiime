@@ -72,7 +72,7 @@ script_info['script_description']="""Specifically, we check that:
     AGGGTTCGATTCTGGCTCAG,AGAGTTTGATCCTGGCTTAG,AGAATTTGATCTTGGTTCAG
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Check the Fasting_Map.txt mapping file for problems, supplying the required mapping file, and output the results in the check_id_map_output directory""","""check_id_map.py -m Fasting_Map.txt -o check_id_map_output"""))
+script_info['script_usage'].append(("""Example:""","""Check the Fasting_Map.txt mapping file for problems, supplying the required mapping file, and output the results in the check_id_map_output directory""","""%prog -m Fasting_Map.txt -o check_id_map_output"""))
 script_info['output_description']="""A log file, html file, and corrected_mapping.txt file will be written to the current output directory."""
 script_info['required_options']= [\
     make_option('-m', '--mapping_fp',type='existing_filepath',
