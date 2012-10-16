@@ -118,63 +118,19 @@ http://qiime.org/tutorials/category_comparison.html.
 """
 
 script_info['script_usage'] = []
-script_info['script_usage'].append(("adonis",
+script_info['script_usage'].append(("adonis example",
 "Runs the adonis statistical method on a distance matrix and mapping file "
-"using the HOST_SUBJECT_ID category and 999 permutations. Then it outputs the "
-"results to the 'adonis' directory. The full file path will be: "
-"./adonis/adonis_results.txt",
-"%prog --method adonis -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o adonis -n 999"))
+"using the Treatment category and 999 permutations, writing the output to the "
+"'adonis_out' directory.",
+"%prog --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
+"Treatment -o adonis_out -n 999"))
 
-script_info['script_usage'].append(("ANOSIM",
+script_info['script_usage'].append(("ANOSIM example",
 "Runs the ANOSIM statistical method on a distance matrix and mapping file "
-"using the HOST_SUBJECT_ID category and 999 perutations. Then it outputs the "
-"results to the 'anosim' directory. The full file path will be: "
-"./anosim/anosim_results.txt",
-"%prog --method anosim -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999"))
-
-script_info['script_usage'].append(("BEST",
-"Runs the BEST statistical method on a distance matrix and mapping file "
-"using the LATITUDE and LONGITUDE categories. Then it outputs the results to "
-"the 'best' directory. The full file path will be: ./best/best_results.txt",
-"%prog --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best"))
-
-script_info['script_usage'].append(("Moran's I",
-"Runs the Moran's I statistical method on a distance matrix and mapping "
-"file using the PH category. Then it outputs the results to the 'morans_i' "
-"directory. The full file path will be: ./morans_i/Morans_I_results.txt",
-"%prog --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m "
-"datasets/88_soils/map.txt -c PH -o morans_i"))
-
-script_info['script_usage'].append(("MRPP",
-"Runs the MRPP statistical method on a distance matrix and mapping file using "
-"the HOST_SUBJECT_ID category. Then it outputs the results to the 'mrpp' "
-"directory. The full file path will be: ./mrpp/mrpp_results.txt",
-"%prog --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999"))
-
-script_info['script_usage'].append(("PERMANOVA", "Runs the PERMANOVA "
-"statistical method on a distance matrix and mapping file using the "
-"HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' "
-"directory. The full file path will be: ./permanova/permanova_results.txt",
-"%prog --method permanova -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova -n 999"))
-
-script_info['script_usage'].append(("PERMDISP", "Runs the PERMDISP "
-"statistical method on a distance matrix and mapping file using the "
-"HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' "
-"directory. The full file path will be: ./permdisp/permdisp_results.txt",
-"%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp"))
-
-script_info['script_usage'].append(("db-RDA", "Runs the db-RDA statistical "
-"method on a distance matrix and mapping file using the HOST_SUBJECT_ID "
-"category. Then it outputs the results to the 'dbrda' directory. The full "
-"file path will be: ./dbrda/dbrda_results.txt and ./dbrda/dbrda_plot.txt",
-"%prog --method dbrda -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
-"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o dbrda"))
+"using the Treatment category and 99 permutations, writing the output to the "
+"'anosim_out' directory.",
+"%prog --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
+"Treatment -o anosim_out -n 99"))
 
 script_info['output_description']= """
 At least one file will be created in the output directory specified by -o. For
