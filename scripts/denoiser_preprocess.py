@@ -35,7 +35,7 @@ script_info['script_usage'] = [ \
     ( "",
       """Run program on flowgrams in 454Reads.sff. Remove reads which are not in split_lib_filtered_seqs.fasta. 
 Remove primer CATGCTGCCTCCCGTAGGAGT from reads before running phase I""",
-      """%prog -i 454Reads.sff.txt -f split_lib_filtered_seqs.fasta -p CATGCTGCCTCCCGTAGGAGT """ )
+      """%prog -i Fasting_Example.sff.txt -f seqs.fna -p CATGCTGCCTCCCGTAGGAGT """ )
     ]
 
 script_info['output_description']="""
