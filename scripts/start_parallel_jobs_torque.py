@@ -3,10 +3,8 @@
 """A simple qsub based cluster submission script."""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder",
-               "Rob Knight",
-               "Greg Caporaso"]
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Jens Reeder", "Rob Knight", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -28,29 +26,36 @@ qiime_config = load_qiime_config()
 script_info = {}
 script_info['brief_description'] = "Starts multiple jobs in parallel on torque/qsub based multiprocessor systems."
 script_info['script_description'] = "This script is designed to start multiple jobs in parallel on cluster systems with a torque/qsub based scheduling system."
-script_info['script_usage'] = [\
- ("Example",\
- "Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. ",\
- "%prog -ms test_jobs.txt RUNID")]
+script_info['script_usage'] = [
+ ("Job submission example",
+ "Start each command listed in test_jobs.txt in parallel. The run ID for these jobs will be RUNID.",
+ "%prog -ms test_jobs.txt RUNID"),
+ ("Queue specification example",
+  "Submit the commands listed in test_jobs.txt to the specified queue.",
+  "%prog -ms test_jobs.txt -q friendlyq RUNID"),
+ ("Jobs output directory specification example",
+  "Submit the commands listed in test_jobs.txt, with the jobs put under the "
+  "my_jobs/ directory.",
+  "%prog -ms test_jobs.txt -j my_jobs/ RUNID")
+ ]
 script_info['output_description']= "No output is created."
 script_info['required_options'] = []
-script_info['optional_options'] = [\
-    make_option('-m','--make_jobs',action='store_true',\
+script_info['optional_options'] = [
+    make_option('-m','--make_jobs',action='store_true',
                     help='make the job files [default: %default]'),
 
-    make_option('-s','--submit_jobs',action='store_true',\
+    make_option('-s','--submit_jobs',action='store_true',
                     help='submit the job files [default: %default]'),
 
-    make_option('-q','--queue',action='store',\
-                    type='string',dest='queue', \
-                    help='name of queue to submit to '+\
-                    ' [default: %default]', \
+    make_option('-q','--queue',action='store',
+                    type='string',dest='queue',
+                    help='name of queue to submit to [default: %default]',
                     default=qiime_config['torque_queue']),
 
-    make_option('-j','--job_dir', action='store',\
-                    type='string',dest='job_dir',\
-                    help='directory to store the jobs '+\
-                    '[default: %default]', default="jobs/"),
+    make_option('-j','--job_dir', action='store',
+                    type='string',dest='job_dir',
+                    help='directory to store the jobs [default: %default]',
+                    default="jobs/")
 ]
 
 script_info['version'] = __version__
@@ -61,12 +66,13 @@ def main():
        parse_command_line_parameters(**script_info)
        
     if opts.submit_jobs and not opts.make_jobs:
-        option_parser.error('Must pass -m if passing -s. (Sorry about this, '+\
-        'it\'s for backwards-compatibility.)') 
+        option_parser.error('Must pass -m if passing -s. (Sorry about this, '
+                            'it\'s for backwards-compatibility.)')
 
     min_args = 2
     if len(args) != min_args:
-        option_parser.error('Program requires <commands file> and  <job prefix>')
+        option_parser.error('Program requires <commands file> and '
+                            '<job prefix>')
 
     if (len(args[1])>10 or len(args[1])==0):
         option_parser.error('job prefix must be 1-10 characters long')
@@ -79,7 +85,7 @@ def main():
             makedirs(opts.job_dir)
         except OSError:
             exit(" Jobs directory can not be created. "
-                 +"Check for permissions or file with the same name: %s\n"
+                 "Check for permissions or file with the same name: %s\n"
                  % opts.job_dir)
 
     if (opts.make_jobs):
