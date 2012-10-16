@@ -27,7 +27,7 @@ script_info={}
 script_info['brief_description']="""Filter OTU mapping file and sequences by SampleIDs"""
 script_info['script_description']="""This filter allows for the removal of sequences and OTUs containing user-specified Sample IDs, for instance, the removal of negative control samples. This script identifies OTUs containing the specified Sample IDs and removes its corresponding sequence from the sequence collection."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""The following command can be used, where all options are passed (using the resulting OTU file from pick_otus.py, FASTA file from split_libraries.py and removal of Sample1) with the resulting data being written to the output directory "filtered_otus/":""","""filter_otus_by_sample.py -i seqs_otus.txt -f seqs.fna -s Sample1 -o filtered_otus/"""))
+script_info['script_usage'].append(("""Example:""","""The following command can be used, where all options are passed (using the resulting OTU file from pick_otus.py, FASTA file from split_libraries.py and removal of sample 'PC.636') with the resulting data being written to the output directory "filtered_otus/":""","""%prog -i seqs_otus.txt -f seqs.fna -s PC.636 -o filtered_otus/"""))
 script_info['output_description']="""As a result a new OTU and sequence file is generated and written to a randomly generated folder where the name of the folder starts with "filter_by_otus" Also included in the folder, is another FASTA file containing the removed sequences, leaving the user with 3 files."""
 
 script_info['required_options']=[\
