@@ -28,3 +28,6 @@ pip-log.txt
 
 # vi
 .*.swp
+
+#OS X files
+.DS_Store
