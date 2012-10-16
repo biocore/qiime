@@ -77,7 +77,7 @@ script_info['script_usage'].append(("""Prefs File Example""",
 script_info['script_usage'].append(("""Output Directory:""",
         "If you want to give an specific output directory (e.g. '3d_plots'), use the "
         "following code:",
-        """%prog -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 3d_plots/"""))
+        """%prog -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 3d_plots"""))
 
 script_info['script_usage'].append(("""Background Color Example:""",
         "If the user would like to color the background white they can use the '-k' "
@@ -91,7 +91,7 @@ script_info['script_usage'].append(("""Jackknifed Principal Coordinates (w/ conf
         "from 0-1. Currently there are two metrics '--ellipsoid_method' that can be used "
         "for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify "
         "all of these options as follows:", 
-        """%prog -i pcoa/ -m Fasting_Map.txt -b \'Treatment&&DOB' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR"""))
+        """%prog -i pcoa -m Fasting_Map.txt -b 'Treatment&&DOB' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR"""))
 
 script_info['script_usage'].append(("""Bi-Plots:""",
         "If the user would like to see which taxa are more prevalent in different areas "
