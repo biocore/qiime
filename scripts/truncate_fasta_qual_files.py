@@ -29,18 +29,16 @@ be used as an index to truncate the sequence and quality scores, and
 all data at that base position and to the end of the sequence will be
 removed in the output filtered files."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Truncate the input fasta and quality files at base position 215, output to the filtered_seqs directory:""","""truncate_fasta_qual_files.py -f seqs.fna -q seqs.qual -b 215 -o filtered_seqs/"""))
+script_info['script_usage'].append(("""Example:""","""Truncate the input fasta and quality files at base position 100, output to the filtered_seqs directory:""","""%prog -f seqs.fna -q seqs.qual -b 100 -o filtered_seqs/"""))
 script_info['output_description']="""Filtered versions of the input fasta and qual file (based on input name with '_filtered' appended) will be generated in the output directory"""
 script_info['required_options']= [\
     make_option('-f', '--fasta_fp',
         type='existing_filepath',
-        help='Fasta file.  Needed to test for congruety between the '+\
-        'number of nucleotides in the fasta file and quality scores in '+\
-        'the qual file.'),
+        help='Input fasta filepath to be truncated.'),
         
     make_option('-q', '--qual_fp',
         type='existing_filepath',
-        help='Quality score file used to generate histogram data.'),
+        help='Input quality scores filepath to be truncated.'),
         
     make_option('-b', '--base_pos', type='int',
         help='Nucleotide position to truncate the fasta and quality score '+\
