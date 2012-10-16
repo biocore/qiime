@@ -27,10 +27,10 @@ script_info['brief_description']="""Extract sequences based on the SampleID"""
 script_info['script_description']="""This script creates a fasta file which will contain only sequences that ARE associated with a set of sample IDs, OR all sequences that are NOT associated with a set of sample IDs (-n)"""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids S2, S3, \
-S4 (-s). As always, sample IDs are case-sensitive:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4"""))
-script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE NOT (-n) associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4 -n"""))
+S4 (-s). As always, sample IDs are case-sensitive:""","""%prog -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4"""))
+script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE NOT (-n) associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:""","""%prog -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4 -n"""))
 
-script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose "Treatment" value is "Fast" in the mapping file:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -m map.txt -s "Treatment:Fast" """))
+script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose "Treatment" value is "Fast" in the mapping file:""","""%prog -i inseqs.fasta -o outseqs.fasta -m map.txt -s "Treatment:Fast" """))
 
 script_info['output_description']="""The script produces a fasta file containing containing only the specified SampleIDs."""
 
