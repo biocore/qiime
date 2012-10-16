@@ -45,9 +45,6 @@ script_info['optional_options'] = [\
  make_option('-w','--working_dir',default=get_qiime_temp_dir(),
              help='directory where the tests should be run [default: %default]',
              type='existing_dirpath'),
- make_option('-q','--qiime_scripts_dir',default=qiime_config['qiime_scripts_dir'],
-             help='directory containing scripts to test [default: %default]',
-             type='existing_dirpath'),
  make_option('-l','--failure_log_fp',type="new_filepath",default=default_log_fp,
              help='log file to store record of failures [default: %s]' % default_log_fp_help_str)
 ]
@@ -65,6 +62,19 @@ else:
      make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
                  help='the directory containing input for script usage examples'))
 
+default_qiime_scripts_dir = qiime_config['qiime_scripts_dir']
+if default_qiime_scripts_dir != None:
+    script_info['optional_options'].append(
+     make_option('-q','--qiime_scripts_dir',
+             default=default_qiime_scripts_dir,
+             help='directory containing scripts to test [default: %default]',
+             type='existing_dirpath'))
+else:
+    script_info['required_options'].append(
+     make_option('-q','--qiime_scripts_dir',
+             help='directory containing scripts to test',
+             type='existing_dirpath'))
+
 script_info['help_on_no_arguments'] = False
 
 def main():
@@ -77,7 +87,7 @@ def main():
     verbose = opts.verbose
     tests = opts.tests
     if tests != None:
-        tests = tests.split(',')
+        tests = [e.rstrip('/') for e in tests.split(',')]
     failure_log_fp = opts.failure_log_fp
     
     result_summary, num_failures = run_script_usage_tests(
