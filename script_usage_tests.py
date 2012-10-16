@@ -77,7 +77,7 @@ def main():
     verbose = opts.verbose
     tests = opts.tests
     if tests != None:
-        tests = tests.split(',')
+        tests = [e.rstrip('/') for e in tests.split(',')]
     failure_log_fp = opts.failure_log_fp
     
     result_summary, num_failures = run_script_usage_tests(
