@@ -65,7 +65,7 @@ def make_category_values_Id_dict(mapping_data, category):
     
     input:
         mapping_data - a nested dictionary that maps SampleID to
-        descriptor categories (e.g. {'Id1': {'Weight':'Fat}}
+        descriptor categories (e.g. {'Id1': {'Weight':'Fat'}}
     
         category - a string which specifies a category found in the 
         mapping data (e.g. 'Weight')
