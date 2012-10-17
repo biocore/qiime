@@ -43,9 +43,9 @@ The resulting OTU map will be:
 === ====    ====    ====    ====    ====    ====
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Expand an OTU map:""","""If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt"""))
+script_info['script_usage'].append(("""Expand an OTU map:""","""If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).""","""%prog -i $PWD/otu_map1.txt,$PWD/otu_map2.txt -o $PWD/otu_map_ex1.txt"""))
 
-script_info['script_usage'].append(("""Expand a failures file:""",""" Some OTU pickers (e.g. uclust_ref) will generate a list of failures for sequences which could not be assigned to OTUs. If this occurs in a chained OTU picking process, the failures file will need to be expanded to include the orignal sequence ids. To do this, pass the failures file via -f, and the otu maps up to, but not including, the step that generated the failures file. ""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -f fail.txt -o all_failures.txt"""))
+script_info['script_usage'].append(("""Expand a failures file:""",""" Some OTU pickers (e.g. uclust_ref) will generate a list of failures for sequences which could not be assigned to OTUs. If this occurs in a chained OTU picking process, the failures file will need to be expanded to include the orignal sequence ids. To do this, pass the failures file via -f, and the otu maps up to, but not including, the step that generated the failures file. ""","""%prog -i $PWD/otu_map1.txt,$PWD/otu_map2.txt -f $PWD/fail.txt -o $PWD/all_failures.txt"""))
 
 script_info['output_description']="""The result of this script is an OTU mapping file."""
 script_info['required_options']=[
