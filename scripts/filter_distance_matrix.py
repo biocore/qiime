@@ -25,16 +25,16 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Filter a distance matrix to contain only a specified set of samples."
-script_info['script_description'] = ""
+script_info['script_description'] = "Remove samples from a distance matrix based on a mapping file or an otu table or a list of sample ids."
 script_info['script_usage'] = [("",
  "Filter samples ids listed in sample_id_list.txt from dm.txt",
- "filter_distance_matrix.py -i dm.txt -o dm_out.txt --sample_id_fp sample_id_list.txt"),
+ "%prog -i dm.txt -o dm_out_sample_list.txt --sample_id_fp sample_id_list.txt"),
  ("",
  "Filter samples ids in otu_table.biom from dm.txt",
- "filter_distance_matrix.py -i dm.txt -o dm_out.txt -t otu_table.biom"),
+ "%prog -i dm.txt -o dm_out_otu_table.txt -t otu_table.biom"),
  ("",
  "Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run \"filter_samples_from_otu_table.py -h\" for additional information on how metadata filtering can be specified.)",
- "filter_distance_matrix.py -i dm.txt -o dm_out4.txt -m Fasting_Map.txt -s \"DOB:20061218\""),]
+ "%prog -i dm.txt -o dm_out_mapping_file.txt -m Fasting_Map.txt -s \"DOB:20061218\""),]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_distance_matrix',
@@ -49,7 +49,7 @@ script_info['optional_options'] = [
  make_option('-t','--otu_table_fp',
   type="existing_filepath",help='the otu table filepath'),
  make_option('-m','--mapping_fp',help='path to the mapping file',type="existing_filepath"),\
- make_option('-s','--valid_states',type='string',help="string containing valid states, e.g. 'STUDY_NAME:DOG'"),
+ make_option('-s','--valid_states',type='string',help="string containing valid states, e.g. 'STUDY_NAME:DOB'"),
  make_option('--negate',default=False,
              action='store_true',
              help="discard specified samples (instead of keeping them) [default: %default]")]
