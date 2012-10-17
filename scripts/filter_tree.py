@@ -27,11 +27,13 @@ script_info['script_description'] = """This script takes a tree and a list of OT
 script_info['script_usage'] = []
 script_info['script_usage'].append(("""Prune a tree to include only the tips in tips_to_keep.txt""",\
     """""",\
-    """%prog -i rep_seqs.tre -t tips_to_keep.txt -o rep_seqs_subtree.tre"""))
-script_info['script_usage'].append(("""Prune a tree to remove the tips in tips_to_remove.txt. Note that the -n/--negate option must be passed for this functionality.""",\
+    """%prog -i rep_seqs.tre -t tips_to_keep.txt -o pruned.tre"""))
+script_info['script_usage'].append(("""Prune a tree to remove the tips in tips_to_remove.txt. Note that the -n/--negate option must be passed for this functionality""",\
     """""",\
-    """%prog -i rep_seqs.tre -t tips_to_remove.txt -o rep_seqs_subtree.tre -n"""))
-
+    """%prog -i rep_seqs.tre -t tips_to_keep.txt -o negated.tre -n"""))
+script_info['script_usage'].append(("""Prune a tree to include only the tips found in the fasta file provided""",\
+    """""",\
+    """%prog -i rep_seqs.tre -f fast_f.fna -o pruned_fast.tre"""))
 script_info['output_description'] = \
     """Output is a pruned tree in newick format."""
 
@@ -56,15 +58,16 @@ script_info['optional_options']=[\
   '--negate',
   default=False,
   action='store_true',
-  help='if negate is not false will prune tips fed in and save \
-   all others [default: %default]'),
+  help='if negate is True will remove input tips/seqs, if \
+   negate is False, will retain input tips/seqs [default: %default]'),
 
  make_option('-t',
   '--tips_fp',
   action='store',
   type='existing_filepath',
- help='A list of sequence identifiers (or tab-delimited lines with \
-  a seq identifier in the first field) which should be retained \
+ help='A list of tips (one tip per line) or sequence identifiers \
+  (tab-delimited lines with a seq identifier in the first field) \
+  which should be retained \
   [default: %default]'),
 
  make_option('-f',
@@ -94,6 +97,7 @@ def main():
     
     tree = DndParser(open(input_tree_fp,'U'))
     
+
     if opts.negate:
         tips_to_keep = negate_tips_to_keep(tips_to_keep, tree)
 
