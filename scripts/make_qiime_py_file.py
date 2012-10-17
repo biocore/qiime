@@ -76,7 +76,6 @@ __version__ = "1.5.0-dev"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
 __status__ = "Development"
-
 """ % strftime('%d %b %Y')
 
     script_block = """
@@ -164,7 +163,7 @@ ACGT
     # already exists -- if it does, print a message and exit
     if exists(output_fp):
         print '\n'.join(["The file name you requested already exists.",\
-            " Delete extant file and rerun script if it should be overwritten.",\
+            " Delete existent file and rerun script if it should be overwritten.",\
             " Otherwise change the file name (-o).",\
             "Creating no files and exiting..."])
         exit(1) 
@@ -176,7 +175,6 @@ ACGT
     lines = [header_block]
 
     if test:
-        lines.append('from cogent.util.unit_test import TestCase, main')
         lines.append(test_block)
         lines += ['','','','if __name__ == "__main__":','    main()']
     elif script:
