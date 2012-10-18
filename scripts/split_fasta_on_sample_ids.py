@@ -20,8 +20,9 @@ from qiime.util import (parse_command_line_parameters,
 script_info = {}
 script_info['brief_description'] = "Split a single post-split_libraries.py fasta file into per-sample fasta files."
 script_info['script_description'] = "Split a single post-split_libraries.py fasta file into per-sample fasta files. This script requires that the sequences identitifers are in post-split_libraries.py format (i.e., SampleID_SeqID). A fasta file will be created for each unique SampleID."
-script_info['script_usage'] = [("","Split seqs.fna into one fasta file per sample and store the resulting fasta files in 'out'","split_fasta_on_sample_ids.py -i seqs.fna -o out/")]
-script_info['output_description']= ""
+script_info['script_usage'] = [("","Split seqs.fna into one fasta file per sample and store the resulting fasta files in 'out'","%prog -i seqs.fna -o out/")]
+script_info['script_usage_output_to_remove'] = ['$PWD/out/']
+script_info['output_description']= "This script will produce an output directory with as many files as samples."
 script_info['required_options'] = [
  make_option('-i','--input_fasta_fp',type="existing_filepath",help='the input fasta file to split'),
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]'),\
