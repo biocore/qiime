@@ -1,0 +1,5 @@
+MothurOtuPicker parameters:
+Algorithm:nearest
+Application:mothur
+Similarity:0.97
+Result path: mothur_picked_otus_nn//seqs.aligned_otus.txt
