@@ -21,9 +21,8 @@ script_info={}
 script_info['brief_description']="""Build a UPGMA tree comparing samples"""
 script_info['script_description']="""In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unweighted Pair Group Method with Arithmetic mean, also known as average linkage). As with PCoA, the input to this step is a distance matrix (i.e. resulting file from beta_diversity.py)."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""UPGMA Cluster (Single File):""","""To perform UPGMA clustering on a single distance matrix (e.g.: beta_div.txt, a result file from beta_diversity.py) use the following idiom:""","""upgma_cluster.py -i beta_div.txt -o beta_div_cluster.tre"""))
-script_info['script_usage'].append(("""UPGMA Cluster (Multiple Files):""","""The script also functions in batch mode if a folder is supplied as input. This script operates on every file in the input directory and creates a corresponding upgma tree file in the output directory, e.g.:""","""upgma_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/"""))
-script_info['script_usage'].append(('','',''))
+script_info['script_usage'].append(("""UPGMA Cluster (Single File):""","""To perform UPGMA clustering on a single distance matrix (e.g.: beta_div.txt, a result file from beta_diversity.py) use the following idiom:""","""%prog -i $PWD/beta_div.txt -o $PWD/beta_div_cluster.tre"""))
+script_info['script_usage'].append(("""UPGMA Cluster (Multiple Files):""","""The script also functions in batch mode if a folder is supplied as input. This script operates on every file in the input directory and creates a corresponding upgma tree file in the output directory, e.g.:""","""%prog -i $PWD/beta_div_folder -o $PWD/beta_div_folder_results/"""))
 script_info['output_description']="""The output is a newick formatted tree compatible with most standard tree viewing programs. Batch processing is also available, allowing the analysis of an entire directory of distance matrices."""
 script_info['required_options']=[
 make_option('-i', '--input_path',

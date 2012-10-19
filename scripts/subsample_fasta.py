@@ -21,7 +21,7 @@ script_info={}
 script_info['brief_description']="""Randomly subsample sequences from a given fasta file"""
 script_info['script_description']="""Subsample the seqs.fna file, randomly select 5% of the sequences:"""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""",""" """,""" subsample_fasta.py -i seqs.fasta -p 0.05"""))
+script_info['script_usage'].append(("""Example:""","""Subsample seqs.fasta to approximately 5%""","""%prog -i $PWD/seqs.fna -p 0.05 -o $PWD/subsampled_seqs.fna"""))
 script_info['output_description']=""""""
 script_info['required_options']=[\
    options_lookup['fasta_as_primary_input'],\
