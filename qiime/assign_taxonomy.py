@@ -9,12 +9,11 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import csv
-import subprocess
-import sqlite3
 import logging
 import os
 import re
+from csv import writer as csv_writer, excel_tab
+from sqlite3 import connect as sqlite_connect
 from os import remove
 from itertools import count
 from string import strip
@@ -28,7 +27,8 @@ from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
 from qiime.pycogent_backports import mothur
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
+from qiime.util import FunctionWithParams, get_rdp_jarpath, qiime_system_call,\
+    get_qiime_temp_dir
 
 
 """Contains code for assigning taxonomy, using several techniques.
@@ -746,21 +746,22 @@ class PplacerTaxonAssigner(TaxonAssigner):
         if log_path:
             self.writeLog(log_path)
 
-        with NamedTemporaryFile() as db:
+        tmp_dir = get_qiime_temp_dir()
+        with NamedTemporaryFile(dir=tmp_dir, prefix='hrefpkg_results', suffix='.db') as db:
             results = self.classify(seq_path, db.name)
             if result_path:
                 with open(result_path, 'w') as fobj:
-                    csv.writer(fobj, dialect=csv.excel_tab).writerows(results)
+                    csv_writer(fobj, dialect=excel_tab).writerows(results)
             else:
                 return {seq_id: (taxonomy, confidence)
                         for seq_id, taxonomy, confidence in results}
 
     def classify(self, seq_path, db_path):
-        subprocess.check_call(
+        qiime_system_call(
             ['hrefpkg_query.py', '-r', 'genus', '--classifier', 'hybrid2', '--post-prob',
-             self.Params['hrefpkg'], seq_path, db_path])
+             self.Params['hrefpkg'], seq_path, db_path], shell=False)
 
-        conn = sqlite3.connect(db_path)
+        conn = sqlite_connect(db_path)
         curs = conn.cursor()
 
         curs.execute('CREATE TEMPORARY TABLE otu_sequences (name PRIMARY KEY, sequence)')
