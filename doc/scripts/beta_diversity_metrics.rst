@@ -5,6 +5,7 @@
 
 *Non-phylogenetic beta diversity metrics.* These are count based metrics which is based on the OTU table:
 
+	* abund_jaccard: abundance weighted Jaccard distance
 	* binary_dist_chisq: Binary chi-square distance
 	* binary_dist_chord: Binary chord distance
 	* binary_dist_euclidean: Binary euclidean distance
