@@ -76,7 +76,6 @@ __version__ = "1.5.0-dev"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
 __status__ = "Development"
-
 """ % strftime('%d %b %Y')
 
     script_block = """
@@ -176,7 +175,6 @@ ACGT
     lines = [header_block]
 
     if test:
-        lines.append('from cogent.util.unit_test import TestCase, main')
         lines.append(test_block)
         lines += ['','','','if __name__ == "__main__":','    main()']
     elif script:
