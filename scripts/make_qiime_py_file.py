@@ -163,7 +163,7 @@ ACGT
     # already exists -- if it does, print a message and exit
     if exists(output_fp):
         print '\n'.join(["The file name you requested already exists.",\
-            " Delete existent file and rerun script if it should be overwritten.",\
+            " Delete extant file and rerun script if it should be overwritten.",\
             " Otherwise change the file name (-o).",\
             "Creating no files and exiting..."])
         exit(1) 
