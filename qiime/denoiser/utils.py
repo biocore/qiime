@@ -42,8 +42,8 @@ def get_denoiser_data_dir():
 def get_flowgram_ali_exe():
     """Return the path to the flowgram alignment prog
     """
-    fp = sys.prefix +\
-        "/qiime/support_files/denoiser/bin/FlowgramAli_4frame"
+    fp = get_qiime_project_dir() +\
+        "/qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame"
     return fp
 
 def check_flowgram_ali_exe():
