@@ -18,11 +18,12 @@ Installing QIIME in Ubuntu 11.10 and Ubuntu LTS (12.04)
   For Ubuntu 11.10:
   ::
   
-     sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient16 libmysqlclient-dev ghc
+     sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant git subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient16 libmysqlclient-dev ghc
+
   For Ubuntu 12.04:
   ::
   
-     sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient18 libmysqlclient-dev ghc
+     sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant git subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient18 libmysqlclient-dev ghc
 * Run the following commands. In this example the software will be installed in your home directory under the qiime_software folder, you can replace this with any path you want.
   ::
   
