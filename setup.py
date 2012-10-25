@@ -99,9 +99,14 @@ setup(name='QIIME',
                     'support_files/js/*js',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
-                    'support_files/denoiser/TestData/*',
-                    'support_files/denoiser/FlowgramAlignment/'
-                        'FlowgramAli_4frame']},
+                    'support_files/denoiser/TestData/*']},
+      # We must put the denoiser executable in the data_files section (and not
+      # under package_data because the executable permissions don't get copied
+      # over when the file is installed. For some reason the permissions are
+      # retained for data_files, though.
+      data_files=[('qiime/support_files/denoiser/FlowgramAlignment',
+                   ['qiime/support_files/denoiser/FlowgramAlignment/'
+                    'FlowgramAli_4frame'])],
       long_description=long_description
 )
 
