@@ -89,7 +89,8 @@ setup(name='QIIME',
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
                 'qiime/denoiser'],
-      scripts=glob('scripts/*py')+glob('scripts/ec2*'),
+      scripts=glob('scripts/*py')+glob('scripts/ec2*')+
+              glob('scripts/FlowgramAli_4frame'),
       package_data={'qiime':
                    ['support_files/qiime_config',
                     'support_files/css/*css',
@@ -100,13 +101,6 @@ setup(name='QIIME',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*']},
-      # We must put the denoiser executable in the data_files section (and not
-      # under package_data because the executable permissions don't get copied
-      # over when the file is installed. For some reason the permissions are
-      # retained for data_files, though.
-      data_files=[('qiime/support_files/denoiser/FlowgramAlignment',
-                   ['qiime/support_files/denoiser/FlowgramAlignment/'
-                    'FlowgramAli_4frame'])],
       long_description=long_description
 )
 
