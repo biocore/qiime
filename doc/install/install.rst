@@ -140,7 +140,7 @@ First, ensure that you are in the top-level QIIME directory::
 
 	cd /home/qiime/Qiime
 
-By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify and alternate directory for the library files with ``--install-purelib``. An example command is::
+By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify an alternate directory for the library files with ``--install-purelib``. An example command is::
 
 	python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/
 
