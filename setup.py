@@ -89,7 +89,8 @@ setup(name='QIIME',
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
                 'qiime/denoiser'],
-      scripts=glob('scripts/*py')+glob('scripts/ec2*'),
+      scripts=glob('scripts/*py')+glob('scripts/ec2*')+
+              glob('scripts/FlowgramAli_4frame'),
       package_data={'qiime':
                    ['support_files/qiime_config',
                     'support_files/css/*css',
@@ -99,9 +100,7 @@ setup(name='QIIME',
                     'support_files/js/*js',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
-                    'support_files/denoiser/TestData/*',
-                    'support_files/denoiser/FlowgramAlignment/'
-                        'FlowgramAli_4frame']},
+                    'support_files/denoiser/TestData/*']},
       long_description=long_description
 )
 
