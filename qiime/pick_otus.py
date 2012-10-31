@@ -16,7 +16,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split
+from os.path import splitext, split, abspath
 from os import makedirs
 from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
@@ -187,11 +187,11 @@ class BlastOtuPicker(OtuPicker):
         
         if not blast_db:
             self.blast_db, self.db_files_to_remove = \
-                build_blast_db_from_fasta_path(refseqs_fp,
+                build_blast_db_from_fasta_path(abspath(refseqs_fp),
                  is_protein=self.Params['is_protein'],
                  output_dir=get_qiime_temp_dir())
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
-             refseqs_fp)
+             abspath(refseqs_fp))
         else:
             self.blast_db = blast_db
             self.db_files_to_remove = []
