@@ -431,9 +431,19 @@ def parse_mothur_assignments(lines):
         if not line:
             continue
         seq_id, _, assignment = line.partition("\t")
+
+        # Special case: unidentified sequences should be given a
+        # confidence of 0.0.  Newer versions of MOTHUR return a real
+        # value for the confidence -- maybe we should consider keeping
+        # the value if present, because a sequence may conceivably be
+        # unknown with 85% confidence.
+        if re.match('unknown', assignment, re.IGNORECASE):
+            yield seq_id, ["Unknown"], 0.0
+            continue
+
         toks = assignment.rstrip(";").split(";")
         lineage = []
-        conf = None
+        conf = 0.0
         for tok in toks:
             matchobj = re.match("(.+)\((\d+)\)$", tok)
             if matchobj:
