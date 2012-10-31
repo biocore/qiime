@@ -185,12 +185,10 @@ def main():
     # Parse the mapping file and distance matrix.
     md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file,'U'))
     dm = DistanceMatrix.parseDistanceMatrix(open(opts.input_dm,'U'))
-
-    # Separate all categories into a list, then grab the first category.
     categories = opts.categories.split(',')
 
+    # Input validation must be done here before running the R commands.
     # Cursory check to make sure all categories passed in are in mapping file.
-    maps = parse_mapping_file(open(opts.mapping_file,'U').readlines())
     for category in categories:
         if not category in maps[1][1:]:
             option_parser.error("Category '%s' not found in mapping file "

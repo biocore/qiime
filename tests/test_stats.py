@@ -88,6 +88,19 @@ class TestHelper(TestCase):
                                  "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
         self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
 
+        self.test_map_str = [
+                "#SampleID\tBarcodeSequence\tFoo\tBar\tDescription",
+                "PC.354\tAGCACGAGCCTA\tfoo\ta\t354",
+                "PC.355\tAACTCGTCGATG\tfoo\ta\t355",
+                "PC.356\tACAGACCACTCA\tbar\ta\t356",
+                "PC.481\tACCAGCGACTAG\tfoo\ta\t481",
+                "PC.593\tAGCAGCACTTGT\tbar\ta\t593",
+                "PC.607\tAACTGTGCGTAC\tbar\ta\t607",
+                "PC.634\tACAGAGTCGGCT\tbar\ta\t634",
+                "PC.635\tACCGCAGAGTCA\tfoo\ta\t635",
+                "PC.636\tACGGTGAGTGTC\tbar\ta\t636"]
+        self.test_map = MetadataMap.parseMetadataMap(self.test_map_str)
+
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
 
@@ -499,7 +512,7 @@ class CategoryStatsTests(TestHelper):
         self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
 
     def test_Categories_setter_invalid_input(self):
-        """Must receive a list of strings that are in the mapping file."""
+        """Must receive a list of categories that are in the mapping file."""
         self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
                           "Hello!")
         self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
@@ -508,6 +521,16 @@ class CategoryStatsTests(TestHelper):
                           ["hehehe", 123, "hello"])
         self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
                           ["foo"])
+
+        # Test setting a unique category.
+        self.assertRaises(ValueError, CategoryStats, self.test_map,
+                [self.overview_dm], ["Description"])
+        cs_test = CategoryStats(self.test_map, [self.overview_dm], ["Foo"])
+        self.assertRaises(ValueError, setattr, cs_test, 'Categories',
+                ["Description"])
+
+        # Test setting a category with only a single value.
+        self.assertRaises(ValueError, setattr, cs_test, 'Categories', ["Bar"])
 
     def test_Categories_getter(self):
         """Test valid return of Categories property."""
@@ -546,7 +569,12 @@ class CategoryStatsTests(TestHelper):
     def test_validate_compatibility(self):
         """Test for compatible sample IDs between dms and mdmap."""
         self.assertEqual(self.cs_overview._validate_compatibility(), None)
+
         self.cs_overview.DistanceMatrices = [self.single_ele_dm]
+        self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
+
+        self.cs_overview.DistanceMatrices = [self.overview_dm]
+        self.cs_overview.MetadataMap = self.test_map
         self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
 
     def test_call(self):
