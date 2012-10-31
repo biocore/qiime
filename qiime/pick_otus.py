@@ -133,7 +133,8 @@ class OtuPicker(FunctionWithParams):
 
         trunc_id = lambda (a,b): (a.split()[0],b)
         # get the prefix map
-        mapping=build_prefix_map(imap(trunc_id, MinimalFastaParser(open(seq_path))))
+        mapping=build_prefix_map(imap(trunc_id, MinimalFastaParser(
+                                                open(seq_path))))
         for key in mapping.keys():
                 mapping[key].append(key)
 
@@ -993,7 +994,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          percent_id_err = self.Params['percent_id_err'],
          minsize = self.Params['minsize'],
          abundance_skew = self.Params['abundance_skew'],
-         db_filepath = self.Params['db_filepath'],
+         db_filepath = abspath(self.Params['db_filepath']),
          rev = self.Params['rev'],
          label_prefix = self.Params['label_prefix'],
          label_suffix = self.Params['label_suffix'],
@@ -1170,7 +1171,8 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
         log_lines.append('Num failures:%d' % len(failures))
-        log_lines.append('Reference database for OTU picking: %s' % refseqs_fp)
+        log_lines.append('Reference database for OTU picking: %s' % \
+                         refseqs_fp)
         
         
         
