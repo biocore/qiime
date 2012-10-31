@@ -9,7 +9,7 @@ from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
     adjust_sff_cycles,check_sffinfo)
 from cogent.parse.binary_sff import parse_binary_sff
-from qiime.util import get_qiime_project_dir
+from qiime.util import get_qiime_project_dir, qiime_open
 
 """Tests of the process_sff.py file.
 """
@@ -17,7 +17,7 @@ from qiime.util import get_qiime_project_dir
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -32,19 +32,26 @@ class TopLevelTests(TestCase):
 
         # Cannot use get_qiime_project_dir() due to test errors in virtual box
         test_dir = os.path.dirname(os.path.abspath(__file__))
-        sff_original_fp =  os.path.join(test_dir, 'test_support_files', 'test.sff')
+        sff_original_fp =  os.path.join(test_dir, 'test_support_files',
+                                        'test.sff')
+        sff_original_gz_fp =  os.path.join(test_dir, 'test_support_files',
+                                        'test_gz.sff.gz')
 
         # copy sff file to working directory
         self.sff_dir = tempfile.mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, 'test.sff')
+        self.sff_gz_fp = os.path.join(self.sff_dir, 'test_gz.sff.gz')
         shutil.copy(sff_original_fp, self.sff_fp)
+        shutil.copy(sff_original_gz_fp, self.sff_gz_fp)
 
     def tearDown(self):
         shutil.rmtree(self.sff_dir)
 
     def test_adjust_sff_cycles(self):
         sff_data = parse_binary_sff(open(self.sff_fp))
+        sff_gz_data = parse_binary_sff(qiime_open(self.sff_gz_fp))
         header, reads = adjust_sff_cycles(sff_data, 2)
+        header_gz, reads_gz = adjust_sff_cycles(sff_gz_data, 2)
         expected_header = {
             'header_length': 48,
             'version': 1,
@@ -59,6 +66,7 @@ class TopLevelTests(TestCase):
             'key_length': 4,
             }
         self.assertEqual(header, expected_header)
+        self.assertEqual(header_gz, expected_header)
 
         expected_read = {
             'name_length': 14,
@@ -75,45 +83,66 @@ class TopLevelTests(TestCase):
             'quality_scores': (32, 32, 32, 32),
             }
         reads = list(reads)
+        reads_gz = list(reads_gz)
         self.assertEqual(len(reads), 1)
+        self.assertEqual(len(reads_gz), 1)
         self.assertEqual(reads[0], expected_read)
+        self.assertEqual(reads_gz[0], expected_read)
 
     def test_convert_Ti_to_FLX(self):
-        """test_make_flow_txt should make flowgram file as expected"""
+        """test_convert_Ti_to_FLX should do proper conversion from Ti to FLX"""
         sff_flx_fp = os.path.join(self.sff_dir, 'test_FLX.sff')
+        sff_flx_gz_fp = os.path.join(self.sff_dir, 'test_FLX_gz.sff')
         convert_Ti_to_FLX(self.sff_fp, sff_flx_fp)
+        convert_Ti_to_FLX(self.sff_gz_fp, sff_flx_gz_fp)
         self.assertNotEqual(os.path.getsize(sff_flx_fp), 0)
+        self.assertNotEqual(os.path.getsize(sff_flx_gz_fp), 0)
     
     def test_make_flow_txt(self):
         """test_make_flow_txt should make flowgram file as expected"""
         flow_fp = os.path.join(self.sff_dir, 'test.txt')
+        flow_gz_fp = os.path.join(self.sff_dir, 'test_gz.txt')
         make_flow_txt(self.sff_fp, flow_fp)
+        make_flow_txt(self.sff_gz_fp, flow_gz_fp)
         self.assertEqual(open(flow_fp).read(), flow_txt)
+        self.assertEqual(open(flow_gz_fp).read(), flow_txt)
 
     def test_make_fna(self):
         """test_make_fna should make fasta file as expected"""
         fna_fp = os.path.join(self.sff_dir, 'test.fna')
+        fna_gz_fp = os.path.join(self.sff_dir, 'test_gz.fna')
         make_fna(self.sff_fp, fna_fp)
+        make_fna(self.sff_gz_fp, fna_gz_fp)
         self.assertEqual(open(fna_fp).read(), fna_txt)
+        self.assertEqual(open(fna_gz_fp).read(), fna_txt)
 
     def test_make_qual(self):
         """test_make_qual should make qual file as expected"""
         qual_fp = os.path.join(self.sff_dir, 'test.qual')
+        qual_gz_fp = os.path.join(self.sff_dir, 'test_gz.qual')
         make_qual(self.sff_fp, qual_fp)
+        make_qual(self.sff_gz_fp, qual_gz_fp)
         self.assertEqual(open(qual_fp).read(), qual_txt)
+        self.assertEqual(open(qual_gz_fp).read(), qual_txt)
 
     def test_prep_sffs_in_dir(self):
         """test_prep_sffs_in_dir should make fasta/qual from sffs."""
         prep_sffs_in_dir(self.sff_dir, self.sff_dir, make_flowgram=True)
 
         fna_fp = os.path.join(self.sff_dir, 'test.fna')
+        fna_gz_fp = os.path.join(self.sff_dir, 'test_gz.fna')
         self.assertEqual(open(fna_fp).read(), fna_txt)
+        self.assertEqual(open(fna_gz_fp).read(), fna_txt)
 
         qual_fp = os.path.join(self.sff_dir, 'test.qual')
+        qual_gz_fp = os.path.join(self.sff_dir, 'test_gz.qual')
         self.assertEqual(open(qual_fp).read(), qual_txt)
+        self.assertEqual(open(qual_gz_fp).read(), qual_txt)
 
         flow_fp = os.path.join(self.sff_dir, 'test.txt')
+        flow_gz_fp = os.path.join(self.sff_dir, 'test_gz.txt')
         self.assertEqual(open(flow_fp).read(), flow_txt)
+        self.assertEqual(open(flow_gz_fp).read(), flow_txt)
 
     def test_prep_sffs_in_dir_FLX(self):
         """test_prep_sffs_in_dir should convert to FLX read lengths."""
@@ -122,12 +151,15 @@ class TopLevelTests(TestCase):
             self.sff_dir, output_dir, make_flowgram=True, convert_to_flx=True)
 
         fna_fp = os.path.join(output_dir, 'test_FLX.fna')
+        fna_gz_fp = os.path.join(output_dir, 'test_gz_FLX.fna')
         self.assertEqual(open(fna_fp).read(), fna_txt)
 
-        qual_fp = os.path.join(output_dir, 'test_FLX.qual')
+        qual_fp = os.path.join(output_dir, 'test_gz_FLX.qual')
+        qual_gz_fp = os.path.join(output_dir, 'test_FLX.qual')
         self.assertEqual(open(qual_fp).read(), qual_txt)
 
-        flow_fp = os.path.join(output_dir, 'test_FLX.txt')
+        flow_fp = os.path.join(output_dir, 'test_gz_FLX.txt')
+        flow_gz_fp = os.path.join(output_dir, 'test_FLX.txt')
         self.assertEqual(open(flow_fp).read(), flx_flow_txt)
 
         shutil.rmtree(output_dir)
@@ -149,11 +181,15 @@ class TopLevelTests(TestCase):
                              no_trim=True)
         
             fna_fp = os.path.join(output_dir, 'test.fna')
+            fna_gz_fp = os.path.join(output_dir, 'test_gz.fna')
 
             self.assertEqual(open(fna_fp).read(), fna_notrim_txt)
+            self.assertEqual(open(fna_gz_fp).read(), fna_notrim_txt)
 
             qual_fp = os.path.join(output_dir, 'test.qual')
+            qual_gz_fp = os.path.join(output_dir, 'test_gz.qual')
             self.assertEqual(open(qual_fp).read(), qual_notrim_txt)
+            self.assertEqual(open(qual_gz_fp).read(), qual_notrim_txt)
 
             #flow_fp = os.path.join(output_dir, 'test.txt')
             #self.assertEqual(open(flow_fp).read(), flow_txt)

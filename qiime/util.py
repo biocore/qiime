@@ -1343,6 +1343,10 @@ def qiime_open(fp, permission='U'):
 
     file_fp : file path
     permission : either 'r','w','a'
+
+    If the file is binary, be sure to pass in a binary mode (append 'b' to
+    the mode); opening a binary file in text mode (e.g., in default mode 'U')
+    will have unpredictable results.
     """
     if fp.endswith('gz'):
         return gzip_open(fp)

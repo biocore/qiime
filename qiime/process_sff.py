@@ -5,6 +5,7 @@ from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
     )
+from qiime.util import qiime_open
 from os import listdir
 from os.path import splitext, join, isfile, isdir, split
 from cStringIO import StringIO
@@ -17,7 +18,7 @@ import subprocess
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight", "Greg Caporaso", "Jesse Stombaugh", "Kyle Bittinger"] 
+__credits__ = ["Rob Knight", "Greg Caporaso", "Jesse Stombaugh", "Kyle Bittinger", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -175,7 +176,8 @@ def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
             ['sfffile', '-flx', '-o', output_fp, sff_fp],
             stdout=open(os.devnull, 'w'))
     else:
-        header, reads = adjust_sff_cycles(parse_binary_sff(open(sff_fp), True), 100)
+        header, reads = adjust_sff_cycles(parse_binary_sff(qiime_open(sff_fp, 'rb'),
+                                          True), 100)
         write_binary_sff(open(output_fp, 'w'), header, reads)
 
 
@@ -186,7 +188,7 @@ def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
         _check_call(['sffinfo', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
-            format_binary_sff(open(sff_fp), open(output_fp, 'w'))
+            format_binary_sff(qiime_open(sff_fp, 'rb'), open(output_fp, 'w'))
         except:
             raise IOError("Could not parse SFF %s" % sff_fp)
 
@@ -202,7 +204,7 @@ def make_fna(sff_fp, output_fp, use_sfftools=False,no_trim=False):
             _check_call(['sffinfo', '-s', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
-            format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'))
+            format_binary_sff_as_fna(qiime_open(sff_fp, 'rb'), open(output_fp, 'w'))
         except:
             raise IOError("Could not parse SFF %s" % sff_fp)
 
@@ -218,7 +220,7 @@ def make_qual(sff_fp, output_fp, use_sfftools=False,no_trim=False):
             _check_call(['sffinfo', '-q', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
-            format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'), qual=True)
+            format_binary_sff_as_fna(qiime_open(sff_fp, 'rb'), open(output_fp, 'w'), qual=True)
         except:
             raise IOError("Could not parse SFF %s" % sff_fp)
 
@@ -244,11 +246,13 @@ def prep_sffs_in_dir(
         filenames = [os.path.basename(sff_dir)]
         sff_dir = os.path.dirname(sff_dir)
     else:
-        filenames = [x for x in os.listdir(sff_dir) if x.endswith('.sff')]
+        filenames = [x for x in os.listdir(sff_dir) if (x.endswith('.sff') or
+                     x.endswith('.sff.gz'))]
 
     for filename in filenames:
         sff_fp = join(sff_dir, filename)
         base_filename = splitext(filename)[0]
+        if filename.endswith('.gz'): base_filename = splitext(base_filename)[0]
         base_output_fp = join(output_dir, base_filename)
 
         if convert_to_flx:
