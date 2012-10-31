@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"]
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -192,15 +192,15 @@ class BlastOtuPicker(OtuPicker):
                  is_protein=self.Params['is_protein'],
                  output_dir=get_qiime_temp_dir())
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
-             abspath(refseqs_fp))
+                                  abspath(refseqs_fp))
         else:
             self.blast_db = blast_db
             self.db_files_to_remove = []
              
         self.log_lines.append('Blast database: %s' % self.blast_db)
         
-        clusters, failures = self._cluster_seqs(\
-         MinimalFastaParser(open(seq_path)))
+        clusters, failures = self._cluster_seqs(
+                                    MinimalFastaParser(open(seq_path)))
         self.log_lines.append('Num OTUs: %d' % len(clusters))
         
         if result_path:
@@ -1171,8 +1171,8 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
         log_lines.append('Num failures:%d' % len(failures))
-        log_lines.append('Reference database for OTU picking: %s' % \
-                         refseqs_fp)
+        log_lines.append('Reference database for OTU picking: %s' % 
+                         abspath(refseqs_fp))
         
         
         
@@ -1308,7 +1308,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         remove_files(self.files_to_remove)
         
         log_lines = []
-        log_lines.append('Reference seqs:%s' % refseqs_fp)
+        log_lines.append('Reference seqs:%s' % abspath(refseqs_fp))
         log_lines.append('Num OTUs:%d' % len(cluster_map))
         log_lines.append('Num new OTUs:%d' % len(new_seeds))
         log_lines.append('Num failures:%d' % len(failures))
