@@ -35,7 +35,7 @@ option_list <- list(
         help="Number of trees in forest [default %default]"),
     make_option(c("-e", "--errortype"), type="character", default='oob',
         help="Type of error estimation: oob (out-of-bag, fastest), 
-              cv (k-fold cross validation, provides mean and standard deviation of error),
+              cv5/cv10 (5/10-fold cross validation, provides mean and standard deviation of error),
               loo (leave-one-out cross validation, useful for small data sets) [default %default]"),
     make_option(c("-o", "--outdir"), type="character", default='.',
         help="Output directory [default %default]"),
@@ -69,8 +69,12 @@ if(opts$errortype == 'oob'){
     if(opts$errortype == 'loo' || opts$nfolds >= length(y)) {
         opts$nfolds <- -1
         error.type <- 'leave-one-out cross validation'
-    } else {
-        error.type <- sprintf('%d-fold cross validation', opts$nfolds)
+    } else if(opts$errortype == 'cv5') {
+        error.type <- '5-fold cross validation'
+        opts$nfolds <- 5
+    } else if(opts$errortype == 'cv10') {
+        error.type <- '10-fold cross validation'
+        opts$nfolds <- 10
     }
     result <- rf.cross.validation(x[ix,,drop=FALSE],y[ix],nfolds=opts$nfolds,
             verbose=opts$verbose,ntree=opts$ntree)
