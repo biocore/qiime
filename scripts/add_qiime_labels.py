@@ -44,7 +44,7 @@ SampleIDs are allowed, so care should be taken that there are no typos.
 No changes are made to the sequences.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Specify fasta_dir as the input directory of fasta files, use the SampleID to fasta file mapping file example_mapping.txt, start enumerating with 1000000 following SampleIDs, and output the data to the directory combined_fasta""","""add_qiime_labels.py -i fasta_dir -m example_mapping.txt -n 1000000 -o combined_fasta"""))
+script_info['script_usage'].append(("""Example:""","""Specify fasta_dir as the input directory of fasta files, use the SampleID to fasta file mapping file example_mapping.txt, start enumerating with 1000000 following SampleIDs, and output the data to the directory combined_fasta""","""%prog -i fasta_dir -m example_mapping.txt -n 1000000 -o combined_fasta"""))
 script_info['output_description']="""A combined_seqs.fasta file will be created in the output directory, with the sequences assigned to Sample.1 and Sample.2."""
 script_info['required_options']= [\
     make_option('-m', '--mapping_fp',type='existing_filepath',
