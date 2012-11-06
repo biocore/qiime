@@ -23,7 +23,6 @@ create new statistical method implementations.
 
 from types import ListType
 
-
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
@@ -586,6 +585,8 @@ class Anosim(CategoryStats):
             r_value - the ANOSIM R statistic computed by the test
             p_value - the p-value computed by the test, or 'NA' if the number
                 of permutations was zero
+            num_perms - the number of permutations used when calculating the
+                p-value
 
         Arguments:
             num_perms - the number of permutations to use when calculating the
@@ -621,11 +622,13 @@ class Anosim(CategoryStats):
             # Calculate the p-value.
             p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
         else:
-            p_value = 'NA'
+            p_value = 1.0
 
         results['method_name'] = 'ANOSIM'
         results['r_value'] = r_stat
         results['p_value'] = p_value
+        results['num_perms'] = num_perms
+
         return results
 
     def _anosim(self, group_map):
@@ -801,6 +804,8 @@ class Permanova(CategoryStats):
             f_value - the PERMANOVA F statistic computed by the test
             p_value - the p-value computed by the test, or 'NA' if the number
                 of permutations was zero
+            num_perms - the number of permutations used when calculating the
+                p-value
 
         Arguments:
             num_perms - the number of permutations to use when calculating the
@@ -836,11 +841,13 @@ class Permanova(CategoryStats):
             # Calculate the p-value.
             p_value = (sum(perm_stats >= f_stat) + 1) / (num_perms + 1)
         else:
-            p_value = 'NA'
+            p_value = 1.0
 
         results['method_name'] = 'PERMANOVA'
         results['f_value'] = f_stat
         results['p_value'] = p_value
+        results['num_perms'] = num_perms
+
         return results
 
     def _permanova(self, grouping):
@@ -914,8 +921,12 @@ class Permanova(CategoryStats):
         return (s_A / (a-1)) / (s_W / (N-a))
 
 
-class BioEnv(CategoryStats):
-    """Class for the BioEnv statistical analysis."""
+class Best(CategoryStats):
+    """Class for the BEST/BioEnv statistical analysis.
+    
+    Based on vegan::bioenv function, which is an implementation of the BEST
+    statistical method.
+    """
 
     def __init__(self, dm, metadata_map, cats,
                  suppress_symmetry_and_hollowness_check=False):
@@ -941,17 +952,17 @@ class BioEnv(CategoryStats):
                 check for small performance gains on extremely large distance
                 matrices
         """
-        # BioEnv doesn't require non-unique categories or non-single value
+        # BEST doesn't require non-unique categories or non-single value
         # categories, but *does* require only numeric categories.
-        super(BioEnv, self).__init__(metadata_map, [dm], cats, num_dms=1,
-                suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check,
-                suppress_category_uniqueness_check=True,
-                suppress_numeric_category_check=False,
-                suppress_single_category_value_check=True)
+        super(Best, self).__init__(metadata_map, [dm], cats, num_dms=1,
+              suppress_symmetry_and_hollowness_check=\
+              suppress_symmetry_and_hollowness_check,
+              suppress_category_uniqueness_check=True,
+              suppress_numeric_category_check=False,
+              suppress_single_category_value_check=True)
 
     def __call__(self, num_perms=999):
-        """Runs the BioEnv analysis on a distance matrix using specified
+        """Runs the BEST/BioEnv analysis on a distance matrix using specified
         metadata map categories.
 
         num_perms is ignored, but maintained for a consistent interface with
@@ -961,10 +972,10 @@ class BioEnv(CategoryStats):
             method_name - name of the statistical method
             num_vars - number of categories (variables)
             vars - mapping of category names to indices
-            bioenv_rho_vals - spearman correlation statistics, one for each
+            rho_vals - spearman correlation statistics, one for each
                 combination of vars
         """
-        res = super(BioEnv, self).__call__()
+        res = super(Best, self).__call__()
         cats = self.Categories
         dm = self.DistanceMatrices[0]
         dm_flat = dm.flatten()
@@ -984,10 +995,12 @@ class BioEnv(CategoryStats):
                 if r > stats[i-1][0]:
                     stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
 
-        res['method_name'] = 'BioEnv'
+        res['method_name'] = 'BEST'
         res['num_vars'] = col_count
-        res['vars'] = ['%s = %d' % (name,val+1) for val,name in enumerate(cats)]
-        res['bioenv_rho_vals'] = stats[:-1]
+        res['vars'] = ['%s = %d' % (name,val+1)
+                       for val,name in enumerate(cats)]
+        res['rho_vals'] = stats[:-1]
+
         return res
 
     def _derive_euclidean_dm(self, cat_mat, dim):
