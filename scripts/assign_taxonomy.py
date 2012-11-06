@@ -18,17 +18,18 @@ from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
-    RtaxTaxonAssigner, validate_rdp_version,
+    RtaxTaxonAssigner, PplacerTaxonAssigner, validate_rdp_version,
     )
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
+    'pplacer': PplacerTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
 }
 
-assignment_method_choices = ['rdp','blast','rtax','mothur']
+assignment_method_choices = ['rdp','blast','rtax','mothur','pplacer']
 
 options_lookup = get_options_lookup()
 
@@ -62,7 +63,7 @@ script_info['script_usage'].append(("""""","""Alternatively, the user could chan
 script_info['script_usage'].append(("""""","""Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier's implementation, all lineages in the training dataset must contain the same number of ranks.""",""""""))
 script_info['script_usage'].append(("""Sample Assignment with RTAX:""","""
 Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
- 
+
 To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:""","""%prog -i rtax_repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r rtax_ref_seq_set.fna -t rtax_id_to_taxonomy.txt"""
     ))
 script_info['script_usage'].append((
@@ -72,6 +73,14 @@ The Mothur software provides a naive bayes classifier similar to the RDP Classif
 
 To make taxonomic classifications of the representative sequences, where the results are output to default directory \"mothur_assigned_taxonomy\", you can run the following command:""",
     "%prog -i mothur_repr_set_seqs.fasta -m mothur -r mothur_ref_seq_set.fna -t mothur_id_to_taxonomy.txt"
+    ))
+script_info['script_usage'].append((
+    "Sample Assignment with pplacer:",
+    """
+pplacer classification with an hrefpkg (hierarchical reference package) uses a hybrid approach. First, there is an initial classification pass done to try to classify all input sequences only to the family rank using a naive bayes classifier. Then, the actual pplacer program places query sequences on a per-family fixed reference phylogenetic tree according to a reference alignment. If the classification derived from the phylogenetic placement has a high enough likelihood, it is used in place of the naive bayes classification.
+
+To make taxonomic classifications of the representative sequences, where the results are output to default directory \"pplacer_assigned_taxonomy\", you can run the following command:""",
+    "%prog -i pplacer_repr_set_seqs.fna -m pplacer --hrefpkg pplacer_hrefpkg"
     ))
 script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
 script_info['required_options']=[\
@@ -117,12 +126,15 @@ script_info['optional_options']=[\
         'classification when the mate pair is overly generic (used for RTAX only).'
         '[default: %default]',default=False),\
  make_option('-m', '--assignment_method', type='choice',
-        help='Taxon assignment method, either blast, mothur, rdp, or rtax '
+        help='Taxon assignment method, either blast, mothur, pplacer, rdp, or rtax '
         '[default:%default]',
         choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db', type='string',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
+ make_option('--hrefpkg', type='existing_filepath',
+        help='Path to the hrefpkg to use for pplacer assignment (used for pplacer '
+        'only). [default: none; required when using pplacer]'),\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
@@ -189,6 +201,10 @@ def main():
                 'reference sequences (via -r) and an id_to_taxonomy '
                 'file (via -t).')
 
+    if assignment_method == 'pplacer' and opts.hrefpkg is None:
+        option_parser.error(
+            'pplacer classification requires a hrefpkg (via --hrefpkg).')
+
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -226,6 +242,9 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
+    elif assignment_method == 'pplacer':
+        params['hrefpkg'] = opts.hrefpkg
+
     elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
@@ -240,6 +259,7 @@ def main():
        params['read_2_seqs_fp'] = opts.read_2_seqs_fp
        params['single_ok'] = opts.single_ok
        params['no_single_ok_generic'] = opts.no_single_ok_generic
+
 
     else:
         # should not be able to get here as an unknown classifier would

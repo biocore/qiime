@@ -9,10 +9,11 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-
 import logging
 import os
 import re
+from csv import writer as csv_writer, excel_tab
+from sqlite3 import connect as sqlite_connect
 from os import remove
 from itertools import count
 from string import strip
@@ -26,7 +27,8 @@ from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
 from qiime.pycogent_backports import mothur
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
+from qiime.util import FunctionWithParams, get_rdp_jarpath, qiime_system_call,\
+    get_qiime_temp_dir
 
 
 """Contains code for assigning taxonomy, using several techniques.
@@ -722,3 +724,69 @@ class RtaxTaxonAssigner(TaxonAssigner):
 
 
         return results
+
+
+class PplacerTaxonAssigner(TaxonAssigner):
+    "Assign taxon using pplacer"
+
+    Name = "PplacerTaxonAssigner"
+    Application = "pplacer"
+
+    def __call__(self, seq_path, result_path=None, log_path=None):
+        """Returns dict mapping {seq_id:(taxonomy, confidence)} for
+        each seq.
+
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified, dumps the
+            result to the desired path instead of returning it.
+        log_path: path to log, which should include dump of params.
+        """
+
+        if log_path:
+            self.writeLog(log_path)
+
+        tmp_dir = get_qiime_temp_dir()
+        with NamedTemporaryFile(dir=tmp_dir, prefix='hrefpkg_results', suffix='.db') as db:
+            results = self.classify(seq_path, db.name)
+            if result_path:
+                with open(result_path, 'w') as fobj:
+                    csv_writer(fobj, dialect=excel_tab).writerows(results)
+            else:
+                return {seq_id: (taxonomy, confidence)
+                        for seq_id, taxonomy, confidence in results}
+
+    def classify(self, seq_path, db_path):
+        qiime_system_call(
+            ['hrefpkg_query.py', '-r', 'genus', '--classifier', 'hybrid2', '--post-prob',
+             self.Params['hrefpkg'], seq_path, db_path], shell=False)
+
+        conn = sqlite_connect(db_path)
+        curs = conn.cursor()
+
+        curs.execute('CREATE TEMPORARY TABLE otu_sequences (name PRIMARY KEY, sequence)')
+        curs.executemany(
+            'INSERT INTO otu_sequences VALUES (?, ?)',
+            ((desc.split()[0], desc)
+             for desc, _ in MinimalFastaParser(open(seq_path))))
+
+        curs.execute("""
+            SELECT sequence,
+                   GROUP_CONCAT(tax_name),
+                   MIN(likelihood)
+              FROM (SELECT sequence,
+                           tax_name || "__" || tax_id AS tax_name,
+                           likelihood
+                      FROM multiclass
+                           JOIN taxa USING (tax_id, rank)
+                           JOIN ranks USING (rank)
+                           JOIN otu_sequences USING (name)
+                     WHERE rank = want_rank
+                       AND want_rank IN ('superkingdom', 'phylum', 'class',
+                                         'order', 'genus', 'species')
+                     ORDER BY name,
+                              rank_order ASC)
+             GROUP BY sequence
+        """)
+
+        return curs
