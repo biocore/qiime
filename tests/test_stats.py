@@ -19,7 +19,7 @@ from numpy import array, asarray, roll
 from numpy.random import permutation
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
-        Anosim, BioEnv, CategoryStats, CorrelationStats, DistanceMatrixStats,
+        Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova)
 from qiime.util import DistanceMatrix, MetadataMap
 
@@ -87,6 +87,19 @@ class TestHelper(TestCase):
                                  "PC.635\tACCGCAGAGTCA\tFast\t20080116",
                                  "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
         self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
+
+        self.test_map_str = [
+                "#SampleID\tBarcodeSequence\tFoo\tBar\tDescription",
+                "PC.354\tAGCACGAGCCTA\tfoo\ta\t354",
+                "PC.355\tAACTCGTCGATG\tfoo\ta\t355",
+                "PC.356\tACAGACCACTCA\tbar\ta\t356",
+                "PC.481\tACCAGCGACTAG\tfoo\ta\t481",
+                "PC.593\tAGCAGCACTTGT\tbar\ta\t593",
+                "PC.607\tAACTGTGCGTAC\tbar\ta\t607",
+                "PC.634\tACAGAGTCGGCT\tbar\ta\t634",
+                "PC.635\tACCGCAGAGTCA\tfoo\ta\t635",
+                "PC.636\tACGGTGAGTGTC\tbar\ta\t636"]
+        self.test_map = MetadataMap.parseMetadataMap(self.test_map_str)
 
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
@@ -499,7 +512,7 @@ class CategoryStatsTests(TestHelper):
         self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
 
     def test_Categories_setter_invalid_input(self):
-        """Must receive a list of strings that are in the mapping file."""
+        """Must receive a list of categories that are in the mapping file."""
         self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
                           "Hello!")
         self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
@@ -508,6 +521,21 @@ class CategoryStatsTests(TestHelper):
                           ["hehehe", 123, "hello"])
         self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
                           ["foo"])
+
+        # Test setting a unique category.
+        self.assertRaises(ValueError, CategoryStats, self.test_map,
+                [self.overview_dm], ["Description"])
+        cs_test = CategoryStats(self.test_map, [self.overview_dm], ["Foo"])
+        self.assertRaises(ValueError, setattr, cs_test, 'Categories',
+                ["Description"])
+
+        # Test setting a category with only a single value.
+        self.assertRaises(ValueError, setattr, cs_test, 'Categories', ["Bar"])
+
+        # Test setting a category that is non-numeric.
+        self.assertRaises(TypeError, CategoryStats, self.overview_map,
+                          [self.overview_dm], ["Treatment"],
+                          suppress_numeric_category_check=False)
 
     def test_Categories_getter(self):
         """Test valid return of Categories property."""
@@ -546,7 +574,12 @@ class CategoryStatsTests(TestHelper):
     def test_validate_compatibility(self):
         """Test for compatible sample IDs between dms and mdmap."""
         self.assertEqual(self.cs_overview._validate_compatibility(), None)
+
         self.cs_overview.DistanceMatrices = [self.single_ele_dm]
+        self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
+
+        self.cs_overview.DistanceMatrices = [self.overview_dm]
+        self.cs_overview.MetadataMap = self.test_map
         self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
 
     def test_call(self):
@@ -657,12 +690,12 @@ class AnosimTests(TestHelper):
     def test_call_no_perms(self):
         """Test __call__() on small dm with no permutations."""
         # These results were verified with R.
-        exp = {'method_name': 'ANOSIM', 'p_value': 'NA', 'r_value': 0.625}
+        exp = {'method_name': 'ANOSIM', 'p_value': 1.0, 'r_value': 0.625}
         obs = self.anosim_small(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertEqual(obs['p_value'], exp['p_value'])
+        self.assertFloatEqual(obs['p_value'], exp['p_value'])
 
     def test_call_incompatible_data(self):
         """Should fail on incompatible mdmap/dm combo and bad perms."""
@@ -877,12 +910,12 @@ class PermanovaTests(TestHelper):
 
     def test_call_uneven(self):
         """Test __call__() on uneven group sizes with no permutations."""
-        exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'f_value': 3.58462}
+        exp = {'method_name': 'PERMANOVA', 'p_value': 1.0, 'f_value': 3.58462}
         obs = self.permanova_uneven(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertEqual(obs['p_value'], exp['p_value'])
+        self.assertFloatEqual(obs['p_value'], exp['p_value'])
 
     def test_call_overview(self):
         """Test __call__() on the overview dataset."""
@@ -901,12 +934,12 @@ class PermanovaTests(TestHelper):
         self.assertRaises(ValueError, self.permanova_plain)
 
 
-class BioEnvTests(TestHelper):
-    """Tests for the BioEnv class."""
+class BestTests(TestHelper):
+    """Tests for the Best class."""
 
     def setUp(self):
         """Define some useful data to use in testing."""
-        super(BioEnvTests, self).setUp()
+        super(BestTests, self).setUp()
 
         self.bv_dm_88soils_str = ["\tMT2.141698\tCA1.141704\tBB2.141659\t"
         "CO2.141657\tTL3.141709\tSN3.141650", "MT2.141698\t0.0\t"
@@ -940,8 +973,7 @@ class BioEnvTests(TestHelper):
                      'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO',
                      'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH',
                      'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
-        self.bioenv = BioEnv(self.bv_dm_88soils, self.bv_map_88soils,
-                             self.cats)
+        self.best = Best(self.bv_dm_88soils, self.bv_map_88soils, self.cats)
 
     def test_vector_dist(self):
         """Test the _vector_dist helper method."""
@@ -949,14 +981,14 @@ class BioEnvTests(TestHelper):
         v2 = [-1,12,4]
 
         exp = 8.48528137424
-        obs = self.bioenv._vector_dist(v1,v2)
+        obs = self.best._vector_dist(v1,v2)
         self.assertFloatEqual(exp, obs)
 
         v1 = [1,2,100,4,2]
         v2 = [-1,12,4,12,99]
 
         exp = 137.087563258
-        obs = self.bioenv._vector_dist(v1,v2)
+        obs = self.best._vector_dist(v1,v2)
         self.assertFloatEqual(exp, obs)
 
     def test_make_cat_mat(self):
@@ -968,7 +1000,7 @@ class BioEnvTests(TestHelper):
                ('4.23', '68.63333333'),
                ('5.74', '36.45')]
 
-        obs = self.bioenv._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1,3])
+        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1,3])
         self.assertEqual(exp,obs)
 
         exp = [('6.66', '-114', '46.8'),
@@ -978,7 +1010,7 @@ class BioEnvTests(TestHelper):
                ('4.23', '-149.5833333', '68.63333333'),
                ('5.74', '-118.1666667', '36.45')]
 
-        obs = self.bioenv._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'],
+        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'],
                                         [1,2,3])
         self.assertEqual(exp,obs)
 
@@ -1009,13 +1041,13 @@ class BioEnvTests(TestHelper):
         4.13376879093,32.2187374711,0.0]]
 
         exp = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
-        obs = self.bioenv._derive_euclidean_dm(cat_mat,
+        obs = self.best._derive_euclidean_dm(cat_mat,
                                                self.bv_dm_88soils.Size)
 
     def test_call(self):
-        """Test the overall functionality of BioEnv."""
-        exp = {'method_name': 'BioEnv',
-               'bioenv_rho_vals': [
+        """Test the overall functionality of Best."""
+        exp = {'method_name': 'BEST',
+               'rho_vals': [
                    (0.75, '8'),
                    (0.5, '1,11'),
                    (0.5107142857142857, '1,8,11'),
@@ -1035,7 +1067,7 @@ class BioEnvTests(TestHelper):
                        'CMIN_RATE = 9', 'LONGITUDE = 10',
                        'LATITUDE = 11']}
 
-        obs = self.bioenv()
+        obs = self.best()
         self.assertTrue(exp == obs)
 
 

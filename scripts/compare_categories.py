@@ -11,19 +11,11 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
-from os import path, makedirs, listdir
-
+from os.path import exists
 from cogent.util.misc import create_dir
-from numpy import zeros
-from numpy.random import permutation
-
-from qiime.format import format_p_value_for_num_iters
-from qiime.parse import (parse_distmat, fields_to_dict, parse_mapping_file,
-                         parse_mapping_file_to_dict)
-from qiime.stats import Anosim, BioEnv, Permanova
+from qiime.compare_categories import compare_categories, methods
 from qiime.util import (parse_command_line_parameters, make_option,
-                        get_options_lookup, DistanceMatrix, MetadataMap,
-                        RExecutor)
+                        get_options_lookup)
 
 options_lookup = get_options_lookup()
 
@@ -147,9 +139,7 @@ text file and a PDF of the ordination plot.
 
 script_info['required_options'] = [
     make_option('--method', help='the statistical method to use. Valid '
-        'options: [adonis, anosim, best, morans_i, mrpp, permanova, '
-        'permdisp, dbrda]', type='choice', choices=['adonis', 'anosim', 'best',
-        'morans_i', 'mrpp', 'permanova', 'permdisp', 'dbrda']),
+        'options: %s' % ', '.join(methods), type='choice', choices=methods),
     make_option('-i', '--input_dm', type='existing_filepath',
         help='the input distance matrix. WARNING: Only symmetric, hollow '
         'distance matrices may be used as input. Asymmetric distance '
@@ -166,120 +156,28 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-n', '--num_permutations', help='the number of permutations '
         'to use when calculating statistical significance. Only applies to '
-        'adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA '
-        '[default: %default]', default=999, type='int')
+        'adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA. Must be '
+        'greater than or equal to zero [default: %default]', default=999,
+        type='int')
 ]
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    # Create the output dir if it doesn't already exist.
-    try:
-        if not path.exists(opts.output_dir):
-            create_dir(opts.output_dir)
-    except:
-        option_parser.error("Could not create or access output directory "
-                            "specified with the -o option.")
-
-    # Parse the mapping file and distance matrix.
-    md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file,'U'))
-    dm = DistanceMatrix.parseDistanceMatrix(open(opts.input_dm,'U'))
-
-    # Separate all categories into a list, then grab the first category.
+    out_dir = opts.output_dir
     categories = opts.categories.split(',')
 
-    # Cursory check to make sure all categories passed in are in mapping file.
-    maps = parse_mapping_file(open(opts.mapping_file,'U').readlines())
-    for category in categories:
-        if not category in maps[1][1:]:
-            option_parser.error("Category '%s' not found in mapping file "
-                                "columns:" % category)
+    # Create the output dir if it doesn't already exist.
+    try:
+        if not exists(out_dir):
+            create_dir(out_dir)
+    except:
+        option_parser.error("Could not create or access output directory '%s' "
+                            "specified with the -o option." % out_dir)
 
-    # Make sure the input distance matrix is symmetric and hollow. Must check
-    # here before allowing R to use it, as R will silently ignore the diagonal
-    # and upper triangle of the distance matrix.
-    if not dm.is_symmetric_and_hollow():
-        option_parser.error("The distance matrix must be symmetric and "
-                            "hollow.")
-
-    # Figure out which method we need to run.
-    if opts.method == 'adonis':
-        command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + categories[0] + " -o " + opts.output_dir + " -n " + \
-            str(opts.num_permutations)]
-        rex = RExecutor()
-        rex(command_args, "adonis.r", output_dir=opts.output_dir)
-    elif opts.method == 'anosim':
-        anosim = Anosim(md_map, dm, categories[0])
-        anosim_results = anosim(opts.num_permutations)
-
-        output_file = open(opts.output_dir + "/" + opts.method + \
-            "_results.txt", "w+")
-        output_file.write("Method Name\tR-value\tP-value")
-        output_file.write("\n")
-        output_file.write(anosim_results["method_name"]+"\t"+\
-            str(anosim_results["r_value"])+"\t"+\
-            str(anosim_results["p_value"])+"\t")
-        output_file.write("\n")
-        output_file.close()
-    elif opts.method == 'best':
-        bioenv = BioEnv(dm, md_map, categories)
-        bioenv_results = bioenv()
-
-        output_file = open(opts.output_dir+"/best_results.txt", 'w+')
-        output_file.write("Method Name:\tNum_Vars:\t")
-        output_file.write("\n")
-        output_file.write(bioenv_results["method_name"]+"\t"+\
-            str(bioenv_results["num_vars"]) + "\t")
-        output_file.write("\n")
-        output_file.write("Variables:\t")
-        output_file.write("\n")
-        for variable in bioenv_results["vars"]:
-            output_file.write(str(variable) + "\t")
-        output_file.write("\n")
-        output_file.write("RHO_Values:\t")
-        output_file.write("\n")
-        for rho_val in bioenv_results["bioenv_rho_vals"]:
-            output_file.write(str(rho_val) + "\t")
-        output_file.write("\n")
-        output_file.close()
-    elif opts.method == 'morans_i':
-        command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + categories[0] + " -o " + opts.output_dir]
-        rex = RExecutor()
-        rex(command_args, "morans_i.r", output_dir=opts.output_dir)
-    elif opts.method == 'mrpp':
-        command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + categories[0] + " -o " + opts.output_dir + \
-            " -n " + str(opts.num_permutations)]
-        rex = RExecutor()
-        rex(command_args, "mrpp.r", output_dir=opts.output_dir)
-    elif opts.method == 'permanova':
-        permanova_plain = Permanova(md_map, dm, categories[0])
-        permanova_results = permanova_plain(opts.num_permutations)
-
-        output_file = open(opts.output_dir+"/permanova_results.txt", 'w+')
-        output_file.write("Method Name\tF-value\tP-value")
-        output_file.write("\n")
-        output_file.write(permanova_results["method_name"]+"\t"+\
-            str(permanova_results["f_value"]) + "\t" + \
-            format_p_value_for_num_iters(permanova_results["p_value"], \
-            opts.num_permutations)+"\t")
-        output_file.write("\n")
-        output_file.close()
-    elif opts.method == 'permdisp':
-        command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + categories[0] + " -o " + opts.output_dir + " -n " + \
-            str(opts.num_permutations)]
-        rex = RExecutor()
-        rex(command_args, "permdisp.r", output_dir=opts.output_dir)
-    elif opts.method == 'dbrda':
-        command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + categories[0] + " -o " + opts.output_dir + " -n " + \
-            str(opts.num_permutations)]
-        rex = RExecutor()
-        rex(command_args, "dbrda.r", output_dir=opts.output_dir)
+    compare_categories(opts.input_dm, opts.mapping_file, opts.method,
+                       categories, opts.num_permutations, out_dir)
 
 
 if __name__ == "__main__":

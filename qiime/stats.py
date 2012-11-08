@@ -23,7 +23,6 @@ create new statistical method implementations.
 
 from types import ListType
 
-
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
@@ -340,7 +339,10 @@ class CategoryStats(DistanceMatrixStats):
 
     def __init__(self, mdmap, dms, cats, num_dms=-1, min_dm_size=-1,
                  random_fn=permutation,
-                 suppress_symmetry_and_hollowness_check=False):
+                 suppress_symmetry_and_hollowness_check=False,
+                 suppress_category_uniqueness_check=False,
+                 suppress_numeric_category_check=True,
+                 suppress_single_category_value_check=False):
         """Default constructor.
 
         Creates a new instance with the provided distance matrices,
@@ -369,9 +371,31 @@ class CategoryStats(DistanceMatrixStats):
                 matrices. Alternatively, if the statistical method works on
                 asymmetric and/or non-hollow distance matrices, you can disable
                 this check to allow for these types of distance matrices
+            suppress_category_uniqueness_check - by default, each input
+                category will be checked to ensure that not all values are
+                unique (i.e. some duplicated values exist). In other words,
+                this check makes sure that the category will group samples such
+                that there exists at least one group of samples that is
+                composed of two or more samples. Many categorical statistical
+                methods (such as ANOSIM and PERMANOVA) need this requirement to
+                be met to avoid erroneous math (e.g. division by zero) due to a
+                lack of 'within' distances. An example of a unique category
+                would be SampleID, where each category value is unique
+            suppress_numeric_category_check - if False, each category's values
+                will be checked to ensure they can be converted to a float.
+                Useful for methods that only accept numeric categories
+            suppress_single_category_value_check - if False, each category's
+                values will be checked to ensure they are not all the same.
+                Many of the methods will not work if every value is the same
+                (i.e. there is only one single group of samples)
         """
         super(CategoryStats, self).__init__(dms, num_dms, min_dm_size,
                 suppress_symmetry_and_hollowness_check)
+        self._suppress_category_uniqueness_check = \
+                suppress_category_uniqueness_check
+        self._suppress_numeric_category_check = suppress_numeric_category_check
+        self._suppress_single_category_value_check = \
+                suppress_single_category_value_check
         self.MetadataMap = mdmap
         self.Categories = cats
         self.RandomFunction = random_fn
@@ -420,8 +444,34 @@ class CategoryStats(DistanceMatrixStats):
             if not isinstance(new_cat, str):
                 raise TypeError("Invalid category: not of type 'string'")
             elif new_cat not in self._metadata_map.CategoryNames:
-                raise ValueError("The category %s is not in the mapping file."
-                    % new_cat)
+                raise ValueError("The category '%s' is not in the mapping "
+                                 "file." % new_cat)
+
+            if not self._suppress_numeric_category_check:
+                if not self._metadata_map.isNumericCategory(new_cat):
+                    raise TypeError("The category '%s' is not numeric. Not "
+                                    "all values could be converted to numbers."
+                                    % new_cat)
+
+            if not self._suppress_category_uniqueness_check:
+                if self._metadata_map.hasUniqueCategoryValues(new_cat):
+                    raise ValueError("All values in category '%s' are unique. "
+                                     "This statistical method cannot operate "
+                                     "on a category with unique values (e.g. "
+                                     "there are no 'within' distances because "
+                                     "each group of samples contains only a "
+                                     "single sample)." % new_cat)
+
+            if not self._suppress_single_category_value_check:
+                if self._metadata_map.hasSingleCategoryValue(new_cat):
+                    raise ValueError("All values in category '%s' are the "
+                                     "same. This statistical method cannot "
+                                     "operate on a category that creates only "
+                                     "a single group of samples (e.g. there "
+                                     "are no 'between' distances because "
+                                     "there is only a single group)."
+                                     % new_cat)
+
         self._categories = new_categories
 
     @property
@@ -444,20 +494,25 @@ class CategoryStats(DistanceMatrixStats):
             raise TypeError("The supplied function reference is not callable.")
 
     def _validate_compatibility(self):
-        """Raises an error if the current dms and map are incompatible.
+        """Checks that the current dms, map, and categories are compatible.
 
         This method will raise an error if any of the sample IDs in any of the
         distance matrices are not found in the metadata map. Ordering of
-        sample IDs is not taken into account.
+        sample IDs is not taken into account. An error will also be raised if
+        any categories cannot be found in the mapping file.
 
-        This method exists because we do not have a method to set both distance
-        matrices and metadata map at the same time.
+        This method exists because we do not have a method to set distance
+        matrices, metadata map, and categories at the same time.
         """
         for dm in self.DistanceMatrices:
             for samp_id in dm.SampleIds:
                 if samp_id not in self.MetadataMap.SampleIds:
                     raise ValueError("The sample ID '%s' was not found in the "
                                      "metadata map." % samp_id)
+        for cat in self.Categories:
+            if cat not in self.MetadataMap.CategoryNames:
+                raise ValueError("The category '%s' was not found in the "
+                                 "metadata map." % cat)
 
     def __call__(self, num_perms=999):
         """Runs the statistical method and returns relevant results.
@@ -530,6 +585,8 @@ class Anosim(CategoryStats):
             r_value - the ANOSIM R statistic computed by the test
             p_value - the p-value computed by the test, or 'NA' if the number
                 of permutations was zero
+            num_perms - the number of permutations used when calculating the
+                p-value
 
         Arguments:
             num_perms - the number of permutations to use when calculating the
@@ -565,11 +622,13 @@ class Anosim(CategoryStats):
             # Calculate the p-value.
             p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
         else:
-            p_value = 'NA'
+            p_value = 1.0
 
         results['method_name'] = 'ANOSIM'
         results['r_value'] = r_stat
         results['p_value'] = p_value
+        results['num_perms'] = num_perms
+
         return results
 
     def _anosim(self, group_map):
@@ -745,6 +804,8 @@ class Permanova(CategoryStats):
             f_value - the PERMANOVA F statistic computed by the test
             p_value - the p-value computed by the test, or 'NA' if the number
                 of permutations was zero
+            num_perms - the number of permutations used when calculating the
+                p-value
 
         Arguments:
             num_perms - the number of permutations to use when calculating the
@@ -780,11 +841,13 @@ class Permanova(CategoryStats):
             # Calculate the p-value.
             p_value = (sum(perm_stats >= f_stat) + 1) / (num_perms + 1)
         else:
-            p_value = 'NA'
+            p_value = 1.0
 
         results['method_name'] = 'PERMANOVA'
         results['f_value'] = f_stat
         results['p_value'] = p_value
+        results['num_perms'] = num_perms
+
         return results
 
     def _permanova(self, grouping):
@@ -858,8 +921,12 @@ class Permanova(CategoryStats):
         return (s_A / (a-1)) / (s_W / (N-a))
 
 
-class BioEnv(CategoryStats):
-    """Class for the BioEnv statistical analysis."""
+class Best(CategoryStats):
+    """Class for the BEST/BioEnv statistical analysis.
+    
+    Based on vegan::bioenv function, which is an implementation of the BEST
+    statistical method.
+    """
 
     def __init__(self, dm, metadata_map, cats,
                  suppress_symmetry_and_hollowness_check=False):
@@ -876,7 +943,7 @@ class BioEnv(CategoryStats):
                 information from
             cats - list of category strings in the metadata map that will be
                 used to determine the combination that "best" explains the
-                variability in the data
+                variability in the data. Each category must be numeric
             suppress_symmetry_and_hollowness_check - by default, the input
                 distance matrix will be checked for symmetry and hollowness.
                 It is recommended to leave this check in place for safety, as
@@ -885,12 +952,17 @@ class BioEnv(CategoryStats):
                 check for small performance gains on extremely large distance
                 matrices
         """
-        super(BioEnv, self).__init__(metadata_map, [dm], cats, num_dms=1,
-                suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+        # BEST doesn't require non-unique categories or non-single value
+        # categories, but *does* require only numeric categories.
+        super(Best, self).__init__(metadata_map, [dm], cats, num_dms=1,
+              suppress_symmetry_and_hollowness_check=\
+              suppress_symmetry_and_hollowness_check,
+              suppress_category_uniqueness_check=True,
+              suppress_numeric_category_check=False,
+              suppress_single_category_value_check=True)
 
     def __call__(self, num_perms=999):
-        """Runs the BioEnv analysis on a distance matrix using specified
+        """Runs the BEST/BioEnv analysis on a distance matrix using specified
         metadata map categories.
 
         num_perms is ignored, but maintained for a consistent interface with
@@ -900,14 +972,13 @@ class BioEnv(CategoryStats):
             method_name - name of the statistical method
             num_vars - number of categories (variables)
             vars - mapping of category names to indices
-            bioenv_rho_vals - spearman correlation statistics, one for each
+            rho_vals - spearman correlation statistics, one for each
                 combination of vars
         """
-        res = super(BioEnv, self).__call__()
+        res = super(Best, self).__call__()
         cats = self.Categories
         dm = self.DistanceMatrices[0]
         dm_flat = dm.flatten()
-        #dm_flat_ranked = self._get_rank(dm_flat)
 
         row_count = dm.Size
         col_count = len(cats)
@@ -924,10 +995,12 @@ class BioEnv(CategoryStats):
                 if r > stats[i-1][0]:
                     stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
 
-        res['method_name'] = 'BioEnv'
+        res['method_name'] = 'BEST'
         res['num_vars'] = col_count
-        res['vars'] = ['%s = %d' % (name,val+1) for val,name in enumerate(cats)]
-        res['bioenv_rho_vals'] = stats[:-1]
+        res['vars'] = ['%s = %d' % (name,val+1)
+                       for val,name in enumerate(cats)]
+        res['rho_vals'] = stats[:-1]
+
         return res
 
     def _derive_euclidean_dm(self, cat_mat, dim):

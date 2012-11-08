@@ -1810,16 +1810,17 @@ class MetadataMapTests(TestCase):
     def setUp(self):
         """Create MetadataMap objects that will be used in the tests."""
         # Create a map using the overview tutorial mapping file.
-        self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
-                                 "PC.354\tAGCACGAGCCTA\tControl\t20061218",
-                                 "PC.355\tAACTCGTCGATG\tControl\t20061218",
-                                 "PC.356\tACAGACCACTCA\tControl\t20061126",
-                                 "PC.481\tACCAGCGACTAG\tControl\t20070314",
-                                 "PC.593\tAGCAGCACTTGT\tControl\t20071210",
-                                 "PC.607\tAACTGTGCGTAC\tFast\t20071112",
-                                 "PC.634\tACAGAGTCGGCT\tFast\t20080116",
-                                 "PC.635\tACCGCAGAGTCA\tFast\t20080116",
-                                 "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
+        self.overview_map_str = [
+                "#SampleID\tBarcodeSequence\tTreatment\tDOB\tDescription",
+                "PC.354\tAGCACGAGCCTA\tControl\t20061218\t354",
+                "PC.355\tAACTCGTCGATG\tControl\t20061218\t355",
+                "PC.356\tACAGACCACTCA\tControl\t20061126\t356",
+                "PC.481\tACCAGCGACTAG\tControl\t20070314\t481",
+                "PC.593\tAGCAGCACTTGT\tControl\t20071210\t593",
+                "PC.607\tAACTGTGCGTAC\tFast\t20071112\t607",
+                "PC.634\tACAGAGTCGGCT\tFast\t20080116\t634",
+                "PC.635\tACCGCAGAGTCA\tFast\t20080116\t635",
+                "PC.636\tACGGTGAGTGTC\tFast\t20080116\t636"]
         self.overview_map = MetadataMap(
             *parse_mapping_file_to_dict(self.overview_map_str))
 
@@ -1850,6 +1851,21 @@ class MetadataMapTests(TestCase):
         self.no_metadata = MetadataMap(*parse_mapping_file_to_dict(
             self.no_metadata_str))
 
+        # Create a MetadataMap object that has a category with only one value
+        # throughout the entire column.
+        self.single_value_str = ["#SampleID\tFoo",
+                                "PC.354\tfoo",
+                                "PC.355\tfoo",
+                                "PC.356\tfoo",
+                                "PC.481\tfoo",
+                                "PC.593\tfoo",
+                                "PC.607\tfoo",
+                                "PC.634\tfoo",
+                                "PC.635\tfoo",
+                                "PC.636\tfoo"]
+        self.single_value = MetadataMap(*parse_mapping_file_to_dict(
+            self.single_value_str))
+
     def test_parseMetadataMap(self):
         """Test parsing a mapping file into a MetadataMap instance."""
         obs = MetadataMap.parseMetadataMap(self.overview_map_str)
@@ -1879,17 +1895,17 @@ class MetadataMapTests(TestCase):
     def test_getSampleMetadata(self):
         """Test metadata by sample ID accessor with valid sample IDs."""
         exp = {'BarcodeSequence': 'AGCACGAGCCTA', 'Treatment': 'Control',
-               'DOB': '20061218'}
+                'DOB': '20061218', 'Description': '354'}
         obs = self.overview_map.getSampleMetadata('PC.354')
         self.assertEqual(obs, exp)
 
         exp = {'BarcodeSequence': 'ACCAGCGACTAG', 'Treatment': 'Control',
-               'DOB': '20070314'}
+                'DOB': '20070314', 'Description': '481'}
         obs = self.map_with_comments.getSampleMetadata('PC.481')
         self.assertEqual(obs, exp)
 
         exp = {'BarcodeSequence': 'ACGGTGAGTGTC', 'Treatment': 'Fast',
-               'DOB': '20080116'}
+                'DOB': '20080116', 'Description': '636'}
         obs = self.map_with_comments.getSampleMetadata('PC.636')
         self.assertEqual(obs, exp)
 
@@ -1941,6 +1957,32 @@ class MetadataMapTests(TestCase):
         obs = self.overview_map.getCategoryValues(smpl_ids, 'Treatment')
         self.assertEqual(obs, exp)
 
+    def test_isNumericCategory(self):
+        """Test checking if a category is numeric."""
+        obs = self.overview_map.isNumericCategory('Treatment')
+        self.assertEqual(obs, False)
+
+        obs = self.overview_map.isNumericCategory('DOB')
+        self.assertEqual(obs, True)
+
+    def test_hasUniqueCategoryValues(self):
+        """Test checking if a category has unique values."""
+        obs = self.overview_map.hasUniqueCategoryValues('Treatment')
+        self.assertEqual(obs, False)
+
+        obs = self.overview_map.hasUniqueCategoryValues('DOB')
+        self.assertEqual(obs, False)
+
+        obs = self.overview_map.hasUniqueCategoryValues('Description')
+        self.assertEqual(obs, True)
+
+    def test_hasSingleCategoryValue(self):
+        """Test checking if a category has only a single value."""
+        obs = self.overview_map.hasSingleCategoryValue('Treatment')
+        self.assertEqual(obs, False)
+
+        obs = self.single_value.hasSingleCategoryValue('Foo')
+        self.assertEqual(obs, True)
 
     def test_getCategoryValue_bad_sample_id(self):
         """Test category value by sample ID accessor with bad sample IDs."""
@@ -2003,7 +2045,7 @@ class MetadataMapTests(TestCase):
 
     def test_CategoryNames(self):
         """Test category names accessor."""
-        exp = ["BarcodeSequence", "DOB", "Treatment"]
+        exp = ["BarcodeSequence", "DOB", "Description", "Treatment"]
         obs = self.overview_map.CategoryNames
         self.assertEqual(obs, exp)
 
