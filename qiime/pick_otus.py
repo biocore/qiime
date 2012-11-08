@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"]
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,7 +16,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split
+from os.path import splitext, split, abspath
 from os import makedirs
 from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
@@ -133,7 +133,8 @@ class OtuPicker(FunctionWithParams):
 
         trunc_id = lambda (a,b): (a.split()[0],b)
         # get the prefix map
-        mapping=build_prefix_map(imap(trunc_id, MinimalFastaParser(open(seq_path))))
+        mapping=build_prefix_map(imap(trunc_id, MinimalFastaParser(
+                                                open(seq_path))))
         for key in mapping.keys():
                 mapping[key].append(key)
 
@@ -187,19 +188,19 @@ class BlastOtuPicker(OtuPicker):
         
         if not blast_db:
             self.blast_db, self.db_files_to_remove = \
-                build_blast_db_from_fasta_path(refseqs_fp,
+                build_blast_db_from_fasta_path(abspath(refseqs_fp),
                  is_protein=self.Params['is_protein'],
                  output_dir=get_qiime_temp_dir())
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
-             refseqs_fp)
+                                  abspath(refseqs_fp))
         else:
             self.blast_db = blast_db
             self.db_files_to_remove = []
              
         self.log_lines.append('Blast database: %s' % self.blast_db)
         
-        clusters, failures = self._cluster_seqs(\
-         MinimalFastaParser(open(seq_path)))
+        clusters, failures = self._cluster_seqs(
+                                    MinimalFastaParser(open(seq_path)))
         self.log_lines.append('Num OTUs: %d' % len(clusters))
         
         if result_path:
@@ -993,7 +994,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          percent_id_err = self.Params['percent_id_err'],
          minsize = self.Params['minsize'],
          abundance_skew = self.Params['abundance_skew'],
-         db_filepath = self.Params['db_filepath'],
+         db_filepath = abspath(self.Params['db_filepath']),
          rev = self.Params['rev'],
          label_prefix = self.Params['label_prefix'],
          label_suffix = self.Params['label_suffix'],
@@ -1170,7 +1171,8 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
         log_lines.append('Num failures:%d' % len(failures))
-        log_lines.append('Reference database for OTU picking: %s' % refseqs_fp)
+        log_lines.append('Reference database for OTU picking: %s' % 
+                         abspath(refseqs_fp))
         
         
         
@@ -1306,7 +1308,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         remove_files(self.files_to_remove)
         
         log_lines = []
-        log_lines.append('Reference seqs:%s' % refseqs_fp)
+        log_lines.append('Reference seqs:%s' % abspath(refseqs_fp))
         log_lines.append('Num OTUs:%d' % len(cluster_map))
         log_lines.append('Num new OTUs:%d' % len(new_seeds))
         log_lines.append('Num failures:%d' % len(failures))
