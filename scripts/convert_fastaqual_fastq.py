@@ -33,8 +33,7 @@ designated output directory."
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Example:",\
 "Using the input files seqs.fna and seqs.qual, generate seqs.fastq in \
-the fastq_files directory:", "convert_fastaqual_fastq.py \
--f seqs.fna -q seqs.qual -o fastq_files/"))
+the fastq_files directory:", "%prog -f seqs.fna -q seqs.qual -o fastq_files/"))
 script_info['script_usage'].append(("Example:",\
 "Using input seqs.fastq generate fasta and qual files in fastaqual \
 directory:", "%prog -c fastq_to_fastaqual \
