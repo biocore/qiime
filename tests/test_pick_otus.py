@@ -13,6 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import remove
+from os.path import abspath
 from shutil import rmtree
 
 from cogent.util.misc import create_dir
@@ -2499,7 +2500,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         remove(tmp_failure_filepath)
         
         log_file_99_exp = ["OtuPicker parameters:",
-         "Reference seqs:%s" % ref_seqs_fp,
+         "Reference seqs:%s" % abspath(ref_seqs_fp),
          "Similarity:0.8",
          "Application:uclust",
          "enable_rev_strand_matching:False",
