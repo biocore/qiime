@@ -1735,6 +1735,54 @@ class MetadataMap():
         """
         return [self._metadata[sid][category] for sid in sample_ids]
 
+    def isNumericCategory(self, category):
+        """Returns True if the category is numeric and False otherwise.
+
+        A category is numeric if all values within the category can be
+        converted to a float.
+
+        Arguments:
+            category - the category that will be checked
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        is_numeric = True
+        for category_value in category_values:
+            try:
+                float(category_value)
+            except ValueError:
+                is_numeric = False
+        return is_numeric
+
+    def hasUniqueCategoryValues(self, category):
+        """Returns True if the category's values are all unique.
+
+        Arguments:
+            category - the category that will be checked for uniqueness
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        is_unique = False
+        if len(set(category_values)) == len(self.SampleIds):
+            is_unique = True
+        return is_unique
+
+    def hasSingleCategoryValue(self, category):
+        """Returns True if the category's values are all the same.
+
+        For example, the category 'Treatment' only has values 'Control' for the
+        entire column.
+
+        Arguments:
+            category - the category that will be checked
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        single_value = False
+        if len(set(category_values)) == 1:
+            single_value = True
+        return single_value
+
     @property
     def SampleIds(self):
         """Returns the IDs of all samples in the metadata map.
