@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jesse Stombaugh"]
+__credits__ = ["Jesse Stombaugh", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -81,9 +81,9 @@ def main():
     
     # list of tree insertion methods
     tree_insertion_module_names = \
-                {'raxml_v730':qiime.pycogent_backports.raxml_v730, 
-                 'parsinsert':qiime.pycogent_backports.parsinsert,
-                 'pplacer':qiime.pycogent_backports.pplacer}
+                {'raxml_v730':cogent.app.raxml_v730, 
+                 'parsinsert':cogent.app.parsinsert,
+                 'pplacer':cogent.app.pplacer}
 
     # load input sequences and convert to phylip since the tools require 
     # the query sequences to phylip-compliant names
