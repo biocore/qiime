@@ -1332,6 +1332,14 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
     return (rec_0_1,rec_0_2,record[1],record[2],record[3],\
             rec_4_1,rec_4_2,rec_4_3), sequence, sequence_qual,\
             barcode,barcode_qual
+
+def is_gzip(fp):
+    """Checks the first two bytes of the file for the gzip magic number
+
+    If the first two bytes of the file are 1f 8b (the "magic number" of a 
+    gzip file), return True; otherwise, return false.
+    """
+    return open(fp, 'rb').read(2) == '\x1f\x8b'
             
 def gzip_open(fp):
     return gzip.open(fp,'rb')
@@ -1348,7 +1356,7 @@ def qiime_open(fp, permission='U'):
     the mode); opening a binary file in text mode (e.g., in default mode 'U')
     will have unpredictable results.
     """
-    if fp.endswith('gz'):
+    if is_gzip(fp):
         return gzip_open(fp)
     else:
         return open(fp, permission)
