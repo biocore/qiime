@@ -168,23 +168,21 @@ class TopLevelTests(TestCase):
     def test_prep_sffs_in_dir_no_trim(self):
         """test_prep_sffs_in_dir should use the no_trim option only if sffinfo exists."""
         output_dir = tempfile.mkdtemp()
-        
+
         try:
             check_sffinfo()
             perform_test=True
         except:
             perform_test=False
-        
+                                                                
         if perform_test:
             prep_sffs_in_dir(self.sff_dir, output_dir, make_flowgram=False, 
                              convert_to_flx=False, use_sfftools=True,
                              no_trim=True)
         
             fna_fp = os.path.join(output_dir, 'test.fna')
-            fna_gz_fp = os.path.join(output_dir, 'test_gz.fna')
 
             self.assertEqual(open(fna_fp).read(), fna_notrim_txt)
-            self.assertEqual(open(fna_gz_fp).read(), fna_notrim_txt)
 
             qual_fp = os.path.join(output_dir, 'test.qual')
             qual_gz_fp = os.path.join(output_dir, 'test_gz.qual')
@@ -195,7 +193,7 @@ class TopLevelTests(TestCase):
             #self.assertEqual(open(flow_fp).read(), flow_txt)
             
 
-        shutil.rmtree(output_dir)
+            shutil.rmtree(output_dir)
 
 
 flow_txt = """\
