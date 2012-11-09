@@ -174,7 +174,7 @@ def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
         if (is_gzip(sff_fp)):
             error_msg = "Cannot use gzipped SFF's with sfftools; "
             error_msg += "please unzip the file (%s)" % sff_fp
-            raise IOError, error_msg
+            raise TypeError, error_msg
         check_sfffile()
         _check_call(
             ['sfffile', '-flx', '-o', output_fp, sff_fp],
