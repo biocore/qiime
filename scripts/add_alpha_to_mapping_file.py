@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Yoshiki Vazquez-Baeza"]
+__credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
@@ -17,26 +17,40 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.add_alpha_to_mapping_file import add_alpha_diversity_values_to_mapping_file
 
 script_info = {}
-script_info['brief_description'] = ""
-script_info['script_description'] = ""
-script_info['script_usage'] = [("","","")]
-script_info['output_description']= ""
+script_info['brief_description'] = "Add alpha diversity data to a metadata "+\
+    "mapping file"
+script_info['script_description'] = "Add alpha diversity data to a mapping "+\
+    "file for use with other QIIME scripts, i. e. make_3d_plots.py. The "+\
+    "resulting mapping file will contain three new columns per metric in the "+\
+    "alpha diversity data; the first column being the raw value, the second "+\
+    "being a normalized raw value and the third one a label classifying "+\
+    "the bin where this value fits."
+script_info['script_usage'] = [("Adding alpha diversity data:","Add the alpha"+\
+    " diversity values to a mapping file and classify the normalized values "+\
+    "into 4 bins.","add_alpha_to_mapping_file.py -i adiv_pd.txt -m "+\
+    "mapping.txt -b 4 -o alpha_mapping.txt")]
+script_info['output_description']= "The result of running this script is a "+\
+    "metadata mapping file that will include 3 new columns per alpha "+\
+    "diversity metric included in the alpha diversity file. For example, with"+\
+    " an alpha diversity file with only PD_whole_tree, the new columns will "+\
+    "PD_whole_tree_alpha, PD_whole_tree_normalized and PD_whole_tree_bin."
 script_info['required_options'] = [\
 make_option('-i','--alpha_fp',type="existing_filepath",\
-    help='alpha_diversity.py output, with one or multiple metrics'),\
+    help='alpha diversity data with one or multiple metrics i. e. the output'+\
+    'of alpha_diversity.py'),\
 make_option('-m','--mapping_fp',type="existing_filepath",\
-    help='input mapping file to modify'),\
+    help='mapping file to modify by adding the alpha diversity data'),\
 ]
 script_info['optional_options'] = [\
 make_option('-o','--output_mapping_fp',type="new_filepath",\
-    help='output mapping file to modify [default: %default]',\
+    help='filepath for the modified mapping file [default: %default]',\
     default='mapping_file_with_alpha.txt'),\
 make_option('-b','--number_of_bins',type="int",\
-    help='Number of bins [default: %default]', default=4),\
+    help='number of bins [default: %default]', default=4),\
 make_option('-x','--missing_value_name',type="string",\
-    help='Bin name for the sample identifiers that exist in the mapping file'+\
-        ' (mapping_fp) but not in the alpha diversity file (alpha_fp)'+\
-        '[default: %default]', default='N/A')\
+    help='bin prefix name for the sample identifiers that exist in the'+\
+        'mapping file (mapping_fp) but not in the alpha diversity file '+\
+        '(alpha_fp) [default: %default]', default='N/A')\
 ]
 script_info['version'] = __version__
 
@@ -50,26 +64,26 @@ def main():
     output_mapping_fp = opts.output_mapping_fp
     missing_value_name = opts.missing_value_name
 
+    # make sure the number of bins is an integer
     try:
         number_of_bins = int(opts.number_of_bins)
     except ValueError:
         raise ValueError, 'The number of bins must be an integer, not %s'\
             % opts.number_of_bins
 
-
+    # parse the data from the files
     mapping_file_data, mapping_file_headers, comments = parse_mapping_file(\
         open(mapping_fp, 'U'))
+    metrics, alpha_sample_ids, alpha_data = parse_matrix(open(alpha_fp, 'U'))
 
-    alpha_metrics, alpha_sample_ids, alpha_data = parse_matrix(\
-        open(alpha_fp, 'U'))
+    # add the alpha diversity data to the mapping file
+    out_mapping_file_data, out_mapping_file_headers = \
+        add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
+        alpha_data, mapping_file_headers, mapping_file_data, number_of_bins,\
+        missing_value_name)
 
-    out_mapping_file_headers, out_mapping_file_data = \
-        add_alpha_diversity_values_to_mapping_file(alpha_metrics,\
-        alpha_sample_ids, alpha_data, mapping_file_headers,\
-        mapping_file_data, number_of_bins, missing_value_name)
-
-    lines = format_mapping_file(out_mapping_file_data, out_mapping_file_headers)
-
+    # format the new data and write it down
+    lines = format_mapping_file(out_mapping_file_headers, out_mapping_file_data)
     fd_out = open(output_mapping_fp, 'w')
     fd_out.writelines(lines)
     fd_out.close()
