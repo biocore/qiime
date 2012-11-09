@@ -2,7 +2,8 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski", "Daniel McDonald"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Daniel McDonald",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -25,7 +26,6 @@ from qiime.util import FunctionWithParams
 import cogent.app.muscle_v38
 import cogent.app.clustalw
 import cogent.app.mafft
-import cogent.app.raxml
 import cogent.app.raxml_v730
 import cogent.app.fasttree
 import cogent.app.fasttree_v1
@@ -120,7 +120,7 @@ tree_module_names = {'muscle':cogent.app.muscle_v38,
     #'mafft':cogent.app.mafft,   
     # current version of Mafft does not support tree building
     'fasttree':cogent.app.fasttree,'fasttree_v1':cogent.app.fasttree_v1,
-    'raxml':cogent.app.raxml, 'raxml_v730':cogent.app.raxml_v730,'clearcut':cogent.app.clearcut
+    'raxml_v730':cogent.app.raxml_v730,'clearcut':cogent.app.clearcut
     }
     
 #def maxTipTipDistance(tree):
