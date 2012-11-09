@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-    "Justin Kuczynski"]
+               "Justin Kuczynski", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -376,8 +376,8 @@ class Qiime_config(TestCase):
             
     def test_pynast_suported_version(self):
         """pynast version is supported """
-        min_acceptable_version = (1,1)
-        min_unacceptable_version = (1,2)
+        min_acceptable_version = (1,2)
+        min_unacceptable_version = (1,3)
         try:
             from pynast import __version__ as pynast_lib_version
             version = pynast_lib_version.split('.')
