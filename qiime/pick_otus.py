@@ -984,6 +984,10 @@ class UsearchOtuPicker(UclustOtuPickerBase):
         original_fasta_path = seq_path
         self.files_to_remove = []
         
+        if self.Params['db_filepath'] is None:
+            db_fp = None
+        else:
+            db_fp = abspath(self.Params['db_filepath'])
         
         
         # perform the filtering/clustering
@@ -994,7 +998,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          percent_id_err = self.Params['percent_id_err'],
          minsize = self.Params['minsize'],
          abundance_skew = self.Params['abundance_skew'],
-         db_filepath = abspath(self.Params['db_filepath']),
+         db_filepath = db_fp,
          rev = self.Params['rev'],
          label_prefix = self.Params['label_prefix'],
          label_suffix = self.Params['label_suffix'],
