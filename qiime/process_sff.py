@@ -5,7 +5,7 @@ from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
     )
-from qiime.util import qiime_open
+from qiime.util import qiime_open, is_gzip
 from os import listdir
 from os.path import splitext, join, isfile, isdir, split
 from cStringIO import StringIO
@@ -25,6 +25,11 @@ __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
 
+def _fail_on_gzipped_sff(sff_fp):
+    if (is_gzip(sff_fp)):
+        error_msg = "Cannot use gzipped SFF's with sfftools; "
+        error_msg += "please unzip the file (%s)" % sff_fp
+        raise TypeError, error_msg
 
 def _check_call(*args, **kwargs):
     """Run subprocess.check_call, sending stderr messages to /dev/null
@@ -171,6 +176,7 @@ def check_sfffile():
 def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
     """Converts Titanium SFF to FLX length reads."""
     if use_sfftools:
+        _fail_on_gzipped_sff(sff_fp)
         check_sfffile()
         _check_call(
             ['sfffile', '-flx', '-o', output_fp, sff_fp],
@@ -184,6 +190,7 @@ def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
 def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
     """Makes flowgram file from sff file."""
     if use_sfftools:
+        _fail_on_gzipped_sff(sff_fp)
         check_sffinfo()
         _check_call(['sffinfo', sff_fp], stdout=open(output_fp, 'w'))
     else:
@@ -196,6 +203,7 @@ def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
 def make_fna(sff_fp, output_fp, use_sfftools=False,no_trim=False):
     """Makes fna file from sff file."""
     if use_sfftools:
+        _fail_on_gzipped_sff(sff_fp)
         check_sffinfo()
         if no_trim:
             _check_call(['sffinfo','-notrim','-s', sff_fp], 
@@ -212,6 +220,7 @@ def make_fna(sff_fp, output_fp, use_sfftools=False,no_trim=False):
 def make_qual(sff_fp, output_fp, use_sfftools=False,no_trim=False):
     """Makes qual file from sff file."""
     if use_sfftools:
+        _fail_on_gzipped_sff(sff_fp)
         check_sffinfo()
         if no_trim:
             _check_call(['sffinfo','-notrim','-q', sff_fp], 
