@@ -34,6 +34,8 @@ Download QIIME
 	
  * Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, `see EC2 documentation <./install/vm_ec2.html>`_.
 
+ * qiime-deploy: The `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ tool can be used to easily install various versions of QIIME natively on Linux systems.
+
 Installing and using QIIME
 ==========================
 New users should begin with the `QIIME installation guide <./install/install.html>`_ or the `QIIME virtual box <./install/virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME overview tutorial <./tutorials/tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation/index.html>`_ and the general `QIIME tutorials <./tutorials/index.html>`_.
