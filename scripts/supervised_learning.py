@@ -17,7 +17,7 @@ from os import makedirs, listdir
 from os.path import join
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_mapping_file
-from qiime.supervised_learning import RSupervisedLearner
+from qiime.supervised_learning import run_supervised_learning
 options_lookup = get_options_lookup()
 
 script_info={}
@@ -131,10 +131,9 @@ def main():
         exit(1)
 
     # run the supervised learning algorithm
-    learner = RSupervisedLearner()
-    results = learner(opts.input_data, opts.mapping_file, opts.category,
+    run_supervised_learning(opts.input_data, opts.mapping_file, opts.category,
             ntree=opts.ntree, errortype=opts.errortype,
-            output_dir=opts.output_dir, remove_tmp=True, verbose=opts.verbose)
+            output_dir=opts.output_dir, verbose=opts.verbose)
         
 if __name__ == "__main__":
     main()

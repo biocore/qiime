@@ -22,7 +22,7 @@ from cogent.app.util import ApplicationError
 from qiime.util import get_tmp_filename
 
 from cogent.util.misc import remove_files
-from qiime.supervised_learning import RSupervisedLearner
+from qiime.supervised_learning import run_supervised_learning
 from numpy import array
 
 def is_float(input_string):
@@ -65,7 +65,7 @@ class RSupervisedLearnerTests(TestCase):
 
         # get random forests results
         mkdir(join(output_dir, 'random_forest'))
-        self.results = RSupervisedLearner()(
+        self.results = run_supervised_learning(
             self.tmp_otu_filepath, self.tmp_map_filepath,'Individual',
             ntree=100, errortype='oob',
             output_dir=output_dir)
@@ -125,12 +125,12 @@ class RSupervisedLearnerTests(TestCase):
 
         # ensure that each line has five elements, and that the first one
         # is the name of one of the samples, the others are floats
-        exp = "#SampleID\tP(alleged label)\tP(second best)\tP(alleged label)-P(second best)\tmislabeled_at_0.05\tmislabeled_at_0.10\tmislabeled_at_0.15\tmislabeled_at_0.20\tmislabeled_at_0.25\tmislabeled_at_0.30\tmislabeled_at_0.35\tmislabeled_at_0.40\tmislabeled_at_0.45\tmislabeled_at_0.50"
+        exp = "#SampleID\tP(alleged label)\tP(second best)\tP(alleged label)-P(second best)\tmislabeled_probability_above_0.05\tmislabeled_probability_above_0.10\tmislabeled_probability_above_0.15\tmislabeled_probability_above_0.20\tmislabeled_probability_above_0.25\tmislabeled_probability_above_0.30\tmislabeled_probability_above_0.35\tmislabeled_probability_above_0.40\tmislabeled_probability_above_0.45\tmislabeled_probability_above_0.50\tmislabeled_probability_above_0.55\tmislabeled_probability_above_0.60\tmislabeled_probability_above_0.65\tmislabeled_probability_above_0.70\tmislabeled_probability_above_0.75\tmislabeled_probability_above_0.80\tmislabeled_probability_above_0.85\tmislabeled_probability_above_0.90\tmislabeled_probability_above_0.95\tmislabeled_probability_above_0.99"
         self.assertEqual(mislabeling_output[0].strip(), exp)
         for line in mislabeling_output[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
-            self.assertEqual(line_length, 14)
+            self.assertEqual(line_length, 24)
             self.assertEqual(words[0] in test_sample_IDs, True)            
             for word in words[1:3]:
                 self.assertEqual(is_float(word),True)
