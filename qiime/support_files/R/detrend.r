@@ -18,7 +18,7 @@ source(sprintf('%s/loaddata.r',sourcedir))
 source(sprintf('%s/util.r',sourcedir))
 source(sprintf('%s/detrend_util.r',sourcedir))
 load.library('optparse')
-library('RColorBrewer')
+load.library('RColorBrewer')
 
 # make option list and parse command line
 option_list <- list(
