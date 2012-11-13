@@ -125,7 +125,7 @@
     # drop non-overlapping samples 
     for(i in 1:length(objects)){
         if(!is.null(objects[[i]])) {
-            objects[[i]] <- objects[[i]][IDs,]
+            objects[[i]] <- objects[[i]][IDs,,drop=F]
             # for mapping file, drop any empty levels from factors that might
             # have occurred due to dropped samples
             if(i == 1) objects[[i]] <- droplevels(objects[[i]])
