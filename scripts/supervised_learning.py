@@ -131,9 +131,10 @@ def main():
         exit(1)
 
     # run the supervised learning algorithm
-    run_supervised_learning(opts.input_data, opts.mapping_file, opts.category,
+    result = run_supervised_learning(opts.input_data, opts.mapping_file, opts.category,
             ntree=opts.ntree, errortype=opts.errortype,
             output_dir=opts.output_dir, verbose=opts.verbose)
-        
+    print result
+    
 if __name__ == "__main__":
     main()

@@ -6,7 +6,7 @@ __credits__ = ["Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Dan Knights"
-__email__ = "daniel.knights@colorado.edu"
+__email__ = "danknights@gmail.com"
 __status__ = "Development"
 
 from os import remove, path, devnull
@@ -31,8 +31,21 @@ def parse_feature_importances(filepath):
         scores.append(float(words[1].strip()))
     return array(feature_IDs), array(scores)
 
+
 def run_supervised_learning(predictor_fp, response_fp, response_name, 
         ntree=1000, errortype='oob', output_dir='.', verbose=False, HALT_EXEC=False):
+    """Run supervised learning (random forests here)
+    
+        predictor_fp: path to otu table
+        response_fp: path to metadata table
+        response_name: Column header for gradient variable in metadata table
+        ntree: Number of trees in forest
+        errortype: method for estimating generalization error
+        output_dir: output directory
+        verbose: print verbose output
+        output_dir: directory where output should be written (default '.')
+        HALT_EXEC: halt just before running the formatdb command and
+    """
     # instantiate the object
     rsl = RSupervisedLearner(HALT_EXEC=HALT_EXEC)
 
@@ -46,6 +59,7 @@ def run_supervised_learning(predictor_fp, response_fp, response_name,
     if verbose:
         rsl.Parameters['-v'].on()
 
+    # run the app
     app_result = rsl(predictor_fp)
 
     ### Hack: delete the temporary otu table left behind by hack biom conversion
@@ -130,8 +144,6 @@ class RSupervisedLearner(CommandLineApplication):
     # R --slave --vanilla --args --source_dir $QIIMEDIR/qiime/support/R/ <normal params> < detrend.r
     def _get_base_command(self):
         """Returns the base command plus command-line options.
-
-        Does not include input file, output file, and training set.
         """
         cd_command = ''.join(['cd ', str(self.WorkingDir), ';'])
         r_command = self._commandline_join(['R','--slave','--vanilla','--args'])
@@ -151,8 +163,7 @@ class RSupervisedLearner(CommandLineApplication):
     def _commandline_join(self, tokens):
         """Formats a list of tokens as a shell command
  
-        This seems to be a repeated pattern; may be useful in
-        superclass.
+           Taken from RDP classifier app controller
         """
         commands = filter(None, map(str, tokens))
         return self._command_delimiter.join(commands).strip()

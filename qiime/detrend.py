@@ -114,10 +114,6 @@ def detrend_pcoa(input_fp, map_fp=None, gradient_variable=None,
             suppress_prerotate=False, output_dir='.', HALT_EXEC=False):
     """Detrend PCoA scores in input_fp
     
-        **If using to create temporary blast databases, you can call
-        cogent.util.misc.remove_files(db_filepaths) to clean up all the
-        files created by formatdb when you're done with the database.
-    
         input_fp: path to PCOA file
         map_fp: path to metadata table
         gradient_variable: Column header for gradient variable in metadata table
