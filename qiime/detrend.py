@@ -9,7 +9,6 @@ __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 __status__ = "Development"
 
-from optparse import OptionParser
 from os.path import split, splitext, join, exists
 from os import remove
 from cogent.app.util import CommandLineApplication, ResultPath, get_tmp_filename
