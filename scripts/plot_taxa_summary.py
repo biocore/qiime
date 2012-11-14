@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski"]
+__credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski", "John Chase"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -16,6 +16,7 @@ This script generates taxonomy charts
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from qiime.util import make_option
+from qiime.util import create_dir
 from qiime.plot_taxa_summary import make_all_charts
 from cogent.util.misc import get_random_directory_name
 from qiime.colors import taxonomy_color_prefs_and_map_data_from_options
@@ -193,32 +194,25 @@ def main():
         raise ValueError, 'The number of categories has to be greater than 0!'
 
     #create directory path
+    dir_path = os.getcwd()
     if opts.dir_path:
-        if os.path.exists(opts.dir_path):
-            dir_path=opts.dir_path
-        else:
-            try:
-                os.mkdir(opts.dir_path)
-                dir_path=opts.dir_path
-            except OSError:
-                pass
-    else:
-        dir_path='./'
-        
-    if dir_path == './':
-        dir_path = os.getcwd()
+        dir_path = opts.dir_path
+        try:
+            create_dir(opts.dir_path)
+        except OSError:
+            pass
 
     #make javascript output directory
     javascript_path = os.path.join(dir_path,'js')
     try:
-        os.mkdir(javascript_path)
+        create_dir(javascript_path)
     except OSError: #raised if dir exists
         pass
         
     #make raw_data output directory
     raw_data_path = os.path.join(dir_path,'raw_data')
     try:
-        os.mkdir(raw_data_path)
+        create_dir(raw_data_path)
     except OSError: #raised if dir exists
         pass
         
@@ -230,7 +224,7 @@ def main():
     #make css output directory
     css_path = os.path.join(dir_path,'css')
     try:
-        os.mkdir(css_path)
+        create_dir(css_path)
     except OSError: #raised if dir exists
         pass
         
@@ -274,7 +268,7 @@ def main():
         #make pie chart output path
         charts_path = os.path.join(dir_path,'charts')
         try:
-            os.mkdir(charts_path)
+            create_dir(charts_path)
         except OSError: #raised if dir exists
             pass
         
