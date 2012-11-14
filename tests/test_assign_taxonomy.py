@@ -526,7 +526,7 @@ class MothurTaxonAssignerTests(TestCase):
                 suffix=suffix,
                 result_constructor=str,
                 )
-        
+
         tax_fp = tfp('.txt')
         f = open(tax_fp, "w")
         f.write(rdp_id_to_taxonomy)
@@ -546,7 +546,7 @@ class MothurTaxonAssignerTests(TestCase):
             'id_to_taxonomy_fp': tax_fp,
             'reference_sequences_fp': ref_fp,
             }
-        
+
         self._paths_to_clean_up = [
             tax_fp, ref_fp, self.seq_fp1,
             ]
@@ -565,7 +565,7 @@ class MothurTaxonAssignerTests(TestCase):
             'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
             ])
         self.assertTrue(x_conf > 0.5)
-        
+
         e_lineage, e_conf = result['EF503697']
         self.assertEqual(e_lineage, [
             'Bacteria', 'Proteobacteria', 'Gammaproteobacteria',
@@ -584,7 +584,7 @@ class MothurTaxonAssignerTests(TestCase):
             'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
             ])
         self.assertTrue(x_conf > 0.94)
-        
+
         e_lineage, e_conf = result['EF503697']
         self.assertTrue(len(e_lineage) < 3)
 
@@ -943,7 +943,7 @@ class RdpTrainingSetTests(TestCase):
     def test_fix_results(self):
         tagged_lineage = self.tagged_str[4:]
         untagged_lineage = self.untagged_str[4:]
-        
+
         s = RdpTrainingSet()
         obs = s.fix_results({'a1': (tagged_lineage, 1.00)})
         self.assertEqual(obs, {'a1': (untagged_lineage, 1.00)})
