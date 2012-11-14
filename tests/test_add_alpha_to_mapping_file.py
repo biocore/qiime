@@ -11,10 +11,11 @@ __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
 __status__ = "Development"
 
-from numpy import array
+from numpy import array, median
+from numpy.random import shuffle
 from cogent.util.unit_test import TestCase, main
 from qiime.add_alpha_to_mapping_file import (add_alpha_diversity_values_to_mapping_file,\
-                                            _get_level,\
+                                            _get_level, quantile, _quantile,\
                                             alpha_diversity_data_to_dict,\
                                             alpha_diversity_dict_to_data)
 
@@ -108,6 +109,48 @@ class TopLevelTests(TestCase):
         with self.assertRaises(AssertionError):
             output = _get_level(0.2, -1)
 
+    def test_quantile(self):
+        """checks for correct quantile statistic values"""
+        
+        # suffle the data to be sure, it is getting sorted
+        sample_data = array(range(1, 11))
+        shuffle(sample_data)
+
+        # regular cases
+        expected_output = [1.9, 2.8, 3.25, 5.5, 7.75, 7.93]
+        list_of_quantiles = [0.1, 0.2, 0.25, 0.5, 0.75, 0.77]
+        output = quantile(sample_data, list_of_quantiles)
+        self.assertFloatEqual(expected_output, output)
+
+        sample_data = array([42, 32, 24, 57, 15, 34, 83, 24, 60, 67, 55, 17,
+            83, 17, 80, 65, 14, 34, 39, 53])
+        list_of_quantiles = [0.5]
+        output = quantile(sample_data, list_of_quantiles)
+        self.assertFloatEqual(output, median(sample_data))
+
+        # quantiles must be between [0, 1]
+        with self.assertRaises(AssertionError):
+            output = quantile(sample_data, [0.1, 0.2, -0.1, 2, 0.3, 0.5])
+
+        # quantiles must be a list or a numpy array
+        with self.assertRaises(AssertionError):
+            output = quantile(sample_data, 1)
+
+        # the data must be a list or a numpy array
+        with self.assertRaises(AssertionError):
+            output = quantile(1, [0])
+
+    def test__quantile(self):
+        """checks for correct quantiles according to R. type 7 algorithm"""
+        # regular cases
+        sample_data = array(range(25, 42))
+        self.assertFloatEqual(_quantile(sample_data, 0.5), median(sample_data))
+
+        # sorted data is assumed for this function
+        sample_data = array([ 0.17483293,  0.99891939,  0.81377467,  0.8137437 ,
+            0.51990174, 0.35521497,  0.98751461])
+        sample_data.sort()
+        self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
     def test_alpha_diversity_data_to_dict(self):
         """checks the conversion from data to dict is working correctly """
