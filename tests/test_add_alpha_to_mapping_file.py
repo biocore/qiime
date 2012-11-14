@@ -15,9 +15,7 @@ from numpy import array, median
 from numpy.random import shuffle
 from cogent.util.unit_test import TestCase, main
 from qiime.add_alpha_to_mapping_file import (add_alpha_diversity_values_to_mapping_file,\
-                                            _get_level, quantile, _quantile,\
-                                            alpha_diversity_data_to_dict,\
-                                            alpha_diversity_dict_to_data)
+                                            _get_level, quantile, _quantile)
 
 class TopLevelTests(TestCase):
     
@@ -29,20 +27,6 @@ class TopLevelTests(TestCase):
         self.sample_ids = ['PC.636', 'PC.635', 'PC.356', 'PC.481', 'PC.354',\
             'PC.593', 'PC.355', 'PC.607', 'PC.634']
 
-        self.alpha_diversity_dict = {\
-            'PD_whole_tree':{\
-                'PC.355': 4.5086599999999999, 'PC.607': 7.3171999999999997,\
-                'PC.634': 6.5754299999999999, 'PC.635': 7.4808899999999996,\
-                'PC.593': 4.8412899999999999, 'PC.636': 6.3990099999999996,\
-                'PC.481': 6.2664799999999996, 'PC.354': 5.40341,\
-                'PC.356': 5.5103}, 
-            'chao1': {\
-                'PC.355': 127.0, 'PC.607': 211.0, 'PC.634': 146.0,\
-                'PC.635': 332.5, 'PC.593': 90.0, 'PC.636': 173.0,\
-                'PC.481': 223.58333332999999, 'PC.354': 176.80000000000001,\
-                'PC.356': 189.9375}\
-            }
-
         self.mapping_file_data = MAPPING_FILE_DATA
         self.mapping_file_headers = ['SampleID', 'BarcodeSequence',\
             'LinkerPrimerSequence', 'Treatment', 'DOB', 'Description']
@@ -50,8 +34,8 @@ class TopLevelTests(TestCase):
     def test_add_alpha_diversity_values_to_mapping_file(self):
         """checks a mapping file is added with the proper fields """
 
-        # regular case no special cases
-        expected_mapping_file_data = MAPPING_FILE_DATA_WITH_ALPHA
+        # regular case no special cases for avg method
+        expected_mapping_file_data = MAPPING_FILE_DATA_WITH_ALPHA_A
         expected_mapping_file_headers = ['SampleID', 'BarcodeSequence',\
             'LinkerPrimerSequence', 'Treatment', 'DOB', 'Description',\
             'chao1_alpha', 'chao1_normalized_alpha', 'chao1_alpha_label',\
@@ -61,10 +45,20 @@ class TopLevelTests(TestCase):
         out_mapping_file_data, out_mapping_file_headers =\
             add_alpha_diversity_values_to_mapping_file(self.metrics,\
                 self.sample_ids, self.alpha_diversity_data,\
-                self.mapping_file_headers, self.mapping_file_data, 4, 'N/A')
+                self.mapping_file_headers, self.mapping_file_data, 4, 'equal')
 
         self.assertEquals(out_mapping_file_data, expected_mapping_file_data)
         self.assertEquals(out_mapping_file_headers, expected_mapping_file_headers)
+
+        # regular case no special cases for quantile method
+        expected_mapping_file_data = MAPPING_FILE_DATA_WITH_ALPHA_B
+        out_mapping_file_data, out_mapping_file_headers =\
+            add_alpha_diversity_values_to_mapping_file(self.metrics,\
+                self.sample_ids, self.alpha_diversity_data,\
+                self.mapping_file_headers, self.mapping_file_data, 4, 'quantile')
+
+        self.assertEquals(out_mapping_file_data, expected_mapping_file_data)
+        self.assertEquals(out_mapping_file_headers,expected_mapping_file_headers)
 
 
     def test__get_level(self):
@@ -72,42 +66,41 @@ class TopLevelTests(TestCase):
 
         # check regular case with and without prefix tags
         expected_output = 1
-        output = _get_level(0.20, 4)
+        output = _get_level(0.20, [0.25, 0.5, 0.75])
         self.assertEquals(output, expected_output)
 
         expected_output = 'level_bin_1_of_4'
-        output = _get_level(0.20, 4, 'level_bin')
+        output = _get_level(0.20, [0.25, 0.5, 0.75], 'level_bin')
+        self.assertEquals(output, expected_output)
+
+        expected_output = 'level_bin_3_of_6'
+        output = _get_level(0.20, [0.05, 0.15, 0.35, 0.8, 0.95], 'level_bin')
         self.assertEquals(output, expected_output)
 
         # edge cases with and without prefix tags
         expected_output = 2
-        output = _get_level(0.25, 4)
+        output = _get_level(0.25, [0.25, 0.5, 0.75])
         self.assertEquals(output, expected_output)
 
         expected_output = 4
-        output = _get_level(1, 4)
+        output = _get_level(1, [0.25, 0.5, 0.75])
         self.assertEquals(output, expected_output)
 
         expected_output = 'testing_bin_2_of_4'
-        output = _get_level(0.25, 4, 'testing_bin')
+        output = _get_level(0.25, [0.25, 0.5, 0.75], 'testing_bin')
         self.assertEquals(output, expected_output)
 
         expected_output = 'testing_bin_4_of_4'
-        output = _get_level(1, 4, 'testing_bin')
+        output = _get_level(1, [0.25, 0.5, 0.75], 'testing_bin')
         self.assertEquals(output, expected_output)
 
         # unwanted cases, greater than one and negative values
         with self.assertRaises(AssertionError):
-            output = _get_level(1.3, 5)
+            output = _get_level(1.3, [0.5])
 
         with self.assertRaises(AssertionError):
-            output = _get_level(-1, 4)
+            output = _get_level(-1, [0.25, 0.5, 0.75])
 
-        with self.assertRaises(AssertionError):
-            output = _get_level(0.2, 4.4)
-
-        with self.assertRaises(AssertionError):
-            output = _get_level(0.2, -1)
 
     def test_quantile(self):
         """checks for correct quantile statistic values"""
@@ -152,40 +145,6 @@ class TopLevelTests(TestCase):
         sample_data.sort()
         self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
-    def test_alpha_diversity_data_to_dict(self):
-        """checks the conversion from data to dict is working correctly """
-
-        # test a case with regular inputs and outputs
-        output = alpha_diversity_data_to_dict(self.metrics, self.sample_ids,\
-            self.alpha_diversity_data)
-        self.assertEquals(output, self.alpha_diversity_dict)
-
-        # test a case with fewer metrics than needed
-        with self.assertRaises(AssertionError):
-            output = alpha_diversity_data_to_dict([], self.sample_ids,\
-            self.alpha_diversity_data)
-
-        # test a case with fewer sample_ids than needed
-        with self.assertRaises(AssertionError):
-            output = alpha_diversity_data_to_dict(self.metrics, [],\
-            self.alpha_diversity_data)
-
-    def test_alpha_diversity_dict_to_data(self):
-        """checks the conversion from dict to data is working correctly """
-
-        # test the common case
-        out_metrics, out_sample_ids, out_data = alpha_diversity_dict_to_data(\
-            self.alpha_diversity_dict)
-
-        # the order of matters for comparison, hence, check this repeated data
-        expected_data = array([[ 6.26648, 223.58333333], [6.39901, 173.],\
-            [4.50866, 127.], [5.40341, 176.8], [7.3172, 211.], [6.57543, 146.],\
-            [7.48089, 332.5], [4.84129, 90.], [5.5103, 189.9375]])
-
-        self.assertEqualItems(out_metrics, self.metrics)
-        self.assertEqualItems(out_sample_ids, self.sample_ids)
-        self.assertEquals(out_data, expected_data)
-
 MAPPING_FILE_DATA = [\
     ['PC.354','AGCACGAGCCTA','YATGCTGCCTCCCGTAGGAGT','Control','20061218','Control_mouse_I.D._354'],\
     ['PC.355','AACTCGTCGATG','YATGCTGCCTCCCGTAGGAGT','Control','20061218','Control_mouse_I.D._355'],\
@@ -198,7 +157,7 @@ MAPPING_FILE_DATA = [\
     ['PC.636','ACGGTGAGTGTC','YATGCTGCCTCCCGTAGGAGT','Fast','20080116','Fasting_mouse_I.D._636']\
 ]
 
-MAPPING_FILE_DATA_WITH_ALPHA = [\
+MAPPING_FILE_DATA_WITH_ALPHA_A = [\
 ['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061218', 'Control_mouse_I.D._354', '176.8', '0.35793814433', 'bin_2_of_4', '5.40341', '0.301036595418', 'bin_2_of_4'],\
 ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061218', 'Control_mouse_I.D._355', '127.0', '0.152577319588', 'bin_1_of_4', '4.50866', '0.0', 'bin_1_of_4'],\
 ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061126', 'Control_mouse_I.D._356', '189.9375', '0.412113402062', 'bin_2_of_4', '5.5103', '0.336999491964', 'bin_2_of_4'],\
@@ -207,6 +166,17 @@ MAPPING_FILE_DATA_WITH_ALPHA = [\
 ['PC.607', 'AACTGTGCGTAC', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20071112', 'Fasting_mouse_I.D._607', '211.0', '0.498969072165', 'bin_2_of_4', '7.3172', '0.944926873089', 'bin_4_of_4'],\
 ['PC.634', 'ACAGAGTCGGCT', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._634', '146.0', '0.230927835052', 'bin_1_of_4', '6.57543', '0.695360049525', 'bin_3_of_4'],\
 ['PC.635', 'ACCGCAGAGTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._635', '332.5', '1.0', 'bin_4_of_4', '7.48089', '1.0', 'bin_4_of_4'],\
+['PC.636', 'ACGGTGAGTGTC', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._636', '173.0', '0.342268041237', 'bin_2_of_4', '6.39901', '0.636003943167', 'bin_3_of_4']]
+
+MAPPING_FILE_DATA_WITH_ALPHA_B = [
+['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061218', 'Control_mouse_I.D._354', '176.8', '0.35793814433', 'bin_3_of_4', '5.40341', '0.301036595418', 'bin_2_of_4'],
+['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061218', 'Control_mouse_I.D._355', '127.0', '0.152577319588', 'bin_1_of_4', '4.50866', '0.0', 'bin_1_of_4'],
+['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20061126', 'Control_mouse_I.D._356', '189.9375', '0.412113402062', 'bin_3_of_4', '5.5103', '0.336999491964', 'bin_2_of_4'],
+['PC.481', 'ACCAGCGACTAG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20070314', 'Control_mouse_I.D._481', '223.58333333', '0.550859106515', 'bin_4_of_4', '6.26648', '0.59141452714', 'bin_3_of_4'],
+['PC.593', 'AGCAGCACTTGT', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '20071210', 'Control_mouse_I.D._593', '90.0', '0.0', 'bin_1_of_4', '4.84129', '0.111912604341', 'bin_1_of_4'],
+['PC.607', 'AACTGTGCGTAC', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20071112', 'Fasting_mouse_I.D._607', '211.0', '0.498969072165', 'bin_4_of_4', '7.3172', '0.944926873089', 'bin_4_of_4'],
+['PC.634', 'ACAGAGTCGGCT', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._634', '146.0', '0.230927835052', 'bin_2_of_4', '6.57543', '0.695360049525', 'bin_4_of_4'],
+['PC.635', 'ACCGCAGAGTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._635', '332.5', '1.0', 'bin_4_of_4', '7.48089', '1.0', 'bin_4_of_4'],
 ['PC.636', 'ACGGTGAGTGTC', 'YATGCTGCCTCCCGTAGGAGT', 'Fast', '20080116', 'Fasting_mouse_I.D._636', '173.0', '0.342268041237', 'bin_2_of_4', '6.39901', '0.636003943167', 'bin_3_of_4']]
 
 

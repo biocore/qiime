@@ -13,12 +13,11 @@ __status__ = "Development"
 
 
 from copy import deepcopy
-from numpy import floor, ceil
-from numpy import array, ndarray
+from numpy import array, ndarray, floor, ceil, searchsorted
 
-def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
-                                            alpha_data, mapping_file_headers,\
-                                            mapping_file_data, bins,\
+def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
+                                            alpha_data, mapping_file_headers,
+                                            mapping_file_data, bins, method='equal',
                                             missing_value_name='N/A'):
     """add 3 columns in the mapping file representing the alpha diversity data
 
@@ -30,6 +29,10 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
     mapping_file_headers: list of headers for the metadata mapping file
     mapping_file_data: metadata mapping file data
     bins: bins to classify the alpha diversity data
+    method: binning method selection, the options are 'equal' and 'quantile'.
+    'equal', will get you equally spaced limits and 'quantile' will assign the
+    limits using quantiles, using the selected number of bins.
+
     missing_value_name: string to place for the sample ids in the mapping file
     but not in the alpha diversity data
 
@@ -41,13 +44,21 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
     normalized values and bins
 
     """
+    norm = lambda x, x_min, x_max: (x-x_min)/(x_max-x_min)
 
     # data will be modified and returned so get your own copy
     new_mapping_file_data = deepcopy(mapping_file_data)
     new_mapping_file_headers = deepcopy(mapping_file_headers)
 
+    # regular levels assigned based on equally spaced bins
+    overall_probs = [i/bins for i in range(1, bins)]
+
+    # if we are using the average method the levels are equal to the probs list
+    if method == 'equal':
+        levels = overall_probs
+
     for index, metric in enumerate(metrics):
-        # get the diversity value for this metric
+        # get the alpha diversity value for the metric being evaluated
         data = [[row[index]] for row in alpha_data]
         metric_max = max(data)[0]
         metric_min = min(data)[0]
@@ -57,11 +68,17 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
         new_mapping_file_headers.append('{0}_normalized_alpha'.format(metric))
         new_mapping_file_headers.append('{0}_alpha_label'.format(metric))
 
+        # when using the quantile method the levels change depending on the
+        # metric being used; hence the calculation and normalization of the data
+        if method == 'quantile':
+            levels = quantile([norm(element[0], metric_min, metric_max)\
+                for element in data], overall_probs)
+
         # get the normalized value of diversity and the tag for each value
         for value in data:
-            norm_value = (value[0]-metric_min)/(metric_max-metric_min)
+            norm_value = norm(value[0], metric_min, metric_max)
             value.append(norm_value)
-            value.append(_get_level(norm_value, bins, 'bin'))
+            value.append(_get_level(norm_value, levels, 'bin'))
 
         # iterate using the mapping file instead of using the alpha diversity
         # data because more often that you will like you will have more samples
@@ -79,12 +96,11 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
     return new_mapping_file_data, new_mapping_file_headers
 
 def _get_level(value, levels, prefix=None):
-    """get a level from a value between 0 to 1; return a label or an integer
+    """accommodate a value into the 'levels' list; return a string or an integer
 
     Input:
     value: normalized value to assign a level to, must be between 0 and 1
-    levels: number of in which a value can be assigned to
-    prefix: a string prefix serves as a tagger
+    levels: sorted edges to check at which level does 'value' fall into place
 
     Output:
     output: (str) if a prefix is provided a string of the form: prefix_2_of_5 is
@@ -93,20 +109,19 @@ def _get_level(value, levels, prefix=None):
     the value is returned as an integer
 
     """
-    assert value <= 1, "The value cannot be greater than 1"
-    assert value >= 0, "The value cannot be less than 0"
-    assert levels > 0 and type(levels) is int, "The number of levels must be "+\
-        "an integer and the value must be greater than zero."
+    assert value <= 1 and value >= 0, "The value must be between 0 and 1"
 
-    factor = 1/levels
-    value_level = int(floor(value/factor))+1
+    check = [i for i in range(0, len(levels)) if levels[i] == value]
 
-    # take care of assignments where the division equals 1
-    if value_level > levels:
-        value_level = levels
+    # apply a special rule for the values that are equal to an edge
+    if len(check):
+        value_level = check[0] + 2
+    # if it is not a special case just use searchsorted
+    else:
+        value_level = searchsorted(levels, value)+1
 
     if prefix != None:
-        output = '{0}_{1}_of_{2}'.format(prefix, value_level, levels)
+        output = '{0}_{1}_of_{2}'.format(prefix, value_level, len(levels)+1)
     else:
         output = value_level
 
@@ -128,7 +143,7 @@ def quantile(data, quantiles):
     assert type(data) == list or type(data) == ndarray, "Data must be either"+\
         " a Python list or a NumPy 1-D array"
     assert type(quantiles) == list or type(quantiles) == ndarray, "Quantiles"+\
-        "must be either a Python list or a NumPy 1-D array"
+        " must be either a Python list or a NumPy 1-D array"
     assert all(map(lambda x: x>=0 and x<=1, quantiles)), "All the elements "+\
         "in the quantiles list must be greater than 0 and lower than one"
 
@@ -137,11 +152,9 @@ def quantile(data, quantiles):
 
     if type(data) != ndarray:
         data = array(data)
-
     data.sort()
 
     output = []
-
     # if needed different quantile methods could be used
     for one_quantile in quantiles:
         output.append(_quantile(data, one_quantile))
@@ -168,43 +181,3 @@ def _quantile(data, quantile):
     output = (1-difference)*data[bottom_index]+difference*data[top_index]
 
     return output
-
-def alpha_diversity_data_to_dict(metrics, sample_ids, data):
-    """ """
-
-    assert len(sample_ids) == len(data), "There has to be as many sample_ids"+\
-        "as rows in the alpha diversity data, cannot continue."
-    assert len(metrics) == len(data[0]), "There has to be as many metrics as"+\
-        "columns in the alpha diversity data, cannot continue."
-
-    # iterate over the metrics to create dictionaries with the sample ids
-    output = {}
-    for metric_index, metric in enumerate(metrics):
-        _buffer = {}
-        for sample_id_index, sample_id in enumerate(sample_ids):
-            _buffer[sample_id] = data[sample_id_index][metric_index]
-        output[metric] = _buffer
-
-    return output
-
-def alpha_diversity_dict_to_data(dictionary):
-    """ """
-    assert type(dictionary) is dict, "The input must be a dictionary"
-
-    metrics = dictionary.keys()
-    sample_ids = dictionary.values()[0].keys()
-
-    # gurantee that the data is ordered according to the sample identifiers
-    _buffer = {}
-    for m_key, m_value in dictionary.iteritems():
-        for d_key, d_value in m_value.iteritems():
-            if d_key not in _buffer:
-                _buffer[d_key] = []
-            _buffer[d_key].append(d_value)
-
-    # unfold the dictionary and pack it in a list of lists
-    data = []
-    for sample_id in sample_ids:
-        data.append(_buffer[sample_id])
-
-    return metrics, sample_ids, array(data)
