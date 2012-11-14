@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel", "Aaron Gallagher"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -777,14 +777,14 @@ class PplacerTaxonAssigner(TaxonAssigner):
               FROM (SELECT sequence,
                            tax_name || "__" || tax_id AS tax_name,
                            likelihood
-                      FROM multiclass
+                      FROM multiclass mc
                            JOIN taxa USING (tax_id, rank)
                            JOIN ranks USING (rank)
                            JOIN otu_sequences USING (name)
-                     WHERE rank = want_rank
-                       AND want_rank IN ('superkingdom', 'phylum', 'class',
-                                         'order', 'genus', 'species')
-                     ORDER BY name,
+                     WHERE mc.rank = mc.want_rank
+                       AND mc.want_rank IN ('superkingdom', 'phylum', 'class',
+                                            'order', 'family', 'genus', 'species')
+                     ORDER BY mc.name,
                               rank_order ASC)
              GROUP BY sequence
         """)

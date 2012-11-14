@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel", "Aaron Gallagher"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
@@ -132,7 +132,7 @@ script_info['optional_options']=[\
  make_option('-b', '--blast_db', type='string',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
- make_option('--hrefpkg', type='existing_filepath',
+ make_option('--hrefpkg', type='existing_dirpath',
         help='Path to the hrefpkg to use for pplacer assignment (used for pplacer '
         'only). [default: none; required when using pplacer]'),\
  make_option('-c', '--confidence', type='float',
