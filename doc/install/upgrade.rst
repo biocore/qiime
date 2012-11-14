@@ -8,16 +8,9 @@ For a detailed history of the most notable changes between versions see the `QII
 
 1.5.0 to 1.5.0-dev (Linux)
 --------------------------
-If you want to use the repository version of QIIME in any Linux box, follow these steps:
-
-::
-
-        wget ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/app-deploy-qiime-1.5.0.tgz
-        tar zxvf app-deploy-qiime-1.5.0.tgz
-        cd app-deploy-qiime-1.5.0
-        python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.5.0_repository.conf --force-remove-failed-dirs
-
-Note that you can replace the installation folder (/qiime_software/) for any other path in your system.
+If you want to use the development version of QIIME on any Linux box, we
+recommend using the `qiime-deploy <https://github.com/qiime/qiime-deploy>`_
+tool to perform the upgrade.
 
 1.4.0 to 1.5.0 (QIIME Virtual Machines)
 ---------------------------------------
