@@ -64,6 +64,7 @@ def main():
     detrend_pcoa(opts.input_fp,
                    map_fp=opts.map_fp,
                    gradient_variable=opts.gradient_variable,
+                   suppress_prerotate=opts.suppress_prerotate,
                    output_dir=opts.output_dir)
     
 if __name__ == "__main__":
