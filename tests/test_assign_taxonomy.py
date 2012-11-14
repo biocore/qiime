@@ -21,7 +21,7 @@ from shutil import copy as copy_file
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from qiime.util import get_tmp_filename
+from qiime.util import get_tmp_filename, get_qiime_project_dir
 
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.rdp_classifier import train_rdp_classifier
@@ -30,9 +30,11 @@ from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
     RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, validate_rdp_version,
-    MothurTaxonAssigner,
+    MothurTaxonAssigner, PplacerTaxonAssigner
     )
 from sys import stderr
+
+PROJECT_HOME = get_qiime_project_dir()
 
 
 class TopLevelFunctionTests(TestCase):
@@ -991,6 +993,92 @@ class RdpTreeTests(TestCase):
             '6*F*5*6*genus\n'
             )
         self.assertEqual(t.get_rdp_taxonomy(), expected)
+
+
+class PplacerTaxonAssignmentTestMixin(object):
+    "A mixin for defining tests that check against expected classifications."
+    query_filename = None
+    expected_assignments = None
+
+    def test_classify(self):
+        """Test that running hrefpkg_query gives expected results.
+
+        hrefpkg_query will always be run against a synthetic hrefpkg with query
+        sequences specifically intended for it.
+        """
+        hrefpkg = path.join(PROJECT_HOME, 'tests/test_support_files/synthetic_hrefpkg')
+        assigner = PplacerTaxonAssigner({'hrefpkg': hrefpkg})
+        tmp_db = get_tmp_filename(prefix='PplacerTaxonAssigner_', suffix='.db')
+        results = assigner.classify(path.join(hrefpkg, self.query_filename), tmp_db)
+        remove(tmp_db)
+        query_assignments = dict((seq, taxon) for seq, taxon, likelihood in results)
+        self.assertEqual(query_assignments, self.expected_assignments)
+
+class BasicPplacerTaxonAssignmentTest(TestCase, PplacerTaxonAssignmentTestMixin):
+    "Test that some simple synthetic queries are classified as expected."
+    query_filename = 'queries.fasta'
+    expected_assignments = {
+        'qa1': 'R__R,Aa__Aa,Ba__Ba',
+        'qa2': 'R__R,Aa__Aa,Ba__Ba',
+        'qa3': 'R__R,Aa__Aa,Ba__Ba,Da__Da',
+        'qa4': 'R__R,Aa__Aa,Ba__Ba,Ca__Ca',
+        'qa6': 'R__R,Aa__Aa,Ea__Ea',
+        'qa8': 'R__R,Aa__Aa,Ea__Ea,Fa__Fa',
+        'qa9': 'R__R,Aa__Aa,Ea__Ea,Ga__Ga',
+        'qb1': 'R__R,Ab__Ab,Bb__Bb',
+        'qb2': 'R__R,Ab__Ab,Bb__Bb',
+        'qb3': 'R__R,Ab__Ab,Bb__Bb,Db__Db',
+        'qb4': 'R__R,Ab__Ab,Bb__Bb,Cb__Cb',
+        'qb6': 'R__R,Ab__Ab,Eb__Eb',
+        'qb8': 'R__R,Ab__Ab,Eb__Eb,Fb__Fb',
+        'qb9': 'R__R,Ab__Ab,Eb__Eb,Gb__Gb',
+    }
+
+
+class FakePplacerTaxonAssigner(PplacerTaxonAssigner):
+    "A fake taxon assigner that returns expected results from its classify method."
+    def classify(self, queries, database):
+        self.queries_arg = queries
+        self.database_arg = database
+        return self.classify_results
+
+class PplacerTaxonAssignerTests(TestCase):
+    def setUp(self):
+        self.assigner = FakePplacerTaxonAssigner({'hrefpkg': 'hrefpkg'})
+        self.assigner.classify_results = [('a', 'b', 1), ('c', 'd', 0.5)]
+
+    def test_writing_results(self):
+        "Test that expected results are written out in the correct format."
+        tmp_results = get_tmp_filename(prefix='assignment_results_', suffix='.tsv')
+        self.assigner(None, result_path=tmp_results)
+        with open(tmp_results, 'Ur') as infile:
+            contents = [line.rstrip() for line in infile]
+        remove(tmp_results)
+        self.assertEqual(contents, ['a\tb\t1', 'c\td\t0.5'])
+
+    def test_returning_results(self):
+        "Test that expected results are returned in the correct format."
+        results = self.assigner(None, result_path=None)
+        self.assertEqual(results, {'a': ('b', 1), 'c': ('d', 0.5)})
+
+    def test_queries_path_passed_on(self):
+        "Test that expected query sequences are passed to the classify method."
+        self.assigner('test-seqs')
+        self.assertEqual(self.assigner.queries_arg, 'test-seqs')
+
+    def test_database_cleaned_up(self):
+        "Test that the temporary database used is removed after assignment."
+        self.assigner(None)
+        self.assertFalse(path.exists(self.assigner.database_arg))
+
+    def test_writing_logfile(self):
+        "Test that expected parameters are written to the log file."
+        tmp_logfile = get_tmp_filename(prefix='logfile_', suffix='.txt')
+        self.assigner(None, log_path=tmp_logfile)
+        with open(tmp_logfile, 'Ur') as infile:
+            contents = [line.rstrip() for line in infile]
+        remove(tmp_logfile)
+        self.assertEqual(contents, ['PplacerTaxonAssigner parameters:', 'hrefpkg:hrefpkg'])
 
 
 rdp_test1_fasta = \
