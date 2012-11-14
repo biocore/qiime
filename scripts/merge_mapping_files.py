@@ -20,7 +20,7 @@ script_info={}
 script_info['brief_description']="""Merge mapping files"""
 script_info['script_description']="""This script provides a convenient interface for merging mapping files which contains data on different samples."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Merge two mapping files into a new mapping file (merged_mapping.txt). In cases where a mapping field is not provided for some samples, add the value 'Data not collected'.""",""" merge_mapping_files.py -m map_controls.txt,map_fasting.txt -o merged_mapping.txt -n 'Data not collected'"""))
+script_info['script_usage'].append(("""Example:""","""Merge two mapping files into a new mapping file (merged_mapping.txt). In cases where a mapping field is not provided for some samples, add the value 'Data not collected'.""","""%prog -m map_controls.txt,map_fasting.txt -o merged_mapping.txt -n 'Data not collected'"""))
 script_info['output_description']="""The result of this script is a merged mapping file (tab-delimited)."""
 script_info['required_options']=[\
  make_option('-m','--mapping_fps',type='existing_filepaths',\

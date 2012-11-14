@@ -1332,6 +1332,14 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
     return (rec_0_1,rec_0_2,record[1],record[2],record[3],\
             rec_4_1,rec_4_2,rec_4_3), sequence, sequence_qual,\
             barcode,barcode_qual
+
+def is_gzip(fp):
+    """Checks the first two bytes of the file for the gzip magic number
+
+    If the first two bytes of the file are 1f 8b (the "magic number" of a 
+    gzip file), return True; otherwise, return false.
+    """
+    return open(fp, 'rb').read(2) == '\x1f\x8b'
             
 def gzip_open(fp):
     return gzip.open(fp,'rb')
@@ -1348,7 +1356,7 @@ def qiime_open(fp, permission='U'):
     the mode); opening a binary file in text mode (e.g., in default mode 'U')
     will have unpredictable results.
     """
-    if fp.endswith('gz'):
+    if is_gzip(fp):
         return gzip_open(fp)
     else:
         return open(fp, permission)
@@ -1734,6 +1742,54 @@ class MetadataMap():
             category - the category name whose values will be returned
         """
         return [self._metadata[sid][category] for sid in sample_ids]
+
+    def isNumericCategory(self, category):
+        """Returns True if the category is numeric and False otherwise.
+
+        A category is numeric if all values within the category can be
+        converted to a float.
+
+        Arguments:
+            category - the category that will be checked
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        is_numeric = True
+        for category_value in category_values:
+            try:
+                float(category_value)
+            except ValueError:
+                is_numeric = False
+        return is_numeric
+
+    def hasUniqueCategoryValues(self, category):
+        """Returns True if the category's values are all unique.
+
+        Arguments:
+            category - the category that will be checked for uniqueness
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        is_unique = False
+        if len(set(category_values)) == len(self.SampleIds):
+            is_unique = True
+        return is_unique
+
+    def hasSingleCategoryValue(self, category):
+        """Returns True if the category's values are all the same.
+
+        For example, the category 'Treatment' only has values 'Control' for the
+        entire column.
+
+        Arguments:
+            category - the category that will be checked
+        """
+        category_values = self.getCategoryValues(self.SampleIds, category)
+
+        single_value = False
+        if len(set(category_values)) == 1:
+            single_value = True
+        return single_value
 
     @property
     def SampleIds(self):
