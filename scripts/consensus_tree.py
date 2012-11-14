@@ -29,7 +29,7 @@ script_info['brief_description'] = "This script outputs a majority consensus tre
 script_info['script_description'] = ""
 script_info['script_usage'] = [
  ("basic usage: given a directory of trees 'jackknifed_trees', compute the majority consensus and save as a newick formatted text file","",
- "consensus_tree.py -i jackknifed_trees -o consensus_tree.tre")
+ "%prog -i jackknifed_trees -o consensus_tree.tre")
  
 ]
 

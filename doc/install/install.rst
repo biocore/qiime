@@ -6,12 +6,14 @@
 
 .. index:: Installing QIIME
 
-===========================
+=========================
 Installing QIIME natively
-===========================
+=========================
 QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
 
-As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
+As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME's dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
+
+Alternatively, if you are interested in installing QIIME on a Linux system, we recommend using the `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ tool, particularly if you are using Ubuntu. This tool allows for the easy (and native) installation of QIIME and its various dependencies.
 
 The following programs and datasets were used to generate the QIIME tutorial. QIIME has been tested with the same versions listed below. Other versions are not guaranteed to work. Download links are provided for convenience, but these are subject to change. We'll do our best to keep these up-to-date.
 
@@ -27,18 +29,17 @@ To install most of following dependencies you need to have a build environment o
 The following are required by QIIME:
 
 * Python 2.7.1 (`src_python <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_) (license: PSF)
-* PyCogent 1.5.1 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.1/PyCogent-1.5.1.tgz/download>`_) (license: GPL)
+* PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * Numpy 1.5.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
-* biom-format 0.9.3 (`src_biom <https://github.com/downloads/biom-format/biom-format/biom-format-0.9.3.tgz>`_) (license: GPL)
+* biom-format 1.0.0 (`src_biom <https://github.com/downloads/biom-format/biom-format/biom-format-1.0.0.tgz>`_) (license: GPL)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
 
-
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required in default pipeline):
 
 * uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
-* PyNAST 1.1 (`src_pynast  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_) (license: GPL)
+* PyNAST 1.2 (`src_pynast  <https://github.com/downloads/qiime/pynast/PyNAST-1.2.tar.gz>`_) (license: GPL)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
@@ -98,28 +99,27 @@ Shortcuts in this document
 For simplicity throughout this document, we assume that you have downloaded QIIME in ``/home/qiime/``. You should consider all occurrences of ``/home/qiime/`` in the remainder of this document as references to the directory which contains the QIIME directory which you'll have after downloading and unpacking QIIME.
 
 Getting QIIME
-----------------
+-------------
 First, change to the directory where you would like to download QIIME::
 
 	cd /home/qiime_user
 
-Stable Pre-Release
-^^^^^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our |release| release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.5.0.tar.gz/download>`_.
+Stable Release
+^^^^^^^^^^^^^^
+Currently the most stable version of QIIME is our |release| release, which you can download from `here <https://github.com/downloads/qiime/qiime/Qiime-1.5.0.tar.gz>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in ``Qiime/doc``. Check out the latest version of QIIME using svn with the commands::
+To get the latest development version of QIIME, you should check it out of our git repository, which is hosted on GitHub. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in ``Qiime/doc``. Check out the latest version of QIIME using git with the command::
 
-	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
+	git clone git://github.com/qiime/qiime.git Qiime
 
-svn users should periodically update QIIME by using the following command::
+If you are using the latest development version of QIIME, you should periodically update your checkout by running the following command (from within your checkout)::
 
-	svn update /home/qiime/Qiime/
-
+	git pull
 
 Unpacking QIIME (release only)
----------------------------------------
+------------------------------
 After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime/``.
 
 Unpack the release Qiime tar file with the commands::
@@ -128,13 +128,11 @@ Unpack the release Qiime tar file with the commands::
 	tar -xvzf Qiime-1.5.0.tar.gz
 	ln -s /home/qiime/Qiime-1.5.0 /home/qiime/Qiime
 
-If you have downloaded from svn, QIIME is already unpacked.
+If you have downloaded the development version from GitHub, QIIME is already unpacked.
 
 Installing QIIME
 ----------------
 QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of running the tests (optional, but highly recommend), installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files.
-
-
 
 Installing the library code and scripts with setup.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -144,9 +142,9 @@ First, ensure that you are in the top-level QIIME directory::
 
 	cd /home/qiime/Qiime
 
-By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify and alternate directory for the library files with ``--install-purelib``, but if you do so you must also specify ``--install-data`` as the same directory. Failure to do this will result in a broken QIIME install. An example command is::
+By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify an alternate directory for the library files with ``--install-purelib``. An example command is::
 
-	python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/ --install-data=/home/qiime/lib/
+	python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/
 
 For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/release/2.7.1/install/index.html#alternate-installation>`_.
 
@@ -295,8 +293,8 @@ Building The QIIME Documentation
 
 .. _build-qiime-docs:
 
-If you are using the svn version of QIIME, you may want to build the documentation locally for access to the latest version. You can change to the ``Qiime/doc`` directory and run::
+If you are using the development version of QIIME, you may want to build the documentation locally for access to the latest version. You can change to the ``Qiime/doc`` directory and run::
 
 	make html
 
-We try to update the documentation as we update the code, but svn users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file ``Qiime/doc/_build/html/index.html``. You may want to bookmark that page for easy access.
+We try to update the documentation as we update the code, but development version users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file ``Qiime/doc/_build/html/index.html``. You may want to bookmark that page for easy access.

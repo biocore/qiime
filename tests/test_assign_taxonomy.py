@@ -588,6 +588,18 @@ class MothurTaxonAssignerTests(TestCase):
         e_lineage, e_conf = result['EF503697']
         self.assertTrue(len(e_lineage) < 3)
 
+    def test_unassignable(self):
+        f = open(self.seq_fp1, "w")
+        f.write(
+            ">MostlyTs\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+            "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+            "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n")
+        f.close()
+        
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+        self.assertEqual(result, {"MostlyTs": (["Unknown"], 0.0)})
+
 
 class RdpTaxonAssignerTests(TestCase):
     """Tests for the Rdp-based taxonomy assigner.

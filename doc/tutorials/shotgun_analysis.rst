@@ -18,7 +18,7 @@ See below for the relevant references for this data set.
 
 Begin by unzipping the resulting file and changing into that directory::
 	
-	tar -xzf shotgun_analysis_gn.tgz
+	tar -xvzf shotgun_analysis_gn.tgz
 	cd shotgun_analysis_gn
 
 Because this tutorial can take a long time to run, we provide the output from all steps for review. If you'd like to run the steps yourself, either remove or rename the ``blat_mapped`` directory::
@@ -36,21 +36,21 @@ Defining environment variables for use in this tutorial
 
 Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this::
 
-	export reference_seqs /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_aa_seqs.faa
-	export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ko_pathway.txt
+	export reference_seqs=/home/ubuntu/qiime_software/img-qiime-7oct2012/gene_aa_seqs.faa
+	export reference_md=/home/ubuntu/qiime_software/img-qiime-7oct2012/gene_ko_pathway.txt
 
 Assigning nucleotide reads to protein reference sequences
 ---------------------------------------------------------
 
 The script used for assigning nucleotide reads to protein reference sequences is ``map_reads_to_reference.py``, and the parallel version, ``parallel_map_reads_to_reference.py``. You can run this as follows::
 
-	map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_fp -t $reference_md -m blat
+	map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -m blat
 
-To run in parallel on four processors (``-O``), you could run::
+Or to run in parallel on four processors (``-O``), you could run::
 
-	parallel_map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_fp -t $reference_md -O 4 -m blat
+	parallel_map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -O 4 -m blat -T
 
-Several output files will be generated during this process. Most important for downstream analysis is ``observation_table.biom``, the `BIOM file <http://www.biom-format.org>`_, which contains the sample-by-gene count matrix. This file, along with your metadata mapping file, is central for down-stream analyses.
+Several output files will be generated during this process. Most important for downstream analysis is ``observation_table.biom``, the `BIOM file <http://www.biom-format.org>`_, which contains the sample-by-gene count matrix. This file, along with your metadata mapping file, is central for down-stream analyses. (Note that running in parallel without the -T flag requires an additional step to create the .biom file).
 
 Computing beta diversity and generating PCoA plots
 --------------------------------------------------

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["William Van Treuren","Greg Caporaso"]
+__credits__ = ["William Van Treuren", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "William Van Treuren"
@@ -12,8 +12,11 @@ __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
 from numpy import array, isnan
+from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from cogent.maths.stats.test import t_two_sample
+from cogent.maths.stats.test import mc_t_two_sample, t_two_sample
+
+test_types = ['parametric', 'nonparametric']
 
 def make_value_pairs_from_category(mapping_data, category):
     """creates all pairs of unique category values from mapping data
@@ -65,7 +68,7 @@ def make_category_values_Id_dict(mapping_data, category):
     
     input:
         mapping_data - a nested dictionary that maps SampleID to
-        descriptor categories (e.g. {'Id1': {'Weight':'Fat}}
+        descriptor categories (e.g. {'Id1': {'Weight':'Fat'}}
     
         category - a string which specifies a category found in the 
         mapping data (e.g. 'Weight')
@@ -249,7 +252,8 @@ def convert_SampleIds_to_rarefaction_mtx(chosen_SampleIds,score_matrix,\
     
 
 def compare_alpha_diversities(rarefaction_lines, mapping_lines, 
-                              category, depth):
+                              category, depth, test_type='nonparametric',
+                              num_permutations=999):
     """compares alpha diversities
     
     inputs:
@@ -262,6 +266,12 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines,
         category - the category to be compared, is a string
         
         depth - the depth of the rarefaction_file to use, is an integer
+
+        test_type - the type of t-test to perform, is a string. Must be either
+        'parametric' or 'nonparametric'
+
+        num_permutations - the number of Monte Carlo permutations to use if
+        test_type is 'nonparametric', is an integer
     
     outputs:
         results - a nested dictionary which specifies the category as
@@ -270,6 +280,9 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines,
         in the specified category
     
     """
+    if test_type == 'nonparametric' and num_permutations < 1:
+        raise ValueError("Invalid number of permutations: %d. Must be greater "
+                         "than zero." % num_permutations)
      
     rarefaction_data = parse_rarefaction(rarefaction_lines)
     mapping_data = parse_mapping_file_to_dict(mapping_lines)[0]
@@ -290,15 +303,26 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines,
     results = {category:{}}
     
     for pair in range(len(SampleId_pairs)):
+        # Must flatten the matrix because t_two_sample only operates on
+        # non-nested sequences (otherwise we'll get the wrong degrees of
+        # freedom).
         i=(convert_SampleIds_to_rarefaction_mtx(SampleId_pairs[pair][0],
-                           reduced_rarefaction_mtx, map_from_Id_to_col))
+                                                reduced_rarefaction_mtx,
+                                                map_from_Id_to_col)).flatten()
         
         j=(convert_SampleIds_to_rarefaction_mtx(SampleId_pairs[pair][1],
-                           reduced_rarefaction_mtx, map_from_Id_to_col))
-        
+                                                reduced_rarefaction_mtx,
+                                                map_from_Id_to_col)).flatten()
+
+        if test_type == 'parametric':
+            obs_t, p_val = t_two_sample(i,j)
+        elif test_type == 'nonparametric':
+            obs_t, _, _, p_val = mc_t_two_sample(i,j,
+                                                 permutations=num_permutations)
+            p_val = format_p_value_for_num_iters(p_val, num_permutations)
+        else:
+            raise ValueError("Invalid test type '%s'." % test_type)
+
         results[category][(str(value_pairs[pair][0]),
-                           str(value_pairs[pair][1]))] =\
-                          t_two_sample(i,j)
-    
+                           str(value_pairs[pair][1]))] = obs_t, p_val
     return results
-    

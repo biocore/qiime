@@ -23,7 +23,7 @@ load.library('vegan')
 option_list <- list(
     make_option(c("--source_dir"), type="character",
         help="Path to R source directory [required]."),
-    make_option(c("-i", "--distmat"), type="character",
+    make_option(c("-d", "--distmat"), type="character",
         help="Input distance matrix [required]."),
     make_option(c("-m", "--mapfile"), type="character",
         help="Input metadata mapping file [required]."),

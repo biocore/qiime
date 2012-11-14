@@ -28,14 +28,18 @@ plot_filetype_choices = ['pdf','svg','png']
 
 script_info={}
 script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
-script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the 'other category' using the (-n) option, default is 20.
+script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown \
+of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy \
+or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in \
+(-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user \
+ can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the \
+ 'other category' using the (-n) option, default is 20.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (Class.txt) along with the taxon level label (Class) and the type(s) of chart, by using the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area"""))
-script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l phylum,class,genus -c pie,bar,area"""))
-script_info['script_usage'].append(("""""","""If you want specify an output directory (e.g. "output_charts/", regardless of whether the directory exists, use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area -o output_charts/"""))
-script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie -o pie_charts/ -n 10"""))
-script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for samples samples: 'sample1' and 'sample2' that are in the counts file header, you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -o pie_charts/ -b sample1,sample2"""))
+script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:""","""%prog -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/"""))
+script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""%prog -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/"""))
+script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""%prog -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/"""))
+script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for specific samples, i.e. sample 'PC.636' and sample 'PC.635' that are in the counts file header, you can use the following command:""","""%prog -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/"""))
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 
 script_info['required_options']=[\

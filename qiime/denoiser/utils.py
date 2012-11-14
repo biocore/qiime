@@ -5,15 +5,15 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
 
-from os import remove, makedirs,\
-    access, X_OK, R_OK
+import sys
+from os import remove, makedirs, access, X_OK, R_OK
 from os.path import exists, isdir
 from collections import defaultdict
 from re import sub
@@ -28,7 +28,8 @@ from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError,ApplicationError
 from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from qiime.util import get_qiime_project_dir, FileFormatError, get_tmp_filename
+from qiime.util import (get_qiime_project_dir, get_qiime_scripts_dir,
+                        FileFormatError, get_tmp_filename)
 from qiime.denoiser.flowgram_filter import write_sff_header
 
 #    Wrap into explicit function so we can easily move the data dir around.
@@ -41,8 +42,7 @@ def get_denoiser_data_dir():
 def get_flowgram_ali_exe():
     """Return the path to the flowgram alignment prog
     """
-    fp = get_qiime_project_dir() +\
-        "/qiime/support_files/denoiser/bin/FlowgramAli_4frame"
+    fp = get_qiime_scripts_dir() + "/FlowgramAli_4frame"
     return fp
 
 def check_flowgram_ali_exe():

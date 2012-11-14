@@ -200,7 +200,11 @@ def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
 def negate_tips_to_keep(tips_to_keep, tree):
     """ Return the list of tips in the tree that are not in tips_to_keep"""
     tips_to_keep = set(tips_to_keep)
-    tips = set([tip.Name for tip in tree.tips()])
+    # trees can return node names in ways that have multiple quotes, e.g.
+    # '"node_1"' or ''node_1''. remove them or it can cause problems with 
+    # tips_to_keep not matching
+    tmp_tips = set([tip.Name for tip in tree.tips()])
+    tips = set([t.strip('\'').strip('\"') for t in tmp_tips])
     return tips - tips_to_keep
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):

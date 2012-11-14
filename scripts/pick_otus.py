@@ -4,7 +4,8 @@
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
-               "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"] 
+               "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -52,47 +53,44 @@ The primary inputs for pick_otus.py are:
 pick_otus.py takes a standard fasta file as input.
 
 """
+
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("""Example (uclust method, default):""","""Using the seqs.fna file generated from split_libraries.py and outputting the results to the directory \"picked_otus/\", while using default parameters (0.97 sequence similarity, no reverse strand matching):""","""pick_otus.py -i seqs.fna -o picked_otus/"""))
+script_info['script_usage'].append(("""Example (uclust method, default):""","""Using the seqs.fna file generated from split_libraries.py and outputting the results to the directory \"picked_otus_default/\", while using default parameters (0.97 sequence similarity, no reverse strand matching):""","""%prog -i seqs.fna -o picked_otus_default"""))
 
+script_info['script_usage'].append(("""""","""To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the command would be the following:""","""%prog -i seqs.fna -o picked_otus_90_percent_rev/ -s 0.90 -z"""))
 
-script_info['script_usage'].append(("""""","""To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:""","""pick_otus.py -i seqs.fna -o picked_otus/ -s 0.90 -z"""))
+script_info['script_usage'].append(("""Uclust Reference-based OTU picking example""","""uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.""","""%prog -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_"""))
 
-script_info['script_usage'].append(("""Uclust Reference-based OTU picking example""","""uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.""","""pick_otus.py -i seqs.fna -r core_set_unaligned.fasta_11_8_07 -m uclust_ref"""))
+script_info['script_usage'].append(("""Example (cdhit method):""","""Using the seqs.fna file generated from split_libraries.py and outputting the results to the directory \"cdhit_picked_otus/\", while using default parameters (0.97 sequence similarity, no prefix filtering):""","""%prog -i seqs.fna -m cdhit -o cdhit_picked_otus/"""))
 
-script_info['script_usage'].append(("""Example (cdhit method):""","""Using the seqs.fna file generated from split_libraries.py and outputting the results to the directory \"picked_otus/\", while using default parameters (0.97 sequence similarity, no prefix filtering):""","""pick_otus.py -i seqs.fna -m cdhit -o picked_otus/"""))
+script_info['script_usage'].append(("""""","""Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly decrease the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:""","""%prog -i seqs.fna -m cdhit -o cdhit_picked_otus_filter/ -n 100"""))
 
-script_info['script_usage'].append(("""""","""Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:""","""pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -n 100"""))
+script_info['script_usage'].append(("""""","""Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering (\"-t\") option as shown by the following command.
 
-script_info['script_usage'].append(("""""","""Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering (\"-t\") option as shown by the following command:""","""pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -t"""))
-
-script_info['script_usage'].append(("""""","""Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (>100,000 seqs) to reduce run-time.""",""""""))
-
+Note: It is highly recommended to use one of the prefiltering methods when analyzing large datasets (>100,000 seqs) to reduce run-time.""","""%prog -i seqs.fna -m cdhit -o cdhit_picked_otus_trie_prefilter/ -t"""))
 
 script_info['script_usage'].append(("""BLAST OTU-Picking Example:""","""OTUs can be picked against a reference database using the BLAST OTU picker. This is useful, for example, when different regions of the SSU RNA have sequenced and a sequence similarity based approach like cd-hit therefore wouldn't work. When using the BLAST OTU picking method, the user must supply either a reference set of sequences or a reference database to compare against. The OTU identifiers resulting from this step will be the sequence identifiers in the reference database. This allows for use of a pre-existing tree in downstream analyses, which again is useful in cases where different regions of the 16s gene have been sequenced.
 
-The following command can be used to blast against a reference sequence set, using the default E-value and sequence similarity (0.97) parameters:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m blast -r ref_seq_set.fna"""))
+The following command can be used to blast against a reference sequence set, using the default E-value and sequence similarity (0.97) parameters:""","""%prog -i seqs.fna -o blast_picked_otus/ -m blast -r $PWD/refseqs.fasta"""))
 
-script_info['script_usage'].append(("""""","""If you already have a pre-built BLAST database, you can pass the database prefix as shown by the following command:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m blast -b ref_database"""))
+script_info['script_usage'].append(("""""","""If you already have a pre-built BLAST database, you can pass the database prefix as shown by the following command:""","""%prog -i seqs.fna -o blast_picked_otus_prebuilt_db/ -m blast -b refseqs.fasta"""))
 
-script_info['script_usage'].append(("""""","""If the user would like to change the sequence similarity (\"-s\") and/or the E-value (\"-e\") for the blast method, they can use the following command:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m blast -s 0.90 -e 1e-30"""))
+script_info['script_usage'].append(("""""","""If the user would like to change the sequence similarity (\"-s\") and/or the E-value (\"-e\") for the blast method, they can use the following command:""","""%prog -i seqs.fna -o blast_picked_otus_90_percent/ -m blast -r $PWD/refseqs.fasta -s 0.90 -e 1e-30"""))
 
-script_info['script_usage'].append(("""Prefix-suffix OTU Picking Example:""","""OTUs can be picked by collapsing sequences which being and/or end with identical bases (i.e., identical prefixes or suffixes). This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m prefix_suffix -p 50 -u 25"""))
+script_info['script_usage'].append(("""Prefix-suffix OTU Picking Example:""","""OTUs can be picked by collapsing sequences which begin and/or end with identical bases (i.e., identical prefixes or suffixes).  This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, the user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:""","""%prog -i seqs.fna -o prefix_suffix_picked_otus/ -m prefix_suffix -p 50 -u 25"""))
 
 script_info['script_usage'].append(("""Mothur OTU Picking Example:""","""The Mothur program (http://www.mothur.org/) provides three clustering algorithms for OTU formation: furthest-neighbor (complete linkage), average-neighbor (group average), and nearest-neighbor (single linkage). Details on the algorithms may be found on the Mothur website and publications (Schloss et al., 2009). However, the running times of Mothur's clustering algorithms scale with the number of sequences squared, so the program may not be feasible for large data sets.
 
-The following command may be used to create OTU's based on a furthest-neighbor algorithm (the default setting):""","""pick_otus.py -i seqs.fna -o picked_otus/ -m mothur"""))
+The following command may be used to create OTUs based on a furthest-neighbor algorithm (the default setting) using aligned sequences as input:""","""%prog -i seqs.aligned.fna -o mothur_picked_otus/ -m mothur"""))
 
-script_info['script_usage'].append(("""""","""If you prefer to use a nearest-neighbor algorithm instead, you may specify this with the '-c' flag:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -c nearest"""))
+script_info['script_usage'].append(("""""","""If you prefer to use a nearest-neighbor algorithm instead, you may specify this with the '-c' flag:""","""%prog -i seqs.aligned.fna -o mothur_picked_otus_nn/ -m mothur -c nearest"""))
 
-script_info['script_usage'].append(("""""","""The sequence similarity parameter may also be specified. For example, the following command may be used to create OTU's at the level of 95% similarity:""","""pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -s 0.90"""))
+script_info['script_usage'].append(("""""","""The sequence similarity parameter may also be specified. For example, the following command may be used to create OTUs at the level of 90% similarity:""","""%prog -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90"""))
 
-script_info['script_usage'].append(("""Usearch_qf ('usearch quality filter')""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.""",""""""))
+script_info['script_usage'].append(("""Usearch_qf ('usearch quality filter')""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:""","""%prog -i seqs.fna -m usearch --word_length 64 --db_filepath $PWD/refseqs.fasta -o usearch_qf_results/ --minsize 2"""))
 
-script_info['script_usage'].append(("""Standard usearch (usearch_qf) example:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o usearch_qf_results/"""))
-
-script_info['script_usage'].append(("""Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o usearch_qf_results/""")) 
+script_info['script_usage'].append(("""Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
@@ -117,17 +115,17 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-m', '--otu_picking_method', type='choice',
         choices=otu_picking_method_choices, default = "uclust",
-        help=('Method for picking OTUs.  Valid choices are: ' +\
-              ', '.join(otu_picking_method_choices) +\
-              '. The mothur method requires an input file ' +\
+        help=('Method for picking OTUs.  Valid choices are: ' +
+              ', '.join(otu_picking_method_choices) +
+              '. The mothur method requires an input file '
               'of aligned sequences.  usearch will enable the usearch quality '
               'filtering pipeline. [default: %default]')),
               
     make_option('-c', '--clustering_algorithm', type='choice',
         choices=MothurOtuPicker.ClusteringAlgorithms, default='furthest',
-        help=('Clustering algorithm for mothur otu picking method.  Valid ' +\
-              'choices are: ' +\
-              ', '.join(MothurOtuPicker.ClusteringAlgorithms) +\
+        help=('Clustering algorithm for mothur otu picking method.  Valid '
+              'choices are: ' +
+              ', '.join(MothurOtuPicker.ClusteringAlgorithms) +
               '. [default: %default]')),
               
     make_option('-M', '--max_cdhit_memory', type='int', default=400,
@@ -135,7 +133,7 @@ script_info['optional_options'] = [
               'option) for cdhit OTU picking method (units of Mbyte) '
               '[default: %default]')),
               
-    make_option('-o', '--output_dir',type='new_dirpath',\
+    make_option('-o', '--output_dir',type='new_dirpath',
         help=('Path to store result file '
               '[default: ./<OTU_METHOD>_picked_otus/]')),
               
@@ -148,12 +146,13 @@ script_info['optional_options'] = [
               '[default: %default]')),
               
     make_option('--min_aligned_percent',
-        help=('Minimum percent of query sequence that can be aligned to consider a hit '
-              ' (BLAST OTU picker only) [default: %default]'),default=0.50,type='float'),
+        help=('Minimum percent of query sequence that can be aligned to '
+              'consider a hit (BLAST OTU picker only) [default: %default]'),
+        default=0.50,type='float'),
               
     make_option('-s', '--similarity', type='float', default=0.97,
-        help=('Sequence similarity threshold (for cdhit, uclust, uclust_ref, or'
-              ' usearch) [default: %default]')),
+        help=('Sequence similarity threshold (for blast, cdhit, uclust, '
+              'uclust_ref, or usearch) [default: %default]')),
               
     make_option('-e', '--max_e_value', type='float', default=1e-10,
         help=('Max E-value when clustering with BLAST [default: %default]')),
@@ -179,8 +178,8 @@ script_info['optional_options'] = [
               
     make_option('-p', '--prefix_length', type='int', default=50,
         help=('Prefix length when using the prefix_suffix otu picker; '
-              'WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length (-n)! '
-              '[default: %default]')),
+              'WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length '
+              '(-n)! [default: %default]')),
               
     make_option('-u', '--suffix_length', type='int', default=50,
         help=('Suffix length when using the prefix_suffix otu picker '
@@ -191,9 +190,10 @@ script_info['optional_options'] = [
         help=('Enable reverse strand matching for uclust otu picking, '
               'will double the amount of memory used. [default: %default]')),
               
-    make_option('-D','--suppress_presort_by_abundance_uclust', action='store_true', 
-              default=False,
-              help=('Suppress presorting of sequences by abundance when picking'
+    make_option('-D','--suppress_presort_by_abundance_uclust',
+        action='store_true', 
+        default=False,
+        help=('Suppress presorting of sequences by abundance when picking'
               ' OTUs with uclust or uclust_ref [default: %default]')),
               
     make_option('-A','--optimal_uclust', action='store_true', 
@@ -213,8 +213,8 @@ script_info['optional_options'] = [
               
     make_option('-C','--suppress_new_clusters',action='store_true',
               default=False,
-              help="Suppress creation of new clusters using seqs that don't" +
-              " match reference when using -m uclust_ref or "+
+              help="Suppress creation of new clusters using seqs that don't"
+              " match reference when using -m uclust_ref or "
               "-m usearch_ref [default: %default]"),
               
     make_option('--max_accepts',type='int',default=20,
@@ -235,7 +235,8 @@ script_info['optional_options'] = [
                   
     make_option('--uclust_otu_id_prefix',default=None,type='string',
               help=("OTU identifier prefix (string) for the de novo uclust" 
-                    " OTU picker [default: %default, OTU ids are ascending"
+                    " OTU picker and for new clusters when uclust_ref is used "
+                    "without -C [default: %default, OTU ids are ascending"
                     " integers]")),
                     
     make_option('--suppress_uclust_stable_sort',default=False,
@@ -252,9 +253,9 @@ script_info['optional_options'] = [
               "preservation of all intermediate files created by usearch "
               "(usearch_qf). [default: %default]")),
               
-    make_option('-j', '--percent_id_err', default=0.97, help=("Percent identity"
-              " threshold for cluster error detection with usearch_qf. "
-              "[default: %default]"), type='float'),
+    make_option('-j', '--percent_id_err', default=0.97,
+              help=("Percent identity threshold for cluster error detection "
+              "with usearch_qf. [default: %default]"), type='float'),
               
     make_option('-g', '--minsize', default=4, help=("Minimum cluster size "
               "for size filtering with usearch_qf. [default: %default]"),
@@ -264,9 +265,9 @@ script_info['optional_options'] = [
               "setting for de novo chimera detection with usearch_qf. "
               "[default: %default]"), type='float'),
               
-    make_option('-f', '--db_filepath',type='existing_filepath', default=None, help=("Reference database "
-              "of fasta sequences for reference based chimera detection with "
-              "usearch_qf. [default: %default]")),
+    make_option('-f', '--db_filepath',type='existing_filepath', default=None,
+              help=("Reference database of fasta sequences for reference "
+              "based chimera detection with usearch_qf. [default: %default]")),
               
     make_option('--perc_id_blast', default=0.97, help=("Percent ID for "
               "mapping OTUs created by usearch_qf back to original sequence"
@@ -286,9 +287,9 @@ script_info['optional_options'] = [
               "by default, pass --supress_reference_chimera_detection to "
               "disable [default: %default]")),
               
-    make_option('-x', '--suppress_reference_chimera_detection', default=False, 
+    make_option('-x', '--suppress_reference_chimera_detection', default=False,
               help=("Perform reference based chimera detection in usearch_qf. "
-              "[default: %default]"), action='store_true'),          
+              "[default: %default]"), action='store_true'),
     
     make_option('--cluster_size_filtering', help=("Deprecated, "
               "cluster size filtering enabled by default, pass "
@@ -320,15 +321,14 @@ script_info['optional_options'] = [
               type='string'),
               
     make_option('--minlen', default=64, help=("Minimum length of sequence "
-                "allowed for usearch. [default: %default]"), type='int'),
+                "allowed for usearch. [default: %default]"), type='int')
     ]
 
 script_info['version'] = __version__
 
 def main():
     # Parse the command line parameters
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     # Create local copies of the options to avoid repetitive lookups
     prefix_prefilter_length = opts.prefix_prefilter_length
@@ -380,13 +380,13 @@ def main():
     # Check for logical inputs
     if otu_picking_method in ['usearch', 'usearch_ref'] and \
      reference_chimera_detection and not db_filepath:
-        raise ValueError,('No reference filepath specified with '+\
-         '--db_filepath option.  Disable reference based chimera detection '+\
-         'with --reference_chimera_detection or specify a reference fasta '+\
+        raise ValueError,('No reference filepath specified with '
+         '--db_filepath option. Disable reference based chimera detection '
+         'with --reference_chimera_detection or specify a reference fasta '
          'file with --db_filepath.')
          
     if chimeras_retention not in ['intersection', 'union']:
-        raise ValueError,('--chimeras_retention must be either union or '+\
+        raise ValueError,('--chimeras_retention must be either union or '
          'intersection.')
          
     # Test that db_filepath can be opened to avoid wasted time
@@ -395,12 +395,9 @@ def main():
             tmp_db_filepath = open(db_filepath, "U")
             tmp_db_filepath.close()
         except IOError:
-            raise IOError,('Unable to open %s, please check path/permissions' %\
+            raise IOError,('Unable to open %s, please check path/permissions' %
              db_filepath)
-        
-    
 
-    
     # Input validation to throw a useful error message on common mistakes
     if (otu_picking_method == 'cdhit' and
         similarity < 0.80):
@@ -589,6 +586,6 @@ def main():
     else:
         raise ValueError, "Unknown OTU picking method: %s" % otu_picking_method
 
+
 if __name__ == "__main__":
     main()
-

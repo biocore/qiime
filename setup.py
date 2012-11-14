@@ -11,7 +11,7 @@ import re
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -63,7 +63,6 @@ def build_denoiser():
     denoiser_dir = join(cwd,'qiime/support_files/denoiser/FlowgramAlignment')
     chdir(denoiser_dir)
     call(["make"])
-    call(["make","install"])
     chdir(cwd)
     print "Denoiser built."
 
@@ -88,21 +87,21 @@ setup(name='QIIME',
       maintainer=__maintainer__,
       maintainer_email=__email__,
       url='http://www.qiime.org',
-      packages=['qiime','qiime/parallel','qiime/pycogent_backports','qiime/denoiser'],
-      scripts=glob('scripts/*py')+glob('scripts/ec2*'),
-      package_data={'qiime':\
-                   ['support_files/qiime_config',\
-                    'support_files/css/*css',\
-                    'support_files/html_templates/*html',\
-                    'support_files/images/*png',\
-                    'support_files/jar/*jar',\
-                    'support_files/js/*js',\
+      packages=['qiime','qiime/parallel','qiime/pycogent_backports',
+                'qiime/denoiser'],
+      scripts=glob('scripts/*py')+glob('scripts/ec2*')+
+              glob('scripts/FlowgramAli_4frame'),
+      package_data={'qiime':
+                   ['support_files/qiime_config',
+                    'support_files/css/*css',
+                    'support_files/html_templates/*html',
+                    'support_files/images/*png',
+                    'support_files/jar/*jar',
+                    'support_files/js/*js',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*']},
-      data_files=[('qiime/support_files/denoiser/bin/',
-       ['qiime/support_files/denoiser/bin/FlowgramAli_4frame'])],
-      long_description=long_description,
+      long_description=long_description
 )
 
 if doc_imports_failed:

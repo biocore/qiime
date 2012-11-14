@@ -40,7 +40,7 @@ The input directory should contain only otu tables. The output directory should 
 If you have a set of rarefied OTU tables, make sure the example file contains every sample present in the otu talbes. You should typically choose the file with the fewest sequences per sample, to avoid files with sparse samples omitted.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""The user inputs the results from batch alpha diversity (e.g. alpha_div_chao1_PD/) and the location where the results should be written (e.g. collated_alpha/), as shown by the following command:""","""collate_alpha.py -i alpha_div_chao1_PD/ -o collated_alpha/"""))
+script_info['script_usage'].append(("""Example:""","""The user inputs the results from batch alpha diversity (e.g. alpha_div/) and the location where the results should be written (e.g. collated_alpha/), as shown by the following command:""","""%prog -i alpha_div/ -o collated_alpha/"""))
 script_info['output_description']="""This script takes the resulting files from batch alpha diversity and collates them into (one file for each metric used).
 
 This script transforms a series of files, named (e.g. alpha_rarefaction_20_0.txt, alpha_rarefaction_20_1.txt, etc.) into a (usually much smaller) set of files named (e.g. chao1.txt, PD_whole_tree.txt, etc.), where the columns correspond to samples and rows to the rarefaction files inputted, as shown by the following:

@@ -33,6 +33,7 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example usage:""","""Create a new script:""","""%prog -s -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_script.py""")) 
 script_info['script_usage'].append(("""""","""Create a new test file:""","""%prog -t -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_test.py""")) 
 script_info['script_usage'].append(("""""","""Create a basic file (e.g., for library code):""","""%prog -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_lib.py""")) 
+script_info['script_usage_output_to_remove'] = ['my_lib.py', 'my_script.py', 'my_test.py']
 script_info['output_description']="""The results of this script is either a python script, test, or library file, depending on the input parameters."""
 script_info['required_options']=[\
 options_lookup['output_fp']
@@ -75,7 +76,6 @@ __version__ = "1.5.0-dev"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
 __status__ = "Development"
-
 """ % strftime('%d %b %Y')
 
     script_block = """
@@ -175,7 +175,6 @@ ACGT
     lines = [header_block]
 
     if test:
-        lines.append('from cogent.util.unit_test import TestCase, main')
         lines.append(test_block)
         lines += ['','','','if __name__ == "__main__":','    main()']
     elif script:

@@ -26,8 +26,8 @@ script_info['script_description']="""Write the reverse complement of all seqs in
 leave sequence description lines untouched by passing -r):"""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""",
-                                    """Reverse complement all sequences in seqs.fna and write result to seqs_rc.fna""",
-                                    """ adjust_seq_orientation.py -i seqs.fna"""))
+"""Reverse complement all sequences in seqs.fna and write result to seqs_rc.fna""",
+"""%prog -i seqs.fna"""))
 script_info['output_description']=""""""
 script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']\
