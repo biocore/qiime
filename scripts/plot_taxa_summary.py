@@ -189,20 +189,13 @@ def main():
         raise ValueError, 'The number of categories has to be greater than 0!'
 
     #create directory path
+    dir_path = os.getcwd()
     if opts.dir_path:
-        if os.path.exists(opts.dir_path):
-            dir_path=opts.dir_path
-        else:
-            try:
-                os.mkdir(opts.dir_path)
-                dir_path=opts.dir_path
-            except OSError:
-                pass
-    else:
-        dir_path='./'
-        
-    if dir_path == './':
-        dir_path = os.getcwd()
+        dir_path = opts.dir_path
+        try:
+            os.mkdir(opts.dir_path)
+        except OSError:
+            pass
 
     #make javascript output directory
     javascript_path = os.path.join(dir_path,'js')
