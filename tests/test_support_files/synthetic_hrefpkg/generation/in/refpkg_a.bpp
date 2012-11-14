@@ -1,0 +1,41 @@
+# The alphabet to use:
+# DNA, RNA or Protein
+alphabet = DNA
+
+# Input tree to use:
+input.tree.file = refpkg_a.tre
+input.tree.format=Newick
+
+# Print a tree with ids as bootstrap values.
+# This is helpful when setting up complexe non-homogeneous models.
+# Setting this option will cause the program to exit after printing the tree.
+//output.tree.path = LSUrooted_wid.dnd
+
+# Number of sites to simulate:
+number_of_sites = 1000
+
+# The model
+model = JC69
+
+# The output file:
+output.sequence.file = refpkg_a.fasta
+# The alignment format:
+# Must be one of Mase, Fasta, Phylip
+output.sequence.format = Fasta()
+
+# ----------------------------------------------------------------------------------------
+#                                     Model specification
+# ----------------------------------------------------------------------------------------
+
+# Homogeneous model?
+# no => Homogeneous case
+# general => Specify the model by hand.
+nonhomogeneous = no
+
+# Models are described in a separate file.
+# Choose one of the two following examples:
+//param = SeqGenHomogeneousModel.bpp
+param = SeqGenNonHomogeneousModel.bpp
+
+# Rate Across Sites variation
+rate_distribution = Gamma(n=4, alpha=0.6)

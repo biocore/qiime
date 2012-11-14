@@ -1,0 +1,9 @@
+tax_id,parent_id,rank,tax_name,order,family,genus,species
+R,R,order,R,R,,,
+Ab,R,family,Ab,R,Ab,,
+Bb,Ab,genus,Bb,R,Ab,Bb,
+Cb,Bb,species,Cb,R,Ab,Bb,Cb
+Db,Bb,species,Db,R,Ab,Bb,Db
+Eb,Ab,genus,Eb,R,Ab,Eb,
+Fb,Eb,species,Fb,R,Ab,Eb,Fb
+Gb,Eb,species,Gb,R,Ab,Eb,Gb

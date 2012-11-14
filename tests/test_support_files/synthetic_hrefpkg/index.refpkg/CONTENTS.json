@@ -1,0 +1,28 @@
+{
+    "files": {
+        "aln_fasta": "allrefsllpYG5.fasta", 
+        "taxonomy": "taxonomy.csv", 
+        "seq_info": "seqinfo.csv", 
+        "aln_sto": "allrefsOdYLdr.sto"
+    }, 
+    "rollback": null, 
+    "log": [
+        "Stripped refpkg (removed 3 files)", 
+        "Updates files: aln_fasta=out/allrefs.fasta, aln_sto=out/allrefs.sto", 
+        "Updates files: aln_fasta=out/allrefs.fasta, aln_sto=out/allrefs.sto", 
+        "Stripped refpkg (removed 1 files)", 
+        "Updates files: aln_fasta=out/allrefs.fasta", 
+        "Stripped refpkg (removed 2 files)"
+    ], 
+    "metadata": {
+        "index_rank": "family", 
+        "format_version": "1.1"
+    }, 
+    "rollforward": null, 
+    "md5": {
+        "aln_fasta": "8da89c29e1e8a3bab4471afd7c5e5f07", 
+        "taxonomy": "8c4983d6a5d4cc95542957125ba9ddb1", 
+        "seq_info": "ec4d18257422de9e979d407dd0db902c", 
+        "aln_sto": "47ba0ebe99f311484d9bde6ceda5533a"
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "files": {
+        "phylo_model": "phylo_modeljMEHUJ.json",
+        "taxonomy": "taxonomy.csv",
+        "tree": "refpkg_b.fasttreeq3CEmA.tre",
+        "aln_fasta": "refpkg_bPZFyez.fasta",
+        "seq_info": "seqinfo.csv",
+        "tree_stats": "refpkg_b.fasttreeJXQJFE.log"
+    },
+    "rollback": null,
+    "log": [
+        "Stripped refpkg (removed 8 files)",
+        "Updates files: tree=out/refpkg_b.fasttree.tre, tree_stats=out/refpkg_b.fasttree.log, aln_fasta=out/refpkg_b.fasta",
+        "Updates files: tree=out/refpkg_b.fasttree.tre, tree_stats=out/refpkg_b.fasttree.log, aln_fasta=out/refpkg_b.fasta",
+        "Stripped refpkg (removed 4 files)",
+        "Updates files: tree=out/refpkg_b.fasttree.tre, tree_stats=out/refpkg_b.fasttree.log, aln_fasta=out/refpkg_b.fasta",
+        "Stripped refpkg (removed 10 files)",
+        "Updates files: tree=fasttree.tre, tree_stats=fasttree.log",
+        "Stripped refpkg (removed 8 files)",
+        "Updates files: tree=fasttree.tre, tree_stats=fasttree.log"
+    ],
+    "metadata": {
+        "format_version": "1.1"
+    },
+    "rollforward": null,
+    "md5": {
+        "phylo_model": "f26314f0d3c8a7ba2e3f9113f7883023",
+        "taxonomy": "bcc82331828f59cabd888e1bb205e62d",
+        "tree": "81cdf9474c7bdb9ced9681b1e4c00104",
+        "aln_fasta": "e2c54d40e229cf717804486fb290a7d4",
+        "seq_info": "709c33685b8b199dc1656b9adf318fe6",
+        "tree_stats": "b94ee28bcda1d286842f38b50450d6fd"
+    }
+}
