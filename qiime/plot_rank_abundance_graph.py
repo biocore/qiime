@@ -130,7 +130,7 @@ def plot_rank_abundance_graphs(sample_names, otu_table,
     if len(rows_for_fname) < MAX_SAMPLES_TO_SHOW_IN_FILENAME:
         output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
     else:
-        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
+        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname[0:MAX_SAMPLES_TO_SHOW_IN_FILENAME]) + '_and_more') 
         
     output_fp += ".%s" % file_type
 
