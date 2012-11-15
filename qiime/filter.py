@@ -79,19 +79,21 @@ def sample_ids_from_category_state_coverage(mapping_f,
         covered_states = set(covered_states)
         valid_coverage_states = set(metadata_map.getCategoryValues(
             metadata_map.SampleIds, coverage_category))
-        for state in covered_states:
-            if state not in valid_coverage_states:
-                raise ValueError("The category state '%s' is not in the '%s' "
-                                 "category in the metadata mapping file." %
-                                 (state, coverage_category))
+        invalid_coverage_states = covered_states - valid_coverage_states
 
-    if (min_num_states is None and covered_states is None) or \
-       (min_num_states is not None and covered_states is not None):
-        raise ValueError("You must specify either the minimum *number* of "
-                         "category states the subject must have samples for, "
-                         "or the minimal category states the subject must have "
-                         "samples for (supplying neither or both criteria is "
-                         "not supported).")
+        if invalid_coverage_states:
+            raise ValueError("The category state(s) '%s' are not in the '%s' "
+                             "category in the metadata mapping file." %
+                             (', '.join(invalid_coverage_states),
+                              coverage_category))
+
+    if min_num_states is None and covered_states is None:
+        raise ValueError("You must specify either the minimum number of "
+                         "category states the subject must have samples for "
+                         "(min_num_states), or the minimal category states "
+                         "the subject must have samples for (covered_states), "
+                         "or both. Supplying neither filtering criteria is "
+                         "not supported.")
 
     subjects = defaultdict(list)
     for samp_id in metadata_map.SampleIds:
@@ -103,14 +105,15 @@ def sample_ids_from_category_state_coverage(mapping_f,
         subject_covered_states = set(
                 metadata_map.getCategoryValues(samp_ids, coverage_category))
 
-        keep_subject = False
+        # Short-circuit evaluation of ANDing filters.
+        keep_subject = True
         if min_num_states is not None:
-            if len(subject_covered_states) >= min_num_states:
-                keep_subject = True
-        elif covered_states is not None:
-            if len(subject_covered_states & covered_states) == \
+            if len(subject_covered_states) < min_num_states:
+                keep_subject = False
+        if keep_subject and covered_states is not None:
+            if len(subject_covered_states & covered_states) != \
                len(covered_states):
-                keep_subject = True
+                keep_subject = False
 
         if keep_subject:
             samp_ids_to_keep.extend(samp_ids)

@@ -551,6 +551,58 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             'Time', 'Individual', covered_states=['3', '2'])
         self.assertEqual(set(obs), exp)
 
+    def test_sample_ids_from_category_state_coverage_both_filters(self):
+        """Test returns samp IDs using both supported filters."""
+        # Filter out all samples (fails both filters).
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2,
+            covered_states=['Control', 'Fast'])
+        self.assertEqual(obs, [])
+
+        # Filter out all samples (fails one filter).
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2, covered_states=['Control'])
+        self.assertEqual(obs, [])
+
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1,
+            covered_states=['Control', 'Fast'])
+        self.assertEqual(obs, [])
+
+        # Don't filter out any samples (passes both filters).
+        exp = set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                   'PC.634', 'PC.635', 'PC.636'])
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=0, covered_states=[])
+        self.assertEqual(set(obs), exp)
+
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=[])
+        self.assertEqual(set(obs), exp)
+
+        # Filter out some samples.
+        exp = set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593'])
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=['Control'])
+        self.assertEqual(set(obs), exp)
+
+        exp = set(['PC.607', 'PC.634', 'PC.635', 'PC.636'])
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=['Fast'])
+        self.assertEqual(set(obs), exp)
+
+        exp = set(['d', 'e'])
+        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+            'BodySite', 'Study', covered_states=['Stool', 'Palm'],
+            min_num_states=1)
+        self.assertEqual(set(obs), exp)
+
+        # Keep subject that has more than specified covered states.
+        exp = set(['c', 'f', 'a'])
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', min_num_states=3, covered_states=['3', '2'])
+        self.assertEqual(set(obs), exp)
+
     def test_sample_ids_from_category_state_coverage_invalid_input(self):
         """Test that errors are thrown on bad input."""
         # Using SampleID for either coverage or subject category.
@@ -579,10 +631,6 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # No filters are provided.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
             self.tutorial_mapping_f, 'Treatment', 'DOB')
-
-        # Both filters are provided.
-        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB', 2, ['Fast'])
 
     def test_filter_otus_from_otu_map(self):
         """ filter_otus_from_otu_map functions as expected """
