@@ -18,6 +18,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * compare_alpha_diversity.py now supports both parametric and nonparametric two sample t-tests (nonparametric is the default) with the new optional options -t/--test_type and -n/--num_permutations. Also fixed a bug that used the wrong degrees of freedom in the t-tests, yielding incorrect t statistics and p-values.
 * Removed tree method 'raxml' from make_phylogeny.py's choices for -t/--tree_method. Tree method 'raxml_v730' should now be used instead. RAxML v703 is no longer supported.
 * Minimum PyNAST version requirement upgraded to PyNAST 1.2.
+* Added sample_ids_from_category_state_coverage function to qiime/filter.py to support filtering of samples based on a subject's category coverage. For example, this function is useful for filtering individuals out of a time series study that do not meet some sort of timepoint coverage criteria.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
