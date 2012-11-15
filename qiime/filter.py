@@ -4,18 +4,21 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Will Van Treuren", "Daniel McDonald"]
+__credits__ = ["Greg Caporaso", "Will Van Treuren", "Daniel McDonald",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
+from qiime.util import MetadataMap
 from biom.parse import parse_biom_table
 
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
@@ -52,8 +55,70 @@ def get_sample_ids(map_data, map_header, states):
             good_ids.append(row[0])
     return good_ids
 
+def sample_ids_from_category_state_coverage(mapping_f,
+                                            coverage_category,
+                                            subject_category,
+                                            min_num_states=None,
+                                            covered_states=None):
+    metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
+    if coverage_category == 'SampleID' or subject_category == 'SampleID':
+        raise ValueError("The 'SampleID' category is not suitable for use in "
+                         "this function. Please choose a different category "
+                         "from the metadata mapping file.")
 
+    if coverage_category not in metadata_map.CategoryNames:
+        raise ValueError("The coverage category '%s' is not in the metadata "
+                         "mapping file." % coverage_category)
+
+    if subject_category not in metadata_map.CategoryNames:
+        raise ValueError("The subject category '%s' is not in the metadata "
+                         "mapping file." % subject_category)
+
+    if covered_states is not None:
+        covered_states = set(covered_states)
+        valid_coverage_states = set(metadata_map.getCategoryValues(
+            metadata_map.SampleIds, coverage_category))
+        for state in covered_states:
+            if state not in valid_coverage_states:
+                raise ValueError("The category state '%s' is not in the '%s' "
+                                 "category in the metadata mapping file." %
+                                 (state, coverage_category))
+
+    if (min_num_states is None and covered_states is None) or \
+       (min_num_states is not None and covered_states is not None):
+        raise ValueError("You must specify either the minimum *number* of "
+                         "category states the subject must have samples for, "
+                         "or the minimal category states the subject must have "
+                         "samples for (supplying neither or both criteria is "
+                         "not supported).")
+
+    subjects = defaultdict(list)
+    for samp_id in metadata_map.SampleIds:
+        subject = metadata_map.getCategoryValue(samp_id, subject_category)
+        subjects[subject].append(samp_id)
+
+    samp_ids_to_keep = []
+    for subject, samp_ids in subjects.items():
+        subject_covered_states = set(
+                metadata_map.getCategoryValues(samp_ids, coverage_category))
+
+        keep_subject = False
+        if min_num_states is not None:
+            if len(subject_covered_states) >= min_num_states:
+                keep_subject = True
+        elif covered_states is not None:
+            if len(subject_covered_states & covered_states) == \
+               len(covered_states):
+                keep_subject = True
+
+        if keep_subject:
+            samp_ids_to_keep.extend(samp_ids)
+
+    return samp_ids_to_keep
+
+#def summarize_category_state_coverage(mapping_f, coverage_category,
+#                                      subject_category, samp_ids):
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
