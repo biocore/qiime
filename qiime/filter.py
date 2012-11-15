@@ -60,8 +60,43 @@ def sample_ids_from_category_state_coverage(mapping_f,
                                             subject_category,
                                             min_num_states=None,
                                             covered_states=None):
+    """Filter sample IDs based on subject's coverage of a category.
+
+    Given a category that groups samples by subject (subject_category), samples
+    are filtered by how well a subject covers (i.e. has at least one sample
+    for) the category states in coverage_category.
+
+    Two filtering criteria are provided (min_num_states and covered_states). At
+    least one must be provided. If both are provided, the subject must meet
+    both criteria to pass the filter (i.e. providing both filters is an AND,
+    not an OR, operation).
+
+    A common use case is to provide a 'time' category for coverage_category and
+    an 'individual' category for subject_category in order to filter out
+    individuals from a study that do not have samples for some minimum number
+    of timepoints (min_num_states) and that do not have samples for certain
+    timepoints (covered_states). For example, this could be the first and last
+    timepoints in the study.
+
+    Returns a list of sample IDs to keep, the number of subjects that were
+    kept, and the number of unique category states in coverage_category that
+    were kept. The list of sample IDs is not guaranteed to be in any specific
+    order relative to the order of sample IDs or subjects in the mapping file.
+
+    Arguments:
+        mapping_f - metadata mapping file (file-like object)
+        coverage_category - category to test subjects' coverage (string)
+        subject_category - category to group samples by subject (string)
+        min_num_states - minimum number of category states in coverage_category
+            that a subject must cover (i.e. have at least one sample for) to be
+            included in results (integer)
+        covered_states - category states in coverage_category that must be
+            covered by a subject's samples in order to be included in results
+            (list of strings)
+    """
     metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
+    # Make sure out input looks sane.
     if coverage_category == 'SampleID' or subject_category == 'SampleID':
         raise ValueError("The 'SampleID' category is not suitable for use in "
                          "this function. Please choose a different category "
@@ -76,6 +111,8 @@ def sample_ids_from_category_state_coverage(mapping_f,
                          "mapping file." % subject_category)
 
     if covered_states is not None:
+        # covered_states must be in coverage_category's states in the mapping
+        # file.
         covered_states = set(covered_states)
         valid_coverage_states = set(metadata_map.getCategoryValues(
             metadata_map.SampleIds, coverage_category))
@@ -95,12 +132,16 @@ def sample_ids_from_category_state_coverage(mapping_f,
                          "or both. Supplying neither filtering criteria is "
                          "not supported.")
 
+    # Build mapping from subject to sample IDs.
     subjects = defaultdict(list)
     for samp_id in metadata_map.SampleIds:
         subject = metadata_map.getCategoryValue(samp_id, subject_category)
         subjects[subject].append(samp_id)
 
+    # Perform filtering.
     samp_ids_to_keep = []
+    num_subjects_kept = 0
+    states_kept = []
     for subject, samp_ids in subjects.items():
         subject_covered_states = set(
                 metadata_map.getCategoryValues(samp_ids, coverage_category))
@@ -117,11 +158,10 @@ def sample_ids_from_category_state_coverage(mapping_f,
 
         if keep_subject:
             samp_ids_to_keep.extend(samp_ids)
+            states_kept.extend(subject_covered_states)
+            num_subjects_kept += 1
 
-    return samp_ids_to_keep
-
-#def summarize_category_state_coverage(mapping_f, coverage_category,
-#                                      subject_category, samp_ids):
+    return samp_ids_to_keep, num_subjects_kept, len(set(states_kept))
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
