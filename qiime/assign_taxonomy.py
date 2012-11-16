@@ -2,7 +2,8 @@
 
 __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
+               "Antonio Gonzalez Pena", "David Soergel", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -597,15 +598,19 @@ class RdpTree(object):
                 yield node
 
     def dereplicate_taxa(self):
+        # We check that there are no duplicate taxon names (case insensitive)
+        # at a given depth. We must do a case insensitive check because the RDP
+        # classifier converts taxon names to lowercase when it checks for
+        # duplicates, and will throw an error otherwise.
         taxa_by_depth = {}
         for node in self.get_nodes():
             name = node.name
             depth = node.depth
             current_names = taxa_by_depth.get(depth, set())
-            if name in current_names:
+            if name.lower() in current_names:
                 node.name = name + _QIIME_RDP_TAXON_TAG + str(node.id)
             else:
-                current_names.add(name)
+                current_names.add(name.lower())
                 taxa_by_depth[depth] = current_names
 
     def get_rdp_taxonomy(self):
