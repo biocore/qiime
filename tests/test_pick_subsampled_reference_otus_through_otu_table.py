@@ -20,7 +20,7 @@ from cogent import LoadTree, LoadSeqs
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import load_qiime_config, count_seqs, get_tmp_filename
-from qiime.workflow import (call_commands_serially,no_status_updates)
+from qiime.workflow import (call_commands_serially,no_status_updates,WorkflowError)
 from qiime.parse import (parse_qiime_parameters,
                          fields_to_dict)
 from qiime.pick_subsampled_reference_otus_through_otu_table import (
@@ -695,6 +695,27 @@ A""".split('\n')
          "Failure OTU (wf.test.otu.ReferenceOTU5) is not in the final OTU map.")
         self.assertFalse('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
          "Step4 (clean-up) OTUs are present in the final OTU map but shouldn't be.")
+
+    def test_pick_subsampled_open_referenence_otus_invalid_input(self):
+        """pick_subsampled_open_referenence_otus raises error on refseqs in params file
+        """
+        self.assertRaises(WorkflowError,
+         pick_subsampled_open_referenence_otus,input_fp=self.fasting_seqs_fp1, 
+                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+                                  output_dir=self.wf_out,
+                                  percent_subsample=0.5,
+                                  new_ref_set_id='wf.test.otu',
+                                  command_handler=call_commands_serially,
+                                  params=parse_qiime_parameters(
+                                   ['pick_otus:refseqs_fp %s' % self.pick_ref_otus_refseqs2]),
+                                  prefilter_refseqs_fp=None,
+                                  qiime_config=self.qiime_config,
+                                  step1_otu_map_fp=None,
+                                  step1_failures_fasta_fp=None,
+                                  parallel=False,
+                                  suppress_step4=False,
+                                  logger=None,
+                                  status_update_callback=no_status_updates)
 
 subsample_otus_seqs = """>sample1_1 r0
 TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCCCGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAGTGAAACCATGCGGAAATACTATACTATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCAA
