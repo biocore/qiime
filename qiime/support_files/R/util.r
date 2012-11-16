@@ -84,7 +84,8 @@ The current R instance knows about these paths:
 
 # Get probability of mislabeling by several measures
 # returns matrix of p(alleged), max(p(others)), p(alleged) - max(p(others))
-# also includes binary "mislabeled" columns at 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%
+# also includes binary "mislabeled" columns at 5%, 10%, ..., 95%, 99%
+# 95% means 95% probability of being mislabeled.
 "get.mislabel.scores" <- function(y,y.prob){
     result <- matrix(0,nrow=length(y),ncol=3)
     # get matrices containing only p(other classes), and containing only p(class)
@@ -94,9 +95,9 @@ The current R instance knows about these paths:
     result <- cbind(y.prob.alleged, y.prob.other.max, y.prob.alleged - y.prob.other.max)
     rownames(result) <- rownames(y.prob)
     colnames(result) <- c('P(alleged label)','P(second best)','P(alleged label)-P(second best)')
-    for(threshold in seq(0.05, 0.5, .05)){
-        result <- cbind(result, as.character(y.prob.alleged < threshold))
-        colnames(result)[ncol(result)] <- sprintf('mislabeled_at_%.02f',threshold)
+    for(threshold in c(seq(0.05, 0.95, .05), .99)){
+         result <- cbind(result, as.character(y.prob.alleged < (1-threshold)))
+         colnames(result)[ncol(result)] <- sprintf('mislabeled_probability_above_%.02f',threshold)
     }
     return(result)
 }
