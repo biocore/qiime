@@ -37,7 +37,8 @@ from qiime.workflow import (print_commands,
                             WorkflowLogger,
                             generate_log_fp,
                             log_input_md5s,
-                            get_params_str)
+                            get_params_str,
+                            WorkflowError)
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
 
@@ -84,6 +85,10 @@ def pick_reference_otus(input_fp,
                         logger,
                         similarity_override=None):
     params_copy = deepcopy(params)
+    if 'pick_otus' in params_copy and 'refseqs_fp' in params_copy['pick_otus']:
+        raise WorkflowError, \
+         ("Cannot pass pick_otus:refseqs_fp in parameters file. This can only be"
+          " passed on the command line or through the API.")
     if similarity_override != None:
         logger.write('Overridding similiary with %1.3f.\n' % similarity_override)
         if 'pick_otus' in params_copy:
