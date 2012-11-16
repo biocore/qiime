@@ -5,7 +5,8 @@
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "David Soergel"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "David Soergel",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -989,6 +990,17 @@ class RdpTreeTests(TestCase):
         c1 = t.children['a'].children['x']
         c2 = t.children['b'].children['x']
         self.assertNotEqual(c1.name, c2.name)
+
+        # Test case-insensitive dereplication.
+        t = RdpTree()
+        t.insert_lineage(['a', 'x'])
+        t.insert_lineage(['b', 'X'])
+        t.dereplicate_taxa()
+
+        c1 = t.children['a'].children['x']
+        c2 = t.children['b'].children['X']
+        self.assertTrue((c1.name == 'x' and c2.name != 'X') or
+                        (c1.name != 'x' and c2.name == 'X'))
 
     def test_get_rdp_taxonomy(self):
         t = RdpTree()
