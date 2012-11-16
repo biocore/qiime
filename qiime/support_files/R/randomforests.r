@@ -31,16 +31,14 @@ option_list <- list(
         help="Metadata column header giving cluster IDs [required]"),
     make_option(c("-v", "--verbose"), action="store_true", default=FALSE,
         help="Print warnings and other additional information"),
-    make_option(c("--ntree"), type="integer", default=1000,
+    make_option(c("-n","--ntree"), type="integer", default=500,
         help="Number of trees in forest [default %default]"),
     make_option(c("-e", "--errortype"), type="character", default='oob',
         help="Type of error estimation: oob (out-of-bag, fastest), 
               cv5/cv10 (5/10-fold cross validation, provides mean and standard deviation of error),
               loo (leave-one-out cross validation, useful for small data sets) [default %default]"),
     make_option(c("-o", "--outdir"), type="character", default='.',
-        help="Output directory [default %default]"),
-    make_option(c("--nfolds"), type="integer", default=10,
-        help="Number of folds in cross-validation (ignored if --errortype is not 'cv') [default %default]")
+        help="Output directory [default %default]")
 )
 opts <- parse_args(OptionParser(option_list=option_list), args=args)
 
@@ -65,8 +63,8 @@ if(opts$errortype == 'oob'){
     result <- rf.out.of.bag(x[ix,,drop=FALSE], y[ix], verbose=opts$verbose, ntree=opts$ntree)
     result$error.type <- 'out-of-bag'
 } else {
-
-    if(opts$errortype == 'loo' || opts$nfolds >= length(y)) {
+    
+    if(opts$errortype == 'loo') {
         opts$nfolds <- -1
         error.type <- 'leave-one-out cross validation'
     } else if(opts$errortype == 'cv5') {
@@ -76,6 +74,13 @@ if(opts$errortype == 'oob'){
         error.type <- '10-fold cross validation'
         opts$nfolds <- 10
     }
+    
+    # ensure that nfolds is not larger than number of items
+    if(opts$nfolds >= length(y)){
+        opts$nfolds <- -1
+        error.type <- 'leave-one-out cross validation'
+    }
+    
     result <- rf.cross.validation(x[ix,,drop=FALSE],y[ix],nfolds=opts$nfolds,
             verbose=opts$verbose,ntree=opts$ntree)
     result$error.type <- error.type
