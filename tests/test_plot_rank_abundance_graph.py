@@ -108,9 +108,9 @@ class PlotRankAbundance(TestCase):
     
         #test all supported filetypes
         for file_type in ['pdf','svg','png','eps']:
-            plot_rank_abundance_graphs('S3', self.otu_table, self.dir,
-                                       file_type=file_type)
             tmp_file = abspath(self.dir+"rank_abundance_cols_0."+file_type)
+
+            plot_rank_abundance_graphs(tmp_file,'S3', self.otu_table, file_type=file_type)
             self.files_to_remove.append(tmp_file)
             self.assertTrue(exists(tmp_file))
             
@@ -123,26 +123,29 @@ class PlotRankAbundance(TestCase):
                                    suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
+        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+
         #test empty sample name
-        self.assertRaises(ValueError, plot_rank_abundance_graphs, '',
-                          self.otu_table, self.dir)
+        self.assertRaises(ValueError, plot_rank_abundance_graphs, tmp_fname, '',
+                          self.otu_table)
         #test invalid sample name
-        self.assertRaises(ValueError, plot_rank_abundance_graphs,
+        self.assertRaises(ValueError, plot_rank_abundance_graphs, tmp_fname,
                           'Invalid_sample_name',
-                          self.otu_table, self.dir)
+                          self.otu_table)
 
         #test with two samples
         file_type="pdf"
-        plot_rank_abundance_graphs('S3,S5', self.otu_table, self.dir,
-                                       file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_2."+file_type)
+
+        plot_rank_abundance_graphs(tmp_file, 'S3,S5', self.otu_table,
+                                       file_type=file_type)
 
         self.assertTrue(exists(tmp_file)) 
         self.files_to_remove.append(tmp_file)
         # test with all samples
-        plot_rank_abundance_graphs('*', self.otu_table, self.dir,
-                                       file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_1_2."+file_type)
+        plot_rank_abundance_graphs(tmp_file, '*', self.otu_table,
+                                       file_type=file_type)
         
         self.files_to_remove.append(tmp_file)
         self.assertTrue(exists(tmp_file)) 
@@ -156,26 +159,28 @@ class PlotRankAbundance(TestCase):
                                    suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
+        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+
         #test empty sample name
-        self.assertRaises(ValueError, plot_rank_abundance_graphs, '',
-                          self.otu_table, self.dir)
+        self.assertRaises(ValueError, plot_rank_abundance_graphs, tmp_fname,'',
+                          self.otu_table)
         #test invalid sample name
-        self.assertRaises(ValueError, plot_rank_abundance_graphs,
+        self.assertRaises(ValueError, plot_rank_abundance_graphs, tmp_fname,
                           'Invalid_sample_name',
-                          self.otu_table, self.dir)
+                          self.otu_table)
 
         #test with two samples
         file_type="pdf"
-        plot_rank_abundance_graphs('S3,S5', self.otu_table, self.dir,
-                                       file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_2."+file_type)
+        plot_rank_abundance_graphs(tmp_file, 'S3,S5', self.otu_table,
+                                       file_type=file_type)
 
         self.assertTrue(exists(tmp_file)) 
         self.files_to_remove.append(tmp_file)
         # test with all samples
-        plot_rank_abundance_graphs('*', self.otu_table, self.dir,
-                                       file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_1_2."+file_type)
+
+        plot_rank_abundance_graphs(tmp_file,'*', self.otu_table,file_type=file_type)
         
         self.files_to_remove.append(tmp_file)
         self.assertTrue(exists(tmp_file)) 
