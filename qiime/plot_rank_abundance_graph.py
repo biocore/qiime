@@ -55,8 +55,8 @@ def plot_rank_abundance_graph(otu_count_vector, color='red', absolute=False, lab
     return ax
 
 
-def plot_rank_abundance_graphs(sample_names, otu_table,
-                               output_dir, file_type='pdf',
+def plot_rank_abundance_graphs(result_fp, sample_names, otu_table,
+                               file_type='pdf',
                                absolute_counts=False,
                                x_linear_scale=False,
                                y_linear_scale=False,
@@ -64,10 +64,10 @@ def plot_rank_abundance_graphs(sample_names, otu_table,
                                log_fh=None):
 
     """plot rank-abundance curves for sample specified in sample_name.
-    
+
+    result_fp: filename of output figure
     sample_names: comma separated string of sample names
     otu_table_fh: open file handle to otu table
-    output_dir: existing directory to which files are written
     file_type: valid matplotlib file type
     x_linear_scale: if True draw x axis in linear scale, otherwise use log
     y_linear_scale: if True draw y axis in linear scale, otherwise use log
@@ -117,21 +117,6 @@ def plot_rank_abundance_graphs(sample_names, otu_table,
     if not no_legend:
         legend()
 
-    #build output fp, if less than MAX_SAMPLES_... append the samples names    
-    output_fp = output_dir
-    MAX_SAMPLES_TO_SHOW_IN_FILENAME = 6
-    
-    rows_for_fname=[]
-    for i,nam in enumerate(otu_table.SampleIds):
-        for j,sel_name in enumerate(user_sample_names):
-            if sel_name==nam:
-                rows_for_fname.append(str(i))
-    
-    if len(rows_for_fname) < MAX_SAMPLES_TO_SHOW_IN_FILENAME:
-        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
-    else:
-        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
-        
-    output_fp += ".%s" % file_type
-
-    savefig(output_fp)
+    if not result_fp.endswith(file_type):
+        result_fp += '.' + file_type
+    savefig(result_fp)
