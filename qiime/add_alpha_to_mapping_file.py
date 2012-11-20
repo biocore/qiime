@@ -13,7 +13,8 @@ __status__ = "Development"
 
 
 from copy import deepcopy
-from numpy import array, ndarray, floor, ceil, searchsorted
+from numpy import searchsorted
+from qiime.stats import quantile
 
 def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
                                             alpha_data, mapping_file_headers,
@@ -71,7 +72,7 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
         # when using the quantile method the levels change depending on the
         # metric being used; hence the calculation and normalization of the data
         if method == 'quantile':
-            levels = quantile([norm(element[0], metric_min, metric_max)\
+            levels = quantile([norm(element[0], metric_min, metric_max)
                 for element in data], overall_probs)
 
         # get the normalized value of diversity and the tag for each value
@@ -90,7 +91,7 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
                 # data fields should be strings
                 row.extend(map(str, data[data_index]))
             except ValueError:
-                row.extend([missing_value_name, missing_value_name,\
+                row.extend([missing_value_name, missing_value_name,
                     missing_value_name])
 
     return new_mapping_file_data, new_mapping_file_headers
@@ -124,60 +125,5 @@ def _get_level(value, levels, prefix=None):
         output = '{0}_{1}_of_{2}'.format(prefix, value_level, len(levels)+1)
     else:
         output = value_level
-
-    return output
-
-def quantile(data, quantiles):
-    """calculates quantiles of a dataset matching a given list of probabilities
-
-    Input:
-    data: 1-D list or numpy array with data to calculate the quantiles
-    quantiles: list of probabilities, floating point values between 0 and 1
-
-    Output:
-    A list of elements drawn from 'data' that corresponding to the list of
-    probabilities. This by default is using R. type 7 method for computation of
-    the quantiles.
-    """
-
-    assert type(data) == list or type(data) == ndarray, "Data must be either"+\
-        " a Python list or a NumPy 1-D array"
-    assert type(quantiles) == list or type(quantiles) == ndarray, "Quantiles"+\
-        " must be either a Python list or a NumPy 1-D array"
-    assert all(map(lambda x: x>=0 and x<=1, quantiles)), "All the elements "+\
-        "in the quantiles list must be greater than 0 and lower than one"
-
-    # unless the user wanted, do not modify the data
-    data = deepcopy(data)
-
-    if type(data) != ndarray:
-        data = array(data)
-    data.sort()
-
-    output = []
-    # if needed different quantile methods could be used
-    for one_quantile in quantiles:
-        output.append(_quantile(data, one_quantile))
-
-    return output
-
-def _quantile(data, quantile):
-    """gets a single quantile value for a dataset using R. type 7 method
-
-    Input:
-    data: sorted 1-d numpy array with float or int elements
-    quantile: floating point value between 0 and 1
-
-    Output:
-    quantile value of data
-
-    This function is based on cogent.maths.stats.util.NumbersI
-    """
-    index = quantile*(len(data)-1)
-    bottom_index = int(floor(index))
-    top_index = int(ceil(index))
-
-    difference = index-bottom_index
-    output = (1-difference)*data[bottom_index]+difference*data[top_index]
 
     return output

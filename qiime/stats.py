@@ -22,15 +22,16 @@ create new statistical method implementations.
 """
 
 from types import ListType
-
+from copy import deepcopy
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
-                   ones, sqrt, tri, unique, zeros)
+                   ones, sqrt, tri, unique, zeros, ndarray, floor)
 from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 from cogent.util.misc import combinate
+
 from cogent.maths.stats.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters
@@ -146,6 +147,60 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
         stat[6] = stat[5] if stat[5] is None else min(stat[5] * num_tests, 1)
     return result
 
+def quantile(data, quantiles):
+    """calculates quantiles of a dataset matching a given list of probabilities
+
+    Input:
+    data: 1-D list or numpy array with data to calculate the quantiles
+    quantiles: list of probabilities, floating point values between 0 and 1
+
+    Output:
+    A list of elements drawn from 'data' that corresponding to the list of
+    probabilities. This by default is using R. type 7 method for computation of
+    the quantiles.
+    """
+
+    assert type(data) == list or type(data) == ndarray, "Data must be either"+\
+        " a Python list or a NumPy 1-D array"
+    assert type(quantiles) == list or type(quantiles) == ndarray, "Quantiles"+\
+        " must be either a Python list or a NumPy 1-D array"
+    assert all(map(lambda x: x>=0 and x<=1, quantiles)), "All the elements "+\
+        "in the quantiles list must be greater than 0 and lower than one"
+
+    # unless the user wanted, do not modify the data
+    data = deepcopy(data)
+
+    if type(data) != ndarray:
+        data = array(data)
+    data.sort()
+
+    output = []
+    # if needed different quantile methods could be used
+    for one_quantile in quantiles:
+        output.append(_quantile(data, one_quantile))
+
+    return output
+
+def _quantile(data, quantile):
+    """gets a single quantile value for a dataset using R. type 7 method
+
+    Input:
+    data: sorted 1-d numpy array with float or int elements
+    quantile: floating point value between 0 and 1
+
+    Output:
+    quantile value of data
+
+    This function is based on cogent.maths.stats.util.NumbersI
+    """
+    index = quantile*(len(data)-1)
+    bottom_index = int(floor(index))
+    top_index = int(ceil(index))
+
+    difference = index-bottom_index
+    output = (1-difference)*data[bottom_index]+difference*data[top_index]
+
+    return output
 
 class DistanceMatrixStats(object):
     """Base class for distance matrix-based statistical methods.

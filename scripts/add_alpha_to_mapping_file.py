@@ -25,47 +25,47 @@ script_info['script_description'] = "Add alpha diversity data to a mapping "+\
     "alpha diversity data; the first column being the raw value, the second "+\
     "being a normalized raw value and the third one a label classifying "+\
     "the bin where this value fits based on the normalized value."
-script_info['script_usage'] = [("Adding alpha diversity data:","Add the alpha"+\
-    " diversity values to a mapping file and classify the normalized values "+\
-    "into 4 bins, where the limits will be  0 < x <= 0.25 for the first bin "+\
-    "0.25 < x <= 0.5 for the second bin, 0.5 < x <= 0.75 for the third bin "+\
-    "and 0.75 < x <= 1 for the fourth bin.","%prog -i adiv_pd.txt -m mapping"+\
+script_info['script_usage'] = [("Adding alpha diversity data:","Add the alpha"
+    " diversity values to a mapping file and classify the normalized values "
+    "into 4 bins, where the limits will be  0 < x <= 0.25 for the first bin "
+    "0.25 < x <= 0.5 for the second bin, 0.5 < x <= 0.75 for the third bin "
+    "and 0.75 < x <= 1 for the fourth bin.","%prog -i adiv_pd.txt -m mapping"
     ".txt -b 4 -o alpha_mapping.txt")]
-script_info['script_usage'].append(("Adding alpha diversity data with the "+\
-    "quantile method:", "Add the alpha diversity values to a mapping file and"+\
-    " classify the normalized values using the quartiles of the distribution "+\
-    "of this values.", "%prog -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_"+\
+script_info['script_usage'].append(("Adding alpha diversity data with the "
+    "quantile method:", "Add the alpha diversity values to a mapping file and"
+    " classify the normalized values using the quartiles of the distribution "
+    "of this values.", "%prog -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_"
     "mapping_quantile.txt --binning_method=quantile"))
 script_info['output_description']= "The result of running this script is a "+\
     "metadata mapping file that will include 3 new columns per alpha "+\
     "diversity metric included in the alpha diversity file. For example, with"+\
     " an alpha diversity file with only PD_whole_tree, the new columns will "+\
     "PD_whole_tree_alpha, PD_whole_tree_normalized and PD_whole_tree_bin."
-script_info['required_options'] = [\
-make_option('-i','--alpha_fp',type="existing_filepath",\
-    help='alpha diversity data with one or multiple metrics i. e. the output'+\
-    ' of alpha_diversity.py'),\
-make_option('-m','--mapping_fp',type="existing_filepath",\
-    help='mapping file to modify by adding the alpha diversity data'),\
+script_info['required_options'] = [
+make_option('-i','--alpha_fp',type="existing_filepath",
+    help='alpha diversity data with one or multiple metrics i. e. the output'
+    ' of alpha_diversity.py'),
+make_option('-m','--mapping_fp',type="existing_filepath",
+    help='mapping file to modify by adding the alpha diversity data'),
 ]
-script_info['optional_options'] = [\
-make_option('-o','--output_mapping_fp',type="new_filepath",\
-    help='filepath for the modified mapping file [default: %default]',\
-    default='mapping_file_with_alpha.txt'),\
-make_option('-b','--number_of_bins',type="int",\
-    help='number of bins [default: %default]', default=4),\
-make_option('-x','--missing_value_name',type="string",\
-    help='bin prefix name for the sample identifiers that exist in the '+\
-        'mapping file (mapping_fp) but not in the alpha diversity file '+\
+script_info['optional_options'] = [
+make_option('-o','--output_mapping_fp',type="new_filepath",
+    help='filepath for the modified mapping file [default: %default]',
+    default='mapping_file_with_alpha.txt'),
+make_option('-b','--number_of_bins',type="int",
+    help='number of bins [default: %default]', default=4),
+make_option('-x','--missing_value_name',type="string",
+    help='bin prefix name for the sample identifiers that exist in the '
+        'mapping file (mapping_fp) but not in the alpha diversity file '
         '(alpha_fp) [default: %default]', default='N/A'),
 make_option('--binning_method', type='string', default='equal',
-    help='Select the method name to create the bins, the options are '+\
-        '\'equal\' and \'quantile\'. Both methods work over the normalized '+\
-        'alpha diversity values. On the one hand \'equal\' will assign the '+\
-        'bins on equally spaced limits, depending on the value of --number'+\
-        '_of_bins i. e. if you select 4 the limits will be [0.25, 0.50, 0.75]'+\
-        '. On the other hand \'quantile\' will select the limits based on the'+\
-        ' --number_of_bins i. e. the limits will be the quartiles if 4 is '+\
+    help='Select the method name to create the bins, the options are '
+        '\'equal\' and \'quantile\'. Both methods work over the normalized '
+        'alpha diversity values. On the one hand \'equal\' will assign the '
+        'bins on equally spaced limits, depending on the value of --number'
+        '_of_bins i. e. if you select 4 the limits will be [0.25, 0.50, 0.75]'
+        '. On the other hand \'quantile\' will select the limits based on the'
+        ' --number_of_bins i. e. the limits will be the quartiles if 4 is '
         'selected [default: %default].')
 ]
 script_info['version'] = __version__
@@ -89,14 +89,14 @@ def main():
             % opts.number_of_bins
 
     # parse the data from the files
-    mapping_file_data, mapping_file_headers, comments = parse_mapping_file(\
+    mapping_file_data, mapping_file_headers, comments = parse_mapping_file(
         open(mapping_fp, 'U'))
     metrics, alpha_sample_ids, alpha_data = parse_matrix(open(alpha_fp, 'U'))
 
     # add the alpha diversity data to the mapping file
     out_mapping_file_data, out_mapping_file_headers = \
-        add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,\
-        alpha_data, mapping_file_headers, mapping_file_data, number_of_bins,\
+        add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
+        alpha_data, mapping_file_headers, mapping_file_data, number_of_bins,
         binning_method, missing_value_name)
 
     # format the new data and write it down
