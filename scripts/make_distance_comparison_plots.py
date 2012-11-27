@@ -360,7 +360,7 @@ def main():
             transparent=opts.transparent)
 
     if not opts.suppress_significance_tests:
-        sig_tests_f = open(join(opts.output_dir, "%s_Stats.xls" % field), 'w')
+        sig_tests_f = open(join(opts.output_dir, "%s_Stats.txt" % field), 'w')
 
         # Rearrange the plot data into a format suitable for all_pairs_t_test.
         sig_tests_labels = []
@@ -384,7 +384,7 @@ def main():
         assert (len(plot_x_axis_labels) == len(plot_data)), "The number of " +\
                 "labels do not match the number of points along the x-axis."
         raw_data_fp = join(opts.output_dir,
-                           "%s_Distance_Comparisons.xls" % field)
+                           "%s_Distance_Comparisons.txt" % field)
         raw_data_f = open(raw_data_fp, 'w')
 
         raw_data_f.write("#ComparisonGroup\tFieldState\tDistances\n")

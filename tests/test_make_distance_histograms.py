@@ -3,7 +3,7 @@
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jeremy Widmann"]
+__credits__ = ["Jeremy Widmann", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jeremy Widmann"
@@ -346,7 +346,7 @@ class DistanceHistogramsTests(TestCase):
     def test_write_distance_files(self):
         """write_distance_files should return correct result.
         """
-        exp_path = self.working_dir+'distances/dist_Treatment.xls'
+        exp_path = self.working_dir+'distances/dist_Treatment.txt'
         write_distance_files(self.single_field_treatment,\
             dir_prefix=self.working_dir)
         self.assertEqual(open(exp_path,'U').read(),
@@ -394,7 +394,7 @@ class DistanceHistogramsTests(TestCase):
         """monte_carlo_group_distances should return correct result.
         """
         mc_group_dist_path = self.working_dir+\
-            'monte_carlo_group_distances/group_distances_Treatment.xls'
+            'monte_carlo_group_distances/group_distances_Treatment.txt'
         monte_carlo_group_distances(mapping_file=self.map_file,\
                                     dmatrix_file=self.dmat_file,\
                                     prefs=PREFS,\
@@ -432,7 +432,7 @@ class DistanceHistogramsTests(TestCase):
         """monte_carlo_group_distances_within_between should return correct.
         """
         mc_group_dist_path = self.working_dir+\
-            'monte_carlo_group_distances/group_distances_within_and_between.xls'
+            'monte_carlo_group_distances/group_distances_within_and_between.txt'
         monte_carlo_group_distances_within_between(\
             single_field=self.single_field_treatment,\
             paired_field=self.paired_field_treatment,\

@@ -553,7 +553,7 @@ def write_distance_files(group_distance_dict,dir_prefix = '', \
         pass
         
     for field, data in group_distance_dict.items(): #skip sample id field
-        fname = path.join(path_prefix, 'dist_' + field + '.xls')
+        fname = path.join(path_prefix, 'dist_' + field + '.txt')
         outfile = open(fname, 'w')
         for d in data:
             if subdir_prefix.endswith('pairs'):
@@ -668,7 +668,7 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
         else:
             groups = group_by_field(mapping, field)
         outfile = open(path.join(path_prefix,
-                                 'group_distances_'+field+'.xls'), 'w')
+                                 'group_distances_'+field+'.txt'), 'w')
         outfile.write('\t'.join(['Category_1a','Category_1b','Avg',\
             'Category_2a','Category_2b','Avg','t','p',\
             'p_greater','p_less','Iterations\n']))
@@ -748,7 +748,7 @@ def monte_carlo_group_distances_within_between(single_field, \
         field, distances in within_and_between.items()])
     
     outfile = open(path.join(path_prefix,
-                            'group_distances_within_and_between.xls'), 'w')
+                            'group_distances_within_and_between.txt'), 'w')
     outfile.write('\t'.join(['Comparison','Category_1','Avg',\
         'Comparison','Category_2','Avg','t','p',\
         'p_greater','p_less','Iterations\n']))
