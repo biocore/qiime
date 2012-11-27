@@ -161,6 +161,12 @@ class ProcrustesTests(TestCase):
             self.assertTrue('S3' in a)
             self.assertTrue('S0' not in a)
             self.assertTrue('S4' not in a)
+
+    def test_get_procrustes_results_no_sample_overlap(self):
+        """ValueError raised on no overlapping sample ids"""
+        self.assertRaises(ValueError,get_procrustes_results,self.pcoa1_f,self.pcoa3_f,\
+         sample_id_map=None,randomize=None,max_dimensions=None)
+
         
         
     def test_procrustes_monte_carlo(self):
