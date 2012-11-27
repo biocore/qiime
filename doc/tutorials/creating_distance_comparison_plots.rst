@@ -33,7 +33,7 @@ This command will create a new output directory named :file:`tutorial_output`, w
 
 The first and second boxplots represent all within distances and all between distances, respectively. The first boxplot contains the distances within `Control` samples and the distances within `Fast` samples.  Likewise, the second boxplot contains the distances between `Control` and `Fast` samples. The next two boxplots represent the individual within distances and the final boxplot represents the individual between distances. Since there are only two possible states for the `Treatment` field (i.e. `Control` or `Fast`), the all between boxplot is the same as the individual between boxplot. If there were more possible field states, however, the all between boxplot may not always match the individual between boxplots because there will be more than one individual between boxplot contributing to the all between boxplot.  
 
-Next, open up the file :file:`Treatment_Stats.xls` in the :file:`tutorial_output` directory:
+Next, open up the file :file:`Treatment_Stats.txt` in the :file:`tutorial_output` directory:
 
 .. note::
 
@@ -57,7 +57,7 @@ This file is most easily viewed in a spreadsheet program such as Microsoft Excel
 
     make_distance_boxplots.py -m Fasting_Map.txt -d wf_bdiv_even146/unweighted_unifrac_dm.txt -f Treatment -o tutorial_output -n 999
 
-Open up the resulting file :file:`Treatment_Stats.xls`:
+Open up the resulting file :file:`Treatment_Stats.txt`:
 
 .. note::
 
@@ -85,7 +85,7 @@ To save the data used in the plots in a text file format, specify the --save_raw
 
     make_distance_boxplots.py -m Fasting_Map.txt -d wf_bdiv_even146/unweighted_unifrac_dm.txt -f Treatment -o tutorial_output --save_raw_data
 
-This will generate the file :file:`Treatment_Distances.xls` in the :file:`tutorial_output` directory, which contains the raw data used in the plots in a tab-separated file format. This file can then be imported into other programs, such as Excel, for easy viewing.
+This will generate the file :file:`Treatment_Distances.txt` in the :file:`tutorial_output` directory, which contains the raw data used in the plots in a tab-separated file format. This file can then be imported into other programs, such as Excel, for easy viewing.
 
 To create plots for multiple fields in the metadata mapping file, you can specify a list of fields using the same -f option that we used before to specify the `Treatment` field: ::
 
