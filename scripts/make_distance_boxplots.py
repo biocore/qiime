@@ -321,7 +321,7 @@ def main():
 
         if not opts.suppress_significance_tests:
             sig_tests_f = open(join(
-                opts.output_dir, "%s_Stats.xls" % field), 'w')
+                opts.output_dir, "%s_Stats.txt" % field), 'w')
             sig_tests_results = all_pairs_t_test(plot_labels, plot_data,
                     tail_type=opts.tail_type,
                     num_permutations=opts.num_permutations)
@@ -331,7 +331,7 @@ def main():
         if opts.save_raw_data:
             # Write the raw plot data into a tab-delimited file.
             assert(len(plot_labels) == len(plot_data))
-            raw_data_fp = join(opts.output_dir, "%s_Distances.xls"
+            raw_data_fp = join(opts.output_dir, "%s_Distances.txt"
                                     % field)
             raw_data_f = open(raw_data_fp, 'w')
 
