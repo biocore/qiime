@@ -146,7 +146,7 @@ class RSupervisedLearner(CommandLineApplication):
         """Returns the base command plus command-line options.
         """
         cd_command = ''.join(['cd ', str(self.WorkingDir), ';'])
-        r_command = self._commandline_join(['R','--slave','--vanilla','--args'])
+        r_command = self._commandline_join(['R','--slave','--no-restore','--args'])
         source_dir_arg = self._commandline_join(['--source_dir',
                                                         self._get_R_script_dir()])
 

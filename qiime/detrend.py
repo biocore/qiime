@@ -82,7 +82,7 @@ class Detrender(CommandLineApplication):
            Adapted from RDP Classifier app controller
         """
         cd_command = ''.join(['cd ', str(self.WorkingDir), ';'])
-        r_command = self._commandline_join(['R','--slave','--vanilla','--args'])
+        r_command = self._commandline_join(['R','--slave','--no-restore','--args'])
         source_dir_arg = self._commandline_join(['--source_dir',
                                                         self._get_R_script_dir()])
         script_arguments = self._commandline_join(
