@@ -58,7 +58,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
 * cdbtools (`src_cdbtools <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
-* rtax 0.982 (`src_rtax <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.982.tgz>`_) (license: GPL)
+* rtax 0.982 (`src_rtax <http://static.davidsoergel.com/rtax-0.983.tgz>`_) (license: GPL)
 * pplacer 1.1 (`src_pplacer <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_) (license: GPL)
 * ParsInsert 1.04 (`src_parsinsert <http://downloads.sourceforge.net/project/parsinsert/ParsInsert.1.04.tgz>`_) (license: GPL)
 
