@@ -19,7 +19,7 @@ The new version of the QIIME virtual machine (VM) is based on Ubuntu 12.04 (LTS)
 1.4.0 to 1.5.0 (general)
 ------------------------
  * mothur support has been updated to use its latest version 1.25.0, which can be found `here <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_.
- * rtax support has been added, which can be found `here <http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.982.tgz>`_.
+ * rtax support has been added, which can be found `here <http://dev.davidsoergel.com/trac/rtax>`_.
  * pplacer support has been added, which can be found `here <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_.
  * raxml support has been updated to use its latest version 7.3.0, which can be found `here <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_.
  * usearch support has been updated to use its latest version 5.2.32, which can be found `here <http://www.drive5.com/usearch/>`_.

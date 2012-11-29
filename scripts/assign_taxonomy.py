@@ -60,7 +60,7 @@ To assign the representative sequence set, where the output directory is "rdp_as
 script_info['script_usage'].append(("""""","""Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""","""%prog -i repr_set_seqs.fasta -m rdp -c 0.85"""))
 script_info['script_usage'].append(("""Sample Assignment with RTAX:""","""
 Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
- 
+
 To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:""","""%prog -i rtax_repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r rtax_ref_seq_set.fna -t rtax_id_to_taxonomy.txt"""))
 script_info['script_usage'].append(("""Sample Assignment with Mothur:""", """The Mothur software provides a naive bayes classifier similar to the RDP Classifier.  A set of training sequences and id-to-taxonomy assignments must be provided.  Unlike the RDP Classifier, sequences in the training set may be assigned at any level of the taxonomy.
 
@@ -84,7 +84,7 @@ script_info['optional_options']=[\
  make_option('-r', '--reference_seqs_fp',type="existing_filepath",
         help='Path to reference sequences.  For assignment with blast, these '
         'are used to generate a blast database. For assignment with rdp, they '
-        'are used as training sequences for the classifier.'
+        'are used as training sequences for the classifier. '
         '[default: %s; REQUIRED if -b is not provided when method is blast]'\
         % default_reference_seqs_fp,
         default=default_reference_seqs_fp),\
@@ -94,20 +94,35 @@ script_info['optional_options']=[\
         '[default: %default]'),\
  make_option('--read_1_seqs_fp',type="existing_filepath",
         help='Path to fasta file containing the first read from paired-end '
-        'sequencing, prior to OTU clustering (used for RTAX only).'
+        'sequencing, prior to OTU clustering (used for RTAX only). '
         '[default: %default]'),\
  make_option('--read_2_seqs_fp',type="existing_filepath",
         help='Path to fasta file containing a second read from paired-end '
-        'sequencing, prior to OTU clustering (used for RTAX only).'
+        'sequencing, prior to OTU clustering (used for RTAX only). '
         '[default: %default]'),\
  make_option('--single_ok',action="store_true",
         help='When classifying paired ends, allow fallback to single-ended '
-        'classification when the mate pair is lacking (used for RTAX only).'
+        'classification when the mate pair is lacking (used for RTAX only). '
         '[default: %default]',default=False),\
  make_option('--no_single_ok_generic',action="store_true",
         help='When classifying paired ends, do not allow fallback to single-ended '
-        'classification when the mate pair is overly generic (used for RTAX only).'
+        'classification when the mate pair is overly generic (used for RTAX only). '
         '[default: %default]',default=False),\
+ make_option('--read_id_regex',type="string",
+        help='Used to parse the result of OTU clustering, to get the read_1_id '
+        'for each clusterID.  (used for RTAX only). '
+        '[default: %default]',default="\\S+\\s+(\\S+)"),\
+ make_option('--amplicon_id_regex',type="string",
+        help='Used to parse the result of split_libraries, to get the ampliconID '
+        'for each read_1_id.  Two groups capture read_1_id and ampliconID, '
+        'respectively.  (used for RTAX only). '
+        '[default: %default]',default="(\\S+)\\s+(\\S+?)\/"),\
+ make_option('--header_id_regex',type="string",
+        help='Used to choose the part of the header in the OTU clustering file '
+        'that Rtax reports back as the ID.  The default uses the amplicon ID, '
+        'not including /1 or /3, as the primary key for the query sequences. '
+        '(used for RTAX only). '
+        '[default: %default]',default="\\S+\\s+(\\S+?)\/"),\
  make_option('-m', '--assignment_method', type='choice',
         help='Taxon assignment method, either blast, mothur, rdp, or rtax '
         '[default:%default]',
@@ -232,6 +247,9 @@ def main():
        params['read_2_seqs_fp'] = opts.read_2_seqs_fp
        params['single_ok'] = opts.single_ok
        params['no_single_ok_generic'] = opts.no_single_ok_generic
+       params['header_id_regex'] = opts.header_id_regex
+       params['read_id_regex'] = opts.read_id_regex
+       params['amplicon_id_regex'] = opts.amplicon_id_regex
 
     else:
         # should not be able to get here as an unknown classifier would
