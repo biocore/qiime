@@ -16,8 +16,9 @@ from string import strip
 from cogent.util.misc import create_dir
 from numpy import median
 from qiime.group import get_all_grouped_distances, get_grouped_distances
+from qiime.make_distance_boxplots import color_field_states
 from qiime.parse import parse_distmat, parse_mapping_file, QiimeParseError
-from cogent.draw.distribution_plots import generate_box_plots
+from qiime.pycogent_backports.distribution_plots import generate_box_plots
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
                         parse_command_line_parameters)
@@ -175,9 +176,19 @@ script_info['optional_options'] = [
         help='the color of the boxes. Can be any valid matplotlib color '
         'string, such as "black", "magenta", "blue", etc. See '
         'http://matplotlib.sourceforge.net/api/colors_api.html for more '
-        'examples of valid color strings that may be used [default: '
+        'examples of valid color strings that may be used. Will be ignored if '
+        '--color_individual_within_by_field is supplied [default: '
         'same as plot background, which is white unless --transparent is '
         'enabled]',
+        default=None, type='string'),
+    make_option('--color_individual_within_by_field',
+        help='field in the the mapping file to color the individual '
+        '"within" boxes by. A legend will be provided to match boxplot colors '
+        'to field states. A one-to-one mapping must exist between the field '
+        'to be colored and the field to color by, otherwise the coloring will '
+        'be ambiguous. If this option is supplied, --box_color will be '
+        'ignored. If --suppress_individual_within is supplied, this option '
+        'will be ignored [default: %default]',
         default=None, type='string'),
     make_option('--sort', action='store_true',
         help='sort boxplots by increasing median. If no sorting is applied, '
@@ -256,20 +267,51 @@ def main():
         plot_data = []
         plot_labels = []
 
+        # Store the specified box color by default and a null legend. This will
+        # be overridden if a "color by" field is given for individual within
+        # plots.
+        box_colors = opts.box_color
+        legend = None
+
+        if opts.color_individual_within_by_field is not None:
+            box_colors = []
+
         if not opts.suppress_all_within:
             plot_data.append(get_all_grouped_distances(dist_matrix_header,
                     dist_matrix, mapping_header, mapping, field, within=True))
             plot_labels.append("All within %s" % field)
+
+            if opts.color_individual_within_by_field is not None:
+                box_colors.append(None)
+
         if not opts.suppress_all_between:
             plot_data.append(get_all_grouped_distances(dist_matrix_header,
                     dist_matrix, mapping_header, mapping, field, within=False))
             plot_labels.append("All between %s" % field)
+
+            if opts.color_individual_within_by_field is not None:
+                box_colors.append(None)
+
         if not opts.suppress_individual_within:
             within_dists = get_grouped_distances(dist_matrix_header,
                     dist_matrix, mapping_header, mapping, field, within=True)
+
+            field_states = []
             for grouping in within_dists:
                 plot_data.append(grouping[2])
                 plot_labels.append("%s vs. %s" % (grouping[0], grouping[1]))
+                field_states.append(grouping[0])
+
+            # If we need to color these boxplots by a field, build up a
+            # list of colors and a legend.
+            if opts.color_individual_within_by_field is not None:
+                colors, color_mapping = color_field_states(
+                        open(opts.mapping_fp, 'U'),
+                        dist_matrix_header, field, field_states,
+                        opts.color_individual_within_by_field)
+                box_colors.extend(colors)
+                legend = (color_mapping.values(), color_mapping.keys())
+
         if not opts.suppress_individual_between:
             between_dists = get_grouped_distances(dist_matrix_header,
                     dist_matrix, mapping_header, mapping, field, within=False)
@@ -277,10 +319,14 @@ def main():
                 plot_data.append(grouping[2])
                 plot_labels.append("%s vs. %s" % (grouping[0], grouping[1]))
 
-        # We now have our data and labels ready, so plot them!
+                if opts.color_individual_within_by_field is not None:
+                    box_colors.append(None)
+
         assert (len(plot_data) == len(plot_labels)), "The number " +\
                 "of boxplot labels does not match the number of " +\
                 "boxplots."
+
+        # We now have our data and labels ready, so plot them!
         if plot_data:
             if opts.sort:
                 # Sort our plot data in order of increasing median.
@@ -308,8 +354,8 @@ def main():
                     x_label="Grouping", y_label="Distance",
                     x_tick_labels_orientation='vertical', y_min=y_min,
                     y_max=y_max, whisker_length=opts.whisker_length,
-                    box_width=opts.box_width, box_color=opts.box_color,
-                    figure_width=width, figure_height=height)
+                    box_width=opts.box_width, box_colors=box_colors,
+                    figure_width=width, figure_height=height, legend=legend)
 
             output_plot_fp = join(opts.output_dir, "%s_Distances.%s"
                                        % (field, opts.imagetype))
