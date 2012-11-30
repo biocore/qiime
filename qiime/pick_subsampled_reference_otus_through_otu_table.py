@@ -871,5 +871,6 @@ def pick_subsampled_open_referenence_otus(input_fp,
                             logger=logger,
                             close_logger_on_success=False)
             commands = []
+    if close_logger_on_success:
+        logger.close()
     
-    logger.close()
