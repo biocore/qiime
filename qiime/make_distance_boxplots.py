@@ -38,6 +38,23 @@ def make_distance_boxplots(dm_f,
                            box_color=None,
                            color_individual_within_by_field=None,
                            sort=False):
+    """Generates various types of boxplots for distance comparisons.
+
+    Returns a list of tuples, one for each field. Each tuple contains the
+    following:
+        1) the name of the field (string)
+        2) a matplotlib.figure.Figure object containing the boxplots
+        3) a list of lists containing the raw plot data that was passed to mpl
+        4) a list of labels for each of the boxplots (string)
+        5) a list of mpl-compatible colors (one for each boxplot)
+
+    The Figure can be saved, and the raw data and labels can be useful (for
+    example) performing statistical tests or writing the raw data to disk.
+
+    The input arguments are exactly derived from the make_distance_boxplots.py
+    script (see the script options for details). To avoid duplicated effort,
+    their descriptions are not reproduced here.
+    """
     # Parse data files and do some preliminary error checking.
     dm_header, dm_data = parse_distmat(dm_f)
     map_data, map_header, map_comments = parse_mapping_file(map_f)
