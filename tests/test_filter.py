@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -22,6 +22,7 @@ from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
 from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_otus_from_otu_table,get_sample_ids,
+                          sample_ids_from_category_state_coverage,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
                           filter_mapping_file,filter_tree,
@@ -57,14 +58,14 @@ class FilterTests(TestCase):
         self.input_dm1 = input_dm1.split('\n')
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
-        self.map_str = map_str
+        self.map_str1 = map_str1
+        self.map_str2 = map_str2.split('\n')
         self.map_data, self.map_headers, self.map_comments =\
-         parse_mapping_file(StringIO(self.map_str))
+         parse_mapping_file(StringIO(self.map_str1))
         self.tree1 = DndParser(tree1)
         self.tree2 = DndParser(tree2)
         self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
-        
-        
+
     def tearDown(self):
         remove_files(self.files_to_remove)
         
@@ -493,6 +494,153 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
 
+    def test_sample_ids_from_category_state_coverage_min_num_states(self):
+        """Test returns samp IDs based on number of category states covered."""
+        # Filter out all samples.
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2)
+        self.assertEqual(obs, ([], 0, 0))
+
+        # Don't filter out any samples.
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1)
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Filter out some samples.
+        exp = (set(['d', 'e']), 1, 2)
+        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+            'BodySite', 'Study', min_num_states=2)
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Keep subject that has more than specified minimum number and has more
+        # than one sample at a single coverage state.
+        exp = (set(['a', 'c', 'd', 'e', 'f', 'g']), 2, 3)
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', min_num_states=2)
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+    def test_sample_ids_from_category_state_coverage_covered_states(self):
+        """Test returns samp IDs based on specific category states covered."""
+        # Filter out all samples.
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', covered_states=['Control', 'Fast'])
+        self.assertEqual(obs, ([], 0, 0))
+
+        # Don't filter out any samples.
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', covered_states=[])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Filter out some samples.
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', covered_states=['Control'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        exp = (set(['d', 'e']), 1, 2)
+        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+            'BodySite', 'Study', covered_states=['Stool', 'Palm'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Keep subject that has more than specified covered states and has more
+        # than one sample at a single coverage state.
+        exp = (set(['c', 'f', 'a', 'g']), 1, 3)
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', covered_states=['3', '2'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+    def test_sample_ids_from_category_state_coverage_both_filters(self):
+        """Test returns samp IDs using both supported filters."""
+        # Filter out all samples (fails both filters).
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2,
+            covered_states=['Control', 'Fast'])
+        self.assertEqual(obs, ([], 0, 0))
+
+        # Filter out all samples (fails one filter).
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2, covered_states=['Control'])
+        self.assertEqual(obs, ([], 0, 0))
+
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1,
+            covered_states=['Control', 'Fast'])
+        self.assertEqual(obs, ([], 0, 0))
+
+        # Don't filter out any samples (passes both filters).
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=0, covered_states=[])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=[])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Filter out some samples.
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=['Control'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        exp = (set(['PC.607', 'PC.634', 'PC.635', 'PC.636']), 2, 1)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, covered_states=['Fast'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        exp = (set(['d', 'e']), 1, 2)
+        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+            'BodySite', 'Study', covered_states=['Stool', 'Palm'],
+            min_num_states=1)
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Keep subject that has more than specified covered states and has more
+        # than one sample at a single coverage state (i.e. timepoint).
+        exp = (set(['c', 'f', 'a', 'g']), 1, 3)
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', min_num_states=3, covered_states=['3', '2'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Test filtering out the subject (from the above test) that has four
+        # timepoints, but only three are unique.
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', min_num_states=4, covered_states=['3', '2'])
+        self.assertEqual(obs, ([], 0, 0))
+
+    def test_sample_ids_from_category_state_coverage_invalid_input(self):
+        """Test that errors are thrown on bad input."""
+        # Using SampleID for either coverage or subject category.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'SampleID', 'DOB',
+            covered_states=['Control', 'Fast'])
+
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'SampleID',
+            covered_states=['Control', 'Fast'])
+
+        # Nonexisting coverage category and subject category.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'foo', 'DOB',
+            covered_states=['Control', 'Fast'])
+
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'foo',
+            covered_states=['Control', 'Fast'])
+
+        # Nonexisting required coverage category state.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'DOB',
+            covered_states=['Fast', 'foo'])
+
+        # No filters are provided.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'DOB')
+
     def test_filter_otus_from_otu_map(self):
         """ filter_otus_from_otu_map functions as expected """
         otu_map_in = """o1 some comment	s1_1	s1_2
@@ -535,13 +683,21 @@ o2	s1_3	s1_4	s2_5
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
 tree2 = "(aaa:10,('bbb':2,ccc:4):5);"
 
-map_str = """#SampleID\tStudy\tBodySite\tDescription
+map_str1 = """#SampleID\tStudy\tBodySite\tDescription
 a\tDog\tStool\tx
 b\tDog\tStool\ty
 c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
 e\tWholeBody\tStool\tb"""
 
+map_str2 = """#SampleID\tIndividual\tTime\tDescription
+a\tI1\t2\tx
+b\tI2\t3\ty
+c\tI1\t1\tz
+d\tI3\t3\ta
+e\tI3\t1\tb
+f\tI1\t3\tc
+g\tI1\t2\td"""
 
 filter_fasta_expected1 = """>Seq1 some comment
 ACCTTGG
