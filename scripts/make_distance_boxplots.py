@@ -205,7 +205,7 @@ def main():
                             "specified with the -o option.")
 
     map_f = open(opts.mapping_fp, 'U')
-    dm_f = open(opts.dist_matrix_fp, 'U')
+    dm_f = open(opts.distance_matrix_fp, 'U')
 
     fields = map(strip, opts.fields.split(','))
     fields = [field.strip('"').strip("'") for field in fields]
