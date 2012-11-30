@@ -10,15 +10,10 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
-from operator import itemgetter
 from os.path import join
 from string import strip
 from cogent.util.misc import create_dir
-from numpy import median
-from qiime.group import get_all_grouped_distances, get_grouped_distances
-from qiime.make_distance_boxplots import color_field_states
-from qiime.parse import parse_distmat, parse_mapping_file, QiimeParseError
-from qiime.pycogent_backports.distribution_plots import generate_box_plots
+from qiime.make_distance_boxplots import make_distance_boxplots
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
                         parse_command_line_parameters)
@@ -202,172 +197,39 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # Create the output dir if it doesn't already exist.
+    out_dir = opts.output_dir
     try:
-        create_dir(opts.output_dir)
+        create_dir(out_dir)
     except:
         option_parser.error("Could not create or access output directory "
                             "specified with the -o option.")
 
-    # Parse the distance matrix and mapping file.
-    try:
-        dist_matrix_header, dist_matrix = parse_distmat(
-            open(opts.distance_matrix_fp, 'U'))
-    except:
-        option_parser.error("This does not look like a valid distance matrix "
-            "file. Please supply a valid distance matrix file using the -d "
-            "option.")
+    map_f = open(opts.mapping_fp, 'U')
+    dm_f = open(opts.dist_matrix_fp, 'U')
 
-    try:
-        mapping, mapping_header, mapping_comments = parse_mapping_file(
-            open(opts.mapping_fp, 'U'))
-    except QiimeParseError:
-        option_parser.error("This does not look like a valid metadata mapping "
-            "file. Please supply a valid mapping file using the -m option.")
-
-    fields = opts.fields
-    fields = map(strip, fields.split(','))
+    fields = map(strip, opts.fields.split(','))
     fields = [field.strip('"').strip("'") for field in fields]
 
-    if fields is None:
-        option_parser.error("You must provide at least one field using the -f "
-                            "option.")
+    color_individual_within_by_field = opts.color_individual_within_by_field
+    results = make_distance_boxplots(dm_f, map_f, fields, width=opts.width,
+            height=opts.height, suppress_all_within=opts.suppress_all_within,
+            suppress_all_between=opts.suppress_all_between,
+            suppress_individual_within=opts.suppress_individual_within,
+            suppress_individual_between=opts.suppress_individual_between,
+            y_min=opts.y_min, y_max=opts.y_max,
+            whisker_length=opts.whisker_length, box_width=opts.box_width,
+            box_color=opts.box_color,
+            color_individual_within_by_field=color_individual_within_by_field,
+            sort=opts.sort)
 
-    # Make sure each field is in the mapping file.
-    for field in fields:
-        if field not in mapping_header:
-            option_parser.error("The field '%s' is not in the provided "
-                "mapping file. Please supply correct fields (using the -f "
-                "option) corresponding to fields in the mapping file."
-                % field)
-
-    # Make sure the y_min and y_max options make sense, as they can be either
-    # 'auto' or a number.
-    y_min = opts.y_min
-    y_max = opts.y_max
-    try:
-        y_min = float(y_min)
-    except ValueError:
-        if y_min == 'auto':
-            y_min = None
-        else:
-            option_parser.error("The --y_min option must be either a number "
-                                "or 'auto'.")
-    try:
-        y_max = float(y_max)
-    except ValueError:
-        if y_max == 'auto':
-            y_max = None
-        else:
-            option_parser.error("The --y_max option must be either a number "
-                                "or 'auto'.")
-
-    # Generate the various boxplots, depending on what the user wanted
-    # suppressed. Add them all to one encompassing plot.
-    for field in fields:
-        plot_data = []
-        plot_labels = []
-
-        # Store the specified box color by default and a null legend. This will
-        # be overridden if a "color by" field is given for individual within
-        # plots.
-        box_colors = opts.box_color
-        legend = None
-
-        if opts.color_individual_within_by_field is not None:
-            box_colors = []
-
-        if not opts.suppress_all_within:
-            plot_data.append(get_all_grouped_distances(dist_matrix_header,
-                    dist_matrix, mapping_header, mapping, field, within=True))
-            plot_labels.append("All within %s" % field)
-
-            if opts.color_individual_within_by_field is not None:
-                box_colors.append(None)
-
-        if not opts.suppress_all_between:
-            plot_data.append(get_all_grouped_distances(dist_matrix_header,
-                    dist_matrix, mapping_header, mapping, field, within=False))
-            plot_labels.append("All between %s" % field)
-
-            if opts.color_individual_within_by_field is not None:
-                box_colors.append(None)
-
-        if not opts.suppress_individual_within:
-            within_dists = get_grouped_distances(dist_matrix_header,
-                    dist_matrix, mapping_header, mapping, field, within=True)
-
-            field_states = []
-            for grouping in within_dists:
-                plot_data.append(grouping[2])
-                plot_labels.append("%s vs. %s" % (grouping[0], grouping[1]))
-                field_states.append(grouping[0])
-
-            # If we need to color these boxplots by a field, build up a
-            # list of colors and a legend.
-            if opts.color_individual_within_by_field is not None:
-                colors, color_mapping = color_field_states(
-                        open(opts.mapping_fp, 'U'),
-                        dist_matrix_header, field, field_states,
-                        opts.color_individual_within_by_field)
-                box_colors.extend(colors)
-                legend = (color_mapping.values(), color_mapping.keys())
-
-        if not opts.suppress_individual_between:
-            between_dists = get_grouped_distances(dist_matrix_header,
-                    dist_matrix, mapping_header, mapping, field, within=False)
-            for grouping in between_dists:
-                plot_data.append(grouping[2])
-                plot_labels.append("%s vs. %s" % (grouping[0], grouping[1]))
-
-                if opts.color_individual_within_by_field is not None:
-                    box_colors.append(None)
-
-        assert (len(plot_data) == len(plot_labels)), "The number " +\
-                "of boxplot labels does not match the number of " +\
-                "boxplots."
-
-        # We now have our data and labels ready, so plot them!
-        if plot_data:
-            if opts.sort:
-                # Sort our plot data in order of increasing median.
-                sorted_data = []
-                for label, distribution in zip(plot_labels, plot_data):
-                    sorted_data.append((label, distribution,
-                        median(distribution)))
-                sorted_data.sort(key=itemgetter(2))
-                plot_labels = []
-                plot_data = []
-                for label, distribution, median_value in sorted_data:
-                    plot_labels.append(label)
-                    plot_data.append(distribution)
-
-            width = opts.width
-            height = opts.height
-            if width is None:
-                width = len(plot_data) * opts.box_width + 2
-            if width <= 0 or height <= 0:
-                option_parser.error("The specified width and height of the "
-                                    "image must be greater than zero.")
-
-            plot_figure = generate_box_plots(plot_data,
-                    x_tick_labels=plot_labels, title="%s Distances" % field,
-                    x_label="Grouping", y_label="Distance",
-                    x_tick_labels_orientation='vertical', y_min=y_min,
-                    y_max=y_max, whisker_length=opts.whisker_length,
-                    box_width=opts.box_width, box_colors=box_colors,
-                    figure_width=width, figure_height=height, legend=legend)
-
-            output_plot_fp = join(opts.output_dir, "%s_Distances.%s"
-                                       % (field, opts.imagetype))
-            plot_figure.savefig(output_plot_fp, format=opts.imagetype,
-                    transparent=opts.transparent)
-        else:
-            option_parser.error("You have chosen to suppress all plots. At "
-                                "least one type of plot must be unsuppressed.")
+    for field, plot_figure, plot_data, plot_labels, plot_colors in results:
+        output_plot_fp = join(out_dir, "%s_Distances.%s" %
+                              (field, opts.imagetype))
+        plot_figure.savefig(output_plot_fp, format=opts.imagetype,
+                            transparent=opts.transparent)
 
         if not opts.suppress_significance_tests:
-            sig_tests_f = open(join(
-                opts.output_dir, "%s_Stats.txt" % field), 'w')
+            sig_tests_f = open(join(out_dir, "%s_Stats.txt" % field), 'w')
             sig_tests_results = all_pairs_t_test(plot_labels, plot_data,
                     tail_type=opts.tail_type,
                     num_permutations=opts.num_permutations)
@@ -377,8 +239,7 @@ def main():
         if opts.save_raw_data:
             # Write the raw plot data into a tab-delimited file.
             assert(len(plot_labels) == len(plot_data))
-            raw_data_fp = join(opts.output_dir, "%s_Distances.txt"
-                                    % field)
+            raw_data_fp = join(out_dir, "%s_Distances.txt" % field)
             raw_data_f = open(raw_data_fp, 'w')
 
             for label, data in zip(plot_labels, plot_data):
