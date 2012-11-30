@@ -22,6 +22,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * Removed tree method 'raxml' from make_phylogeny.py's choices for -t/--tree_method. Tree method 'raxml_v730' should now be used instead. RAxML v703 is no longer supported.
 * Minimum PyNAST version requirement upgraded to PyNAST 1.2.
 * make_distance_boxplots.py, make_distance_comparison_plots.py, and make_distance_histograms.py now correctly output TSV data files with .txt extension instead of .xls (this allows them to be opened easier in programs such as Excel).
+* make_distance_boxplots.py has a new option --color_individual_within_by_field that allows the "individual within" boxplots to be optionally colored to indicate their membership in another mapping file field. A legend is also included.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================

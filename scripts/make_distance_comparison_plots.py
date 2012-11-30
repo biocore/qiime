@@ -18,7 +18,7 @@ from qiime.group import get_field_state_comparisons
 from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import (group_by_field, parse_distmat, parse_mapping_file,
                         QiimeParseError)
-from cogent.draw.distribution_plots import (
+from qiime.pycogent_backports.distribution_plots import (
         generate_comparative_plots)
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
