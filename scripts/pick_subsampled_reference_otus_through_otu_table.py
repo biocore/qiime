@@ -97,7 +97,13 @@ script_info['optional_options'] = [
              ' (may be necessary for extremely large data sets) [default: %default]'),
  make_option('--min_otu_size',type='int',default=2,
              help='the minimum otu size (in number of sequences) to retain the otu '
-             '[default: %default]')
+             '[default: %default]'),
+ make_option('--suppress_assign_tax',action='store_true',default=False,
+             help='skip the taxonomy assignment step, resulting in an OTU table without taxonomy'
+             ' [default: %default]'),
+ make_option('--suppress_align_and_tree',action='store_true',default=False,
+             help='skip the sequence alignment and tree-building steps'
+             ' [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -173,6 +179,8 @@ def main():
                                   command_handler=command_handler,
                                   params=params,
                                   min_otu_size=opts.min_otu_size,
+                                  run_assign_tax=not opts.suppress_assign_tax,
+                                  run_align_and_tree=not opts.suppress_align_and_tree,
                                   qiime_config=qiime_config,
                                   prefilter_refseqs_fp=prefilter_refseqs_fp,
                                   prefilter_percent_id=prefilter_percent_id,
@@ -191,6 +199,8 @@ def main():
                               command_handler=command_handler,
                               params=params,
                               min_otu_size=opts.min_otu_size,
+                              run_assign_tax=not opts.suppress_assign_tax,
+                              run_align_and_tree=not opts.suppress_align_and_tree,
                               qiime_config=qiime_config,
                               prefilter_refseqs_fp=prefilter_refseqs_fp,
                               prefilter_percent_id=prefilter_percent_id,

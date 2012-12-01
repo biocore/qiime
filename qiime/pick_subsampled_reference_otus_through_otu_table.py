@@ -358,7 +358,8 @@ def iterative_pick_subsampled_open_referenence_otus(
                               prefilter_refseqs_fp=None,
                               prefilter_percent_id=0.60,
                               min_otu_size=2,
-                              run_tax_align_tree=True,
+                              run_assign_tax=True,
+                              run_align_and_tree=True,
                               step1_otu_map_fp=None,
                               step1_failures_fasta_fp=None,
                               parallel=False,
@@ -404,7 +405,8 @@ def iterative_pick_subsampled_open_referenence_otus(
                                      command_handler=command_handler,
                                      params=params,
                                      qiime_config=qiime_config,
-                                     run_tax_align_tree=False,
+                                     run_assign_tax=False,
+                                     run_align_and_tree=False,
                                      prefilter_refseqs_fp=prefilter_refseqs_fp,
                                      prefilter_percent_id=prefilter_percent_id,
                                      min_otu_size=min_otu_size,
@@ -441,10 +443,6 @@ def iterative_pick_subsampled_open_referenence_otus(
             logger=logger,
             close_logger_on_success=False)
     commands = []
-    
-    # temp
-    run_align_and_tree = run_tax_align_tree
-    run_assign_tax = run_tax_align_tree
     
     # initialize output file names - these differ based on what combination of
     # taxonomy assignment and alignment/tree building is happening.
@@ -539,7 +537,8 @@ def pick_subsampled_open_referenence_otus(input_fp,
                               params,
                               qiime_config,
                               prefilter_refseqs_fp=None,
-                              run_tax_align_tree=True,
+                              run_assign_tax=True,
+                              run_align_and_tree=True,
                               prefilter_percent_id=0.60,
                               min_otu_size=2,
                               step1_otu_map_fp=None,
@@ -786,10 +785,6 @@ def pick_subsampled_open_referenence_otus(input_fp,
             close_logger_on_success=False)
     
     commands = []
-    
-    # temp
-    run_align_and_tree = run_tax_align_tree
-    run_assign_tax = run_tax_align_tree
     
     # initialize output file names - these differ based on what combination of
     # taxonomy assignment and alignment/tree building is happening.
