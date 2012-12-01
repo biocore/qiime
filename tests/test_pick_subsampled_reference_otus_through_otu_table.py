@@ -56,6 +56,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.dirs_to_remove = []
         self.files_to_remove = []
         
+        # use 'fast' uclust settings for reduced runtime
+        self.params = parse_qiime_parameters([
+         "pick_otus:max_rejects	8",
+         "pick_otus:word_length	8",
+         "pick_otus:max_accepts	1",
+         "pick_otus:stepwords	8"])
+        
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
         if not exists(self.tmp_dir):
             makedirs(self.tmp_dir)
@@ -148,7 +155,7 @@ A""".split('\n')
           percent_subsample=0.5,
           new_ref_set_id='wf.test.otu',
           command_handler=call_commands_serially,
-          params=parse_qiime_parameters([]),
+          params=self.params,
           qiime_config=self.qiime_config,
           prefilter_refseqs_fp=None,
           prefilter_percent_id=None,
@@ -234,7 +241,7 @@ A""".split('\n')
           percent_subsample=0.5,
           new_ref_set_id='wf.test.otu',
           command_handler=call_commands_serially,
-          params=parse_qiime_parameters([]),
+          params=self.params,
           qiime_config=self.qiime_config,
           prefilter_refseqs_fp=None,
           prefilter_percent_id=0.80,
@@ -321,7 +328,7 @@ A""".split('\n')
           percent_subsample=0.5,
           new_ref_set_id='wf.test.otu',
           command_handler=call_commands_serially,
-          params=parse_qiime_parameters([]),
+          params=self.params,
           prefilter_refseqs_fp=None,
           qiime_config=self.qiime_config,
           step1_otu_map_fp=None,
@@ -405,7 +412,7 @@ A""".split('\n')
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
-                                  params=parse_qiime_parameters([]),
+                                  params=self.params,
                                   prefilter_refseqs_fp=None,
                                   qiime_config=self.qiime_config,
                                   step1_otu_map_fp=None,
@@ -475,7 +482,7 @@ A""".split('\n')
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
-                                  params=parse_qiime_parameters([]),
+                                  params=self.params,
                                   qiime_config=self.qiime_config,
                                   prefilter_refseqs_fp=None,
                                   prefilter_percent_id=None,
@@ -531,7 +538,7 @@ A""".split('\n')
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
-                                  params=parse_qiime_parameters([]),
+                                  params=self.params,
                                   qiime_config=self.qiime_config,
                                   prefilter_refseqs_fp=None,
                                   step1_otu_map_fp=None,
@@ -601,7 +608,7 @@ A""".split('\n')
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
-                                  params=parse_qiime_parameters([]),
+                                  params=self.params,
                                   prefilter_refseqs_fp=None,
                                   qiime_config=self.qiime_config,
                                   step1_otu_map_fp=None,
@@ -653,7 +660,7 @@ A""".split('\n')
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
-                                  params=parse_qiime_parameters([]),
+                                  params=self.params,
                                   qiime_config=self.qiime_config,
                                   prefilter_refseqs_fp=None,
                                   step1_otu_map_fp=None,
