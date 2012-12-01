@@ -473,6 +473,59 @@ A""".split('\n')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
 
+    def test_pick_subsampled_open_referenence_otus_suppress_assign_tax(self):
+        """pick_subsampled_open_referenence_otus functions without assign tax step
+        """
+        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+                                  output_dir=self.wf_out,
+                                  percent_subsample=0.5,
+                                  new_ref_set_id='wf.test.otu',
+                                  command_handler=call_commands_serially,
+                                  params=self.params,
+                                  prefilter_refseqs_fp=None,
+                                  qiime_config=self.qiime_config,
+                                  step1_otu_map_fp=None,
+                                  step1_failures_fasta_fp=None,
+                                  parallel=False,
+                                  suppress_step4=False,
+                                  logger=None,
+                                  status_update_callback=no_status_updates,
+                                  run_assign_tax=False)
+
+        otu_table_fp = '%s/otu_table_mc2.biom' % self.wf_out
+        self.assertTrue(exists(otu_table_fp),"OTU table doesn't exist.")
+        otu_table_w_tax_fp = '%s/otu_table_mc2_w_tax.biom' % self.wf_out
+        self.assertFalse(exists(otu_table_w_tax_fp),
+                         "OTU table w tax exists (it shouldn't).")
+
+    def test_pick_subsampled_open_referenence_otus_suppress_align_and_tree(self):
+        """pick_subsampled_open_referenence_otus functions without assign tax step
+        """
+        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+                                  output_dir=self.wf_out,
+                                  percent_subsample=0.5,
+                                  new_ref_set_id='wf.test.otu',
+                                  command_handler=call_commands_serially,
+                                  params=self.params,
+                                  prefilter_refseqs_fp=None,
+                                  qiime_config=self.qiime_config,
+                                  step1_otu_map_fp=None,
+                                  step1_failures_fasta_fp=None,
+                                  parallel=False,
+                                  suppress_step4=False,
+                                  logger=None,
+                                  status_update_callback=no_status_updates,
+                                  run_align_and_tree=False)
+
+        otu_table_fp = '%s/otu_table_mc2.biom' % self.wf_out
+        self.assertTrue(exists(otu_table_fp),"OTU table doesn't exist.")
+        tree_fp = '%s/rep_set.tre' % self.wf_out
+        self.assertFalse(exists(tree_fp),
+                         "Tree exists (it shouldn't).")
+
+
     def test_pick_subsampled_open_referenence_otus_no_prefilter(self):
         """pick_subsampled_open_referenence_otus functions as expected without prefilter
         """

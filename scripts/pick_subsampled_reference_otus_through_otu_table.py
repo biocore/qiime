@@ -37,7 +37,14 @@ script_info['script_usage'].append(("","Run the subsampled open-reference OTU pi
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
-script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/','$PWD/ucrss_iter/']
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. This is useful if you're working with marker genes that do not result in useful alignment (e.g., fungal ITS). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree"))
+
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection, suppressing assignment of taxonomy. This is useful if you're working with a reference collection without associated taxonomy. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_assign_tax"))
+
+script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/',
+                                                '$PWD/ucrss_iter/',
+                                                '$PWD/ucrss_iter_no_tree/',
+                                                '$PWD/ucrss_iter_no_tax/']
 
 script_info['output_description']= ""
 script_info['required_options'] = [
