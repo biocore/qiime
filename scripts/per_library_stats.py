@@ -54,6 +54,15 @@ def main():
     med_abs_dev = median_absolute_deviation(counts_per_sample_values)[0]
     even_sampling_depth = guess_even_sampling_depth(counts_per_sample_values)
     
+    try:
+        sample_md_keys = otu_table.SampleMetadata[0].keys()
+    except TypeError:
+        sample_md_keys = ["None provided"]
+    try:
+        observation_md_keys = otu_table.ObservationMetadata[0].keys()
+    except TypeError:
+        observation_md_keys = ["None provided"]
+    
     num_samples = len(counts_per_sample)
     print 'Num samples: %s' % str(num_samples)
     print 'Num otus: %s' % str(num_otus)
@@ -77,6 +86,9 @@ def main():
     print ' Median Absolute Deviation: %s' % str(med_abs_dev)
     print ' Default even sampling depth in\n  core_qiime_analyses.py (just a suggestion): %s' %\
      str(even_sampling_depth)
+    print ' Sample Metadata Categories: %s' % '; '.join(sample_md_keys)
+    print ' Observation Metadata Categories: %s' % '; '.join(observation_md_keys)
+     
     print ''
     if opts.num_otus:
         print 'OTUs/sample detail:'
