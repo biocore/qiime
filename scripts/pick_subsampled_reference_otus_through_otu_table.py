@@ -20,8 +20,8 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (validate_and_set_jobs_to_start, call_commands_serially,
                             print_commands, no_status_updates, print_to_stdout)
 from qiime.pick_subsampled_reference_otus_through_otu_table import (
-                        pick_subsampled_open_referenence_otus,
-                        iterative_pick_subsampled_open_referenence_otus)
+                        pick_subsampled_open_reference_otus,
+                        iterative_pick_subsampled_open_reference_otus)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -178,7 +178,7 @@ def main():
         status_update_callback = no_status_updates
 
     if len(input_fps) == 1:
-        pick_subsampled_open_referenence_otus(input_fp=input_fps[0], 
+        pick_subsampled_open_reference_otus(input_fp=input_fps[0], 
                                   refseqs_fp=refseqs_fp,
                                   output_dir=output_dir,
                                   percent_subsample=percent_subsample,
@@ -198,7 +198,7 @@ def main():
                                   logger=None,
                                   status_update_callback=status_update_callback)
     else:    
-        iterative_pick_subsampled_open_referenence_otus(input_fps=input_fps,
+        iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
                               refseqs_fp=refseqs_fp,
                               output_dir=output_dir,
                               percent_subsample=percent_subsample,

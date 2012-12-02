@@ -24,8 +24,8 @@ from qiime.workflow import (call_commands_serially,no_status_updates,WorkflowErr
 from qiime.parse import (parse_qiime_parameters,
                          fields_to_dict)
 from qiime.pick_subsampled_reference_otus_through_otu_table import (
-                                pick_subsampled_open_referenence_otus,
-                                iterative_pick_subsampled_open_referenence_otus,
+                                pick_subsampled_open_reference_otus,
+                                iterative_pick_subsampled_open_reference_otus,
                                 final_repset_from_iteration_repsets)
 from biom.parse import parse_biom_table
 
@@ -145,10 +145,10 @@ A""".split('\n')
         self.assertEqual(actual,exp)
     
 
-    def test_iterative_pick_subsampled_open_referenence_otus_no_prefilter(self):
-        """pick_subsampled_open_referenence_otus functions as expected without prefilter
+    def test_iterative_pick_subsampled_open_reference_otus_no_prefilter(self):
+        """pick_subsampled_open_reference_otus functions as expected without prefilter
         """
-        iterative_pick_subsampled_open_referenence_otus(
+        iterative_pick_subsampled_open_reference_otus(
           input_fps=[self.fasting_seqs_fp1,self.fasting_seqs_fp2],
           refseqs_fp=self.pick_ref_otus_refseqs2,
           output_dir=self.wf_out,
@@ -231,10 +231,10 @@ A""".split('\n')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
 
-    def test_iterative_pick_subsampled_open_referenence_otus(self):
-        """pick_subsampled_open_referenence_otus functions as expected with prefilter
+    def test_iterative_pick_subsampled_open_reference_otus(self):
+        """pick_subsampled_open_reference_otus functions as expected with prefilter
         """
-        iterative_pick_subsampled_open_referenence_otus(
+        iterative_pick_subsampled_open_reference_otus(
           input_fps=[self.fasting_seqs_fp1,self.fasting_seqs_fp2],
           refseqs_fp=self.pick_ref_otus_refseqs2,
           output_dir=self.wf_out,
@@ -318,10 +318,10 @@ A""".split('\n')
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
 
 
-    def test_iterative_pick_subsampled_open_referenence_otus_parallel(self):
-        """pick_subsampled_open_referenence_otus functions as expected in parallel
+    def test_iterative_pick_subsampled_open_reference_otus_parallel(self):
+        """pick_subsampled_open_reference_otus functions as expected in parallel
         """
-        iterative_pick_subsampled_open_referenence_otus(
+        iterative_pick_subsampled_open_reference_otus(
           input_fps=[self.fasting_seqs_fp1,self.fasting_seqs_fp2],
           refseqs_fp=self.pick_ref_otus_refseqs2,
           output_dir=self.wf_out,
@@ -403,10 +403,10 @@ A""".split('\n')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
         
-    def test_pick_subsampled_open_referenence_otus(self):
-        """pick_subsampled_open_referenence_otus functions as expected
+    def test_pick_subsampled_open_reference_otus(self):
+        """pick_subsampled_open_reference_otus functions as expected
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -473,10 +473,10 @@ A""".split('\n')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
 
-    def test_pick_subsampled_open_referenence_otus_suppress_assign_tax(self):
-        """pick_subsampled_open_referenence_otus functions without assign tax step
+    def test_pick_subsampled_open_reference_otus_suppress_assign_tax(self):
+        """pick_subsampled_open_reference_otus functions without assign tax step
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -499,10 +499,10 @@ A""".split('\n')
         self.assertFalse(exists(otu_table_w_tax_fp),
                          "OTU table w tax exists (it shouldn't).")
 
-    def test_pick_subsampled_open_referenence_otus_suppress_align_and_tree(self):
-        """pick_subsampled_open_referenence_otus functions without assign tax step
+    def test_pick_subsampled_open_reference_otus_suppress_align_and_tree(self):
+        """pick_subsampled_open_reference_otus functions without assign tax step
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -526,10 +526,10 @@ A""".split('\n')
                          "Tree exists (it shouldn't).")
 
 
-    def test_pick_subsampled_open_referenence_otus_no_prefilter(self):
-        """pick_subsampled_open_referenence_otus functions as expected without prefilter
+    def test_pick_subsampled_open_reference_otus_no_prefilter(self):
+        """pick_subsampled_open_reference_otus functions as expected without prefilter
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -582,10 +582,10 @@ A""".split('\n')
          "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU1) is not in the final OTU map.")
 
 
-    def test_pick_subsampled_open_referenence_otus_parallel(self):
-        """pick_subsampled_open_referenence_otus functions as expected
+    def test_pick_subsampled_open_reference_otus_parallel(self):
+        """pick_subsampled_open_reference_otus functions as expected
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -652,10 +652,10 @@ A""".split('\n')
         self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
 
 
-    def test_pick_subsampled_open_referenence_otus_suppress_step4(self):
-        """pick_subsampled_open_referenence_otus functions as expected wo step 4
+    def test_pick_subsampled_open_reference_otus_suppress_step4(self):
+        """pick_subsampled_open_reference_otus functions as expected wo step 4
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -704,10 +704,10 @@ A""".split('\n')
         self.assertFalse('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
          "Step4 (clean-up) OTUs are present in the final OTU map but shouldn't be.")
 
-    def test_pick_subsampled_open_referenence_otus_parallel_suppress_step4(self):
-        """pick_subsampled_open_referenence_otus functions as expected in parallel wo step4
+    def test_pick_subsampled_open_reference_otus_parallel_suppress_step4(self):
+        """pick_subsampled_open_reference_otus functions as expected in parallel wo step4
         """
-        pick_subsampled_open_referenence_otus(input_fp=self.fasting_seqs_fp1, 
+        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
@@ -756,11 +756,11 @@ A""".split('\n')
         self.assertFalse('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
          "Step4 (clean-up) OTUs are present in the final OTU map but shouldn't be.")
 
-    def test_pick_subsampled_open_referenence_otus_invalid_input(self):
-        """pick_subsampled_open_referenence_otus raises error on refseqs in params file
+    def test_pick_subsampled_open_reference_otus_invalid_input(self):
+        """pick_subsampled_open_reference_otus raises error on refseqs in params file
         """
         self.assertRaises(WorkflowError,
-         pick_subsampled_open_referenence_otus,input_fp=self.fasting_seqs_fp1, 
+         pick_subsampled_open_reference_otus,input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,

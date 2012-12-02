@@ -347,7 +347,7 @@ def iteration_output_exists(iteration_output_dir,min_otu_size,remove_partial_out
     
     return True
 
-def iterative_pick_subsampled_open_referenence_otus(
+def iterative_pick_subsampled_open_reference_otus(
                               input_fps, 
                               refseqs_fp,
                               output_dir,
@@ -367,7 +367,7 @@ def iterative_pick_subsampled_open_referenence_otus(
                               suppress_step4=False,
                               logger=None,
                               status_update_callback=print_to_stdout):
-    """ Call the pick_subsampled_open_referenence_otus workflow on multiple inputs
+    """ Call the pick_subsampled_open_reference_otus workflow on multiple inputs
          and handle processing of the results.
     """
     create_dir(output_dir)
@@ -398,7 +398,7 @@ def iterative_pick_subsampled_open_referenence_otus(
             logger.write('Iteration %d (input file: %s) output data already exists. '
                          'Skipping and moving to next.\n\n' % (i,input_fp))
         else:
-            pick_subsampled_open_referenence_otus(input_fp=input_fp,
+            pick_subsampled_open_reference_otus(input_fp=input_fp,
                                      refseqs_fp=refseqs_fp,
                                      output_dir=iteration_output_dir,
                                      percent_subsample=percent_subsample,
@@ -529,7 +529,7 @@ def iterative_pick_subsampled_open_referenence_otus(
     logger.close()
 
 
-def pick_subsampled_open_referenence_otus(input_fp, 
+def pick_subsampled_open_reference_otus(input_fp, 
                               refseqs_fp,
                               output_dir,
                               percent_subsample,
