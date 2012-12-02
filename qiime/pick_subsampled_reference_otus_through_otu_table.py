@@ -201,7 +201,8 @@ def assign_tax(repset_fasta_fp,
             # is method-specific, so doesn't take a --assignment_method
             # option. This works for now though.
             d = params['assign_taxonomy'].copy()
-            del d['assignment_method']
+            if 'assignment_method' in d:
+                del d['assignment_method']
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
