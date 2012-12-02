@@ -39,7 +39,7 @@ script_info['script_usage'].append(("","Run the subsampled open-reference OTU pi
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. This is useful if you're working with marker genes that do not result in useful alignment (e.g., fungal ITS). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree"))
 
-script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection, suppressing assignment of taxonomy. This is useful if you're working with a reference collection without associated taxonomy. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_assign_tax"))
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection, suppressing assignment of taxonomy. This is useful if you're working with a reference collection without associated taxonomy. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_taxonomy_assignment"))
 
 script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/',
                                                 '$PWD/ucrss_iter/',
@@ -105,7 +105,7 @@ script_info['optional_options'] = [
  make_option('--min_otu_size',type='int',default=2,
              help='the minimum otu size (in number of sequences) to retain the otu '
              '[default: %default]'),
- make_option('--suppress_assign_tax',action='store_true',default=False,
+ make_option('--suppress_taxonomy_assignment',action='store_true',default=False,
              help='skip the taxonomy assignment step, resulting in an OTU table without taxonomy'
              ' [default: %default]'),
  make_option('--suppress_align_and_tree',action='store_true',default=False,
@@ -186,7 +186,7 @@ def main():
                                   command_handler=command_handler,
                                   params=params,
                                   min_otu_size=opts.min_otu_size,
-                                  run_assign_tax=not opts.suppress_assign_tax,
+                                  run_assign_tax=not opts.suppress_taxonomy_assignment,
                                   run_align_and_tree=not opts.suppress_align_and_tree,
                                   qiime_config=qiime_config,
                                   prefilter_refseqs_fp=prefilter_refseqs_fp,
@@ -206,7 +206,7 @@ def main():
                               command_handler=command_handler,
                               params=params,
                               min_otu_size=opts.min_otu_size,
-                              run_assign_tax=not opts.suppress_assign_tax,
+                              run_assign_tax=not opts.suppress_taxonomy_assignment,
                               run_align_and_tree=not opts.suppress_align_and_tree,
                               qiime_config=qiime_config,
                               prefilter_refseqs_fp=prefilter_refseqs_fp,
