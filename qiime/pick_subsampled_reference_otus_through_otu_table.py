@@ -160,7 +160,7 @@ def pick_denovo_otus(input_fp,
     
     return result
 
-def tax_align_tree(repset_fasta_fp,
+def assign_tax(repset_fasta_fp,
                    output_dir,
                    command_handler,
                    params,
@@ -201,7 +201,8 @@ def tax_align_tree(repset_fasta_fp,
             # is method-specific, so doesn't take a --assignment_method
             # option. This works for now though.
             d = params['assign_taxonomy'].copy()
-            del d['assignment_method']
+            if 'assignment_method' in d:
+                del d['assignment_method']
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
@@ -221,6 +222,33 @@ def tax_align_tree(repset_fasta_fp,
     if exists(assign_taxonomy_dir):
         rmtree(assign_taxonomy_dir)
     commands.append([('Assign taxonomy',assign_taxonomy_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
+    return taxonomy_fp
+
+def align_and_tree(repset_fasta_fp,
+                   output_dir,
+                   command_handler,
+                   params,
+                   qiime_config,
+                   parallel=False,
+                   logger=None,
+                   status_update_callback=print_to_stdout):
+                   
+    input_dir, input_filename = split(repset_fasta_fp)
+    input_basename, input_ext = splitext(input_filename)
+    commands = []
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     
     ## Prep the pynast alignment command
     alignment_method = 'pynast'
@@ -294,7 +322,7 @@ def tax_align_tree(repset_fasta_fp,
                     status_update_callback,
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
-    return taxonomy_fp, failures_fp
+    return failures_fp
 
 #####################
 ## End functions to port to new Qiime/qiime/workflow/util.py
@@ -319,7 +347,7 @@ def iteration_output_exists(iteration_output_dir,min_otu_size,remove_partial_out
     
     return True
 
-def iterative_pick_subsampled_open_referenence_otus(
+def iterative_pick_subsampled_open_reference_otus(
                               input_fps, 
                               refseqs_fp,
                               output_dir,
@@ -331,14 +359,15 @@ def iterative_pick_subsampled_open_referenence_otus(
                               prefilter_refseqs_fp=None,
                               prefilter_percent_id=0.60,
                               min_otu_size=2,
-                              run_tax_align_tree=True,
+                              run_assign_tax=True,
+                              run_align_and_tree=True,
                               step1_otu_map_fp=None,
                               step1_failures_fasta_fp=None,
                               parallel=False,
                               suppress_step4=False,
                               logger=None,
                               status_update_callback=print_to_stdout):
-    """ Call the pick_subsampled_open_referenence_otus workflow on multiple inputs
+    """ Call the pick_subsampled_open_reference_otus workflow on multiple inputs
          and handle processing of the results.
     """
     create_dir(output_dir)
@@ -369,7 +398,7 @@ def iterative_pick_subsampled_open_referenence_otus(
             logger.write('Iteration %d (input file: %s) output data already exists. '
                          'Skipping and moving to next.\n\n' % (i,input_fp))
         else:
-            pick_subsampled_open_referenence_otus(input_fp=input_fp,
+            pick_subsampled_open_reference_otus(input_fp=input_fp,
                                      refseqs_fp=refseqs_fp,
                                      output_dir=iteration_output_dir,
                                      percent_subsample=percent_subsample,
@@ -377,7 +406,8 @@ def iterative_pick_subsampled_open_referenence_otus(
                                      command_handler=command_handler,
                                      params=params,
                                      qiime_config=qiime_config,
-                                     run_tax_align_tree=False,
+                                     run_assign_tax=False,
+                                     run_align_and_tree=False,
                                      prefilter_refseqs_fp=prefilter_refseqs_fp,
                                      prefilter_percent_id=prefilter_percent_id,
                                      min_otu_size=min_otu_size,
@@ -415,18 +445,32 @@ def iterative_pick_subsampled_open_referenence_otus(
             close_logger_on_success=False)
     commands = []
     
-    if run_tax_align_tree:
+    # initialize output file names - these differ based on what combination of
+    # taxonomy assignment and alignment/tree building is happening.
+    if run_assign_tax and run_align_and_tree:
+        tax_input_otu_table_fp = otu_table_fp
         otu_table_w_tax_fp = \
          '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
-        final_otu_table_fp = \
+        align_and_tree_input_otu_table = otu_table_w_tax_fp
+        pynast_failure_filtered_otu_table_fp = \
          '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,min_otu_size)
-        if exists(final_otu_table_fp) and getsize(final_otu_table_fp) > 0:
-            logger.write("Final output file exists (%s). Will not rebuild." % otu_table_fp)
+    elif run_assign_tax:
+        tax_input_otu_table_fp = otu_table_fp
+        otu_table_w_tax_fp = \
+         '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
+    elif run_align_and_tree:
+        align_and_tree_input_otu_table = otu_table_fp
+        pynast_failure_filtered_otu_table_fp = \
+         '%s/otu_table_mc%d_no_pynast_failures.biom' % (output_dir,min_otu_size)
+    
+    if run_assign_tax:
+        if exists(otu_table_w_tax_fp) and getsize(otu_table_w_tax_fp) > 0:
+            logger.write("Final output file exists (%s). Will not rebuild." % otu_table_w_tax_fp)
         else:
             # remove files from partially completed runs
-            remove_files([otu_table_w_tax_fp,final_otu_table_fp],error_on_missing=False)
+            remove_files([otu_table_w_tax_fp],error_on_missing=False)
         
-            taxonomy_fp, pynast_failures_fp = tax_align_tree(
+            taxonomy_fp = assign_tax(
                        repset_fasta_fp=final_repset_fp,
                        output_dir=output_dir,
                        command_handler=command_handler,
@@ -438,7 +482,7 @@ def iterative_pick_subsampled_open_referenence_otus(
         
             # Add taxa to otu table
             add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
-             (otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
+             (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
             commands.append([("Add taxa to OTU table",add_taxa_cmd)])
         
             command_handler(commands,
@@ -446,16 +490,36 @@ def iterative_pick_subsampled_open_referenence_otus(
                 logger=logger,
                 close_logger_on_success=False)
             commands = []
+
+    if run_align_and_tree:
+        if exists(pynast_failure_filtered_otu_table_fp) and\
+           getsize(pynast_failure_filtered_otu_table_fp) > 0:
+            logger.write("Final output file exists (%s). Will not rebuild." %\
+                         pynast_failure_filtered_otu_table_fp)
+        else:
+            # remove files from partially completed runs
+            remove_files([pynast_failure_filtered_otu_table_fp],
+                         error_on_missing=False)
+        
+            pynast_failures_fp = align_and_tree(
+                       repset_fasta_fp=final_repset_fp,
+                       output_dir=output_dir,
+                       command_handler=command_handler,
+                       params=params,
+                       qiime_config=qiime_config,
+                       parallel=parallel,
+                       logger=logger,
+                       status_update_callback=status_update_callback)
         
             # Build OTU table without PyNAST failures
             filtered_otu_table = filter_otus_from_otu_table(
-                  parse_biom_table(open(otu_table_w_tax_fp,'U')),
+                  parse_biom_table(open(align_and_tree_input_otu_table,'U')),
                   get_seq_ids_from_fasta_file(open(pynast_failures_fp,'U')),
                   0,inf,0,inf,negate_ids_to_keep=True)
-            otu_table_f = open(final_otu_table_fp,'w')
+            otu_table_f = open(pynast_failure_filtered_otu_table_fp,'w')
             otu_table_f.write(format_biom_table(filtered_otu_table))
             otu_table_f.close()
-    
+        
             command_handler(commands,
                             status_update_callback,
                             logger=logger,
@@ -465,7 +529,7 @@ def iterative_pick_subsampled_open_referenence_otus(
     logger.close()
 
 
-def pick_subsampled_open_referenence_otus(input_fp, 
+def pick_subsampled_open_reference_otus(input_fp, 
                               refseqs_fp,
                               output_dir,
                               percent_subsample,
@@ -474,7 +538,8 @@ def pick_subsampled_open_referenence_otus(input_fp,
                               params,
                               qiime_config,
                               prefilter_refseqs_fp=None,
-                              run_tax_align_tree=True,
+                              run_assign_tax=True,
+                              run_align_and_tree=True,
                               prefilter_percent_id=0.60,
                               min_otu_size=2,
                               step1_otu_map_fp=None,
@@ -722,8 +787,32 @@ def pick_subsampled_open_referenence_otus(input_fp,
     
     commands = []
     
-    if run_tax_align_tree:
-            taxonomy_fp, pynast_failures_fp = tax_align_tree(
+    # initialize output file names - these differ based on what combination of
+    # taxonomy assignment and alignment/tree building is happening.
+    if run_assign_tax and run_align_and_tree:
+        tax_input_otu_table_fp = otu_table_fp
+        otu_table_w_tax_fp = \
+         '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
+        align_and_tree_input_otu_table = otu_table_w_tax_fp
+        pynast_failure_filtered_otu_table_fp = \
+         '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,min_otu_size)
+    elif run_assign_tax:
+        tax_input_otu_table_fp = otu_table_fp
+        otu_table_w_tax_fp = \
+         '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
+    elif run_align_and_tree:
+        align_and_tree_input_otu_table = otu_table_fp
+        pynast_failure_filtered_otu_table_fp = \
+         '%s/otu_table_mc%d_no_pynast_failures.biom' % (output_dir,min_otu_size)
+    
+    if run_assign_tax:
+        if exists(otu_table_w_tax_fp) and getsize(otu_table_w_tax_fp) > 0:
+            logger.write("Final output file exists (%s). Will not rebuild." % otu_table_w_tax_fp)
+        else:
+            # remove files from partially completed runs
+            remove_files([otu_table_w_tax_fp],error_on_missing=False)
+        
+            taxonomy_fp = assign_tax(
                        repset_fasta_fp=final_repset_fp,
                        output_dir=output_dir,
                        command_handler=command_handler,
@@ -732,28 +821,44 @@ def pick_subsampled_open_referenence_otus(input_fp,
                        parallel=parallel,
                        logger=logger,
                        status_update_callback=status_update_callback)
-            
+        
             # Add taxa to otu table
-            otu_table_w_tax_fp = \
-             '%s/otu_table_mc%d_w_tax.biom' % (output_dir,min_otu_size)
             add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
-             (otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
+             (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
             commands.append([("Add taxa to OTU table",add_taxa_cmd)])
-            
+        
             command_handler(commands,
                 status_update_callback,
                 logger=logger,
                 close_logger_on_success=False)
             commands = []
-            
+
+    if run_align_and_tree:
+        if exists(pynast_failure_filtered_otu_table_fp) and\
+           getsize(pynast_failure_filtered_otu_table_fp) > 0:
+            logger.write("Final output file exists (%s). Will not rebuild." %\
+                         pynast_failure_filtered_otu_table_fp)
+        else:
+            # remove files from partially completed runs
+            remove_files([pynast_failure_filtered_otu_table_fp],
+                         error_on_missing=False)
+        
+            pynast_failures_fp = align_and_tree(
+                       repset_fasta_fp=final_repset_fp,
+                       output_dir=output_dir,
+                       command_handler=command_handler,
+                       params=params,
+                       qiime_config=qiime_config,
+                       parallel=parallel,
+                       logger=logger,
+                       status_update_callback=status_update_callback)
+        
             # Build OTU table without PyNAST failures
-            otu_table_fp = \
-             '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,min_otu_size)
             filtered_otu_table = filter_otus_from_otu_table(
-                  parse_biom_table(open(otu_table_w_tax_fp,'U')),
+                  parse_biom_table(open(align_and_tree_input_otu_table,'U')),
                   get_seq_ids_from_fasta_file(open(pynast_failures_fp,'U')),
                   0,inf,0,inf,negate_ids_to_keep=True)
-            otu_table_f = open(otu_table_fp,'w')
+            otu_table_f = open(pynast_failure_filtered_otu_table_fp,'w')
             otu_table_f.write(format_biom_table(filtered_otu_table))
             otu_table_f.close()
         
@@ -762,8 +867,6 @@ def pick_subsampled_open_referenence_otus(input_fp,
                             logger=logger,
                             close_logger_on_success=False)
             commands = []
-            
-    command_handler(commands,
-            status_update_callback,
-            logger=logger,
-            close_logger_on_success=close_logger_on_success)
+    if close_logger_on_success:
+        logger.close()
+    
