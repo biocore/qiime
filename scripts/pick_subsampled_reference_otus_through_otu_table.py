@@ -20,8 +20,8 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (validate_and_set_jobs_to_start, call_commands_serially,
                             print_commands, no_status_updates, print_to_stdout)
 from qiime.pick_subsampled_reference_otus_through_otu_table import (
-                        pick_subsampled_open_referenence_otus,
-                        iterative_pick_subsampled_open_referenence_otus)
+                        pick_subsampled_open_reference_otus,
+                        iterative_pick_subsampled_open_reference_otus)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -37,7 +37,14 @@ script_info['script_usage'].append(("","Run the subsampled open-reference OTU pi
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
-script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/','$PWD/ucrss_iter/']
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. This is useful if you're working with marker genes that do not result in useful alignment (e.g., fungal ITS). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree"))
+
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection, suppressing assignment of taxonomy. This is useful if you're working with a reference collection without associated taxonomy. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_taxonomy_assignment"))
+
+script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/',
+                                                '$PWD/ucrss_iter/',
+                                                '$PWD/ucrss_iter_no_tree/',
+                                                '$PWD/ucrss_iter_no_tax/']
 
 script_info['output_description']= ""
 script_info['required_options'] = [
@@ -97,7 +104,13 @@ script_info['optional_options'] = [
              ' (may be necessary for extremely large data sets) [default: %default]'),
  make_option('--min_otu_size',type='int',default=2,
              help='the minimum otu size (in number of sequences) to retain the otu '
-             '[default: %default]')
+             '[default: %default]'),
+ make_option('--suppress_taxonomy_assignment',action='store_true',default=False,
+             help='skip the taxonomy assignment step, resulting in an OTU table without taxonomy'
+             ' [default: %default]'),
+ make_option('--suppress_align_and_tree',action='store_true',default=False,
+             help='skip the sequence alignment and tree-building steps'
+             ' [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -165,7 +178,7 @@ def main():
         status_update_callback = no_status_updates
 
     if len(input_fps) == 1:
-        pick_subsampled_open_referenence_otus(input_fp=input_fps[0], 
+        pick_subsampled_open_reference_otus(input_fp=input_fps[0], 
                                   refseqs_fp=refseqs_fp,
                                   output_dir=output_dir,
                                   percent_subsample=percent_subsample,
@@ -173,6 +186,8 @@ def main():
                                   command_handler=command_handler,
                                   params=params,
                                   min_otu_size=opts.min_otu_size,
+                                  run_assign_tax=not opts.suppress_taxonomy_assignment,
+                                  run_align_and_tree=not opts.suppress_align_and_tree,
                                   qiime_config=qiime_config,
                                   prefilter_refseqs_fp=prefilter_refseqs_fp,
                                   prefilter_percent_id=prefilter_percent_id,
@@ -183,7 +198,7 @@ def main():
                                   logger=None,
                                   status_update_callback=status_update_callback)
     else:    
-        iterative_pick_subsampled_open_referenence_otus(input_fps=input_fps,
+        iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
                               refseqs_fp=refseqs_fp,
                               output_dir=output_dir,
                               percent_subsample=percent_subsample,
@@ -191,6 +206,8 @@ def main():
                               command_handler=command_handler,
                               params=params,
                               min_otu_size=opts.min_otu_size,
+                              run_assign_tax=not opts.suppress_taxonomy_assignment,
+                              run_align_and_tree=not opts.suppress_align_and_tree,
                               qiime_config=qiime_config,
                               prefilter_refseqs_fp=prefilter_refseqs_fp,
                               prefilter_percent_id=prefilter_percent_id,
