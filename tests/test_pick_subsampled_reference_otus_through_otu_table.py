@@ -500,7 +500,7 @@ A""".split('\n')
                          "OTU table w tax exists (it shouldn't).")
 
     def test_pick_subsampled_open_reference_otus_suppress_align_and_tree(self):
-        """pick_subsampled_open_reference_otus functions without assign tax step
+        """pick_subsampled_open_reference_otus functions without align/tree step
         """
         pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
                                   refseqs_fp=self.pick_ref_otus_refseqs2,
