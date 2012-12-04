@@ -15,12 +15,13 @@ __status__ = "Development"
 
 from string import digits
 from cogent.util.unit_test import TestCase, main
-from numpy import array, asarray, roll
-from numpy.random import permutation
+from numpy import array, asarray, roll, median
+from numpy.random import permutation, shuffle
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
-        MantelCorrelogram, Mantel, PartialMantel, Permanova)
+        MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
+        _quantile)
 from qiime.util import DistanceMatrix, MetadataMap
 
 
@@ -1524,6 +1525,54 @@ class PartialMantelTests(TestHelper):
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertCorrectPValue(0.8, 1.0, self.small_pm_diff2,
                                  p_val_key='mantel_p')
+
+class TopLevelTests(TestCase):
+    
+    def setUp(self):
+        pass
+
+    def test_quantile(self):
+        """checks for correct quantile statistic values"""
+        
+        # suffle the data to be sure, it is getting sorted
+        sample_data = array(range(1, 11))
+        shuffle(sample_data)
+
+        # regular cases
+        expected_output = [1.9, 2.8, 3.25, 5.5, 7.75, 7.93]
+        list_of_quantiles = [0.1, 0.2, 0.25, 0.5, 0.75, 0.77]
+        output = quantile(sample_data, list_of_quantiles)
+        self.assertFloatEqual(expected_output, output)
+
+        sample_data = array([42, 32, 24, 57, 15, 34, 83, 24, 60, 67, 55, 17,
+            83, 17, 80, 65, 14, 34, 39, 53])
+        list_of_quantiles = [0.5]
+        output = quantile(sample_data, list_of_quantiles)
+        self.assertFloatEqual(output, median(sample_data))
+
+        # quantiles must be between [0, 1]
+        with self.assertRaises(AssertionError):
+            output = quantile(sample_data, [0.1, 0.2, -0.1, 2, 0.3, 0.5])
+
+        # quantiles must be a list or a numpy array
+        with self.assertRaises(AssertionError):
+            output = quantile(sample_data, 1)
+
+        # the data must be a list or a numpy array
+        with self.assertRaises(AssertionError):
+            output = quantile(1, [0])
+
+    def test__quantile(self):
+        """checks for correct quantiles according to R. type 7 algorithm"""
+        # regular cases
+        sample_data = array(range(25, 42))
+        self.assertFloatEqual(_quantile(sample_data, 0.5), median(sample_data))
+
+        # sorted data is assumed for this function
+        sample_data = array([0.17483293, 0.99891939, 0.81377467, 0.8137437,
+            0.51990174, 0.35521497, 0.98751461])
+        sample_data.sort()
+        self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
 
 if __name__ == "__main__":
