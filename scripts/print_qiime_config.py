@@ -28,7 +28,8 @@ from qiime.util import (load_qiime_config,
                         get_qiime_project_dir, 
                         parse_command_line_parameters,
                         get_qiime_library_version,
-                        get_rdp_jarpath)
+                        get_rdp_jarpath,
+                        get_java_version)
 from qiime.denoiser.utils import check_flowgram_ali_exe
 
 from cogent import __version__ as pycogent_lib_version
@@ -75,7 +76,7 @@ class Qiime_config(TestCase):
     
     def setUp(self):
         self.config = load_qiime_config()
-    
+   
     def test_python_exe_fp(self):
         """python_exe_fp is set to a working python env"""
         
@@ -745,6 +746,10 @@ def main():
     else:
         rdp_version = split(rdp_jarpath)[1]
 
+    java_version = get_java_version()
+    if java_version is None:
+        java_version = "Not installed."
+
     system_info = [
      ("Platform", platform),
      ("Python version",python_version.replace('\n', ' ')),
@@ -763,7 +768,9 @@ def main():
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
-     ("RDP Classifier version (if installed)", rdp_version)]
+     ("RDP Classifier version (if installed)", rdp_version),
+     ("Java version (if installed)", java_version)]
+
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"
     print  "===================" 

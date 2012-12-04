@@ -1084,6 +1084,20 @@ def flowgram_id_to_seq_id_map(seqs):
         result[flowgram_id] = seq_id
     return result
 
+def get_java_version():
+    """Returns the Java version, or None if not installed"""
+    o, e, exit_status = qiime_system_call("java -version")
+    if exit_status != 0:
+        return None
+    
+    # expect the first line of stderr to be 'java version "x.y.z_build"'
+    e = e.strip().splitlines()
+    version_line = e[0]
+    if not version_line.startswith('java version'):
+        return None
+    else:
+        return version_line.split()[-1].strip('"')
+
 def qiime_system_call(cmd, shell=True):
     """Call cmd and return (stdout, stderr, return_value).
 
