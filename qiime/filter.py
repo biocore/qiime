@@ -28,14 +28,18 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
     
         positive_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
-         one of the levels matches exactly to an item in positive_taxa, that
-         OTU will be marked for retention. Default: All OTUs are retained.
+         one of the levels matches exactly (except for case) to an item in 
+         positive_taxa, that OTU will be marked for retention. Default: All 
+         OTUs are retained.
         negative_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
-         one of the levels matches exactly to an item in negative_taxa, that
-         OTU will be marked for removal. Default: All OTUs are retained.
+         one of the levels matches exactly (except for case)  to an item in 
+         negative_taxa, that OTU will be marked for removal. Default: All 
+         OTUs are retained.
         metadata_field : the metadata field to look up in the 
          observation metadata
+         
+        Note: string matches are case insensitive.
     """
     # define a positive screening function - if the user doesn't pass
     # positive_taxa, all OTUs will pass this filter 
@@ -45,7 +49,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
         def positive_screen(e):
             return True
     else:
-        positive_taxa = set([t.strip() for t in positive_taxa])
+        positive_taxa = set([t.strip().lower() for t in positive_taxa])
         def positive_screen(e):
             return e in positive_taxa
     
@@ -57,7 +61,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
         def negative_screen(e):
             return False
     else:
-        negative_taxa = set([t.strip() for t in negative_taxa])
+        negative_taxa = set([t.strip().lower() for t in negative_taxa])
         def negative_screen(e):
             return e in negative_taxa
     
@@ -73,14 +77,14 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
         positive_hit = False
         negative_hit = False
         for e in md[metadata_field]:
-            if positive_screen(e.strip()):
+            if positive_screen(e.strip().lower()):
                 # Note that we don't want to just do
                 # positive_hit = positive_screen(e.strip())
                 # we're checking whether any e hits the positive taxa
                 # and doing that be the same as 
                 # positive_hit = md[metadata_field][-1]
                 positive_hit = True
-            if negative_screen(e.strip()):
+            if negative_screen(e.strip().lower()):
                 # see note in previous if statement for why we don't use
                 # negative_hit = negative_screen(e.strip())
                 negative_hit = True
