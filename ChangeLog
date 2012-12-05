@@ -1,5 +1,6 @@
 QIIME 1.5.0-dev (changes since 1.5.0 go here)
 =============================================
+* Added filter_taxa_from_otu_table.py to support filtering OTUs with (or without) specific taxonomy assignments from an OTU table.
 * Added parameters to pick_subsamples_reference_otus_through_otu_table.py to suppress taxonomy assignment (--suppress_taxonomy_assignment), and alignment and tree building steps (--suppress_align_and_tree). These are useful for cases where a taxonomy may not exist for the reference collection (not too common) or when the region doesn't work well for phylogenetic reconstruction (e.g., fungal ITS). Additionally fixed a bug where alternate assign_taxonomy parameters provided in the parameters file would be ignored when running in parallel.
 * Detrending of quadratic curvature in ordination coordinates now a feature of QIIME. This approach was used in: Harris JK, et al. "Phylogenetic stratigraphy in the Guerrero Negro hypersaline microbial mat." The ISME journal (2012).
 * Supervised learning mislabeling output now includes binary "mislabeled" columns at 5%, 10%, ..., 95%, 99%
