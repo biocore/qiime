@@ -21,6 +21,77 @@ from qiime.format import format_otu_table, format_distance_matrix, format_mappin
 from qiime.util import MetadataMap
 from biom.parse import parse_biom_table
 
+def get_otu_ids_from_taxonomy_f(positive_taxa=None,
+                                negative_taxa=None,
+                                metadata_field="taxonomy"):
+    """ return function to pass to Table.filterObservations for taxon-based filtering
+    
+        positive_taxa : a list of strings that will be compared to each
+         taxonomy level in an observation's (i.e., OTU's) metadata_field. If
+         one of the levels matches exactly (except for case) to an item in 
+         positive_taxa, that OTU will be marked for retention. Default: All 
+         OTUs are retained.
+        negative_taxa : a list of strings that will be compared to each
+         taxonomy level in an observation's (i.e., OTU's) metadata_field. If
+         one of the levels matches exactly (except for case)  to an item in 
+         negative_taxa, that OTU will be marked for removal. Default: All 
+         OTUs are retained.
+        metadata_field : the metadata field to look up in the 
+         observation metadata
+         
+        Note: string matches are case insensitive.
+    """
+    # define a positive screening function - if the user doesn't pass
+    # positive_taxa, all OTUs will pass this filter 
+    # (i.e., be marked for retention)
+    if positive_taxa == None:
+        positive_taxa = set()
+        def positive_screen(e):
+            return True
+    else:
+        positive_taxa = set([t.strip().lower() for t in positive_taxa])
+        def positive_screen(e):
+            return e in positive_taxa
+    
+    # define a negative screening function - if the user doesn't pass
+    # negative_taxa, all OTUs will pass this filter 
+    # (i.e., be marked for retention)
+    if negative_taxa == None:
+        negative_taxa = set()
+        def negative_screen(e):
+            return False
+    else:
+        negative_taxa = set([t.strip().lower() for t in negative_taxa])
+        def negative_screen(e):
+            return e in negative_taxa
+    
+    # The positive_taxa and negative_taxa lists must be mutually exclusive.
+    if len(positive_taxa & negative_taxa) != 0:
+        raise ValueError, \
+         ("Your positive and negative taxa lists contain overlapping values. "
+          "These lists must be mutually exclusive.\n"
+          "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
+    
+    # Define the function that can be passed to Table.filterObservations
+    def result(v,oid,md):
+        positive_hit = False
+        negative_hit = False
+        for e in md[metadata_field]:
+            if positive_screen(e.strip().lower()):
+                # Note that we don't want to just do
+                # positive_hit = positive_screen(e.strip())
+                # we're checking whether any e hits the positive taxa
+                # and doing that be the same as 
+                # positive_hit = md[metadata_field][-1]
+                positive_hit = True
+            if negative_screen(e.strip().lower()):
+                # see note in previous if statement for why we don't use
+                # negative_hit = negative_screen(e.strip())
+                negative_hit = True
+        return positive_hit and not negative_hit
+    
+    return result
+
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     """ Given a description of metadata, return the corresponding sample ids
     """
