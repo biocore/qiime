@@ -237,6 +237,9 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         self.assertRaises(ValueError,get_otu_ids_from_taxonomy_f,['x'],['x'])
         self.assertRaises(KeyError,get_otu_ids_from_taxonomy_f(['x'],metadata_field='x'),[],42,{'taxonomy':['a','b','c']})
         
+        # alt metadata field
+        self.assertTrue(get_otu_ids_from_taxonomy_f(['b','a'],metadata_field='x')([],42,{'x':['a','b','c']}))
+        
     
     def test_filter_otus_from_otu_table_ids(self):
         """filter_otus_from_otu_table functions with list of OTU ids"""

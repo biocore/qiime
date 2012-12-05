@@ -26,9 +26,24 @@ def get_otu_ids_from_taxonomy_f(positive_taxa,
                                 metadata_field="taxonomy"):
     """ return function that can be passed to Table.filterObservations
     """
-    positive_taxa = set([t.strip() for t in positive_taxa])
-    negative_taxa = negative_taxa or []
-    negative_taxa = set([t.strip() for t in negative_taxa])
+    if positive_taxa == None:
+        positive_taxa = set()
+        def positive_screen(e):
+            return True
+    else:
+        positive_taxa = set([t.strip() for t in positive_taxa])
+        def positive_screen(e):
+            return e in positive_taxa
+    
+    if negative_taxa == None:
+        negative_taxa = set()
+        def negative_screen(e):
+            return False
+    else:
+        negative_taxa = set([t.strip() for t in negative_taxa])
+        def negative_screen(e):
+            return e in negative_taxa
+            
     if len(positive_taxa & negative_taxa) != 0:
         raise ValueError, \
          ("Your positive and negative taxa lists contain overlapping values. "
@@ -39,10 +54,16 @@ def get_otu_ids_from_taxonomy_f(positive_taxa,
         positive_hit = False
         negative_hit = False
         for e in md[metadata_field]:
-            if e.strip() in positive_taxa:
+            if positive_screen(e.strip()):
+                # Note that we don't want to just do
+                # positive_hit = positive_screen(e.strip())
+                # we're checking whether any e hits the positive taxa
+                # and doing that be the same as 
+                # positive_hit = md[metadata_field][-1]
                 positive_hit = True
-            if e.strip() in negative_taxa:
+            if negative_screen(e.strip()):
                 negative_hit = True
+            negative_hit = negative_screen(e.strip())
         return positive_hit and not negative_hit
     
     return result
