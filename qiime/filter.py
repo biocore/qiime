@@ -24,8 +24,22 @@ from biom.parse import parse_biom_table
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
-    """ return function that can be passed to Table.filterObservations
+    """ return function to pass to Table.filterObservations for taxon-based filtering
+    
+        positive_taxa : a list of strings that will be compared to each
+         taxonomy level in an observation's (i.e., OTU's) metadata_field. If
+         one of the levels matches exactly to an item in positive_taxa, that
+         OTU will be marked for retention. Default: All OTUs are retained.
+        negative_taxa : a list of strings that will be compared to each
+         taxonomy level in an observation's (i.e., OTU's) metadata_field. If
+         one of the levels matches exactly to an item in negative_taxa, that
+         OTU will be marked for removal. Default: All OTUs are retained.
+        metadata_field : the metadata field to look up in the 
+         observation metadata
     """
+    # define a positive screening function - if the user doesn't pass
+    # positive_taxa, all OTUs will pass this filter 
+    # (i.e., be marked for retention)
     if positive_taxa == None:
         positive_taxa = set()
         def positive_screen(e):
@@ -35,6 +49,9 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
         def positive_screen(e):
             return e in positive_taxa
     
+    # define a negative screening function - if the user doesn't pass
+    # negative_taxa, all OTUs will pass this filter 
+    # (i.e., be marked for retention)
     if negative_taxa == None:
         negative_taxa = set()
         def negative_screen(e):
@@ -43,13 +60,15 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
         negative_taxa = set([t.strip() for t in negative_taxa])
         def negative_screen(e):
             return e in negative_taxa
-            
+    
+    # The positive_taxa and negative_taxa lists must be mutually exclusive.
     if len(positive_taxa & negative_taxa) != 0:
         raise ValueError, \
          ("Your positive and negative taxa lists contain overlapping values. "
           "These lists must be mutually exclusive.\n"
           "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
     
+    # Define the function that can be passed to Table.filterObservations
     def result(v,oid,md):
         positive_hit = False
         negative_hit = False
