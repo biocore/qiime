@@ -21,7 +21,7 @@ from qiime.format import format_otu_table, format_distance_matrix, format_mappin
 from qiime.util import MetadataMap
 from biom.parse import parse_biom_table
 
-def get_otu_ids_from_taxonomy_f(positive_taxa,
+def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
     """ return function that can be passed to Table.filterObservations
@@ -62,8 +62,9 @@ def get_otu_ids_from_taxonomy_f(positive_taxa,
                 # positive_hit = md[metadata_field][-1]
                 positive_hit = True
             if negative_screen(e.strip()):
+                # see note in previous if statement for why we don't use
+                # negative_hit = negative_screen(e.strip())
                 negative_hit = True
-            negative_hit = negative_screen(e.strip())
         return positive_hit and not negative_hit
     
     return result

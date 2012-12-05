@@ -217,15 +217,25 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         
     def test_get_otu_ids_from_taxonomy_f(self):
         """get_otu_ids_from_taxonomy_f returns functions that work as expected"""
-        # positive list only
+        ## positive list only
         self.assertTrue(get_otu_ids_from_taxonomy_f(['a'])([],42,{'taxonomy':['a','b','c']}))
         self.assertTrue(get_otu_ids_from_taxonomy_f(['b'])([],42,{'taxonomy':['a','b','c']}))
         self.assertTrue(get_otu_ids_from_taxonomy_f(['c'])([],42,{'taxonomy':['a','b','c']}))
         self.assertFalse(get_otu_ids_from_taxonomy_f(['d'])([],42,{'taxonomy':['a','b','c']}))
         self.assertTrue(get_otu_ids_from_taxonomy_f(['d','a'])([],42,{'taxonomy':['a','b','c']}))
         self.assertTrue(get_otu_ids_from_taxonomy_f(['b','a'])([],42,{'taxonomy':['a','b','c']}))
-        # only complete match works
+        # only full-length match works
         self.assertFalse(get_otu_ids_from_taxonomy_f(['c'])([],42,{'taxonomy':['a','b','cc']}))
+        
+        # negative list only
+        self.assertTrue(get_otu_ids_from_taxonomy_f(None,['d'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertTrue(get_otu_ids_from_taxonomy_f(None,['x'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['a'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['b'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['c'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['x','c'])([],42,{'taxonomy':['a','b','c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['b','c'])([],42,{'taxonomy':['a','b','c']}))
+        
         
         # positive and negative list
         self.assertTrue(get_otu_ids_from_taxonomy_f(['a'],['d'])([],42,{'taxonomy':['a','b','c']}))
