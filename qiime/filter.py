@@ -21,6 +21,32 @@ from qiime.format import format_otu_table, format_distance_matrix, format_mappin
 from qiime.util import MetadataMap
 from biom.parse import parse_biom_table
 
+def get_otu_ids_from_taxonomy_f(positive_taxa,
+                                negative_taxa=None,
+                                metadata_field="taxonomy"):
+    """ return function that can be passed to Table.filterObservations
+    """
+    positive_taxa = set([t.strip() for t in positive_taxa])
+    negative_taxa = negative_taxa or []
+    negative_taxa = set([t.strip() for t in negative_taxa])
+    if len(positive_taxa & negative_taxa) != 0:
+        raise ValueError, \
+         ("Your positive and negative taxa lists contain overlapping values. "
+          "These lists must be mutually exclusive.\n"
+          "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
+    
+    def result(v,oid,md):
+        positive_hit = False
+        negative_hit = False
+        for e in md[metadata_field]:
+            if e.strip() in positive_taxa:
+                positive_hit = True
+            if e.strip() in negative_taxa:
+                negative_hit = True
+        return positive_hit and not negative_hit
+    
+    return result
+
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     """ Given a description of metadata, return the corresponding sample ids
     """
