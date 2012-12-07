@@ -323,16 +323,14 @@ def filter_mapping_file_from_mapping_f(mapping_f,sample_ids_to_keep,negate=False
     filtered_mapping_data = []
     sample_ids_to_keep = {}.fromkeys(sample_ids_to_keep)
     
-    if negate:
-        def f(sid):
-            return not sid in sample_ids_to_keep
-    else:
-        def f(sid):
-            return sid in sample_ids_to_keep
-    
     for mapping_datum in mapping_data:
-        if f(mapping_datum[0]):
+        hit = mapping_datum[0] in sample_ids_to_keep
+        if hit and not negate:
             filtered_mapping_data.append(mapping_datum)
+        elif not hit and negate:
+            filtered_mapping_data.append(mapping_datum)
+        else:
+            pass
     return format_mapping_file(header,filtered_mapping_data)
 
 
