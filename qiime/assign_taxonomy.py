@@ -270,7 +270,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         """ blast each seq in seqs against blast_db and retain good hits
         """
         max_evalue = self.Params['Max E value']
-        min_percent_identity = self.Params['Min percent identity']
+        min_percent_identity = 100.0 * self.Params['Min percent identity']
         seq_ids = [s[0] for s in seqs]
         result = {}
 
