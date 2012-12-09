@@ -118,7 +118,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         """ Initialize the object
         """
         _params = {
-            'Min percent identity': 0.90,
+            'Min percent identity': 90.0,
             'Max E value': 1e-30,
             'Application': 'blastn/megablast'
             }
@@ -270,7 +270,9 @@ class BlastTaxonAssigner(TaxonAssigner):
         """ blast each seq in seqs against blast_db and retain good hits
         """
         max_evalue = self.Params['Max E value']
-        min_percent_identity = 100.0 * self.Params['Min percent identity']
+        min_percent_identity = self.Params['Min percent identity']
+        if min_percent_identity < 1.0:
+            min_percent_identity *= 100.0
         seq_ids = [s[0] for s in seqs]
         result = {}
 
