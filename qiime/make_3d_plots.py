@@ -128,7 +128,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             else:
                 groups[l[ind_group]].append((l[ind_sort],l[0]))
         for g in groups:
-            groups[g] = natsort(groups[g])
+            groups[g] = _vector_sort(groups[g])
         add_vectors['vectors'] = groups
 
         # managing the options to weight the vectors by a given metadata column
@@ -1140,10 +1140,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                     if len(add_vectors['vectors_output'][group][cat]['vectors_vector']) != 0:
                         to_test[cat] = add_vectors['vectors_output'][group][cat]['vectors_vector']
                         per_category_information.append(add_vectors['vectors_output'][group][cat]['vectors_result'])
-                        #add_vectors['vectors_output'][name][group_name]
                     else:
                         add_vectors['vectors_output'][group][cat]['vectors_result'] = nan
-                        #add_vectors['vectors_output'][name][group_name]
                 
                 # Not all dicts can be tested
                 if can_run_ANOVA_trajectories(to_test):
@@ -1251,7 +1249,7 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
     # add it to a group corresponding to the first element of this tuple
     for keys, values in add_vectors['vectors'].iteritems():
         # Be sure to sort the values otherwise, lines won't make much sense
-        for value in natsort(values):
+        for value in _vector_sort(values):
             if value[1] in ids:
                 # If the list hasn't been created yet, then create an empty one
                 if value[0] not in grouped_coords.keys():
@@ -1267,8 +1265,9 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
 
     # Add vectors is used by other functions, so create a mock dict, be aware
     # of the order in the ids, otherwise the visualization will be confusing
+    # the sorting of the keys must be casting the values to floating point type
     avg_add_vectors['vectors'] = {group_name :[ (str(i), avg_id)\
-        for i, avg_id in enumerate(natsort(avg_coord_dict.keys())) ]}   
+        for i, avg_id in enumerate(_vector_sort(avg_coord_dict.keys())) ]}
 
     return avg_coord_dict, avg_add_vectors
 
@@ -1357,3 +1356,34 @@ def windowed_diff(vector, window_size):
         op_vector.append(element-vector[index])
 
     return op_vector
+
+def _vector_sort(data_list):
+    """sort a list, considering specific cases for use with the vectors section
+
+    data_list: list of tuples (with two strings as elements) or strings. When a
+    string is provided, the string will try to be type-casted to a float type
+
+    output: sorted version of data_list
+
+    The elements will be assumed to be real numbers, if that assumption fails,
+    then the elements will be sorted using a natural sorting algorithm
+
+    """
+
+    # list is empty, do nothing
+    if not data_list:
+        return data_list
+
+    # deal with non-tuple types of data
+    if not all([type(element) == tuple for element in data_list]):
+        try:
+            return sorted(data_list, key=float)
+        except ValueError:
+            return natsort(data_list)
+
+    # deal with tuples type of data, the first element can be a real number or
+    # a string, the second element is a string that won't be accounted
+    try:
+        return sorted(data_list, key=lambda tup: float(tup[0]))
+    except ValueError:
+        return natsort(data_list)
