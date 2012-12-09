@@ -26,6 +26,8 @@ from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
 from qiime.pycogent_backports import mothur
+from t2t.nlevel import load_consensus_map, load_tree, determine_rank_order
+from t2t import tax2tree_controller
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
@@ -727,3 +729,76 @@ class RtaxTaxonAssigner(TaxonAssigner):
 
 
         return results
+
+class Tax2TreeTaxonAssigner(TaxonAssigner):
+    """Assign taxon using Tax2Tree
+    """
+    Name = "Tax2TreeTaxonAssigner"
+    Application = "Tax2Tree"
+    Citation = "Daniel McDonald"
+    
+    def __init__(self, params):
+        """Returns a new Tax2TreeAssigner object with specified params
+        """
+        _params = {
+            'id_to_taxonomy_fp': None, #Required. Used as consensus map.
+            'tree_fp': None, #Required. The aligned and filtered tree of combined input and reference seqs.
+            }
+        _params.update(params)
+        TaxonAssigner.__init__(self, _params)
+        
+    def __call__(self, seq_path=None, result_path=None, log_path=None):
+        """Returns a dict mapping {seq_id:(taxonomy, confidence)} for each seq
+
+        Keep in mind, "confidence" is only done for consistency and in fact
+        all assignments will have a score of 0 because a method for determining
+        confidence is not currently implemented.
+
+        Parameters:
+        seq_path: path to file of sequences. The sequences themselves are
+            never actually used, but they are needed for their ids.
+        result_path: path to file of results. If specified, dumps the
+            result to the desired path instead of returning it.
+        log_path: path to log, which should include dump of params.
+        """
+
+        # initialize the logger
+        logger = self._get_logger(log_path)
+        logger.info(str(self))
+
+        with open(seq_path, 'U') as f:
+            seqs = dict(MinimalFastaParser(f))
+
+        consensus_map = tax2tree.prep_consensus(open(self.Params['id_to_taxonomy_fp']), seqs.keys())
+        seed_con = consensus_map[0].strip().split('\t')[1]
+        determine_rank_order(seed_con)
+
+        tipnames_map = load_consensus_map(consensus_map, False)
+
+        tree = load_tree(open(self.Params['tree_fp']), tipnames_map)
+
+        results = tax2tree.generate_constrings(tree, tipnames_map)
+        results = tax2tree.clean_output(results, seqs.keys())
+
+        if result_path:
+            # if the user provided a result_path, write the
+            # results to file
+            with open(result_path,'w') as f:
+                for seq_id, (lineage, confidence) in results.iteritems():
+                    f.write('%s\t%s\t%s\n' %(seq_id, lineage, confidence))
+            logger.info('Result path: %s' % result_path)
+            
+
+        return results
+
+    def _get_logger(self, log_path=None):
+        if log_path is not None:
+            handler = logging.FileHandler(log_path, mode='w')
+        else:
+            class NullHandler(logging.Handler):
+                def emit(self, record): pass
+            handler = NullHandler()
+        logger = logging.getLogger("Tax2TreeTaxonAssigner logger")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        return logger

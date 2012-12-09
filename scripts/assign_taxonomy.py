@@ -18,7 +18,7 @@ from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
-    RtaxTaxonAssigner, validate_rdp_version,
+    RtaxTaxonAssigner, Tax2TreeTaxonAssigner, validate_rdp_version,
     )
 
 assignment_method_constructors = {
@@ -26,9 +26,10 @@ assignment_method_constructors = {
     'mothur': MothurTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
+    'tax2tree': Tax2TreeTaxonAssigner
 }
 
-assignment_method_choices = ['rdp','blast','rtax','mothur']
+assignment_method_choices = ['rdp','blast','rtax','mothur', 'tax2tree']
 
 options_lookup = get_options_lookup()
 
@@ -139,6 +140,9 @@ script_info['optional_options']=[\
  make_option('-e', '--e_value', type='float',
         help='Maximum e-value to record an assignment, only used for blast '
         'method [default: %default]',default=0.001),\
+ make_option('--tree_fp', type='string',
+        help='The filepath to a prebuilt tree containing both the representative '
+        'and reference sequences. Required for Tax2Tree assignment.'),\
  make_option('-o','--output_dir', type='new_dirpath',\
           help='Path to store result file '+\
           '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
@@ -196,6 +200,16 @@ def main():
                 'reference sequences (via -r) and an id_to_taxonomy '
                 'file (via -t).')
 
+    if assignment_method == 'tax2tree':
+        if opts.tree_fp is None:
+            option_parser.error('Tax2Tree classification requires a '
+            'filepath to a prebuilt tree (via --tree_fp) containing '
+            'both the representative and reference sequences. Check '
+            'Tax2Tree documentation for help building a tree.')
+        if opts.id_to_taxonomy_fp is None:
+            option_parser.error('Tax2Tree classification requires a '
+            'filepath for an id_to_taxonomy file (via -t).')
+
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -250,6 +264,10 @@ def main():
        params['header_id_regex'] = opts.header_id_regex
        params['read_id_regex'] = opts.read_id_regex
        params['amplicon_id_regex'] = opts.amplicon_id_regex
+
+    elif assignment_method == 'tax2tree':
+        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+        params['tree_fp'] = opts.tree_fp
 
     else:
         # should not be able to get here as an unknown classifier would
