@@ -11,25 +11,30 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-
-from cogent.util.misc import flatten
-from qiime.parse import parse_coords,group_by_field,parse_mapping_file
-from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
-from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std, concatenate, ones, append, zeros
-from numpy import abs as numpy_abs
-from numpy.linalg import norm
-import numpy as np
 import os
-from random import choice
 import re
-from time import strftime
-from biplots import make_mage_taxa
-from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
-from qiime.format import format_coords
-from cogent.maths.stats.test import ANOVA_one_way
-from cogent.maths.stats.util import Numbers
+import numpy as np
 from copy import deepcopy
+from random import choice
+from time import strftime
+from numpy.linalg import norm
+from qiime.sort import natsort
+from biplots import make_mage_taxa
+from numpy import abs as numpy_abs
+from cogent.util.misc import flatten
+from qiime.format import format_coords
+from cogent.maths.stats.util import Numbers
+from cogent.maths.stats.test import ANOVA_one_way
+from qiime.parse import parse_coords,group_by_field,parse_mapping_file
+from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
+from numpy import (array, shape, apply_along_axis, dot, delete, vstack, sqrt,
+                    average, isnan, nan, diff, mean, std, concatenate, ones,
+                    append, zeros)
+from qiime.colors import (get_group_colors, color_groups, make_color_dict,
+                            combine_map_label_cols, process_colorby,
+                            linear_gradient, iter_color_groups, get_map,
+                            kinemage_colors)
+
 
 '''
 xdata_colors = {
@@ -1361,7 +1366,8 @@ def _vector_sort(data_list):
     """sort a list, considering specific cases for use with the vectors section
 
     data_list: list of tuples (with two strings as elements) or strings. When a
-    string is provided, the string will try to be type-casted to a float type
+    string is provided, the string will try to be type-casted to a float type,
+    if a tuple is provided, the first element will be used to sort the list.
 
     output: sorted version of data_list
 

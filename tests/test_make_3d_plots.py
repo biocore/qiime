@@ -28,13 +28,11 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     make_mage_ellipsoids,subdivide,
                                     get_multiple_coords,validate_coord_files,
                                     make_3d_plots_invue, make_vectors_output, 
-                                    make_subgroup_vectors, 
-                                    run_ANOVA_trajetories,
-                                    generate_3d_plots, 
+                                    make_subgroup_vectors,
+                                    run_ANOVA_trajetories, generate_3d_plots,
                                     can_run_ANOVA_trajectories,
-                                    avg_vector_for_group,
-                                    weight_by_vector,
-                                    windowed_diff)
+                                    avg_vector_for_group, weight_by_vector,
+                                    windowed_diff, _vector_sort)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -824,6 +822,61 @@ class TopLevelTests(TestCase):
         self.assertEqual(calc_result, exp_result)
 
         return
+
+
+    def _vector_sort(self):
+        """Test correct sorting of different data types"""
+
+        # an empty list must be returned when an empty list needs to be sorted
+        self.assertEqual(_vector_sort([]), [])
+
+        # tuples that can be sorted by type-casting the first element
+        test_list = [('9', 'SampleA'), ('-1', 'SampleD'), ('7', 'SampleC'),
+            ('-2', 'SampleE'), ('-0.11', 'SampleF'), ('17.11', 'SampleB'),
+            ('100', 'SampleG'), ('13', 'SampleH')]
+        expected_result = [('-2', 'SampleE'), ('-0.11', 'SampleF'),
+            ('-1', 'SampleD'), ('7', 'SampleC'), ('9', 'SampleA'),
+            ('13', 'SampleH'), ('17.11', 'SampleB'), ('100', 'SampleG')]
+
+        output = _vector_sort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # tuples that must be sortede alphabetically
+        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
+            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('Hydra', 'SampleF'),
+            ('Carina', 'SampleB'), ('Orion', 'SampleG'), ('Lynx', 'SampleH')]
+        expected_result = [('Aurgia', 'SampleC'), ('Carina', 'SampleB'),
+            ('Cepheus', 'SampleD'), ('Cygnus', 'SampleA'), ('Grus', 'SampleE'),
+            ('Hydra', 'SampleF'), ('Lynx', 'SampleH'), ('Orion', 'SampleG')]
+
+        output = _vector_sort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # mixed case, tuples will be sorted alpha-numerically
+        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
+            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('-0.11', 'SampleF'),
+            ('17.11', 'SampleB'), ('100', 'SampleG'), ('Lynx', 'SampleH')]
+        expected_result = [('17.11', 'SampleB'), ('100', 'SampleG'),
+            ('-0.11', 'SampleF'), ('Aurgia', 'SampleC'), ('Cepheus', 'SampleD'),
+            ('Cygnus', 'SampleA'), ('Lynx', 'SampleH')]
+
+        output = _vector_sort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # mixed case just a list
+        test_list = ['foo', 'bar', '-100', '12', 'spam', '4', '-1']
+        expected_result = ['4', '12', '-1', '-100', 'bar', 'foo', 'spam']
+
+        output = _vector_sort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # list of elements that can be type-casted
+        test_list = ['0', '1', '14', '12', '-15', '4', '-1']
+        expected_result = ['-15', '-1', '0', '1', '4', '12', '14']
+
+        output = _vector_sort(test_list)
+        self.assertEquals(output, expected_result)
+
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@labellist color=red1 radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '0.08452953915 -0.22261522815 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0887560161075 -0.22261522815 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 0.0836582103 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.2299972416 0.087841120815 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.2299972416 -0.22261522815 -0.09277110675 white', '-0.2299972416 -0.22261522815 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.2299972416 -0.22261522815 0.101801355075 white', '@kinemage {Day_scaled}', '@dimension {PC1} {PC2} {PC3}', '@dimminmax -0.156460708571 0.0575030878571 -0.181726716857 0.0682924165714 -0.088353435 0.09233683', '@master {points}', '@master {labels}', '@hsvcolor {blue1} 240.0 100.0 100.0', '@hsvcolor {blue2} 211.0 42.0 85.0', '@hsvcolor {blue3} 197.0 100.0 100.0', '@hsvcolor {brown1} 36.0 89.0 42.0', '@hsvcolor {brown2} 33.0 45.0 77.0', '@hsvcolor {cyan1} 184.0 49.0 96.0', '@hsvcolor {gray1} 0.0 0.0 50.2', '@hsvcolor {gray2} 0.0 0.0 75.3', '@hsvcolor {green1} 120.0 100.0 50.2', '@hsvcolor {green2} 142.0 36.0 79.0', '@hsvcolor {green3} 60.0 100.0 50.2', '@hsvcolor {green4} 81.0 100.0 26.0', '@hsvcolor {lime} 123.0 99.0 96.0', '@hsvcolor {orange1} 28.0 98.0 95.0', '@hsvcolor {orange2} 32.0 46.0 99.0', '@hsvcolor {orange3} 26.0 100.0 65.0', '@hsvcolor {pink1} 333.0 37.0 96.0', '@hsvcolor {purple1} 302.0 73.0 57.0', '@hsvcolor {purple2} 269.0 29.0 75.0', '@hsvcolor {purple4} 264.0 75.0 100.0', '@hsvcolor {red1} 0.0 100.0 100.0', '@hsvcolor {red2} 14.0 51.0 97.0', '@hsvcolor {red3} 325.0 100.0 93.0', '@hsvcolor {red4} 348.0 31.0 74.0', '@hsvcolor {red5} 0.0 100.0 50.2', '@hsvcolor {teal1} 178.0 42.0 63.0', '@hsvcolor {teal3} 180.0 100.0 50.2', '@hsvcolor {yellow1} 60.0 100.0 100.0', '@hsvcolor {yellow2} 56.0 40.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', '@group {Day1 (n=3)} collapsible', '@balllist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={points} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@labellist color=red1 radius=0.00213963796429 alpha=0.75 dimension=3 master={labels} nobutton', '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', '@group {axes} collapsible', '@vectorlist {PC1 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '0.06037824225 -0.1908130527 -0.09277110675 white', '@labellist {PC1 (25%)} dimension=3 on', '{PC1 (25%)}0.0633971543625 -0.1908130527 -0.09277110675 white', '@vectorlist {PC2 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 0.0717070374 -0.09277110675 white', '@labellist {PC2 (30%)} dimension=3 on', '{PC2 (30%)}-0.164283744 0.07529238927 -0.09277110675 white', '@vectorlist {PC3 line} dimension=3 on', '-0.164283744 -0.1908130527 -0.09277110675 white', '-0.164283744 -0.1908130527 0.0969536715 white', '@labellist {PC3 (35%)} dimension=3 on', '{PC3 (35%)}-0.164283744 -0.1908130527 0.101801355075 white']
