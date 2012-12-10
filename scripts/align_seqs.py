@@ -12,14 +12,13 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option
 from os import makedirs
 from os.path import exists, splitext, split, isdir
-
+from qiime.util import (parse_command_line_parameters, get_options_lookup, 
+                        make_option, get_pynast_version, load_qiime_config, 
+                        create_dir)
 from qiime.align_seqs import alignment_module_names,alignment_method_constructors,\
     pairwise_alignment_methods, CogentAligner, compute_min_alignment_length
-from qiime.util import load_qiime_config, create_dir
 
 options_lookup = get_options_lookup()
 
@@ -70,31 +69,61 @@ script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']
 ]
 
-script_info['optional_options']=[\
-    make_option('-t','--template_fp',\
-          type='existing_filepath',dest='template_fp',help='Filepath for '+\
-          'template against %s' % template_fp_default_help,\
-          default=qiime_config['pynast_template_alignment_fp']),
 
-    make_option('-m','--alignment_method',\
+script_info['optional_options'] = []
+
+# Check if PyNAST is installed - if get_pynast_version() returns None,
+# PyNAST is not installed.
+pynast_installed = get_pynast_version() != None
+
+if pynast_installed:
+    script_info['optional_options'].append(
+     make_option('-m','--alignment_method',\
           type='choice',help='Method for aligning'+\
           ' sequences. Valid choices are: ' +\
           ', '.join(alignment_method_choices) + ' [default: %default]',
           choices=alignment_method_choices,\
-          default='pynast'),
-          
-    make_option('-a','--pairwise_alignment_method',\
+          default='pynast'))
+    script_info['optional_options'].append(
+     make_option('-a','--pairwise_alignment_method',\
           type='choice',help='method for performing pairwise ' +\
           'alignment in PyNAST. Valid choices are '+\
           ', '.join(pairwise_alignment_method_choices) +\
           ' [default: %default]',\
           choices=pairwise_alignment_method_choices,\
-          default='uclust'),
-
-    make_option('-d','--blast_db', type='string',\
+          default='uclust'))
+    script_info['optional_options'].append(
+     make_option('-t','--template_fp',\
+          type='existing_filepath',dest='template_fp',help='Filepath for '+\
+          'template against %s' % template_fp_default_help,\
+          default=qiime_config['pynast_template_alignment_fp']))
+    script_info['optional_options'].append(
+     make_option('-e','--min_length',\
+          type='int',help='Minimum sequence '+\
+          'length to include in alignment [default: 75% of the'+\
+          ' median input sequence length]',\
+           default=-1))
+    script_info['optional_options'].append(
+     make_option('-p','--min_percent_id',\
+          type='float',help='Minimum percent '+\
+          'sequence identity to closest blast hit to include sequence in'+\
+          ' alignment [default: %default]', default=0.75))
+    script_info['optional_options'].append(
+     make_option('-d','--blast_db', type='string',\
           dest='blast_db',help='Database to blast against when -m pynast '+\
           '[default: %s]' % blast_db_default_help,\
-          default=qiime_config['pynast_template_alignment_blastdb']),
+          default=qiime_config['pynast_template_alignment_blastdb']))
+else:
+    alignment_method_choices.remove('pynast')
+    script_info['optional_options'].append(
+     make_option('-m','--alignment_method',\
+          type='choice',help='Method for aligning'+\
+          ' sequences. Valid choices are: ' +\
+          ', '.join(alignment_method_choices) + ' [default: %default]',
+          choices=alignment_method_choices,\
+          default='muscle'))
+
+script_info['optional_options'] += [
 
     make_option('--muscle_max_memory', type='int',
         help='Maximum memory allocation for the muscle alignment method ' +\
@@ -103,17 +132,6 @@ script_info['optional_options']=[\
     make_option('-o','--output_dir', type='new_dirpath',\
           help='Path to store '+\
           'result file [default: <ALIGNMENT_METHOD>_aligned]'),
-          
-    make_option('-e','--min_length',\
-          type='int',help='Minimum sequence '+\
-          'length to include in alignment [default: 75% of the'+\
-          ' median input sequence length]',\
-           default=-1),
-          
-    make_option('-p','--min_percent_id',\
-          type='float',help='Minimum percent '+\
-          'sequence identity to closest blast hit to include sequence in'+\
-          ' alignment [default: %default]', default=0.75)
 ]
 
 script_info['version'] = __version__
