@@ -1128,6 +1128,14 @@ def get_qiime_library_version():
     else:
         return '%s' % __version__
 
+def get_pynast_version():
+    """Return PyNAST version string or None if PyNAST is not installed"""
+    try:
+        import pynast
+        return pynast.__version__
+    except ImportError:
+        return None
+
 def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     """Expand denoiser fasta files based on denoiser map
     
