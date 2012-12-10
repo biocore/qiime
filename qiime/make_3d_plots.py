@@ -80,14 +80,13 @@ def create_dir(dir_path,plot_type):
     return dir_path
 
 
-def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
-                    background_color,label_color, \
-                    taxa=None, custom_axes=None, \
-                    edges=None, coords_low=None, coords_high=None, \
-                    ellipsoid_prefs=None, \
-                    user_supplied_edges=False, ball_scale=1.0, \
+def make_3d_plots(coord_header, coords, pct_var, mapping, prefs,
+                    background_color, label_color, taxa=None, custom_axes=None,
+                    edges=None, coords_low=None, coords_high=None,
+                    ellipsoid_prefs=None, user_supplied_edges=False,
+                    ball_scale=1.0,
                     arrow_colors={'line_color': 'white', 'head_color': 'red'},
-                    add_vectors=None,plot_scaled=False,plot_unscaled=True):
+                    add_vectors=None, plot_scaled=False, plot_unscaled=True):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
