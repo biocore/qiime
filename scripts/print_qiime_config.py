@@ -5,23 +5,25 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-               "Justin Kuczynski", "Jai Ram Rideout"]
+               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from qiime.util import make_option
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
+from numpy import __version__ as numpy_lib_version
+
 from cogent.util.unit_test import TestCase, main as test_main
 from cogent.util.misc import app_path, get_random_directory_name
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
+from cogent import __version__ as pycogent_lib_version
 
 from qiime.parse import parse_qiime_config_file
 from qiime.util import (load_qiime_config, 
@@ -29,11 +31,10 @@ from qiime.util import (load_qiime_config,
                         parse_command_line_parameters,
                         get_qiime_library_version,
                         get_rdp_jarpath,
-                        get_java_version)
+                        get_java_version,
+                        get_pynast_version,
+                        make_option)
 from qiime.denoiser.utils import check_flowgram_ali_exe
-
-from cogent import __version__ as pycogent_lib_version
-from numpy import __version__ as numpy_lib_version
 
 try:
     from biom import __version__ as biom_lib_version
@@ -44,10 +45,9 @@ try:
     from matplotlib import __version__ as matplotlib_lib_version
 except ImportError:
     matplotlib_lib_version = "Not installed."
-    
-try:
-    from pynast import __version__ as pynast_lib_version
-except ImportError:
+
+pynast_lib_version = get_pynast_version()
+if pynast_lib_version == None:
     pynast_lib_version = "Not installed."
 
 
