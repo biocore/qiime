@@ -108,6 +108,16 @@ PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._35
 PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355"""
         self.assertEqual(actual,expected)
 
+    def test_filter_mapping_file_from_mapping_f_negate(self):
+        """ filter_mapping_file_from_mapping_f functions as expected when negate is True """
+        actual = filter_mapping_file_from_mapping_f(self.tutorial_mapping_f,
+         ["PC.356", "PC.481", "PC.593", "PC.607", "PC.634", "PC.635", "PC.636"],
+         negate=True)
+        expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355"""
+        self.assertEqual(actual,expected)
+
     def test_filter_mapping_file_by_metadata_states(self):
         """ filter_mapping_file_by_metadata_states functions as expected """
         actual = filter_mapping_file_by_metadata_states(self.tutorial_mapping_f,"Treatment:Control")
