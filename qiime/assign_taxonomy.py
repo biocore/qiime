@@ -26,11 +26,22 @@ from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
 from qiime.pycogent_backports import mothur
-from t2t.nlevel import load_consensus_map, load_tree, determine_rank_order
-from t2t import tax2tree_controller
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
+# Load Tax2Tree if it's available. If it's not, skip it, but set up
+# to raise errors if the user tries to use it.
+try:
+    from t2t.nlevel import load_consensus_map, load_tree, determine_rank_order
+    from qiime.pycogent_backports import tax2tree
+
+except ImportError:
+    def raise_tax2tree_not_found_error(*args, **kwargs):
+        raise ApplicationNotFoundError,\
+         "Tax2Tree cannot be found.\nIs Tax2Tree installed? Is it in your $PYTHONPATH?"+\
+         "\nYou can obtain Tax2Tree from http://sourceforge.net/projects/tax2tree/." 
+    # set functions which cannot be imported to raise_tax2tree_not_found_error
+    load_consensus = load_tree = determine_rank_order = tax2tree_controller = raise_tax2tree_not_found_error
 
 """Contains code for assigning taxonomy, using several techniques.
 
