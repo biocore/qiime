@@ -13,7 +13,7 @@
 	* doubles (# otus with exactly two individuals in sample)
 	* equitability
 	* fisher_alpha
-	* heip_e
+	* heip_e (note, using heip_e at low (<5) individuals may cause errors
 	* kempton_taylor_q
 	* margalef
 	* mcintosh_d
@@ -23,7 +23,7 @@
 	* observed_species
 	* osd (observed # otus, singleton OTUs, doubleton OTUs)
 	* robbins
-	* shannon
+	* shannon (base 2 is used in the logarithms)
 	* simpson (1 - Dominance)
 	* simpson_reciprocal (1 / Dominance)
 	* simpson_e
