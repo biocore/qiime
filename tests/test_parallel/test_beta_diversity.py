@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -146,7 +146,7 @@ class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):
         dm_sample_ids_l = []
         for input_fp, dm_fp in zip(self.input1_fps,
                                  glob(join(self.test_out,'*weighted_unifrac*'))):
-            input_sample_ids_l.append(parse_biom_table(open(input_fp,'U')).SampleIds)
+            input_sample_ids_l.append(list(parse_biom_table(open(input_fp,'U')).SampleIds))
             dm_sample_ids_l.append(parse_distmat(open(dm_fp))[0])
         dm_sample_ids_l.sort()
         input_sample_ids_l.sort()
@@ -175,7 +175,7 @@ class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):
         dm_sample_ids_l = []
         for input_fp, dm_fp in zip(self.input1_fps,
                                  glob(join(self.test_out,'*bray_curtis*'))):
-            input_sample_ids_l.append(parse_biom_table(open(input_fp,'U')).SampleIds)
+            input_sample_ids_l.append(list(parse_biom_table(open(input_fp,'U')).SampleIds))
             dm_sample_ids_l.append(parse_distmat(open(dm_fp))[0])
         dm_sample_ids_l.sort()
         input_sample_ids_l.sort()
