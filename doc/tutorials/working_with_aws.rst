@@ -67,8 +67,8 @@ To transfer a file out of your EC2 instance, your command will look like this::
 
 Examples of each are::
 
-	scp -i  ~/my_key.pem ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/Fasting_Map.txt ~/code/Qiime/qiime_tutorial/Fasting_Map.txt
-	scp -i  ~/my_key.pem ~/code/Qiime/qiime_tutorial/Fasting_Map.txt ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/
+	scp -i  ~/my_key.pem ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/Fasting_Map.txt ~/code/Qiime/examples/qiime_tutorial/Fasting_Map.txt
+	scp -i  ~/my_key.pem ~/code/Qiime/examples/qiime_tutorial/Fasting_Map.txt ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/
 
 
 Working with Cyberduck

@@ -10,7 +10,7 @@ To this end, QIIME-compatible versions of the `Silva <http://www.arb-silva.de/>`
 
 IMPORTANT:  Java version 1.6.0 or later is suggested for retraining the RDP classifier, errors have been observed with earlier versions.
 
-A sample fasta file containing sequences from archaea, bacteria, and eukaryotes can be found in the /qiime_tutorial/18S_tutorial_files/ which will be used along with the Silva reference set in this tutorial.
+A sample fasta file containing sequences from archaea, bacteria, and eukaryotes can be found in the 18S_tutorial_files of the `QIIME Tutorial files <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip>`_ data set, which will be used along with the Silva reference set in this tutorial.
 
 Each of the following steps are described in this tutorial (the remaining analyses are identical to those described in the general 16S `tutorial <tutorial.html>`_):
 
