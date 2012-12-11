@@ -752,8 +752,10 @@ class Tax2TreeTaxonAssigner(TaxonAssigner):
         """Returns a new Tax2TreeAssigner object with specified params
         """
         _params = {
-            'id_to_taxonomy_fp': None, #Required. Used as consensus map.
-            'tree_fp': None, #Required. The aligned and filtered tree of combined input and reference seqs.
+            #Required. Used as consensus map.
+            'id_to_taxonomy_fp': None,
+            #Required. The aligned and filtered tree of combined input and reference seqs.
+            'tree_fp': None,
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
