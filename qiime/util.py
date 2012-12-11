@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy"] #remember to add yourself if you make changes
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -1114,17 +1114,24 @@ def qiime_system_call(cmd, shell=True):
     stdout, stderr = proc.communicate()
     return_value = proc.returncode
     return stdout, stderr, return_value
-    
+
 def get_qiime_library_version():
-    """get QIIME version, including the svn version if applicable"""
+    """get QIIME version and the git SHA + current branch (if applicable)"""
     qiime_dir = get_qiime_project_dir()
     qiime_version = qiime_library_version
-    cmd_call = 'svn info %s | egrep "Revision: "' % (qiime_dir)
-    o,e,r = qiime_system_call(cmd_call)
-    svn_revision = o.replace("Revision: ","").strip()
-    
-    if len(svn_revision) > 0:
-        return '%s, svn revision %s' % (__version__, svn_revision)
+
+    # if needed more information could be retrieved following this pattern
+    sha_cmd = 'git --git-dir %s/.git rev-parse --short HEAD' % (qiime_dir)
+    sha_o, sha_e, sha_r = qiime_system_call(sha_cmd)
+    git_sha = sha_o.strip()
+
+    branch_cmd = 'git --git-dir %s/.git rev-parse --abbrev-ref HEAD' %\
+        (qiime_dir)
+    branch_o, branch_e, branch_r = qiime_system_call(branch_cmd)
+    git_branch = branch_o.strip()
+
+    if len(git_branch) and len(git_sha):
+        return '%s, %s@%s' % (__version__, git_branch, git_sha)
     else:
         return '%s' % __version__
 
