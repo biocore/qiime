@@ -1620,16 +1620,11 @@ class DistanceMatrix(DenseTable):
             raise ValueError("The input distance matrix must be square.")
         if self.SampleIds != self.ObservationIds:
             raise ValueError("The sample IDs must match the observation IDs.")
-        self._size = data_matrix.shape[0]
 
     @property
     def Size(self):
-        """Returns the size of the distance matrix (number of rows or columns).
-
-        This exists to explicitly make Size read-only by not having an
-        accompanying setter.
-        """
-        return self._size
+        """Returns the size of the distance matrix (number of rows or cols)."""
+        return len(self.SampleIds)
 
     @property
     def DataMatrix(self):
