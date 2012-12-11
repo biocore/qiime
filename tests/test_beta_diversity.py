@@ -2,7 +2,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight", "Jai Ram Rideout"]
+__credits__ = ["Justin Kuczynski", "Rob Knight"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -59,9 +59,9 @@ class BetaDiversityCalcTests(TestCase):
             [0,0,0,2,4,0,0,0,1],
             [0,0,0,1,7,0,0,0,0]
             ])
-        self.l19_sample_names = ('sam1', 'sam2', 'sam3', 'sam4', 'sam5','sam6',\
+        self.l19_sample_names = ['sam1', 'sam2', 'sam3', 'sam4', 'sam5','sam6',\
         'sam7', 'sam8', 'sam9', 'sam_middle', 'sam11', 'sam12', 'sam13', \
-        'sam14', 'sam15', 'sam16', 'sam17', 'sam18', 'sam19')
+        'sam14', 'sam15', 'sam16', 'sam17', 'sam18', 'sam19']
         self.l19_taxon_names =  ['tax1', 'tax2', 'tax3', 'tax4', 'endbigtaxon',\
         'tax6', 'tax7', 'tax8', 'tax9']
         self.l19_taxon_names_w_underscore =  ['ta_x1', 'tax2', 'tax3', 'tax4', 
