@@ -546,7 +546,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
 
     def test_sample_ids_from_category_state_coverage_min_num_states(self):
-        """Test returns samp IDs based on number of category states covered."""
+        """Test returns samp IDs based on number of states that are covered."""
         # Filter out all samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=2)
@@ -570,6 +570,42 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         exp = (set(['a', 'c', 'd', 'e', 'f', 'g']), 2, 3)
         obs = sample_ids_from_category_state_coverage(self.map_str2,
             'Time', 'Individual', min_num_states=2)
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+    def test_sample_ids_from_category_state_coverage_min_num_states_w_considered_states(self):
+        """Test returns samp IDs based on number of considered states that are covered."""
+        
+        ## Filter out all samples
+        # min_num_states too high
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=2, 
+             considered_states=["Control","Fast"])
+        self.assertEqual(obs, ([], 0, 0))
+        # considered_states too restrictive
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1, 
+             considered_states=[])
+        self.assertEqual(obs, ([], 0, 0))
+
+        # Don't filter out any samples.
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1,
+             considered_states=["Control","Fast"])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+        
+        # Some samples filtered when considered states is partially restrictive
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1,
+             considered_states=["Control"])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+        
+        exp = (set(['PC.607','PC.634', 'PC.635', 'PC.636']), 2, 1)
+        obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
+            'Treatment', 'DOB', min_num_states=1,
+             considered_states=["Fast"])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
     def test_sample_ids_from_category_state_coverage_required_states(self):
@@ -604,7 +640,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             'Time', 'Individual', required_states=['3', '2'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
-    def test_sample_ids_from_category_state_coverage_both_filters(self):
+    def test_sample_ids_from_category_state_combined_filters(self):
         """Test returns samp IDs using both supported filters."""
         # Filter out all samples (fails both filters).
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
