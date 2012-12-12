@@ -279,7 +279,7 @@ script_info['optional_options'] = [
               " [default: %default]")),
     
     make_option('-k', '--suppress_de_novo_chimera_detection', default=False,
-              help=("Perform de novo chimera detection in usearch_qf. "
+              help=("Suppress de novo chimera detection in usearch_qf. "
               "[default: %default]"), action='store_true'),          
 
     make_option('--reference_chimera_detection', 
@@ -288,7 +288,7 @@ script_info['optional_options'] = [
               "disable [default: %default]")),
               
     make_option('-x', '--suppress_reference_chimera_detection', default=False,
-              help=("Perform reference based chimera detection in usearch_qf. "
+              help=("Suppress reference based chimera detection in usearch_qf. "
               "[default: %default]"), action='store_true'),
     
     make_option('--cluster_size_filtering', help=("Deprecated, "
@@ -297,7 +297,7 @@ script_info['optional_options'] = [
               "  [default: %default]")),
               
     make_option('-l', '--suppress_cluster_size_filtering', default=False,
-              help=("Disable cluster size filtering in usearch_qf.  "
+              help=("Suppress cluster size filtering in usearch_qf.  "
               "[default: %default]"), action='store_true'),
               
     make_option('--remove_usearch_logs', default=False, help=("Disable "
