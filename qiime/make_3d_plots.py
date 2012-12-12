@@ -11,25 +11,30 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-
-from cogent.util.misc import flatten
-from qiime.parse import parse_coords,group_by_field,parse_mapping_file
-from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
-from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan, diff, mean, std, concatenate, ones, append, zeros
-from numpy import abs as numpy_abs
-from numpy.linalg import norm
-import numpy as np
 import os
-from random import choice
 import re
-from time import strftime
-from biplots import make_mage_taxa
-from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
-from qiime.format import format_coords
-from cogent.maths.stats.test import ANOVA_one_way
-from cogent.maths.stats.util import Numbers
+import numpy as np
 from copy import deepcopy
+from random import choice
+from time import strftime
+from numpy.linalg import norm
+from biplots import make_mage_taxa
+from numpy import abs as numpy_abs
+from cogent.util.misc import flatten
+from qiime.format import format_coords
+from cogent.maths.stats.util import Numbers
+from qiime.sort import natsort, signed_natsort
+from cogent.maths.stats.test import ANOVA_one_way
+from qiime.parse import parse_coords,group_by_field,parse_mapping_file
+from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
+from numpy import (array, shape, apply_along_axis, dot, delete, vstack, sqrt,
+                    average, isnan, nan, diff, mean, std, concatenate, ones,
+                    append, zeros)
+from qiime.colors import (get_group_colors, color_groups, make_color_dict,
+                            combine_map_label_cols, process_colorby,
+                            linear_gradient, iter_color_groups, get_map,
+                            kinemage_colors)
+
 
 '''
 xdata_colors = {
@@ -75,14 +80,13 @@ def create_dir(dir_path,plot_type):
     return dir_path
 
 
-def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
-                    background_color,label_color, \
-                    taxa=None, custom_axes=None, \
-                    edges=None, coords_low=None, coords_high=None, \
-                    ellipsoid_prefs=None, \
-                    user_supplied_edges=False, ball_scale=1.0, \
+def make_3d_plots(coord_header, coords, pct_var, mapping, prefs,
+                    background_color, label_color, taxa=None, custom_axes=None,
+                    edges=None, coords_low=None, coords_high=None,
+                    ellipsoid_prefs=None, user_supplied_edges=False,
+                    ball_scale=1.0,
                     arrow_colors={'line_color': 'white', 'head_color': 'red'},
-                    add_vectors=None,plot_scaled=False,plot_unscaled=True):
+                    add_vectors=None, plot_scaled=False, plot_unscaled=True):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -128,7 +132,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             else:
                 groups[l[ind_group]].append((l[ind_sort],l[0]))
         for g in groups:
-            groups[g] = natsort(groups[g])
+            groups[g] = signed_natsort(groups[g])
         add_vectors['vectors'] = groups
 
         # managing the options to weight the vectors by a given metadata column
@@ -1140,10 +1144,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                     if len(add_vectors['vectors_output'][group][cat]['vectors_vector']) != 0:
                         to_test[cat] = add_vectors['vectors_output'][group][cat]['vectors_vector']
                         per_category_information.append(add_vectors['vectors_output'][group][cat]['vectors_result'])
-                        #add_vectors['vectors_output'][name][group_name]
                     else:
                         add_vectors['vectors_output'][group][cat]['vectors_result'] = nan
-                        #add_vectors['vectors_output'][name][group_name]
                 
                 # Not all dicts can be tested
                 if can_run_ANOVA_trajectories(to_test):
@@ -1251,7 +1253,7 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
     # add it to a group corresponding to the first element of this tuple
     for keys, values in add_vectors['vectors'].iteritems():
         # Be sure to sort the values otherwise, lines won't make much sense
-        for value in natsort(values):
+        for value in signed_natsort(values):
             if value[1] in ids:
                 # If the list hasn't been created yet, then create an empty one
                 if value[0] not in grouped_coords.keys():
@@ -1267,8 +1269,9 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
 
     # Add vectors is used by other functions, so create a mock dict, be aware
     # of the order in the ids, otherwise the visualization will be confusing
+    # the sorting of the keys must be casting the values to floating point type
     avg_add_vectors['vectors'] = {group_name :[ (str(i), avg_id)\
-        for i, avg_id in enumerate(natsort(avg_coord_dict.keys())) ]}   
+        for i, avg_id in enumerate(signed_natsort(avg_coord_dict.keys())) ]}
 
     return avg_coord_dict, avg_add_vectors
 

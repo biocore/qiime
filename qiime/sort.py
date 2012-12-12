@@ -10,7 +10,8 @@ from qiime.parse import parse_mapping_file
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Rob Knight","Daniel McDonald"]
+__credits__ = ["Greg Caporaso","Rob Knight","Daniel McDonald",\
+    "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -173,3 +174,38 @@ def sort_otu_table(otu_table, sorted_sample_ids):
     sorted_table = otu_table.sortSampleOrder(safe_sorted_sample_ids)
 
     return sorted_table
+
+def signed_natsort(data):
+    """sort an iterable considering the cases where elements are signed
+
+    data: list of tuples (with two strings as elements) or strings. When a
+    string is provided, the string will try to be type-casted to a float type,
+    if a tuple is provided, the first element will be used to sort the list. If
+    a dict is provided a sorted version of the keys will be returned.
+
+    output: sorted version of data
+
+    The elements will be assumed to be real numbers, if that assumption fails,
+    then the elements will be sorted using a natural sorting algorithm.
+
+    """
+
+    # list is empty, do nothing
+    if not data:
+        return data
+
+    # deal with non-[tuple, dict, list] types of data
+    if not all([type(element) == tuple or type(element) == list or\
+        type(element) == dict for element in data]):
+        try:
+            return sorted(data, key=float)
+        except ValueError:
+            return natsort(data)
+
+    # deal with tuples type of data, the first element can be a real number or
+    # a string, the second element is a string that won't be accounted
+    try:
+        return sorted(data, key=lambda tup: float(tup[0]))
+    except ValueError:
+        return natsort(data)
+
