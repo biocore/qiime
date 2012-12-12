@@ -41,7 +41,7 @@ class Test_flowgram_filter(TestCase):
                       'Uneven1_10 FV9NWLF01D4LTB orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0']
 
 
-       self.list_of_invalid_cases = [['Uneven1_1 FV9NWLF_01_EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0'],
+       self.invalid_sequence_identifiers = [['Uneven1_1 FV9NWLF_01_EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0'],
                       ['Even1_2 FV9NWLF_01_DROG9 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0'],
                       ['Even1_8 FV9NWLF-01-A0OG1 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0'],
                       ['Even2_9 FV9NWLF_01-DJZFF orig_bc=TCACGATTAGCG new_bc=TCACGATTAGCG bc_diffs=0'],
@@ -189,7 +189,7 @@ class Test_flowgram_filter(TestCase):
    def test_extract_barcodes_from_mapping(self):
        """extract_barcodes_from_mapping pulls out the barcodes and ids."""
 
-       # regular cases
+       # cases that are valid
        expected = {'FV9NWLF.01.EVGI8':'TCGAGCGAATCT',
                    'FV9NWLF.01.DROG9':'TAGTTGCGAGTC',
                    'FV9NWLF.01.DZTVJ':'TCGAGCGAATCT',
@@ -203,8 +203,8 @@ class Test_flowgram_filter(TestCase):
        obs = extract_barcodes_from_mapping(self.labels)
        self.assertEqual(obs, expected)
 
-       # non expected cases
-       for label in self.list_of_invalid_cases:
+       # invalid sequence identifiers, each element will raise an exception
+       for label in self.invalid_sequence_identifiers:
          with self.assertRaises(AttributeError):
            obs = extract_barcodes_from_mapping(label)
 
