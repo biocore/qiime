@@ -187,7 +187,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
     if required_states is not None:
         # required_states must be in coverage_category's states in the mapping
         # file.
-        required_states = set(required_states)
+        required_states = set(map(str,required_states))
         valid_coverage_states = set(metadata_map.getCategoryValues(
             metadata_map.SampleIds, coverage_category))
         invalid_coverage_states = required_states - valid_coverage_states
@@ -204,7 +204,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # listed here don't actually show up in the mapping file (allowing
         # the user to pass something like range(100) to consider only states
         # that fall in some range)
-        considered_states = set(considered_states)
+        considered_states = set(map(str,considered_states))
         # define a function to determine if a state should be considered
         consider_state = lambda s: s in considered_states
     else:
@@ -237,6 +237,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # Short-circuit evaluation of ANDing filters.
         keep_subject = True
         if min_num_states is not None:
+            # note: when summing a list of boolean values, True == 1 and False == 0
             if sum([consider_state(s) for s in subject_required_states]) < min_num_states:
                 keep_subject = False
         if keep_subject and required_states is not None:
