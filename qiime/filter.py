@@ -130,14 +130,14 @@ def sample_ids_from_category_state_coverage(mapping_f,
                                             coverage_category,
                                             subject_category,
                                             min_num_states=None,
-                                            covered_states=None):
+                                            required_states=None):
     """Filter sample IDs based on subject's coverage of a category.
 
     Given a category that groups samples by subject (subject_category), samples
     are filtered by how well a subject covers (i.e. has at least one sample
     for) the category states in coverage_category.
 
-    Two filtering criteria are provided (min_num_states and covered_states). At
+    Two filtering criteria are provided (min_num_states and required_states). At
     least one must be provided. If both are provided, the subject must meet
     both criteria to pass the filter (i.e. providing both filters is an AND,
     not an OR, operation).
@@ -146,7 +146,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
     an 'individual' category for subject_category in order to filter out
     individuals from a study that do not have samples for some minimum number
     of timepoints (min_num_states) and that do not have samples for certain
-    timepoints (covered_states). For example, this could be the first and last
+    timepoints (required_states). For example, this could be the first and last
     timepoints in the study.
 
     Returns a list of sample IDs to keep, the number of subjects that were
@@ -161,7 +161,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         min_num_states - minimum number of category states in coverage_category
             that a subject must cover (i.e. have at least one sample for) to be
             included in results (integer)
-        covered_states - category states in coverage_category that must be
+        required_states - category states in coverage_category that must be
             covered by a subject's samples in order to be included in results
             (list of strings)
     """
@@ -181,13 +181,13 @@ def sample_ids_from_category_state_coverage(mapping_f,
         raise ValueError("The subject category '%s' is not in the metadata "
                          "mapping file." % subject_category)
 
-    if covered_states is not None:
-        # covered_states must be in coverage_category's states in the mapping
+    if required_states is not None:
+        # required_states must be in coverage_category's states in the mapping
         # file.
-        covered_states = set(covered_states)
+        required_states = set(required_states)
         valid_coverage_states = set(metadata_map.getCategoryValues(
             metadata_map.SampleIds, coverage_category))
-        invalid_coverage_states = covered_states - valid_coverage_states
+        invalid_coverage_states = required_states - valid_coverage_states
 
         if invalid_coverage_states:
             raise ValueError("The category state(s) '%s' are not in the '%s' "
@@ -195,11 +195,11 @@ def sample_ids_from_category_state_coverage(mapping_f,
                              (', '.join(invalid_coverage_states),
                               coverage_category))
 
-    if min_num_states is None and covered_states is None:
+    if min_num_states is None and required_states is None:
         raise ValueError("You must specify either the minimum number of "
                          "category states the subject must have samples for "
                          "(min_num_states), or the minimal category states "
-                         "the subject must have samples for (covered_states), "
+                         "the subject must have samples for (required_states), "
                          "or both. Supplying neither filtering criteria is "
                          "not supported.")
 
@@ -214,22 +214,22 @@ def sample_ids_from_category_state_coverage(mapping_f,
     num_subjects_kept = 0
     states_kept = []
     for subject, samp_ids in subjects.items():
-        subject_covered_states = set(
+        subject_required_states = set(
                 metadata_map.getCategoryValues(samp_ids, coverage_category))
 
         # Short-circuit evaluation of ANDing filters.
         keep_subject = True
         if min_num_states is not None:
-            if len(subject_covered_states) < min_num_states:
+            if len(subject_required_states) < min_num_states:
                 keep_subject = False
-        if keep_subject and covered_states is not None:
-            if len(subject_covered_states & covered_states) != \
-               len(covered_states):
+        if keep_subject and required_states is not None:
+            if len(subject_required_states & required_states) != \
+               len(required_states):
                 keep_subject = False
 
         if keep_subject:
             samp_ids_to_keep.extend(samp_ids)
-            states_kept.extend(subject_covered_states)
+            states_kept.extend(subject_required_states)
             num_subjects_kept += 1
 
     return samp_ids_to_keep, num_subjects_kept, len(set(states_kept))
