@@ -14,247 +14,267 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase,main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from numpy import array
-from qiime.compare_alpha_diversity import (compare_alpha_diversities,
-    extract_rarefaction_scores_at_depth,
-    make_SampleIds_rarefaction_columns_dict,
-    make_category_values_Id_dict,
-    make_value_pairs_from_category,
-    map_category_value_pairs_to_Ids,
-    convert_SampleIds_to_rarefaction_mtx)
+from qiime.compare_alpha_diversity import (sampleId_pairs,
+    compare_alpha_diversities, _correct_compare_alpha_results)
+from numpy.random import seed
+from numpy import nan
 
 class TopLevelTests(TestCase):
     """Tests of top level functions"""
     
     def setUp(self):
         """define data for tests"""
+        # small amount of redundancy here since setUp called at each test, but
+        # limited tests means little concern
         self.rarefaction_file = \
-         ['\tsequences per sample\titeration\t123\t234\t345\t456',
-          'rare10.txt\t10\t0\t1.99181\t5.42877\t2.13996\t0.002322',
-          'rare10.txt\t10\t1\t2.07163\t1.42877\t2.37055\t0.01219',
-          'rare310.txt\t310\t0\t8.83115\t6.42877\t11.00725\t0.18233',
-          'rare310.txt\t310\t1\t10.05242\t9.42877\t8.24474\t0.99229',
-          'rare810.txt\t810\t0\t12.03067\tn/a\t11.58928\t0.8993',
-          'rare910.txt\t910\t1\t12.9862\t2.42877\t11.58642\t1.22563']
-        
+            ['\tsequences per sample\titeration\tSam1\tSam2\tSam3\tSam4\tSam5\tSam6',
+            'rare480.txt\t480\t0\t2.52800404052\t2.3614611247\t2.59867416108\t3.56970811181\t3.44800265895\t1.9433560517',
+            'rare480.txt\t480\t1\t2.06375457238\t3.32293450758\t3.4189896645\t3.35312890712\t3.10763472113\t2.78155253726',
+            'rare480.txt\t480\t2\t2.44788730109\t3.42464996459\t2.24541787295\t2.491419231\t2.60106690099\t5.40828403581',
+            'rare480.txt\t480\t3\t5.1846120153\t3.67022675065\t1.54879964908\t2.8055801405\t4.3086171269\t3.87761898868',
+            'rare910.txt\t910\t0\t2.67580703282\t1.72405794627\t2.15312863498\t2.4300954476\t3.7753658185\t3.36198860355',
+            'rare910.txt\t910\t1\t4.10226466956\t2.24587945345\t3.02932964779\t2.98218513619\t3.73316846484\t1.85879566537',
+            'rare910.txt\t910\t2\t1.65800670063\t2.42281993323\t3.02400997565\t3.271608097\t2.99265263795\t3.68802382515',
+            'rare910.txt\t910\t3\t2.50976021964\t2.43976761056\t3.32119905587\t2.47487750248\t1.901408525\t3.42883742207',
+            'rare500.txt\t500\t0\t3.42225118215\tn/a\t4.03758268426\t2.35344629448\t2.26690085385\t1.80164570104',
+            'rare850.txt\t850\t0\t4.2389858006\t4.97464230229\t1.53451087057\t3.35785261181\t1.91658777533\t2.32583475424',
+            'rare850.txt\t850\t1\t2.81445883827\tn/a\t2.54767461948\t1.38835207925\t3.70018890199\t1.57359105209',
+            'rare850.txt\t850\t2\t2.9340493412\t3.95897035158\tn/a\t2.07761860166\t3.42393336685\t2.6927305603']
         self.rarefaction_data = parse_rarefaction(self.rarefaction_file)
-        
         self.mapping_file = \
-        ['#SampleID\tTreatment\tLinker'+\
-         'PrimerSequence\tDose\tTTD\tDescription',
-         '#Comment Line',
-         '123\tAAAA\tBBBB\tHigh\t31\tM_ID_123',
-         '234\tCCCC\tDDDD\tLow\t67\tM_ID_234',
-         '345\tAAAA\tFFFF\tMed\t21\tM_ID_345',
-         '456\tAAAA\tGGGG\tLow\t67\tM_ID_456'
-         ]
+            ['#SampleID\tDose\tLinkerPrimerSequence\tWeight\tTTD\tDescription',
+            '#Comment Line',
+            'Sam1\t1xDose\tATCG\tHigh\t31\ts1_desc',
+            'Sam2\t1xDose\tACCG\tLow\t67\ts2_desc',
+            'Sam3\t2xDose\tACGT\tMed\t21\ts3_desc',
+            'Sam4\t2xDose\tAACG\tLow\t55\ts4_desc',
+            'Sam5\tControl\tCGTC\tLow\t67\ts5_desc',
+            'Sam6\t1xDose\tACCT\tLow\t55\ts6_desc']
+        self.mapping_data = parse_mapping_file_to_dict(self.mapping_file)[0]
+    
+    def test_sampleId_pairs(self):
+        """Test that sampleId_pairs returns the correct combos/sampleId's."""
+        # expected values
+        dose_vps = \
+            [('1xDose', '2xDose'), ('1xDose', 'Control'), ('2xDose', 'Control')]
+        ttd_vps = \
+            [('31', '21'), ('31', '55'), ('31', '67'), ('21', '55'),
+             ('21', '67'), ('55', '67')]
+        dose_sids = \
+            [(['Sam1','Sam2','Sam6'], ['Sam3','Sam4']),
+             (['Sam1','Sam2','Sam6'], ['Sam5']),
+             (['Sam3','Sam4'], ['Sam5'])]
+        ttd_sids = \
+            [(['Sam1'], ['Sam3']), 
+             (['Sam1'], ['Sam4','Sam6']), 
+             (['Sam1'], ['Sam2','Sam5']), 
+             (['Sam3'], ['Sam4','Sam6']),
+             (['Sam3'], ['Sam2','Sam5']), 
+             (['Sam4','Sam6'], ['Sam2','Sam5'])]
         
-        self.mapping_data = \
-         parse_mapping_file_to_dict(self.mapping_file)[0]
-        self.value_pairs_Dose = \
-         [('Low','Med'),('Low','High'),('Med','High')]                         
-        self.value_pairs_TTD = \
-         [('67', '21'), ('67', '31'), ('21', '31')]
-        self.value_pairs_Treatment = \
-         [('CCCC', 'AAAA')]
-        self.cat_val_Dose = \
-         {'High': ['123'], 'Low': ['234', '456'], 'Med': ['345']}
-        self.cat_val_TTD = \
-         {'21': ['345'], '31': ['123'], '67': ['234', '456']}
-        self.cat_val_Treatment = \
-         {'AAAA': ['345', '123', '456'], 'CCCC': ['234']}
-        self.Id_pairs_Dose = \
-         [(['234', '456'], ['345']), (['234', '456'], ['123']),
-          (['345'], ['123'])]
-        self.Id_pairs_TTD = \
-         [(['234', '456'], ['345']), (['234', '456'], ['123']),
-          (['345'], ['123'])]
+        # observed values
+        obs_dose_sids, obs_dose_vps = sampleId_pairs(self.mapping_data, 
+            self.rarefaction_data, 'Dose')
+        obs_ttd_sids, obs_ttd_vps = sampleId_pairs(self.mapping_data,
+            self.rarefaction_data, 'TTD')
         
-        self.Id_pairs_Treatment = \
-         [(['234'], ['345', '123', '456'])]
+        # sort -- order is unimportant and depends on way presented in mf
+        self.assertEqual(dose_vps.sort(),obs_dose_vps.sort())
+        self.assertEqual(dose_sids.sort(),obs_dose_sids.sort())
+        self.assertEqual(ttd_vps.sort(),obs_ttd_vps.sort())
+        self.assertEqual(ttd_sids.sort(),obs_ttd_sids.sort())
         
-        self.rarefaction_cols_dict = \
-         {'123': 0, '234': 1, '345': 2, '456':3}
-       
-        self.extracted_mtx_10 = \
-         array([[ 1.99181,  5.42877,  2.13996, 0.002322],
-               [ 2.07163,  1.42877,  2.37055, 0.01219]])
-        
-        self.extracted_mtx_310 = \
-         array([[  8.83115,   6.42877,  11.00725, 0.18233],
-               [ 10.05242,   9.42877,   8.24474, 0.99229]])
-        
-        self.extracted_mtx_910 = \
-         array([[ 12.9862 ,   2.42877,  11.58642, 1.22563]])
-        
-        self.sample_pair1 = \
-         (['234'], ['345', '123'])
+        # check errors when no samples had this category
+        self.assertRaises(ValueError, sampleId_pairs, self.mapping_data,
+            self.rarefaction_data, 'DNE')
+
+        # check no error if map file has more sampleids than rarefaction data
+        superset_mf = \
+            ['#SampleID\tDose\tLinkerPrimerSequence\tWeight\tTTD\tDescription',
+            '#Comment Line',
+            'Sam1\t1xDose\tATCG\tHigh\t31\ts1_desc',
+            'Sam2\t1xDose\tACCG\tLow\t67\ts2_desc',
+            'Sam3\t2xDose\tACGT\tMed\t21\ts3_desc',
+            'Sam4\t2xDose\tAACG\tLow\t55\ts4_desc',
+            'Sam5\tControl\tCGTC\tLow\t67\ts5_desc',
+            'Sam6\t1xDose\tACCT\tLow\t55\ts6_desc',
+            'Sam7\t4xDose\tACCT\tLow\t55\ts7_desc',
+            'Sam8\t3xDose\tACCT\tLow\t55\ts8_desc',
+            'Sam9\t1xDose\tACCT\tLow\t55\ts9_desc']
+        superset_mf = parse_mapping_file_to_dict(superset_mf)[0] #(mf, comments)
+        obs_dose_sids, obs_dose_vps = sampleId_pairs(superset_mf, 
+            self.rarefaction_data, 'Dose')
+
+        self.assertEqual(dose_vps.sort(),obs_dose_vps.sort())
+        self.assertEqual(dose_sids.sort(),obs_dose_sids.sort())
+
+
+    def test_correct_compare_alpha_results(self):
+        """Test that FDR and Bonferroni are applied correctly."""
+
+        input_results = \
+            {'1xDose,2xDose': [(-1.8939787722170394, 0.14),
+                (-1.406989273588368, 0.12),
+                (1.233831324546275, 0.25),
+                (2.68216250487486, 0.07)],
+             'Control,1xDose': [(3.365078231689424, 0.34),
+                (0.5277041181189259, 0.67),
+                (-0.6655122398235679, 0.78),
+                (0.06799689773744992, 1.0)],
+             'Control,2xDose': [(0.43262479194397335, 1.0),
+                (-4.881465192979518, 0.35),
+                (1.0920231334904227, 0.68),
+                (1.958305518931809, 0.32)]}
             
-        self.rarefaction_mtx_for_sample_pair1_0 = \
-         array([[ 5.42877],
-               [ 1.42877]])
-        
-        self.rarefaction_mtx_for_sample_pair1_1 = \
-         array([[ 2.13996,  1.99181],
-               [ 2.37055,  2.07163]])
-        
-        self.compared_alpha_diversities_TTD = {'TTD': {('67', '21'):
-            (-0.27929839680103463, 0.79386220041241184), ('21', '31'):
-            (1.8321466933860993, 0.20839398129924847), ('67', '31'):
-            (-0.16318504125427058, 0.87828549279958279)}}
+        method = 'FDR'
+        expected_results = \
+            {'1xDose,2xDose': [(-1.8939787722170394, 0.56),
+              (-1.406989273588368, 0.72),
+              (1.233831324546275, 0.75),
+              (2.68216250487486, 0.8400000000000001)],
+            'Control,1xDose': [(3.365078231689424, 0.68),
+              (0.5277041181189259, 1.0050000000000001),
+              (-0.6655122398235679, 0.9359999999999999),
+              (0.06799689773744992, 1.0)],
+            'Control,2xDose': [(0.43262479194397335, 1.0909090909090908),
+              (-4.881465192979518, 0.6),
+              (1.0920231334904227, 0.9066666666666667),
+              (1.958305518931809, 0.768)]}
+        observed_results = _correct_compare_alpha_results(input_results, method)
+        # test each key in expected results -- this won't catch if 
+        # observed_results has extra entries, but test that via the next call
+        for k in expected_results:
+            self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-    def test_make_value_pairs_from_category(self):
-        """check value pairs returns correct unique pairs for categories
-        """
+        method = 'Bonferroni'
+        expected_results = \
+            {'1xDose,2xDose': [(-1.8939787722170394, 0.14*12),
+                (-1.406989273588368, 0.12*12),
+                (1.233831324546275, 0.25*12),
+                (2.68216250487486, 0.07*12)],
+             'Control,1xDose': [(3.365078231689424, 0.34*12),
+                (0.5277041181189259, 0.67*12),
+                (-0.6655122398235679, 0.78*12),
+                (0.06799689773744992, 1.0*12)],
+             'Control,2xDose': [(0.43262479194397335, 1.0*12),
+                (-4.881465192979518, 0.35*12),
+                (1.0920231334904227, 0.68*12),
+                (1.958305518931809, 0.32*12)]}
+        observed_results = _correct_compare_alpha_results(input_results, method)
+        # test each key in expected results -- this won't catch if 
+        # observed_results has extra entries, but test that via the next call
+        for k in expected_results:
+            self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        self.assertEqual(
-         make_value_pairs_from_category(self.mapping_data, 'Dose'),
-         self.value_pairs_Dose)
-        
-        self.assertEqual(
-            make_value_pairs_from_category(self.mapping_data, 'TTD'),
-            self.value_pairs_TTD)
-        
-        self.assertEqual(
-            make_value_pairs_from_category(self.mapping_data, 'Treatment'),
-            self.value_pairs_Treatment)
-        
-        self.assertRaises(
-         ValueError,
-         make_value_pairs_from_category, self.mapping_data, 'WrongCat')
-                         
-    def test_make_category_values_Id_dict(self):
-        """check value pairs reference correct Id pairs"""
-             
-        self.assertEqual(
-            make_category_values_Id_dict(self.mapping_data, 'Dose'),
-            self.cat_val_Dose)
-        
-        self.assertEqual(
-            make_category_values_Id_dict(self.mapping_data, 'TTD'),
-            self.cat_val_TTD)
-        
-        self.assertEqual(
-            make_category_values_Id_dict(self.mapping_data, 'Treatment'),
-            self.cat_val_Treatment)
-    
-    def test_map_category_value_pairs_to_Ids(self):
-        """check value pairs converted to correct Ids"""
-                
-        self.assertEqual(
-            map_category_value_pairs_to_Ids(self.value_pairs_Dose,
-                                            self.cat_val_Dose),
-            self.Id_pairs_Dose)
+        method = 'None'
+        expected_results = \
+            {'1xDose,2xDose': [(-1.8939787722170394, 0.14),
+                (-1.406989273588368, 0.12),
+                (1.233831324546275, 0.25),
+                (2.68216250487486, 0.07)],
+             'Control,1xDose': [(3.365078231689424, 0.34),
+                (0.5277041181189259, 0.67),
+                (-0.6655122398235679, 0.78),
+                (0.06799689773744992, 1.0)],
+             'Control,2xDose': [(0.43262479194397335, 1.0),
+                (-4.881465192979518, 0.35),
+                (1.0920231334904227, 0.68),
+                (1.958305518931809, 0.32)]}
+        observed_results = _correct_compare_alpha_results(input_results, method)
+        # test each key in expected results -- this won't catch if 
+        # observed_results has extra entries, but test that via the next call
+        for k in expected_results:
+            self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        self.assertEqual(
-            map_category_value_pairs_to_Ids(self.value_pairs_TTD,
-                                            self.cat_val_TTD),
-            self.Id_pairs_TTD)
+        # check errors if wrong method
+        self.assertRaises(ValueError, _correct_compare_alpha_results,
+            input_results, 'DNE')
         
-        self.assertEqual(
-            map_category_value_pairs_to_Ids(self.value_pairs_Treatment,
-                                            self.cat_val_Treatment),
-            self.Id_pairs_Treatment)
-    
-    def test_make_SampleIds_rarefaction_columns_dict(self):
-        """ """
-                
-        self.assertEqual(
-         make_SampleIds_rarefaction_columns_dict(self.rarefaction_data),
-         self.rarefaction_cols_dict)
+    def test_compare_alpha_diversities(self):
+        """Tests alpha diversities are correctly calculated."""
+        # test 'Dose' at 480 inputs
+        category = 'Dose'
+        depth = 480
+        test_type = 'parametric'
+        observed_results = compare_alpha_diversities(self.rarefaction_file,
+            self.mapping_file, category=category, depth=depth, 
+            test_type=test_type)
         
-    def test_extract_rarefaction_scores_at_depth(self):
-        """check correct errors raised for wrong depths and correct mtx
-        """
-           
-        self.assertFloatEqual(
-         extract_rarefaction_scores_at_depth(10,self.rarefaction_data),
-         self.extracted_mtx_10)
-        
-        self.assertFloatEqual(
-         extract_rarefaction_scores_at_depth(310,self.rarefaction_data),
-         self.extracted_mtx_310)
-        
-        self.assertFloatEqual(
-         extract_rarefaction_scores_at_depth(910,self.rarefaction_data),
-         self.extracted_mtx_910)
-        
-        self.assertRaises(
-         ValueError,
-         extract_rarefaction_scores_at_depth,810,self.rarefaction_data)
-        
-        self.assertRaises(
-         ValueError,
-         extract_rarefaction_scores_at_depth,100,self.rarefaction_data)
-        
-    def test_convert_SampleIds_to_rarefaction_mtx(self):
-        """check correct reduced rarefaction scores mtx produced"""
-                 
-        self.rarefaction_mtx_for_sample_pair1_0 = \
-         array([[ 5.42877],
-               [ 1.42877]])
-        
-        self.rarefaction_mtx_for_sample_pair1_1 = \
-         array([[ 2.13996,  1.99181],
-               [ 2.37055,  2.07163]])
-        
-        self.assertEqual(
-            convert_SampleIds_to_rarefaction_mtx(
-                self.sample_pair1[0],
-                self.extracted_mtx_10,
-                self.rarefaction_cols_dict),
-            self.rarefaction_mtx_for_sample_pair1_0)
-        
-        self.assertEqual(
-            convert_SampleIds_to_rarefaction_mtx(
-                self.sample_pair1[1],
-                self.extracted_mtx_10,
-                self.rarefaction_cols_dict),
-            self.rarefaction_mtx_for_sample_pair1_1)
-        
-    def test_compare_alpha_diversities_parametric(self):
-        """test main function properly compares alpha divs (parametric)"""
-                
-        self.assertFloatEqual(
-            compare_alpha_diversities(self.rarefaction_file,
-                                      self.mapping_file, 'TTD', 10,
-                                      'parametric'),
-            self.compared_alpha_diversities_TTD)
+        # had to hardcode the order of the terms in the keys otherwise would 
+        # fail.
+        expected_results = \
+            {'1xDose,2xDose':[(-1.8939787722170394, 0.15454645351109564),
+                (-1.406989273588368, 0.25413514837204443),
+                (1.2338313245462751, 0.3051139898508054),
+                (2.6821625048748601, 0.074911084525487157)],
+             'Control,1xDose':[(3.3650782316894241, 0.078104058521767578),
+                (0.52770411811892592, 0.65040221684561772),
+                (-0.66551223982356789, 0.57420297667232167),
+                (0.067996897737449921, 0.9519744129770501)],
+             'Control,2xDose':[(0.43262479194397335, 0.74006104997641819),
+                (-4.8814651929795181, 0.12863596739719793),
+                (1.0920231334904227, 0.47201464726723585),
+                (1.958305518931809, 0.30056585125162061)]
+            }
+        # test each key in expected results -- this won't catch if 
+        # observed_results has extra entries, but test that via the next call
+        for k in expected_results:
+            self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        # Should ignore num_permutations if test_type is parametric.
-        self.assertFloatEqual(
-            compare_alpha_diversities(self.rarefaction_file,
-                                      self.mapping_file, 'TTD', 10,
-                                      'parametric', 0),
-            self.compared_alpha_diversities_TTD)
+        # test 'Dose' at 480 inputs with nonparametric test
+        seed(0) # set the seed to reproduce random MC pvals
+        category = 'Dose'
+        depth = 480
+        test_type = 'nonparametric'
+        num_permutations = 100
+        observed_results = compare_alpha_diversities(self.rarefaction_file,
+            self.mapping_file, category=category, depth=depth, 
+            test_type=test_type, num_permutations=num_permutations)
 
-    def test_compare_alpha_diversities_nonparametric(self):
-        """test main function properly compares alpha divs (nonparametric)"""
+        expected_results = \
+            {'Control,2xDose': [(0.43262479194397335, 1.00),
+                (-4.8814651929795181, 0.35), 
+                (1.0920231334904227, 0.68), 
+                (1.958305518931809, 0.32)], 
+             '1xDose,2xDose': [(-1.8939787722170394, 0.14),
+                (-1.406989273588368, 0.12), 
+                (1.2338313245462751, 0.25), 
+                (2.6821625048748601, 0.07)], 
+             'Control,1xDose': [(3.3650782316894241, 0.34), 
+                (0.52770411811892592, 0.67), 
+                (-0.66551223982356789, 0.78), 
+                (0.067996897737449921, 1.00)]
+            }
+        # test each key in expected results -- this won't catch if 
+        # observed_results has extra entries, but test that via the next call
+        for k in expected_results:
+            self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        obs = compare_alpha_diversities(self.rarefaction_file,
-                                        self.mapping_file, 'TTD', 10,
-                                        'nonparametric')
+        # test it works with NA values
+        # test 'Dose' at 500 inputs with paramteric test
+        category = 'Dose'
+        depth = 500
+        test_type = 'parametric'
+        observed_results = compare_alpha_diversities(self.rarefaction_file,
+            self.mapping_file, category=category, depth=depth, 
+            test_type=test_type)
 
-        # Since p-values are stochastic, we'll check that they are sane and
-        # that the t statistics are the same as we'd get for a parametric test.
-        for comp, (t, p_val) in obs['TTD'].items():
-            exp = self.compared_alpha_diversities_TTD['TTD'][comp]
-            self.assertFloatEqual(t, exp[0])
-            self.assertIsProb(float(p_val))
-
-    def test_compare_alpha_diversities_invalid_input(self):
-        """test main function bails on bad input"""
-
-        # Invalid test_type.
-        self.assertRaises(ValueError, compare_alpha_diversities,
-                          self.rarefaction_file, self.mapping_file, 'TTD', 10,
-                          'foo')
-
-        # Invalid num_permutations.
-        self.assertRaises(ValueError, compare_alpha_diversities,
-                          self.rarefaction_file, self.mapping_file, 'TTD', 10,
-                          'nonparametric', 0)
-
+        expected_results = \
+            {'Control,2xDose': [(-0.63668873339963239, 0.63906168713487699)], 
+             '1xDose,2xDose': [(None,None)], 
+             'Control,1xDose': [(nan,nan)]
+            }
+        # the comparison will fail on (nan,nan)==(nan,nan) because nan's don't
+        # compare equal. we avoid this check knowing that its producing nans.
+        for k in expected_results:
+            if k is not 'Control,1xDose':
+                self.assertEqual(expected_results[k],observed_results[k])
+        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
 if __name__ == "__main__":
     main()
