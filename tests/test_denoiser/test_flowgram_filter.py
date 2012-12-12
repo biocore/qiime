@@ -3,7 +3,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Yoshiki Vazquez Baeza"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -28,16 +28,25 @@ class Test_flowgram_filter(TestCase):
    def setUp(self):
        self.test_map = {'1': ('a','b','c'),
                         '2': ('d','e','f')}
-       self.labels = ['Uneven1_1 FV9NWLF01EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0',
-                      'Even1_2 FV9NWLF01DROG9 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0',
-                      'Uneven1_3 FV9NWLF01DZTVJ orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0',
-                      'Uneven3_4 FV9NWLF01DI8SC orig_bc=TCTGCTAGATGT new_bc=TCTGCTAGATGT bc_diffs=0',
-                      'Even3_5 FV9NWLF01DW381 orig_bc=TCATCGCGATAT new_bc=TCATCGCGATAT bc_diffs=0',
+
+       self.labels = ['Uneven1_1 FV9NWLF.01.EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0',
+                      'Even1_2 FV9NWLF.01.DROG9 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0',
+                      'Uneven1_3 FV9NWLF.01.DZTVJ orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0',
+                      'Uneven3_4 FV9NWLF.01.DI8SC orig_bc=TCTGCTAGATGT new_bc=TCTGCTAGATGT bc_diffs=0',
+                      'Even3_5 FV9NWLF.01.DW381 orig_bc=TCATCGCGATAT new_bc=TCATCGCGATAT bc_diffs=0',
                       'Even3_6 FV9NWLF01DP96S orig_bc=TCATCGCGATAT new_bc=TCATCGCGATAT bc_diffs=0',
                       'Uneven2_7 FV9NWLF01BOY7E orig_bc=TCGTTCACATGA new_bc=TCGTTCACATGA bc_diffs=0',
                       'Even1_8 FV9NWLF01A0OG1 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0',
                       'Even2_9 FV9NWLF01DJZFF orig_bc=TCACGATTAGCG new_bc=TCACGATTAGCG bc_diffs=0',
                       'Uneven1_10 FV9NWLF01D4LTB orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0']
+
+
+       self.invalid_sequence_identifiers = [['Uneven1_1 FV9NWLF_01_EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0'],
+                      ['Even1_2 FV9NWLF_01_DROG9 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0'],
+                      ['Even1_8 FV9NWLF-01-A0OG1 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0'],
+                      ['Even2_9 FV9NWLF_01-DJZFF orig_bc=TCACGATTAGCG new_bc=TCACGATTAGCG bc_diffs=0'],
+                      ['Uneven1_10 FV9NWLF_01.D4LTB orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0']]
+
 
        self.tiny_test =  get_qiime_project_dir() +\
            "/qiime/support_files/denoiser/TestData/tiny_test.sff.txt"
@@ -157,11 +166,11 @@ class Test_flowgram_filter(TestCase):
    def test_build_inverse_barcode_map(self):
        """build_inverse_barcode_map maps flow ids to sample ids."""
 
-       expected = ({'FV9NWLF01EVGI8':'Uneven1',
-                    'FV9NWLF01DROG9':'Even1',
-                    'FV9NWLF01DZTVJ':'Uneven1',
-                    'FV9NWLF01DI8SC':'Uneven3',
-                    'FV9NWLF01DW381':'Even3',
+       expected = ({'FV9NWLF.01.EVGI8':'Uneven1',
+                    'FV9NWLF.01.DROG9':'Even1',
+                    'FV9NWLF.01.DZTVJ':'Uneven1',
+                    'FV9NWLF.01.DI8SC':'Uneven3',
+                    'FV9NWLF.01.DW381':'Even3',
                     'FV9NWLF01DP96S':'Even3',
                     'FV9NWLF01BOY7E':'Uneven2',
                     'FV9NWLF01A0OG1':'Even1',
@@ -179,20 +188,26 @@ class Test_flowgram_filter(TestCase):
 
    def test_extract_barcodes_from_mapping(self):
        """extract_barcodes_from_mapping pulls out the barcodes and ids."""
-       
-       expected = {'FV9NWLF01EVGI8':'TCGAGCGAATCT',
-                   'FV9NWLF01DROG9':'TAGTTGCGAGTC',
-                   'FV9NWLF01DZTVJ':'TCGAGCGAATCT',
-                   'FV9NWLF01DI8SC':'TCTGCTAGATGT',
-                   'FV9NWLF01DW381':'TCATCGCGATAT',
+
+       # cases that are valid
+       expected = {'FV9NWLF.01.EVGI8':'TCGAGCGAATCT',
+                   'FV9NWLF.01.DROG9':'TAGTTGCGAGTC',
+                   'FV9NWLF.01.DZTVJ':'TCGAGCGAATCT',
+                   'FV9NWLF.01.DI8SC':'TCTGCTAGATGT',
+                   'FV9NWLF.01.DW381':'TCATCGCGATAT',
                    'FV9NWLF01DP96S':'TCATCGCGATAT',
                    'FV9NWLF01BOY7E':'TCGTTCACATGA',
                    'FV9NWLF01A0OG1':'TAGTTGCGAGTC',
                    'FV9NWLF01DJZFF':'TCACGATTAGCG',
                    'FV9NWLF01D4LTB':'TCGAGCGAATCT'}
-
        obs = extract_barcodes_from_mapping(self.labels)
        self.assertEqual(obs, expected)
+
+       # invalid sequence identifiers, each element will raise an exception
+       for label in self.invalid_sequence_identifiers:
+         with self.assertRaises(AttributeError):
+           obs = extract_barcodes_from_mapping(label)
+
 
 if __name__ == "__main__":
     main()
