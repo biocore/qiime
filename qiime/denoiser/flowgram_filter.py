@@ -4,7 +4,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Yoshiki Vazquez Baeza"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -247,7 +247,7 @@ def extract_barcodes_from_mapping(labels):
     barcodes = {}
 
     #use \w* to allow for non barcoded reads
-    re = compile(r'(\w+) (\w+) orig_bc=(\w*) new_bc=\w* bc_diffs=\d+')
+    re = compile(r'(\w+) ([a-zA-Z0-9.]+) orig_bc=(\w*) new_bc=\w* bc_diffs=\d+')
     for label in labels:
         tmatch = search(re, label)
         flowgram_id = tmatch.group(2)
