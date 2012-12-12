@@ -44,7 +44,6 @@ def sampleId_pairs(mapping_data, rarefaction_data, category):
     # able to find the id's. to avoid this, make treatment covering set from 
     # only the sampleIds found in the rarefaction file. 
     sids = rarefaction_data[0][3:] # 0-2 are header strings
-    print sids, mapping_data.keys()
     categories = []
     check = 0
     for k in sids:
@@ -67,7 +66,6 @@ def sampleId_pairs(mapping_data, rarefaction_data, category):
             mapping_data[sid].has_key(category) and \
             mapping_data[sid][category] == pair1]
         sid_pairs.append((pair0_sids,pair1_sids))
-    print sid_pairs, combos
     return sid_pairs, combos
 
 def _correct_compare_alpha_results(result, method):
