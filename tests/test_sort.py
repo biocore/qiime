@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -18,7 +18,7 @@ from biom.parse import parse_biom_table_str
 from qiime.sort import (sort_sample_ids_by_mapping_value,
                         sort_fasta_by_abundance, natsort,
                         natsort_case_insensitive, sort_otu_table,
-                        sort_otu_table_by_mapping_field)
+                        sort_otu_table_by_mapping_field, signed_natsort)
 
 class SortTests(TestCase):
     
@@ -216,6 +216,74 @@ class SortTests(TestCase):
                                    parse_mapping_file(self.mapping_f2),
                                    sort_field = "Age")
 
+    def test_signed_sort(self):
+        """Test correct sorting of different data types"""
+
+        # an empty list must be returned when an empty list needs to be sorted
+        self.assertEqual(signed_natsort([]), [])
+
+        # tuples that can be sorted by type-casting the first element
+        test_list = [('9', 'SampleA'), ('-1', 'SampleD'), ('7', 'SampleC'),
+            ('-2', 'SampleE'), ('-0.11', 'SampleF'), ('17.11', 'SampleB'),
+            ('100', 'SampleG'), ('13', 'SampleH')]
+        expected_result = [('-2', 'SampleE'), ('-1', 'SampleD'),
+            ('-0.11', 'SampleF'), ('7', 'SampleC'), ('9', 'SampleA'),
+            ('13', 'SampleH'), ('17.11', 'SampleB'), ('100', 'SampleG')]
+
+        output = signed_natsort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # tuples that must be sorted alphabetically
+        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
+            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('Hydra', 'SampleF'),
+            ('Carina', 'SampleB'), ('Orion', 'SampleG'), ('Lynx', 'SampleH')]
+        expected_result = [('Auriga', 'SampleC'), ('Carina', 'SampleB'),
+            ('Cepheus', 'SampleD'), ('Cygnus', 'SampleA'), ('Grus', 'SampleE'),
+            ('Hydra', 'SampleF'), ('Lynx', 'SampleH'), ('Orion', 'SampleG')]
+
+        output = signed_natsort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # mixed case, tuples will be sorted alpha-numerically
+        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
+            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('-0.11', 'SampleF'),
+            ('17.11', 'SampleB'), ('100', 'SampleG'), ('Lynx', 'SampleH')]
+        expected_result = [('17.11', 'SampleB'), ('100', 'SampleG'),
+            ('-0.11', 'SampleF'), ('Auriga', 'SampleC'), ('Cepheus', 'SampleD'),
+            ('Cygnus', 'SampleA'), ('Grus', 'SampleE'), ('Lynx', 'SampleH')]
+
+        output = signed_natsort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # mixed case just a list
+        test_list = ['foo', 'bar', '-100', '12', 'spam', '4', '-1']
+        expected_result = ['4', '12', '-1', '-100', 'bar', 'foo', 'spam']
+
+        output = signed_natsort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # list of elements that can be type-casted
+        test_list = ['0', '1', '14', '12', '-15', '4', '-1']
+        expected_result = ['-15', '-1', '0', '1', '4', '12', '14']
+
+        output = signed_natsort(test_list)
+        self.assertEquals(output, expected_result)
+
+        # mixed dict case
+        test_dict = {'foo':'a', 'bar':'b', '-100':'1', '12':'11', 'spam':'q',
+            '4':'11', '-1':'e'}
+        expected_result = ['4', '12', '-1', '-100', 'bar', 'foo', 'spam']
+
+        output = signed_natsort(test_dict)
+        self.assertEquals(output, expected_result)
+
+        # dict where the keys can be type-casted
+        test_dict = {'0':'foo', '1':'bar', '14':'stand', '12':'eggs', '-15':'q',
+            '4':'b', '-1':'h'}
+        expected_result = ['-15', '-1', '0', '1', '4', '12', '14']
+
+        output = signed_natsort(test_dict)
+        self.assertEquals(output, expected_result)
 
 
 mapping_f1 = """#SampleID\tSomething\tdays_since_epoch

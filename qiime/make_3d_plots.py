@@ -18,12 +18,12 @@ from copy import deepcopy
 from random import choice
 from time import strftime
 from numpy.linalg import norm
-from qiime.sort import natsort
 from biplots import make_mage_taxa
 from numpy import abs as numpy_abs
 from cogent.util.misc import flatten
 from qiime.format import format_coords
 from cogent.maths.stats.util import Numbers
+from qiime.sort import natsort, signed_natsort
 from cogent.maths.stats.test import ANOVA_one_way
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
@@ -132,7 +132,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs,
             else:
                 groups[l[ind_group]].append((l[ind_sort],l[0]))
         for g in groups:
-            groups[g] = _vector_sort(groups[g])
+            groups[g] = signed_natsort(groups[g])
         add_vectors['vectors'] = groups
 
         # managing the options to weight the vectors by a given metadata column
@@ -1253,7 +1253,7 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
     # add it to a group corresponding to the first element of this tuple
     for keys, values in add_vectors['vectors'].iteritems():
         # Be sure to sort the values otherwise, lines won't make much sense
-        for value in _vector_sort(values):
+        for value in signed_natsort(values):
             if value[1] in ids:
                 # If the list hasn't been created yet, then create an empty one
                 if value[0] not in grouped_coords.keys():
@@ -1271,7 +1271,7 @@ def avg_vector_for_group(group_name, ids, coord_dict, custom_axes, add_vectors):
     # of the order in the ids, otherwise the visualization will be confusing
     # the sorting of the keys must be casting the values to floating point type
     avg_add_vectors['vectors'] = {group_name :[ (str(i), avg_id)\
-        for i, avg_id in enumerate(_vector_sort(avg_coord_dict.keys())) ]}
+        for i, avg_id in enumerate(signed_natsort(avg_coord_dict.keys())) ]}
 
     return avg_coord_dict, avg_add_vectors
 
@@ -1360,35 +1360,3 @@ def windowed_diff(vector, window_size):
         op_vector.append(element-vector[index])
 
     return op_vector
-
-def _vector_sort(data_list):
-    """sort a list, considering specific cases for use with the vectors section
-
-    data_list: list of tuples (with two strings as elements) or strings. When a
-    string is provided, the string will try to be type-casted to a float type,
-    if a tuple is provided, the first element will be used to sort the list.
-
-    output: sorted version of data_list
-
-    The elements will be assumed to be real numbers, if that assumption fails,
-    then the elements will be sorted using a natural sorting algorithm
-
-    """
-
-    # list is empty, do nothing
-    if not data_list:
-        return data_list
-
-    # deal with non-tuple types of data
-    if not all([type(element) == tuple for element in data_list]):
-        try:
-            return sorted(data_list, key=float)
-        except ValueError:
-            return natsort(data_list)
-
-    # deal with tuples type of data, the first element can be a real number or
-    # a string, the second element is a string that won't be accounted
-    try:
-        return sorted(data_list, key=lambda tup: float(tup[0]))
-    except ValueError:
-        return natsort(data_list)

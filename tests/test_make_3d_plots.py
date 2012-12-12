@@ -32,7 +32,7 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     run_ANOVA_trajetories, generate_3d_plots,
                                     can_run_ANOVA_trajectories,
                                     avg_vector_for_group, weight_by_vector,
-                                    windowed_diff, _vector_sort)
+                                    windowed_diff)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -939,60 +939,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(calc_result, exp_result)
 
         return
-
-
-    def _vector_sort(self):
-        """Test correct sorting of different data types"""
-
-        # an empty list must be returned when an empty list needs to be sorted
-        self.assertEqual(_vector_sort([]), [])
-
-        # tuples that can be sorted by type-casting the first element
-        test_list = [('9', 'SampleA'), ('-1', 'SampleD'), ('7', 'SampleC'),
-            ('-2', 'SampleE'), ('-0.11', 'SampleF'), ('17.11', 'SampleB'),
-            ('100', 'SampleG'), ('13', 'SampleH')]
-        expected_result = [('-2', 'SampleE'), ('-0.11', 'SampleF'),
-            ('-1', 'SampleD'), ('7', 'SampleC'), ('9', 'SampleA'),
-            ('13', 'SampleH'), ('17.11', 'SampleB'), ('100', 'SampleG')]
-
-        output = _vector_sort(test_list)
-        self.assertEquals(output, expected_result)
-
-        # tuples that must be sortede alphabetically
-        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
-            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('Hydra', 'SampleF'),
-            ('Carina', 'SampleB'), ('Orion', 'SampleG'), ('Lynx', 'SampleH')]
-        expected_result = [('Aurgia', 'SampleC'), ('Carina', 'SampleB'),
-            ('Cepheus', 'SampleD'), ('Cygnus', 'SampleA'), ('Grus', 'SampleE'),
-            ('Hydra', 'SampleF'), ('Lynx', 'SampleH'), ('Orion', 'SampleG')]
-
-        output = _vector_sort(test_list)
-        self.assertEquals(output, expected_result)
-
-        # mixed case, tuples will be sorted alpha-numerically
-        test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
-            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('-0.11', 'SampleF'),
-            ('17.11', 'SampleB'), ('100', 'SampleG'), ('Lynx', 'SampleH')]
-        expected_result = [('17.11', 'SampleB'), ('100', 'SampleG'),
-            ('-0.11', 'SampleF'), ('Aurgia', 'SampleC'), ('Cepheus', 'SampleD'),
-            ('Cygnus', 'SampleA'), ('Lynx', 'SampleH')]
-
-        output = _vector_sort(test_list)
-        self.assertEquals(output, expected_result)
-
-        # mixed case just a list
-        test_list = ['foo', 'bar', '-100', '12', 'spam', '4', '-1']
-        expected_result = ['4', '12', '-1', '-100', 'bar', 'foo', 'spam']
-
-        output = _vector_sort(test_list)
-        self.assertEquals(output, expected_result)
-
-        # list of elements that can be type-casted
-        test_list = ['0', '1', '14', '12', '-15', '4', '-1']
-        expected_result = ['-15', '-1', '0', '1', '4', '12', '14']
-
-        output = _vector_sort(test_list)
-        self.assertEquals(output, expected_result)
 
 
 exp_kin_full=\
