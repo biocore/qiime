@@ -95,10 +95,6 @@ Finally, you may want to generate summaries of the samples based on their KO com
 
 Above is an summary of EC by layer (which could be achieved by running ``export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ko_pathway.txt`` prior to the ``map_reads_to_reference.py`` step of this tutorial), collapsed at EC Level 2. 
 
-=====
-Notes
-=====
-
 A note on input data
 --------------------
 This tutorial assumes that data is provided in post-split-libraries format, as with the ``seqs.fna`` file used here. If you obtain Illumina data in fastq files with one sample/metagenome per fasta file, you can use ``split_libraries_fastq.py`` in ``not-barcoded`` mode, and then concatenate the resulting files. For example::
