@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Application controller for Tax2Tree version 1.0
+"""Wrapper for Tax2Tree version 1.0
 
-Includes application controller for Tax2Tree.
+Includes wrapper for Tax2Tree.
 """
 
 __author__ = "Kyle Patnode"
