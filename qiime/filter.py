@@ -231,23 +231,23 @@ def sample_ids_from_category_state_coverage(mapping_f,
     num_subjects_kept = 0
     states_kept = []
     for subject, samp_ids in subjects.items():
-        subject_required_states = set(
+        subject_covered_states = set(
                 metadata_map.getCategoryValues(samp_ids, coverage_category))
 
         # Short-circuit evaluation of ANDing filters.
         keep_subject = True
         if min_num_states is not None:
             # note: when summing a list of boolean values, True == 1 and False == 0
-            if sum([consider_state(s) for s in subject_required_states]) < min_num_states:
+            if sum([consider_state(s) for s in subject_covered_states]) < min_num_states:
                 keep_subject = False
         if keep_subject and required_states is not None:
-            if len(subject_required_states & required_states) != \
+            if len(subject_covered_states & required_states) != \
                len(required_states):
                 keep_subject = False
 
         if keep_subject:
             samp_ids_to_keep.extend(samp_ids)
-            states_kept.extend(subject_required_states)
+            states_kept.extend(subject_covered_states)
             num_subjects_kept += 1
 
     return samp_ids_to_keep, num_subjects_kept, len(set(states_kept))
