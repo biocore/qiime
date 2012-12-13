@@ -1785,17 +1785,17 @@ class DistanceMatrixTests(TestCase):
 
     def test_SampleIds(self):
         """Test sample ID getter method."""
-        exp =  ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 
-                    'PC.607', 'PC.634', 'PC.635', 'PC.636']
+        exp =  ('PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 
+                    'PC.607', 'PC.634', 'PC.635', 'PC.636')
         obs = self.overview_dm.SampleIds
         self.assertEqual(obs, exp)
 
-        exp = ['s1', 's2', 's3']
+        exp = ('s1', 's2', 's3')
         obs = self.dm.SampleIds
         self.assertEqual(obs, exp)
 
         obs = self.single_ele_dm.SampleIds
-        self.assertEqual(obs, ['s1'])
+        self.assertEqual(obs, ('s1',))
 
     def test_is_symmetric_and_hollow(self):
         """Test is_symmetric_and_hollow method with various dms."""

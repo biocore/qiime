@@ -2,7 +2,8 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["justin kuczynski", "Rob Knight", "Jose Carlos Clemente Litran"]
+__credits__ = ["justin kuczynski", "Rob Knight",
+               "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -146,7 +147,7 @@ class FunctionTests(TestCase):
         """
         rare_otu_table = get_rare_data(self.otu_table,
                                        11, include_small_samples=False)
-        self.assertEqual(rare_otu_table.SampleIds, ['X'])
+        self.assertEqual(rare_otu_table.SampleIds, ('X',))
 
         # a very complicated way to test things
         rare_values = [val[0] for (val, otu_id, meta) in rare_otu_table.iterObservations()]

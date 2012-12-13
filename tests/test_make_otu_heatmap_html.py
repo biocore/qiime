@@ -3,7 +3,8 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran",
+               "Jai Ram Rideout"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -128,9 +129,9 @@ javascript array"""
 
         # comparing directly log_otu_table against exp_otu_table doesn't work,
         #  needs to be modified in the otu table object
-        self.assertFloatEqual ( log_otu_table._data.items(), exp_otu_table._data.items())
-        
-        
+        self.assertFloatEqual(list(log_otu_table.iterSampleData()),
+                              list(exp_otu_table.iterSampleData()))
+
     def test_generate_heatmap_plots(self):
         """generate_heatmap_plots: create default output files"""
         

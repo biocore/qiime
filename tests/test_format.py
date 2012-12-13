@@ -430,8 +430,8 @@ class TopLevelTests(TestCase):
         # confirm that parsing the res gives us a valid biom file with 
         # expected observation and sample ids
         t = parse_biom_table(res.split('\n'))
-        self.assertEqual(t.ObservationIds,['1','2'])
-        self.assertEqual(t.SampleIds,['a','b','c'])
+        self.assertEqual(t.ObservationIds,('1','2'))
+        self.assertEqual(t.SampleIds,('a','b','c'))
 
     def test_format_coords(self):
         """format_coords should return tab-delimited table of coords"""

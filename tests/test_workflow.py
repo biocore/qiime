@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -237,7 +237,7 @@ class WorkflowTests(TestCase):
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids = otu_table.SampleIds
+        sample_ids = list(otu_table.SampleIds)
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
@@ -272,7 +272,7 @@ class WorkflowTests(TestCase):
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids = otu_table.SampleIds
+        sample_ids = list(otu_table.SampleIds)
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
@@ -307,7 +307,7 @@ class WorkflowTests(TestCase):
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids= otu_table.SampleIds
+        sample_ids= list(otu_table.SampleIds)
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()

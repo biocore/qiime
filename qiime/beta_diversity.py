@@ -2,7 +2,8 @@
 
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso", "Jose Carlos Clemente Litran"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
+               "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -172,9 +173,11 @@ class BetaDiversityCalc(FunctionWithParams):
         
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
-            return (self.Metric(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds), otu_table.SampleIds)
+            return (self.Metric(otumtx, otu_table.ObservationIds, tree,
+                                otu_table.SampleIds),
+                    list(otu_table.SampleIds))
         else:
-            return self.Metric(otumtx), otu_table.SampleIds
+            return self.Metric(otumtx), list(otu_table.SampleIds)
 
     def formatResult(self, result):
         """Generate formatted distance matrix. result is (data, sample_names)"""
