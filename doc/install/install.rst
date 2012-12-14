@@ -217,10 +217,12 @@ RDP_JAR_PATH Environment Variable
 
 .. _rdp-install:
 
-If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (``rdp_classifier-2.0.1.jar``) in ``/home/qiime/app`` you can do this with the following command::
+If you plan to use the RDP classifier for taxonomy assignment you must define an ``RDP_JAR_PATH`` environment variable. If you downloaded and unzipped the RDP classifier folder in ``/home/qiime/app/``, you can do this with the following commands::
 
-	echo "export RDP_JAR_PATH=/home/qiime/app/rdp_classifier-2.0.1.jar" >> /home/qiime/.bashrc
+	echo "export RDP_JAR_PATH=/home/qiime/app/rdp_classifier_2.2/rdp_classifier-2.2.jar" >> /home/qiime/.bashrc
 	source /home/qiime/.bashrc
+
+Note that you will need the contents inside ``rdp_classifier_2.2`` for the program to function properly.
 
 uclust Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^
