@@ -121,6 +121,8 @@ After choosing an even sampling depth you can use the ``beta_diversity_through_p
 
 Again the ``-aO8`` specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file ``bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` in a web browser. This may take a minute to load for very large sets of samples.
 
+.. _filter_to_closed_ref:
+
 ---------------------------------------------------------------
 Filtering an open-reference OTU table to reference OTUs only
 ---------------------------------------------------------------
