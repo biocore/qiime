@@ -768,8 +768,27 @@ eigvals\t4.94\t1.79\t1.50
         s = 'Study:Twin,Hand,Dog;BodySite:Palm,Stool'
         self.assertEqual(parse_metadata_state_descriptions(s), {'Study':set(['Twin','Hand','Dog']),
             'BodySite':set(['Palm','Stool'])})
-            
-        
+
+        # category names with colons i. e. ontology-derived
+        s = 'Study:Twin,Hand,Dog;site:UBERON:feces,UBERON:ear canal;'+\
+            'env_feature:ENVO:farm soil,ENVO:national park'
+        self.assertEqual(parse_metadata_state_descriptions(s), {'Study':
+            set(['Twin', 'Hand', 'Dog']), 'site':set(['UBERON:feces',
+            'UBERON:ear canal']), 'env_feature':set(['ENVO:farm soil',
+            'ENVO:national park'])})
+
+        s = "Treatment:A,B,C;env_matter:ENVO:nitsol,ENVO:farm soil;env_biom:"+\
+            "ENVO:Tropical dry (including Monsoon forests) and woodlands,"+\
+            "ENVO:Forest: including woodlands;country:GAZ:Persnickety Islands"+\
+            ",St. Kitt's and Nevis"
+        self.assertEqual(parse_metadata_state_descriptions(s), {"country":
+            set(["GAZ:Persnickety Islands", "St. Kitt's and Nevis"]),
+            "env_biom":set(["ENVO:Tropical dry (including Monsoon forests) "+\
+            "and woodlands", "ENVO:Forest: including woodlands"]), "env_matter":
+            set(["ENVO:nitsol","ENVO:farm soil"]), 'Treatment':set(["A", "B",
+            "C"])})
+
+
     def test_parse_illumina_line_barcode_in_header(self):
         """parse_illumina_line: handles barcode in header correctly """
         illumina_line0 = illumina_read1[0]

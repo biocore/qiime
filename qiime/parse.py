@@ -775,7 +775,8 @@ def parse_metadata_state_descriptions(state_string):
     if state_string:
         cols = map(strip, state_string.split(';'))
         for c in cols:
-            colname, vals = map(strip, c.split(':'))
+            # split on the first colon to account for category names with colons
+            colname, vals = map(strip, c.split(':', 1))
             vals = map(strip, vals.split(','))
             result[colname] = set(vals)
     return result
