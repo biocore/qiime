@@ -2,7 +2,7 @@
 QIIME coding guidelines
 ***************************
 
-QIIME generally follows the `PyCogent Coding Guidelines <http://pycogent.sourceforge.net/coding_guidelines.html>`_. You **must** review this document, and adhere to these standards in your QIIME code. 
+QIIME generally follows the `PyCogent Coding Guidelines <http://www.pycogent.org/coding_guidelines.html>`_. You **must** review this document, and adhere to these standards in your QIIME code. 
 
 
 QIIME command line interface guidelines

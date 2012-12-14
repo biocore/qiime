@@ -51,7 +51,7 @@ All QIIME scripts provide usage information when called with their -h option. Th
 
 .. _Python: http://www.python.org
 .. _BLAST: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/
-.. _PyCogent: http://pycogent.sourceforge.net
+.. _PyCogent: http://www.pycogent.org
 .. _Cython: http://www.cython.org/
 .. _Numpy: http://numpy.scipy.org/
 .. _Matplotlib: http://matplotlib.sourceforge.net
