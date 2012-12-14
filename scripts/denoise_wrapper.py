@@ -110,7 +110,11 @@ def main():
             #do nothing, just overwrite content
             pass
         else:
-            raise ApplicationError, "Directory exists. Use --force to overwrite."
+            # Since the analysis can take quite a while, I put this check
+            # in to help users avoid overwriting previous output.
+            option_parser.error("Output directory already exists. Please choose"
+                " a different directory, or force overwrite with -f.")
+
     else:
         handle_error_codes(outdir, error_code=ret_val)
 
