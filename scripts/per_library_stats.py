@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski","Jose Carlos Clemente Litran"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski",
+               "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -69,9 +70,8 @@ def main():
     if not opts.num_otus:
         num_observations = sum(counts_per_sample_values)
         print 'Num observations (sequences): %s' % str(num_observations)
-        # port denisty functionality to a tested function. the following is broken (should be 
-        # count of non-zero cells rather than number of observations in the numerator)
-        #print 'Table density (fraction of non-zero values): %1.4f' % (num_observations/(num_samples * num_otus))
+        print 'Table density (fraction of non-zero values): %1.4f' % \
+              otu_table.getTableDensity()
     print
 
     if opts.num_otus:
