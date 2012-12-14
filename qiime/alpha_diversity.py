@@ -237,8 +237,7 @@ def get_phylogenetic_metric(name):
 def list_known_metrics():
     nonphylo = [metric.__name__ for metric in nonphylogenetic_metrics]
     phylo = [metric.__name__ for metric in phylogenetic_metrics]
-    cup = [ metric.__name__ for metric in cup_metrics ]
-    return nonphylo + phylo + cup
+    return nonphylo + phylo
     
 
 import cogent.maths.unifrac.fast_unifrac as fast_unifrac
@@ -262,10 +261,9 @@ alph.equitability,
 alph.esty_ci,
 alph.fisher_alpha,
 alph.gini_index,
+alph.goods_coverage,
 alph.heip_e,
 alph.kempton_taylor_q,
-alph.lladser_ci,
-alph.lladser_pe,
 alph.margalef,
 alph.mcintosh_d,
 alph.mcintosh_e,
@@ -283,10 +281,8 @@ alph.strong]
 
 cup_metrics = [
 alph.lladser_pe,
-alph.lladser_ci,
-#starr, not yet needs tests
-alph.esty_ci,
-alph.robbins]
+alph.lladser_ci]
+#starr, not yet needs tests]
 
 def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
     metrics_list = metrics.split(',')

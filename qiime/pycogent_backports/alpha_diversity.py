@@ -1139,6 +1139,7 @@ def lladser_ci(counts, r, alpha=0.95, f=10, ci_type='ULCL', **args):
         pe = ('NaN','NaN')
     return pe
 
+# this is important for one of the tests to pass, unknown why
 esty_ci.return_names = ('esty_lower_bound', 'esty_upper_bound')
 lladser_ci.return_names = ('lladser_lower_bound', 'lladser_upper_bound')
 
