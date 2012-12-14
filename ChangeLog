@@ -26,6 +26,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * make_distance_boxplots.py, make_distance_comparison_plots.py, and make_distance_histograms.py now correctly output TSV data files with .txt extension instead of .xls (this allows them to be opened easier in programs such as Excel).
 * make_distance_boxplots.py has a new option --color_individual_within_by_field that allows the "individual within" boxplots to be optionally colored to indicate their membership in another mapping file field. A legend is also included.
 * Added sample_ids_from_category_state_coverage function to qiime/filter.py to support filtering of samples based on a subject's category coverage. For example, this function is useful for filtering individuals out of a time series study that do not meet some sort of timepoint coverage criteria.
+* assign_taxonomy.py now supports assignment with tax2tree version 1.0.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
