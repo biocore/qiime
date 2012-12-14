@@ -12,7 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os import access, X_OK, R_OK, W_OK, getenv, environ, remove
+from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
 from shutil import rmtree
@@ -423,7 +423,7 @@ class Qiime_config(TestCase):
         self.assertTrue(app_path('FastTree'),
          "FastTree not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
-        command = "FastTree 2>&1 > /dev/null | grep version"
+        command = "FastTree 2>&1 > %s | grep version" % devnull
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
@@ -609,7 +609,7 @@ class Qiime_config(TestCase):
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
-        command = "rtax 2>&1 > /dev/null | grep Version | awk '{print $2}'"
+        command = "rtax 2>&1 > % | grep Version | awk '{print $2}'" % devnull
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
