@@ -237,7 +237,8 @@ def get_phylogenetic_metric(name):
 def list_known_metrics():
     nonphylo = [metric.__name__ for metric in nonphylogenetic_metrics]
     phylo = [metric.__name__ for metric in phylogenetic_metrics]
-    return nonphylo + phylo
+    cup = [ metric.__name__ for metric in cup_metrics ]
+    return nonphylo + phylo + cup
     
 
 import cogent.maths.unifrac.fast_unifrac as fast_unifrac
@@ -248,6 +249,7 @@ alph.osd.return_names = ('observed', 'singles', 'doubles')
 #hand curated lists of metrics, these either return one value, or
 #are modified above
 phylogenetic_metrics = [fast_unifrac.PD_whole_tree]
+
 nonphylogenetic_metrics = [
 alph.ACE,
 alph.berger_parker_d,
@@ -278,6 +280,13 @@ alph.simpson,
 alph.simpson_e,
 alph.singles,
 alph.strong]
+
+cup_metrics = [
+alph.lladser_pe,
+alph.lladser_ci,
+#starr, not yet needs tests
+alph.esty_ci,
+alph.robbins]
 
 def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
     metrics_list = metrics.split(',')
@@ -341,7 +350,7 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
             except AttributeError:
                 raise ValueError(
                  "could not find metric.  %s.\n Known metrics are: %s\n" \
-                 % (metric, ', '.join(list_known_metrics())))
+                 % (metric, ', '.join(list_known_cup_metrics())))
 
 
     for fname in file_names:
@@ -384,7 +393,7 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
         except AttributeError:
             stderr.write(
                 "Could not find metric %s.\n Known metrics are: %s\n" \
-                    % (metric, ', '.join(list_known_metrics())))
+                    % (metric, ', '.join(list_known_cup_metrics())))
             exit(1)
             
         c = AlphaDiversityCalc(metric_f, params=params)
@@ -402,13 +411,6 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
         stderr.write(str(e)+'\n')
         exit(1)
 
-cup_metrics = [alph.lladser_pe,
-               alph.lladser_ci,
-               #starr, not yet needs tests
-               alph.esty_ci,
-               alph.robbins
-               ]
-
 def get_cup_metric(name):
     """Gets metric by name from list in this module
     """
@@ -417,6 +419,6 @@ def get_cup_metric(name):
             return metric    
     raise AttributeError
 
-def list_known_metrics():
+def list_known_cup_metrics():
     """Show the names of available metrics."""
     return [ metric.__name__ for metric in cup_metrics ]
