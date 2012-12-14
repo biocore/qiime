@@ -13,6 +13,7 @@ __status__ = "Development"
 """Contains functionality to interact with remote services."""
 
 from csv import writer
+from socket import gaierror
 from StringIO import StringIO
 from gdata.spreadsheet import SpreadsheetsCellsFeedFromString
 from gdata.spreadsheet.service import CellQuery
@@ -34,13 +35,16 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
         http://www.payne.org/index.php/Reading_Google_Spreadsheets_in_Python
         http://stackoverflow.com/a/12031835
     """
-    # TODO test if no connection
     gd_client = SpreadsheetsService()
 
-    # TODO test if no connection
-    worksheets_feed = gd_client.GetWorksheetsFeed(spreadsheet_key,
-                                                  visibility='public',
-                                                  projection='basic')
+    try:
+        worksheets_feed = gd_client.GetWorksheetsFeed(spreadsheet_key,
+                                                      visibility='public',
+                                                      projection='basic')
+    except gaierror:
+        raise RemoteMappingFileError("Could not establish connection with "
+                                     "server. Do you have an active Internet "
+                                     "connection?")
 
     if len(worksheets_feed.entry) < 1:
         raise RemoteMappingFileError("The Google Spreadsheet with key '%s' "
@@ -135,6 +139,19 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     tsv_writer = writer(out_lines, delimiter='\t', lineterminator='\n')
     tsv_writer.writerows(mapping_lines)
     return out_lines.getvalue()
+
+def _extract_spreadsheet_key_from_url(url):
+    """Extracts a key from a URL in the form '...key=some_key#foo=42...
+    
+    If the URL doesn't look valid, assumes the URL is the key and returns it
+    unmodified.
+    """
+    result = url
+
+    if 'docs.google.com' in url:
+        result = url.split('key=')[-1].split('#')[0]
+
+    return result
 
 def _convert_strings_to_column_headers(proposed_headers):
   """Converts a list of strings to column names which spreadsheets accepts.
