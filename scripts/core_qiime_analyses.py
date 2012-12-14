@@ -13,6 +13,7 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from os import makedirs
+from optparse import OptionValueError
 from qiime.util import (load_qiime_config, 
                         parse_command_line_parameters, 
                         get_options_lookup)
@@ -155,9 +156,8 @@ def main():
         else:
             # Since the analysis can take quite a while, I put this check
             # in to help users avoid overwriting previous output.
-            print "Output directory already exists. Please choose "+\
-             "a different directory, or force overwrite with -f."
-            exit(1)
+            raise OptionValueError,("Output directory already exists. Please "
+                "choose a different directory, or force overwrite with -f.")
         
     if print_only:
         command_handler = print_commands
