@@ -21,9 +21,9 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
 
-6. uclust (Robert Edgar, unpublished, 2009), creates "seeds" of sequences which generate clusters based on percent identity.
+6. uclust (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity.
 
-7. usearch (Robert Edgar, unpublished, 2011), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+7. usearch (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
 
 The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 
