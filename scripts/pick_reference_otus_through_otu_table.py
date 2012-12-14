@@ -113,10 +113,9 @@ def main():
         if opts.force:
             pass
         else:
-            print "Output directory already exists. Please choose "+\
-             "a different directory, or force overwrite with -f."
-            exit(1)
-        
+            option_parser.error("Output directory already exists. Please choose"
+                " a different directory, or force overwrite with -f.")
+
     if print_only:
         command_handler = print_commands
     else:

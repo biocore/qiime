@@ -119,9 +119,8 @@ def main():
             pass
         else:
             # This check helps users avoid overwriting previous output.
-            print "Output directory already exists. Please choose "+\
-             "a different directory, or force overwrite with -f."
-            exit(1)
+            option_parser.error("Output directory already exists. Please choose"
+                " a different directory, or force overwrite with -f.")
 
     # verify that category is in mapping file
     map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
