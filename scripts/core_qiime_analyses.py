@@ -155,9 +155,8 @@ def main():
         else:
             # Since the analysis can take quite a while, I put this check
             # in to help users avoid overwriting previous output.
-            print "Output directory already exists. Please choose "+\
-             "a different directory, or force overwrite with -f."
-            exit(1)
+            option_parser.error("Output directory already exists. Please choose"
+                " a different directory, or force overwrite with -f.")
         
     if print_only:
         command_handler = print_commands
