@@ -13,6 +13,8 @@
 	* doubles (# otus with exactly two individuals in sample)
 	* equitability
 	* fisher_alpha
+	* gini index
+	* goods coverage
 	* heip_e (note, using heip_e at low (<5) individuals may cause errors
 	* kempton_taylor_q
 	* margalef
