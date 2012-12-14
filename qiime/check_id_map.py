@@ -519,7 +519,7 @@ def check_fixed_len_bcs_dups(header,
     correction = 1
     
     for curr_data in mapping_data:
-        barcodes.append(curr_data[check_ix])
+        barcodes.append(upper(curr_data[check_ix]))
     
     dups = duplicates_indices(barcodes)
     
@@ -562,7 +562,7 @@ def check_variable_len_bcs_dups(header,
     correction = 1
     
     for curr_data in mapping_data:
-        barcodes.append(curr_data[check_ix])
+        barcodes.append(upper(curr_data[check_ix]))
         bc_lens.append(len(curr_data[check_ix]))
     
     # Get max length of barcodes to determine how many primer bases to slice
@@ -574,11 +574,11 @@ def check_variable_len_bcs_dups(header,
     bcs_added_nts = []
     for curr_data in mapping_data:
         if no_primers:
-            bcs_added_nts.append(curr_data[check_ix])
+            bcs_added_nts.append(upper(curr_data[check_ix]))
         else:
             adjusted_len = barcode_max_len - len(curr_data[check_ix])
-            bcs_added_nts.append(curr_data[check_ix] +\
-             curr_data[linker_primer_ix][0:adjusted_len])
+            bcs_added_nts.append(upper(curr_data[check_ix] +\
+             curr_data[linker_primer_ix][0:adjusted_len]))
 
     dups = duplicates_indices(bcs_added_nts)
     
@@ -647,7 +647,7 @@ def check_added_demultiplex_dups(header,
     
     if has_barcodes and bc_found:
         for curr_data in mapping_data:
-            barcodes.append(curr_data[bc_ix])
+            barcodes.append(upper(curr_data[bc_ix]))
             bc_lens.append(len(curr_data[bc_ix]))
     
         # Get max length of barcodes to determine how many primer bases to slice
