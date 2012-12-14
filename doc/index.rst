@@ -64,4 +64,4 @@ If you use QIIME for any published research, please include the following citati
 
 You can find the `QIIME paper here <http://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.f.303.html>`_, and the data presented in this paper can be found `here <http://bmf.colorado.edu/QIIME/QIIME_NM_2010.tgz>`_.
 
-.. _PyCogent: http://pycogent.sourceforge.net
+.. _PyCogent: http://www.pycogent.org
