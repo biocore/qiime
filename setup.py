@@ -36,7 +36,7 @@ except ImportError:
 try:
     import cogent
 except ImportError:
-    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://pycogent.sourceforge.net."
+    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://www.pycogent.org."
     exit(1)
 from cogent.util.misc import app_path
 
