@@ -382,8 +382,8 @@ def main():
      reference_chimera_detection and not db_filepath:
         raise ValueError,('No reference filepath specified with '
          '--db_filepath option. Disable reference based chimera detection '
-         'with --reference_chimera_detection or specify a reference fasta '
-         'file with --db_filepath.')
+         'with --suppress_reference_chimera_detection or specify a reference '
+         'fasta file with --db_filepath.')
          
     if chimeras_retention not in ['intersection', 'union']:
         raise ValueError,('--chimeras_retention must be either union or '
