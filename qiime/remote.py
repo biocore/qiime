@@ -12,6 +12,7 @@ __status__ = "Development"
 
 """Contains functionality to interact with remote services."""
 
+from collections import defaultdict
 from csv import writer
 from socket import gaierror
 from StringIO import StringIO
@@ -20,6 +21,9 @@ from gdata.spreadsheet.service import CellQuery
 from gdata.spreadsheet.service import SpreadsheetsService
 
 class RemoteMappingFileError(Exception):
+    pass
+
+class RemoteMappingFileConnectionError(RemoteMappingFileError):
     pass
 
 # TODO test comments, empty lines/cells, quoted strings
@@ -35,6 +39,7 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
         http://www.payne.org/index.php/Reading_Google_Spreadsheets_in_Python
         http://stackoverflow.com/a/12031835
     """
+    spreadsheet_key = _extract_spreadsheet_key_from_url(spreadsheet_key)
     gd_client = SpreadsheetsService()
 
     try:
@@ -42,9 +47,10 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
                                                       visibility='public',
                                                       projection='basic')
     except gaierror:
-        raise RemoteMappingFileError("Could not establish connection with "
-                                     "server. Do you have an active Internet "
-                                     "connection?")
+        raise RemoteMappingFileConnectionError("Could not establish "
+                                               "connection with server. Do "
+                                               "you have an active Internet "
+                                               "connection?")
 
     if len(worksheets_feed.entry) < 1:
         raise RemoteMappingFileError("The Google Spreadsheet with key '%s' "
@@ -114,17 +120,18 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     while True:
         for row in rows_feed.entry:
             try:
+                # Ignore cells that are empty (they will be None). This allows
+                # things like comments to be handled correctly.
                 mapping_lines.append([row.custom[cleaned_header].text
-                    for header, cleaned_header in zip(headers, cleaned_headers)])
+                    for header, cleaned_header in zip(headers, cleaned_headers)
+                    if row.custom[cleaned_header].text is not None])
             except KeyError:
-                raise RemoteMappingFileError("Could not map header '%s' to Google "
-                                             "Spreadsheet's internal "
-                                             "representation of the header. We "
-                                             "suggest changing the name of the "
-                                             "header in your Google Spreadsheet "
-                                             "to be alphanumeric if possible, as "
-                                             "this will likely solve the issue." %
-                                             header)
+                raise RemoteMappingFileError("Could not map header '%s' to "
+                        "Google Spreadsheet's internal representation of the "
+                        "header. We suggest changing the name of the header "
+                        "in your Google Spreadsheet to be alphanumeric if "
+                        "possible, as this will likely solve the issue."
+                        % header)
 
         # Get the next set of rows if necessary.
         next_link = rows_feed.GetNextLink()
@@ -154,31 +161,41 @@ def _extract_spreadsheet_key_from_url(url):
     return result
 
 def _convert_strings_to_column_headers(proposed_headers):
-  """Converts a list of strings to column names which spreadsheets accepts.
+    """Converts a list of strings to column names which spreadsheets accepts.
 
-  When setting values in a record, the keys which represent column names must
-  fit certain rules. They are all lower case, contain no spaces or special
-  characters. If two columns have the same name after being sanitized, the 
-  columns further to the right have _2, _3 _4, etc. appended to them.
+    When setting values in a record, the keys which represent column names must
+    fit certain rules. They are all lower case, contain no spaces or special
+    characters. If two columns have the same name after being sanitized, the 
+    columns further to the right have _2, _3 _4, etc. appended to them.
 
-  If there are column names which consist of all special characters, or if
-  the column header is blank, an obfuscated value will be used for a column
-  name. This method does not handle blank column names or column names with
-  only special characters.
+    If there are column names which consist of all special characters, or if
+    the column header is blank, an obfuscated value will be used for a column
+    name. This method does not handle blank column names or column names with
+    only special characters.
 
-  Taken from gdata.spreadsheet.text_db.ConvertStringsToColumnHeaders and
-  modified to handle headers with pound signs.
-  """
-  headers = []
-  for input_string in proposed_headers:
-    # Probably a more efficient way to do this. Perhaps regex.
-    sanitized = input_string.lower().replace('_', '').replace(
-        ':', '').replace(' ', '').replace('#', '')
+    Taken from gdata.spreadsheet.text_db.ConvertStringsToColumnHeaders and
+    modified to handle headers with pound signs, as well as correctly handle
+    duplicate cleaned headers.
+    """
+    headers = []
+    for input_string in proposed_headers:
+        # Probably a more efficient way to do this. Perhaps regex.
+        sanitized = input_string.lower().replace('_', '').replace(':',
+                    '').replace(' ', '').replace('#', '')
+        headers.append(sanitized)
+
     # When the same sanitized header appears multiple times in the first row
     # of a spreadsheet, _n is appended to the name to make it unique.
-    header_count = headers.count(sanitized)
-    if header_count > 0:
-      headers.append('%s_%i' % (sanitized, header_count+1))
-    else:
-      headers.append(sanitized)
-  return headers
+    header_count = defaultdict(int)
+    results = []
+
+    for header in headers:
+        new_header = header
+
+        if header_count[header] > 0:
+            new_header = '%s_%d' % (header, header_count[header])
+
+        header_count[header] += 1
+        results.append(new_header)
+
+    return results

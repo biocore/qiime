@@ -13,8 +13,10 @@ __status__ = "Development"
 """Test suite for the remote.py module."""
 
 from cogent.util.unit_test import TestCase, main
-from qiime.remote import (_extract_spreadsheet_key_from_url,
+from qiime.remote import (_convert_strings_to_column_headers,
+                          _extract_spreadsheet_key_from_url,
                           load_google_spreadsheet_mapping_file,
+                          RemoteMappingFileConnectionError,
                           RemoteMappingFileError)
 
 class RemoteTests(TestCase):
@@ -34,10 +36,23 @@ class RemoteTests(TestCase):
         try:
             obs = load_google_spreadsheet_mapping_file(self.spreadsheet_key,
                                                        worksheet_name=None)
-        except RemoteMappingFileError:
+        except RemoteMappingFileConnectionError:
             pass
         else:
             self.assertEqual(obs, self.exp_mapping_lines)
+
+    def test_convert_strings_to_column_headers(self):
+        """Test correctly converts headers to Google's representation."""
+        # Some duplicates.
+        exp = ['foo', 'foo_1', 'foo_2', 'foo_3', 'fooo', 'foo_4', 'foo_5']
+        obs = _convert_strings_to_column_headers(
+                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '#Foo', 'f O O#'])
+        self.assertEqual(obs, exp)
+
+        # All unique.
+        exp = ['foo', 'bar']
+        obs = _convert_strings_to_column_headers(['Fo#o', 'bar'])
+        self.assertEqual(obs, exp)
 
     def test_extract_spreadsheet_key_from_url(self):
         """Test correctly extracts a key from a URL."""
@@ -52,17 +67,17 @@ class RemoteTests(TestCase):
 
 url = 'https://docs.google.com/spreadsheet/ccc?key=0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc#gid=1'
 
-exp_mapping_lines = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+exp_mapping_lines = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription
 #Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
-PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
-PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	20061126	Control_mouse_I.D._356
-PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
-PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
-PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
-PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
-PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
-PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
+PC.354\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354
+PC.355\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._355
+PC.356\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061126\tControl_mouse_I.D._356
+PC.481\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20070314\tControl_mouse_I.D._481
+PC.593\tAGCAGCACTTGT\tYATGCTGCCTCCCGTAGGAGT\tControl\t20071210\tControl_mouse_I.D._593
+PC.607\tAACTGTGCGTAC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20071112\tFasting_mouse_I.D._607
+PC.634\tACAGAGTCGGCT\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\tFasting_mouse_I.D._634
+PC.635\tACCGCAGAGTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\tFasting_mouse_I.D._635
+PC.636\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\tFasting_mouse_I.D._636
 """
 
 
