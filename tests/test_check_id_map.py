@@ -883,6 +883,25 @@ class CheckIdMapTests(TestCase):
         
         self.assertEqual(errors, expected_errors)
         
+    def test_check_fixed_len_bcs_dups_mixed_caps(self):
+        
+        # Should find duplicates with mixed caps
+        
+        header =\
+         ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'run_prefix',
+          'Description']
+        mapping_data = [['s-1', 'CGTA', 'AAAA', '1', 's1&data'],
+         ['s2', 'cgta', 'AAAA', '2', 's2_data']]
+        errors = []
+        
+        errors = check_fixed_len_bcs_dups(header,
+                        mapping_data,
+                        errors)
+                        
+        expected_errors = ['Duplicate barcode CGTA found.\t1,1', 'Duplicate barcode CGTA found.\t2,1']
+        
+        self.assertEqual(errors, expected_errors)
+        
     def test_check_variable_len_bcs_dups(self):
         """ Ensures that slices of barcodes + 5' primer fragments are unique """
         
