@@ -15,7 +15,6 @@ Tests each function in the tax2tree controller module. It
 should be noted that these tests are fairly sparse, since
 tax2tree implements quite a few of its own tests."""
 
-from t2t.tax2tree_controller import *
 from t2t.nlevel import load_tree, load_consensus_map, determine_rank_order
 from os import makedirs, getcwd, chdir
 from os.path import exists
@@ -25,6 +24,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
+from qiime.pycogent_backports.tax2tree import *
 
 class GenerateTaxaCompareTableTests(TestCase):
     """Tests for the tax2tree_controller.py module."""
