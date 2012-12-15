@@ -26,7 +26,8 @@ class RemoteMappingFileError(Exception):
 class RemoteMappingFileConnectionError(RemoteMappingFileError):
     pass
 
-# TODO test comments, empty lines/cells, quoted strings
+# TODO test comments, empty lines/cells, quoted strings, duplicate headers, add
+# reference to overview tutorial, fix url parser
 def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     """Loads a mapping file contained in a Google Spreadsheet.
 
@@ -148,15 +149,15 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     return out_lines.getvalue()
 
 def _extract_spreadsheet_key_from_url(url):
-    """Extracts a key from a URL in the form '...key=some_key#foo=42...
-    
+    """Extracts a key from a URL in the form '...key=some_key&foo=42...
+
     If the URL doesn't look valid, assumes the URL is the key and returns it
     unmodified.
     """
     result = url
 
-    if 'docs.google.com' in url:
-        result = url.split('key=')[-1].split('#')[0]
+    if 'key=' in url:
+        result = url.split('key=')[-1].split('#')[0].split('&')[0]
 
     return result
 
