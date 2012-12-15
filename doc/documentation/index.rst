@@ -17,6 +17,7 @@ These pages provide references on different features of QIIME. If you're instead
    biom_format
    file_formats
    script_index
+   qiime_parameters_files
    table_objects
 
 
