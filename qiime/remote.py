@@ -26,8 +26,6 @@ class RemoteMappingFileError(Exception):
 class RemoteMappingFileConnectionError(RemoteMappingFileError):
     pass
 
-# TODO test comments, empty lines/cells, quoted strings, duplicate headers, add
-# reference to overview tutorial, fix url parser
 def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     """Loads a mapping file contained in a Google Spreadsheet.
 
@@ -242,7 +240,15 @@ def _get_cleaned_headers(headers):
         # Probably a more efficient way to do this. Perhaps regex.
         sanitized = header.lower().replace('_', '').replace(':', '').replace(
                 ' ', '').replace('#', '')
-        cleaned_headers.append(sanitized)
+        if len(sanitized) > 0:
+            cleaned_headers.append(sanitized)
+        else:
+            raise RemoteMappingFileError("Encountered a header '%s' that was "
+                    "either blank or consisted only of special characters. "
+                    "Could not map the header to the internal representation "
+                    "used by the Google Spreadsheet. Please change the header "
+                    "to consist of at least one alphanumeric character."
+                    % header)
 
     # When the same sanitized header appears multiple times in the first row
     # of a spreadsheet, _n is appended to the name to make it unique.
@@ -253,8 +259,9 @@ def _get_cleaned_headers(headers):
         new_header = cleaned_header
 
         if header_count[cleaned_header] > 0:
+            # Google's numbering starts from _2, hence the +1.
             new_header = '%s_%d' % (cleaned_header,
-                                    header_count[cleaned_header])
+                                    header_count[cleaned_header] + 1)
 
         header_count[cleaned_header] += 1
         results.append(new_header)

@@ -30,7 +30,18 @@ at http://qiime.org/tutorials/remote_mapping_files.html.
 """
 
 script_info['script_usage'] = []
-script_info['script_usage'].append(("", "", "%prog"))
+script_info['script_usage'].append((
+"Load mapping file from Google Spreadsheet",
+"The following command exports and downloads a QIIME metadata mapping file "
+"from a Google Spreadsheet, using the data found in the first worksheet of "
+"the spreadsheet.",
+"%prog -k 0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc -o example1_map.txt"))
+
+script_info['script_usage'].append((
+"Load specific worksheet",
+"The following command exports from a worksheet named 'Fasting_Map'.",
+"%prog -k 0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc -w Fasting_Map "
+"-o example2_map.txt"))
 
 script_info['output_description'] = """
 The script outputs a single file, which is the metadata mapping file obtained
@@ -42,7 +53,7 @@ script_info['required_options'] = [
         help='the spreadsheet key that will be used to identify the Google '
         'Spreadsheet to load. This is the part of the Google Spreadsheet URL '
         'that comes after \'key=\'. You may instead provide the entire URL '
-        'and the key will be extracted from it. Either this option or '),
+        'and the key will be extracted from it.'),
     options_lookup['output_fp']
 ]
 script_info['optional_options'] = [

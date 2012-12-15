@@ -85,3 +85,5 @@ Caveats
 Please keep the following caveats in mind when using the remote mapping file functionality in QIIME:
 
 * If your spreadsheet contains blank lines, only the rows **up to** to the first blank line will be exported and downloaded. This is currently a limitation of the Google Spreadsheet API.
+
+* If any headers (i.e. in the first row of the spreadsheet) are empty, the entire column will be ignored during the export.
