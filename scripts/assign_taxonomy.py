@@ -11,9 +11,13 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
-
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option, get_rdp_jarpath, load_qiime_config
+from qiime.util import (parse_command_line_parameters,
+                        get_options_lookup,
+                        make_option,
+                        get_rdp_jarpath,
+                        load_qiime_config,
+                        get_tmp_filename,
+                        remove_files)
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
@@ -273,10 +277,28 @@ def main():
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error
         exit(1)
-
+    temp_result_path = get_tmp_filename(prefix='assign-tax')
     taxon_assigner = taxon_assigner_constructor(params)
     taxon_assigner(input_sequences_filepath,\
-     result_path=result_path,log_path=log_path)
+     result_path=temp_result_path,log_path=log_path)
+    
+    ## This is an ugly hack, and needs to be pushed upstream to
+    ## the taxon assigners. The output taxonomy maps that are returned by the 
+    ## taxon assigners contain the full sequence headers as the first field
+    ## (so including "comment" text in the fasta headers), but for consistency
+    ## with the input taxonomy maps, should only contain the sequence identifier.
+    ## This modifies those entries to contain only the sequence identifer, 
+    ## discarding any comment information. The formatting of these result files
+    ## needs to be centralized, and at that stage this processing should
+    ## happen there rather than here.
+    result_f = open(result_path,'w')
+    for line in open(temp_result_path,'U'):
+        fields = line.strip().split('\t')
+        seq_id = fields[0].split()[0]
+        result_f.write('%s\t%s\n' % (seq_id,'\t'.join(fields[1:])))
+    result_f.close()
+    remove_files([temp_result_path])
+        
 
 
 if __name__ == "__main__":
