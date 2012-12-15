@@ -481,9 +481,9 @@ def iterative_pick_subsampled_open_reference_otus(
                        status_update_callback=status_update_callback)
         
             # Add taxa to otu table
-            add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
+            add_metadata_cmd = 'add_metadata.py -i %s --observation_mapping_fp %s -o %s --sc_separated taxonomy --observation_header OTUID,taxonomy' %\
              (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
-            commands.append([("Add taxa to OTU table",add_taxa_cmd)])
+            commands.append([("Add taxa to OTU table",add_metadata_cmd)])
         
             command_handler(commands,
                 status_update_callback,
@@ -823,9 +823,10 @@ def pick_subsampled_open_reference_otus(input_fp,
                        status_update_callback=status_update_callback)
         
             # Add taxa to otu table
-            add_taxa_cmd = 'add_taxa.py -i %s -t %s -o %s' %\
+            # Add taxa to otu table
+            add_metadata_cmd = 'add_metadata.py -i %s --observation_mapping_fp %s -o %s --sc_separated taxonomy --observation_header OTUID,taxonomy' %\
              (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
-            commands.append([("Add taxa to OTU table",add_taxa_cmd)])
+            commands.append([("Add taxa to OTU table",add_metadata_cmd)])
         
             command_handler(commands,
                 status_update_callback,
