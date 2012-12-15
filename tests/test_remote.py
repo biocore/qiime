@@ -13,7 +13,7 @@ __status__ = "Development"
 """Test suite for the remote.py module."""
 
 from cogent.util.unit_test import TestCase, main
-from qiime.remote import (_convert_strings_to_column_headers,
+from qiime.remote import (_get_cleaned_headers,
                           _extract_spreadsheet_key_from_url,
                           load_google_spreadsheet_mapping_file,
                           RemoteMappingFileConnectionError,
@@ -43,17 +43,17 @@ class RemoteTests(TestCase):
         else:
             self.assertEqual(obs, self.exp_mapping_lines)
 
-    def test_convert_strings_to_column_headers(self):
+    def test_get_cleaned_headers(self):
         """Test correctly converts headers to Google's representation."""
         # Some duplicates.
         exp = ['foo', 'foo_1', 'foo_2', 'foo_3', 'fooo', 'foo_4', 'foo_5']
-        obs = _convert_strings_to_column_headers(
+        obs = _get_cleaned_headers(
                 ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '#Foo', 'f O O#'])
         self.assertEqual(obs, exp)
 
         # All unique.
         exp = ['foo', 'bar']
-        obs = _convert_strings_to_column_headers(['Fo#o', 'bar'])
+        obs = _get_cleaned_headers(['Fo#o', 'bar'])
         self.assertEqual(obs, exp)
 
     def test_extract_spreadsheet_key_from_url(self):
