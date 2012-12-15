@@ -109,3 +109,5 @@ Each non-chimeric reads is assigned to the specific OTU identifier it belongs to
 References
 ------------
 .. [1] Edgar RC, Haas BJ, Clemente JC, Quince C, Knight R. UCHIME improves sensitivity and speed of chimera detection. Bioinformatics. 2011 Aug 15;27(16):2194-200. Epub 2011 Jun 23. (`link <http://www.ncbi.nlm.nih.gov/pubmed/21700674>`_)
+
+.. [2] Edgar RC. Search and clustering orders of magnitude faster than BLAST. Bioinformatics. 2010 Aug 12;26(19):2460-2461. (`link <http://bioinformatics.oxfordjournals.org/content/26/19/2460>`_)
