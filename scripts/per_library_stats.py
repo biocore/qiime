@@ -36,7 +36,7 @@ script_info['script_usage'].append(("""Write to standard out and edit mapping fi
 script_info['output_description']="""The resulting statistics are written to stdout. If -m is passed, a new mapping file is written to the path specified by -o, in addition to the statistics written to stdout"""
 script_info['required_options']=[options_lookup['otu_table_as_primary_input']]
 script_info['optional_options']=[
-make_option('-m','--mapping_fp',type='existing_filepath',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
+make_option('-m','--mapping_fp',type='existing_filepath',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences per sample is presented in a new column entitled "SequenceCount", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
 
 make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written', type='new_filepath'),
 make_option('--num_otus',action='store_true',help='Counts are presented as number of observed OTUs per sample, rather than counts of sequences per sample [default: %default]',default=False)
@@ -112,7 +112,7 @@ def main():
             endoffset = 0 # if we only have the sample id, this data -> last col
         else:
             endoffset = 1 # usually make this data the penultimate column.
-        headers.insert(len(headers)-endoffset,'NumIndividuals')
+        headers.insert(len(headers)-endoffset,'SequenceCount')
         for map_line in mapping_lines:
             sample_id = map_line
             try:
