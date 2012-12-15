@@ -24,7 +24,9 @@ class RemoteTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        self.url = url
+        self.url1 = url1
+        self.url2 = url2
+        self.url3 = url3
         self.spreadsheet_key = '0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc'
         self.worksheet_name = 'Fasting_Map'
         self.exp_mapping_lines = exp_mapping_lines
@@ -56,16 +58,30 @@ class RemoteTests(TestCase):
 
     def test_extract_spreadsheet_key_from_url(self):
         """Test correctly extracts a key from a URL."""
-        # Pass a URL.
-        obs = _extract_spreadsheet_key_from_url(self.url)
+        # Pass various URLs with different key/value combos.
+        obs = _extract_spreadsheet_key_from_url(self.url1)
         self.assertEqual(obs, self.spreadsheet_key)
 
-        # Pass a key.
+        obs = _extract_spreadsheet_key_from_url(self.url2)
+        self.assertEqual(obs, self.spreadsheet_key)
+
+        obs = _extract_spreadsheet_key_from_url(self.url3)
+        self.assertEqual(obs, self.spreadsheet_key)
+
+        # Pass a key directly.
         obs = _extract_spreadsheet_key_from_url(self.spreadsheet_key)
         self.assertEqual(obs, self.spreadsheet_key)
 
+        # Pass 'key=<key>'.
+        obs = _extract_spreadsheet_key_from_url('key=' + self.spreadsheet_key)
+        self.assertEqual(obs, self.spreadsheet_key)
 
-url = 'https://docs.google.com/spreadsheet/ccc?key=0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc#gid=1'
+
+url1 = 'https://docs.google.com/spreadsheet/ccc?key=0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc#gid=1'
+
+url2 = 'https://docs.google.com/spreadsheet/pub?key=0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc&output=html'
+
+url3 = 'https://docs.google.com/spreadsheet/pub?key=0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc&output=html#gid=1'
 
 exp_mapping_lines = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription
 #Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
