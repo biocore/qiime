@@ -101,7 +101,7 @@ class BlastTaxonAssignerTests(TestCase):
         p = BlastTaxonAssigner({})
         self.assertEqual(p.Name, 'BlastTaxonAssigner')
         # default parameters correctly initialized
-        default_params = {'Min percent identity':0.90,\
+        default_params = {'Min percent identity':90.0,\
          'Max E value':1e-30,\
          'Application':'blastn/megablast'}
         self.assertEqual(p.Params, default_params)
@@ -332,7 +332,7 @@ class BlastTaxonAssignerTests(TestCase):
 
         log_file_exp = [
             "BlastTaxonAssigner parameters:",
-            'Min percent identity:0.9',
+            'Min percent identity:90.0',
             'Application:blastn/megablast',
             'Max E value:1e-30',
             'Result path: None, returned as dict.',
