@@ -83,11 +83,11 @@ An example fasta file (with truncated nucleotide sequences) that matches the abo
 Tips for building and troubleshooting custom RDP retraining files
 =================================================================
 
-1.  Always use a plain-text editor when modifying taxonomy mapping or reference sequence files to avoid the addition of unwanted characters.  If errors occur, it may be necessary to check a file using a command such as "less" in the terminal to check for hidden characters.
+1.  Always use a plain-text editor when modifying taxonomy mapping or reference sequence files to avoid the addition of unwanted characters.  If errors occur, it may be necessary to check a file using a command such as ``less`` in the terminal to check for hidden characters.
 2.  Always have the same number of taxonomic levels (separated by semicolons) in the taxonomy mapping file.
 3.  The memory requirements can change when alternative files are used.  Additionally memory can be allocated with the --rdp_max_memory parameter when calling assign_taxonomy.py.
 4.  Avoid having white space in the taxonomy mapping data.  In the above example taxonomy mapping data, if the first line had an extra space before the class level, an error would be raised.
 5.  Avoid empty levels in the taxonomy mapping with double semicolons.  At an unknown taxonomic level, use a consistent naming convention (such as the `s__` listed above for unknown species), rather than leaving a level empty.
-6.  Used consistent capitalization.  For instance, do not have one class level named c__Gammaproteobacteria and another named c__gammaproteobacteria.
-7.  Reference sequences should be ungapped (no . or - characters).
+6.  Used consistent capitalization.  For instance, do not have one class level named c__Gammaproteobacteria and another named c__gammaproteobacteria, as these would be considered distinct taxonomies.
+7.  Reference sequences should be unaligned (no gap or leading/trailing characters such as . or -) with nucleotide characters only.
 8.  As the exact line causing an error is sometimes difficult to detect, it may be advisable to break apart the taxonomy mapping file and reference sequences into smaller subsets to determine which part(s) are causing error(s).
