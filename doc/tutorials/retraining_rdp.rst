@@ -58,10 +58,36 @@ Defining alternate training files
 
 Training files can be defined by users for other taxonomies. The format is the same as the ``id_to_taxonomy_map`` used by the BLAST taxonomy assigner, defined `here <../documentation/file_formats.html#sequence-id-to-taxonomy-mapping-files>`_. You must provide this file as well as a fasta file of reference sequences where the identifiers correspond to the ids in the ``id_to_taxonomy_map``.
 
-The RDP Classifier has several requirements about its taxonomy strings for retraining. The first entry in each taxonomy string must be ``Root``, and there must be exactly six levels, including ``Root``. For example, the first four lines in the ``4feb2011`` greengenes OTUs are::
+The RDP Classifier has several requirements about its taxonomy strings for retraining.  The first column of this tab separated file is the sequence identifiers (see the reference sequence file below).  The second column is the taxonomy strings in descending order of taxonomic specification, separated by semicolons.  The number of taxonomic levels must be equal for every line.
 
-	573145	Root;k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae
-	89440	Root;k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae
-	452783	Root;k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae
-	430240	Root;k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae
+An example set of four lines in the ``4feb2011`` greengenes OTUs that are valid for RDP retraining are::
 
+	573145	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__
+	89440	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__
+	222043	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Raoultella;s__Raoultellaornithinolytica
+	430240	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Serratia;s__Serratiamarcescens
+	
+The reference sequence file should have fasta labels that match all of the labels as listed in the taxonomy mapping file.  Orientation of the sequences does not matter for RDP, but as this can impact other software such as uclust, so it is suggested that the sequences be in the same orientation to avoid complications with other QIIME scripts.
+
+An example fasta file (with truncated nucleotide sequences) that matches the above taxonomy strings is::
+
+	>573145
+	AGAGTTTGATCATGGCTCAGATTGAACGCAGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCT
+	>89440
+	AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGC
+	>222043
+	AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAGCGGTAGCACAGAAAGCTTACTC
+	>101567
+	TGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGAGGAGGAAGGCATTAAGGTTAATAACCTTAGTGATTGA
+	
+Tips for building and troubleshooting custom RDP retraining files
+=================================================================
+
+1.  Always use a plain-text editor when modifying taxonomy mapping or reference sequence files to avoid the addition of unwanted characters.  If errors occur, it may be necessary to check a file using a command such as ``less`` in the terminal to check for hidden characters.
+2.  Always have the same number of taxonomic levels (separated by semicolons) in the taxonomy mapping file.
+3.  The memory requirements can change when alternative files are used.  Additionally memory can be allocated with the --rdp_max_memory parameter when calling assign_taxonomy.py.
+4.  Avoid having white space in the taxonomy mapping data.  In the above example taxonomy mapping data, if the first line had an extra space before the class level, an error would be raised.
+5.  Avoid empty levels in the taxonomy mapping with double semicolons.  At an unknown taxonomic level, use a consistent naming convention (such as the `s__` listed above for unknown species), rather than leaving a level empty.
+6.  Used consistent capitalization.  For instance, do not have one class level named c__Gammaproteobacteria and another named c__gammaproteobacteria, as these would be considered distinct taxonomies.
+7.  Reference sequences should be unaligned (no gap or leading/trailing characters such as . or -) with nucleotide characters only.
+8.  As the exact line causing an error is sometimes difficult to detect, it may be advisable to break apart the taxonomy mapping file and reference sequences into smaller subsets to determine which part(s) are causing error(s).
