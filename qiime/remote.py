@@ -16,9 +16,24 @@ from collections import defaultdict
 from csv import writer
 from socket import gaierror
 from StringIO import StringIO
-from gdata.spreadsheet import SpreadsheetsCellsFeedFromString
-from gdata.spreadsheet.service import CellQuery
-from gdata.spreadsheet.service import SpreadsheetsService
+from cogent.app.util import ApplicationNotFoundError
+
+# Load gdata if it's available. If it's not, skip it but set up to raise errors
+# if the user tries to use it.
+try:
+    from gdata.spreadsheet import SpreadsheetsCellsFeedFromString
+    from gdata.spreadsheet.service import CellQuery
+    from gdata.spreadsheet.service import SpreadsheetsService
+except ImportError:
+    def raise_gdata_not_found_error(*args, **kwargs):
+        raise ApplicationNotFoundError("gdata cannot be found.\nIs it "
+                "installed? Is it in your $PYTHONPATH?\nThis is an optional "
+                "QIIME dependency, but is required if you plan to use QIIME's "
+                "remote mapping file features. For more information, please "
+                "see http://qiime.org/install/install.html.")
+    # Set functions which cannot be imported to raise_gdata_not_found_error.
+    SpreadsheetsCellsFeedFromString = CellQuery = SpreadsheetsService = \
+            raise_gdata_not_found_error
 
 class RemoteMappingFileError(Exception):
     pass

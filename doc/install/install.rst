@@ -93,7 +93,7 @@ If you plan to build the QIIME documentation locally:
 
 If you plan to use remote mapping files (stored as Google Spreadsheets) with QIIME (see the tutorial `here <../tutorials/remote_mapping_files.html>`_):
 
-* gdata 2.0.17 (`src <http://code.google.com/p/gdata-python-client/downloads/detail?name=gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
+* gdata 2.0.17 (`src <http://gdata-python-client.googlecode.com/files/gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
 
 License information for external dependencies
 ---------------------------------------------

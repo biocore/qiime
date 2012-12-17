@@ -48,7 +48,7 @@ You are now ready to use your Google Spreadsheet with QIIME!
 
 How do I use a remote mapping file with QIIME?
 ----------------------------------------------
-The script `load_remote_mapping_file.py <../scripts/load_remote_mapping_file.html>`_ allows you to export and download a remote mapping file (currently a Google Spreadsheet) to your local machine. This removes the steps of navigating to Google Docs in a browser, exporting the spreadsheet as CSV or Excel, and then having to re-export as TSV (which is the format that QIIME expects).
+The script `load_remote_mapping_file.py <../scripts/load_remote_mapping_file.html>`_ allows you to export and download a remote mapping file (currently a Google Spreadsheet) to your local machine. This removes the steps of navigating to Google Docs in a web browser and exporting the spreadsheet as TSV each time you need to obtain the latest published version of the spreadsheet.
 
 To obtain a local copy of the `QIIME overview tutorial <./tutorial.html>`_ mapping file stored in Google Docs, run the following command: ::
 
@@ -74,9 +74,7 @@ To update this mapping file at a later time, simply rerun the above command (not
 
 If your spreadsheet has multiple worksheets (i.e. tabs), `load_remote_mapping_file.py <../scripts/load_remote_mapping_file.html>`_  will by default choose the first worksheet as the one it will export. You can override this behavior by using the -w option and providing the name of the worksheet.
 
-You may also specify the entire URL of the Google Spreadsheet (instead of only
-supplying the key) using the same -k option that we used above. The script will
-attempt to extract the key from the URL.
+You may also specify the entire URL of the Google Spreadsheet (instead of only supplying the key) using the same -k option that we used above. The script will attempt to extract the key from the URL.
 
 **Note:** Now that we have a local copy of our mapping file, it is a good idea to run `check_id_map.py <../scripts/check_id_map.html>`_ on the mapping file to make sure it is a valid mapping file and that there weren't any problems during the export/download process.
 
@@ -87,3 +85,13 @@ Please keep the following caveats in mind when using the remote mapping file fun
 * If your spreadsheet contains blank lines, only the rows **up to** to the first blank line will be exported and downloaded. This is currently a limitation of the Google Spreadsheet API.
 
 * If any headers (i.e. in the first row of the spreadsheet) are empty, the entire column will be ignored during the export.
+
+Upcoming Features
+-----------------
+Remote mapping files are very new to QIIME and are thus an experimental feature. We plan to add additional support for remote mapping files in the future, including the following features:
+
+* Seamless integration with existing QIIME scripts to allow a remote mapping file to be specified directly as input (without having to run `load_remote_mapping_file.py <../scripts/load_remote_mapping_file.html>`_ beforehand).
+
+* Option to run `check_id_map.py <../scripts/check_id_map.html>`_ as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.
+
+* Ability to authenticate users to allow access to spreadsheets that are not "published to the web" and to allow edits.
