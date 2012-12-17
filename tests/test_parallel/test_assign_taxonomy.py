@@ -105,7 +105,7 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
         # as our input with the same seq IDs. We should have a taxonomy string
         # and a confidence value for each seq as well.
         self.assertEqual(len(results), 2)
-        self.assertEqual(len(results['X67228 some description']), 2)
+        self.assertEqual(len(results['X67228']), 2)
         self.assertEqual(len(results['EF503697']), 2)
 
 
