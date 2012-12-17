@@ -10,6 +10,13 @@ To further reduce runtime, we take a big shortcut: in this tutorial, we perform 
 
 The data used in this analysis is derived from the `Moving Pictures of the Human Microbiome <http://www.ncbi.nlm.nih.gov/pubmed/21624126>`_ study, where two human subjects collected daily samples from four body sites: the tongue, the palm of the left hand, the palm of the right hand, and the gut (via fecal samples obtained by swapping used toilet paper). This data was sequenced across six lanes of an Illumina GAIIx, using the barcoding amplicon sequencing protocol described in `Global patterns of 16S rRNA diversity at a depth of millions of sequences per sample <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_. A more recent version of this protocol that can be used with the Illumina HiSeq 2000 and MiSeq can be found `here <http://www.ncbi.nlm.nih.gov/pubmed/22402401>`_. 
 
+IPython Notebook
+----------------
+
+The steps in this tutorial are also presented in an IPython Notebook which you can view `here <http://nbviewer.ipython.org/urls/raw.github.com/qiime/qiime/master/examples/ipynb/illumina_overview_tutorial.ipynb>`_. 
+
+We'd like to thank the IPython developers for their help with using their tools with QIIME. For more information on using QIIME with IPython, see `our recent paper here <http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html>`_. You can find more information on the `IPython Notebook here <http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html>`_, and the `nbviewer tool (which we use to display the notebook) here <http://nbviewer.ipython.org/>`_.
+
 Obtaining the data
 ------------------
 
