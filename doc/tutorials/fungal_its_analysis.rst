@@ -15,4 +15,4 @@ This tutorial is provided as an IPython Notebook. You can view the tutorial `her
 Acknowledgements
 ----------------
 
-We'd like to thank the IPython developers for their help with using their tools with QIIME. For more information on using QIIME with IPython, see `our recent paper here <http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html>`_. You can find more information on the [IPython Notebook here](http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html), and the [nbviewer tool (which we use to display the notebook) here](http://nbviewer.ipython.org/).
+We'd like to thank the IPython developers for their help with using their tools with QIIME. For more information on using QIIME with IPython, see `our recent paper here <http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html>`_. You can find more information on the `IPython Notebook here <http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html>`_, and the `nbviewer tool (which we use to display the notebook) here <http://nbviewer.ipython.org/>`_.
