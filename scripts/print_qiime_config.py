@@ -609,7 +609,7 @@ class Qiime_config(TestCase):
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
-        command = "rtax 2>&1 > % | grep Version | awk '{print $2}'" % devnull
+        command = "rtax 2>&1 > %s | grep Version | awk '{print $2}'" % devnull
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
