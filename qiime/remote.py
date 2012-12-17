@@ -36,18 +36,24 @@ except ImportError:
     SpreadsheetsCellsFeedFromString = CellQuery = SpreadsheetsService = \
             raise_gdata_not_found_error
 
-class RemoteMappingFileError(Exception):
+class GoogleSpreadsheetError(Exception):
     pass
 
-class RemoteMappingFileConnectionError(Exception):
+class GoogleSpreadsheetConnectionError(Exception):
     pass
 
-def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
-    """Loads a mapping file contained in a Google Spreadsheet.
+def load_google_spreadsheet(spreadsheet_key, worksheet_name=None):
+    """Downloads and exports a Google Spreadsheet in TSV format.
 
-    Returns a string containing the mapping file contents in QIIME-compatible
-    format (e.g. for writing out to a file or parsing using
-    qiime.parse.parse_mapping_file).
+    Returns a string containing the spreadsheet contents in TSV format (e.g.
+    for writing out to a file or parsing).
+
+    The first line is assumed to be the spreadsheet header (i.e. containing
+    column names), which can optionally be followed by one or more comment
+    lines (starting with '#'). Only the first cell of a comment line will be
+    parsed (to keep exported spreadsheets consistent with QIIME mapping files'
+    comments). The (optional) comments section is then followed by the
+    spreadsheet data.
 
     Some of this code is based on the following websites, as well as the
     gdata.spreadsheet.text_db module:
@@ -69,18 +75,18 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
                                                       visibility='public',
                                                       projection='basic')
     except gaierror:
-        raise RemoteMappingFileConnectionError("Could not establish "
+        raise GoogleSpreadsheetConnectionError("Could not establish "
                                                "connection with server. Do "
                                                "you have an active Internet "
                                                "connection?")
 
     if len(worksheets_feed.entry) < 1:
-        raise RemoteMappingFileError("The Google Spreadsheet with key '%s' "
+        raise GoogleSpreadsheetError("The Google Spreadsheet with key '%s' "
                                      "does not have any worksheets associated "
                                      "with it." % spreadsheet_key)
 
-    # Find worksheet that will be used as the mapping file. If a name has not
-    # been provided, use the first worksheet.
+    # Find worksheet that will be exported. If a name has not been provided,
+    # use the first worksheet.
     worksheet = None
     if worksheet_name is not None:
         for sheet in worksheets_feed.entry:
@@ -88,7 +94,7 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
                 worksheet = sheet
 
         if worksheet is None:
-            raise RemoteMappingFileError("The worksheet name '%s' could not "
+            raise GoogleSpreadsheetError("The worksheet name '%s' could not "
                                          "be found in the Google Spreadsheet "
                                          "with key '%s'."
                                          % (worksheet_name, spreadsheet_key))
@@ -100,25 +106,25 @@ def load_google_spreadsheet_mapping_file(spreadsheet_key, worksheet_name=None):
     worksheet_id = worksheet.id.text.split('/')[-1]
 
     # Now that we have a spreadsheet key and worksheet ID, we can read the
-    # mapping file data. First get the mapping file headers (first row). We
-    # need this in order to grab the rest of the actual mapping file data in
-    # the correct order (it is returned unordered).
+    # data. First get the headers (first row). We need this in order to grab
+    # the rest of the actual data in the correct order (it is returned
+    # unordered).
     headers = _get_spreadsheet_headers(gd_client, spreadsheet_key,
                                        worksheet_id)
     if len(headers) < 1:
-        raise RemoteMappingFileError("Could not load mapping file header (it "
+        raise GoogleSpreadsheetError("Could not load spreadsheet header (it "
                                      "appears to be empty). Is your Google "
                                      "Spreadsheet with key '%s' empty?"
                                      % spreadsheet_key)
 
     # Loop through the rest of the rows and build up a list of data (in the
-    # same row/col order found in the original mapping file).
-    mapping_lines = _export_mapping_file(gd_client, spreadsheet_key,
-                                         worksheet_id, headers)
+    # same row/col order found in the spreadsheet).
+    spreadsheet_lines = _export_spreadsheet(gd_client, spreadsheet_key,
+                                            worksheet_id, headers)
 
     out_lines = StringIO()
     tsv_writer = writer(out_lines, delimiter='\t', lineterminator='\n')
-    tsv_writer.writerows(mapping_lines)
+    tsv_writer.writerows(spreadsheet_lines)
     return out_lines.getvalue()
 
 def _extract_spreadsheet_key_from_url(url):
@@ -163,10 +169,10 @@ def _get_spreadsheet_headers(client, spreadsheet_key, worksheet_id):
 
     return headers
 
-def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
-    """Returns a list of lists containing the entire mapping file.
+def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
+    """Returns a list of lists containing the entire spreadsheet.
 
-    This will include the header, any comment lines, and the mapping data.
+    This will include the header, any comment lines, and the spreadsheet data.
     Blank cells are represented as None. Data will only be read up to the first
     blank line that is encountered (this is a limitation of the Google
     Spreadsheet API).
@@ -184,7 +190,7 @@ def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
 
     # List feed skips header and returns rows in the order they appear in the
     # spreadsheet.
-    mapping_lines = [headers]
+    spreadsheet_lines = [headers]
     rows_feed = client.GetListFeed(spreadsheet_key, worksheet_id,
                                    visibility='public', projection='values')
     while True:
@@ -193,7 +199,7 @@ def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
         for row in rows_feed.entry:
             line = []
 
-            # Loop through our headers and use the cleaned version to lookup
+            # Loop through our headers and use the cleaned version to look up
             # the cell data. In certain cases (if the original header was blank
             # or only contained special characters) we will not be able to map
             # our header, so the best we can do is tell the user to change the
@@ -203,7 +209,7 @@ def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
                 try:
                     cell_data = row.custom[cleaned_header].text
                 except KeyError:
-                    raise RemoteMappingFileError("Could not map header '%s' "
+                    raise GoogleSpreadsheetError("Could not map header '%s' "
                             "to Google Spreadsheet's internal representation "
                             "of the header. We suggest changing the name of "
                             "the header in your Google Spreadsheet to be "
@@ -220,7 +226,7 @@ def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
                     line.append(cell_data)
                     found_data = True
 
-            mapping_lines.append(line)
+            spreadsheet_lines.append(line)
 
         # Get the next set of rows if necessary.
         next_link = rows_feed.GetNextLink()
@@ -231,7 +237,7 @@ def _export_mapping_file(client, spreadsheet_key, worksheet_id, headers):
         else:
             break
 
-    return mapping_lines
+    return spreadsheet_lines
 
 def _get_cleaned_headers(headers):
     """Creates a list of "cleaned" headers which spreadsheets accept.
@@ -259,7 +265,7 @@ def _get_cleaned_headers(headers):
         if len(sanitized) > 0:
             cleaned_headers.append(sanitized)
         else:
-            raise RemoteMappingFileError("Encountered a header '%s' that was "
+            raise GoogleSpreadsheetError("Encountered a header '%s' that was "
                     "either blank or consisted only of special characters. "
                     "Could not map the header to the internal representation "
                     "used by the Google Spreadsheet. Please change the header "

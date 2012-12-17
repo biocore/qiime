@@ -16,12 +16,12 @@ from socket import gaierror
 from cogent.util.unit_test import TestCase, main
 from qiime.remote import (_get_cleaned_headers,
                           _get_spreadsheet_headers,
-                          _export_mapping_file,
+                          _export_spreadsheet,
                           _extract_spreadsheet_key_from_url,
-                          load_google_spreadsheet_mapping_file,
+                          load_google_spreadsheet,
                           raise_gdata_not_found_error,
-                          RemoteMappingFileConnectionError,
-                          RemoteMappingFileError)
+                          GoogleSpreadsheetConnectionError,
+                          GoogleSpreadsheetError)
 
 try:
     from gdata.spreadsheet.service import SpreadsheetsService
@@ -49,32 +49,30 @@ class RemoteTests(TestCase):
         client = SpreadsheetsService()
 
         try:
-            client.GetWorksheetsFeed(self.spreadsheet_key,
-                                          visibility='public',
-                                          projection='basic')
+            client.GetWorksheetsFeed(self.spreadsheet_key, visibility='public',
+                                     projection='basic')
         except gaierror:
             client = None
 
         return client
 
-    def test_load_google_spreadsheet_mapping_file(self):
-        """Test retrieves remote mapping file. Will fail if no Internet connection."""
+    def test_load_google_spreadsheet(self):
+        """Test retrieves a Google Spreadsheet. Will fail if no Internet connection."""
         # Test without naming a worksheet.
-        obs = load_google_spreadsheet_mapping_file(self.spreadsheet_key,
-                                                   worksheet_name=None)
+        obs = load_google_spreadsheet(self.spreadsheet_key,
+                                      worksheet_name=None)
         self.assertEqual(obs, self.exp_mapping_lines)
 
         # Test with naming a worksheet.
-        obs = load_google_spreadsheet_mapping_file(self.spreadsheet_key,
-                worksheet_name='Fasting_Map')
+        obs = load_google_spreadsheet(self.spreadsheet_key,
+                                      worksheet_name='Fasting_Map')
         self.assertEqual(obs, self.exp_mapping_lines)
 
-    def test_load_google_spreadsheet_mapping_file_invalid_input(self):
+    def test_load_google_spreadsheet_invalid_input(self):
         """Test correctly raises errors on various bad inputs. Will fail if no Internet connection."""
         # Bad worksheet name.
-        self.assertRaises(RemoteMappingFileError,
-                load_google_spreadsheet_mapping_file, self.spreadsheet_key,
-                worksheet_name='foo')
+        self.assertRaises(GoogleSpreadsheetError, load_google_spreadsheet,
+                         self.spreadsheet_key, worksheet_name='foo')
 
     def test_extract_spreadsheet_key_from_url(self):
         """Test correctly extracts a key from a URL."""
@@ -106,11 +104,11 @@ class RemoteTests(TestCase):
                                            self.worksheet_id)
             self.assertEqual(obs, exp)
         else:
-            raise RemoteMappingFileConnectionError("Cannot execute test "
+            raise GoogleSpreadsheetConnectionError("Cannot execute test "
                     "without an active Internet connection.")
 
-    def test_export_mapping_file(self):
-        """Test exporting mapping file from spreadsheet. Will fail if no Internet connection."""
+    def test_export_spreadsheet(self):
+        """Test exporting spreadsheet as TSV. Will fail if no Internet connection."""
         client = self.getClient()
         if client:
             exp = [['#SampleID', 'DOB'],
@@ -122,23 +120,23 @@ class RemoteTests(TestCase):
                 ['PC.481', '20070314'], ['PC.593', '20071210'],
                 ['PC.607', '20071112'], ['PC.634', '20080116'],
                 ['PC.635', '20080116'], ['PC.636', '20080116']]
-            obs = _export_mapping_file(client, self.spreadsheet_key,
-                                       self.worksheet_id, ['#SampleID', 'DOB'])
+            obs = _export_spreadsheet(client, self.spreadsheet_key,
+                                      self.worksheet_id, ['#SampleID', 'DOB'])
             self.assertEqual(obs, exp)
         else:
-            raise RemoteMappingFileConnectionError("Cannot execute test "
+            raise GoogleSpreadsheetConnectionError("Cannot execute test "
                     "without an active Internet connection.")
 
-    def test_export_mapping_file_invalid_input(self):
-        """Test exporting mapping file with bad input raises errors. Will fail if no Internet connection."""
+    def test_export_spreadsheet_invalid_input(self):
+        """Test exporting spreadsheet with bad input raises errors. Will fail if no Internet connection."""
         client = self.getClient()
         if client:
             # Nonexisting header.
-            self.assertRaises(RemoteMappingFileError, _export_mapping_file,
+            self.assertRaises(GoogleSpreadsheetError, _export_spreadsheet,
                     client, self.spreadsheet_key, self.worksheet_id,
                     ['#SampleID', 'Foo'])
         else:
-            raise RemoteMappingFileConnectionError("Cannot execute test "
+            raise GoogleSpreadsheetConnectionError("Cannot execute test "
                     "without an active Internet connection.")
 
     def test_get_cleaned_headers(self):
@@ -156,9 +154,9 @@ class RemoteTests(TestCase):
 
         # Header consisting of only special characters and header that is
         # blank.
-        self.assertRaises(RemoteMappingFileError, _get_cleaned_headers,
+        self.assertRaises(GoogleSpreadsheetError, _get_cleaned_headers,
                           ['Foo', '___', 'BAR'])
-        self.assertRaises(RemoteMappingFileError, _get_cleaned_headers,
+        self.assertRaises(GoogleSpreadsheetError, _get_cleaned_headers,
                           ['Foo', '', 'BAR'])
 
 

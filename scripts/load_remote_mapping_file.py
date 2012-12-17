@@ -12,7 +12,7 @@ __status__ = "Development"
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
-from qiime.remote import load_google_spreadsheet_mapping_file
+from qiime.remote import load_google_spreadsheet
 
 options_lookup = get_options_lookup()
 
@@ -72,8 +72,7 @@ def main():
     if worksheet_name is not None:
         worksheet_name = worksheet_name.strip('"').strip("'")
 
-    results = load_google_spreadsheet_mapping_file(opts.spreadsheet_key,
-                                                   worksheet_name)
+    results = load_google_spreadsheet(opts.spreadsheet_key, worksheet_name)
 
     with open(opts.output_fp, 'w') as out_f:
         out_f.write(results)
