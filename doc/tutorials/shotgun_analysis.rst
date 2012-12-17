@@ -36,8 +36,10 @@ Defining environment variables for use in this tutorial
 
 Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this::
 
-	export reference_seqs=/home/ubuntu/qiime_software/img-qiime-7oct2012/gene_aa_seqs.faa
-	export reference_md=/home/ubuntu/qiime_software/img-qiime-7oct2012/gene_ko_pathway.txt
+	export reference_seqs=/home/ubuntu/qiime_software/img-qiime-***/gene_aa_seqs.faa
+	export reference_md=/home/ubuntu/qiime_software/img-qiime-***/gene_ko_pathway.txt
+
+where ``img-qiime-***`` will be specific to the version of the reference dataset you downloaded from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.
 
 Assigning nucleotide reads to protein reference sequences
 ---------------------------------------------------------

@@ -1,7 +1,8 @@
 # qiime_config
-# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_config
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime/support_files/qiime_config
 # To overwrite defaults, copy this file to $HOME/.qiime_config or a full path
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
+# Find details on this file at http://qiime.org/install/qiime_config.html
 
 cluster_jobs_fp
 python_exe_fp	python
