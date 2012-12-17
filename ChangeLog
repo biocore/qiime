@@ -27,6 +27,7 @@ QIIME 1.5.0-dev (changes since 1.5.0 go here)
 * make_distance_boxplots.py has a new option --color_individual_within_by_field that allows the "individual within" boxplots to be optionally colored to indicate their membership in another mapping file field. A legend is also included.
 * Added sample_ids_from_category_state_coverage function to qiime/filter.py to support filtering of samples based on a subject's category coverage. For example, this function is useful for filtering individuals out of a time series study that do not meet some sort of timepoint coverage criteria.
 * assign_taxonomy.py now supports assignment with tax2tree version 1.0.
+* Added new script load_remote_mapping_file.py and accompanying tutorial to allow exporting and downloading of mapping files stored as Google Spreadsheets.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================

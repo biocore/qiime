@@ -91,6 +91,10 @@ If you plan to build the QIIME documentation locally:
 
 * Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
 
+If you plan to use remote mapping files (stored as Google Spreadsheets) with QIIME (see the tutorial `here <../tutorials/remote_mapping_files.html>`_):
+
+* gdata 2.0.17 (`src <http://gdata-python-client.googlecode.com/files/gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
+
 License information for external dependencies
 ---------------------------------------------
 We have attempted to provide accurate licensing information for the above dependencies for the convenience of our users. This information is by no means definitive and may contain errors. Any questions about licenses or the legality of specific uses of these software packages should be directed to the authors of the software. Do not rely solely on the license information presented above!
