@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from os import remove, system
 from string import join, lowercase
-from os.path import exists
+from os.path import exists, join
 from time import sleep, time
 from random import sample
 
@@ -38,7 +38,7 @@ def submit_jobs(commands, prefix):
     if not (exists(CLUSTER_JOBS_SCRIPT) or app_path(CLUSTER_JOBS_SCRIPT)):
         raise ApplicationNotFoundError,"cluster_jobs_fp not in $PATH or provided as full path!"
 
-    outfilename = "%s/%s_commands.txt" % (get_qiime_temp_dir(), prefix)
+    outfilename = join(get_qiime_temp_dir(), "%s_commands.txt" % prefix) 
     fh = open(outfilename, "w") 
     fh.write("\n".join(commands))
     fh.close()
@@ -63,8 +63,8 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
 """
 
     qiime_config = load_qiime_config()
-    DENOISE_WORKER = get_qiime_scripts_dir() + "/denoiser_worker.py"
-    CLOUD_DISPATCH = get_qiime_scripts_dir() + "/ec2Dispatch"
+    DENOISE_WORKER = join( get_qiime_scripts_dir(), "denoiser_worker.py")
+    CLOUD_DISPATCH = join( get_qiime_scripts_dir(), "ec2Dispatch")
     CLOUD_ENV = qiime_config['cloud_environment']
     CLOUD = not CLOUD_ENV == "False"
 
