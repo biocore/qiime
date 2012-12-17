@@ -3,7 +3,7 @@
 Using parallel QIIME
 ====================
 
-Some steps in QIIME can be run in parallel, either directly or though workflow scripts that wrap them. Some of the individual steps that can be run in parallel are assignment of taxonomy with BLAST (:doc:`../scripts/parallel_assign_taxonomy_blast`) or the RDP classifier (:doc:`../scripts/parallel_assign_taxonomy_rdp`), sequence alignment with PyNAST (:doc:`../scripts/parallel_align_seqs_pynast`), computation of alpha diversity (:doc:`../scripts/parallel_alpha_diversity`) and beta diversity (:doc:`../scripts/parallel_beta_diversity`), and reference-based OTU picking (:doc:`../scripts/parallel_pick_otus_uclust_ref`). The workflow scripts that wrap these steps allow you to run them in parallel by passing the ``-a`` parameter.
+Some steps in QIIME can be run in parallel, either directly or though workflow scripts that wrap them. Some of the individual steps that can be run in parallel are assignment of taxonomy with BLAST (:doc:`../scripts/parallel_assign_taxonomy_blast`) or the RDP classifier (:doc:`../scripts/parallel_assign_taxonomy_rdp`), sequence alignment with PyNAST (:doc:`../scripts/parallel_align_seqs_pynast`), computation of alpha diversity (:doc:`../scripts/parallel_alpha_diversity`) and beta diversity (:doc:`../scripts/parallel_beta_diversity`), and reference-based OTU picking (:doc:`../scripts/parallel_pick_otus_uclust_ref`). To find a complete list of the parallel QIIME scripts, see the scripts beginning with the name ``parallel`` on :doc:`the script index <../scripts/index>`. The workflow scripts that wrap these steps allow you to run them in parallel by passing the ``-a`` parameter.
 
 How parallel QIIME works
 -------------------------
@@ -33,7 +33,12 @@ If you are running in a more complex environment (e.g, a cluster) you'll need to
 
 .. warning:: 
 	
-	Before starting parallel jobs with QIIME, you should run ``print_qiime_config.py -t`` to confirm that the changes you've made in ``qiime_config`` have been recognized by QIIME. This is very important as it allows you to ensure that the correct ``cluster_jobs_fp`` is being used in your environment (and therefore that you're not about to issue 100 ``system`` calls on the head node of your cluster, which would likely make your system administrator very angry - you've been warned!). 
+	Before starting parallel jobs with QIIME, you should run ``print_qiime_config.py -t`` to confirm that the changes you've made in ``qiime_config`` have been recognized by QIIME. This is very important as it allows you to ensure that the correct ``cluster_jobs_fp`` is being used in your environment (and therefore that you're not about to issue 100 ``system`` calls on the head node of your cluster, which would likely make your system administrator very angry - you've been warned!).
+
+.. warning::
+	
+	If you're using the QIIME workflow scripts in parallel mode (i.e., with the ``-a`` parameter), and submitting the workflow command as a job to the queueing system, that job must be able to submit other jobs to the queue. In other words, worker jobs on the cluster must have sufficent permission to submit jobs.
+
 
 Writing a cluster jobs script specific to your parallel environment
 -------------------------------------------------------------------
