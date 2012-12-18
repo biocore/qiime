@@ -31,16 +31,17 @@ Treatment='2xDose') passing 'Treatment' to this script would cause it to compare
 By default the two sample t-test will be
 nonparametric (i.e. using Monte Carlo permutations to calculate the p-value),
 though the user has the option to make the test a parametric t-test. 
-The output format is a comparison X iteration table where each row is a
-different group comparison, and each column is either a p or t value (indicated
-by the header) for the specified iteration. The iterations are not controlled 
+The output format is a comparison X (tval,pval) table where each row is a
+different group comparison, and the columns are a t-value or p-value (indicated
+by the header). Any iterations of a rarefaction at a given depth will be 
+averaged. For instance, if your collated_alpha file had 10 iterations of the
+rarefaction at depth 480, the scores for the alpha diversity metrics of those
+10 iterations would be averaged (within sample). The iterations are not 
+controlled 
 by this script; when multiple_rarefactions.py is called, the -n option specifies
-the number of iterations that have occurred. Each iteration at a given depth
-is a rarefaction at that depth. 
-The multiple comparison correction takes into account both the number of 
-between group comparisons and the number of iterations. For example, if you had
-10 iterations and 3 between group comparisons you would be comparing for 30 
-tests.
+the number of iterations that have occurred. 
+The multiple comparison correction takes into account the number of between 
+group comparisons.
 """
  
 script_info['script_usage'] = []
