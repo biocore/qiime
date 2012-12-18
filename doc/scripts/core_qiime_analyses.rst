@@ -47,7 +47,7 @@ This script plugs several QIIME steps together to form a basic full data analysi
 	`-`-suppress_split_libraries
 		Skip demultiplexing/quality filtering (i.e. split_libraries). This assumes that sequence identifiers are in post-split_libraries format (i.e., sampleID_seqID) [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 4]
 
 
 **Output:**

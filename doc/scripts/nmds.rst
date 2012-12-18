@@ -43,6 +43,14 @@ For this script, the user supplies a distance matrix (i.e. resulting file from `
 
 	nmds.py -i beta_div.txt -o beta_div_coords.txt
 
+**NMDS (Dimensions):**
+
+For this script, the user supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), the number of dimensions of NMDS space and the output filename (e.g. beta_div_coords.txt), as follows:
+
+::
+
+	nmds.py -i beta_div.txt -d 3 -o beta_div_3_coords.txt
+
 **NMDS (Multiple Files):**
 
 The script also functions in batch mode if a folder is supplied as input (e.g. from `beta_diversity.py <./beta_diversity.html>`_ run in batch). No other files should be present in the input folder - only the distance matrix files to be analyzed. This script operates on every distance matrix file in the input directory and creates a corresponding nmds results file in the output directory, e.g.:

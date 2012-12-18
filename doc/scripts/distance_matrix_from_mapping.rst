@@ -7,7 +7,7 @@
 
 **Description:**
 
-The input for this script is a mapping file and the name of a column from which a distance matrix will be created. The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
+The input for this script is a mapping file and the name of a column, it has to be numeric, from which a distance matrix will be created. The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
 
 As this is a univariate procedure only one metric is supported: d = c-b.
 
@@ -39,10 +39,10 @@ The output of `distance_matrix_from_mapping.py <./distance_matrix_from_mapping.h
 
 **Pairwise dissimilarity:**
 
-To calculate the distance matrix (using e.g. euclidean distance) on a column of the mapping file, where the results are output to DOB_euclidean.txt, use the following command:
+To calculate the distance matrix (using euclidean distance) on a column of the mapping file, where the results are output to DOB.txt, use the following command:
 
 ::
 
-	distance_matrix_from_mapping.py -i Fasting_Map.txt -c DOB -m euclidean -o distance_matrix/
+	distance_matrix_from_mapping.py -i Fasting_Map.txt -c DOB
 
 

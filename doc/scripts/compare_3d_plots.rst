@@ -55,15 +55,15 @@ Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned 
 
 ::
 
-	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'
+	compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt
 
 **Example 2:**
 
-Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):
+Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Treatment and DOB):
 
 ::
 
-	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'
+	compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment,DOB'
 
 **Example 3:**
 
@@ -71,15 +71,15 @@ Compare two pca/pcoa files in the same 3d plot for a combination of label header
 
 ::
 
-	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/
+	compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test/
 
 **Example 4:**
 
-Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: 
+Pass in a list of desired edges and only one pca/pcoa file: 
 
 ::
 
-	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/
+	compare_3d_plots.py -i $PWD/raw_pca_data1.txt -e $PWD/edges.txt -m Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test2/
 
 **Example 5:**
 
@@ -87,14 +87,6 @@ Pass in a list of desired edges and only one pca/pcoa file:
 
 ::
 
-	compare_3d_plots.py -i 'raw_pca_data1.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/
-
-**Example 6:**
-
-Pass in a list of desired edges and only one pca/pcoa file: 
-
-::
-
-	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/
+	compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -e $PWD/edges.txt -m $PWD/Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test3/
 
 

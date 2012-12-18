@@ -41,6 +41,6 @@ Blast all sequences in inseqs.fasta (-i) against a BLAST db constructed from ref
 
 ::
 
-	blast_wrapper.py -i inseqs.fasta -r refseqs.fasta
+	blast_wrapper.py -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta
 
 

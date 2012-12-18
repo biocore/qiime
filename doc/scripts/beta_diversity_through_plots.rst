@@ -21,7 +21,7 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		The input fasta file [REQUIRED]
+		The input biom table [REQUIRED]
 	-m, `-`-mapping_fp
 		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir
@@ -50,7 +50,7 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 	`-`-suppress_3d_plots
 		Do not generate 3D plots [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 4]
 
 
 **Output:**
@@ -60,7 +60,7 @@ This script results in a distance matrix (from `beta_diversity.py <./beta_divers
 
 **Example:**
 
-Given an OTU table, a phylogenetic tree, an even sampling depth, and a mapping file, perform the following steps: 1. Randomly subsample otu_table.biom to even number of sequences per sample (100 in this case); 2. Compute a weighted and unweighted unifrac distance matrcies (can add additional metrics by passing a parameters file via -p); 3. Peform a principle coordinates analysis on the result of Step 2; 4. Generate a 2D and 3D plots for all mapping fields.
+Given an OTU table, a phylogenetic tree, an even sampling depth, and a mapping file, perform the following steps: 1. Randomly subsample otu_table.biom to even number of sequences per sample (100 in this case); 2. Compute a weighted and unweighted unifrac distance matrcies (can add additional metrics by passing a parameters file via -p); 3. Peform a principal coordinates analysis on the result of Step 2; 4. Generate a 2D and 3D plots for all mapping fields.
 
 ::
 

@@ -25,9 +25,9 @@ removed in the output filtered files.
 	**[REQUIRED]**
 		
 	-f, `-`-fasta_fp
-		Fasta file.  Needed to test for congruety between the number of nucleotides in the fasta file and quality scores in the qual file.
+		Input fasta filepath to be truncated.
 	-q, `-`-qual_fp
-		Quality score file used to generate histogram data.
+		Input quality scores filepath to be truncated.
 	-b, `-`-base_pos
 		Nucleotide position to truncate the fasta and quality score files at.
 	
@@ -44,10 +44,10 @@ Filtered versions of the input fasta and qual file (based on input name with '_f
 
 **Example:**
 
-Truncate the input fasta and quality files at base position 215, output to the filtered_seqs directory:
+Truncate the input fasta and quality files at base position 100, output to the filtered_seqs directory:
 
 ::
 
-	truncate_fasta_qual_files.py -f seqs.fna -q seqs.qual -b 215 -o filtered_seqs/
+	truncate_fasta_qual_files.py -f seqs.fna -q seqs.qual -b 100 -o filtered_seqs/
 
 

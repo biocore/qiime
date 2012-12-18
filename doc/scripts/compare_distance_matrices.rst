@@ -32,7 +32,7 @@ For more information and examples pertaining to this script, please refer to the
 	`-`-method
 		Matrix correlation method to use. Valid options: [mantel, partial_mantel, mantel_corr]
 	-i, `-`-input_dms
-		The input distance matrices, comma-separated
+		The input distance matrices, comma-separated. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. `beta_diversity.py <./beta_diversity.html>`_ -m unifrac_g), should not be used as input
 	-o, `-`-output_dir
 		Path to the output directory
 	
@@ -65,26 +65,26 @@ Mantel Correlogram: Two files are created in the output directory: a text file c
 
 **Partial Mantel:**
 
-Performs a partial Mantel test on two distance matrices, using a third matrix as a control. Runs 100 permutations to calculate the p-value.
+Performs a partial Mantel test on two distance matrices, using a third matrix as a control. Runs 99 permutations to calculate the p-value.
 
 ::
 
-	compare_distance_matrices.py --method partial_mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt -o mantel_out -n 100
+	compare_distance_matrices.py --method partial_mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 99
 
 **Mantel:**
 
-Performs a Mantel test on all pairs of four distance matrices, including 1000 permutations for each test.
+Performs a Mantel test on all pairs of four distance matrices, including 999 permutations for each test.
 
 ::
 
-	compare_distance_matrices.py --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out -n 1000
+	compare_distance_matrices.py --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out -n 999
 
 **Mantel Correlogram:**
 
-This example computes a Mantel correlogram on two distance matrices using 999 permutations in each Mantel test. Output is written to the mantel_output directory.
+This example computes a Mantel correlogram on two distance matrices using 999 permutations in each Mantel test. Output is written to the mantel_correlogram_out directory.
 
 ::
 
-	compare_distance_matrices.py --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_output -n 999
+	compare_distance_matrices.py --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999
 
 

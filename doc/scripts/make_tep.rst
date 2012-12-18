@@ -22,22 +22,22 @@ WARNING: The jnlp file relies on an absolute path, if you move the .tep file, th
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		Path to otu table in biom format
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 	-m, `-`-mapping_fp
-		Path to mapping file
+		The mapping filepath
 	-t, `-`-tree_fp
 		Path to tree
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-out_fp
-		The output directory [default: None]
+	-o, `-`-output_dir
+		Path to the output directory
 	-p, `-`-prefs_file_fp
 		Path to prefs file
 	-w, `-`-web_flag
 		Web codebase jnlp flag [default: False]
 	-u, `-`-url
-		Url path
+		Url path for the tep file. Note: when passing this flag, it will overwrite the supplied OTU table, Mapping and Tree files.
 
 
 **Output:**

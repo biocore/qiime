@@ -21,7 +21,7 @@ This script converts a directory of sff files into FASTA, QUAL and flowgram file
 	**[REQUIRED]**
 		
 	-i, `-`-input_dir
-		Input directory of sff files
+		Input directory of sff files or a single sff filepath
 	
 	**[OPTIONAL]**
 		
@@ -50,6 +50,12 @@ Convert all the sffs in directory "sffs/" to fasta and qual.
 
 	process_sff.py -i sffs/
 
+Convert a single sff to fasta and qual.
+
+::
+
+	process_sff.py -i sffs/test.sff
+
 **Flowgram example:**
 
 Convert all the sffs in directory "sffs/" to fasta and qual, along with a flowgram file.
@@ -57,6 +63,12 @@ Convert all the sffs in directory "sffs/" to fasta and qual, along with a flowgr
 ::
 
 	process_sff.py -i sffs/ -f
+
+Convert a single sff to fasta and qual, along with a flowgram file.
+
+::
+
+	process_sff.py -i sffs/test.sff -f
 
 **Output example:**
 

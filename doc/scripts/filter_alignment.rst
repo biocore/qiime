@@ -27,7 +27,7 @@ This script should be applied to generate a useful tree when aligning against a 
 	-o, `-`-output_dir
 		The output directory [default: .]
 	-m, `-`-lane_mask_fp
-		Path to lanemask file [default: $HOME/qiime_software/lanemask_in_1s_and_0s.txt]
+		Path to lanemask file [default: /Users/caporaso/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt]
 	-s, `-`-suppress_lane_mask_filter
 		Suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for --lane_mask_fp) [default: False]
 	-g, `-`-allowed_gap_frac
@@ -51,12 +51,12 @@ As a simple example of this script, the user can use the following command, whic
 
 ::
 
-	filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/
+	filter_alignment.py -i seqs_rep_set_aligned.fasta -m lanemask_in_1s_and_0s -o filtered_alignment/
 
 Alternatively, if the user would like to use a different gap fraction threshold ("-g"), they can use the following command:
 
 ::
 
-	filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/ -g 0.95
+	filter_alignment.py -i seqs_rep_set_aligned.fasta -m lanemask_in_1s_and_0s -o filtered_alignment/ -g 0.95
 
 

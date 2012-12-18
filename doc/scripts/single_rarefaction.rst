@@ -34,6 +34,8 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 		Exclude taxonomic (lineage) information for each OTU.
 	-k, `-`-keep_empty_otus
 		Retain OTUs of all zeros, which are usually omitted from the output OTU tables. [default: False]
+	`-`-subsample_multinomial
+		Subsample using subsampling with replacement [default: False]
 
 
 **Output:**

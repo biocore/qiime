@@ -47,6 +47,14 @@ to compute the quality of clusters, and print to stdout, use the following idiom
 
 ::
 
-	cluster_quality.py -i unweighted_unifrac_distance_matrix.txt -m Fasting_Map.txt -c Treatment
+	cluster_quality.py -i weighted_unifrac_otu_table.txt -m Fasting_Map.txt -c Treatment
+
+**cluster quality based on the DOB category:**
+
+to compute the quality of clusters, and print to stdout, use the following idiom:
+
+::
+
+	cluster_quality.py -i weighted_unifrac_otu_table.txt -m Fasting_Map.txt -c DOB
 
 

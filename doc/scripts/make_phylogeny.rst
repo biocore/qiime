@@ -25,7 +25,7 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 	**[OPTIONAL]**
 		
 	-t, `-`-tree_method
-		Method for tree building. Valid choices are: clearcut, clustalw, raxml, fasttree_v1, fasttree, raxml_v730, muscle [default: fasttree]
+		Method for tree building. Valid choices are: clearcut, clustalw, fasttree_v1, fasttree, raxml_v730, muscle [default: fasttree]
 	-o, `-`-result_fp
 		Path to store result file [default: <input_sequences_filename>.tre]
 	-l, `-`-log_fp
@@ -47,14 +47,12 @@ A simple example of `make_phylogeny.py <./make_phylogeny.html>`_ is shown by the
 
 ::
 
-	make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -o rep_phylo.tre
+	make_phylogeny.py -i $PWD/aligned.fasta -o $PWD/rep_phylo.tre
 
 Alternatively, if the user would prefer using another tree building method (i.e. clearcut (Sheneman, Evans, & Foster, 2006)), then they could use the following command:
 
 ::
 
-	make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -t clearcut
-
-Note: For whichever method used, the 3rd party program must be properly installed on the user's computer.
+	make_phylogeny.py -i $PWD/aligned.fasta -t clearcut
 
 

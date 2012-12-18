@@ -2,12 +2,19 @@
 
 .. index:: compare_alpha_diversity.py
 
-*compare_alpha_diversity.py* -- This script compares alpha diversities based on a t_two_sample test
+*compare_alpha_diversity.py* -- This script compares alpha diversities based on a two sample t-test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-This script compares the alpha diversity of entries in a rarefaction file after they have been grouped based on some category found in the mapping file based on a t_two_sample test.
+
+This script compares the alpha diversity of entries in a rarefaction file after
+they have been grouped based on some category found in the mapping file based
+on a two sample t-test. The output file contains the
+(Category: (Subcategories): t, prob). By default the two sample t-test will be
+nonparametric (i.e. using Monte Carlo permutations to calculate the p-value),
+though the user has the option to make the test a parametric t-test.
+
 
 
 **Usage:** :file:`compare_alpha_diversity.py [options]`
@@ -29,21 +36,40 @@ This script compares the alpha diversity of entries in a rarefaction file after 
 		Depth of rarefaction file to use [REQUIRED]
 	-o, `-`-output_filepath
 		Output file path [REQUIRED]
+	
+	**[OPTIONAL]**
+		
+	-t, `-`-test_type
+		The type of test to perform when calculating the p-values. Valid choices: parametric, nonparametric. If test_type is nonparametric, Monte Carlo permutations will be used to determine the p-value. If test_type is parametric, the num_permutations option will be ignored and the t-distribution will be used instead [default: nonparametric]
+	-n, `-`-num_permutations
+		The number of permutations to perform when calculating the p-value. Must be greater than zero. Only applies if test_type is nonparametric [default: 999]
 
 
 **Output:**
 
-Script generates an output nested dictionary which has as a first 
-    key:value pair the category passed, and a dictionary which gives the
-    t_two_sample score for every possible combination of the values 
-    under that category in the mapping file, saved as a text file into
-    the directory specified by the output path.
+
+Script generates an output nested dictionary which has as a first key:value
+pair the category passed, and a dictionary which gives the t_two_sample score
+for every possible combination of the values under that category in the
+mapping file, saved as a text file into the directory specified by the output
+path.
 
 
-**Explanation:\ Inputs: mapping file lines (lines of a mapping file which associates to each OTU/sample a number of characteristics, given as file path), rarefaction file lines (lines of a rarefaction file that has scores for each OTU/sample based on a certain rarefaction depth, given as a file path), depth (the depth score of the rarefaction file to use), category (the category to compare OTU/samples on), output file path (a path to the output file).:**
+
+**Comparing alpha diversities:**
+
+The following command takes the following input: a mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), and output file path (a path to the output file). A nonparametric two sample t-test is run to compare the alpha diversities using the default number of Monte Carlo permutations (999).
 
 ::
 
-	compare_alpha_diversity.py -i PD_whole_tree.txt -m map.txt -c Treatment -d 100 -o PD_d100.txt
+	compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100.txt
+
+**Parametric t-test:**
+
+The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations.
+
+::
+
+	compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100_parametric.txt -t parametric
 
 

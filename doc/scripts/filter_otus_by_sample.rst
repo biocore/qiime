@@ -39,10 +39,10 @@ As a result a new OTU and sequence file is generated and written to a randomly g
 
 **Example:**
 
-The following command can be used, where all options are passed (using the resulting OTU file from `pick_otus.py <./pick_otus.html>`_, FASTA file from `split_libraries.py <./split_libraries.html>`_ and removal of Sample1) with the resulting data being written to the output directory "filtered_otus/":
+The following command can be used, where all options are passed (using the resulting OTU file from `pick_otus.py <./pick_otus.html>`_, FASTA file from `split_libraries.py <./split_libraries.html>`_ and removal of sample 'PC.636') with the resulting data being written to the output directory "filtered_otus/":
 
 ::
 
-	filter_otus_by_sample.py -i seqs_otus.txt -f seqs.fna -s Sample1 -o filtered_otus/
+	filter_otus_by_sample.py -i seqs_otus.txt -f seqs.fna -s PC.636 -o filtered_otus/
 
 

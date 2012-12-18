@@ -2,15 +2,29 @@
 
 .. index:: make_distance_boxplots.py
 
-*make_distance_boxplots.py* -- Creates boxplots to compare distances                                     between categories
+*make_distance_boxplots.py* -- Creates boxplots to compare distances between categories
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
 
-This script creates boxplots that allow for the comparison between different categories found within the mapping file. The boxplots that are created show the distances within all samples of a field value, as well as between different field values. Individual within and individual between distances are also plotted.
+This script creates boxplots that allow for the comparison between different
+categories found within the mapping file. The boxplots that are created compare
+distances within all samples of a field value, as well as between different
+field values. Individual within and between distances are also plotted.
 
-For more information and examples pertaining to this script, please refer to the accompanying tutorial, which can be found at http://qiime.org/tutorials/creating_distance_comparison_plots.html.
+The script also performs two-sample t-tests for all pairs of boxplots to help
+determine which boxplots (distributions) are significantly different.
+
+Tip: the script tries its best to fit everything into the plot, but there are
+cases where plot elements may get cut off (e.g. if axis labels are extremely
+long), or things may appear squashed, cluttered, or too small (e.g. if
+there are many boxplots in one plot). Increasing the width and/or height of the
+plot (using --width and --height) usually fixes these problems.
+
+For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 
 
 
@@ -28,7 +42,7 @@ For more information and examples pertaining to this script, please refer to the
 	-o, `-`-output_dir
 		Path to the output directory
 	-d, `-`-distance_matrix_fp
-		Input distance matrix filepath (i.e. the result of `beta_diversity.py <./beta_diversity.html>`_)
+		Input distance matrix filepath (i.e. the result of `beta_diversity.py <./beta_diversity.html>`_). WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. `beta_diversity.py <./beta_diversity.html>`_ -m unifrac_g), should not be used as input
 	-f, `-`-fields
 		Comma-separated list of fields to compare, where the list of fields should be in quotes (e.g. "Field1,Field2,Field3")
 	
@@ -46,6 +60,12 @@ For more information and examples pertaining to this script, please refer to the
 		Suppress plotting of individual "within" boxplot(s) [default: False]
 	`-`-suppress_individual_between
 		Suppress plotting of individual "between" boxplot(s) [default: False]
+	`-`-suppress_significance_tests
+		Suppress performing signifance tests between each pair of boxplots [default: False]
+	-n, `-`-num_permutations
+		The number of Monte Carlo permutations to perform when calculating the nonparametric p-value in the significance tests. Must be an integer greater than or equal to zero. If zero, the nonparametric p-value will not be calculated and will instead be reported as "N/A". This option has no effect if --suppress_significance_tests is supplied [default: 0]
+	-t, `-`-tail_type
+		The type of tail test to compute when calculating the p-values in the significance tests. "high" specifies a one-tailed test for values greater than the observed t statistic, while "low" specifies a one-tailed test for values less than the observed t statistic. "two-sided" specifies a two-tailed test for values greater in magnitude than the observed t statistic. This option has no effect if --suppress_significance_tests is supplied. Valid choices: low or high or two-sided [default: two-sided]
 	`-`-y_min
 		The minimum y-axis value in the resulting plot. If "auto", it is automatically calculated [default: 0]
 	`-`-y_max
@@ -68,24 +88,29 @@ For more information and examples pertaining to this script, please refer to the
 
 **Output:**
 
-Images of the plots are written to                                     the specified output directory (one image                                     per field). The raw data used in the                                     plots can optionally be written into                                     tab-delimited files (one file per field).
+
+Images of the plots are written to the specified output directory (one image
+per field). The raw data used in the plots and the results of significance
+tests can optionally be written into tab-delimited files (one file per field)
+that are most easily viewed in a spreadsheet program such as Microsoft Excel.
 
 
-**Compare distances between Fast and Control for Treatment field:**
 
-This example will generate an image with boxplots for all within and all between distances for the field Treatment, and will also include plots for individual within (e.g. Control vs. Control, Fast vs. Fast) and individual between (e.g. Control vs. Fast). The generated plot image PDF will be written to the output directory 'out_files'.
+**Compare distances between Fast and Control samples:**
 
-::
-
-	make_distance_boxplots.py -d dist_matrix.txt -m map.txt -f "Treatment" -o out_files
-
-**Only plot individual distances:**
-
-This example will generate a PNG of all of individual distances (within and between) for the Treatment field.
+This example will generate an image with boxplots for all within and all between distances for the field Treatment, and will also include plots for individual within (e.g. Control vs. Control, Fast vs. Fast) and individual between (e.g. Control vs. Fast). The generated plot PDF and signifiance testing results will be written to the output directory 'out1'.
 
 ::
 
-	make_distance_boxplots.py -d dist_matrix.txt -m map.txt -f "Treatment" -o out_files -g png --suppress_all_within --suppress_all_between
+	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out1
+
+**Only plot individual field value distances:**
+
+This example will generate a PNG of all individual field value distances (within and between) for the Treatment field.
+
+::
+
+	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out2 -g png --suppress_all_within --suppress_all_between
 
 **Save raw data:**
 
@@ -93,6 +118,14 @@ This example will generate an SVG image of the boxplots and also output the plot
 
 ::
 
-	make_distance_boxplots.py -d dist_matrix.txt -m map.txt -f "Treatment" -o out_files -g svg --save_raw_data
+	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out3 -g svg --save_raw_data
+
+**Suppress significance tests:**
+
+This example will only generate a plot and skip the significance testing step. This can be useful if you are operating on a large dataset and are not interested in performing the statistical tests (or at least not initially).
+
+::
+
+	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out4 --suppress_significance_tests
 
 
