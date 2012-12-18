@@ -10,7 +10,7 @@ The definitive source for information on QIIME is the QIIME website at `http://w
 Dependencies
 ------------
 
-QIIME requires Python_ 2.7, Numpy_ 1.5.1, and PyCogent_ 1.5.1. 
+QIIME requires Python_ 2.7.3, Numpy_ 1.5.1, and PyCogent_ 1.5.3. 
 
 Required
 ^^^^^^^^
