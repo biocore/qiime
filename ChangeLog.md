@@ -27,13 +27,20 @@ QIIME 1.6.0 (18 Dec 2012)
 * ``make_distance_boxplots.py``, ``make_distance_comparison_plots.py``, and ``make_distance_histograms.py`` now correctly output TSV data files with ``.txt`` extension instead of ``.xls`` (this allows them to be opened easier in programs such as Excel).
 * ``make_distance_boxplots.py`` has a new option ``--color_individual_within_by_field`` that allows the "individual within" boxplots to be optionally colored to indicate their membership in another mapping file field. A legend is also included.
 * Added ``sample_ids_from_category_state_coverage`` function to ``qiime/filter.py`` to support filtering of samples based on a subject's category coverage. For example, this function is useful for filtering individuals out of a time series study that do not meet some sort of timepoint coverage criteria.
-* ``assign_taxonomy.py`` now supports assignment with tax2tree version 1.0.
+* ``assign_taxonomy.py`` now supports assignment with tax2tree version 1.0 and mothur version 1.25.0.
 * Added new script ``load_remote_mapping_file.py`` and accompanying tutorial to allow exporting and downloading of mapping files stored as Google Spreadsheets.
 * Fixed bug in ``parallel_assign_taxonomy_blast.py`` which would cause the script to hang if a relative path was passed for ``-o``.
 * Added the [``qiime_test_data``](https://github.com/qiime/qiime_test_data) repository which contains example input and output for most QIIME scripts. The individual script documentation was completely refactored so that usage examples correspond to the example input and output files. The *basic script testing* functionality was removed from ``all_tests.py`` and replaced with more detailed testing of the scripts based on their usage examples.
 * ``add_taxa.py`` was removed in favor of ``add_metadata.py`` (a ``biom-format`` project script). See the new [tutorial on adding metadata to BIOM files](biom-format.org/documentation/adding_metadata.html).
 * Updated ``qiime.util.get_qiime_library_version`` to return git commit hash rather than svn revision number (as we're using git for revision control now).
 * Added java version in output of ``print_qiime_config.py`` to assist with debugging.
+* Changed ``plot_rank_abundance_graph.py`` so ``-o`` specifies the filename of the figure, not the output directory anymore.
+* Added new script ``add_alpha_to_mapping_file.py`` which adds alpha diversity data to a mapping file for incorporation in plots, etc.
+* Moved the QIIME website files from ``Qiime/web`` to their own GitHub repository: [qiime.github.com](https://github.com/qiime/qiime.github.com).
+* Fixed bug in installation of QIIME Denoiser with setup.py.
+* ``supervised_learning.py`` now produces mislabeling.txt and cv_probabilities.txt that look like QIIME mapping files, allowing them to be used for coloring points in PCoA plots, etc.
+* Updated RDP Classifier training code to allow any number of ranks in training files, as long as number of ranks is uniform. This removes the need for special RDP training files in reference OTU collections.
+* Added table density and metadata listings to ``per_library_stats.py``.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
