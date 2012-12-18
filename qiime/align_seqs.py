@@ -46,7 +46,7 @@ except ImportError:
     def raise_pynast_not_found_error(*args, **kwargs):
         raise ApplicationNotFoundError,\
          "PyNAST cannot be found.\nIs PyNAST installed? Is it in your $PYTHONPATH?"+\
-         "\nYou can obtain PyNAST from http://pynast.sourceforge.net/." 
+         "\nYou can obtain PyNAST from http://qiime.org/pynast/."
     # set functions which cannot be imported to raise_pynast_not_found_error
     pynast_seqs = NastLogger = raise_pynast_not_found_error
     pairwise_alignment_methods = {}
