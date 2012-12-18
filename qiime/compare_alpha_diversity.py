@@ -75,6 +75,7 @@ def _correct_compare_alpha_results(result, method):
      result - dict, output of compare_alpha_diversities.
      method - str, in ['FDR','Bonferroni','None']
     """
+    method = method.lower()
     if method not in correction_types:
         raise ValueError('You must specify a method to correct for multiple '+\
             'comparisons. You may pass \'bonferroni\' or \'fdr\' or \'none\'.')
