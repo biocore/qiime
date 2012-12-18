@@ -77,31 +77,24 @@ def _correct_compare_alpha_results(result, method):
     if method not in ['Bonferroni','FDR','None']:
         raise ValueError('You must specify a method to correct for multiple '+\
             'comparisons. You may pass \'Bonferroni\' or \'FDR\' or \'None\'.')
-    
+
+    corrected_result = {}
     if method == 'Bonferroni':
-        # the number of comparisons is the number of iterations times the number
-        # of different groups compared. keys=groups compared, and the length
-        # of any item from any key will be the same, is the number of iters
-        num_comps = float(len(result.keys())*len(result.items()[0][1]))
-        corrected_result = {}
+        num_comps = float(len(result))
         for k,v in result.items():
-            corrected_result[k] = [(tval,pval*num_comps) for tval,pval in v]
+            corrected_result[k] = (v[0],v[1]*num_comps)
         # this returns bizarre results like pval=35 since the bonferroni isn't
         # really designed to correct individual values, but rather to correct
         # the level of your test. 
     elif method == 'FDR':
         # pull out the uncorrected pvals and apply fdr correction
-        tmp_pvals = []
-        [tmp_pvals.extend([k[1] for k in j]) for i,j in result.items()]
+        tmp_pvals = [v[1] for k,v in result.items()]
         fdr_corr_vals = fdr_correction(tmp_pvals)
         # create corrected results by going through result in same order as 
         # pvalues were removed and replacing them with fdr corrected
-        corrected_result = defaultdict(list)
-        count = 0
-        for k in result:
-            for t,p in result[k]: #t=tval, p=pval
-                corrected_result[k].append((t,fdr_corr_vals[count]))
-                count+=1
+        for i,k in enumerate(result): #steps through in same order as items 
+            t,p = result[k]
+            corrected_result[k] = (t, fdr_corr_vals[i])
     elif method == 'None':
         corrected_result = result
     return corrected_result
@@ -132,10 +125,15 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
     # samid_pairs, treatment_pairs are in the same order
     samid_pairs, treatment_pairs = sampleId_pairs(mapping_data, 
         rarefaction_data, category)
+    
     # extract only rows of the rarefaction data that are at the given depth
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
+    # average each column of the rarefaction matrix because we are computing 
+    # the t_test on the average scores for a given comparison. this avoids 
+    # a much larger number of tests which kills significance.
+    rare_mat = rare_mat.sum(0)/rare_mat.shape[0]
     sids = rarefaction_data[0][3:] # 0-2 are header strings
-    results = defaultdict(list)
+    results = {}
 
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
         # first two cols of rare_mat are depth, iteration, don't want to grab 
@@ -143,20 +141,19 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
         pair0_indices = [sids.index(i)+2 for i in sid_pair[0]]
         pair1_indices = [sids.index(i)+2 for i in sid_pair[1]]
         t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
-        for row in rare_mat: 
-            i = row.take(pair0_indices)
-            j = row.take(pair1_indices)
-            if test_type == 'parametric':
-                obs_t, p_val = t_two_sample(i,j)
-            elif test_type == 'nonparametric':
-                obs_t, _, _, p_val = mc_t_two_sample(i,j, 
-                    permutations=num_permutations)
-                #format_p_value returns a string for some reason
-                p_val = float(format_p_value_for_num_iters(p_val, 
-                    num_iters=num_permutations))
-            else:
-                raise ValueError("Invalid test type '%s'." % test_type)
-            results[t_key].append((obs_t,p_val))
+        i = rare_mat.take(pair0_indices)
+        j = rare_mat.take(pair1_indices)
+        if test_type == 'parametric':
+            obs_t, p_val = t_two_sample(i,j)
+        elif test_type == 'nonparametric':
+            obs_t, _, _, p_val = mc_t_two_sample(i,j, 
+                permutations=num_permutations)
+            #format_p_value returns a string for some reason
+            p_val = float(format_p_value_for_num_iters(p_val, 
+                num_iters=num_permutations))
+        else:
+            raise ValueError("Invalid test type '%s'." % test_type)
+        results[t_key]= (obs_t,p_val)
     return results
 
 

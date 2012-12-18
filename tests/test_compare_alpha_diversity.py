@@ -113,80 +113,49 @@ class TopLevelTests(TestCase):
         """Test that FDR and Bonferroni are applied correctly."""
 
         input_results = \
-            {'1xDose,2xDose': [(-1.8939787722170394, 0.14),
-                (-1.406989273588368, 0.12),
-                (1.233831324546275, 0.25),
-                (2.68216250487486, 0.07)],
-             'Control,1xDose': [(3.365078231689424, 0.34),
-                (0.5277041181189259, 0.67),
-                (-0.6655122398235679, 0.78),
-                (0.06799689773744992, 1.0)],
-             'Control,2xDose': [(0.43262479194397335, 1.0),
-                (-4.881465192979518, 0.35),
-                (1.0920231334904227, 0.68),
-                (1.958305518931809, 0.32)]}
+            {'1xDose,2xDose': (-1.8939787722170394, 0.14),
+             'Control,1xDose': (3.365078231689424, 0.34),
+             'Control,2xDose': (0.43262479194397335, 1.0)}
             
         method = 'FDR'
         expected_results = \
-            {'1xDose,2xDose': [(-1.8939787722170394, 0.56),
-              (-1.406989273588368, 0.72),
-              (1.233831324546275, 0.75),
-              (2.68216250487486, 0.8400000000000001)],
-            'Control,1xDose': [(3.365078231689424, 0.68),
-              (0.5277041181189259, 1.0050000000000001),
-              (-0.6655122398235679, 0.9359999999999999),
-              (0.06799689773744992, 1.0)],
-            'Control,2xDose': [(0.43262479194397335, 1.0909090909090908),
-              (-4.881465192979518, 0.6),
-              (1.0920231334904227, 0.9066666666666667),
-              (1.958305518931809, 0.768)]}
+            {'1xDose,2xDose': (-1.8939787722170394, 0.42),
+             'Control,1xDose': (3.365078231689424, 0.51),
+             'Control,2xDose': (0.43262479194397335, 1.0)}
+        
         observed_results = _correct_compare_alpha_results(input_results, method)
         # test each key in expected results -- this won't catch if 
         # observed_results has extra entries, but test that via the next call
         for k in expected_results:
-            self.assertEqual(expected_results[k],observed_results[k])
+            for val0, val1 in zip(expected_results[k],observed_results[k]):
+                self.assertAlmostEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
         method = 'Bonferroni'
         expected_results = \
-            {'1xDose,2xDose': [(-1.8939787722170394, 0.14*12),
-                (-1.406989273588368, 0.12*12),
-                (1.233831324546275, 0.25*12),
-                (2.68216250487486, 0.07*12)],
-             'Control,1xDose': [(3.365078231689424, 0.34*12),
-                (0.5277041181189259, 0.67*12),
-                (-0.6655122398235679, 0.78*12),
-                (0.06799689773744992, 1.0*12)],
-             'Control,2xDose': [(0.43262479194397335, 1.0*12),
-                (-4.881465192979518, 0.35*12),
-                (1.0920231334904227, 0.68*12),
-                (1.958305518931809, 0.32*12)]}
+            {'1xDose,2xDose': (-1.8939787722170394, 0.14*3),
+             'Control,1xDose': (3.365078231689424, 0.34*3),
+             'Control,2xDose': (0.43262479194397335, 1.0*3)}
+
         observed_results = _correct_compare_alpha_results(input_results, method)
         # test each key in expected results -- this won't catch if 
         # observed_results has extra entries, but test that via the next call
         for k in expected_results:
-            self.assertEqual(expected_results[k],observed_results[k])
+            for val0, val1 in zip(expected_results[k],observed_results[k]):
+                self.assertAlmostEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
         method = 'None'
         expected_results = \
-            {'1xDose,2xDose': [(-1.8939787722170394, 0.14),
-                (-1.406989273588368, 0.12),
-                (1.233831324546275, 0.25),
-                (2.68216250487486, 0.07)],
-             'Control,1xDose': [(3.365078231689424, 0.34),
-                (0.5277041181189259, 0.67),
-                (-0.6655122398235679, 0.78),
-                (0.06799689773744992, 1.0)],
-             'Control,2xDose': [(0.43262479194397335, 1.0),
-                (-4.881465192979518, 0.35),
-                (1.0920231334904227, 0.68),
-                (1.958305518931809, 0.32)]}
+            {'1xDose,2xDose': (-1.8939787722170394, 0.14),
+             'Control,1xDose': (3.365078231689424, 0.34),
+             'Control,2xDose': (0.43262479194397335, 1.0)}
         observed_results = _correct_compare_alpha_results(input_results, method)
         # test each key in expected results -- this won't catch if 
         # observed_results has extra entries, but test that via the next call
         for k in expected_results:
-            self.assertEqual(expected_results[k],observed_results[k])
+            for val0, val1 in zip(expected_results[k],observed_results[k]):
+                self.assertAlmostEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
         # check errors if wrong method
@@ -203,22 +172,12 @@ class TopLevelTests(TestCase):
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
         
-        # had to hardcode the order of the terms in the keys otherwise would 
-        # fail.
+        # hardcoded order of the terms in the keys otherwise would comps fail
         expected_results = \
-            {'1xDose,2xDose':[(-1.8939787722170394, 0.15454645351109564),
-                (-1.406989273588368, 0.25413514837204443),
-                (1.2338313245462751, 0.3051139898508054),
-                (2.6821625048748601, 0.074911084525487157)],
-             'Control,1xDose':[(3.3650782316894241, 0.078104058521767578),
-                (0.52770411811892592, 0.65040221684561772),
-                (-0.66551223982356789, 0.57420297667232167),
-                (0.067996897737449921, 0.9519744129770501)],
-             'Control,2xDose':[(0.43262479194397335, 0.74006104997641819),
-                (-4.8814651929795181, 0.12863596739719793),
-                (1.0920231334904227, 0.47201464726723585),
-                (1.958305518931809, 0.30056585125162061)]
-            }
+            {'Control,2xDose': (1.1746048668554037, 0.44899351189030801),
+             '1xDose,2xDose': (1.7650193854830403, 0.17574514418562981),
+             'Control,1xDose': (0.43618805086434992, 0.7052689260099092)}
+             
         # test each key in expected results -- this won't catch if 
         # observed_results has extra entries, but test that via the next call
         for k in expected_results:
@@ -236,19 +195,10 @@ class TopLevelTests(TestCase):
             test_type=test_type, num_permutations=num_permutations)
 
         expected_results = \
-            {'Control,2xDose': [(0.43262479194397335, 1.00),
-                (-4.8814651929795181, 0.35), 
-                (1.0920231334904227, 0.68), 
-                (1.958305518931809, 0.32)], 
-             '1xDose,2xDose': [(-1.8939787722170394, 0.14),
-                (-1.406989273588368, 0.12), 
-                (1.2338313245462751, 0.25), 
-                (2.6821625048748601, 0.07)], 
-             'Control,1xDose': [(3.3650782316894241, 0.34), 
-                (0.52770411811892592, 0.67), 
-                (-0.66551223982356789, 0.78), 
-                (0.067996897737449921, 1.00)]
-            }
+            {'Control,2xDose': (1.1746048668554037, 0.63),
+             '1xDose,2xDose': (1.7650193854830403, 0.09),
+             'Control,1xDose': (0.43618805086434992, 0.76)}
+ 
         # test each key in expected results -- this won't catch if 
         # observed_results has extra entries, but test that via the next call
         for k in expected_results:
@@ -265,15 +215,16 @@ class TopLevelTests(TestCase):
             test_type=test_type)
 
         expected_results = \
-            {'Control,2xDose': [(-0.63668873339963239, 0.63906168713487699)], 
-             '1xDose,2xDose': [(None,None)], 
-             'Control,1xDose': [(nan,nan)]
-            }
+            {'Control,2xDose': (-0.63668873339963239, 0.63906168713487699), 
+             '1xDose,2xDose': (None,None), 
+             'Control,1xDose': (nan,nan)}
+
         # the comparison will fail on (nan,nan)==(nan,nan) because nan's don't
         # compare equal. we avoid this check knowing that its producing nans.
         for k in expected_results:
             if k is not 'Control,1xDose':
-                self.assertEqual(expected_results[k],observed_results[k])
+                for val0, val1 in zip(expected_results[k],observed_results[k]):
+                    self.assertEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
 if __name__ == "__main__":
