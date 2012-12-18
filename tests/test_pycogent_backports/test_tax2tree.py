@@ -2,7 +2,7 @@
 
 __author__ = "Kyle Patnode"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Kyle Patnode","Jai Ram Rideout"]
+__credits__ = ["Kyle Patnode","Jai Ram Rideout", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Kyle Patnode"
@@ -15,7 +15,12 @@ Tests each function in the tax2tree controller module. It
 should be noted that these tests are fairly sparse, since
 tax2tree implements quite a few of its own tests."""
 
-from t2t.nlevel import load_tree, load_consensus_map, determine_rank_order
+from cogent.app.util import ApplicationNotFoundError
+try:
+    from t2t.nlevel import load_tree, load_consensus_map, determine_rank_order
+except ImportError:
+    raise ApplicationNotFoundError,\
+         "Cannot find tax2tree. Is it installed? Is it in your path?"
 from os import makedirs, getcwd, chdir
 from os.path import exists
 from shutil import rmtree
