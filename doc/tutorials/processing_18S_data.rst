@@ -1,8 +1,8 @@
 .. _processing_18S_data:
 
 
-Processing 18S data
--------------------
+Analysis of 18S data
+---------------------
 
 This tutorial explains how to use the **QIIME** pipeline to analyze 18S, or mixed 18S/16S, data.  While most of the steps are identical to the standard 16S pipeline described in the `overview tutorial <tutorial.html>`_, reference data that include eukaryotic sequences may be required for OTU picking, taxonomic assignments, and template-based alignment building.
 
