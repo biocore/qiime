@@ -30,19 +30,14 @@ Once you have this data on your system you can unzip it as follows::
 
 	tar xzf moving_pictures_tutorial.tgz
 
-Next, change to the directory that was just unzipped. We'll work there for this tutorial.
-::
-	
-	cd moving_pictures_tutorial
-
 Defining reference filepaths with environment variables
 -------------------------------------------------------
 
 Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
 
-	export reference_seqs=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
-	export reference_tree=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
-	export reference_tax=/home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+	export reference_seqs=/home/ubuntu/qiime_software/gg_otus-12_10-release/rep_set/97_otus.fasta
+	export reference_tree=/home/ubuntu/qiime_software/gg_otus-12_10-release/trees/97_otus.tree
+	export reference_tax=/home/ubuntu/qiime_software/gg_otus-12_10-release/taxonomy/97_otu_taxonomy.txt
 
 
 Demultiplexing and quality filtering
@@ -50,7 +45,7 @@ Demultiplexing and quality filtering
 
 We start by demultiplexing our sequences (i.e. assigning barcoded reads to the samples they are derived from). In general, you should get seperate fastq files for your sequence and barcode reads. On the multiple-lane Illumina platforms, we typically reuse barcodes across lanes, so we must demultiplex each lane independently. To do that, run the following command (*will run for a few minutes*)::
 
-	split_libraries_fastq.py -o slout/ -i subsampled_fastq/subsampled_s_1_sequence.fastq,subsampled_fastq/subsampled_s_2_sequence.fastq,subsampled_fastq/subsampled_s_3_sequence.fastq,subsampled_fastq/subsampled_s_4_sequence.fastq,subsampled_fastq/subsampled_s_5_sequence.fastq,subsampled_fastq/subsampled_s_6_sequence.fastq -b subsampled_fastq/subsampled_s_1_sequence_barcodes.fastq,subsampled_fastq/subsampled_s_2_sequence_barcodes.fastq,subsampled_fastq/subsampled_s_3_sequence_barcodes.fastq,subsampled_fastq/subsampled_s_4_sequence_barcodes.fastq,subsampled_fastq/subsampled_s_5_sequence_barcodes.fastq,subsampled_fastq/subsampled_s_6_sequence_barcodes.fastq -m filtered_mapping_l1.txt,filtered_mapping_l2.txt,filtered_mapping_l3.txt,filtered_mapping_l4.txt,filtered_mapping_l5.txt,filtered_mapping_l6.txt
+	split_libraries_fastq.py -o slout/ -i moving_pictures_tutorial/subsampled_fastq/subsampled_s_1_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_2_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_3_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_4_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_5_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_6_sequence.fastq -b moving_pictures_tutorial/subsampled_fastq/subsampled_s_1_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_2_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_3_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_4_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_5_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_6_sequence_barcodes.fastq -m moving_pictures_tutorial/filtered_mapping_l1.txt,moving_pictures_tutorial/filtered_mapping_l2.txt,moving_pictures_tutorial/filtered_mapping_l3.txt,moving_pictures_tutorial/filtered_mapping_l4.txt,moving_pictures_tutorial/filtered_mapping_l5.txt,moving_pictures_tutorial/filtered_mapping_l6.txt
 
 This is a big command, but it's relatively straight-forward. We're telling QIIME that we have six lanes of sequence data (specified as a comma-separated list of files passed as ``-i``), six lanes of barcode data (specified as a comma-separated list of files passed as ``-b``), and a metadata mapping file corresponding to each lane (specified as a comma-separated list of files passed as ``-m``). The metadata mapping file contains the sample-to-barcode mapping that we need for demultiplexing. **Important**: The order of files passed for ``-m``, ``-b``, and ``-i`` must be consistent, so if you pass the lane 1 sequence data first for ``-i``, you must pass the lane 1 barcode data first for ``-b``, and the lane 1 metadata mapping file first as ``-m``. The only other parameter here is the output directory, which we'll call ``slout``, for *split libraries output*.
 
@@ -77,7 +72,7 @@ OTU picking
 
 Now that we have demultiplexed sequences, we're ready to cluster these sequences into OTUs. As mentioned above, in the interest of providing a tutorial that can be run quickly for educational purposes, we're using a closed-reference OTU picking protocol here, although typically you'll want to use open-reference OTU picking, as discussed `here <open_reference_illumina_processing.html>`_). For closed-reference OTU picking we use `pick_reference_otus_through_otu_table.py` (*will run for a few minutes*)::
 
-	pick_reference_otus_through_otu_table.py -o ucrC_fast/ -i slout/seqs.fna -r $reference_seqs -t $reference_tax -p ucrC_fast_params.txt
+	pick_reference_otus_through_otu_table.py -o ucrC_fast/ -i slout/seqs.fna -r $reference_seqs -t $reference_tax -p moving_pictures_tutorial/ucrC_fast_params.txt
 
 Note that this command takes the ``seqs.fna`` file that was generated in the previous step, as well as the reference fasta file (``$reference_seqs`` here) and the taxonomies associated with the reference sequences (``$reference_tax`` here). We're also taking on an additional shortcut here for the sake of reduced run time: we're using the *fast uclust* parameters. To allow this to run in a just a couple of minutes, we're using parameters that are optimized for reduced runtime at the expense of accuracy. These correspond to ``uclust``'s default parameters. QIIME uses slightly more stringent parameter settings by default. These parameters are specified the the *parameters file* which is passes as ``-p``. You can find information on defining parameters files `here <../documentation/file_formats.html#qiime-parameters>`_.
 
@@ -89,7 +84,7 @@ To see some summary statistics of the OTU table we can run the following command
 
 We started with six lanes of data but have now summarized these in a single OTU table. However, we still need to merge the per-lane mapping files into a single *combined* mapping file that represents all six lanes, and therefore all of our data. Note that we will have duplicated barcodes in our mapping file, but that's OK as we've already demultiplexed our reads. We don't use the barcodes again. We can merge the six mapping files as follows::
 
-	merge_mapping_files.py -o combined_mapping_file.txt -m filtered_mapping_l1.txt,filtered_mapping_l2.txt,filtered_mapping_l3.txt,filtered_mapping_l4.txt,filtered_mapping_l5.txt,filtered_mapping_l6.txt
+	merge_mapping_files.py -o combined_mapping_file.txt -m moving_pictures_tutorial/filtered_mapping_l1.txt,moving_pictures_tutorial/filtered_mapping_l2.txt,moving_pictures_tutorial/filtered_mapping_l3.txt,moving_pictures_tutorial/filtered_mapping_l4.txt,moving_pictures_tutorial/filtered_mapping_l5.txt,moving_pictures_tutorial/filtered_mapping_l6.txt
 
 From this point on, we'll work with ``combined_mapping_file.txt``.
 
@@ -147,11 +142,11 @@ Modified Procrustes Analysis Steps (temporary)
 
 We're in the process of modifying the `Procrustes analysis tutorial <procrustes_analysis.html>`_ to more directly follow from this one. In the meantime, these commands will allow you to continue::
 
-	pick_reference_otus_through_otu_table.py -o ./454_ucrC/ -i ./subsampled_454_seqs.fna -r $reference_seqs -t $reference_tax -aO8 -p ucrC_fast_params.txt
-	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
-	beta_diversity_through_plots.py -o ./454_ucrC/bdiv_even135/ -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -t $reference_tree -m ./454_map.txt --suppress_2d_plots
-	transform_coordinate_matrices.py -i bdiv_even258/unweighted_unifrac_pc.txt,./454_ucrC/bdiv_even135/unweighted_unifrac_pc.txt -s ./procrustes_sid_map.txt -r 100 -o ./454_v_illumina/
-	compare_3d_plots.py -i ./454_v_illumina/pc1_transformed.txt,./454_v_illumina/pc2_transformed.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
+	pick_reference_otus_through_otu_table.py -i moving_pictures_tutorial/subsampled_454_seqs.fna -o 454_ucrC_fast/ -r $reference_seqs -t $reference_tax -p moving_pictures_tutorial/ucrC_fast_params.txt
+	per_library_stats.py -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom
+	beta_diversity_through_plots.py -o bdiv_even135/ -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom -e 135 -t $reference_tree -m moving_pictures_tutorial/454_map.txt
+	transform_coordinate_matrices.py -o 454_v_illumina/ -i bdiv_even258/unweighted_unifrac_pc.txt,bdiv_even135/unweighted_unifrac_pc.txt -s moving_pictures_tutorial/procrustes_sid_map.txt -r 100
+	compare_3d_plots.py -o 454_v_illumina/plots/ -i 454_v_illumina/pc1_transformed.txt,454_v_illumina/pc2_transformed.txt -m moving_pictures_tutorial/procrustes_metadata_map.txt --custom_axes days_since_epoch
 
 
 
