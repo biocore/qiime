@@ -685,49 +685,6 @@ def format_biom_table(biom_table):
     generated_by_str = "QIIME " + get_qiime_library_version()
     return biom_table.getBiomFormatJsonString(generated_by_str)
 
-def format_html_table_from_directory(directory,
-                                     directory_prefix='',
-                                     included_suffixes=None):
-    if included_suffixes == None:
-        included_suffixes = []
-    
-    link_str = "<a href='%s' target='_blank'>%s</a>"
-    
-    results = []
-    for root, dirs, files in walk(directory):
-        for fn in files:
-            fp = join(directory_prefix,root,fn)
-            if not included_suffixes or splitext(fn)[1] in included_suffixes:
-                results.append(link_str % (fp,fn) + "<br>")
-    return '\n'.join(results)
-
-def format_ipynb_table_from_directory(directory,
-                                      directory_prefix='files/',
-                                      included_suffixes=None):
-    if not exists(directory):
-        return "Output (<tt>%s</tt>) doesn't exist. It may still be in the process of being generated, or you may have the path wrong." % directory
-    
-    if isfile(directory):
-        path = join(directory_prefix,directory)
-        return "<a href='%s' target='_blank'>%s</a>" % (path,directory)
-    
-    return format_html_table_from_directory(directory, 
-                                            directory_prefix, 
-                                            included_suffixes=included_suffixes)
-
-def get_ipynb_output_formatter(working_directory=''):
-    try:
-        from IPython.display import display, HTML
-    except ImportError:
-        raise ImportError, "get_ipynb_output_formatter can only be called if IPython is installed."
-    directory_prefix = join('files',working_directory)
-    included_suffixes = ['.biom','.txt','.html','.fna','.fastq']
-    def result(output_dir,included_suffixes=included_suffixes):
-        return display(HTML(format_ipynb_table_from_directory(output_dir,
-                                                  directory_prefix=directory_prefix,
-                                                  included_suffixes=included_suffixes)))
-    return result
-
 def format_mapping_html_data(header,
                              mapping_data,
                              errors,
