@@ -12,6 +12,10 @@ and fasta file names (just the file name itself, not the full or relative
 filepath) is used to generate a combined fasta file with valid
 QIIME labels based upon the SampleIDs specified in the mapping file.
 
+Example mapping file:
+Sample.1	fasta_dir/seqs1.fna
+Sample.2	fasta_dir/seqs2.fna
+
 This script is to handle situations where fasta data comes already 
 demultiplexed into a one fasta file per sample basis.  Apart from altering
 the fasta label to add a QIIME compatible label at the beginning (example:
@@ -52,7 +56,7 @@ No changes are made to the sequences.
 
 **Output:**
 
-A combined_seqs.fasta file will be created in the output directory
+A combined_seqs.fasta file will be created in the output directory, with the sequences assigned to Sample.1 and Sample.2.
 
 
 **Example:**

@@ -29,7 +29,7 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-p, `-`-prefix_length
 		Prefix length used to split the input. Must be smaller than the shortest seq in input! [default: 5]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 4]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -37,13 +37,13 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/reederj/Projects/Boulder/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: `start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 
 
 **Output:**

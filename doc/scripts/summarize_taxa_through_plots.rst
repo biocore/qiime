@@ -22,8 +22,6 @@ The steps performed by this script are: Summarize OTU by Category (optional, pas
 		
 	-i, `-`-otu_table_fp
 		The input otu table [REQUIRED]
-	-m, `-`-mapping_fp
-		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir
 		The output directory [REQUIRED]
 	
@@ -31,6 +29,8 @@ The steps performed by this script are: Summarize OTU by Category (optional, pas
 		
 	-p, `-`-parameter_fp
 		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters. [if omitted, default values will be used]
+	-m, `-`-mapping_fp
+		Path to the mapping file [REQUIRED if passing -c]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only

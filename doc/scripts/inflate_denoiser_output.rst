@@ -43,12 +43,12 @@ Inflate the results of a single denoiser run.
 
 ::
 
-	inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna
+	inflate_denoiser_output.py -c centroids.fasta -s singletons.fasta -f seqs.fna -d denoiser_mapping.txt -o inflated_seqs.fna
 
-Inflate the results of multiple denoiser runs to a single denoised_seqs.fna file.
+Inflate the results of multiple denoiser runs to a single inflated_seqs.fna file.
 
 ::
 
-	inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna
+	inflate_denoiser_output.py -c centroids1.fasta,centroids2.fasta -s singletons1.fasta,singletons2.fasta -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o inflated_seqs_combined.fna
 
 

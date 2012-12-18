@@ -25,10 +25,10 @@ Given an otu table in BIOM format, compute and print the (min, max, median, mean
 	**[OPTIONAL]**
 		
 	-m, `-`-mapping_fp
-		A mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file
+		A mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences per sample is presented in a new column entitled "SequenceCount", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file
 	-o, `-`-output_mapping_fp
 		The output filepath where the modified mapping file will be written
-	`-`-otu_counts
+	`-`-num_otus
 		Counts are presented as number of observed OTUs per sample, rather than counts of sequences per sample [default: False]
 
 

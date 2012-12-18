@@ -33,7 +33,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template against [default: $HOME/qiime_software/core_set_aligned.fasta.imputed]
+		Filepath for template against [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
@@ -52,7 +52,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 
 **Output:**
 
-All aligners will output a fasta file containing the alignment and log file in the directory specified by `-`-output_dir (default <alignment_method>_aligned). PyNAST additionally outputs a failures file, containing the sequences which failed to align. So the result of `align_seqs.py <./align_seqs.html>`_ will be up to three files, where the prefix of each file depends on the user supplied FASTA file:
+All aligners will output a fasta file containing the alignment and log file in the directory specified by `-`-output_dir (default <alignment_method>_aligned). PyNAST additionally outputs a failures file, containing the sequences which failed to align. So the result of %prog will be up to three files, where the prefix of each file depends on the user supplied FASTA file:
 
 1. "..._aligned.fasta" - This is a FASTA file containing all aligned sequences.
 
@@ -67,7 +67,7 @@ One could also use the MUSCLE algorithm. The following command can be used to al
 
 ::
 
-	align_seqs.py -i repr_set_seqs.fasta -m muscle -o muscle_alignment/
+	align_seqs.py -i $PWD/unaligned.fna -m muscle -o $PWD/muscle_alignment/
 
 **Alignment with PyNAST:**
 
@@ -77,13 +77,13 @@ The following command can be used for aligning sequences using the PyNAST method
 
 ::
 
-	align_seqs.py -i repr_set_seqs.fasta -t core_set_template.fasta -o pynast_aligned/
+	align_seqs.py -i $PWD/unaligned.fna -t $PWD/core_set_aligned.fasta.imputed -o $PWD/pynast_aligned_defaults/
 
 Alternatively, one could change the minimum sequence length ("-e") requirement and minimum sequence identity ("-p"), using the following command:
 
 ::
 
-	align_seqs.py -i repr_set_seqs.fasta -t core_set_template.fasta -o pynast_aligned/ -e 500 -p 95.0
+	align_seqs.py -i $PWD/unaligned.fna -t core_set_aligned.fasta.imputed -o $PWD/pynast_aligned/ -e 500 -p 95.0
 
 **Alignment with Infernal:**
 
@@ -93,6 +93,6 @@ The following command can be used for aligning sequences using the Infernal meth
 
 ::
 
-	align_seqs.py -m infernal -i repr_set_seqs.fasta -t seed.16s.reference_model.sto -o infernal_aligned/
+	align_seqs.py -m infernal -i $PWD/unaligned.fna -t $PWD/seed.16s.reference_model.sto -o $PWD/infernal_aligned/
 
 

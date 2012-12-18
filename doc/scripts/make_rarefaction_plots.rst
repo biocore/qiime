@@ -48,6 +48,8 @@ This script creates an html file of rarefaction plots based on the supplied coll
 		Calculation to perform for generating error bars. Options are standard deviation (stddev) or standard error (stderr). [default: stddev]
 	-o, `-`-output_dir
 		Path to the output directory
+	`-`-output_type
+		Write the HTML output as one file, images embedded, or several. Options are file_creation, multiple files, and memory. [default: file_creation]
 
 
 **Output:**
@@ -61,38 +63,38 @@ For generated rarefaction plots using the default parameters, including the mapp
 
 ::
 
-	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt
 
 **Specify Image Type and Resolution:**
 
-Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:
+Optionally, you can change the resolution ('-d') and the type of image created ('-i'), by using the following command:
 
 ::
 
-	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -g pdf
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -g pdf
 
 **Use Prefs File:**
 
-You can also supply a preferences file "-p", as follows
+You can also supply a preferences file '-p', as follows
 
 ::
 
-	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -p prefs.txt
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -p prefs.txt
 
 **Set Background Color:**
 
-Alternatively, you can set the plot background "-k", as follows: a preferences file "-p", as follows
+Alternatively, you can set the plot background '-k'
 
 ::
 
-	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -k black
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -k black
 
 **Generate raw data without interactive webpages:**
 
-The user can choose to not create an interactive webpage ("-w" option).  This is for the case, where the user just wants the average plots and the raw average data.
+The user can choose to not create an interactive webpage ('-w' option). This is for the case, where the user just wants the average plots and theraw average data.
 
 ::
 
-	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -w
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -w
 
 

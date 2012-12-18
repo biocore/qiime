@@ -7,7 +7,7 @@
 
 **Description:**
 
-Takes fasta sequences have already been demultiplexed (via `split_libraries.py <./split_libraries.html>`_, `denoise_wrapper.py <./denoise_wrapper.html>`_, `ampliconnoise.py <./ampliconnoise.html>`_, etc.), and have fasta labels that are QIIME format, i.e., SampleID_#, this script will use the SampleID and a mapping file with a ReversePrimer column to find the reverse primer by local alignment and remove this and any subsequent sequence in a filtered output fasta file.
+Takes input mapping file and fasta sequences which have already have been demultiplexed (via `split_libraries.py <./split_libraries.html>`_, `denoise_wrapper.py <./denoise_wrapper.html>`_, `ampliconnoise.py <./ampliconnoise.html>`_, etc.) with fasta labels that are in QIIME format, i.e., SampleID_#.  This script will use the SampleID and a mapping file with a ReversePrimer column to find the reverse primer by local alignment and remove this and any subsequent sequence in a filtered output fasta file.
 
 
 **Usage:** :file:`truncate_reverse_primer.py [options]`
@@ -20,7 +20,7 @@ Takes fasta sequences have already been demultiplexed (via `split_libraries.py <
 	**[REQUIRED]**
 		
 	-f, `-`-fasta_fp
-		Fasta file.  Needs to have fasta labels in proper demultiplexed format 
+		Fasta file.  Needs to have fasta labels in proper demultiplexed format.
 	-m, `-`-mapping_fp
 		Mapping filepath.  ReversePrimer field required.  Reverse primers need to be in 5'->3' orientation.
 	
@@ -36,15 +36,15 @@ Takes fasta sequences have already been demultiplexed (via `split_libraries.py <
 
 **Output:**
 
-Truncated version of the input fasta file (based on input name with '_reverse_primer_removed' appended) will be generated in the output directory, along with a .log file.
+Truncated version of the input fasta file (based on input name with 'seqs_rev_primer_truncated' appended) will be generated in the output directory, along with a .log file.
 
 
 **Example:**
 
-Find, truncate reverse primers from the fasta file seqs.fna, write output fasta file to the reverse_primer_removed directory:
+Find, truncate reverse primers from the fasta file seqs.fna, with the SampleIDs and reverse primers specified in Mapping_File_Rev_Primer.txt, writes output fasta file to the reverse_primer_removed directory:
 
 ::
 
-	truncate_reverse_primer.py -f seqs.fna -m Fasting_Map.txt -o reverse_primer_removed/
+	truncate_reverse_primer.py -f seqs.fna -m Mapping_File_Rev_Primer.txt -o reverse_primer_removed/
 
 

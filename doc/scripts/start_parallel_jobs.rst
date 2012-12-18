@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script is designed to start multiple jobs in parallel on systems with no queueing system, for example a multiple processor or multiple core laptop/desktop machine. This also serves as an example 'cluster_jobs' which users can use a template to define scripts to start parallel jobs in their environment.
+This script is designed to start multiple jobs in parallel on systems with no queueing system, for example a multiple processor or multiple core laptop/desktop machine. This also serves as an example 'cluster_jobs' which users can use as a template to define scripts to start parallel jobs in their environment.
 
 
 **Usage:** :file:`start_parallel_jobs.py [options]`
@@ -32,7 +32,7 @@ No output is created.
 
 **Example:**
 
-Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. 
+Start each command listed in test_jobs.txt in parallel. The run ID for these jobs will be RUNID.
 
 ::
 

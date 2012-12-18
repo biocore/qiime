@@ -73,6 +73,12 @@ For this script, the user supplies two distance matrices (i.e. resulting file fr
 
 ::
 
-	plot_semivariogram.py -x distance.txt -y unifrac.txt -m exponential -o semivariogram.png
+	plot_semivariogram.py -x distance.txt -y unifrac.txt -o semivariogram_exponential.png
+
+Modify the the default method to gaussian
+
+::
+
+	plot_semivariogram.py -x distance.txt -y unifrac.txt -m gaussian -o semivariogram_gaussian.png
 
 
