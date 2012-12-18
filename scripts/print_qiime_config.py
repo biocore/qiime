@@ -315,8 +315,7 @@ class Qiime_config(TestCase):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        min_acceptable_version = (2,7,1)
-        min_unacceptable_version = (2,7,2)
+        acceptable_version = (2,7,3)
         command = 'python --version'
         proc = Popen(command,shell=True,universal_newlines=True, \
                          stdout=PIPE,stderr=STDOUT)
@@ -328,15 +327,13 @@ class Qiime_config(TestCase):
             version = tuple(map(int,version_string.split('.')))
             if len(version) == 2:
                 version = (version[0],version[1],0)
-            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported python version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
-            version_string))
+         "Unsupported python version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
 
     def test_numpy_suported_version(self):
         """numpy version is supported """
