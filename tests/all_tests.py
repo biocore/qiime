@@ -107,7 +107,7 @@ def main():
                qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
                working_dir=qiime_config['temp_dir'],
                verbose=True,
-               tests=script_tests, # runs all
+               tests=script_tests,
                failure_log_fp=None,
                force_overwrite=True)
 
