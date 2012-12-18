@@ -45,7 +45,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
-* usearch v5.2.32 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html)
+* usearch v5.2.236(`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html)
 * tax2tree 1.0.0 (`src_tax2tree <https://downloads.sourceforge.net/project/tax2tree/tax2tree-v1.0.tar.gz>`_)
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
