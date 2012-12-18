@@ -30,7 +30,8 @@ Treatment='2xDose') passing 'Treatment' to this script would cause it to compare
 (Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity values. 
 By default the two sample t-test will be nonparametric (i.e. using Monte Carlo 
 permutations to calculate the p-value), though the user has the option to make 
-the test a parametric t-test. 
+the test a parametric t-test.
+
 The output format is a comparison X (tval,pval) table where each row is a
 different group comparison, and the columns are a t-value or p-value (indicated
 by the header). Any iterations of a rarefaction at a given depth will be 
@@ -112,16 +113,18 @@ script_info['optional_options'] = [
   help='the number of permutations to perform when calculating the '
        'p-value. Must be greater than 10. Only applies if test_type is '
        'nonparametric [default: %default]'),
-  make_option('-p', '--correction_method', type='choice', choices=correction_types,
-  help='method to use for correcting multiple comparisons. Available '
-   'methods are bonferroni, fdr, or none. [default:%default]', default='none')]
+  make_option('-p', '--correction_method', type='choice',
+  choices=correction_types, help='method to use for correcting multiple '
+  'comparisons. Available methods are bonferroni, fdr, or none. '
+  '[default: %default]', default='bonferroni')]
 
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     if opts.num_permutations < 10:
-        raise ValueError('Number of permuations must be greater than 10.')
+        option_parser.error('Number of permuations must be greater than or '
+                            'equal to 10.')
 
     rarefaction_lines = open(opts.alpha_diversity_fp, 'U')
     mapping_lines = open(opts.mapping_fp, 'U')

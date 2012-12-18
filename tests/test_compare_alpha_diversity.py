@@ -117,7 +117,7 @@ class TopLevelTests(TestCase):
              'Control,1xDose': (3.365078231689424, 0.34),
              'Control,2xDose': (0.43262479194397335, 1.0)}
             
-        method = 'FDR'
+        method = 'fdr'
         expected_results = \
             {'1xDose,2xDose': (-1.8939787722170394, 0.42),
              'Control,1xDose': (3.365078231689424, 0.51),
@@ -131,7 +131,7 @@ class TopLevelTests(TestCase):
                 self.assertAlmostEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        method = 'Bonferroni'
+        method = 'bonferroni'
         expected_results = \
             {'1xDose,2xDose': (-1.8939787722170394, 0.14*3),
              'Control,1xDose': (3.365078231689424, 1.0), #because maxes at 1
@@ -145,7 +145,7 @@ class TopLevelTests(TestCase):
                 self.assertAlmostEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
 
-        method = 'None'
+        method = 'none'
         expected_results = \
             {'1xDose,2xDose': (-1.8939787722170394, 0.14),
              'Control,1xDose': (3.365078231689424, 0.34),
@@ -226,6 +226,7 @@ class TopLevelTests(TestCase):
                 for val0, val1 in zip(expected_results[k],observed_results[k]):
                     self.assertEqual(val0,val1)
         self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
+
 
 if __name__ == "__main__":
     main()
