@@ -2,7 +2,8 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight","Greg Caporaso"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
+    "William Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.5.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -33,13 +34,13 @@ tax1    [or here]
 """
 
 #note: might want to use make_safe_f to strip out additional params passed on.
-import numpy
+from numpy import array, zeros
 import os.path
 from optparse import OptionParser
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-import cogent.maths.stats.alpha_diversity as alph
+import qiime.pycogent_backports.alpha_diversity as alph # relying on backports
 
 from qiime.parse import make_envs_dict
 from qiime.util import FunctionWithParams, make_safe_f
@@ -47,7 +48,7 @@ from qiime.format import format_matrix
 from sys import exit, stderr
 import sys
 import os.path
-import qiime.alpha_diversity
+#import qiime.alpha_diversity
 from biom.parse import parse_biom_table
 
 class AlphaDiversityCalc(FunctionWithParams):
@@ -131,7 +132,7 @@ class AlphaDiversityCalc(FunctionWithParams):
                 envs[observation_id] = obs
             
             new_sample_names, result = self.Metric(tree, envs, **self.Params)
-            ordered_res = numpy.zeros(len(sample_names), 'float')
+            ordered_res = zeros(len(sample_names), 'float')
             for i, sample in enumerate(sample_names):
                 try:
                    # idx is sample's index in result from metric
@@ -139,14 +140,14 @@ class AlphaDiversityCalc(FunctionWithParams):
                    ordered_res[i] = result[idx]
                 except ValueError:
                    pass # already is zero
-            return numpy.array(ordered_res)
+            return array(ordered_res)
             
         else:
             def metric(row):
                 return self.Metric(row, **self.Params)
             result = map(metric, data)
             
-            return numpy.array(result)
+            return array(result)
 
     def formatResult(self, result):
         """Generate formatted vector, here just tab-delimited text.
@@ -207,7 +208,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
                     res.append(met) 
             else:
                 raise RuntimeError, "alpha div shape not as expected"
-        res_data = numpy.array(res).T
+        res_data = array(res).T
         
         return res_data, otu_table.SampleIds, calc_names
     
@@ -247,6 +248,7 @@ alph.osd.return_names = ('observed', 'singles', 'doubles')
 #hand curated lists of metrics, these either return one value, or
 #are modified above
 phylogenetic_metrics = [fast_unifrac.PD_whole_tree]
+
 nonphylogenetic_metrics = [
 alph.ACE,
 alph.berger_parker_d,
@@ -256,7 +258,10 @@ alph.chao1_confidence,
 alph.dominance,
 alph.doubles,
 alph.equitability,
+alph.esty_ci,
 alph.fisher_alpha,
+alph.gini_index,
+alph.goods_coverage,
 alph.heip_e,
 alph.kempton_taylor_q,
 alph.margalef,
@@ -273,6 +278,11 @@ alph.simpson,
 alph.simpson_e,
 alph.singles,
 alph.strong]
+
+cup_metrics = [
+alph.lladser_pe,
+alph.lladser_ci]
+#starr, not yet needs tests]
 
 def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
     metrics_list = metrics.split(',')
@@ -336,7 +346,7 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
             except AttributeError:
                 raise ValueError(
                  "could not find metric.  %s.\n Known metrics are: %s\n" \
-                 % (metric, ', '.join(list_known_metrics())))
+                 % (metric, ', '.join(list_known_cup_metrics())))
 
 
     for fname in file_names:
@@ -345,3 +355,66 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
         single_file_alpha(os.path.join(input_path, fname), 
             metrics, os.path.join(output_path,'alpha_'+fname),
             tree_path)
+
+
+def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
+    """Compute variations of the conditional uncovered probability.
+
+    otufilepath: path to otu_table file
+    metrics: comma separated list of required metrics
+    outfilepath: path to output file
+
+    r: Number of new colors that are required for the next prediction
+    alpha: desired confidence level
+    f: ratio between upper and lower bound
+    ci_type: type of confidence interval. One of:
+             ULCL: upper and lower bounds with conservative lower bound
+             ULCU: upper and lower woth conservative upper bound
+             U: Upper bound only, lower bound fixed to 0
+             L: Lower bound only, upper bound fixed to 1
+
+    The opposite of uncovered probability is sometimes called coverage.
+    """
+    metrics_list = metrics.split(',')
+    calcs = []
+
+    params = {'r': r,
+              'alpha': alpha,
+              'f':f,
+              'ci_type':ci_type}
+                  
+    for metric in metrics_list:
+        try:
+            metric_f = get_cup_metric(metric)
+        except AttributeError:
+            stderr.write(
+                "Could not find metric %s.\n Known metrics are: %s\n" \
+                    % (metric, ', '.join(list_known_cup_metrics())))
+            exit(1)
+            
+        c = AlphaDiversityCalc(metric_f, params=params)
+        calcs.append(c)
+    
+    all_calcs = AlphaDiversityCalcs(calcs)
+
+    try:
+        result = all_calcs(data_path=otu_filepath,
+            result_path=outfilepath, log_path=None)
+        if result:  #can send to stdout instead of file
+            print all_calcs.formatResult(result)
+    except IOError, e:
+        stderr.write("Failed because of missing files.\n")
+        stderr.write(str(e)+'\n')
+        exit(1)
+
+def get_cup_metric(name):
+    """Gets metric by name from list in this module
+    """
+    for metric in cup_metrics:
+        if metric.__name__.lower() == name.lower():
+            return metric    
+    raise AttributeError
+
+def list_known_cup_metrics():
+    """Show the names of available metrics."""
+    return [ metric.__name__ for metric in cup_metrics ]
