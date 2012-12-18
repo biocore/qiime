@@ -78,7 +78,6 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-
     if opts.show_metrics:
         print("Known metrics are: %s\n" \
               % (', '.join(list_known_metrics()),))
