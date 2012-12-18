@@ -41,7 +41,7 @@ QIIME 1.6.0 (18 Dec 2012)
 * ``supervised_learning.py`` now produces mislabeling.txt and cv_probabilities.txt that look like QIIME mapping files, allowing them to be used for coloring points in PCoA plots, etc.
 * Updated RDP Classifier training code to allow any number of ranks in training files, as long as number of ranks is uniform. This removes the need for special RDP training files in reference OTU collections.
 * Added table density and metadata listings to ``per_library_stats.py``.
-* Updates to several dependencies. New dependencies (for those that changed in this release) are: Python 2.7.3; PyCogent 1.5.1; biom-format 1.1.1; PyNAST 1.2; usearch 5.2.236; rtax 0.983; AmpliconNoise 1.27; Greengenes OTUs 12_10; and RDP Classifier 2.2.
+* Updates to several dependencies. New dependencies (for those that changed in this release) are: Python 2.7.3; PyCogent 1.5.3; biom-format 1.1.1; PyNAST 1.2; usearch 5.2.236; rtax 0.983; AmpliconNoise 1.27; Greengenes OTUs 12_10; and RDP Classifier 2.2.
 
 QIIME 1.5.0 (8 May 2012)
 ==================================
