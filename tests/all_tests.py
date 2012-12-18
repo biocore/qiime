@@ -34,16 +34,15 @@ script_info['optional_options'] = [
              action='store_true',
              help='suppress unit tests [default: %default]',
              default=False),
- make_option('--suppress_script_tests',
-             action='store_true',
-             help='suppress script tests [default: %default]',
-             default=False),
  make_option('--suppress_script_usage_tests',
              action='store_true',
              help='suppress script usage tests [default: %default]',
              default=False),
  make_option('--unittest_glob',
-             help='wildcard pattern to match tests to run [default: %default]',
+             help='wildcard pattern to match tests to run [default: run all]',
+             default=None),
+ make_option('--script_tests',
+             help='comma-separated list of tests to run [default: run all]',
              default=None),
 ]
 script_info['version'] = __version__
@@ -55,10 +54,8 @@ def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
 
-    if (opts.suppress_unit_tests and \
-       opts.suppress_script_tests and \
-       opts.suppress_script_usage_tests):
-       option_parser.error("You're suppressing all three test types. Nothing to run.")
+    if (opts.suppress_unit_tests and opts.suppress_script_usage_tests):
+       option_parser.error("You're suppressing both test types. Nothing to run.")
 
     test_dir = abspath(dirname(__file__))
 
@@ -95,39 +92,14 @@ def main():
                     missing_application_tests.append(unittest_name)
                 else:
                     bad_tests.append(unittest_name)
-
-
-    bad_scripts = []
-    if not opts.suppress_script_tests:
-        # Run through all of QIIME's scripts, and pass -h to each one. If the
-        # resulting stdout does not being with the Usage text, that is an 
-        # indicator of something being wrong with the script. Issues that would
-        # cause that are bad import statements in the script, SyntaxErrors, or 
-        # other failures prior to running qiime.util.parse_command_line_parameters.
-
-        try:
-            scripts_dir = get_qiime_scripts_dir()
-            script_directory_found = True
-        except AssertionError:
-            script_directory_found = False
-
-
-        if script_directory_found:
-            script_names = []
-            script_names = glob('%s/*py' % scripts_dir)
-            script_names.sort()
-
-            for script_name in script_names:
-                script_good_pattern = re.compile('^Usage: %s' % split(script_name)[1])
-                print "Testing %s." % script_name
-                command = '%s %s -h' % (python_name, script_name)
-                stdout, stderr, return_value = qiime_system_call(command)
-                if not script_good_pattern.search(stdout):
-                    bad_scripts.append(script_name)
     
     num_script_usage_example_failures = 0
     qiime_test_data_dir = qiime_config['qiime_test_data_dir']
     if not opts.suppress_script_usage_tests and qiime_test_data_dir != None:
+        if opts.script_tests != None:
+            script_tests = opts.script_tests.split(',')
+        else:
+            script_tests = None
         # Run the script usage testing functionality
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
@@ -135,7 +107,7 @@ def main():
                qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
                working_dir=qiime_config['temp_dir'],
                verbose=True,
-               tests=None, # runs all
+               tests=script_tests,
                failure_log_fp=None,
                force_overwrite=True)
 
@@ -154,16 +126,6 @@ def main():
         
         if not (missing_application_tests or bad_tests):
             print "\nAll unit tests passed.\n\n"
-     
-    if not opts.suppress_script_tests:
-        print "\nBasic script test result summary\n--------------------------------\n"
-        if not script_directory_found:
-            print "Critical error: Failed to test scripts because the script directory could not be found.\n The most likely explanation for this failure is that you've installed QIIME using setup.py, and forgot to specify the qiime_scripts_dir in your qiime_config file. This value shoud be set either to the directory you provided for --install-scripts, or /usr/local/bin if no value was provided to --install-scripts."
-        else:
-            if bad_scripts:
-                print "Failed the following basic script tests.\n%s" % '\n'.join(bad_scripts)
-            else:
-                print "All basic script tests passed successfully.\n"
     
     qiime_test_data_dir_exists = True
     if not opts.suppress_script_usage_tests:
@@ -175,13 +137,13 @@ def main():
             qiime_test_data_dir_exists = False
         print ""
 
-    # If any of the unit tests, script tests, or script usage tests fail, or if
+    # If any of the unit tests or script usage tests fail, or if
     # we have any missing application errors or a missing QIIME test data dir
     # if script usage tests weren't suppressed, use return code 1 (as python's
     # unittest module does to indicate one or more failures).
     return_code = 1
     if (len(bad_tests) == 0 and len(missing_application_tests) == 0 and
-        len(bad_scripts) == 0 and num_script_usage_example_failures == 0 and
+        num_script_usage_example_failures == 0 and
         qiime_test_data_dir_exists):
         return_code = 0
     return return_code
