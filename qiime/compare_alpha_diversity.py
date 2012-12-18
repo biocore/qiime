@@ -75,19 +75,17 @@ def _correct_compare_alpha_results(result, method):
      result - dict, output of compare_alpha_diversities.
      method - str, in ['FDR','Bonferroni','None']
     """
-    if method not in ['bonferroni','fdr','none']:
+    method = method.lower()
+    if method not in correction_types:
         raise ValueError('You must specify a method to correct for multiple '+\
             'comparisons. You may pass \'bonferroni\' or \'fdr\' or \'none\'.')
 
     corrected_result = {}
-    if method == 'Bonferroni':
+    if method == 'bonferroni':
         num_comps = float(len(result))
         for k,v in result.items():
             corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
-        # unless we take min, bonferroni could return really bizarre results 
-        # of pvals > 1. bonferonni should be used to correct level of test, not
-        # actual pvals to avoid this. 
-    elif method == 'FDR':
+    elif method == 'fdr':
         # pull out the uncorrected pvals and apply fdr correction
         tmp_pvals = [v[1] for k,v in result.items()]
         fdr_corr_vals = fdr_correction(tmp_pvals)
@@ -96,7 +94,7 @@ def _correct_compare_alpha_results(result, method):
         for i,k in enumerate(result): #steps through in same order as items 
             t,p = result[k]
             corrected_result[k] = (t, min(fdr_corr_vals[i],1.0)) #same as above
-    elif method == 'None':
+    elif method == 'none':
         corrected_result = result
     return corrected_result
 
@@ -149,12 +147,9 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
         elif test_type == 'nonparametric':
             obs_t, _, _, p_val = mc_t_two_sample(i,j, 
                 permutations=num_permutations)
-            #format_p_value returns a string for some reason
             p_val = float(format_p_value_for_num_iters(p_val, 
                 num_iters=num_permutations))
         else:
             raise ValueError("Invalid test type '%s'." % test_type)
         results[t_key]= (obs_t,p_val)
     return results
-
-
