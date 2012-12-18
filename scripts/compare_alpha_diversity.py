@@ -28,20 +28,18 @@ For examples if your mapping file had a category called 'Treatment' that
 separated your samples into three groups (Treatment='Control', Treatment='Drug',
 Treatment='2xDose') passing 'Treatment' to this script would cause it to compare 
 (Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity values. 
-By default the two sample t-test will be
-nonparametric (i.e. using Monte Carlo permutations to calculate the p-value),
-though the user has the option to make the test a parametric t-test. 
+By default the two sample t-test will be nonparametric (i.e. using Monte Carlo 
+permutations to calculate the p-value), though the user has the option to make 
+the test a parametric t-test. 
 The output format is a comparison X (tval,pval) table where each row is a
 different group comparison, and the columns are a t-value or p-value (indicated
 by the header). Any iterations of a rarefaction at a given depth will be 
 averaged. For instance, if your collated_alpha file had 10 iterations of the
 rarefaction at depth 480, the scores for the alpha diversity metrics of those
 10 iterations would be averaged (within sample). The iterations are not 
-controlled 
-by this script; when multiple_rarefactions.py is called, the -n option specifies
-the number of iterations that have occurred. 
-The multiple comparison correction takes into account the number of between 
-group comparisons.
+controlled by this script; when multiple_rarefactions.py is called, the -n option 
+specifies the number of iterations that have occurred. The multiple comparison
+correction takes into account the number of between group comparisons.
 """
  
 script_info['script_usage'] = []
@@ -112,7 +110,7 @@ script_info['optional_options'] = [
        '%default]', default='nonparametric'),
  make_option('-n', '--num_permutations', type='int', default=999,
   help='the number of permutations to perform when calculating the '
-       'p-value. Must be greater than zero. Only applies if test_type is '
+       'p-value. Must be greater than 10. Only applies if test_type is '
        'nonparametric [default: %default]'),
   make_option('-p', '--correction_method', type='choice', choices=correction_types,
   help='method to use for correcting multiple comparisons. Available '
@@ -122,7 +120,8 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    
+    if opts.num_permutations < 10:
+        raise ValueError('Number of permuations must be greater than 10.')
 
     rarefaction_lines = open(opts.alpha_diversity_fp, 'U')
     mapping_lines = open(opts.mapping_fp, 'U')
