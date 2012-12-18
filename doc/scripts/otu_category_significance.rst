@@ -53,7 +53,7 @@ With the exception of longitudinal correlation and paired_T, this script can be 
 	-o, `-`-output_fp
 		Path to output file. [default: otu_category_significance_results.txt]
 	-f, `-`-filter
-		Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. For longitudinal options, is the number of samples from the individuals/sites that were not ignored because of the OTU not being observed in any of the samples from that individual/site. As an example, if 5 samples per individual were collected over a timeseries that was being evaluated with longitudinal_correlation, a value of 10 would indicate that the OTU would have to have been detected in at least 2 individuals. The default value=10.
+		Minimum fraction of samples that must contain the OTU for the OTU to be included in the analysis. For longitudinal options, is the fraction of individuals/sites that were not ignored because of the OTU not being observed in any of the samples from that individual/site. [default: 0.25]
 	-t, `-`-threshold
 		Threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None
 	-l, `-`-otu_include_fp
@@ -116,26 +116,26 @@ The paired_T results are output as tab delimited text that can be examined in Ex
 
 **G-test:**
 
-Perform a G test on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
+Perform a G test on otu_table.biom testing OTUs for differences in the abundance across the category "Treatment":
 
 ::
 
-	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -f 4 -o single_g_test.txt
+	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -o single_g_test.txt
 
 **ANOVA:**
 
-Perform an ANOVA on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
+Perform an ANOVA on otu_table.biom testing OTUs for differences in the abundance across the category "Treatment":
 
 ::
 
-	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o single_anova.txt
+	otu_category_significance.py -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -o single_anova.txt
 
 **ANOVA on mutliple OTU tables:**
 
-Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":
+Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs for differences in the abundance across the category "Treatment":
 
 ::
 
-	otu_category_significance.py -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o multiple_anova.txt
+	otu_category_significance.py -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -o multiple_anova.txt
 
 

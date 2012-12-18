@@ -27,9 +27,9 @@ This script takes a tree and a list of OTU IDs (in one of several supported form
 	**[OPTIONAL]**
 		
 	-n, `-`-negate
-		If negate is not false will prune tips fed in and save    all others [default: False]
+		If negate is True will remove input tips/seqs, if    negate is False, will retain input tips/seqs [default: False]
 	-t, `-`-tips_fp
-		A list of sequence identifiers (or tab-delimited lines with   a seq identifier in the first field) which should be retained   [default: None]
+		A list of tips (one tip per line) or sequence identifiers   (tab-delimited lines with a seq identifier in the first field)   which should be retained   [default: None]
 	-f, `-`-fasta_fp
 		A fasta file where the seq ids should be retained [default: None]
 
@@ -43,12 +43,18 @@ Output is a pruned tree in newick format.
 
 ::
 
-	filter_tree.py -i rep_seqs.tre -t tips_to_keep.txt -o rep_seqs_subtree.tre
+	filter_tree.py -i rep_seqs.tre -t tips_to_keep.txt -o pruned.tre
 
-**Prune a tree to remove the tips in tips_to_remove.txt. Note that the -n/--negate option must be passed for this functionality.:**
+**Prune a tree to remove the tips in tips_to_remove.txt. Note that the -n/--negate option must be passed for this functionality:**
 
 ::
 
-	filter_tree.py -i rep_seqs.tre -t tips_to_remove.txt -o rep_seqs_subtree.tre -n
+	filter_tree.py -i rep_seqs.tre -t tips_to_keep.txt -o negated.tre -n
+
+**Prune a tree to include only the tips found in the fasta file provided:**
+
+::
+
+	filter_tree.py -i rep_seqs.tre -f fast_f.fna -o pruned_fast.tre
 
 

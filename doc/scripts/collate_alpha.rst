@@ -65,10 +65,10 @@ alpha_rarefaction_20_3.txt  20                      3           0.91    0.93
 
 **Example:**
 
-The user inputs the results from batch alpha diversity (e.g. alpha_div_chao1_PD/) and the location where the results should be written (e.g. collated_alpha/), as shown by the following command:
+The user inputs the results from batch alpha diversity (e.g. alpha_div/) and the location where the results should be written (e.g. collated_alpha/), as shown by the following command:
 
 ::
 
-	collate_alpha.py -i alpha_div_chao1_PD/ -o collated_alpha/
+	collate_alpha.py -i alpha_div/ -o collated_alpha/
 
 

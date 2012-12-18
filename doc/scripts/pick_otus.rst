@@ -65,9 +65,9 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
 	`-`-min_aligned_percent
-		Minimum percent of query sequence that can be aligned to consider a hit  (BLAST OTU picker only) [default: 0.5]
+		Minimum percent of query sequence that can be aligned to consider a hit (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
-		Sequence similarity threshold (for cdhit, uclust, uclust_ref, or usearch) [default: 0.97]
+		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, or usearch) [default: 0.97]
 	-e, `-`-max_e_value
 		Max E-value when clustering with BLAST [default: 1e-10]
 	-q, `-`-trie_reverse_seqs
@@ -101,9 +101,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-word_length
 		W value to usearch, uclust, and uclust_ref.  Set to 64 for usearch. [default: 12]
 	`-`-uclust_otu_id_prefix
-		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
-	`-`-uclust_stable_sort
-		Deprecated: stable sort enabled by default, pass --uclust_suppress_stable_sort to disable [default: True]
+		OTU identifier prefix (string) for the de novo uclust OTU picker and for new clusters when uclust_ref is used without -C [default: None, OTU ids are ascending integers]
 	`-`-suppress_uclust_stable_sort
 		Don't pass --stable-sort to uclust [default: False]
 	`-`-suppress_uclust_prefilter_exact_match
@@ -120,18 +118,26 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Reference database of fasta sequences for reference based chimera detection with usearch_qf. [default: None]
 	`-`-perc_id_blast
 		Percent ID for mapping OTUs created by usearch_qf back to original sequence IDs [default: 0.97]
-	-k, `-`-de_novo_chimera_detection
-		Perform de novo chimera detection in usearch_qf. [default: True]
-	-x, `-`-reference_chimera_detection
-		Perform reference based chimera detection in usearch_qf. [default: True]
-	-l, `-`-cluster_size_filtering
-		Perform cluster size filtering in usearch_qf.  [default: True]
+	`-`-de_novo_chimera_detection
+		Deprecated:  de novo chimera detection performed by default, pass --suppress_de_novo_chimera_detection to disable. [default: None]
+	-k, `-`-suppress_de_novo_chimera_detection
+		Suppress de novo chimera detection in usearch_qf. [default: False]
+	`-`-reference_chimera_detection
+		Deprecated:  Reference based chimera detection performed by default, pass --supress_reference_chimera_detection to disable [default: None]
+	-x, `-`-suppress_reference_chimera_detection
+		Suppress reference based chimera detection in usearch_qf. [default: False]
+	`-`-cluster_size_filtering
+		Deprecated, cluster size filtering enabled by default, pass --disable_cluster_size_filtering to disable.  [default: None]
+	-l, `-`-suppress_cluster_size_filtering
+		Suppress cluster size filtering in usearch_qf.  [default: False]
 	`-`-remove_usearch_logs
 		Disable creation of logs when usearch is called.  Up to nine logs are created, depending on filtering steps enabled.  [default: False]
 	`-`-derep_fullseq
 		Dereplication of full sequences, instead of subsequences. Faster than the default --derep_subseqs in usearch. [default: False]
 	-F, `-`-non_chimeras_retention
 		Selects subsets of sequences detected as non-chimeras to retain after de novo and refernece based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
+	`-`-minlen
+		Minimum length of sequence allowed for usearch. [default: 64]
 
 
 **Output:**
@@ -154,17 +160,17 @@ The resulting .log file contains a list of parameters passed to the `pick_otus.p
 
 **Example (uclust method, default):**
 
-Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus/", while using default parameters (0.97 sequence similarity, no reverse strand matching):
+Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus_default/", while using default parameters (0.97 sequence similarity, no reverse strand matching):
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/
+	pick_otus.py -i seqs.fna -o picked_otus_default
 
-To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:
+To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the command would be the following:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -s 0.90 -z
+	pick_otus.py -i seqs.fna -o picked_otus_90_percent_rev/ -s 0.90 -z
 
 **Uclust Reference-based OTU picking example:**
 
@@ -172,29 +178,29 @@ uclust_ref can be passed via -m to pick OTUs against a reference set where seque
 
 ::
 
-	pick_otus.py -i seqs.fna -r core_set_unaligned.fasta_11_8_07 -m uclust_ref
+	pick_otus.py -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_
 
 **Example (cdhit method):**
 
-Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus/", while using default parameters (0.97 sequence similarity, no prefix filtering):
+Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "cdhit_picked_otus/", while using default parameters (0.97 sequence similarity, no prefix filtering):
 
 ::
 
-	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/
+	pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus/
 
-Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:
-
-::
-
-	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -n 100
-
-Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering ("-t") option as shown by the following command:
+Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly decrease the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:
 
 ::
 
-	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -t
+	pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_filter/ -n 100
 
-Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (>100,000 seqs) to reduce run-time.
+Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering ("-t") option as shown by the following command.
+
+Note: It is highly recommended to use one of the prefiltering methods when analyzing large datasets (>100,000 seqs) to reduce run-time.
+
+::
+
+	pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_trie_prefilter/ -t
 
 **BLAST OTU-Picking Example:**
 
@@ -204,64 +210,62 @@ The following command can be used to blast against a reference sequence set, usi
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m blast -r ref_seq_set.fna
+	pick_otus.py -i seqs.fna -o blast_picked_otus/ -m blast -r refseqs.fasta
 
 If you already have a pre-built BLAST database, you can pass the database prefix as shown by the following command:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m blast -b ref_database
+	pick_otus.py -i seqs.fna -o blast_picked_otus_prebuilt_db/ -m blast -b refseqs.fasta
 
 If the user would like to change the sequence similarity ("-s") and/or the E-value ("-e") for the blast method, they can use the following command:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m blast -s 0.90 -e 1e-30
+	pick_otus.py -i seqs.fna -o blast_picked_otus_90_percent/ -m blast -r refseqs.fasta -s 0.90 -e 1e-30
 
 **Prefix-suffix OTU Picking Example:**
 
-OTUs can be picked by collapsing sequences which being and/or end with identical bases (i.e., identical prefixes or suffixes). This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:
+OTUs can be picked by collapsing sequences which begin and/or end with identical bases (i.e., identical prefixes or suffixes).  This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, the user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m prefix_suffix -p 50 -u 25
+	pick_otus.py -i seqs.fna -o prefix_suffix_picked_otus/ -m prefix_suffix -p 50 -u 25
 
 **Mothur OTU Picking Example:**
 
 The Mothur program (http://www.mothur.org/) provides three clustering algorithms for OTU formation: furthest-neighbor (complete linkage), average-neighbor (group average), and nearest-neighbor (single linkage). Details on the algorithms may be found on the Mothur website and publications (Schloss et al., 2009). However, the running times of Mothur's clustering algorithms scale with the number of sequences squared, so the program may not be feasible for large data sets.
 
-The following command may be used to create OTU's based on a furthest-neighbor algorithm (the default setting):
+The following command may be used to create OTUs based on a furthest-neighbor algorithm (the default setting) using aligned sequences as input:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m mothur
+	pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus/ -m mothur
 
 If you prefer to use a nearest-neighbor algorithm instead, you may specify this with the '-c' flag:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -c nearest
+	pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_nn/ -m mothur -c nearest
 
-The sequence similarity parameter may also be specified. For example, the following command may be used to create OTU's at the level of 95% similarity:
+The sequence similarity parameter may also be specified. For example, the following command may be used to create OTUs at the level of 90% similarity:
 
 ::
 
-	pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -s 0.90
+	pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90
 
 **Usearch_qf ('usearch quality filter'):**
 
-Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.
-
-**Standard usearch (usearch_qf) example:**
+Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:
 
 ::
 
-	pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o usearch_qf_results/
+	pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2
 
 **Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:**
 
 ::
 
-	pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o usearch_qf_results/
+	pick_otus.py -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/
 
 

@@ -57,9 +57,9 @@ The denoiser removes sequencing noise characteristic to pyrosequencing by flowgr
 	`-`-low_memory
 		Use slower, low memory method [default: False]
 	-e, `-`-error_profile
-		Path to error profile [default= $HOME/qiime_software/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
+		Path to error profile [default= /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
 	`-`-titanium
-		Shortcut for -e $HOME/qiime_software/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
+		Shortcut for -e /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
 
 
 **Output:**

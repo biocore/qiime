@@ -41,6 +41,6 @@ Merge two mapping files into a new mapping file (merged_mapping.txt). In cases w
 
 ::
 
-	 merge_mapping_files.py -m inseqs1_mapping.txt,inseqs2_mapping.txt  -o merged_mapping.txt -n 'Data not collected'
+	merge_mapping_files.py -m map_controls.txt,map_fasting.txt -o merged_mapping.txt -n 'Data not collected'
 
 

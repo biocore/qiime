@@ -2,31 +2,97 @@
 
 .. index:: compare_categories.py
 
-*compare_categories.py* -- Analyzes distance matrices for statistical significance of sample grouping
+*compare_categories.py* -- Analyzes statistical significance of sample groupings using distance matrices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
 
-This script allows for the analysis of distance matrices using several statistical methods. These methods are Adonis, Anosim, BEST, DFA, Moran's I, MRPP, PERMANOVA, PERMDISP, RDA.
+This script allows for the analysis of the strength and statistical
+significance of sample groupings using a distance matrix as the primary input.
+Several statistical methods are available: adonis, ANOSIM, BEST, Moran's I,
+MRPP, PERMANOVA, PERMDISP, and db-RDA.
 
-Adonis - This method takes a distance matrix and mapping file. It then identifies important points in the data and performs F-tests on the initial data, and random permutations (via shuffling) the category data. Then, it finally returns the information that was identified in the samples. It's stated that it partitions (or seperates the data) for this analysis in order to find underlying relationships.
+Note: R's vegan and ape packages are used to compute many of these methods, and
+for the ones that are not, their implementations are based on the
+implementations found in those packages. It is recommended to read through the
+detailed descriptions provided by the authors (they are not reproduced here)
+and to refer to the primary literature for complete details, including the
+methods' assumptions. To view the documentation of a method in R, prepend a
+question mark before the method name. For example:
 
-Anosim - This method takes in a distance matrix and a mapping file. This method tests whether two or more categories are significantly different. You can specify a category in the metadata mapping file to separate samples into groups and then test whether there are significant differences between those groups. For example, you might test whether Control samples are significantly different from Fast samples. Since ANOSIM is non-parametric, significance is determined through permutations.
+?vegan::adonis
 
-BEST - This method looks at the numerical environmental variables relating samples in a distance matrix. For instance, the unifrac distance matrix and pH and latitude (or any other number of variables) in soil samples, and ranks them in order of which best explain patterns in the communities. This method will only accept categories that are numerical.
+The following are brief descriptions of the available methods:
 
-Moran's I - This method takes in a distance matrix and mapping file. Then it uses the geographical data supplied to identify what type of spatial configuration occurs in the samples. Are they dispersed, clustered, or of no distinctly noticeable configuration when compared to each other? This method will only accept a category that is numerical.
+adonis - Partitions a distance matrix among sources of variation in order to
+describe the strength and significance that a categorical or continuous
+variable has in determining variation of distances. This is a nonparametric
+method and is nearly equivalent to db-RDA (see below) except when distance
+matrices constructed with semi-metric or non-metric dissimilarities are
+provided, which may result in negative eigenvalues. adonis is very similar to
+PERMANOVA, though it is more robust in that it can accept either categorical or
+continuous variables in the metadata mapping file, while PERMANOVA can only
+accept categorical variables. See vegan::adonis for more details.
 
-MRPP - This method takes in a distance matrix and a mapping file. It then tests whether two or more categories are significantly different. You can specify a category in the metadata mapping file to separate samples into groups and then test whether there are significant differences between those groups. For example, you might test whether Control samples are significantly different from Fast samples. Since MRPP is non-parametric, significance is determined through permutations.
+ANOSIM - Tests whether two or more groups of samples are significantly
+different based on a categorical variable found in the metadata mapping file.
+You can specify a category in the metadata mapping file to separate
+samples into groups and then test whether there are significant differences
+between those groups. For example, you might test whether 'Control' samples are
+significantly different from 'Fast' samples. Since ANOSIM is nonparametric,
+significance is determined through permutations. See vegan::anosim for more
+details.
 
-PERMANOVA - This method takes distance matrix and a mapping file. This method is for testing the simultaneous response of one or more variables to one or more factors in an ANOVA experimental design on the basis of any distance metric. It returns a R value and a P value.
+BEST - This method looks at the numerical environmental variables relating
+samples in a distance matrix. For instance, given a UniFrac distance matrix and
+pH and latitude (or any other number of variables) in soil samples, BEST will
+rank them in order of which best explain patterns in the communities. This
+method will only accept categories that are numerical (continuous or discrete).
+This is currently the only method in this script that accepts more than one
+category (via -c). See vegan::bioenv for more details.
 
-PERMDISP - This method takes a distance matrix and a mapping file. This method is a procedure for the analysis of multivariate homogeneity of group dispersions (variances). Permutations can be utilized to measure the dissimilatities between groups.
+Moran's I - This method uses the numerical (e.g. geographical) data supplied to
+identify what type of spatial configuration occurs in the samples. For example,
+are they dispersed, clustered, or of no distinctly noticeable configuration
+when compared to each other? This method will only accept a category that is
+numerical. See ape::Moran.I for more details.
 
-RDA - This method takes a distance matrix and a mapping file. This method is an ordination method that shows grouping/clustering of samples based on a category in the metadata mapping file and a distance matrix. This category is used to explain the variability between samples. Thus, RDA is similar to PCoA except that it is constrained, while PCoA is unconstrained (you must specify which category should be used to explain the variability in your data).
+MRPP - This method tests whether two or more groups of samples are
+significantly different based on a categorical variable found in the metadata
+mapping file. You can specify a category in the metadata mapping file to
+separate samples into groups and then test whether there are significant
+differences between those groups. For example, you might test whether 'Control'
+samples are significantly different from 'Fast' samples. Since MRPP is
+nonparametric, significance is determined through permutations. See
+vegan::mrpp for more details.
 
-For more information and examples pertaining to this script, please refer to the accompanying tutorial, which can be found at http://qiime.org/tutorials/category_comparison.html.
+PERMANOVA - This method is very similar to adonis except that it only accepts a
+categorical variable in the metadata mapping file. It uses an ANOVA
+experimental design and returns a pseudo-F value and a p-value. Since PERMANOVA
+is nonparametric, significance is determined through permutations.
+
+PERMDISP - This method analyzes the multivariate homogeneity of group
+dispersions (variances). In essence, it determines whether the variances of
+groups of samples are significantly different. The results of both parametric
+and nonparametric significance tests are provided in the output. This method is
+generally used as a companion to PERMANOVA. See vegan::betadisper for more
+details.
+
+db-RDA - This method is very similar to adonis and will only differ if certain
+non-Euclidean semi- or non-metrics are used to generate the input distance
+matrix, and negative eigenvalues are encountered. The only difference then will
+be in the p-values, not the R^2 values. As part of the output, an ordination
+plot is also generated that shows grouping/clustering of samples based on a
+category in the metadata mapping file. This category is used to explain the
+variability between samples. Thus, the ordination output of db-RDA is similar
+to PCoA except that it is constrained, while PCoA is unconstrained (i.e. with
+db-RDA, you must specify which category should be used to explain the
+variability in your data). See vegan::capscale for more details.
+
+For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+http://qiime.org/tutorials/category_comparison.html.
 
 
 
@@ -40,113 +106,52 @@ For more information and examples pertaining to this script, please refer to the
 	**[REQUIRED]**
 		
 	`-`-method
-		The category analysis method. Valid options: [adonis, anosim, best, morans_i, mrpp, permanova, permdisp, rda]
+		The statistical method to use. Valid options: adonis, anosim, best, morans_i, mrpp, permanova, permdisp, dbrda
 	-i, `-`-input_dm
-		The input distance matrix
+		The input distance matrix. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. `beta_diversity.py <./beta_diversity.html>`_ -m unifrac_g), should not be used as input
 	-m, `-`-mapping_file
 		The metadata mapping file
 	-c, `-`-categories
-		A comma-delimited list of categories from the mapping file (NOTE: many methods take just a single category, if multiple are passed only the first will be selected.)
+		A comma-delimited list of categories from the mapping file. Note: all methods except for BEST take just a single category. If multiple categories are provided, only the first will be used
 	-o, `-`-output_dir
 		Path to the output directory
 	
 	**[OPTIONAL]**
 		
 	-n, `-`-num_permutations
-		The number of permutations to perform. Only applies to adonis, anosim, mrpp, and permanova [default: 999]
+		The number of permutations to use when calculating statistical significance. Only applies to adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA. Must be greater than or equal to zero [default: 999]
 
 
 **Output:**
 
 
-Adonis:
-One file is created and outputs the results into it. The results will be: Analysis of variance(AOV) table, degrees of freedom, sequential sums of squares, mean squares, F statistics, partial R-squared and p-values, based on the N permutations.
+At least one file will be created in the output directory specified by -o. For
+most methods, a single output file containing the results of the test (e.g. the
+effect size statistic and p-value) will be created. The format of the output
+files will vary between methods as some are generated by native QIIME code,
+while others are generated by R's vegan or ape packages. Please refer to the
+script description for details on how to access additional information for
+these methods, including what information is included in the output files.
 
-Anosim:
-One file is output to the designated location under the name of anosim_results.txt. The information in the file will be an R-value and p-value.
-
-Best:
-This outputs one file 'best_results.txt' It will have teh method name, The number of variables. The list of varibles supplied. And lastly, the RHO values, which are ranked pearson correlations for the best combination of variables that describe the community.
-
-Moran's I:
-The output file is placed in a directory specified by -o. The file will be a text file with 4 values: observed, expected, sd, and p.value. The observed value is Morans I index of x. This is computed based on the values passed in to be compared with the weights. The expected value is the value of I under the null hypothesis. The sd is the standard deviation of I under the null hypothesis. P Value is the p-value of the test of the null hypothesis against the alternative hypothesis specified in alternative. Each of these values, except for the p-value, should be between -1 and 1.
-
-MRPP:
-The command in the previous section creates a single output file in the directory specified by the -o arguement, if not it will be sent to the directory location it was called from. The file will be named mrpp_results.txt. The file will contain a dissimilarity index, the class mean and counts. It will also conatin information about the chance corrected within-group agreement A, as well as the result Based on observed delta, and expected delta. There will also be the Significance of delta and the amount of permutations performed.
-
-PERMANOVA:
-Permanova returns one output file containing the the file passed in, the F-value and the p-value.
-
-PERMDISP:
-This method returns one file that outputs an analysis of varaiance table. Responses with the distances will be shown. There will be the strata relationship, then the sample information as well. Lastly you will be able to see the f-value and p-value.
-
-RDA:
-RDA outputs a two files. One is calles rda_results.txt, the other file is rda_plot.pdf. rda.txt contains the Inertia Proportion Rank, the Eigenvalues for constrained axes, and the Eigenvalues for unconstrained axes.
+db-RDA is the only exception in that two output files are created: a results
+text file and a PDF of the ordination plot.
 
 
 
-**Adonis:**
+**adonis example:**
 
-Performs the Adonis statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category and 999 permutations. Then it outputs the results to the 'adonis' directory. The full file path will be: ./adonis/adonis_results.txt
+Runs the adonis statistical method on a distance matrix and mapping file using the Treatment category and 999 permutations, writing the output to the 'adonis_out' directory.
 
 ::
 
-	compare_categories.py --method adonis -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o adonis -n 999
+	compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis_out -n 999
 
-**Anosim:**
+**ANOSIM example:**
 
-Performs the Anosim statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category and 999 perutations. Then it outputs the results to the 'anosim' directory. The full file path will be: ./anosim/anosim_results.txt
-
-::
-
-	compare_categories.py --method anosim -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999
-
-**BEST:**
-
-Performs the BEST statistical method on a distance matrix and mapping file using the LATITUDE and LONGITUDE categories. Then it outputs the results to the 'best' directory. The full file path will be: ./best/best_results.txt
+Runs the ANOSIM statistical method on a distance matrix and mapping file using the Treatment category and 99 permutations, writing the output to the 'anosim_out' directory.
 
 ::
 
-	compare_categories.py --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best
-
-**Moran's I:**
-
-Performs the Moran's I statistical method on a distance matrix and mapping file using the PH category. Then it outputs the results to the 'morans_i' directory. The full file path will be: ./morans_i/Morans_I_results.txt
-
-::
-
-	compare_categories.py --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m datasets/88_soils/map.txt -c PH -o morans_i
-
-**MRPP:**
-
-Performs the MRPP statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category. Then it outputs the results to the 'mrpp' directory. The full file path will be: ./mrpp/mrpp_results.txt
-
-::
-
-	compare_categories.py --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999
-
-**PERMANOVA:**
-
-Performs the PERMANOVA statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' directory. The full file path will be: ./permanova/permanova_results.txt
-
-::
-
-	compare_categories.py --method permanova -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova -n 999
-
-**PERMDISP:**
-
-Performs the PERMDISP statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' directory. The full file path will be: ./permdisp/betadisper_results.txt
-
-::
-
-	compare_categories.py --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp
-
-**RDA:**
-
-Performs the RDA statistical method on a distance matrix and mapping file using the HOST_SUBJECT_ID category. Then it outputs the results to the 'rda' directory. The full file path will be: ./RDA/rda_results.txt and ./RDA/rda_plot.txt
-
-::
-
-	compare_categories.py --method rda -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda
+	compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o anosim_out -n 99
 
 

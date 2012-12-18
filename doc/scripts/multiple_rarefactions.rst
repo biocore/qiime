@@ -38,6 +38,8 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 		Retain taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table. [default: False]
 	-k, `-`-keep_empty_otus
 		Retain OTUs of all zeros, which are usually omitted from the output OTU tables. [default: False]
+	`-`-subsample_multinomial
+		Subsample using subsampling with replacement [default: False]
 
 
 **Output:**

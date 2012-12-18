@@ -41,16 +41,16 @@ This script transforms 2 coordinate matrices (e.g., the output of `principal_coo
 Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations.
 
 
-**Generate monte carlo p-values:**
-
-::
-
-	transform_coordinate_matrices.py -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
-
 **Write the transformed procrustes matrices to file:**
 
 ::
 
-	transform_coordinate_matrices.py -o out/ -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
+	transform_coordinate_matrices.py -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o procrustes_output
+
+**Generate transformed procrustes matrices and monte carlo p-values:**
+
+::
+
+	transform_coordinate_matrices.py -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o mc_procrustes_output -r 1000
 
 

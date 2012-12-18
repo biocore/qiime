@@ -30,6 +30,8 @@
 		Keep OTUs in otu_ids_to_exclude_fp rather than discard them [default:False] 
 	-n, `-`-min_count
 		The minimum total observation count of an otu for that otu to be retained [default: 0]
+	`-`-min_count_fraction
+		Fraction of the total observation (sequence) count to apply as the minimum total observation count of an otu for that otu to be retained. this is a fraction, not percent, so if you want to filter to 1%, you specify 0.01. [default: 0]
 	-x, `-`-max_count
 		The maximum total observation count of an otu for that otu to be retained [default: infinity]
 	-s, `-`-min_samples

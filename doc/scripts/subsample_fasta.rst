@@ -37,10 +37,10 @@ Subsample the seqs.fna file, randomly select 5% of the sequences:
 
 **Example:**
 
- 
+Subsample seqs.fasta to approximately 5%
 
 ::
 
-	 subsample_fasta.py -i seqs.fasta -p 0.05
+	subsample_fasta.py -i $PWD/seqs.fna -p 0.05 -o $PWD/subsampled_seqs.fna
 
 

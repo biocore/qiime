@@ -38,10 +38,10 @@ leave sequence description lines untouched by passing -r):
 
 **Example:**
 
- 
+Reverse complement all sequences in seqs.fna and write result to seqs_rc.fna
 
 ::
 
-	 adjust_seq_orientation.py -i seqs.fasta
+	adjust_seq_orientation.py -i seqs.fna
 
 

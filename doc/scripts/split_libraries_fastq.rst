@@ -21,8 +21,6 @@
 		
 	-i, `-`-sequence_read_fps
 		The sequence read fastq files (comma-separated if more than one)
-	-b, `-`-barcode_read_fps
-		The barcode read fastq files (comma-separated if more than one)
 	-o, `-`-output_dir
 		Directory to store output files
 	-m, `-`-mapping_fps
@@ -30,8 +28,12 @@
 	
 	**[OPTIONAL]**
 		
+	-b, `-`-barcode_read_fps
+		The barcode read fastq files (comma-separated if more than one) [default: None]
 	`-`-store_qual_scores
 		Store qual strings in .qual files [default: False]
+	`-`-sample_id
+		Single sample id to be applied to all sequences (used when data is not multiplexed) [default: None]
 	`-`-store_demultiplexed_fastq
 		Write demultiplexed fastq files [default: False]
 	`-`-retain_unassigned_reads
@@ -58,6 +60,8 @@
 		The type of barcode used. This can be an integer, e.g. for length 6 barcodes, or golay_12 for golay error-correcting barcodes. Error correction will only be applied for golay_12 barcodes. [default: golay_12]
 	`-`-max_barcode_errors
 		Maximum number of errors in barcode [default: 1.5]
+	`-`-phred_offset
+		The ascii offset to use when decoding phred scores - warning: in most cases you don't need to pass this value [default: determined automatically]
 
 
 **Output:**
@@ -82,5 +86,17 @@
 ::
 
 	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20
+
+**Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.:**
+
+::
+
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'
+
+**Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data and write results to ./slout_single_sample_q20.:**
+
+::
+
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'
 
 

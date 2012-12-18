@@ -32,16 +32,12 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 		
 	-n, `-`-num-reps
 		Num iterations at each seqs/sample level [default: 10]
-	`-`-lineages_included
-		Deprecated: lineages are now included by default. Pass --supress_lineages_included to prevent output OTU tables from including taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table.
 	`-`-suppress_lineages_included
 		Exclude taxonomic (lineage) information for each OTU.
-	-N, `-`-single_rarefaction_fp
-		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: $HOME/qiime_software/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
 	-s, `-`-step
 		Levels: min, min+step... for level <= max [default: 1]
-	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: $HOME/qiime_software/scripts/`poller.py <./poller.html>`_]
+	`-`-subsample_multinomial
+		Subsample using subsampling with replacement [default: False]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -49,17 +45,15 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: $HOME/qiime_software/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: `start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
-	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 4]
 
 
 **Output:**
