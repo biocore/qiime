@@ -20,6 +20,7 @@ from collections import defaultdict
 from qiime.otu_category_significance import fdr_correction
 
 test_types = ['parametric', 'nonparametric']
+correction_types = ['bonferroni', 'fdr', 'none']
 
 def sampleId_pairs(mapping_data, rarefaction_data, category):
     """Returns list of sampleId tuples.
@@ -74,18 +75,18 @@ def _correct_compare_alpha_results(result, method):
      result - dict, output of compare_alpha_diversities.
      method - str, in ['FDR','Bonferroni','None']
     """
-    if method not in ['Bonferroni','FDR','None']:
+    if method not in ['bonferroni','fdr','none']:
         raise ValueError('You must specify a method to correct for multiple '+\
-            'comparisons. You may pass \'Bonferroni\' or \'FDR\' or \'None\'.')
+            'comparisons. You may pass \'bonferroni\' or \'fdr\' or \'none\'.')
 
     corrected_result = {}
     if method == 'Bonferroni':
         num_comps = float(len(result))
         for k,v in result.items():
-            corrected_result[k] = (v[0],v[1]*num_comps)
-        # this returns bizarre results like pval=35 since the bonferroni isn't
-        # really designed to correct individual values, but rather to correct
-        # the level of your test. 
+            corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
+        # unless we take min, bonferroni could return really bizarre results 
+        # of pvals > 1. bonferonni should be used to correct level of test, not
+        # actual pvals to avoid this. 
     elif method == 'FDR':
         # pull out the uncorrected pvals and apply fdr correction
         tmp_pvals = [v[1] for k,v in result.items()]
@@ -94,7 +95,7 @@ def _correct_compare_alpha_results(result, method):
         # pvalues were removed and replacing them with fdr corrected
         for i,k in enumerate(result): #steps through in same order as items 
             t,p = result[k]
-            corrected_result[k] = (t, fdr_corr_vals[i])
+            corrected_result[k] = (t, min(fdr_corr_vals[i],1.0)) #same as above
     elif method == 'None':
         corrected_result = result
     return corrected_result

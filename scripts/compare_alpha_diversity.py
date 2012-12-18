@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.compare_alpha_diversity import (compare_alpha_diversities,
-    _correct_compare_alpha_results, test_types)
+    _correct_compare_alpha_results, test_types, correction_types)
 
 script_info = {}
 script_info['brief_description'] = """This script compares alpha diversities based on a two sample t-test using either parametric or non-parametric (Monte Carlo) methods."""
@@ -64,11 +64,9 @@ script_info['script_usage'].append(("Parametric t-test",
 "PD_d100_parametric.txt -t parametric"))
 
 script_info['output_description']= """
-Script generates an output file that is a table of TreatmentPair by iteration. 
+Script generates an output file that is a table of TreatmentPair by (tval,pval). 
 Each row corresponds to a comparison between two groups of treatment values. 
-Each column has the results from the nth iteration across all the treatment 
-pairs. The first value is the probability (pval), the second is the test
-statistic (tval).
+The columns are the tvals or pvals for that comparison.
 """
 
 script_info['required_options']=[
@@ -102,14 +100,7 @@ script_info['required_options']=[
   action='store',
   type='new_filepath',
   dest='output_fp',
-  help='output file path [REQUIRED]'),
- make_option('-p',
-  '--correction_method',
-  action='store',
-  type='string',
-  dest='correction_method',
-  help='method to use for correcting multiple comparisons. Available '
-   'methods are Bonferroni or FDR [REQUIRED]')]
+  help='output file path [REQUIRED]')]
 
 script_info['optional_options'] = [
  make_option('-t', '--test_type', type='choice', choices=test_types,
@@ -122,7 +113,10 @@ script_info['optional_options'] = [
  make_option('-n', '--num_permutations', type='int', default=999,
   help='the number of permutations to perform when calculating the '
        'p-value. Must be greater than zero. Only applies if test_type is '
-       'nonparametric [default: %default]')]
+       'nonparametric [default: %default]'),
+  make_option('-p', '--correction_method', type='choice', choices=correction_types,
+  help='method to use for correcting multiple comparisons. Available '
+   'methods are bonferroni, fdr, or none. [default:%default]', default='none')]
 
 script_info['version'] = __version__
 

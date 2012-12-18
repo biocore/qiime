@@ -134,8 +134,8 @@ class TopLevelTests(TestCase):
         method = 'Bonferroni'
         expected_results = \
             {'1xDose,2xDose': (-1.8939787722170394, 0.14*3),
-             'Control,1xDose': (3.365078231689424, 0.34*3),
-             'Control,2xDose': (0.43262479194397335, 1.0*3)}
+             'Control,1xDose': (3.365078231689424, 1.0), #because maxes at 1
+             'Control,2xDose': (0.43262479194397335, 1.0)} #becuase maxes at 1
 
         observed_results = _correct_compare_alpha_results(input_results, method)
         # test each key in expected results -- this won't catch if 
