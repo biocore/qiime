@@ -668,7 +668,7 @@ class Qiime_config(TestCase):
         
     def test_usearch_supported_version(self):
         """usearch is in path and version is supported """
-        acceptable_version = [(5,2,32),(5,2,32)]
+        acceptable_version = [(5,2,236),(5,2,236)]
         self.assertTrue(app_path('usearch'),
          "usearch not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
