@@ -55,7 +55,7 @@ The QIIME development team is very interested in incorporating community-contrib
    procrustes_analysis
    
 
-**Experimental QIIME features**
+**Experimental QIIME features: these tutorials cover features that should be considered beta QIIME software**
 
 .. toctree::
    :maxdepth: 1
