@@ -146,15 +146,10 @@ def main():
 
     # write results
     outfile = open(output_path, 'w')
-    treatment_comps = corrected_result.keys()
-    iters = len(corrected_result[treatment_comps[0]]) #all equal length, use any
-    header = 'Comparison\t'+'p%s\t'*iters+'t%s\t'*iters
-    header = (header % tuple([i for i in range(iters)]*2)).rstrip()
+    header = 'Comparison\ttval\tpval'
     lines = [header]
-    for tc in treatment_comps:
-        tvals = [t for t,p in corrected_result[tc]]
-        pvals = [p for t,p in corrected_result[tc]]
-        lines.append('\t'.join(map(str,[tc]+pvals+tvals)))
+    for k,v in corrected_result.items():
+        lines.append('\t'.join(map(str,[k,v[0],v[1]])))
     outfile.write('\n'.join(lines))
     outfile.close()
 
