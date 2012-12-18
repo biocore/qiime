@@ -206,8 +206,8 @@ def main():
                     cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
                     inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
 
-
-            if (not script.script_info.has_key('required_options') and not script.script_info.has_key('optional_options')) or ( script.script_info['required_options']==[] and script.script_info['optional_options']==[]):
+            if (not script.script_info.has_key('required_options') and not script.script_info.has_key('optional_options')) or \
+                (script.script_info['required_options']==[] and script.script_info['optional_options']==[]):
                 inputs='\t\n\tNone'
                 
             script_examples=''
@@ -241,8 +241,11 @@ def main():
             f.close()
             
             #script.close()
-        except ValueError:
+        except AttributeError:
             print "%s: This file does not contain the appropriate dictionary" \
+            % (file)
+        except KeyError:
+            print "%s: This file does not contain necessary fields" \
             % (file)
 
 
