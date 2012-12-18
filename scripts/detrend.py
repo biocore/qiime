@@ -51,6 +51,7 @@ script_info['optional_options']=[\
               " not pre-rotating assumes that the curvature is symmetrical across"+\
               " the vertical axis [default: %default]"),
 ]
+script_info['output_description']="""Output is detrended PCoA matrices."""
 script_info['version'] = __version__
 
 def main():
