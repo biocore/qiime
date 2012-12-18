@@ -707,8 +707,19 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported R version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-         
-        
+
+    def test_gdata_install(self):
+        """gdata is installed"""
+        # We currently can't programmatically find the version of gdata. An
+        # issue has been created alerting the gdata devs.
+        pass_test = True
+        try:
+            import gdata
+        except ImportError:
+            pass_test = False
+        self.assertTrue(pass_test, "gdata is not installed.")
+
+
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""
