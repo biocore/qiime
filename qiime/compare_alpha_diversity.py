@@ -11,7 +11,7 @@ __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
-from numpy import array, isnan
+from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from cogent.maths.stats.test import mc_t_two_sample, t_two_sample
@@ -142,6 +142,13 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
         t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
         i = rare_mat.take(pair0_indices)
         j = rare_mat.take(pair1_indices)
+        # found discussion of how to quickly check an array for nan here:
+        # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
+        if isnan(np_min(i)) or isnan(np_min(j)):
+            raise ValueError("nan present in alpha diversities at depth %d."
+             " Re-run alpha diversity comparison at lower sampling depth where"
+             " diversity was computed for all samples, or recompute alpha"
+             " diversity after filtering samples with too few sequences." % depth)
         if test_type == 'parametric':
             obs_t, p_val = t_two_sample(i,j)
         elif test_type == 'nonparametric':
