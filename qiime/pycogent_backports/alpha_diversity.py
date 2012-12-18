@@ -566,7 +566,8 @@ def lladser_point_estimates(sample, r=10):
     r: Number of new colors that are required for the next prediction
 
     This is the point estimator described in Theorem 2 (i):
-
+    Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization:
+    Accurate Measurements of the Microbial Unknown" PLoS 2011.
     Returns: Each new color yields 3-tuple:
          - point estimate
          - position in sample of prediction
@@ -709,6 +710,8 @@ def lladser_ci_series(seq, r, alpha=0.95, f=10, ci_type='ULCL'):
              L: Lower bound only, upper bound fixed to 1
   
     Returns: One CI prediction for each new color that is detected and where.
+    Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization:
+    Accurate Measurements of the Microbial Unknown" PLoS 2011.
     """
 
     for count,seen,cost,i in get_interval_for_r_new_species(seq, r):
@@ -728,7 +731,9 @@ def lladser_ci_from_r(r, t, alpha=0.95, f=10, ci_type='ULCL'):
              U: Upper bound only, lower bound fixed to 0
              L: Lower bound only, upper bound fixed to 1
 
-    This is the formula that is described in Theorem 2 iii              
+    This is the formula that is described in Theorem 2 iii 
+    Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization:
+    Accurate Measurements of the Microbial Unknown" PLoS 2011.           
 
     Returns: A confidence interval that contains the true conditional
              uncovered probability with a probability of 100% * alpha.
@@ -766,7 +771,8 @@ def lower_confidence_bound(r, alpha):
 
     Compute constant b according to Theorem 2 iii with b=1
     aka c_3 from Table 3
-
+    Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization:
+    Accurate Measurements of the Microbial Unknown" PLoS 2011.
     Returns: Constant c such that the confidence interval is [c/T_r, 1]
     """
    
@@ -812,6 +818,8 @@ def upper_confidence_bound(r, alpha):
 
     Compute constant b according to Theorem 2 iii with a=0
     aka c_0 from Table 3
+    Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization:
+    Accurate Measurements of the Microbial Unknown" PLoS 2011.
 
     Returns: Constant c such that the confidence interval is [0,c/T_r]
     """
