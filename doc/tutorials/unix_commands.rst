@@ -4,18 +4,13 @@
 Basic Unix/Linux/OS X commands
 =============================================
 
-This document covers some very basic unix commands that will be useful working with QIIME. You can find a lot of resources both on the web and as books.
+This document covers some very basic unix commands that will be useful working with QIIME. There are a lot of good resources on the web and in books. A few good ones are:
 
-Web resources
--------------
-
- * Linux/Unix: http://www.linuxcommand.org/learning_the_shell.php
- * OS X: http://acad.coloradocollege.edu/dept/pc/SciCompLab/UnixTutorial/
-
-Books
------
-
- * `Unix Power Tools <http://oreilly.com/catalog/9780596003302>`_
+ * `The Command Line Crash Course <http://cli.learncodethehardway.org/book/>`_ (free online book)
+ * `Unix Power Tools <http://oreilly.com/catalog/9780596003302>`_ (book)
+ * `Practical Computing for Biologists <http://practicalcomputing.org/>`_ (book; also covers python programming and other relevant topics)
+ * `Learning the Shell <http://www.linuxcommand.org/learning_the_shell.php>`_ (free online book on Linux/Unix)
+ * `Mac OS X UNIX Tutorial for Beginners <http://acad.coloradocollege.edu/dept/pc/SciCompLab/UnixTutorial/>`_ (free online book on Mac OS)
 
 
 cd : change directory

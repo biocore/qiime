@@ -1,8 +1,8 @@
 .. _illumina_overview_tutorial:
 
-==========================
-Illumina Overview Tutorial
-==========================
+===============================================================================
+Illumina Overview Tutorial: closed reference OTU picking and diversity analyses
+===============================================================================
 
 This tutorial covers a variety of QIIME using Illumina sequencing data. It expands on the :ref:`Processing Illumina Data <processing_illumina_data>` tutorial, which focused primarily on demultiplexing Illumina data. This tutorial is is intended to be quick to run, and as such, uses only a subset of a full Illumina Genome Analyzer II (GAIIx) run. 
 
