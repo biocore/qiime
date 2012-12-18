@@ -1,8 +1,8 @@
 .. _tutorial:
 
-==========================
-QIIME Overview Tutorial
-==========================
+===================================================================
+QIIME Overview Tutorial: de novo OTU picking and diversity analyses
+===================================================================
 
 Introduction
 -------------
