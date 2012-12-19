@@ -7,10 +7,10 @@ __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from os.path import splitext, split, exists
 from os import makedirs
