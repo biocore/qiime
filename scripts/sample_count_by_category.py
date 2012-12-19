@@ -14,6 +14,7 @@ __status__ = "Development"
 from collections import defaultdict
 from qiime.parse import parse_mapping_file
 from qiime.util import parse_command_line_parameters, make_option
+from qiime.sort import natsort
 
 script_info = {}
 script_info['brief_description'] = "Count the number of samples associated to a category value"
@@ -41,11 +42,11 @@ def main():
     for samp in map_data:
         result[samp[cat_idx]] += 1
 
-    for cat_val, val in sorted(result.items()):
+    for cat_val in natsort(result):
         if not cat_val:
-            print "***UNSPECIFIED***\t%d" % val
+            print "***UNSPECIFIED***\t%d" % result[cat_val]
         else:
-            print "%s\t%d" % (cat_val, val)
+            print "%s\t%d" % (cat_val, result[cat_val])
 
 if __name__ == "__main__":
     main()
