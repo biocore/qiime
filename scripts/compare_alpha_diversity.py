@@ -43,7 +43,7 @@ specifies the number of iterations that have occurred. The multiple comparison
 correction takes into account the number of between group comparisons.
 
 If t-scores and/or p-values are None for any of your comparisons, this 
-indicates thatthere were undefined values in your collated alpha diversity 
+indicates that there were undefined values in your collated alpha diversity 
 input file. This occurs if there were too few sequences in one or more of the 
 samples in the groups involved in those comparisons to compute alpha diversity 
 at that depth. You can either rerun %prog passing a lower 
