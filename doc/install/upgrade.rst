@@ -12,7 +12,7 @@ If you have QIIME installed on a Linux machine, the easiest way to upgrade is by
 
 Virtual Machine (VM) users
 --------------------------
-If you run QIIME from within a virtual machine, download the latest QIIME image and follow the install instructions :ref:`virtual_box`.
+If you run QIIME from within a virtual machine, you can either download the latest QIIME image or upgrade an existing one (e.g. to keep your settings, files, etc.) by following the :ref:`virtual_box` install instructions.
 
 Amazon Web Services (AWS) users
 -------------------------------
