@@ -6,10 +6,10 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.6.0"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from numpy import array
 from cogent.maths.stats.test import is_symmetric_and_hollow

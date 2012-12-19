@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from numpy import std
 from qiime.util import (compute_seqs_per_library_stats, 
