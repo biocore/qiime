@@ -35,7 +35,7 @@ def main():
     map_data, header, comments = parse_mapping_file(opts.input_fp)
     
     if opts.category not in header:
-        raise KeyError, "%s doesn't appear to exist in the mapping file!" % opts.category
+        option_parser.error("%s doesn't appear to exist in the mapping file!" % opts.category)
 
     result = defaultdict(int)
     cat_idx = header.index(opts.category)
