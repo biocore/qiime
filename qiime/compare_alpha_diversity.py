@@ -84,7 +84,10 @@ def _correct_compare_alpha_results(result, method):
     if method == 'bonferroni':
         num_comps = float(len(result))
         for k,v in result.items():
-            corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
+            if v[0] == None:
+                corrected_result[k] = v
+            else:
+                corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
     elif method == 'fdr':
         # pull out the uncorrected pvals and apply fdr correction
         tmp_pvals = [v[1] for k,v in result.items()]
@@ -145,10 +148,8 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
         # found discussion of how to quickly check an array for nan here:
         # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
         if isnan(np_min(i)) or isnan(np_min(j)):
-            raise ValueError("nan present in alpha diversities at depth %d."
-             " Re-run alpha diversity comparison at lower sampling depth where"
-             " diversity was computed for all samples, or recompute alpha"
-             " diversity after filtering samples with too few sequences." % depth)
+            results[t_key]= (None,None)
+            continue
         if test_type == 'parametric':
             obs_t, p_val = t_two_sample(i,j)
         elif test_type == 'nonparametric':
