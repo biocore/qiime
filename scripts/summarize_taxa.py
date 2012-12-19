@@ -8,10 +8,10 @@ __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",\
         "Julia Goodrich", "Daniel McDonald", "Antonio Gonzalez Pena",
         "Jesse Stombaugh", "Jose Carlos Clemente Litran", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
  
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option,get_options_lookup,create_dir

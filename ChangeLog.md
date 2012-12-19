@@ -1,3 +1,7 @@
+QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
+===================================================
+
+
 QIIME 1.6.0 (18 Dec 2012)
 =========================
 * Added ``filter_taxa_from_otu_table.py`` to support filtering OTUs with (or without) specific taxonomy assignments from an OTU table.
