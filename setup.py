@@ -69,8 +69,8 @@ def build_denoiser():
 pycogent_version = tuple([int(v) \
         for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
         
-if pycogent_version < (1,5):
-    print "PyCogent >= 1.5.0 required, but %s is installed." % cogent.__version__
+if pycogent_version < (1,5,3):
+    print "PyCogent >= 1.5.3 required, but %s is installed." % cogent.__version__
     exit(1)
 
 if app_path("ghc"):
