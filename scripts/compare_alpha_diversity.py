@@ -41,6 +41,14 @@ rarefaction at depth 480, the scores for the alpha diversity metrics of those
 controlled by this script; when multiple_rarefactions.py is called, the -n option 
 specifies the number of iterations that have occurred. The multiple comparison
 correction takes into account the number of between group comparisons.
+
+If t-scores and/or p-values are None for any of your comparisons, this 
+indicates thatthere were undefined values in your collated alpha diversity 
+input file. This occurs if there were too few sequences in one or more of the 
+samples in the groups involved in those comparisons to compute alpha diversity 
+at that depth. You can either rerun %prog passing a lower 
+value for --depth, or you can re-run alpha diversity after filtering samples with 
+too few sequences.
 """
  
 script_info['script_usage'] = []
