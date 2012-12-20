@@ -25,8 +25,8 @@ script_info = {}
 script_info['brief_description'] = ""
 script_info['script_description'] = ""
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Run a subset of the interface tests in verbose mode","Run interface tests for the add_taxa.py and make_otu_table.py scripts. This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/qime_script_tests.log -t add_taxa,make_otu_table -v"))
-script_info['script_usage'].append(("Run all of the interface tests","Run all script interface tests.  This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/all_qime_script_tests.log"))
+script_info['script_usage'].append(("Run a subset of the interface tests in verbose mode","Run interface tests for the count_seqs.py and make_otu_table.py scripts. This illustrates how to run from the qiime_test_dir directory.","%prog -t count_seqs,make_otu_table -v"))
+script_info['script_usage'].append(("Run all of the interface tests","Run all script interface tests.  This illustrates how to run from the qiime_test_dir directory.","%prog"))
 script_info['output_description']= ""
 script_info['required_options'] = []
 
