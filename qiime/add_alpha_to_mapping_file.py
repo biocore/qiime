@@ -13,8 +13,9 @@ __status__ = "Development"
 
 
 from copy import deepcopy
-from numpy import searchsorted
 from qiime.stats import quantile
+from numpy import searchsorted, array
+from qiime.parse import parse_rarefaction
 
 def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
                                             alpha_data, mapping_file_headers,
@@ -127,3 +128,52 @@ def _get_level(value, levels, prefix=None):
         output = value_level
 
     return output
+
+def mean_alpha(alpha_dict, depth):
+    """mean collated alpha diversity data at a given depth
+
+    Input:
+    alpha_dict: dictionary where the values are the lines of a collated alpha
+    diversity data files and the keys are the names of each of these files with
+    no extension, this name is usually the metric used to compute the alpha
+    diversity.
+    depth: selected depth to mean the computed alpha diversity values for the
+    alpha_dict data.
+
+    Output:
+    metrics: list of metric names i. e. the name of each collated alpha div file
+    sample_ids: list of sample identifiers represented
+    data: a list of lists with the mean of alpha diversity data at a given
+    depth for the different metrics, each column is a different metric.
+    """
+
+    assert type(alpha_dict) == dict, "Input data must be a dictionary"
+    assert depth >= 0 and type(depth) == int, "The spcified depth must be a "+\
+        "positive integer."
+
+    metrics = []
+    sample_ids = []
+    data = []
+
+    for key, value in alpha_dict.iteritems():
+        metrics.append('{0}_even_{1}'.format(key, depth))
+        identifiers, _, _, rarefaction_data = parse_rarefaction(value)
+
+        # check all the files have the same sample ids in the same order
+        if sample_ids:
+            if not sample_ids == identifiers[3:]:
+                raise (ValueError, "Non-matching sample ids were found in the "
+                    "collated alpha diversity files. Make sure all the files "
+                    "contain data for the same samples.")
+        else:
+            sample_ids = identifiers[3:]
+
+        # find all the data at the desired depth and get the mean values, remove
+        # the first two elements ([depth, iteration]) as those are not needed
+        data.append(array([row[2:] for row in rarefaction_data if\
+            row[0] == depth]).mean(axis=0))
+
+    # transpose the data to match the formatting of non-collated alpha div data
+    data = array(data).T.tolist()
+
+    return metrics, sample_ids, data
