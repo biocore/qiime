@@ -11,10 +11,12 @@ __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
 __status__ = "Development"
 
+from os.path import basename, splitext
 from qiime.format import format_mapping_file
 from qiime.parse import parse_matrix, parse_mapping_file
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.add_alpha_to_mapping_file import add_alpha_diversity_values_to_mapping_file
+from qiime.add_alpha_to_mapping_file import (mean_alpha,
+    add_alpha_diversity_values_to_mapping_file)
 
 script_info = {}
 script_info['brief_description'] = "Add alpha diversity data to a metadata "+\
@@ -36,15 +38,23 @@ script_info['script_usage'].append(("Adding alpha diversity data with the "
     " classify the normalized values using the quartiles of the distribution "
     "of this values.", "%prog -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_"
     "mapping_quantile.txt --binning_method=quantile"))
+script_info['script_usage'].append(("Adding collated alpha diversity data",
+    "Add the mean of the alpha diversity values at a specified rarefaction"
+    " depth, this case is for use with the output of collated_alpha.py. It is "
+    "recommended that the filenames are the name of the metric used in each "
+    "file.", "%prog -i 'shannon.txt,chao1.txt' -m mapping.txt -b 4 -o collated_"
+    "alpha_mapping.txt --depth=49"))
 script_info['output_description']= "The result of running this script is a "+\
     "metadata mapping file that will include 3 new columns per alpha "+\
     "diversity metric included in the alpha diversity file. For example, with"+\
     " an alpha diversity file with only PD_whole_tree, the new columns will "+\
     "PD_whole_tree_alpha, PD_whole_tree_normalized and PD_whole_tree_bin."
 script_info['required_options'] = [
-make_option('-i','--alpha_fp',type="existing_filepath",
+make_option('-i','--alpha_fps',type="existing_filepaths",
     help='alpha diversity data with one or multiple metrics i. e. the output'
-    ' of alpha_diversity.py'),
+    ' of alpha_diversity.py. This can also be a comma-separated list of colla'
+    'ted alpha diversity file paths i. e. the output of collate_alpha.py, when'
+    ' using collated alpha diversity data the --depth option is required'),
 make_option('-m','--mapping_fp',type="existing_filepath",
     help='mapping file to modify by adding the alpha diversity data'),
 ]
@@ -53,20 +63,24 @@ make_option('-o','--output_mapping_fp',type="new_filepath",
     help='filepath for the modified mapping file [default: %default]',
     default='mapping_file_with_alpha.txt'),
 make_option('-b','--number_of_bins',type="int",
-    help='number of bins [default: %default]', default=4),
+    help='number of bins [default: %default].', default=4),
 make_option('-x','--missing_value_name',type="string",
     help='bin prefix name for the sample identifiers that exist in the '
         'mapping file (mapping_fp) but not in the alpha diversity file '
-        '(alpha_fp) [default: %default]', default='N/A'),
+        '(alpha_fp) [default: %default].', default='N/A'),
 make_option('--binning_method', type='string', default='equal',
     help='Select the method name to create the bins, the options are '
-        '\'equal\' and \'quantile\'. Both methods work over the normalized '
-        'alpha diversity values. On the one hand \'equal\' will assign the '
-        'bins on equally spaced limits, depending on the value of --number'
-        '_of_bins i. e. if you select 4 the limits will be [0.25, 0.50, 0.75]'
-        '. On the other hand \'quantile\' will select the limits based on the'
-        ' --number_of_bins i. e. the limits will be the quartiles if 4 is '
-        'selected [default: %default].')
+    '\'equal\' and \'quantile\'. Both methods work over the normalized alpha '
+    'diversity values. On the one hand \'equal\' will assign the bins on '
+    'equally spaced limits, depending on the value of --number_of_bins i. e. '
+    'if you select 4 the limits will be [0.25, 0.50, 0.75]. On the other hand '
+    '\'quantile\' will select the limits based on the --number_of_bins i. e. '
+    'the limits will be the quartiles if 4 is selected [default: %default].'),
+make_option('--depth', type='int', default=None, help='Select the rarefaction '
+    'depth to use when the alpha_fps refers to collated alpha diversity file(s)'
+    ' i. e. the output of collate_alpha.py. All the iterations contained at '
+    'this depth will be averaged to form a single mean value [default: %defaul'
+    't].')
 ]
 script_info['version'] = __version__
 
@@ -75,11 +89,12 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    alpha_fp = opts.alpha_fp
+    alpha_fps = opts.alpha_fps
     mapping_fp = opts.mapping_fp
     output_mapping_fp = opts.output_mapping_fp
     binning_method = opts.binning_method
     missing_value_name = opts.missing_value_name
+    depth = opts.depth
 
     # make sure the number of bins is an integer
     try:
@@ -88,10 +103,33 @@ def main():
         raise ValueError, 'The number of bins must be an integer, not %s'\
             % opts.number_of_bins
 
+    # if using collated data, make sure they specify a depth
+    if depth is not None:
+        alpha_dict = {}
+
+        # build up a dictionary with the filenames as keys and lines as values
+        for single_alpha_fp in alpha_fps:
+            alpha_dict[splitext(basename(single_alpha_fp))[0]] = open(
+                single_alpha_fp, 'U').readlines()
+
+        # format the collated data
+        metrics, alpha_sample_ids, alpha_data = mean_alpha(alpha_dict,
+            depth)
+
+    # when not using collated data, the user can only specify one input file
+    else:
+        if len(alpha_fps) > 1:
+            option_parser.error('A comma-separated list of files should only be'
+                ' passed with the --alpha_fps option when using collated alpha '
+                'diversity data and also selecting a rarefaction depth with the'
+                ' --depth option.')
+        else:
+            metrics, alpha_sample_ids, alpha_data = parse_matrix(open(
+                alpha_fps[0], 'U'))
+
     # parse the data from the files
     mapping_file_data, mapping_file_headers, comments = parse_mapping_file(
         open(mapping_fp, 'U'))
-    metrics, alpha_sample_ids, alpha_data = parse_matrix(open(alpha_fp, 'U'))
 
     # add the alpha diversity data to the mapping file
     out_mapping_file_data, out_mapping_file_headers = \
