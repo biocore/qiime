@@ -1105,7 +1105,8 @@ class MantelCorrelogram(CorrelationStats):
     """
 
     def __init__(self, eco_dm, geo_dm, alpha=0.05,
-                 suppress_symmetry_and_hollowness_check=False):
+                 suppress_symmetry_and_hollowness_check=False,
+                 variable_size_distance_classes=False):
         """Constructs a new MantelCorrelogram instance.
 
         WARNING: Only symmetric, hollow distance matrices may be used as input.
@@ -1128,11 +1129,19 @@ class MantelCorrelogram(CorrelationStats):
                 symmetric and hollow distance matrices, you can disable this
                 check for small performance gains on extremely large distance
                 matrices
+            variable_size_distance_classes - if True, distance classes (bins)
+                will vary in size such that each distance class (bin) will have
+                the same number of distances. If False, all distance classes
+                will have the same size, though the number of distances in each
+                class may not be equal. Having variable-sized distance classes
+                can help maintain statistical power if there are large
+                differences in the number of distances in each class
         """
         super(MantelCorrelogram, self).__init__([eco_dm, geo_dm], num_dms=2,
                 min_dm_size=3, suppress_symmetry_and_hollowness_check=\
                 suppress_symmetry_and_hollowness_check)
         self.Alpha = alpha
+        self.VariableSizeDistanceClasses = variable_size_distance_classes
 
     @property
     def Alpha(self):
@@ -1276,7 +1285,11 @@ class MantelCorrelogram(CorrelationStats):
         list of distance class midpoints.
 
         Distance classes are determined by the minimum and maximum values in
-        the input matrix and the number of specified classes.
+        the input matrix and the number of specified classes. If
+        self.VariableSizeDistanceClasses is True, distance classes will each
+        contain the same number of distances (but may vary in size). If False,
+        distance classes will be of equal size (but possibly with unequal
+        numbers of distances).
 
         Arguments:
             dm - the input DistanceMatrix object to compute distance classes on
@@ -1289,8 +1302,7 @@ class MantelCorrelogram(CorrelationStats):
         # of specified classes and the ranges of values in the lower triangular
         # portion of the distance matrix (excluding the diagonal).
         dm_lower_flat = dm.flatten()
-        break_points = self._find_break_points(np_min(dm_lower_flat),
-            np_max(dm_lower_flat), num_classes)
+        break_points = self._find_break_points(dm_lower_flat, dm_lower_flat), num_classes)
 
         # Find the class indices (the midpoints between breakpoints).
         class_indices = []
@@ -1306,23 +1318,35 @@ class MantelCorrelogram(CorrelationStats):
             for j in range(size):
                 if i != j:
                     curr_ele = dm[i][j]
-                    bps = [(k - 1) for k, bp in enumerate(break_points) \
-                        if bp >= curr_ele]
+                    bps = [(k - 1) for k, bp in enumerate(break_points)
+                           if bp >= curr_ele]
                     dist_class_matrix[i][j] = min(bps)
                 else:
                     dist_class_matrix[i][j] = -1
         return dist_class_matrix, class_indices
 
-    def _find_break_points(self, start, end, num_classes):
-        """Finds the points to break a range into equal width classes.
+    def _find_break_points(self, dists, num_classes):
+        """Finds the points to break a list of distances into classes (bins).
+
+        If self.VariableSizeDistanceClasses is True, classes will each contain
+        the same number of distances (but may vary in size). If False, distance
+        classes will be of equal size (but possibly with unequal numbers of
+        distances).
 
         Returns a list of floats indicating breakpoints in the range.
 
         Arguments:
-            start - the minimum value in the range
-            end - the maximum value in the range
-            num_classes - the number of classes to break the range into
+            dists - list of distances (floats)
+            num_classes - the number of classes to break the distances into
         """
+
+        if self.VariableSizeDistanceClasses:
+            dm_lower_flat.sort()
+            class_size = ceil(len(dm_lower_flat) / num_classes)
+            break_points = self._find_variable_spaced_break_points(
+                    dm_lower_flat, class_size)
+
+
         if start >= end:
             raise ValueError("Cannot find breakpoints because the starting "
                 "point is greater than or equal to the ending point.")
@@ -1330,8 +1354,8 @@ class MantelCorrelogram(CorrelationStats):
             raise ValueError("Cannot have fewer than one distance class.")
 
         width = (end - start) / num_classes
-        break_points = [start + width * class_num \
-            for class_num in range(num_classes)]
+        break_points = [start + width * class_num
+                        for class_num in range(num_classes)]
         break_points.append(float(end))
 
         # Move the first breakpoint a little bit to the left. Machine epsilon
