@@ -11,7 +11,7 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
-from qiime.distance_matrix_from_mapping import distance_matrix, dist_Vincenty, calculate_dist_Vincenty
+from qiime.distance_matrix_from_mapping import compute_distance_matrix_from_metadata, dist_vincenty, calculate_dist_vincenty
 from numpy import array
 from cogent.util.unit_test import TestCase, main
 import StringIO
@@ -37,7 +37,7 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
     self.latitudes = [30, 20, 30, 30, 0, 1, 90, 89, 0, 0]
     self.longitudes = [60, -50, 60, 60, 0, 0, 0, 0, 0, 0]
 
-  def test_distance_int(self):
+  def test_compute_distance_matrix_from_metadata_int(self):
     """ distance calculations on ints should throw no errors"""
     exp_out = array([[0, 0, 92, 9096, 9992, 9894, 18898, 18898, 18898], [0, 0, 92, 9096, 9992, 9894, 18898, 18898, 18898],
       [92, 92, 0, 9188, 10084, 9986, 18990, 18990, 18990], [9096, 9096, 9188, 0, 896, 798, 9802, 9802, 9802],
@@ -45,10 +45,10 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
       [18898, 18898, 18990, 9802, 8906, 9004, 0, 0, 0], [18898, 18898, 18990, 9802, 8906, 9004, 0, 0, 0],
       [18898, 18898, 18990, 9802, 8906, 9004, 0, 0, 0]])
 
-    res_out = distance_matrix(self.DOB)
+    res_out = compute_distance_matrix_from_metadata(self.DOB)
     self.assertFloatEqual(exp_out, res_out)
     
-  def test_distance_floats(self):
+  def test_compute_distance_matrix_from_metadata_floats(self):
     """ distance calculations on floats should throw no errors"""
     # testing floats
     exp_out = array([[0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8], [0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
@@ -57,48 +57,44 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
       [0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0., 0.1, 0.2], [0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0., 0.1],
       [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.]])
  
-    res_out = distance_matrix(self.Float_Col)
+    res_out = compute_distance_matrix_from_metadata(self.Float_Col)
     self.assertFloatEqual(exp_out, res_out)
    
-  def test_dist_Vincenty(self):
+  def test_dist_vincenty(self):
     """dist_Vincenty:Returns distance in meters between two lat long points"""
     lat1, lon1, lat2, lon2, expected_value = 30, 60, 20, -50, 10709578.387
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 30, 60, 30, 60, 0
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 0,  0,  1, 0, 110574.389
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 90,  0, 89, 0, 111693.865
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 90,  0, 180, 0, 10001965.729
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 90,  0,  0, 0, 10001965.729
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     lat1, lon1, lat2, lon2, expected_value = 0,  0,  0, 0, 0
-    value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
+    value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
     # test for not converge
     lat1, lon1, lat2, lon2 = 0, 180,  0, 0
-    try:
-      value = dist_Vincenty(lat1, lon1, lat2, lon2, 20)
-      raise ValueError("This test shouldn't converge and it did!")
-    except ValueError:
-      self.assertEqual(True,True)
+    self.assertRaises(ValueError, dist_vincenty, lat1, lon1, lat2, lon2, 20)
 
-  def test_calculate_dist_Vincenty(self):
+  def test_calculate_dist_vincenty(self):
     exp_out = array([[0.0, 10709578.387, 0.0, 0.0, 7154900.607, 7094106.828, 6681852.331, 6626434.332, 7154900.607, 7154900.607],
         [10709578.387, 0.0, 10709578.387, 10709578.387, 5877643.846, 5831009.412, 7789599.475, 7718017.604, 5877643.846, 5877643.846],
         [0.0, 10709578.387, 0.0, 0.0, 7154900.607, 7094106.828, 6681852.331, 6626434.332, 7154900.607, 7154900.607],
@@ -110,7 +106,7 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
         [7154900.607, 5877643.846, 7154900.607, 7154900.607, 0.0, 110574.389, 10001965.729, 9890271.864, 0.0, 0.0],
         [7154900.607, 5877643.846, 7154900.607, 7154900.607, 0.0, 110574.389, 10001965.729, 9890271.864, 0.0, 0.0]])
     
-    res_out = calculate_dist_Vincenty(self.latitudes, self.longitudes)
+    res_out = calculate_dist_vincenty(self.latitudes, self.longitudes)
     
     self.assertFloatEqual(res_out, exp_out)
     

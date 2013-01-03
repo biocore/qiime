@@ -15,7 +15,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.format import format_distance_matrix
-from qiime.distance_matrix_from_mapping import distance_matrix, calculate_dist_Vincenty 
+from qiime.distance_matrix_from_mapping import compute_distance_matrix_from_metadata, calculate_dist_vincenty 
 from qiime.parse import parse_mapping_file_to_dict
 import os.path
 
@@ -74,7 +74,7 @@ def main():
                 raise ValueError, "All the values in the column '%s' must be numeric but '%s' has '%s'" % (column_name, i, data[i][column_name])
             
             column_headers.append(i)
-        dtx_mtx = distance_matrix(column_data)
+        dtx_mtx = compute_distance_matrix_from_metadata(column_data)
     else:
         latitudes = []
         longitudes = []
@@ -95,7 +95,7 @@ def main():
             
             column_headers.append(i)
         
-        dtx_mtx = calculate_dist_Vincenty(latitudes, longitudes)
+        dtx_mtx = calculate_dist_vincenty(latitudes, longitudes)
         
     dtx_txt = format_distance_matrix(column_headers, dtx_mtx)
     

@@ -30,7 +30,7 @@ from qiime.util import FunctionWithParams
 from numpy import array, reshape, nan, radians, zeros
 from math import atan, tan, sin, cos, pi, sqrt, atan2, acos, asin
 
-def distance_matrix(column_data):
+def compute_distance_matrix_from_metadata(column_data):
     """ calculates distance matrix on a single column of a mapping file
     
     inputs:
@@ -43,7 +43,7 @@ def distance_matrix(column_data):
     return dist_mtx
     
     
-def dist_Vincenty(lat1, lon1, lat2, lon2, iterations=20):
+def dist_vincenty(lat1, lon1, lat2, lon2, iterations=20):
     """Returns distance in meters between two lat long points
        
        Vincenty's formula is accurate to within 0.5mm, or 0.000015" (!),
@@ -55,13 +55,14 @@ def dist_Vincenty(lat1, lon1, lat2, lon2, iterations=20):
        Vincenty inverse formula - T Vincenty, "Direct and Inverse Solutions of Geodesics on the */
        Ellipsoid with application of nested equations", Survey Review, vol XXII no 176, 1975    */
        http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf  
-       
-       NOTE:What should be done if lat>90 or long>=360?
-       
+              
        This code was modified from geopy and movable-type:
        http://code.google.com/p/geopy/source/browse/trunk/geopy/distance.py?r=105
        http://www.movable-type.co.uk/scripts/latlong-vincenty.html
-       """
+    """
+    if (lat1<0 and lat1>90) or (lat2<0 and lat2>90) or (lon1<-180 and lon1>360) or (lon2<-180 and lon2>360):
+        raise ValueError, "Latitude values shoulds range from 0-90 and longitude from -180 to 360 but one of the input values is out of bounds. Latitude_1: %f, Logitude_1: %f, Latitude_2: %f, Logitude_2: %f" % (lat1, lon1, lat2, lon2)
+    
     major, minor, f = 6378137, 6356752.314245, 1/298.257223563
     
     lat1, lng1, lat2, lng2 = radians(lat1), radians(lon1), radians(lat2), radians(lon2)
@@ -126,16 +127,18 @@ def dist_Vincenty(lat1, lon1, lat2, lon2, iterations=20):
     return round(s,3) # round to 1mm precision
     
 
-def calculate_dist_Vincenty(latitudes, longitudes):
+def calculate_dist_vincenty(latitudes, longitudes):
     """Returns the distance matrix from calculating dist_Vicenty
     
        latitudes, longitudes: list of values, have to be the same size
     """
+    assert len(latitudes) == len(longitudes), "latitudes and longitudes must be lists of exactly the same size"
+    
     size = len(latitudes)
     dtx_mtx = zeros([size, size])
         
     for i in range(size):
         for j in range(i,size):
-            dtx_mtx[i,j] = dtx_mtx[j,i] = dist_Vincenty(latitudes[i], longitudes[i], latitudes[j], longitudes[j])
+            dtx_mtx[i,j] = dtx_mtx[j,i] = dist_vincenty(latitudes[i], longitudes[i], latitudes[j], longitudes[j])
         
     return dtx_mtx
