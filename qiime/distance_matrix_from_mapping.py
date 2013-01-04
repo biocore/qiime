@@ -61,7 +61,7 @@ def dist_vincenty(lat1, lon1, lat2, lon2, iterations=20):
        http://www.movable-type.co.uk/scripts/latlong-vincenty.html
     """
     if lat1<-90 or lat1>90 or lat2<-90 or lat2>90 or lon1<-180 or lon1>180 or lon2<-180 or lon2>180:
-        raise ValueError, "Latitude values shoulds range from 0-90 and longitude from -180 to 360 but one of the input values is out of bounds. Latitude_1: %f, Logitude_1: %f, Latitude_2: %f, Logitude_2: %f" % (lat1, lon1, lat2, lon2)
+        raise ValueError, "Latitude values shoulds range from (-90,90) and longitude from (-180,180) but one of the input values is out of bounds. Latitude_1: %f, Logitude_1: %f, Latitude_2: %f, Logitude_2: %f" % (lat1, lon1, lat2, lon2)
     
     major, minor, f = 6378137, 6356752.314245, 1/298.257223563
     
