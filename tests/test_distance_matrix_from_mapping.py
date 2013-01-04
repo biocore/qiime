@@ -78,7 +78,7 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
     value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
-    lat1, lon1, lat2, lon2, expected_value = 90,  0, 180, 0, 10001965.729
+    lat1, lon1, lat2, lon2, expected_value = 90,  0, -90, 0, 20003931.459
     value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
     self.assertFloatEqual(value, expected_value)
     
