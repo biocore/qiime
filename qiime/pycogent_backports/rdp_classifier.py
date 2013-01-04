@@ -17,6 +17,7 @@ import re
 from os import remove, environ, getenv, path
 from optparse import OptionParser
 from shutil import rmtree
+import sys
 import tempfile
 from cogent.app.parameters import Parameter, ValuedParameter, Parameters
 from cogent.parse.fasta import MinimalFastaParser
@@ -514,7 +515,20 @@ def train_rdp_classifier_and_assign_taxonomy(
         max_memory=max_memory, fixrank=False, tmp_dir=tmp_dir)
 
     if model_output_dir is None:
-        rmtree(training_dir)
+        # Forum user reported an error on the call to os.rmtree:
+        # https://groups.google.com/d/topic/qiime-forum/MkNe7-JtSBw/discussion
+        # We were not able to replicate the problem and fix it
+        # properly.  However, even if an error occurs, we would like
+        # to return results, along with a warning.
+        try:
+            rmtree(training_dir)
+        except OSError as e:
+            sys.stdout.write(
+                "WARNING: Temporary training directory %s not "
+                "removed\n" % training_dir)
+            if os.path.isdir(training_dir):
+                training_dir_files = os.listdir(training_dir)
+                sys.stdout.write("Detected files %s\n" % training_dir_files)
 
     return assignment_results
 
