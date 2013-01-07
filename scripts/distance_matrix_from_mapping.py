@@ -36,7 +36,7 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
     ("Pairwise dissimilarity using the Vincenty formula for distance between two Latitude/Longitude points:",
      "To calculate the distance matrix (using Vincenty formula) on a column of the mapping file, where the results are output to lat_long.txt, use the following command:",
-     "%prog -i lat_long.txt -c Latitute,Longitude"))
+     "%prog -i lat_long.txt -c Latitute,Longitude -o lat_long_dtx_matrix.txt"))
 script_info['output_description']="""The output of distance_matrix_from_mapping.py is a file containing a distance matrix between rows corresponding to a pair of columns in a mapping file."""
 script_info['required_options']=[
  make_option('-i', '--input_path',
@@ -47,7 +47,7 @@ script_info['required_options']=[
 script_info['optional_options']=[
  make_option('-o', '--output_fp',
      help="Output directory. One will be created if it doesn't exist. [default=%default]",
-     type='new_dirpath', default="map_distance_matrix")
+     type='new_dirpath', default="map_distance_matrix.txt")
 ]
 script_info['option_label']={'input_path':'Mapping filepath',
                              'column':'List of samples for compute',
