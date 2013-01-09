@@ -17,8 +17,8 @@ import re
 from os import remove, environ, getenv, path
 from optparse import OptionParser
 from shutil import rmtree
-import sys
 import tempfile
+import warnings
 from cogent.app.parameters import Parameter, ValuedParameter, Parameters
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
@@ -522,13 +522,13 @@ def train_rdp_classifier_and_assign_taxonomy(
         # to return results, along with a warning.
         try:
             rmtree(training_dir)
-        except OSError as e:
-            sys.stdout.write(
-                "WARNING: Temporary training directory %s not "
-                "removed\n" % training_dir)
+        except OSError:
+            msg = (
+                "Temporary training directory %s not removed" % training_dir)
             if os.path.isdir(training_dir):
                 training_dir_files = os.listdir(training_dir)
-                sys.stdout.write("Detected files %s\n" % training_dir_files)
+                msg += "\nDetected files %s" % training_dir_files
+            warnings.warn(msg, RuntimeWarning)
 
     return assignment_results
 
