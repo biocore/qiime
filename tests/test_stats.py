@@ -1251,6 +1251,31 @@ class MantelCorrelogramTests(TestHelper):
         self.assertRaises(ValueError, self.mc._find_distance_classes,
                 self.mc.DistanceMatrices[1], -1)
 
+    def test_find_row_col_indices(self):
+        """Test finds the row and col based on a flattened-list index."""
+        obs = self.mc._find_row_col_indices(0)
+        self.assertEqual(obs, (1, 0))
+
+        obs = self.mc._find_row_col_indices(1)
+        self.assertEqual(obs, (2, 0))
+
+        obs = self.mc._find_row_col_indices(2)
+        self.assertEqual(obs, (2, 1))
+
+        obs = self.mc._find_row_col_indices(3)
+        self.assertEqual(obs, (3, 0))
+
+        obs = self.mc._find_row_col_indices(4)
+        self.assertEqual(obs, (3, 1))
+
+        obs = self.mc._find_row_col_indices(5)
+        self.assertEqual(obs, (3, 2))
+
+        obs = self.mc._find_row_col_indices(6)
+        self.assertEqual(obs, (4, 0))
+
+        self.assertRaises(IndexError, self.mc._find_row_col_indices, -1)
+
     def test_find_break_points(self):
         """Test finding equal-spaced breakpoints in a range."""
         exp = [-2.2204460492503131e-16, 1.0, 2.0, 3.0, 4.0, 5.0]

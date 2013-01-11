@@ -26,9 +26,9 @@ from copy import deepcopy
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
-                   ones, sqrt, tri, unique, zeros, ndarray, floor)
-from numpy import min as np_min, max as np_max
+from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
+        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor)
+from numpy import argsort, min as np_min, max as np_max
 from numpy.random import permutation
 from cogent.util.misc import combinate
 
@@ -1298,72 +1298,130 @@ class MantelCorrelogram(CorrelationStats):
         if num_classes < 1:
             raise ValueError("Cannot have fewer than one distance class.")
 
-        # Compute the breakpoints of the distance classes based on the number
-        # of specified classes and the ranges of values in the lower triangular
-        # portion of the distance matrix (excluding the diagonal).
         dm_lower_flat = dm.flatten()
-        break_points = self._find_break_points(dm_lower_flat, dm_lower_flat), num_classes)
 
-        # Find the class indices (the midpoints between breakpoints).
-        class_indices = []
-        for bp_index, break_point in enumerate(break_points[0:num_classes]):
-            next_bp = break_points[bp_index + 1]
-            class_indices.append(break_point + (0.5 * (next_bp - break_point)))
+        if self.VariableSizeDistanceClasses:
+            order = argsort(array(dm_lower_flat))
+            class_size = ceil(len(dm_lower_flat) / num_classes)
 
-        # Create the matrix of distance classes. Every element in the matrix
-        # tells what distance class the original element belongs to.
-        size = dm.Size
-        dist_class_matrix = empty([size, size], dtype=int)
-        for i in range(size):
-            for j in range(size):
-                if i != j:
-                    curr_ele = dm[i][j]
-                    bps = [(k - 1) for k, bp in enumerate(break_points)
-                           if bp >= curr_ele]
-                    dist_class_matrix[i][j] = min(bps)
-                else:
-                    dist_class_matrix[i][j] = -1
+            dist_class_matrix = empty([size, size], dtype=int)
+            curr_class = 0
+            for i, sorted_idx in enumerate(order):
+                row_idx, col_idx = self._find_row_col_indices(sorted_idx)
+
+                # Check if we've filled up our current class.
+                if i % (class_size - 1) == 0:
+                    curr_class += 1
+
+                # Matrix is symmetric.
+                dist_class_matrix[row_idx][col_idx] = curr_class
+                dist_class_matrix[col_idx][row_idx] = curr_class
+
+            # Fill diagonal with -1, as it does not belong to any distance
+            # class.
+            fill_diagonal(dist_class_matrix, -1)
+
+            for i in range(size):
+                for j in range(size):
+                    if i != j:
+                        curr_ele = dm[i][j]
+                        bps = [(k - 1) for k, bp in enumerate(break_points)
+                               if bp >= curr_ele]
+                        dist_class_matrix[i][j] = min(bps)
+                    else:
+                        dist_class_matrix[i][j] = -1
+        else:
+            # Compute the breakpoints of the distance classes based on the
+            # number of specified classes and the ranges of values in the lower
+            # triangular portion of the distance matrix (excluding the
+            # diagonal).
+            break_points = self._find_break_points(np_min(dm_lower_flat),
+                                                   np_max(dm_lower_flat),
+                                                   num_classes)
+
+            # Find the class indices (the midpoints between breakpoints).
+            class_indices = []
+            for bp_index, break_point in \
+                    enumerate(break_points[0:num_classes]):
+                next_bp = break_points[bp_index + 1]
+                class_indices.append(break_point +
+                                     (0.5 * (next_bp - break_point)))
+
+            # Create the matrix of distance classes. Every element in the
+            # matrix tells what distance class the original element belongs to.
+            size = dm.Size
+            dist_class_matrix = empty([size, size], dtype=int)
+            for i in range(size):
+                for j in range(size):
+                    if i != j:
+                        curr_ele = dm[i][j]
+                        bps = [(k - 1) for k, bp in enumerate(break_points)
+                               if bp >= curr_ele]
+                        dist_class_matrix[i][j] = min(bps)
+                    else:
+                        dist_class_matrix[i][j] = -1
         return dist_class_matrix, class_indices
 
-    def _find_break_points(self, dists, num_classes):
-        """Finds the points to break a list of distances into classes (bins).
+    def _find_row_col_indices(self, idx):
+        """Returns row, col for idx into flattened lower triangular matrix.
+        
+        It is assumed that the index points to a matrix that was flattened,
+        containing only the lower triangular elements (excluding the diagonal)
+        in left-to-right, top-to-bottom order (such as that given by
+        DistanceMatrix.flatten(lower=True).
+        """
+        if idx < 0:
+            raise IndexError("The index %d must be greater than or equal to "
+                             "zero." % idx)
 
-        If self.VariableSizeDistanceClasses is True, classes will each contain
-        the same number of distances (but may vary in size). If False, distance
-        classes will be of equal size (but possibly with unequal numbers of
-        distances).
+        # First find the row we're at. The number of elements at each row
+        # increases by one each time.
+        curr_idx = 0
+        delta = 1
+
+        while curr_idx <= idx:
+            curr_idx += delta
+            delta += 1
+
+        # We subtract one because delta gives us one row past our target.
+        row = delta - 1
+
+        # Now that we know the row index, we subtract the number of elements
+        # below the row (given by (n*n-n)/2) to find the column that idx is at.
+        col = int(idx - ((row * row - row) / 2))
+
+        return row, col
+
+    def _find_break_points(self, start, end, num_classes):
+        """Finds the points to break a range into classes (bins).
 
         Returns a list of floats indicating breakpoints in the range.
 
         Arguments:
-            dists - list of distances (floats)
-            num_classes - the number of classes to break the distances into
+            start - start of the range (float or int)
+            end - end of the range (float or int)
+            num_classes - the number of classes to break the range into
         """
-
-        if self.VariableSizeDistanceClasses:
-            dm_lower_flat.sort()
-            class_size = ceil(len(dm_lower_flat) / num_classes)
-            break_points = self._find_variable_spaced_break_points(
-                    dm_lower_flat, class_size)
-
+        if num_classes < 1:
+            raise ValueError("Cannot have fewer than one distance class.")
 
         if start >= end:
             raise ValueError("Cannot find breakpoints because the starting "
-                "point is greater than or equal to the ending point.")
-        if num_classes < 1:
-            raise ValueError("Cannot have fewer than one distance class.")
+                             "point is greater than or equal to the ending "
+                             "point.")
 
         width = (end - start) / num_classes
         break_points = [start + width * class_num
                         for class_num in range(num_classes)]
         break_points.append(float(end))
 
-        # Move the first breakpoint a little bit to the left. Machine epsilon
-        # is take from:
+        # Move the first breakpoint a little bit to the left. Machine
+        # epsilon is take from:
         # http://en.wikipedia.org/wiki/Machine_epsilon#
         #     Approximation_using_Python
         epsilon = finfo(float).eps
         break_points[0] = break_points[0] - epsilon
+
         return break_points
 
     def _correct_p_values(self, p_vals):
