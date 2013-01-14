@@ -1253,36 +1253,31 @@ class MantelCorrelogramTests(TestHelper):
 
     def test_find_distance_classes_variable_size_bins(self):
         """Test finding distance classes with variable-size bins."""
+        # Single distance class.
         exp = (array([[-1,  0,  0], [ 0, -1,  0], [ 0,  0, -1]]), [5.0])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 1)
         self.assertFloatEqual(obs, exp)
 
+        # Multiple distance classes (even #).
         exp = (array([[-1,  0,  0], [ 0, -1,  1], [ 0,  1, -1]]), [3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 2)
         self.assertFloatEqual(obs, exp)
 
+        # Multiple distance classes (odd #).
         exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
                [2.0, 3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 3)
         self.assertFloatEqual(obs, exp)
 
-        #exp = (array([[-1,  1,  2,  0,  0,  5,  7,  4,  6],
-        #    [ 1, -1,  0,  2,  3,  6,  6,  6,  4],
-        #    [ 2,  0, -1,  4,  5,  5,  7,  4,  6],
-        #    [ 0,  2,  4, -1,  3,  3,  3,  3,  2],
-        #    [ 0,  3,  5,  3, -1,  5,  7,  6,  6],
-        #    [ 5,  6,  5,  3,  5, -1,  5,  2,  5],
-        #    [ 7,  6,  7,  3,  7,  5, -1,  0,  0],
-        #    [ 4,  6,  4,  3,  6,  2,  0, -1,  0],
-        #    [ 6,  4,  6,  2,  6,  5,  0,  0, -1]]),
-        #    [0.57381779, 0.60024231, 0.62666684, 0.65309137, 0.67951589,
-        #     0.70594042, 0.73236494, 0.75878947])
-        #obs = self.mc._find_distance_classes(
-        #    self.mc.DistanceMatrices[1], 8)
-        #self.assertFloatEqual(obs, exp)
+        # More classes than distances.
+        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+               [2.0, 3.5, 6.5, 8])
+        obs = self.small_mc_var_bins._find_distance_classes(
+            self.small_mc_var_bins.DistanceMatrices[1], 4)
+        self.assertFloatEqual(obs, exp)
 
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""

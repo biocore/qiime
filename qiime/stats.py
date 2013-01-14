@@ -1302,9 +1302,14 @@ class MantelCorrelogram(CorrelationStats):
         size = dm.Size
 
         if self.VariableSizeDistanceClasses:
+            class_size = int(ceil(len(dm_lower_flat) / num_classes))
             order = argsort(array(dm_lower_flat))
-            class_size = ceil(len(dm_lower_flat) / num_classes)
 
+            # Create the matrix of distance classes. Every element in the
+            # matrix tells what distance class the original element belongs to.
+            # Each element in the original matrix is traversed in sorted
+            # (min -> max) order, and the current distance class is incremented
+            # once it is "filled" with class_size distances.
             dist_class_matrix = empty([size, size], dtype=int)
             class_indices = []
             curr_class = 0
@@ -1325,6 +1330,11 @@ class MantelCorrelogram(CorrelationStats):
                     class_indices.append(class_start +
                                          (class_end - class_start) / 2)
                     class_start = class_end
+
+            if curr_class < num_classes:
+                # Our last class was empty, so record the last distance seen
+                # (which will be the max) as the class index.
+                class_indices.append(class_end)
 
             # Fill diagonal with -1, as it does not belong to any distance
             # class.
@@ -1355,7 +1365,12 @@ class MantelCorrelogram(CorrelationStats):
                         curr_ele = dm[i][j]
                         bps = [(k - 1) for k, bp in enumerate(break_points)
                                if bp >= curr_ele]
-                        dist_class_matrix[i][j] = min(bps)
+                        min_bp = min(bps)
+
+                        # If we somehow got a negative breakpoint (possible
+                        # sometimes due to rounding error), put it in the first
+                        # distance class.
+                        dist_class_matrix[i][j] = min_bp if min_bp >= 0 else 0
                     else:
                         dist_class_matrix[i][j] = -1
 
