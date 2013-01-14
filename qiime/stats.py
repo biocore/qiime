@@ -1299,37 +1299,36 @@ class MantelCorrelogram(CorrelationStats):
             raise ValueError("Cannot have fewer than one distance class.")
 
         dm_lower_flat = dm.flatten()
+        size = dm.Size
 
         if self.VariableSizeDistanceClasses:
             order = argsort(array(dm_lower_flat))
             class_size = ceil(len(dm_lower_flat) / num_classes)
 
             dist_class_matrix = empty([size, size], dtype=int)
+            class_indices = []
             curr_class = 0
+            class_start = dm_lower_flat[order[0]]
             for i, sorted_idx in enumerate(order):
                 row_idx, col_idx = self._find_row_col_indices(sorted_idx)
-
-                # Check if we've filled up our current class.
-                if i % (class_size - 1) == 0:
-                    curr_class += 1
+                class_end = dm_lower_flat[sorted_idx]
 
                 # Matrix is symmetric.
                 dist_class_matrix[row_idx][col_idx] = curr_class
                 dist_class_matrix[col_idx][row_idx] = curr_class
 
+                # Check if we've filled up our current class or are at the last
+                # iteration (the final distance class may not completely fill
+                # up).
+                if (i + 1) % class_size == 0 or i == len(order) - 1:
+                    curr_class += 1
+                    class_indices.append(class_start +
+                                         (class_end - class_start) / 2)
+                    class_start = class_end
+
             # Fill diagonal with -1, as it does not belong to any distance
             # class.
             fill_diagonal(dist_class_matrix, -1)
-
-            for i in range(size):
-                for j in range(size):
-                    if i != j:
-                        curr_ele = dm[i][j]
-                        bps = [(k - 1) for k, bp in enumerate(break_points)
-                               if bp >= curr_ele]
-                        dist_class_matrix[i][j] = min(bps)
-                    else:
-                        dist_class_matrix[i][j] = -1
         else:
             # Compute the breakpoints of the distance classes based on the
             # number of specified classes and the ranges of values in the lower
@@ -1349,7 +1348,6 @@ class MantelCorrelogram(CorrelationStats):
 
             # Create the matrix of distance classes. Every element in the
             # matrix tells what distance class the original element belongs to.
-            size = dm.Size
             dist_class_matrix = empty([size, size], dtype=int)
             for i in range(size):
                 for j in range(size):
@@ -1360,6 +1358,7 @@ class MantelCorrelogram(CorrelationStats):
                         dist_class_matrix[i][j] = min(bps)
                     else:
                         dist_class_matrix[i][j] = -1
+
         return dist_class_matrix, class_indices
 
     def _find_row_col_indices(self, idx):
