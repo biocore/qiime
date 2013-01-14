@@ -1407,30 +1407,29 @@ class MantelCorrelogram(CorrelationStats):
         return row, col
 
     def _find_break_points(self, start, end, num_classes):
-        """Finds the points to break a range into classes (bins).
+        """Finds the points to break a range into equal width classes.
 
         Returns a list of floats indicating breakpoints in the range.
 
         Arguments:
-            start - start of the range (float or int)
-            end - end of the range (float or int)
+            start - the minimum value in the range
+            end - the maximum value in the range
             num_classes - the number of classes to break the range into
         """
-        if num_classes < 1:
-            raise ValueError("Cannot have fewer than one distance class.")
-
         if start >= end:
             raise ValueError("Cannot find breakpoints because the starting "
                              "point is greater than or equal to the ending "
                              "point.")
+        if num_classes < 1:
+            raise ValueError("Cannot have fewer than one distance class.")
 
         width = (end - start) / num_classes
         break_points = [start + width * class_num
                         for class_num in range(num_classes)]
         break_points.append(float(end))
 
-        # Move the first breakpoint a little bit to the left. Machine
-        # epsilon is take from:
+        # Move the first breakpoint a little bit to the left. Machine epsilon
+        # is taken from:
         # http://en.wikipedia.org/wiki/Machine_epsilon#
         #     Approximation_using_Python
         epsilon = finfo(float).eps
