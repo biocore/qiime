@@ -151,9 +151,9 @@ def sample_ids_from_category_state_coverage(mapping_f,
     timepoints in the study.
 
     Returns a list of sample IDs to keep, the number of subjects that were
-    kept, and the number of unique category states in coverage_category that
-    were kept. The list of sample IDs is not guaranteed to be in any specific
-    order relative to the order of sample IDs or subjects in the mapping file.
+    kept, and the unique category states in coverage_category that were kept.
+    The list of sample IDs is not guaranteed to be in any specific order
+    relative to the order of sample IDs or subjects in the mapping file.
 
     Arguments:
         mapping_f - metadata mapping file (file-like object)
@@ -164,9 +164,10 @@ def sample_ids_from_category_state_coverage(mapping_f,
             included in results (integer)
         required_states - category states in coverage_category that must be
             covered by a subject's samples in order to be included in results
-            (list of strings)
+            (list of strings or items that can be converted to strings)
         considered_states - category states that are counted toward the 
-            min_num_states (list of strings)
+            min_num_states (list of strings or items that can be converted to
+            strings)
     """
     metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
@@ -250,7 +251,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
             states_kept.extend(subject_covered_states)
             num_subjects_kept += 1
 
-    return samp_ids_to_keep, num_subjects_kept, len(set(states_kept))
+    return samp_ids_to_keep, num_subjects_kept, set(states_kept)
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
