@@ -713,7 +713,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_sample_ids_from_category_state_coverage_invalid_input(self):
         """Test that errors are thrown on bad input."""
-        # Using SampleID for either coverage or subject category.
+        # Using SampleID for coverage, subject, or splitter category.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
             self.tutorial_mapping_f, 'SampleID', 'DOB',
             required_states=['Control', 'Fast'])
@@ -722,7 +722,11 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             self.tutorial_mapping_f, 'Treatment', 'SampleID',
             required_states=['Control', 'Fast'])
 
-        # Nonexisting coverage category and subject category.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'DOB',
+            required_states=['Control', 'Fast'], splitter_category='SampleID')
+
+        # Nonexisting coverage, subject, or splitter category.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
             self.tutorial_mapping_f, 'foo', 'DOB',
             required_states=['Control', 'Fast'])
@@ -730,6 +734,19 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
             self.tutorial_mapping_f, 'Treatment', 'foo',
             required_states=['Control', 'Fast'])
+
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'DOB',
+            required_states=['Control', 'Fast'], splitter_category='foo')
+
+        # Reusing same category for coverage, subject, or splitter category.
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'Treatment',
+            required_states=['Control', 'Fast'])
+
+        self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
+            self.tutorial_mapping_f, 'Treatment', 'DOB',
+            required_states=['Control', 'Fast'], splitter_category='Treatment')
 
         # Nonexisting required coverage category state.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
