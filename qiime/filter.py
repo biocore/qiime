@@ -172,7 +172,12 @@ def sample_ids_from_category_state_coverage(mapping_f,
         splitter_category - category to split input mapping file on prior to
             processing. If not supplied, the mapping file will not be split. If
             supplied, a dictionary mapping splitter_category state to results
-            will be returned instead of the three-element tuple
+            will be returned instead of the three-element tuple. The supplied
+            filtering criteria will apply to each split piece of the mapping
+            file independently (e.g. if an individual passes the filters for
+            the "tongue" samples, he/she will be included for the "tongue"
+            results, even if he/she doesn't pass the filters for the "palm"
+            samples)
     """
     metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
@@ -233,19 +238,30 @@ def sample_ids_from_category_state_coverage(mapping_f,
 
     if splitter_category is None:
         sample_ids = metadata_map.SampleIds
+        results = _filter_sample_ids_from_category_state_coverage(
+                metadata_map, sample_ids, coverage_category, subject_category,
+                consider_state, min_num_states, required_states)
+
     else:
         # "Split" the metadata mapping file by extracting only sample IDs that
-        # match the current splitter category state.
-        splitter_category_states = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, splitter_category))
+        # match the current splitter category state and using those for the
+        # actual filtering.
+        splitter_category_states = defaultdict(list)
+        for samp_id in metadata_map.SampleIds:
+            splitter_category_state = \
+                    metadata_map.getCategoryValue(samp_id, splitter_category)
+            splitter_category_states[splitter_category_state].append(samp_id)
 
-    return _filter_sample_ids_from_category_state_coverage(metadata_map,
-                                                           sample_ids,
-                                                           coverage_category,
-                                                           subject_category,
-                                                           consider_state,
-                                                           min_num_states,
-                                                           required_states)
+        results = {}
+        for splitter_category_state, sample_ids in \
+            splitter_category_states.items():
+            results[splitter_category_state] = \
+                    _filter_sample_ids_from_category_state_coverage(
+                            metadata_map, sample_ids, coverage_category,
+                            subject_category, consider_state, min_num_states,
+                            required_states)
+
+    return results
 
 def _filter_sample_ids_from_category_state_coverage(metadata_map,
                                                     sample_ids,
