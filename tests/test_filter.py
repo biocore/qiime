@@ -550,24 +550,25 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # Filter out all samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=2)
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         # Don't filter out any samples.
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
-                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+                    'PC.634', 'PC.635', 'PC.636']), 6,
+               set(['Control', 'Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1)
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
         # Filter out some samples.
-        exp = (set(['d', 'e']), 1, 2)
+        exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
         obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
             'BodySite', 'Study', min_num_states=2)
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
         # Keep subject that has more than specified minimum number and has more
         # than one sample at a single coverage state.
-        exp = (set(['a', 'c', 'd', 'e', 'f', 'g']), 2, 3)
+        exp = (set(['a', 'c', 'd', 'e', 'f', 'g']), 2, set(['1', '3', '2']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
             'Time', 'Individual', min_num_states=2)
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
@@ -580,29 +581,31 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=2, 
              considered_states=["Control","Fast"])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
         # considered_states too restrictive
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1, 
              considered_states=[])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         # Don't filter out any samples.
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
-                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+                    'PC.634', 'PC.635', 'PC.636']), 6,
+               set(['Control', 'Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1,
              considered_states=["Control","Fast"])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
         
         # Some samples filtered when considered states is partially restrictive
-        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
+               set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1,
              considered_states=["Control"])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
         
-        exp = (set(['PC.607','PC.634', 'PC.635', 'PC.636']), 2, 1)
+        exp = (set(['PC.607','PC.634', 'PC.635', 'PC.636']), 2, set(['Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1,
              considered_states=["Fast"])
@@ -613,31 +616,38 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # Filter out all samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', required_states=['Control', 'Fast'])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         # Don't filter out any samples.
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
-                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+                    'PC.634', 'PC.635', 'PC.636']), 6,
+               set(['Control', 'Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', required_states=[])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
         # Filter out some samples.
-        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
+               set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', required_states=['Control'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
-        exp = (set(['d', 'e']), 1, 2)
+        exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
         obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
             'BodySite', 'Study', required_states=['Stool', 'Palm'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
         # Keep subject that has more than specified covered states and has more
         # than one sample at a single coverage state.
-        exp = (set(['c', 'f', 'a', 'g']), 1, 3)
+        exp = (set(['c', 'f', 'a', 'g']), 1, set(['1', '2', '3']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
             'Time', 'Individual', required_states=['3', '2'])
+        self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
+
+        # Should convert states to strings.
+        obs = sample_ids_from_category_state_coverage(self.map_str2,
+            'Time', 'Individual', required_states=[3, 2])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
     def test_sample_ids_from_category_state_combined_filters(self):
@@ -646,21 +656,22 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=2,
             required_states=['Control', 'Fast'])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         # Filter out all samples (fails one filter).
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=2, required_states=['Control'])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1,
             required_states=['Control', 'Fast'])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
         # Don't filter out any samples (passes both filters).
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
-                    'PC.634', 'PC.635', 'PC.636']), 6, 2)
+                    'PC.634', 'PC.635', 'PC.636']), 6,
+               set(['Control', 'Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=0, required_states=[])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
@@ -670,17 +681,18 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
         # Filter out some samples.
-        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4, 1)
+        exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
+               set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1, required_states=['Control'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
-        exp = (set(['PC.607', 'PC.634', 'PC.635', 'PC.636']), 2, 1)
+        exp = (set(['PC.607', 'PC.634', 'PC.635', 'PC.636']), 2, set(['Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
             'Treatment', 'DOB', min_num_states=1, required_states=['Fast'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
 
-        exp = (set(['d', 'e']), 1, 2)
+        exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
         obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
             'BodySite', 'Study', required_states=['Stool', 'Palm'],
             min_num_states=1)
@@ -688,7 +700,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
         # Keep subject that has more than specified covered states and has more
         # than one sample at a single coverage state (i.e. timepoint).
-        exp = (set(['c', 'f', 'a', 'g']), 1, 3)
+        exp = (set(['c', 'f', 'a', 'g']), 1, set(['1', '2', '3']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
             'Time', 'Individual', min_num_states=3, required_states=['3', '2'])
         self.assertEqual((set(obs[0]), obs[1], obs[2]), exp)
@@ -697,7 +709,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # timepoints, but only three are unique.
         obs = sample_ids_from_category_state_coverage(self.map_str2,
             'Time', 'Individual', min_num_states=4, required_states=['3', '2'])
-        self.assertEqual(obs, ([], 0, 0))
+        self.assertEqual(obs, ([], 0, set([])))
 
     def test_sample_ids_from_category_state_coverage_invalid_input(self):
         """Test that errors are thrown on bad input."""
