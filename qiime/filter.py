@@ -175,9 +175,9 @@ def sample_ids_from_category_state_coverage(mapping_f,
             will be returned instead of the three-element tuple. The supplied
             filtering criteria will apply to each split piece of the mapping
             file independently (e.g. if an individual passes the filters for
-            the "tongue" samples, he/she will be included for the "tongue"
-            results, even if he/she doesn't pass the filters for the "palm"
-            samples)
+            the tongue samples, his/her tongue samples will be included for
+            the tongue results, even if he/she doesn't pass the filters for the 
+            palm samples)
     """
     metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
