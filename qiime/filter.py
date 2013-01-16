@@ -151,10 +151,10 @@ def sample_ids_from_category_state_coverage(mapping_f,
     timepoints (required_states). For example, this could be the first and last
     timepoints in the study.
 
-    Returns a list of sample IDs to keep, the number of subjects that were
-    kept, and the unique category states in coverage_category that were kept.
-    The list of sample IDs is not guaranteed to be in any specific order
-    relative to the order of sample IDs or subjects in the mapping file.
+    Returns a set of sample IDs to keep, the number of subjects that were
+    kept, and a set of the unique category states in coverage_category that
+    were kept. The set of sample IDs is not guaranteed to be in any specific
+    order relative to the order of sample IDs or subjects in the mapping file.
 
     Arguments:
         mapping_f - metadata mapping file (file-like object)
@@ -237,11 +237,10 @@ def sample_ids_from_category_state_coverage(mapping_f,
                          "not supported.")
 
     if splitter_category is None:
-        sample_ids = metadata_map.SampleIds
         results = _filter_sample_ids_from_category_state_coverage(
-                metadata_map, sample_ids, coverage_category, subject_category,
-                consider_state, min_num_states, required_states)
-
+                metadata_map, metadata_map.SampleIds, coverage_category,
+                subject_category, consider_state, min_num_states,
+                required_states)
     else:
         # "Split" the metadata mapping file by extracting only sample IDs that
         # match the current splitter category state and using those for the
@@ -270,6 +269,11 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
                                                     consider_state_fn,
                                                     min_num_states=None,
                                                     required_states=None):
+    """Helper function to perform filtering based on category state coverage.
+
+    Not explicitly unit-tested because it is implicitly tested by
+    sample_ids_from_category_state_coverage's unit tests.
+    """
     # Build mapping from subject to sample IDs.
     subjects = defaultdict(list)
     for samp_id in sample_ids:
@@ -302,7 +306,7 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
             states_kept.extend(subject_covered_states)
             num_subjects_kept += 1
 
-    return samp_ids_to_keep, num_subjects_kept, set(states_kept)
+    return set(samp_ids_to_keep), num_subjects_kept, set(states_kept)
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
