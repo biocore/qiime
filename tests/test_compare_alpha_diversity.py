@@ -161,6 +161,42 @@ class TopLevelTests(TestCase):
         # check errors if wrong method
         self.assertRaises(ValueError, _correct_compare_alpha_results,
             input_results, 'DNE')
+
+        # check that the methods work correctly when Nones are included 
+        input_results = \
+            {'1xDose,2xDose': (None, None),
+             'A,B': (3, 0.004),
+             'A,C': (3, 0.0022),
+             'A,D': (3, 0.05),
+             'A,E': (3, 0.06),
+             'A,F': (None, None),
+             'Control,1xDose': (None, None),
+             'Control,2xDose': (-0.6366887333996324, 0.639061687134877)}
+
+        # Bonferroni
+        expected_bonferroni_results = \
+            {'1xDose,2xDose': (None, None),
+             'A,B': (3, 0.02),
+             'A,C': (3, 0.011000000000000001),
+             'A,D': (3, 0.25),
+             'A,E': (3, 0.3),
+             'A,F': (None, None),
+             'Control,1xDose': (None, None),
+             'Control,2xDose': (-0.6366887333996324, 1.0)}
+        self.assertEqual(expected_bonferroni_results, 
+            _correct_compare_alpha_results(input_results,'bonferroni'))
+        #FDR
+        expected_fdr_results = \
+            {'1xDose,2xDose': (None, None),
+             'A,B': (3, 0.01),
+             'A,C': (3, 0.011000000000000001),
+             'A,D': (3, 0.08333333333333334),
+             'A,E': (3, 0.075),
+             'A,F': (None, None),
+             'Control,1xDose': (None, None),
+             'Control,2xDose': (-0.6366887333996324, 0.639061687134877)}
+        self.assertEqual(expected_fdr_results,
+            _correct_compare_alpha_results(input_results,'fdr'))
         
     def test_compare_alpha_diversities(self):
         """Tests alpha diversities are correctly calculated."""
@@ -213,19 +249,22 @@ class TopLevelTests(TestCase):
         observed_results = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
-
         expected_results = \
             {'Control,2xDose': (-0.63668873339963239, 0.63906168713487699), 
              '1xDose,2xDose': (None,None), 
-             'Control,1xDose': (nan,nan)}
-
-        # the comparison will fail on (nan,nan)==(nan,nan) because nan's don't
-        # compare equal. we avoid this check knowing that its producing nans.
-        for k in expected_results:
-            if k is not 'Control,1xDose':
-                for val0, val1 in zip(expected_results[k],observed_results[k]):
-                    self.assertEqual(val0,val1)
-        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
+             'Control,1xDose': (None,None)}
+        self.assertEqual(observed_results, expected_results)
+        # test that it works with nonparametric test - this was erroring.
+        seed(0)
+        test_type = 'nonparametric'
+        expected_results = \
+            {'Control,2xDose': (-0.63668873339963239, 0.675), 
+             '1xDose,2xDose': (None,None), 
+             'Control,1xDose': (None,None)}
+        observed_results = compare_alpha_diversities(self.rarefaction_file,
+            self.mapping_file, category=category, depth=depth, 
+            test_type=test_type)
+        self.assertEqual(observed_results, expected_results)
 
 
 if __name__ == "__main__":
