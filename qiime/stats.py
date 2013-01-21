@@ -26,9 +26,9 @@ from copy import deepcopy
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (argsort, array, asarray, ceil, empty, finfo, log2, mean,
-                   ones, sqrt, tri, unique, zeros, ndarray, floor)
-from numpy import min as np_min, max as np_max
+from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
+        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor)
+from numpy import argsort, min as np_min, max as np_max
 from numpy.random import permutation
 from cogent.util.misc import combinate
 
@@ -1105,7 +1105,8 @@ class MantelCorrelogram(CorrelationStats):
     """
 
     def __init__(self, eco_dm, geo_dm, alpha=0.05,
-                 suppress_symmetry_and_hollowness_check=False):
+                 suppress_symmetry_and_hollowness_check=False,
+                 variable_size_distance_classes=False):
         """Constructs a new MantelCorrelogram instance.
 
         WARNING: Only symmetric, hollow distance matrices may be used as input.
@@ -1128,11 +1129,19 @@ class MantelCorrelogram(CorrelationStats):
                 symmetric and hollow distance matrices, you can disable this
                 check for small performance gains on extremely large distance
                 matrices
+            variable_size_distance_classes - if True, distance classes (bins)
+                will vary in size such that each distance class (bin) will have
+                the same number of distances. If False, all distance classes
+                will have the same size, though the number of distances in each
+                class may not be equal. Having variable-sized distance classes
+                can help maintain statistical power if there are large
+                differences in the number of distances in each class
         """
         super(MantelCorrelogram, self).__init__([eco_dm, geo_dm], num_dms=2,
                 min_dm_size=3, suppress_symmetry_and_hollowness_check=\
                 suppress_symmetry_and_hollowness_check)
         self.Alpha = alpha
+        self.VariableSizeDistanceClasses = variable_size_distance_classes
 
     @property
     def Alpha(self):
@@ -1276,7 +1285,11 @@ class MantelCorrelogram(CorrelationStats):
         list of distance class midpoints.
 
         Distance classes are determined by the minimum and maximum values in
-        the input matrix and the number of specified classes.
+        the input matrix and the number of specified classes. If
+        self.VariableSizeDistanceClasses is True, distance classes will each
+        contain the same number of distances (but may vary in size). If False,
+        distance classes will be of equal size (but possibly with unequal
+        numbers of distances).
 
         Arguments:
             dm - the input DistanceMatrix object to compute distance classes on
@@ -1285,33 +1298,113 @@ class MantelCorrelogram(CorrelationStats):
         if num_classes < 1:
             raise ValueError("Cannot have fewer than one distance class.")
 
-        # Compute the breakpoints of the distance classes based on the number
-        # of specified classes and the ranges of values in the lower triangular
-        # portion of the distance matrix (excluding the diagonal).
         dm_lower_flat = dm.flatten()
-        break_points = self._find_break_points(np_min(dm_lower_flat),
-            np_max(dm_lower_flat), num_classes)
-
-        # Find the class indices (the midpoints between breakpoints).
-        class_indices = []
-        for bp_index, break_point in enumerate(break_points[0:num_classes]):
-            next_bp = break_points[bp_index + 1]
-            class_indices.append(break_point + (0.5 * (next_bp - break_point)))
-
-        # Create the matrix of distance classes. Every element in the matrix
-        # tells what distance class the original element belongs to.
         size = dm.Size
-        dist_class_matrix = empty([size, size], dtype=int)
-        for i in range(size):
-            for j in range(size):
-                if i != j:
-                    curr_ele = dm[i][j]
-                    bps = [(k - 1) for k, bp in enumerate(break_points) \
-                        if bp >= curr_ele]
-                    dist_class_matrix[i][j] = min(bps)
-                else:
-                    dist_class_matrix[i][j] = -1
+
+        if self.VariableSizeDistanceClasses:
+            class_size = int(ceil(len(dm_lower_flat) / num_classes))
+            order = argsort(array(dm_lower_flat))
+
+            # Create the matrix of distance classes. Every element in the
+            # matrix tells what distance class the original element belongs to.
+            # Each element in the original matrix is traversed in sorted
+            # (min -> max) order, and the current distance class is incremented
+            # once it is "filled" with class_size distances.
+            dist_class_matrix = empty([size, size], dtype=int)
+            class_indices = []
+            curr_class = 0
+            class_start = dm_lower_flat[order[0]]
+            for i, sorted_idx in enumerate(order):
+                row_idx, col_idx = self._find_row_col_indices(sorted_idx)
+                class_end = dm_lower_flat[sorted_idx]
+
+                # Matrix is symmetric.
+                dist_class_matrix[row_idx][col_idx] = curr_class
+                dist_class_matrix[col_idx][row_idx] = curr_class
+
+                # Check if we've filled up our current class or are at the last
+                # iteration (the final distance class may not completely fill
+                # up).
+                if (i + 1) % class_size == 0 or i == len(order) - 1:
+                    curr_class += 1
+                    class_indices.append(class_start +
+                                         (class_end - class_start) / 2)
+                    class_start = class_end
+
+            if curr_class < num_classes:
+                # Our last class was empty, so record the last distance seen
+                # (which will be the max) as the class index.
+                class_indices.append(class_end)
+
+            # Fill diagonal with -1, as it does not belong to any distance
+            # class.
+            fill_diagonal(dist_class_matrix, -1)
+        else:
+            # Compute the breakpoints of the distance classes based on the
+            # number of specified classes and the ranges of values in the lower
+            # triangular portion of the distance matrix (excluding the
+            # diagonal).
+            break_points = self._find_break_points(np_min(dm_lower_flat),
+                                                   np_max(dm_lower_flat),
+                                                   num_classes)
+
+            # Find the class indices (the midpoints between breakpoints).
+            class_indices = []
+            for bp_index, break_point in \
+                    enumerate(break_points[0:num_classes]):
+                next_bp = break_points[bp_index + 1]
+                class_indices.append(break_point +
+                                     (0.5 * (next_bp - break_point)))
+
+            # Create the matrix of distance classes. Every element in the
+            # matrix tells what distance class the original element belongs to.
+            dist_class_matrix = empty([size, size], dtype=int)
+            for i in range(size):
+                for j in range(size):
+                    if i != j:
+                        curr_ele = dm[i][j]
+                        bps = [(k - 1) for k, bp in enumerate(break_points)
+                               if bp >= curr_ele]
+                        min_bp = min(bps)
+
+                        # If we somehow got a negative breakpoint (possible
+                        # sometimes due to rounding error), put it in the first
+                        # distance class.
+                        dist_class_matrix[i][j] = min_bp if min_bp >= 0 else 0
+                    else:
+                        dist_class_matrix[i][j] = -1
+
         return dist_class_matrix, class_indices
+
+    def _find_row_col_indices(self, idx):
+        """Returns row, col for idx into flattened lower triangular matrix.
+        
+        It is assumed that the index points to a matrix that was flattened,
+        containing only the lower triangular elements (excluding the diagonal)
+        in left-to-right, top-to-bottom order (such as that given by
+        DistanceMatrix.flatten(lower=True).
+        """
+        if idx < 0:
+            raise IndexError("The index %d must be greater than or equal to "
+                             "zero." % idx)
+
+        # First find the row we're at. The number of elements at each row
+        # increases by one each time.
+        curr_idx = 0
+        delta = 1
+
+        while curr_idx <= idx:
+            curr_idx += delta
+            delta += 1
+
+        # We subtract one because delta gives us one row past our target.
+        row = delta - 1
+
+        # Now that we know the row index, we subtract the number of elements
+        # below the row (given by (n*n-n)/2) to find the column that idx is at.
+        col = int(idx - ((row * row - row) / 2))
+
+        return row, col
 
     def _find_break_points(self, start, end, num_classes):
         """Finds the points to break a range into equal width classes.
@@ -1325,21 +1418,23 @@ class MantelCorrelogram(CorrelationStats):
         """
         if start >= end:
             raise ValueError("Cannot find breakpoints because the starting "
-                "point is greater than or equal to the ending point.")
+                             "point is greater than or equal to the ending "
+                             "point.")
         if num_classes < 1:
             raise ValueError("Cannot have fewer than one distance class.")
 
         width = (end - start) / num_classes
-        break_points = [start + width * class_num \
-            for class_num in range(num_classes)]
+        break_points = [start + width * class_num
+                        for class_num in range(num_classes)]
         break_points.append(float(end))
 
         # Move the first breakpoint a little bit to the left. Machine epsilon
-        # is take from:
+        # is taken from:
         # http://en.wikipedia.org/wiki/Machine_epsilon#
         #     Approximation_using_Python
         epsilon = finfo(float).eps
         break_points[0] = break_points[0] - epsilon
+
         return break_points
 
     def _correct_p_values(self, p_vals):

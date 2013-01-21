@@ -1085,9 +1085,16 @@ class MantelCorrelogramTests(TestHelper):
 
         # Smallest test case: 3x3 matrices.
         ids = ['s1', 's2', 's3']
-        self.small_mc = MantelCorrelogram(
-            DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids, ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids))
+        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]),
+                             ids, ids)
+        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
+                             ids, ids)
+
+        self.small_mc = MantelCorrelogram(dm1, dm2)
+
+        # For testing variable-sized bins.
+        self.small_mc_var_bins = MantelCorrelogram(dm1, dm2,
+                variable_size_distance_classes=True)
 
     def test_Alpha_getter(self):
         """Test retrieving the value of alpha."""
@@ -1244,12 +1251,65 @@ class MantelCorrelogramTests(TestHelper):
             self.mc.DistanceMatrices[1], 8)
         self.assertFloatEqual(obs, exp)
 
+    def test_find_distance_classes_variable_size_bins(self):
+        """Test finding distance classes with variable-size bins."""
+        # Single distance class.
+        exp = (array([[-1,  0,  0], [ 0, -1,  0], [ 0,  0, -1]]), [5.0])
+        obs = self.small_mc_var_bins._find_distance_classes(
+            self.small_mc_var_bins.DistanceMatrices[1], 1)
+        self.assertFloatEqual(obs, exp)
+
+        # Multiple distance classes (even #).
+        exp = (array([[-1,  0,  0], [ 0, -1,  1], [ 0,  1, -1]]), [3.5, 6.5])
+        obs = self.small_mc_var_bins._find_distance_classes(
+            self.small_mc_var_bins.DistanceMatrices[1], 2)
+        self.assertFloatEqual(obs, exp)
+
+        # Multiple distance classes (odd #).
+        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+               [2.0, 3.5, 6.5])
+        obs = self.small_mc_var_bins._find_distance_classes(
+            self.small_mc_var_bins.DistanceMatrices[1], 3)
+        self.assertFloatEqual(obs, exp)
+
+        # More classes than distances.
+        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+               [2.0, 3.5, 6.5, 8])
+        obs = self.small_mc_var_bins._find_distance_classes(
+            self.small_mc_var_bins.DistanceMatrices[1], 4)
+        self.assertFloatEqual(obs, exp)
+
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""
         self.assertRaises(ValueError, self.mc._find_distance_classes,
                 self.mc.DistanceMatrices[1], 0)
         self.assertRaises(ValueError, self.mc._find_distance_classes,
                 self.mc.DistanceMatrices[1], -1)
+
+    def test_find_row_col_indices(self):
+        """Test finds the row and col based on a flattened-list index."""
+        obs = self.mc._find_row_col_indices(0)
+        self.assertEqual(obs, (1, 0))
+
+        obs = self.mc._find_row_col_indices(1)
+        self.assertEqual(obs, (2, 0))
+
+        obs = self.mc._find_row_col_indices(2)
+        self.assertEqual(obs, (2, 1))
+
+        obs = self.mc._find_row_col_indices(3)
+        self.assertEqual(obs, (3, 0))
+
+        obs = self.mc._find_row_col_indices(4)
+        self.assertEqual(obs, (3, 1))
+
+        obs = self.mc._find_row_col_indices(5)
+        self.assertEqual(obs, (3, 2))
+
+        obs = self.mc._find_row_col_indices(6)
+        self.assertEqual(obs, (4, 0))
+
+        self.assertRaises(IndexError, self.mc._find_row_col_indices, -1)
 
     def test_find_break_points(self):
         """Test finding equal-spaced breakpoints in a range."""
