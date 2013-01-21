@@ -18,6 +18,10 @@ The `cluster jobs` scripts that ship with QIIME are:
  * :doc:`../scripts/start_parallel_jobs_torque`
  * :doc:`../scripts/start_parallel_jobs_sc`
 
+A multicore or multithread machine can be set to use one of these files by setting your ``qiime_config`` file as follows (assuming that ``start_parallel_jobs.py`` is in your ``$PATH``)::
+
+	cluster_jobs_fp  start_parallel_jobs.py
+
 Enabling parallel runs in QIIME
 -------------------------------
 
