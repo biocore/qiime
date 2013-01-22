@@ -1120,8 +1120,8 @@ def get_qiime_library_version():
     qiime_dir = get_qiime_project_dir()
     qiime_version = qiime_library_version
 
-    # if needed more information could be retrieved following this pattern
-    sha_cmd = 'git --git-dir %s/.git rev-parse --short HEAD' % (qiime_dir)
+    # more information could be retrieved following this pattern
+    sha_cmd = 'git --git-dir %s/.git rev-parse HEAD' % (qiime_dir)
     sha_o, sha_e, sha_r = qiime_system_call(sha_cmd)
     git_sha = sha_o.strip()
 
@@ -1130,10 +1130,93 @@ def get_qiime_library_version():
     branch_o, branch_e, branch_r = qiime_system_call(branch_cmd)
     git_branch = branch_o.strip()
 
-    if len(git_branch) and len(git_sha):
-        return '%s, %s@%s' % (__version__, git_branch, git_sha)
+    # validate the output from both command calls
+    if is_valid_git_refname(git_branch) and is_valid_git_sha1(git_sha):
+        return '%s, %s@%s' % (__version__, git_branch, git_sha[0:7])
     else:
         return '%s' % __version__
+
+def is_valid_git_refname(refname):
+    """check if a string is a valid branch-name/ref-name for git
+
+    Input:
+    refname: string to validate
+
+    Output:
+    True if 'refname' is a valid branch name in git. False if it fails to meet
+    any of the criteria described in the man page for 'git check-ref-format',
+    also see:
+
+    http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
+    """
+    if len(refname) == 0:
+        return False
+
+    # git imposes a few requirements to accept a string as a refname/branch-name
+
+    # They can include slash / for hierarchical (directory) grouping, but no
+    # slash-separated component can begin with a dot . or end with the sequence
+    # .lock
+    if (len([True for element in refname.split('/')\
+            if element.startswith('.') or element.endswith('.lock')]) != 0):
+        return False
+
+    # They cannot have two consecutive dots .. anywhere
+    if '..' in refname:
+        return False
+
+    # They cannot have ASCII control characters (i.e. bytes whose values are
+    # lower than \040, or \177 DEL), space, tilde, caret ^, or colon : anywhere
+    if len([True for refname_char in refname if ord(refname_char) < 40 or\
+            ord(refname_char) == 177 ]) != 0:
+        return False
+    if ' ' in refname or '~' in refname or '^' in refname or ':' in refname:
+        return False
+
+    # They cannot have question-mark ?, asterisk *, or open bracket [ anywhere
+    if '?' in refname or '*' in refname or '[' in refname:
+        return False
+
+    # They cannot begin or end with a slash / or contain multiple consecutive
+    # slashes
+    if refname.startswith('/') or refname.endswith('/') or '//' in refname:
+        return False
+
+    # They cannot end with a dot ..
+    if refname.endswith('.'):
+        return False
+
+    # They cannot contain a sequence @{
+    if '@{' in refname:
+        return False
+
+    # They cannot contain a \
+    if '\\' in refname:
+        return False
+
+    return True
+
+def is_valid_git_sha1(hash):
+    """check if a string is a valid git sha1 string
+
+    Input:
+    hash: string to validate
+
+    Output:
+    True if the string has 40 characters and is an hexadecimal number, False
+    otherwise.
+
+    """
+
+    if len(hash) != 40:
+        return False
+    try:
+        value = int(hash, 16)
+    except ValueError:
+        return False
+
+    return True
+
 
 def get_pynast_version():
     """Return PyNAST version string or None if PyNAST is not installed"""

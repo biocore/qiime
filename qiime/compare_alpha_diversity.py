@@ -38,7 +38,6 @@ def sampleId_pairs(mapping_data, rarefaction_data, category):
     # make treatment pairs list eg. 
     # [('Obese','Fat'),('Obese','notFat'),('Fat','notFat')]
 
-
     # frequently the user will have a filtered their table before rarefactions 
     # such that the mapping file contains sampleId's that are not found in the 
     # filtered table. this caused an error with the script because it wasn't 
@@ -74,6 +73,9 @@ def _correct_compare_alpha_results(result, method):
     Inputs:
      result - dict, output of compare_alpha_diversities.
      method - str, in ['FDR','Bonferroni','None']
+    Notes:
+     Nones are ignored for purposes of calculating how many comparisons have 
+     been done. 
     """
     method = method.lower()
     if method not in correction_types:
@@ -82,21 +84,29 @@ def _correct_compare_alpha_results(result, method):
 
     corrected_result = {}
     if method == 'bonferroni':
-        num_comps = float(len(result))
+        # correct for comparisons which get tval,pval=None,None
+        num_comps = float(len(result)) - result.values().count((None,None))
         for k,v in result.items():
             if v[0] == None:
                 corrected_result[k] = v
             else:
                 corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
     elif method == 'fdr':
-        # pull out the uncorrected pvals and apply fdr correction
-        tmp_pvals = [v[1] for k,v in result.items()]
+        # pull out the uncorrected pvals and apply fdr correction. skip vals
+        # which are (None,None). If left in, FDR correction will count them as
+        # tests for the purpose of the correction factor. 
+        tmp_pvals = [v[1] for k,v in result.items() if v!=(None,None)]
         fdr_corr_vals = fdr_correction(tmp_pvals)
-        # create corrected results by going through result in same order as 
-        # pvalues were removed and replacing them with fdr corrected
-        for i,k in enumerate(result): #steps through in same order as items 
+        # Place values in corrected_result in same order as they were extracted
+        # skipping nones. 
+        i=0
+        for k in result:
             t,p = result[k]
-            corrected_result[k] = (t, min(fdr_corr_vals[i],1.0)) #same as above
+            if (t,p)==(None,None):
+                corrected_result[k] = (None, None)
+            else:
+                corrected_result[k] = (t, min(fdr_corr_vals[i],1.0))
+                i+=1
     elif method == 'none':
         corrected_result = result
     return corrected_result
@@ -130,34 +140,37 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
     
     # extract only rows of the rarefaction data that are at the given depth
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
-    # average each column of the rarefaction matrix because we are computing 
-    # the t_test on the average scores for a given comparison. this avoids 
-    # a much larger number of tests which kills significance.
-    rare_mat = rare_mat.sum(0)/rare_mat.shape[0]
+    
+    # Average each col of the rarefaction mtx. Computing t test on averages over
+    # all iterations. Avoids more comps which kills signifigance. 
+    rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
     sids = rarefaction_data[0][3:] # 0-2 are header strings
     results = {}
-
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
-        # first two cols of rare_mat are depth, iteration, don't want to grab 
-        # those for values so we add 2 to all indices.
-        pair0_indices = [sids.index(i)+2 for i in sid_pair[0]]
-        pair1_indices = [sids.index(i)+2 for i in sid_pair[1]]
-        t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
-        i = rare_mat.take(pair0_indices)
-        j = rare_mat.take(pair1_indices)
-        # found discussion of how to quickly check an array for nan here:
-        # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
-        if isnan(np_min(i)) or isnan(np_min(j)):
+        # if there is only 1 sample for each treatment in a comparison, and mc
+        # using mc method, will error (e.g. mc_t_two_sample([1],[1]).
+        if len(sid_pair[0])==1 and len(sid_pair[1])==1:
+            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
             results[t_key]= (None,None)
-            continue
-        if test_type == 'parametric':
-            obs_t, p_val = t_two_sample(i,j)
-        elif test_type == 'nonparametric':
-            obs_t, _, _, p_val = mc_t_two_sample(i,j, 
-                permutations=num_permutations)
-            p_val = float(format_p_value_for_num_iters(p_val, 
-                num_iters=num_permutations))
         else:
-            raise ValueError("Invalid test type '%s'." % test_type)
-        results[t_key]= (obs_t,p_val)
+            pair0_indices = [sids.index(i) for i in sid_pair[0]]
+            pair1_indices = [sids.index(i) for i in sid_pair[1]]
+            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
+            i = rare_mat.take(pair0_indices)
+            j = rare_mat.take(pair1_indices)
+            # found discussion of how to quickly check an array for nan here:
+            # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
+            if isnan(np_min(i)) or isnan(np_min(j)):
+                results[t_key]= (None,None)
+                continue
+            if test_type == 'parametric':
+                obs_t, p_val = t_two_sample(i,j)
+            elif test_type == 'nonparametric':
+                obs_t, _, _, p_val = mc_t_two_sample(i,j, 
+                    permutations=num_permutations)
+                p_val = float(format_p_value_for_num_iters(p_val, 
+                    num_iters=num_permutations))
+            else:
+                raise ValueError("Invalid test type '%s'." % test_type)
+            results[t_key]= (obs_t,p_val)
     return results
