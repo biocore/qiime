@@ -18,10 +18,18 @@ import numpy.ma as ma
 
 from numpy import triu_indices
 
-"""NOTE: calculates NRI/NTI according to the formula used by Phylocom 4.2,3.41 
-rather than Webb 2002 or Webb 2000. Uses a 'null model 2' -- chooses the 
-random distance matrices without replacment from the full available pool of
-distance matrices. See Phylocom manual for details."""
+"""The calculations for MPD (mean phylogenetic distance), MNTD (mean nearest
+taxon distance), NRI (net relatedness index), and NTI (nearest taxon index) are
+based on the formulas available in the Phylocom 4.2 manual. That manual is 
+currently available at http://phylodiversity.net/phylocom/phylocom_manual.pdf.
+
+The null model that is used by the random_mpd and random_mntd methods is null
+model 2 (pg 16). Null model 2 specifies that for random draws from the total
+phylogeny, any taxa may be taken regardless of whether or not it occurred in 
+one of the samples.
+"""
+
+
 
 # used by both NRI and NTI
 
