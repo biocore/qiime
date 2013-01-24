@@ -11,151 +11,107 @@ __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
  
-from numpy.random import shuffle
-from numpy import std, mean, array, allclose
+from numpy.random import shuffle, random
+from numpy import std, mean, array, allclose, arange, eye
 from copy import deepcopy
+import numpy.ma as ma
 
+from numpy import triu_indices
 
 """NOTE: calculates NRI/NTI according to the formula used by Phylocom 4.2,3.41 
 rather than Webb 2002 or Webb 2000. Uses a 'null model 2' -- chooses the 
 random distance matrices without replacment from the full available pool of
 distance matrices. See Phylocom manual for details."""
 
+# used by both NRI and NTI
+
+def reduce_mtx(distmat, indices):
+    """Returns rows,cols of distmat where rows,cols=indices."""
+    return distmat.take(indices,0).take(indices,1)
+
 # NRI
 
-def nri(dist_mat, all_ids, group_ids, iters=1000):
-    """calculates nri (net relatedness index) of an otu or sample grouping
-    inputs:
-        datamtx - 2d array that has distance between otus or samples
-        all_ids - list of strs/floats/ints that corresponds to the rows or cols 
-            of the datamtx
-        group_ids - list of strs/floats/ints that corresponds to the rows or
-            cols of the datamtx that you want to group and compare against the 
-            entire matrix.
-        iters - int, number of random draws used to calculate the distance to
-            compare the group_ids distance against.
-    NOTE: calculates NRI according to the formula used by Phylocom 4.2,3.41 
-    rather than Webb 2002 or Webb 2000. Uses a 'null model 2' -- chooses the 
-    random distance matrices without replacment from the full available pool of
-    distance matrices. See Phylocom manual for details. 
+def nri(distmat, marginals, group, iters):
+    """Calculate the NRI of the selected group.
+    Notes:
+     distmat - distance matrix between taxa.
+     marginals - list of ids of the marginals of the distmat, i.e. the taxa 
+     names. only need to provide row xor col marginals since its a dist mat.
+     group - list of ids of the group that you want to calculate the nri of. 
+     iters - number of iterations to use. 1000 is suggested.
+     MPD (mean phylogenetic distance) is calculated by mpd. 
     """
-    if len(group_ids) < 2:
-        raise ValueError('there is no standard deviation of distances with ' +\
-            'less than 2 taxa in taxa ids')
-    if dist_mat.sum() == 0.0:
-        raise ValueError('the input dist_mat has no data. its sum is 0.')
+    group_marginals = [marginals.index(i) for i in group] 
+    mn_x_obs = mpd(reduce_mtx(distmat, group_marginals))
+    mn_x_n, sd_x_n = random_mpd(distmat, len(group_marginals), iters)
+    if abs(0.0 - sd_x_n)<.00001:
+        raise ValueError('The standard deviation of the means of the random'+\
+            ' draws from the distance matrix was less than .00001. This is'+\
+            ' likely do to a phylogeny with distances to all tips equal.'+\
+            ' This phylogeny is not suitable for NRI/NTI analysis.')
+    return -1.*((mn_x_obs-mn_x_n)/sd_x_n)
 
-    mn_x_obs = \
-        mpd(take_distmat_data(dist_mat, all_ids, group_ids))
-    mn_x_n, sd_x_n = \
-        mpd_mean_sd(dist_mat, all_ids, len(group_ids), iters)
-    if allclose(sd_x_n,0.0) == True:
-        raise ValueError("The std of the random samples was zero within 10^-8 of"+\
-            " 0.0. This is likely due to a phylogeny which has equal distances"+\
-            " between all tips.")
-    return -1.0*((mn_x_obs-mn_x_n)/sd_x_n)
+def mpd(distmat):
+    """Return mean distmat, assumes distmat is symmetric and hollow."""
+    return distmat.sum()/(distmat.size-distmat.shape[0])
 
-def take_random_ids(all_ids, num_to_take):
-    """takes num_to_take ids from shuffled list of all_ids"""
-    if len(all_ids) < num_to_take:
-        raise ValueError('trying to take too many ids from all ids')
-    l = deepcopy(all_ids)
-    shuffle(l)
-    return l[:num_to_take]
-
-def mpd(datamtx):
-    """calculates mpd (mean phylogenetic distance)""" 
-    dists = []
-    rows,cols = datamtx.shape
-    for r in range(rows):
-        for c in range(r+1,rows): # avoid d(i,i). d(i,i)=0 if datamtx calculated with distance metric
-            dists.append(datamtx[r][c])
-    m = mean(dists)
-    return float(m)
-
-def mpd_mean_sd(dist_mat, all_ids, num_to_take, iters):
-    """calculates mean and std for random dist mats based on iter randomizations
-    """
+def random_mpd(distmat, n, iters):
+    """Calc mean,std of mean of iters # of rand nxn distmats drawn from distmat.
+    Notes:
+     Calculate the std of the means of the distances in the nxn mat excluding 
+     the main diagonal and below since d(A,A)=0 and distmat is symmetric.
+     The forumula from Webb 2002 seems to calculate the standard deviation of 
+     the distances but based on tests of Phylocom and the Phylocom manual, 
+     Phylocom computes the standard deviations of the means."""
     means = []
+    indices = arange(distmat.shape[0]) #square so rows=cols
     for i in range(iters):
-        ids_to_take = take_random_ids(all_ids, num_to_take)
-        r_dist_mat = take_distmat_data(dist_mat, all_ids, ids_to_take)
-        i_mean = mpd(r_dist_mat)
-        means.append(i_mean)
-    # calculate the standard deviation of the means of the distances rather than
-    # the standard deviation of the distances themselves. The forumula from
-    # Webb 2002 seems to calculate the standard deviation of the distances
-    # but based on tests of Phylocom and the Phylocom manual, Phylocom 
-    # computes the standard deviations of the means of the iters number of 
-    # random  distance matrices.  
-    return float(mean(means)), float(std(means))
-
-def take_distmat_data(dist_mat, all_ids, ids_to_keep):
-    """takes data from the dist_mat based on index of ids_to_keep in all_ids"""
-    # ids could be given in any order, must sort  to prevent choosing
-    # wrong values at later steps. all_ids must be given in order of the
-    # dist_mat array they correspond to
-    indices = sorted([all_ids.index(i) for i in ids_to_keep])
-    new_dist_mat = dist_mat.take(indices,axis=0) #remove rows
-    new_dist_mat = new_dist_mat.take(indices,axis=1) #remove cols
-    return new_dist_mat
-
+        shuffle(indices) #shuffling indices after its been shuffled is not 
+        # mathematically different than shuffling fresh arange(n) 
+        means.append(mpd(reduce_mtx(distmat, indices[:n])))
+    return mean(means), std(means)
 
 # NTI
 
-def nti(datamtx, all_ids, group_ids, iters=1000):
-    """calculates nti (nearest taxon index) of an otu or sample grouping
-    inputs:
-        datamtx - 2d array that has distance between otus or samples
-        all_ids - list of strs/floats/ints that corresponds to the rows or cols 
-            of the datamtx
-        group_ids - list of strs/floats/ints that corresponds to the rows or
-            cols of the datamtx that you want to group and compare against the 
-            entire matrix.
-        iters - int, number of random draws used to calculate the distance to
-            compare the group_ids distance against.
-    NOTE: calculates NTI according to the formula used by Phylocom 4.2,3.41 
-    rather than Webb 2002 or Webb 2000. Uses a 'null model 2' -- chooses the 
-    random distance matrices without replacment from the full available pool of
-    distance matrices. See Phylocom manual for details. 
+def nti(distmat, marginals, group, iters):
+    """Calculates the NTI of the selected group.
+    Notes:
+     distmat - distance matrix between taxa.
+     marginals - list of ids of the marginals of the distmat, i.e. the taxa 
+     names. only need to provide row xor col marginals since its a dist mat.
+     group - list of ids of the group that you want to calculate the nti of. 
+     iters - number of iterations to use. 1000 is suggested.
+     MNTD (mean nearest taxon distance) is calculated by mntd. 
     """
-    if len(group_ids) < 2:
-        raise ValueError('there is no standard deviation of distances with ' +\
-            'less than 2 taxa in the taxa ids')
-    if datamtx.sum() == 0.0:
-        raise ValueError('the input dist_mat has no data. its sum is 0.')
-
-    mn_y_obs = \
-        mntd(take_distmat_data(datamtx, all_ids, group_ids))
-    mn_y_n, sd_y_n = \
-        mntd_mean_sd(datamtx, all_ids, len(group_ids), iters)
-    # for debugging, to check against phylocom
-    # print mn_y_obs, mn_y_n, sd_y_n
-    # WARNING: the std deviation is being rounded 
-    if allclose(sd_y_n,0.0) == True:
-        raise ValueError("The std of the random samples was zero within 10^-8 of"+\
-            " 0.0. This is likely due to a phylogeny which has equal distances"+\
-            " between all tips.")
+    group_marginals = [marginals.index(i) for i in group] 
+    mn_y_obs = mntd(reduce_mtx(distmat, group_marginals))
+    mn_y_n, sd_y_n = random_mntd(distmat, len(group_marginals), iters)
+    if abs(0.0 - sd_y_n)<.00001:
+        raise ValueError('The standard deviation of the means of the random'+\
+            ' draws from the distance matrix was less than .00001. This is'+\
+            ' likely do to a phylogeny with distances to all tips equal.'+\
+            ' This phylogeny is not suitable for NRI/NTI analysis.')
     return -1.*((mn_y_obs-mn_y_n)/sd_y_n)
 
-def mntd(datamtx):
-    """calculates mntd (mena nearest taxon distance) for a datamtx"""
-    # the MNTD (mean nearest taxon distance) requires choosing only the min
-    # value in each row, excluding d(i,i) vals which are dists to self (0.0)
-    m = 0.0
-    for i,row in enumerate(datamtx): 
-        m += min(row.tolist()[:i]+row.tolist()[i+1:]) # exclude d(i,i). d(i,i)=0 bc datamatx calculated with metric   
-    return m/float(i+1) #i+1 dists 
+def mntd(distmat):
+    """Find mean of row mins in hollow, symmetric distmat excluding main diag."""
+    return ma.masked_array(distmat, eye(distmat.shape[0])).min(0).mean()
 
-
-def mntd_mean_sd(dist_mat, all_ids, num_to_take, iters):
-    """calculates mean and std for random dist mats based on iter randomizations
-    num_to_take is the number of random rows/cols to take for a randomization"""
+def random_mntd(distmat, n, iters):
+    """Calc mean,std of mntd of iters # of rand nxn mtx's drawn from distmat.
+    Notes:
+     Calculate the std of the means of minimums of the distances in the nxn mat
+     excluding the main diagonal since d(A,A)=0 (mtx is hollow).
+     The forumula from Webb 2002 seems to calculate the standard deviation of 
+     the distances but based on tests of Phylocom and the Phylocom manual, 
+     Phylocom computes the standard deviations of the means.
+     """
     means = []
+    indices = arange(distmat.shape[0]) #square so rows=cols
     for i in range(iters):
-        ids_to_take = take_random_ids(all_ids, num_to_take)
-        r_dist_mat = take_distmat_data(dist_mat, all_ids, ids_to_take)
-        i_mean = mntd(r_dist_mat)
-        means.append(i_mean)
-    return float(mean(means)), float(std(means))
+        shuffle(indices) #shuffling indices after its been shuffled is not 
+        # mathematically different than shuffling fresh arange(n) 
+        means.append(mntd(reduce_mtx(distmat, indices[:n])))
+    return mean(means), std(means)
+
 
