@@ -271,9 +271,9 @@ def compose_logfile_lines(start_time,db_format_time,blast_time,option_lines,\
     log_lines.append("|                       Output                             |")
     log_lines.append(FORMAT_BAR)
 
-    log_lines.append("Writing excluded sequences (hits matching filters) to: %s" %options.outputfilename + '.excluded') 
-    log_lines.append("Writing screened sequences (excluding hits matching filters) to: %s" %options.outputfilename + '.screened') 
-    log_lines.append("Writing raw BLAST results to: %s" %options.outputfilename + '.raw_blast_results') 
+    log_lines.append("Writing excluded sequences (hits matching filters) to: %s" % join(options.outputdir, "matching.fna")) 
+    log_lines.append("Writing screened sequences (excluding hits matching filters) to: %s" % join(options.outputdir, "non-matching.fna")) 
+    log_lines.append("Writing raw BLAST results to: %s" % join(options.outputdir, 'raw_blast_results.txt')) 
     
     #format for printing
     revised_log_lines=[]
@@ -311,16 +311,9 @@ def check_options(parser,options):
     except IOError:
         parser.error(\
               "Please check -d option: cannot read from subject FASTA filepath")
-    if options.outputfilename is None:
+    if options.outputdir is None:
         parser.error(\
-                "Please check -o option: must specify base output path")  
-    try:
-        f=open(options.outputfilename,'w')
-        f.close()
-        remove_files([FilePath(options.outputfilename)])
-    except IOError:
-        parser.error(\
-              "Please check -o option: cannot write to output file")  
+                "Please check -o option: must specify the output directory path")   
 
 
 def format_options_as_lines(options):
