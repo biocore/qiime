@@ -74,18 +74,18 @@ def filter_OTUs(otu_table, filt, all_samples=True,\
     def filter_f(values, id_, md):
         """filter observations based on how many samples are covered"""
         # determine the number of samples the observation occurs in
-        n_nonzero = sum(values > 0)
+        n_samples = sum(values > 0)
 
         # we don't have enough samples represented
-        if n_nonzero < min_filter:
+        if n_samples < min_filter:
             return False
 
         # we have to many samples represented
-        if max_filter and n_nonzero > max_filter:
+        if max_filter and n_samples > max_filter:
             return False
 
         # if all samples have this observation
-        if all_samples and n_nonzero == len(values):
+        if all_samples and n_samples == len(values):
             return False
 
         return True
