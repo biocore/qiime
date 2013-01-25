@@ -1,6 +1,7 @@
 QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 ===================================================
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
+* ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================

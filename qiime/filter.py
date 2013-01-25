@@ -131,7 +131,8 @@ def sample_ids_from_category_state_coverage(mapping_f,
                                             subject_category,
                                             min_num_states=None,
                                             required_states=None,
-                                            considered_states=None):
+                                            considered_states=None,
+                                            splitter_category=None):
     """Filter sample IDs based on subject's coverage of a category.
 
     Given a category that groups samples by subject (subject_category), samples
@@ -150,9 +151,9 @@ def sample_ids_from_category_state_coverage(mapping_f,
     timepoints (required_states). For example, this could be the first and last
     timepoints in the study.
 
-    Returns a list of sample IDs to keep, the number of subjects that were
-    kept, and the number of unique category states in coverage_category that
-    were kept. The list of sample IDs is not guaranteed to be in any specific
+    Returns a set of sample IDs to keep, the number of subjects that were
+    kept, and a set of the unique category states in coverage_category that
+    were kept. The set of sample IDs is not guaranteed to be in any specific
     order relative to the order of sample IDs or subjects in the mapping file.
 
     Arguments:
@@ -164,25 +165,40 @@ def sample_ids_from_category_state_coverage(mapping_f,
             included in results (integer)
         required_states - category states in coverage_category that must be
             covered by a subject's samples in order to be included in results
-            (list of strings)
+            (list of strings or items that can be converted to strings)
         considered_states - category states that are counted toward the 
-            min_num_states (list of strings)
+            min_num_states (list of strings or items that can be converted to
+            strings)
+        splitter_category - category to split input mapping file on prior to
+            processing. If not supplied, the mapping file will not be split. If
+            supplied, a dictionary mapping splitter_category state to results
+            will be returned instead of the three-element tuple. The supplied
+            filtering criteria will apply to each split piece of the mapping
+            file independently (e.g. if an individual passes the filters for
+            the tongue samples, his/her tongue samples will be included for
+            the tongue results, even if he/she doesn't pass the filters for the 
+            palm samples)
     """
     metadata_map = MetadataMap.parseMetadataMap(mapping_f)
 
-    # Make sure out input looks sane.
-    if coverage_category == 'SampleID' or subject_category == 'SampleID':
+    # Make sure our input looks sane.
+    categories_to_test = [coverage_category, subject_category]
+    if splitter_category is not None:
+        categories_to_test.append(splitter_category)
+
+    if 'SampleID' in categories_to_test:
         raise ValueError("The 'SampleID' category is not suitable for use in "
                          "this function. Please choose a different category "
                          "from the metadata mapping file.")
 
-    if coverage_category not in metadata_map.CategoryNames:
-        raise ValueError("The coverage category '%s' is not in the metadata "
-                         "mapping file." % coverage_category)
+    for category in categories_to_test:
+        if category not in metadata_map.CategoryNames:
+            raise ValueError("The category '%s' is not in the metadata "
+                             "mapping file." % category)
 
-    if subject_category not in metadata_map.CategoryNames:
-        raise ValueError("The subject category '%s' is not in the metadata "
-                         "mapping file." % subject_category)
+    if len(set(categories_to_test)) < len(categories_to_test):
+        raise ValueError("The coverage, subject, and (optional) splitter "
+                         "categories must all be unique.")
 
     if required_states is not None:
         # required_states must be in coverage_category's states in the mapping
@@ -197,7 +213,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
                              "category in the metadata mapping file." %
                              (', '.join(invalid_coverage_states),
                               coverage_category))
-                              
+
     if considered_states is not None:
         # considered_states is not as restrictive as required_states - we don't 
         # require that these are present, so it's OK if some of the states
@@ -220,9 +236,47 @@ def sample_ids_from_category_state_coverage(mapping_f,
                          "or both. Supplying neither filtering criteria is "
                          "not supported.")
 
+    if splitter_category is None:
+        results = _filter_sample_ids_from_category_state_coverage(
+                metadata_map, metadata_map.SampleIds, coverage_category,
+                subject_category, consider_state, min_num_states,
+                required_states)
+    else:
+        # "Split" the metadata mapping file by extracting only sample IDs that
+        # match the current splitter category state and using those for the
+        # actual filtering.
+        splitter_category_states = defaultdict(list)
+        for samp_id in metadata_map.SampleIds:
+            splitter_category_state = \
+                    metadata_map.getCategoryValue(samp_id, splitter_category)
+            splitter_category_states[splitter_category_state].append(samp_id)
+
+        results = {}
+        for splitter_category_state, sample_ids in \
+            splitter_category_states.items():
+            results[splitter_category_state] = \
+                    _filter_sample_ids_from_category_state_coverage(
+                            metadata_map, sample_ids, coverage_category,
+                            subject_category, consider_state, min_num_states,
+                            required_states)
+
+    return results
+
+def _filter_sample_ids_from_category_state_coverage(metadata_map,
+                                                    sample_ids,
+                                                    coverage_category,
+                                                    subject_category,
+                                                    consider_state_fn,
+                                                    min_num_states=None,
+                                                    required_states=None):
+    """Helper function to perform filtering based on category state coverage.
+
+    Not explicitly unit-tested because it is implicitly tested by
+    sample_ids_from_category_state_coverage's unit tests.
+    """
     # Build mapping from subject to sample IDs.
     subjects = defaultdict(list)
-    for samp_id in metadata_map.SampleIds:
+    for samp_id in sample_ids:
         subject = metadata_map.getCategoryValue(samp_id, subject_category)
         subjects[subject].append(samp_id)
 
@@ -237,8 +291,10 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # Short-circuit evaluation of ANDing filters.
         keep_subject = True
         if min_num_states is not None:
-            # note: when summing a list of boolean values, True == 1 and False == 0
-            if sum([consider_state(s) for s in subject_covered_states]) < min_num_states:
+            # note: when summing a list of boolean values, True == 1 and
+            # False == 0
+            if sum([consider_state_fn(s) for s in subject_covered_states]) < \
+               min_num_states:
                 keep_subject = False
         if keep_subject and required_states is not None:
             if len(subject_covered_states & required_states) != \
@@ -250,7 +306,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
             states_kept.extend(subject_covered_states)
             num_subjects_kept += 1
 
-    return samp_ids_to_keep, num_subjects_kept, len(set(states_kept))
+    return set(samp_ids_to_keep), num_subjects_kept, set(states_kept)
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
