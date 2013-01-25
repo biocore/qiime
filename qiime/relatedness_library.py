@@ -12,24 +12,25 @@ __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
  
 from numpy.random import shuffle, random
-from numpy import std, mean, array, allclose, arange, eye
+from numpy import std, mean, array, allclose, arange, eye, triu_indices
 from copy import deepcopy
 import numpy.ma as ma
 
-from numpy import triu_indices
+
 
 """The calculations for MPD (mean phylogenetic distance), MNTD (mean nearest
 taxon distance), NRI (net relatedness index), and NTI (nearest taxon index) are
-based on the formulas available in the Phylocom 4.2 manual. That manual is 
-currently available at http://phylodiversity.net/phylocom/phylocom_manual.pdf.
+based on the formulas available in the Phylocom 4.2 manual and the Webb et al.
+2002 paper in Phylogenies and Comunnity Ecology. The manual is 
+currently available at http://phylodiversity.net/phylocom/phylocom_manual.pdf,
+and the paper is available at 
+http://www.annualreviews.org/doi/pdf/10.1146/annurev.ecolsys.33.010802.150448.
 
 The null model that is used by the random_mpd and random_mntd methods is null
 model 2 (pg 16). Null model 2 specifies that for random draws from the total
 phylogeny, any taxa may be taken regardless of whether or not it occurred in 
 one of the samples.
 """
-
-
 
 # used by both NRI and NTI
 
@@ -60,7 +61,7 @@ def nri(distmat, marginals, group, iters):
     return -1.*((mn_x_obs-mn_x_n)/sd_x_n)
 
 def mpd(distmat):
-    """Return mean distmat, assumes distmat is symmetric and hollow."""
+    """Return mean of pairwise dists, assumes distmat is symmetric,hollow."""
     return distmat.sum()/(distmat.size-distmat.shape[0])
 
 def random_mpd(distmat, n, iters):
