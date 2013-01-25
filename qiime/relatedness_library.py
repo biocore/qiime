@@ -30,6 +30,37 @@ The null model that is used by the random_mpd and random_mntd methods is null
 model 2 (pg 16). Null model 2 specifies that for random draws from the total
 phylogeny, any taxa may be taken regardless of whether or not it occurred in 
 one of the samples.
+
+
+Comparisons against phylocom 4.2 shows significant agreement. If you would 
+like to test, make the sample file have the folowing form:
+clump1    sp1
+clump1    sp2
+clump1    sp4
+clump1    sp7
+
+and the phylo file have the following tree string:
+(((sp1:.06,sp2:.1)A:.031,(sp3:.001,sp4:.01)B:.2)AB:.4,((sp5:.03,sp6:.02)C:.13,(sp7:.01,sp8:.005)D:.1)CD:.3)root;
+
+tr = DndParser(ts)
+distmat = tr.tipToTipDistances()
+distmat = 
+(array([[ 0.   ,  0.16 ,  0.292,  0.301,  0.951,  0.941,  0.901,  0.896],
+       [ 0.16 ,  0.   ,  0.332,  0.341,  0.991,  0.981,  0.941,  0.936],
+       [ 0.292,  0.332,  0.   ,  0.011,  1.061,  1.051,  1.011,  1.006],
+       [ 0.301,  0.341,  0.011,  0.   ,  1.07 ,  1.06 ,  1.02 ,  1.015],
+       [ 0.951,  0.991,  1.061,  1.07 ,  0.   ,  0.05 ,  0.27 ,  0.265],
+       [ 0.941,  0.981,  1.051,  1.06 ,  0.05 ,  0.   ,  0.26 ,  0.255],
+       [ 0.901,  0.941,  1.011,  1.02 ,  0.27 ,  0.26 ,  0.   ,  0.015],
+       [ 0.896,  0.936,  1.006,  1.015,  0.265,  0.255,  0.015,  0.   ]]),
+100 tests (87 for phylocom) using 1000 iters each:
+nri
+phylocom - mean = .4481, std = .05529
+rel - mean = .4516, std = .048414
+
+nti
+phylocom - mean = -1.2081908, std = 0.03177133
+rel - mean = -1.23526, std = 0.02437
 """
 
 # used by both NRI and NTI
