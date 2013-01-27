@@ -25,8 +25,8 @@ script_info = {}
 script_info['brief_description'] = ""
 script_info['script_description'] = ""
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Run a subset of the interface tests in verbose mode","Run interface tests for the add_taxa.py and make_otu_table.py scripts. This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/qime_script_tests.log -t add_taxa,make_otu_table -v"))
-script_info['script_usage'].append(("Run all of the interface tests","Run all script interface tests.  This illustrates how to run from the qiime_test_dir directory.","%prog -i $PWD/ -l $HOME/all_qime_script_tests.log"))
+script_info['script_usage'].append(("Run a subset of the interface tests in verbose mode","Run interface tests for the count_seqs.py and make_otu_table.py scripts. This illustrates how to run from the qiime_test_dir directory.","%prog -t count_seqs,make_otu_table -v"))
+script_info['script_usage'].append(("Run all of the interface tests","Run all script interface tests.  This illustrates how to run from the qiime_test_dir directory.","%prog"))
 script_info['output_description']= ""
 script_info['required_options'] = []
 
@@ -45,9 +45,6 @@ script_info['optional_options'] = [\
  make_option('-w','--working_dir',default=get_qiime_temp_dir(),
              help='directory where the tests should be run [default: %default]',
              type='existing_dirpath'),
- make_option('-q','--qiime_scripts_dir',default=qiime_config['qiime_scripts_dir'],
-             help='directory containing scripts to test [default: %default]',
-             type='existing_dirpath'),
  make_option('-l','--failure_log_fp',type="new_filepath",default=default_log_fp,
              help='log file to store record of failures [default: %s]' % default_log_fp_help_str)
 ]
@@ -65,6 +62,19 @@ else:
      make_option('-i','--qiime_test_data_dir',type="existing_dirpath",
                  help='the directory containing input for script usage examples'))
 
+default_qiime_scripts_dir = qiime_config['qiime_scripts_dir']
+if default_qiime_scripts_dir != None:
+    script_info['optional_options'].append(
+     make_option('-q','--qiime_scripts_dir',
+             default=default_qiime_scripts_dir,
+             help='directory containing scripts to test [default: %default]',
+             type='existing_dirpath'))
+else:
+    script_info['required_options'].append(
+     make_option('-q','--qiime_scripts_dir',
+             help='directory containing scripts to test',
+             type='existing_dirpath'))
+
 script_info['help_on_no_arguments'] = False
 
 def main():
@@ -77,7 +87,7 @@ def main():
     verbose = opts.verbose
     tests = opts.tests
     if tests != None:
-        tests = tests.split(',')
+        tests = [e.rstrip('/') for e in tests.split(',')]
     failure_log_fp = opts.failure_log_fp
     
     result_summary, num_failures = run_script_usage_tests(

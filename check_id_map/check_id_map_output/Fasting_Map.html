@@ -1,0 +1,44 @@
+<html>
+<head>
+
+<script type="text/javascript" src="./overlib.js"></script>
+</head>
+<body bgcolor="white"> <h1>No errors or warnings detected.<br></h1><h1>Mapping file error and warning details.</h1>
+Notes for interpreting this report:
+<ul>
+    <li>Errors will be listed in red, warnings in yellow.  
+    <li>Mouse over an error or warning in a cell for more details.
+    <li>Errors in the header row may mask other errors, so these should be corrected first.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+</ul>
+<p>
+Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
+<ul> 
+    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.
+    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>
+    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.
+</ul>
+General issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr></tr></table><br>
+<table border="2" cellspacing="0" cellpadding="5">
+
+<tr></tr>
+<tr>
+<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>DOB</th><th>Description</th>
+</tr>
+
+<tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>20061218</tt></th><th><tt>Control_mouse_I.D._354
+</tt></th></tr><tr><th><tt>PC.355</tt></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>20061218</tt></th><th><tt>Control_mouse_I.D._355
+</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>20061126</tt></th><th><tt>Control_mouse_I.D._356
+</tt></th></tr><tr><th><tt>PC.481</tt></th><th><tt>ACCAGCGACTAG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>20070314</tt></th><th><tt>Control_mouse_I.D._481
+</tt></th></tr><tr><th><tt>PC.593</tt></th><th><tt>AGCAGCACTTGT</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>20071210</tt></th><th><tt>Control_mouse_I.D._593
+</tt></th></tr><tr><th><tt>PC.607</tt></th><th><tt>AACTGTGCGTAC</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Fast</tt></th><th><tt>20071112</tt></th><th><tt>Fasting_mouse_I.D._607
+</tt></th></tr><tr><th><tt>PC.634</tt></th><th><tt>ACAGAGTCGGCT</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Fast</tt></th><th><tt>20080116</tt></th><th><tt>Fasting_mouse_I.D._634
+</tt></th></tr><tr><th><tt>PC.635</tt></th><th><tt>ACCGCAGAGTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Fast</tt></th><th><tt>20080116</tt></th><th><tt>Fasting_mouse_I.D._635
+</tt></th></tr><tr><th><tt>PC.636</tt></th><th><tt>ACGGTGAGTGTC</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Fast</tt></th><th><tt>20080116</tt></th><th><tt>Fasting_mouse_I.D._636
+</tt></th></tr>
+</tr>
+</table>
+
+</body>
+</html>

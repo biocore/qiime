@@ -1,0 +1,65 @@
+usearch --usersort --chimeras /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/de_novo_chimeras.fasta --abskew 2.0 --uchime /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/clustered_error_corrected.fasta --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/uchime_de_novo_chimera_filtering.log --nonchimeras /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/de_novo_non_chimeras.fasta
+Started Thu Oct 18 14:23:30 2012
+Version 5.2.32
+8.6Gb RAM
+
+Minus strand search OFF
+    0.28  minh
+    8.00  xn
+    1.40  dn
+    1.00  xa
+    0.80  mindiv
+    0.75  id
+       2  maxp
+
+Highest-abundance sequences
+      3  Cluster2;size=3
+      3  Cluster3;size=3
+      2  Cluster70;size=2
+      2  Cluster87;size=2
+      2  Cluster68;size=2
+      2  Cluster67;size=2
+      2  Cluster65;size=2
+      2  Cluster82;size=2
+      2  Cluster20;size=2
+      2  Cluster73;size=2
+      2  Cluster18;size=2
+      2  Cluster34;size=2
+      2  Cluster16;size=2
+      2  Cluster74;size=2
+      2  Cluster14;size=2
+      2  Cluster11;size=2
+      2  Cluster10;size=2
+      2  Cluster9;size=2
+      2  Cluster8;size=2
+      2  Cluster7;size=2
+      2  Cluster6;size=2
+      2  Cluster5;size=2
+      2  Cluster4;size=2
+      2  Cluster1;size=2
+      2  Cluster0;size=2
+      1  Cluster75;size=1
+      1  Cluster76;size=1
+      1  Cluster72;size=1
+      1  Cluster71;size=1
+      1  Cluster69;size=1
+      1  Cluster66;size=1
+      1  Cluster64;size=1
+
+/Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/clustered_error_corrected.fasta: 7/99 chimeras found (7.1%)
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+          windex       12836         749   72.2%         1.2Mb
+            mx_h         628         178   19.5%       328.7kb
+         myutils           3           0    5.7%        96.0kb
+           ultra          25          24    2.4%        40.1kb
+           dpmem           4           2    0.1%       2168.0b
+       hspfinder         398         396    0.0%        768.0b
+           seqdb         388         388    0.0%         39.0b
+----------------  ----------  ----------  ------  ------------
+           Total       14282        1737  100.0%         1.7Mb
+
+Finished Thu Oct 18 14:23:30 2012
+Elapsed time 00:00
+Max memory 3.2Mb
