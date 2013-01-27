@@ -17,7 +17,7 @@ from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.util import create_dir, get_tmp_filename
 from qiime.add_qiime_labels import (add_qiime_labels, check_mapping_data,
- get_fasta_fps, write_combined_fasta, check_fasta_fps)
+ get_fasta_fps, write_combined_fasta)
 
 class AddQiimeLabelsTests(TestCase):
     def setUp(self):
@@ -71,22 +71,24 @@ class AddQiimeLabelsTests(TestCase):
         
         # With valid data should not raise any errors
         
-        mapping_data = ['Sample1\t%s' % basename(self.fasta1_fp),
-                        'Sample2\t%s' % basename(self.fasta2_fp),
-                        'Sample3\t%s' % basename(self.fasta3_fp)
+        mapping_data = ['#SampleID	BarcodeSequence	LinkerPrimerSequence	InputFileNames	Description',
+                        'Sample1	AAAA	ACTG	%s	S1' % basename(self.fasta1_fp),
+                        'Sample2	TTTT	ACTG	%s	S2' % basename(self.fasta2_fp),
+                        'Sample3	CCCC	ACTG	%s	S3' % basename(self.fasta3_fp)
                         ]
                         
-        add_qiime_labels(mapping_data, self.input_dir, 
+        filename_column = "InputFileNames"
+                        
+        add_qiime_labels(mapping_data, self.input_dir, filename_column,
         self.output_dir)
         
         output_fp = open(join(self.output_dir, "combined_seqs.fna"), "U")
         output_lines = [line.strip() for line in output_fp]
         
-        expected_output_lines = ['>Sample2_0 label3 ZZZ', 'AACGYAACGAGA',
-         '>Sample2_1 label4', 'ACAGAGAGAGGGGAGA',
-         '>Sample3_2 label5 ;LKJ', 'ACAGGGATTTTTAT',
-         '>Sample1_3 label1 XXX', 'ACAGATTACGA',
-         '>Sample1_4 label2 YYY', 'ACATAAAATAGCCGGAG']
+        expected_output_lines = ['>Sample1_0 label1 XXX', 'ACAGATTACGA',
+         '>Sample1_1 label2 YYY', 'ACATAAAATAGCCGGAG', '>Sample2_2 label3 ZZZ',
+         'AACGYAACGAGA', '>Sample2_3 label4', 'ACAGAGAGAGGGGAGA',
+         '>Sample3_4 label5 ;LKJ', 'ACAGGGATTTTTAT']
          
         self.assertEqual(output_lines, expected_output_lines)
         
@@ -95,64 +97,109 @@ class AddQiimeLabelsTests(TestCase):
         
         # Should raise error with duplicated fasta path used.
         
-        mapping_data = ['Sample1\t%s' % basename(self.fasta1_fp),
-                        'Sample2\t%s' % basename(self.fasta2_fp),
-                        'Sample3\t%s' % basename(self.fasta1_fp)
+        mapping_data = ['#SampleID	BarcodeSequence	LinkerPrimerSequence	InputFileNames	Description',
+                        'Sample1	AAAA	ACTG	%s	S1' % basename(self.fasta1_fp),
+                        'Sample2	TTTT	ACTG	%s	S2' % basename(self.fasta1_fp),
+                        'Sample3	CCCC	ACTG	%s	S3' % basename(self.fasta3_fp)
                         ]
                         
+        filename_column = "InputFileNames"
+                        
         self.assertRaises(ValueError, add_qiime_labels, mapping_data,
-         self.input_dir, self.output_dir)
+         filename_column, self.input_dir, self.output_dir)
          
     def test_check_mapping_data_valid_data(self):
         """ Returns expected dict with valid data supplied """
         
-        mapping_data = ['Sample1\tFile1',
-                        'Sample2\tFile2',
-                        'Sample3\tFile3'
+        mapping_data = ['Sample1\tAAAA\tACTG\tFile1\ts.1'.split('\t'),
+                        'Sample2\tCCCC\tACTG\tFile2\ts.2'.split('\t'),
+                        'Sample3\tTTTT\tACTG\tFile3\ts.3'.split('\t')
                         ]
+        
+        headers = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'InputFileNames', 'Description']
+        
+        filename_column = 'InputFileNames'                
                         
         expected_data = {'File3': 'Sample3',
                          'File2': 'Sample2',
                          'File1': 'Sample1'}
         
-        actual_data = check_mapping_data(mapping_data)
+        actual_data = check_mapping_data(mapping_data, headers, filename_column)
         
         self.assertEqual(actual_data, expected_data)
         
     def test_check_mapping_data_dups(self):
         """ Raises errors if duplicate file names supplied """
         
-        mapping_data = ['Sample1\tFile3',
-                        'Sample2\tFile2',
-                        'Sample3\tFile3'
+        mapping_data = ['Sample1\tAAAA\tACTG\tFile1\ts.1'.split('\t'),
+                        'Sample2\tCCCC\tACTG\tFile2\ts.2'.split('\t'),
+                        'Sample3\tTTTT\tACTG\tFile2\ts.3'.split('\t')
                         ]
         
-        self.assertRaises(ValueError, check_mapping_data, mapping_data)
+        headers = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'InputFileNames', 'Description']
+        
+        filename_column = 'InputFileNames'                
+        
+        self.assertRaises(ValueError, check_mapping_data, mapping_data,
+         headers, filename_column)
+    
+    def test_check_mapping_data_dups(self):
+        """ Raises errors if duplicate SampleIDs supplied """
+        
+        mapping_data = ['Sample3\tAAAA\tACTG\tFile1\ts.1'.split('\t'),
+                        'Sample2\tCCCC\tACTG\tFile2\ts.2'.split('\t'),
+                        'Sample3\tTTTT\tACTG\tFile3\ts.3'.split('\t')
+                        ]
+        
+        headers = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'InputFileNames', 'Description']
+        
+        filename_column = 'InputFileNames'                
+        
+        self.assertRaises(ValueError, check_mapping_data, mapping_data,
+         headers, filename_column)
         
     def test_check_mapping_data_invalid_sampleids(self):
         """ Raises errors if invalid SampleIDs supplied """
         
-        mapping_data = ['Sa!mple1\tFile1',
-                        'Sample2\tFile2',
-                        'Sample3\tFile3'
+        mapping_data = ['Sample1\tAAAA\tACTG\tFile1\ts.1'.split('\t'),
+                        'Sam&ple2\tCCCC\tACTG\tFile2\ts.2'.split('\t'),
+                        'Sample3\tTTTT\tACTG\tFile3\ts.3'.split('\t')
                         ]
         
-        self.assertRaises(ValueError, check_mapping_data, mapping_data)
+        headers = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'InputFileNames', 'Description']
+        
+        filename_column = 'InputFileNames'                
+        
+        self.assertRaises(ValueError, check_mapping_data, mapping_data,
+         headers, filename_column)
         
     def test_check_mapping_data_invalid_mapping_file_format(self):
         """ Raises errors if missing data from mapping file """
         
-        mapping_data = ['Sample1\tFile1',
-                        'Sample2',
-                        'Sample3\tFile3'
+        mapping_data = ['Sample1\tAAAA\tACTG\tFile1\ts.1'.split('\t'),
+                        'Sample2\tCCCC\tACTG'.split('\t'),
+                        'Sample3\tTTTT\tACTG\tFile3\ts.3'.split('\t')
                         ]
         
-        self.assertRaises(IndexError, check_mapping_data, mapping_data)
+        headers = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence',
+         'InputFileNames', 'Description']
+        
+        filename_column = 'InputFileNames'                
+        
+        self.assertRaises(IndexError, check_mapping_data, mapping_data,
+         headers, filename_column)
         
     def test_get_fasta_fps(self):
         """ Properly returns fasta files from given directory """
         
-        actual_fastas = get_fasta_fps(self.input_dir)
+        file_basenames = [basename(self.fasta2_fp), basename(self.fasta3_fp),
+         basename(self.fasta1_fp)]
+        
+        actual_fastas = get_fasta_fps(self.input_dir, file_basenames)
         
         expected_fasta = [self.fasta2_fp, self.fasta3_fp, self.fasta1_fp]
         
@@ -182,29 +229,6 @@ class AddQiimeLabelsTests(TestCase):
                                 ]
          
         self.assertEqual(output_lines, expected_output_lines)
-        
-    def test_check_fasta_fps(self):
-        """ Checks that all fasta files are found in mapping data """
-        
-        mapping_data = {'%s' % basename(self.fasta1_fp):'Sample1',
-                        '%s' % basename(self.fasta2_fp):'Sample2',
-                        '%s' % basename(self.fasta3_fp):'Sample3'
-                        }
-                        
-        fasta_fps = [self.fasta2_fp, self.fasta3_fp, self.fasta1_fp]
-        
-        # Should return True for all fasta files found
-        self.assertTrue(check_fasta_fps(mapping_data, fasta_fps))
-        
-        mapping_data = {'%s' % basename(self.fasta1_fp):'Sample1',
-                        '%s' % basename(self.fasta1_fp):'Sample2',
-                        '%s' % basename(self.fasta3_fp):'Sample3'
-                        }
-                        
-        fasta_fps = [self.fasta2_fp, self.fasta3_fp, self.fasta1_fp]
-        
-        # Should raise error due to fasta file found but not defined in mapping
-        self.assertRaises(ValueError,check_fasta_fps,mapping_data, fasta_fps)
 
             
 sample_fasta1 = """>label1 XXX
