@@ -1,2 +1,3 @@
-Sample.1	fasta_dir/seqs1.fna
-Sample.2	fasta_dir/seqs2.fna
+#SampleID	BarcodeSequence	LinkerPrimerSequence	InputFileName	Description
+Sample.1	AAAACCCCGGGG	CTACATAATCGGRATT	seqs1.fna	sample.1
+Sample.2	TTTTGGGGAAAA	CTACATAATCGGRATT	seqs2.fna	sample.2
