@@ -11,11 +11,9 @@ __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
  
-from numpy.random import shuffle, random
-from numpy import std, mean, array, allclose, arange, eye, triu_indices
-from copy import deepcopy
-import numpy.ma as ma
-
+from numpy.random import shuffle
+from numpy import std, mean, arange, eye
+from numpy.ma import masked_array
 
 
 """The calculations for MPD (mean phylogenetic distance), MNTD (mean nearest
@@ -135,7 +133,7 @@ def nti(distmat, marginals, group, iters):
 
 def mntd(distmat):
     """Find mean of row mins in hollow, symmetric distmat excluding main diag."""
-    return ma.masked_array(distmat, eye(distmat.shape[0])).min(0).mean()
+    return masked_array(distmat, eye(distmat.shape[0])).min(0).mean()
 
 def random_mntd(distmat, n, iters):
     """Calc mean,std of mntd of iters # of rand nxn mtx's drawn from distmat.
