@@ -23,6 +23,8 @@ From the raw, binary sff file, three files need to be generated for each run wit
 Note that the qiime since package v1.2 has a replacement for the sfftools.
 It's slower but fully functional.
 
+**Note**: Since late 2012, 454 machines have a new feature (flow pattern B) that is supposed to allow for longer reads. Unfortunately, files using this feature can not be denoised, but result in nonsense output. To make sure that your file uses the older, more common flow pattern A, open the .sff.txt file and look for the :file:`Flow Chars:` section in the header. If it shows a constant repeat of TACG you are fine. If however the pattern deviates after the third repeat, you are looking at the new flow patten B that can not be denoised. In any case, all other qiime programs are not affected by this and can be used as usual.
+
 For more details on the available options of each script explained in
 the following use the -h option.
 
@@ -32,10 +34,12 @@ Prior to denoising, each read has to be assigned to one barcode/sample
 and low quality reads need to be filtered out. This can be done using
 `split_libraries.py <../scripts/split_libraries.html>`_. An example command would be::
 
-	split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -r -l 150 -L 350
-	split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -r -l 150 -L 350 -n 1000000
+	split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -g -r -l 150 -L 350
+	split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -g -r -l 150 -L 350 -n 1000000
 
-This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through `split_libraries.py <../scripts/split_libraries.html>`_.
+This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through `split_libraries.py <../scripts/split_libraries.html>`_. Note that all options to `split_libraries.py <../scripts/split_libraries.html>`_ that truncate the sequences on the 3' end should not be used as they do not affect the sff.txt files used for denoising. This includes the :file:`-x`, :file:`-z truncate_only`, and :file:`-w` without :file:`-g` options. We recommend though to use the :file:`-w 50 -g` combination to discard reads of bad quality.
+Also, do not use the `truncate_fasta_qual_files.py  <../scripts/truncate_fasta_qual_files.html>`_ script if you plan to denoise your data.
+If you need to truncate your data, use the :file:`sfffile` program from the Roche sfftools package and recreate your fasta and qual files from the truncated sff file.
 
 For a single, non-barcoded sample, `split_libraries.py <../scripts/split_libraries.html>`_
 can be provided with a mapping file that has an empty field for the BarcodeSequence.
@@ -44,8 +48,8 @@ Example:
 
 .. note::
 
-	#SampleID   BarcodeSequence	LinkerPrimerSequence	 Description
-	Artificial    			ATTAGATACCCNGGTAG	 ArtificialGSFLX_from_Quince_et_al
+   * #SampleID   BarcodeSequence	LinkerPrimerSequence	 Description
+   * Artificial    			ATTAGATACCCNGGTAG	 ArtificialGSFLX_from_Quince_et_al
 
 Note that fields must be separated by a single tab. For the empty barcode there must be two
 tabs between SampleID and the primer sequence. Use QIIME's
