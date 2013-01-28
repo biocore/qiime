@@ -5,7 +5,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 __status__ = "Development"
@@ -51,6 +51,7 @@ script_info['optional_options']=[\
               " not pre-rotating assumes that the curvature is symmetrical across"+\
               " the vertical axis [default: %default]"),
 ]
+script_info['output_description']="""Output is detrended PCoA matrices."""
 script_info['version'] = __version__
 
 def main():

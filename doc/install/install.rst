@@ -28,10 +28,10 @@ To install most of following dependencies you need to have a build environment o
 
 The following are required by QIIME:
 
-* Python 2.7.1 (`src_python <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_) (license: PSF)
+* Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * Numpy 1.5.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
-* biom-format 1.0.0 (`src_biom <https://github.com/downloads/biom-format/biom-format/biom-format-1.0.0.tgz>`_) (license: GPL)
+* biom-format 1.1.1 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.1.1.tar.gz>`_) (license: GPL)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
@@ -45,7 +45,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
-* usearch v5.2.32 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html)
+* usearch v5.2.236 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html)
 * tax2tree 1.0.0 (`src_tax2tree <https://downloads.sourceforge.net/project/tax2tree/tax2tree-v1.0.tar.gz>`_)
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
@@ -70,26 +70,29 @@ Processing sff files:
 Denoising 454 data:
 
 * GNU Science Library (required by AmpliconNoise) (`src_gsl <ftp://ftp.gnu.org/gnu/gsl/gsl-1.9.tar.gz>`_)
-* AmpliconNoise 1.25 (`src_ampliconnoise <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.25.tar.gz>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
+* AmpliconNoise 1.27 (`src_ampliconnoise <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.27.tar.gz>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
 * ghc 6.8 (required by the QIIME denoiser) (`src_ghc <http://haskell.org/ghc>`_)
-
 
 Visualization and plotting steps:
 
 * MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
 * cytoscape v2.7.0 (`src_cytoscape <http://www.cytoscape.org/>`_) (license: LGPL)
 
-Supervised learning (``supervised_learning.py``):
+Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
 
 * R 2.12.0 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
 Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97% identity:
 
-* Greengenes 97% OTUs, taxonomies, and tree (`zip <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz>`_)
+* Greengenes OTUs, taxonomies, and trees (`.tar.gz <ftp://greengenes.microbio.me/greengenes_release/gg_12_10/gg_12_10_otus.tar.gz>`_)
 
 If you plan to build the QIIME documentation locally:
 
 * Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
+
+If you plan to use remote mapping files (stored as Google Spreadsheets) with QIIME (see the tutorial `here <../tutorials/remote_mapping_files.html>`_):
+
+* gdata 2.0.17 (`src <http://gdata-python-client.googlecode.com/files/gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
 
 License information for external dependencies
 ---------------------------------------------
@@ -107,7 +110,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Release
 ^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our |release| release, which you can download from `here <https://github.com/downloads/qiime/qiime/Qiime-1.5.0.tar.gz>`_.
+Currently the most stable version of QIIME is our |release| release, which you can download from `here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.6.0.tar.gz>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,11 +126,11 @@ Unpacking QIIME (release only)
 ------------------------------
 After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime/``.
 
-Unpack the release Qiime tar file with the commands::
+Unpack the release .tar.gz file with the commands::
 
-	cd /home/qiime_user
-	tar -xvzf Qiime-1.5.0.tar.gz
-	ln -s /home/qiime/Qiime-1.5.0 /home/qiime/Qiime
+	cd /home/qiime
+	tar -xvzf qiime-1.6.0.tar.gz
+	ln -s /home/qiime/qiime-1.6.0 /home/qiime/Qiime
 
 If you have downloaded the development version from GitHub, QIIME is already unpacked.
 
@@ -239,9 +242,9 @@ usearch Install Notes
 
 .. _usearch-install:
 
-The usearch binary must be called ``usearch``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``usearch5.2.32_i86linux32`` as ``/home/qiime/bin/usearch5.2.32_i86linux32``, we recommend creating a symbolic link to this file::
+The usearch binary must be called ``usearch``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``usearch5.2.236_i86linux32`` as ``/home/qiime/bin/usearch5.2.236_i86linux32``, we recommend creating a symbolic link to this file::
 
-	ln -s /home/qiime/bin/usearch5.2.32_i86linux32 /home/qiime/bin/usearch
+	ln -s /home/qiime/bin/usearch5.2.236_i86linux32 /home/qiime/bin/usearch
 
 ChimeraSlayer Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -266,9 +269,16 @@ R Install Notes
 
 .. _R-install:
 
-To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and excecute the command::
+To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and excecute the following commands::
 
 	install.packages('randomForest')
+	install.packages('optparse')
+	install.packages('vegan')
+	install.packages('ape')
+	install.packages('MASS')
+	install.packages('gtools')
+	install.packages('klaR')
+	install.packages('RColorBrewer')
 	q()
 
 AmpliconNoise Install Notes
@@ -276,12 +286,12 @@ AmpliconNoise Install Notes
 
 .. _ampliconnoise-install:
 
-AmpliconNoise requires that several environment variables are set. After you've installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is ``/home/qiime/AmpliconNoiseV1.24/``)::
+AmpliconNoise requires that several environment variables are set. After you've installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is ``/home/qiime/AmpliconNoiseV1.27/``)::
 
-	echo "export PATH=/home/qiime/AmpliconNoiseV1.24/Scripts:/home/qiime/AmpliconNoiseV1.24/bin:$PATH" >> /home/qiime/.bashrc
+	echo "export PATH=/home/qiime/AmpliconNoiseV1.27/Scripts:/home/qiime/AmpliconNoiseV1.27/bin:$PATH" >> /home/qiime/.bashrc
 
-	echo "export PYRO_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/LookUp_E123.dat" >> /home/qiime/.bashrc
-	echo "export SEQ_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/Tran.dat" >> /home/qiime/.bashrc
+	echo "export PYRO_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.27/Data/LookUp_E123.dat" >> /home/qiime/.bashrc
+	echo "export SEQ_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.27/Data/Tran.dat" >> /home/qiime/.bashrc
 
 QIIME Denoiser Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

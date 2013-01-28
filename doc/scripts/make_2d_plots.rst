@@ -55,7 +55,7 @@ If you just want to use the default output, you can supply the principal coordin
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
 
 **Output Directory Usage:**
 
@@ -63,31 +63,31 @@ If you want to give an specific output directory (e.g. "2d_plots"), use the foll
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -o 2d_plots/
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 2d_plots/
 
 **Mapping File Usage:**
 
-Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b 'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.
-
-If the user wants to color by specific mapping labels, they can use the following code:
+Additionally, the user can supply their mapping file ('-m') and a specific category to color by ('-b') or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b 'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.If the user wants to color by specific mapping labels, they can use the following code:
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -b 'Treatment'
 
 **Scree plot Usage:**
 
-A scree plot can tell you how many axes are likely to be important and help determine how many "real" underlying gradients there might be in your data as well as their relative "strength". If you want to generate a scree plot, use the following code.
+A scree plot can tell you how many axes are likely to be important and help determine how many 'real' underlying gradients there might be in your data as well as their relative 'strength'. If you want to generate a scree plot, use the following code.
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt --scree
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt --scree
 
-If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
+**Color by all categories:**
+
+If the user would like to color all categories in their metadata mapping file, they should not pass -b. Color by all is the default behavior.
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
 
 **Prefs File:**
 
@@ -95,14 +95,14 @@ The user can supply a prefs file to color by, as follows:
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
+	make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -p prefs.txt
 
 **Jackknifed Principal Coordinates (w/ confidence intervals):**
 
-If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
+If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point '--ellipsoid_opacity', which is a value from 0-1. Currently there are two metrics '--ellipsoid_method' that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
 
 ::
 
-	make_2d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
+	make_2d_plots.py -i pcoa/ -m Fasting_Map.txt -b 'Treatment&&DOB' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
 
 

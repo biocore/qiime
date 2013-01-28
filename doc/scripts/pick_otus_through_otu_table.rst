@@ -35,7 +35,7 @@ This script takes a sequence file and performs all processing steps through buil
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 4]
 
 
 **Output:**

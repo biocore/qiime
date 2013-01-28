@@ -45,18 +45,18 @@ Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) 
 
 ::
 
-	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4
+	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_sample.fasta -s S2,S3,S4
 
 Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE NOT (-n) associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:
 
 ::
 
-	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4 -n
+	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_sample_negated.fasta -s S2,S3,S4 -n
 
 Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose "Treatment" value is "Fast" in the mapping file:
 
 ::
 
-	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -m map.txt -s "Treatment:Fast" 
+	extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_mapping_field.fasta -m map.txt -s "Treatment:Fast" 
 
 

@@ -13,6 +13,7 @@
 	* binary_dist_jaccard: Binary Jaccard distance (binary Soergel distance)
 	* binary_dist_lennon: Binary Lennon distance
 	* binary_dist_ochiai: Binary Ochiai distance
+	* binary_otu_gain: Binary distance similar to Unifrac G
 	* binary_dist_pearson: Binary Pearson distance
 	* binary_dist_sorensen_dice: Binary Sörensen-Dice distance (binary Bray-Curtis distance or binary Whittaker distance)
 	* dist_bray_curtis: Bray-Curtis distance (normalized Manhattan distance)

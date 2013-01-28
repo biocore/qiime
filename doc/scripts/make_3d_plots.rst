@@ -59,13 +59,17 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 	`-`-polyhedron_offset
 		Used only when generating inVUE plots. The offset to be added to each point created when using the --polyhedron_points option. This is only used when using the invue output_format. [default: 1.5]
 	`-`-add_vectors
-		Create vectors based on a column of the mapping file. This.parameter accepts up to 2 columns: (1) create the vectors, (2) sort them. If you wanted to group by Species and order by SampleID you will pass --add_vectors=Species but if you wanted to group by Species but order by DOB you will pass --add_vectors=Species,DOB; this is useful when you use --custom_axes param [default: None]
-	`-`-rms_algorithm
-		The algorithm to calculate the RMS, either avg or trajectory; both algorithms use all the dimensions and weights them using their percentange explained; return the norm of the created vectors; and their  confidence using ANOVA. The vectors are created as follows: for avg it calculates the average at each timepoint (averaging within a group), then calculates the norm of each point; for trajectory  calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: None]
-	`-`-rms_axes
-		The number of axes to account while doing the RMS calculations. We suggest using 3 because those are the ones being displayed in the plots but you could use any number between 1 and number of samples - 1. To use all of them pass 0. [default: 3]
-	`-`-rms_path
-		Name of the file to save the root mean square (RMS) of the vectors grouped by the column used with the --add_vectors function. Note that this option only works with --add_vectors. The file is going to be created inside the output_dir and its name will start with "RMS". [default: RMS_output.txt]
+		Create vectors based on a column of the mapping file. This parameter accepts up to 2 columns: (1) create the vectors, (2) sort them. If you wanted to group by Species and order by SampleID you will pass --add_vectors=Species but if you wanted to group by Species but order by DOB you will pass --add_vectors=Species,DOB; this is useful when you use --custom_axes param [default: None]
+	`-`-vectors_algorithm
+		The algorithm used to create the vectors. The method used can be RMS (either using 'avg' or 'trajectory'); or the first difference (using 'diff'), or 'wdiff' for a modified first difference algorithm (see --window_size) the aforementioned use all the dimensions and weights them using their percentage explained; returns the norm of the created vectors; and their confidence using ANOVA. The Vectors are created as follows: for 'avg' it calculates the average at each timepoint (averaging within a group), then calculates the norm of each point; for 'trajectory' calculates the norm for the 1st-2nd, 2nd-3rd, etc.; for 'diff', it calculates the norm for all the time-points and then calculates the first difference for each resulting point; for for 'wdiff' it uses the same procedure as the previous method but the subtraction will be between the mean of the next number of elements specified in --window_size and the current element, both methods ('wdiff' and 'diff') will also include the mean and the standard deviation of the calculations [defautl: None]
+	`-`-vectors_axes
+		The number of axes to account while doing the vector specificcalculations. We suggest using 3 because those are the ones being displayed in the plots but you could use any number between 1 and number of samples- 1. To use all of them pass 0. [default: 3]
+	`-`-vectors_path
+		Name of the file to save the first difference, or the root mean square (RMS) of the vectors grouped by the column used with the --add_vectors function. Note that this option only works with --add_vectors. The file is going to be created inside the output_dir and its name will start with the word 'Vectors'.[default: vectors_output.txt]
+	-w, `-`-weight_by_vector
+		Use -w when you want the output created in the --vectors_path to be weighted by the space between samples in the --add_vectors, sorting column, i. e. days between samples [default: False]
+	`-`-window_size
+		Use --window_size, when selecting the modified first difference ('wdiff') option for --vectors_algorithm. This integer determines the number of elements to be averaged per element subtraction, the resulting vector. [default: None]
 	-o, `-`-output_dir
 		Path to the output directory
 
@@ -81,32 +85,39 @@ If you just want to use the default output, you can supply the principal coordin
 
 ::
 
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
 
-Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b 'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.
+**Mapping File Usage by Category:**
 
-If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
-
-::
-
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL
-
-As an alternative, the user can supply a preferences (prefs) file, using the -p option. The prefs file allows the user to give specific samples their own columns within a given mapping column. This file also allows the user to perform a color gradient, given a specific mapping column.
-
-If the user wants to color by using the prefs file (e.g. prefs.txt), they can use the following code:
+Additionally, the user can supply their mapping file ('-m') and a specific category to color by ('-b') or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.
 
 ::
 
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -b 'Treatment&&DOB'
 
+**Color All Categories:**
+
+If the user would like to color all categories in their metadata mapping file they should not pass -b (default is color by all categories)
+
+::
+
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
+
+**Prefs File Example:**
+
+As an alternative, the user can supply a preferences (prefs) file, using the -p option. The prefs file allows the user to give specific samples their own columns within a given mapping column. This file also allows the user to perform a color gradient, given a specific mapping column.If the user wants to color by using the prefs file (e.g. prefs.txt), they can use the following code:
+
+::
+
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -p prefs.txt
 
 **Output Directory:**
 
-If you want to give an specific output directory (e.g. "3d_plots"), use the following code:
+If you want to give an specific output directory (e.g. '3d_plots'), use the following code:
 
 ::
 
-	make_3d_plots.py -i principal_coordinates-output_file --o 3d_plots/
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 3d_plots
 
 **Background Color Example:**
 
@@ -114,22 +125,22 @@ If the user would like to color the background white they can use the '-k' optio
 
 ::
 
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL -k white
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -k white
 
 **Jackknifed Principal Coordinates (w/ confidence intervals):**
 
-If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
+If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point '--ellipsoid_opacity', which is a value from 0-1. Currently there are two metrics '--ellipsoid_method' that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
 
 ::
 
-	make_3d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
+	make_3d_plots.py -i pcoa -m Fasting_Map.txt -b 'Treatment&&DOB' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
 
 **Bi-Plots:**
 
-If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder "-i", a mapping file "-m", and a summarized taxa file "-t" from `summarize_taxa.py <./summarize_taxa.html>`_. Can be combined with jacknifed principal coordinates.
+If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder '-i', a mapping file '-m', and a summarized taxa file '-t' from `summarize_taxa.py <./summarize_taxa.html>`_. Can be combined with jacknifed principal coordinates.
 
 ::
 
-	make_3d_plots.py -i pcoa.txt -m Mapping_file.txt -t otu_table_level3.txt
+	make_3d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -t otu_table_L3.txt
 
 

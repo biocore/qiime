@@ -41,18 +41,18 @@ Outputs a value for specified tests
 
 ::
 
-	relatedness.py -t gg_tree.tre -i ids.txt -m nri,nti
+	relatedness.py -t reference.tre -g group1_otus.txt -m nri,nti
 
 **Calculate only NRI:**
 
 ::
 
-	relatedness.py -t gg_tree.tre -i ids.txt -m nri
+	relatedness.py -t reference.tre -g group1_otus.txt -m nri
 
 **Calculate only NTI using a different number of iterations:**
 
 ::
 
-	relatedness.py -t gg_tree.tre -i ids.txt -m nti -i 100
+	relatedness.py -t reference.tre -g group1_otus.txt -m nti -i 100
 
 

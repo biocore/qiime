@@ -32,7 +32,7 @@ The resulting output file consists of the principal coordinate (PC) axes (column
 
 **PCoA (Single File):**
 
-For this script, the user supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), along with the output filename (e.g. beta_div_coords.txt), as follows:
+For this script, the user supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), along with the output filename (e.g.  beta_div_coords.txt), as follows:
 
 ::
 

@@ -6,7 +6,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -105,7 +105,7 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
         # as our input with the same seq IDs. We should have a taxonomy string
         # and a confidence value for each seq as well.
         self.assertEqual(len(results), 2)
-        self.assertEqual(len(results['X67228 some description']), 2)
+        self.assertEqual(len(results['X67228']), 2)
         self.assertEqual(len(results['EF503697']), 2)
 
 

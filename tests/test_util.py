@@ -45,7 +45,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
-    qiime_blastx_seqs, add_filename_suffix)
+    qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
+    is_valid_git_sha1)
 
 import numpy
 from numpy import array, asarray
@@ -57,9 +58,9 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy"]
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -744,6 +745,86 @@ GTCTGA
         self.assertEqual(add_filename_suffix('baz.fasta.txt', 'z'),
                                              'baz.fastaz.txt')
         self.assertEqual(add_filename_suffix('/foo/', 'z'), 'z')
+
+    def test_is_valid_git_refname(self):
+        """Test correct validation of refnames"""
+        # valid branchnames
+        self.assertTrue(is_valid_git_refname('master'))
+        self.assertTrue(is_valid_git_refname('debuggatron_2000'))
+        self.assertTrue(is_valid_git_refname('refname/bar'))
+        self.assertTrue(is_valid_git_refname('ref.nameslu/_eggs_/spam'))
+        self.assertTrue(is_valid_git_refname('valid{0}char'.format(
+            unichr(40))))
+        self.assertTrue(is_valid_git_refname('master@head'))
+        self.assertTrue(is_valid_git_refname('bar{thing}foo'))
+
+        # case happening with git < 1.6.6
+        self.assertFalse(is_valid_git_refname(
+            '--abbrev-ref\nbaa350d7b7063d585ca293fc16ef15e0765dc9ee'))
+
+        # different invalid refnames, for a description of each group see the
+        # man page of git check-ref-format
+        self.assertFalse(is_valid_git_refname('bar/.spam/eggs'))
+        self.assertFalse(is_valid_git_refname('bar.lock/spam/eggs'))
+        self.assertFalse(is_valid_git_refname('bar.lock'))
+        self.assertFalse(is_valid_git_refname('.foobar'))
+
+        self.assertFalse(is_valid_git_refname('ref..name'))
+
+        self.assertFalse(is_valid_git_refname(u'invalid{0}char'.format(
+            unichr(177))))
+        self.assertFalse(is_valid_git_refname('invalid{0}char'.format(
+            unichr(39))))
+        self.assertFalse(is_valid_git_refname('ref~name/bar'))
+        self.assertFalse(is_valid_git_refname('refname spam'))
+        self.assertFalse(is_valid_git_refname('bar/foo/eggs~spam'))
+        self.assertFalse(is_valid_git_refname('bar:_spam_'))
+        self.assertFalse(is_valid_git_refname('eggtastic^2'))
+
+        self.assertFalse(is_valid_git_refname('areyourandy?'))
+        self.assertFalse(is_valid_git_refname('bar/*/spam'))
+        self.assertFalse(is_valid_git_refname('bar[spam]/eggs'))
+
+        self.assertFalse(is_valid_git_refname('/barfooeggs'))
+        self.assertFalse(is_valid_git_refname('barfooeggs/'))
+        self.assertFalse(is_valid_git_refname('bar/foo//////eggs'))
+
+        self.assertFalse(is_valid_git_refname('dotEnding.'))
+
+        self.assertFalse(is_valid_git_refname('@{branch'))
+
+        self.assertFalse(is_valid_git_refname('contains\\slash'))
+
+        self.assertFalse(is_valid_git_refname('$newbranch'))
+
+    def test_is_valid_git_sha1(self):
+        """ """
+
+        # valid sha1 strings
+        self.assertTrue(is_valid_git_sha1(
+            '65a9ba2ef4b126fb5b054ea6b89b457463db4ec6'))
+        self.assertTrue(is_valid_git_sha1(
+            'a29a9911e41253405494c43889925a6d79ca26db'))
+        self.assertTrue(is_valid_git_sha1(
+            'e099cd5fdea89eba929d6051fbd26cc9e7a0c961'))
+        self.assertTrue(is_valid_git_sha1(
+            '44235d322c3386bd5ce872d9d7ea2e10d27c86cb'))
+        self.assertTrue(is_valid_git_sha1(
+            '7d2fc23E04540EE92c742948cca9ed5bc54d08d1'))
+        self.assertTrue(is_valid_git_sha1(
+            'fb5dc0285a8b11f199c4f3a7547a2da38138373f'))
+        self.assertTrue(is_valid_git_sha1(
+            '0b2abAEb195ba7ebc5cfdb53213a66fbaddefdb8'))
+
+        # invalid length
+        self.assertFalse(is_valid_git_sha1('cca9ed5bc54d08d1'))
+        self.assertFalse(is_valid_git_sha1(''))
+
+        # invalid characters
+        self.assertFalse(is_valid_git_sha1(
+            'fb5dy0f85a8b11f199c4f3a75474a2das8138373'))
+        self.assertFalse(is_valid_git_sha1(
+            '0x5dcc816fbc1c2e8eX087d7d2ed8d2950a7c16b'))
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments

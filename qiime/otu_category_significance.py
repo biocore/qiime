@@ -5,9 +5,9 @@ from __future__ import division
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Dan Knights",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
 __status__ = "Development"
@@ -26,6 +26,7 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
+from biom.exception import TableException
 
 """Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
@@ -63,31 +64,39 @@ def filter_OTUs(otu_table, filt, all_samples=True,\
         mapping_file_samples = set(category_mapping_info.keys())
         otu_table_samples = set(otu_table.SampleIds)
         included_samples = mapping_file_samples & otu_table_samples
-    else:
-        included_samples = otu_table.SampleIds
-    #convert the filter fraction into a raw number
-    filt = round(filt * len(included_samples)) 
+        otu_table = otu_table.filterSamples(lambda v,i,m: i in included_samples)
+
+    # min and max number of samples per observation to keep
+    min_filter = int(round(filt * len(otu_table.SampleIds)))
     if max_filter:
-        max_filter = round(max_filter * len(included_samples))
-    for obs_index, obs_id in enumerate(otu_table.ObservationIds):
-        samples = []
-        for samp_index, samp_id in enumerate(otu_table.SampleIds):
-            if float(otu_table[obs_index, samp_index]) > 0:
-                if category_mapping_info:
-                    if samp_id in included_samples:
-                        samples.append(samp_id)
-                else:
-                    samples.append(samp_id)
-        if len(samples) >= int(filt):
-            if all_samples and not max_filter:
-                if len(samples) < len(included_samples):
-                    result.append(str(obs_id))
-            elif max_filter:
-                if len(samples) <= int(max_filter):
-                    result.append(str(obs_id))
-            else:
-                result.append(str(obs_id))
-    return result
+        max_filter = int(round(max_filter * len(otu_table.SampleIds)))
+
+    def filter_f(values, id_, md):
+        """filter observations based on how many samples are covered"""
+        # determine the number of samples the observation occurs in
+        n_samples = sum(values > 0)
+
+        # we don't have enough samples represented
+        if n_samples < min_filter:
+            return False
+
+        # we have to many samples represented
+        if max_filter and n_samples > max_filter:
+            return False
+
+        # if all samples have this observation
+        if all_samples and n_samples == len(values):
+            return False
+
+        return True
+    
+    try:
+        filtered = otu_table.filterObservations(filter_f)
+    except TableException:
+        # all observations filtered out
+        return []
+
+    return list(filtered.ObservationIds)
 
 def sync_mapping_to_otu_table(otu_table, mapping):
     """removes samples from the mapping file that are not in the otu table

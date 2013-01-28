@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -315,8 +315,7 @@ class Qiime_config(TestCase):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        min_acceptable_version = (2,7,1)
-        min_unacceptable_version = (2,7,2)
+        acceptable_version = (2,7,3)
         command = 'python --version'
         proc = Popen(command,shell=True,universal_newlines=True, \
                          stdout=PIPE,stderr=STDOUT)
@@ -328,15 +327,13 @@ class Qiime_config(TestCase):
             version = tuple(map(int,version_string.split('.')))
             if len(version) == 2:
                 version = (version[0],version[1],0)
-            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported python version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
-            version_string))
+         "Unsupported python version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
 
     def test_numpy_suported_version(self):
         """numpy version is supported """
@@ -609,7 +606,7 @@ class Qiime_config(TestCase):
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
-        command = "rtax 2>&1 > % | grep Version | awk '{print $2}'" % devnull
+        command = "rtax 2>&1 > %s | grep Version | awk '{print $2}'" % devnull
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
@@ -671,7 +668,7 @@ class Qiime_config(TestCase):
         
     def test_usearch_supported_version(self):
         """usearch is in path and version is supported """
-        acceptable_version = [(5,2,32),(5,2,32)]
+        acceptable_version = [(5,2,236),(5,2,236)]
         self.assertTrue(app_path('usearch'),
          "usearch not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -710,8 +707,19 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported R version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-         
-        
+
+    def test_gdata_install(self):
+        """gdata is installed"""
+        # We currently can't programmatically find the version of gdata. An
+        # issue has been created alerting the gdata devs.
+        pass_test = True
+        try:
+            import gdata
+        except ImportError:
+            pass_test = False
+        self.assertTrue(pass_test, "gdata is not installed.")
+
+
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""

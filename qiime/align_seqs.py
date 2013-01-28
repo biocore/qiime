@@ -4,7 +4,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Greg Caporaso", "Jeremy Widmann", "Kyle Bittinger"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -46,7 +46,7 @@ except ImportError:
     def raise_pynast_not_found_error(*args, **kwargs):
         raise ApplicationNotFoundError,\
          "PyNAST cannot be found.\nIs PyNAST installed? Is it in your $PYTHONPATH?"+\
-         "\nYou can obtain PyNAST from http://pynast.sourceforge.net/." 
+         "\nYou can obtain PyNAST from http://qiime.org/pynast/."
     # set functions which cannot be imported to raise_pynast_not_found_error
     pynast_seqs = NastLogger = raise_pynast_not_found_error
     pairwise_alignment_methods = {}

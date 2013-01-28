@@ -46,11 +46,11 @@ The output from `pick_rep_set.py <./pick_rep_set.html>`_ is a single FASTA file 
 
 **Simple example: picking a representative set for de novo-picked OTUs:**
 
-The script `pick_rep_set.py <./pick_rep_set.html>`_ takes as input an 'OTU map' (via the "-i" parameter) which maps OTU identifiers to sequence identifiers. Typically, this will be the output file provided by `pick_otus.py <./pick_otus.html>`_. Additionally, a FASTA file is required, via "-f", which contains all of the sequences whose identifiers are listed in the OTU map. By default, a representative sequence will be chosen as the most abundant sequence in the OTU. This can be changed to, for example, choose the first sequence listed in each OTU by passing -m first.
+The script `pick_rep_set.py <./pick_rep_set.html>`_ takes as input an 'OTU map' (via the "-i" parameter) which maps OTU identifiers to sequence identifiers. Typically, this will be the output file provided by `pick_otus.py <./pick_otus.html>`_. Additionally, a FASTA file is required, via "-f", which contains all of the sequences whose identifiers are listed in the OTU map.  By default, a representative sequence will be chosen as the most abundant sequence in the OTU. This can be changed to, for example, choose the first sequence listed in each OTU by passing -m first.
 
 ::
 
-	pick_rep_set.py -i seqs_otus.txt -f seqs.fna -o rep_set.fna
+	pick_rep_set.py -i seqs_otus.txt -f seqs.fna -o rep_set1.fna
 
 **Picking OTUs with "preferred representative" sequences:**
 
@@ -58,6 +58,6 @@ Under some circumstances you may have a fasta file of "preferred representative"
 
 ::
 
-	pick_rep_set.py -i seqs_otus.txt -f seqs.fna -r refseqs.fasta -o rep_set.fna
+	pick_rep_set.py -i seqs_otus.txt -f seqs.fna -r refseqs.fasta -o rep_set2.fna
 
 

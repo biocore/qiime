@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -127,6 +127,18 @@ script_info['optional_options'] = [
         help='the type of image to produce. Valid options: [png, svg, pdf]. '
         'Only applies when method is mantel_corr [default: %default]',
         default='pdf', type='choice', choices=['pdf', 'png', 'svg']),
+    make_option('--variable_size_distance_classes', action='store_true',
+        help='if this option is supplied, each distance class will have an '
+        'equal number of distances (i.e. pairwise comparisons), which may '
+        'result in variable sizes of distance classes (i.e. each distance '
+        'class may span a different range of distances). If this option is '
+        'not supplied, each distance class will have the same width, but may '
+        'contain varying numbers of pairwise distances in each class. This '
+        'option can help maintain statistical power if there are large '
+        'differences in the number of distances in each class. See '
+        'Darcy et al. 2011 (PLoS ONE) for an example of this type of '
+        'correlogram. Only applies when method is mantel_corr '
+        '[default: %default]', default=False),
     # Partial Mantel specific, i.e., method == partial_mantel
     make_option('-c', '--control_dm',
         help='the control matrix. Only applies (and is *required*) when '
@@ -183,8 +195,10 @@ def main():
         output_f = open(path.join(opts.output_dir,
                         'mantel_correlogram_results.txt'), 'w')
         result_str, correlogram_fps, correlograms = run_mantel_correlogram(
-                input_dm_fps, distmats, opts.num_permutations, comment_corr,
-                opts.alpha, sample_id_map=sample_id_map)
+            input_dm_fps, distmats, opts.num_permutations, comment_corr,
+            opts.alpha, sample_id_map=sample_id_map,
+            variable_size_distance_classes=opts.variable_size_distance_classes)
+
         output_f.write(result_str)
         for corr_fp, corr in zip(correlogram_fps, correlograms):
             corr.savefig(path.join(opts.output_dir, corr_fp + opts.image_type),

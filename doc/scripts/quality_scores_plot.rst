@@ -19,7 +19,7 @@ position, so that one may easily visualize how sequence length drops off.
 A dotted line shows the cut-off point for a score to be acceptable (default
 is 25).
 
-An text file logging the average, standard deviation, and base count 
+A text file logging the average, standard deviation, and base count 
 for each base position is also generated.  These three sections are comma 
 separated.
 
@@ -62,6 +62,6 @@ Generate plots and output to the quality_histograms folder
 
 ::
 
-	quality_score_plot.py -q seqs.qual -o quality_histograms/
+	quality_scores_plot.py -q seqs.qual -o quality_histograms/
 
 

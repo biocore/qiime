@@ -64,7 +64,7 @@ If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids i
 
 ::
 
-	merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt
+	merge_otu_maps.py -i $PWD/otu_map1.txt,$PWD/otu_map2.txt -o $PWD/otu_map_ex1.txt
 
 **Expand a failures file:**
 
@@ -72,6 +72,6 @@ If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids i
 
 ::
 
-	merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -f fail.txt -o all_failures.txt
+	merge_otu_maps.py -i $PWD/otu_map1.txt,$PWD/otu_map2.txt -f $PWD/fail.txt -o $PWD/all_failures.txt
 
 

@@ -9,7 +9,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
     "Justin Kuczynski", "Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza", "John Chase"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"

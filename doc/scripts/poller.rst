@@ -7,7 +7,7 @@
 
 **Description:**
 
-Script for polling parallel runs to check completion. See Qiime/scripts/`poller_example.py <./poller_example.html>`_ for example usage.
+Script for polling parallel runs to check completion.
 
 
 **Usage:** :file:`poller.py [options]`
@@ -42,5 +42,13 @@ Script for polling parallel runs to check completion. See Qiime/scripts/`poller_
 
 No output created.
 
+
+**Poller example:**
+
+Runs the poller, which checks for the existence of two input files (file1.txt and file2.txt) and merges their contents. A cleanup file is provided that instructs the poller to remove the newly merged file.
+
+::
+
+	poller.py -f run_complete.txt -m poller_test_completed.txt -d clean_up.txt
 
 

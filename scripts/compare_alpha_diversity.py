@@ -6,7 +6,7 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren", "Greg Caparaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
@@ -14,19 +14,47 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.compare_alpha_diversity import (compare_alpha_diversities,
-                                           extract_rarefaction_scores_at_depth,
-                                           test_types)
+    _correct_compare_alpha_results, test_types, correction_types)
 
 script_info = {}
-script_info['brief_description'] = """This script compares alpha diversities based on a two sample t-test"""
+script_info['brief_description'] = """This script compares alpha diversities based on a two sample t-test using either parametric or non-parametric (Monte Carlo) methods."""
  
 script_info['script_description'] = """
-This script compares the alpha diversity of entries in a rarefaction file after
-they have been grouped based on some category found in the mapping file based
-on a two sample t-test. The output file contains the
-(Category: (Subcategories): t, prob). By default the two sample t-test will be
-nonparametric (i.e. using Monte Carlo permutations to calculate the p-value),
-though the user has the option to make the test a parametric t-test.
+This script compares the alpha diversity of samples found in a collated alpha 
+diversity file.  The comparison is done not between samples, but between groups
+of samples. The groupings are created via the input 'category' passed with this 
+script. Any samples which have the same value under the catgory will be grouped. 
+For examples if your mapping file had a category called 'Treatment' that
+separated your samples into three groups (Treatment='Control', Treatment='Drug',
+Treatment='2xDose') passing 'Treatment' to this script would cause it to compare 
+(Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity values. 
+By default the two sample t-test will be nonparametric (i.e. using Monte Carlo 
+permutations to calculate the p-value), though the user has the option to make 
+the test a parametric t-test.
+
+The output format is a comparison X (tval,pval) table where each row is a
+different group comparison, and the columns are a t-value or p-value (indicated
+by the header). Any iterations of a rarefaction at a given depth will be 
+averaged. For instance, if your collated_alpha file had 10 iterations of the
+rarefaction at depth 480, the scores for the alpha diversity metrics of those
+10 iterations would be averaged (within sample). The iterations are not 
+controlled by this script; when multiple_rarefactions.py is called, the -n option 
+specifies the number of iterations that have occurred. The multiple comparison
+correction takes into account the number of between group comparisons.
+
+If t-scores and/or p-values are None for any of your comparisons there are two
+possible reasons. The first is that there were undefined values in your collated
+alpha diversity input file. This occurs if there were too few sequences in one 
+or more of the samples in the groups involved in those comparisons to compute 
+alpha diversity at that depth. You can either rerun %prog passing a lower 
+value for --depth, or you can re-run alpha diversity after filtering samples
+with too few sequences.
+The second is that you had some comparison where each treatment was represented 
+by only a single sample. It is not possible to perform a t_two_sample test on 
+two samples each of length 1, so it will give you None,None for tval,pval 
+instead.
+The multiple comparisons correction will not penalize you for comparisons that
+return as None regardless of origin. 
 """
  
 script_info['script_usage'] = []
@@ -49,11 +77,9 @@ script_info['script_usage'].append(("Parametric t-test",
 "PD_d100_parametric.txt -t parametric"))
 
 script_info['output_description']= """
-Script generates an output nested dictionary which has as a first key:value
-pair the category passed, and a dictionary which gives the t_two_sample score
-for every possible combination of the values under that category in the
-mapping file, saved as a text file into the directory specified by the output
-path.
+Script generates an output file that is a table of TreatmentPair by (tval,pval). 
+Each row corresponds to a comparison between two groups of treatment values. 
+The columns are the tvals or pvals for that comparison.
 """
 
 script_info['required_options']=[
@@ -99,13 +125,20 @@ script_info['optional_options'] = [
        '%default]', default='nonparametric'),
  make_option('-n', '--num_permutations', type='int', default=999,
   help='the number of permutations to perform when calculating the '
-       'p-value. Must be greater than zero. Only applies if test_type is '
-       'nonparametric [default: %default]')]
+       'p-value. Must be greater than 10. Only applies if test_type is '
+       'nonparametric [default: %default]'),
+  make_option('-p', '--correction_method', type='choice',
+  choices=correction_types, help='method to use for correcting multiple '
+  'comparisons. Available methods are bonferroni, fdr, or none. '
+  '[default: %default]', default='bonferroni')]
 
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    if opts.num_permutations < 10:
+        option_parser.error('Number of permuations must be greater than or '
+                            'equal to 10.')
 
     rarefaction_lines = open(opts.alpha_diversity_fp, 'U')
     mapping_lines = open(opts.mapping_fp, 'U')
@@ -114,15 +147,23 @@ def main():
     output_path = opts.output_fp
 
     result = compare_alpha_diversities(rarefaction_lines, mapping_lines,
-                                       category, depth, opts.test_type,
-                                       opts.num_permutations)
-    outfile = open(output_path, 'w')
-    outfile.write(str(result))
-    outfile.write('\n')
-
-    outfile.close()
+        category, depth, opts.test_type, opts.num_permutations)
+    
     rarefaction_lines.close()
     mapping_lines.close()
+
+    corrected_result = _correct_compare_alpha_results(result,
+        opts.correction_method)
+
+    # write results
+    outfile = open(output_path, 'w')
+    header = 'Comparison\ttval\tpval'
+    lines = [header]
+    for k,v in corrected_result.items():
+        lines.append('\t'.join(map(str,[k,v[0],v[1]])))
+    outfile.write('\n'.join(lines))
+    outfile.close()
+
 
 
 if __name__ == "__main__":

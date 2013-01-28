@@ -59,36 +59,36 @@ If the user would like to use specified categories ('SampleID,Individual') or co
 
 ::
 
-	make_prefs_file.py -b "SampleID,Individual,SampleID&&Individual" -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -b "SampleID,Treatment,SampleID&&Treatment" -o prefs_out_1.txt
 
 If the user would like to change the background color for their plots, they can pass the '-k' option, where the colors: black and white can be used for 3D plots and many additional colors can be used for the 2D plots, such as cyan, pink, yellow, etc.: 
 
 ::
 
-	make_prefs_file.py -k white -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -k white -o prefs_out_white.txt
 
 If the user would like to change the monte_carlo distances, they can pass the '-d' option as follows: 
 
 ::
 
-	make_prefs_file.py -d 15 -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -d 15 -o prefs_out_d15.txt
 
 If the user would like to add a list of taxons they can pass the '-i' option, which is the resulting taxa file from `summarize_taxa.py <./summarize_taxa.html>`_, as follows: 
 
 ::
 
-	make_prefs_file.py -i taxa_level_3.txt -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -i taxa_level_3.txt -o prefs_out_taxa_l3.txt
 
 If the user would like to add the ball size scale they can pass the '-s' option as follows: 
 
 ::
 
-	make_prefs_file.py -m map_fname.txt -s 2.5 -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -s 3 -o prefs_out_s3.txt
 
 If the user would like to add the head and line color for the arrows in the procrustes analysis plot they can pass the '-a' and '-l' options as follows: 
 
 ::
 
-	make_prefs_file.py -m map_fname.txt -a black -l blue -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -a black -l blue -o prefs_out_procrustes.txt
 
 

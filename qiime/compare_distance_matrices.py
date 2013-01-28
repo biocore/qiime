@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -125,7 +125,8 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
     return result
 
 def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
-                           sample_id_map=None):
+                           sample_id_map=None,
+                           variable_size_distance_classes=False):
     """Runs a Mantel correlogram analysis on all pairs of distance matrices.
 
     Returns a string suitable for writing out to a file containing the results
@@ -152,6 +153,9 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
             correlogram plots
         sample_id_map - dict mapping sample IDs (i.e. what is expected by
             make_compatible_distance_matrices)
+        variable_size_distance_classes - create distance classes that vary in
+            size (i.e. width) but have the same number of distances in each
+            class
     """
     if len(fps) != len(distmats):
         raise ValueError("Must provide the same number of filepaths as there "
@@ -186,7 +190,9 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
 
             # Create an instance of our Mantel correlogram test and run it with
             # the specified number of permutations.
-            results = MantelCorrelogram(dm1, dm2, alpha=alpha)(num_perms)
+            mc = MantelCorrelogram(dm1, dm2, alpha=alpha,
+                variable_size_distance_classes=variable_size_distance_classes)
+            results = mc(num_perms)
 
             # Generate a name for the current correlogram and save it and the
             # correlogram itself.

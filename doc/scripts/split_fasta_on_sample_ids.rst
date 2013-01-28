@@ -32,7 +32,7 @@ Split a single post-`split_libraries.py <./split_libraries.html>`_ fasta file in
 
 **Output:**
 
-
+This script will produce an output directory with as many files as samples.
 
 
 Split seqs.fna into one fasta file per sample and store the resulting fasta files in 'out'

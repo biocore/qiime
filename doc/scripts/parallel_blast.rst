@@ -39,13 +39,9 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-D, `-`-suppress_format_blastdb
 		Supress format of blastdb [default: False]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: $HOME/software/bin/blast-2.2.22/data]
-	-b, `-`-blastall_fp
-		Path to blastall [default: blastall]
+		Full path to directory containing blastmat file [default: /Applications/blast-2.2.22/data/]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
-	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: $HOME/qiime_software/scripts/`poller.py <./poller.html>`_]
+		Number of jobs to start [default: 4]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -53,15 +49,13 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: $HOME/qiime_software/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: `start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
-	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python2.7]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 
 
 **Output:**

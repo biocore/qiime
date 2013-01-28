@@ -7,14 +7,15 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development" 
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.conditional_uncovered_probability import single_file_cup, list_known_metrics
+from qiime.alpha_diversity import (single_file_cup, 
+    list_known_cup_metrics)
 import os
 
 #conditional_uncovered_probability.py
@@ -99,7 +100,7 @@ def main():
 
     if opts.show_metrics:
         print("Known metrics are: %s\n" \
-              % (', '.join(list_known_metrics()),))
+              % (', '.join(list_known_cup_metrics()),))
         exit(0)
 
     almost_required_options = ['input_path', 'output_path']

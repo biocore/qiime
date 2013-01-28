@@ -6,12 +6,12 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
-from os.path import join
+from os.path import join, abspath
 from qiime.util import (get_options_lookup, get_qiime_scripts_dir,
                         load_qiime_config, make_option,
                         parse_command_line_parameters)
@@ -101,7 +101,7 @@ def main():
             seconds_to_sleep=opts.seconds_to_sleep)
 
     parallel_runner(opts.input_fasta_fp,
-                    opts.output_dir,
+                    abspath(opts.output_dir),
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,

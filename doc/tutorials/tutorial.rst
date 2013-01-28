@@ -1,8 +1,8 @@
 .. _tutorial:
 
-==========================
-QIIME Overview Tutorial
-==========================
+===================================================================
+QIIME Overview Tutorial: de novo OTU picking and diversity analyses
+===================================================================
 
 Introduction
 -------------
@@ -694,5 +694,5 @@ References
 Crawford, P. A., Crowley, J. R., Sambandam, N., Muegge, B. D., Costello, E. K., Hamady, M., et al. (2009). Regulation of myocardial ketone body metabolism by the gut microbiota during nutrient deprivation. Proc Natl Acad Sci U S A, 106(27), 11276-11281.
 
 .. _Cytoscape: http://www.cytoscape.org/
-.. _PyNAST: http://pynast.sourceforge.net/
+.. _PyNAST: http://qiime.org/pynast/
 .. _Unifrac: http://bmf2.colorado.edu/unifrac/index.psp

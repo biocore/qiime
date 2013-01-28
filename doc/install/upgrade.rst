@@ -2,24 +2,22 @@
 
 Upgrading to the latest version of QIIME
 ========================================
-This page documents how to install a new version of QIIME from an installation of the previous version. It should also be possible to follow the steps to upgrade from older versions to the most recent version, but it's best to review all steps in that case to ensure that you won't be performing unnecessary steps.
+This page describes various ways to upgrade your QIIME installation to a new version.
 
-For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <https://github.com/qiime/qiime/blob/master/ChangeLog>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
+For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <https://github.com/qiime/qiime/blob/master/ChangeLog.md>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
 
-1.5.0 to 1.5.0-dev (Linux)
+Linux users
+-----------
+If you have QIIME installed on a Linux machine, the easiest way to upgrade is by using the `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ tool. The `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ website has instructions for how to upgrade an existing installation.
+
+Virtual Machine (VM) users
 --------------------------
-If you want to use the development version of QIIME on any Linux box, we
-recommend using the `qiime-deploy <https://github.com/qiime/qiime-deploy>`_
-tool to perform the upgrade.
+If you run QIIME from within a virtual machine, you can either download the latest QIIME image or upgrade an existing one (e.g. to keep your settings, files, etc.) by following the :ref:`virtual_box` install instructions.
 
-1.4.0 to 1.5.0 (QIIME Virtual Machines)
----------------------------------------
-The new version of the QIIME virtual machine (VM) is based on Ubuntu 12.04 (LTS) due to this upgrade in the operating system we can not support autoupdates. Thus we suggest downloading a new full VM and following the install instructions :ref:`virtual_box`.
+Amazon Web Services (AWS) users
+-------------------------------
+If you run QIIME using the AWS EC2 service, visit `this page <http://qiime.org/home_static/dataFiles.html>`_ for the latest QIIME AMI.
 
-1.4.0 to 1.5.0 (general)
-------------------------
- * mothur support has been updated to use its latest version 1.25.0, which can be found `here <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_.
- * rtax support has been added, which can be found `here <http://dev.davidsoergel.com/trac/rtax>`_.
- * pplacer support has been added, which can be found `here <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_.
- * raxml support has been updated to use its latest version 7.3.0, which can be found `here <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_.
- * usearch support has been updated to use its latest version 5.2.32, which can be found `here <http://www.drive5.com/usearch/>`_.
+Mac OS X users / Native QIIME installation
+------------------------------------------
+If you run QIIME on Mac OS X or have a native install (e.g. you are not using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ to install QIIME on Linux), you will need to manually upgrade the versions of QIIME's dependencies that have changed. To see a complete list of required dependency versions, please see `this page <install.html>`_. For a list of dependency versions that have changed between QIIME releases, please see the `QIIME ChangeLog <https://github.com/qiime/qiime/blob/master/ChangeLog.md>`_.

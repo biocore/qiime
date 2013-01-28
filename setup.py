@@ -13,7 +13,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -69,8 +69,8 @@ def build_denoiser():
 pycogent_version = tuple([int(v) \
         for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
         
-if pycogent_version < (1,5):
-    print "PyCogent >= 1.5.0 required, but %s is installed." % cogent.__version__
+if pycogent_version < (1,5,3):
+    print "PyCogent >= 1.5.3 required, but %s is installed." % cogent.__version__
     exit(1)
 
 if app_path("ghc"):

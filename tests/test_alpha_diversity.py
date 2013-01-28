@@ -4,7 +4,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Justin Kuczynski", "Rob Knight"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
@@ -18,7 +18,9 @@ from os import makedirs
 from os.path import exists
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
-from cogent.maths.stats.alpha_diversity import (observed_species, osd)
+#from cogent.maths.stats.alpha_diversity import (observed_species, osd)
+from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)
+
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename, load_qiime_config
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs

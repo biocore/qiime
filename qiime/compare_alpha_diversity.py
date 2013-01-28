@@ -6,279 +6,127 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.5.0-dev"
+__version__ = "1.6.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
-from numpy import array, isnan
+from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from cogent.maths.stats.test import mc_t_two_sample, t_two_sample
+from itertools import combinations
+from collections import defaultdict
+from qiime.otu_category_significance import fdr_correction
 
 test_types = ['parametric', 'nonparametric']
+correction_types = ['bonferroni', 'fdr', 'none']
 
-def make_value_pairs_from_category(mapping_data, category):
-    """creates all pairs of unique category values from mapping data
-    
-    input:
-        mapping_data - a nested dictionary that maps SampleIds to
-        descriptor categories (e.g. {'Id1': {'Weight':'Fat'}}
-    
-        category - a string which specifies a category found in the 
-        mapping data (e.g. 'Obese')
-    
-    output:
-        unique_pairs - a list of unique pairs of the values specified by
-        category
-        (e.g. [('Obese','Fat'),('Obese','notFat'),('Fat','notFat')]
-    
+def sampleId_pairs(mapping_data, rarefaction_data, category):
+    """Returns list of sampleId tuples.
+    Notes:
+     The function first constructs pairwise combinations of values found under
+     the passed category. It then finds which sampleId's belong to each
+     category and returns a list of tuples where each tuple is a treatment pair
+     and the entries in the tuples are lists of the sampleId's which have one of
+     those treatments.
+    Inputs:
+     mapping_data - nested dict, output of parse_mapping_file_to_dict.
+     rarefaction_data - list of 4 elements, output of parse_rarefaction.
+     category - str, category that samples have in the mapping file. eg 'Weight'
     """
-    
-    #gets the keys of the mapping file dictionary. corresponds to the 
-    #names of the individuals in the mapping data file
-    
-    keys = mapping_data.keys()
-       
+    # make treatment pairs list eg. 
+    # [('Obese','Fat'),('Obese','notFat'),('Fat','notFat')]
+
+    # frequently the user will have a filtered their table before rarefactions 
+    # such that the mapping file contains sampleId's that are not found in the 
+    # filtered table. this caused an error with the script because it wasn't 
+    # able to find the id's. to avoid this, make treatment covering set from 
+    # only the sampleIds found in the rarefaction file. 
+    sids = rarefaction_data[0][3:] # 0-2 are header strings
     categories = []
-    for key in keys:
+    check = 0
+    for k in sids:
         try:
-            categories.append(mapping_data[key][category])
-        except KeyError:
-            raise ValueError(('the specified category ({0}) was '+\
-                    'not found in the mapping file.').format(category))
-    #strip duplicate values from this list
-    
-    unique_vals = []
-    for val in categories:
-        if unique_vals.count(val)==0:
-            unique_vals.append(val)
-            
-    #create and populate list of unique pairs of category values
-    
-    unique_pairs = []
-    for i in range(len(unique_vals)):
-        for j in unique_vals[i+1:]:
-            unique_pairs.append((unique_vals[i], j))
-    
-    return unique_pairs
-            
-def make_category_values_Id_dict(mapping_data, category):
-    """makes dict lists all SampleIds that have given category value
-    
-    input:
-        mapping_data - a nested dictionary that maps SampleID to
-        descriptor categories (e.g. {'Id1': {'Weight':'Fat'}}
-    
-        category - a string which specifies a category found in the 
-        mapping data (e.g. 'Weight')
-    
-    output:
-        cat_val_Ids - a dictionary with category values as keys
-        and a list of SampleIds which have the specific category value
-        as values 
-        (e.g. {'Fat':['Id1','Id2'],'notFat':['Id3'],'Obese':['Id4']}).
-    
+            categories.append(mapping_data[k][category])
+        except KeyError: #a sample did not have the category
+            check+=1
+    if check==len(sids): #no samples had the category passed
+        raise ValueError('No samples had a value for category: \'%s\'.' % 
+            category)
+    combos = list(combinations(set(categories),2))
+    # make sampleId combos list eg. 
+    #[(['Id4'],['Id1','Id2']), (['Id1','Id2'],['Id3]), (['Id4'],['Id3])]
+    sid_pairs = []
+    for pair0, pair1 in combos:
+        pair0_sids = [sid for sid in sids if \
+            mapping_data[sid].has_key(category) and \
+            mapping_data[sid][category] == pair0]
+        pair1_sids = [sid for sid in sids if \
+            mapping_data[sid].has_key(category) and \
+            mapping_data[sid][category] == pair1]
+        sid_pairs.append((pair0_sids,pair1_sids))
+    return sid_pairs, combos
+
+def _correct_compare_alpha_results(result, method):
+    """Correct compare_alpha_diversities for multiple comps based on method.
+    Inputs:
+     result - dict, output of compare_alpha_diversities.
+     method - str, in ['FDR','Bonferroni','None']
+    Notes:
+     Nones are ignored for purposes of calculating how many comparisons have 
+     been done. 
     """
-    
-    keys = mapping_data.keys()
-    
-    # create and populate list of all the different values for the 
-    # category that was specified 
-    
-    categories = []
-    for key in keys:
-        categories.append(mapping_data[key][category])
-    
-    #strip duplicate values from this list
-    
-    unique_vals = []
-    for val in categories:
-        if unique_vals.count(val)==0:
-            unique_vals.append(val)
-    
-    #make a dictionary with keys that are the possible values of the 
-    #category that was specified.
-    
-    cat_val_Ids = {}
-    for val in unique_vals:
-        cat_val_Ids[val] = []
-    
-    #populate the cat_val dict with Id's which have proper category 
-    
-    for key in keys:
-        for val in cat_val_Ids.keys():
-            if mapping_data[key][category] == val:
-                cat_val_Ids[val].append(key)
-    
-    return cat_val_Ids
-        
-def map_category_value_pairs_to_Ids(value_pairs, cat_val_Ids):
-    """maps category value pairs to Id's which have that category value
-    
-    input:
-        value_pairs - a list of pairs of categories (e.g. 
-        [('Obese','Fat'),('Fat','notFat'),('Obese','notFat')]
-        
-        cat_val_Ids - a dictionary with category values as keys
-        and a list of SampleId's which have the specific category value 
-        as values
-        (e.g. {'Fat':['Id1','Id2'],'notFat':['Id3'],'Obese':['Id4']}).
-    
-    output:
-        mapped_pairs - the list of value_pairs with the values replaced
-        by the SampleIds which have the values specified in the pair e.g
-        [(['Id4'],['Id1','Id2']),(['Id1','Id2'],\
-        ['Id3]),(['Id4'],['Id3])] 
-    """
-    
-    mapped_pairs = []
-    
-    for pair in value_pairs:
-        mapped_pairs.append((cat_val_Ids[pair[0]],cat_val_Ids[pair[1]]))
-    
-    return mapped_pairs
+    method = method.lower()
+    if method not in correction_types:
+        raise ValueError('You must specify a method to correct for multiple '+\
+            'comparisons. You may pass \'bonferroni\' or \'fdr\' or \'none\'.')
 
+    corrected_result = {}
+    if method == 'bonferroni':
+        # correct for comparisons which get tval,pval=None,None
+        num_comps = float(len(result)) - result.values().count((None,None))
+        for k,v in result.items():
+            if v[0] == None:
+                corrected_result[k] = v
+            else:
+                corrected_result[k] = (v[0],min(v[1]*num_comps,1.0))
+    elif method == 'fdr':
+        # pull out the uncorrected pvals and apply fdr correction. skip vals
+        # which are (None,None). If left in, FDR correction will count them as
+        # tests for the purpose of the correction factor. 
+        tmp_pvals = [v[1] for k,v in result.items() if v!=(None,None)]
+        fdr_corr_vals = fdr_correction(tmp_pvals)
+        # Place values in corrected_result in same order as they were extracted
+        # skipping nones. 
+        i=0
+        for k in result:
+            t,p = result[k]
+            if (t,p)==(None,None):
+                corrected_result[k] = (None, None)
+            else:
+                corrected_result[k] = (t, min(fdr_corr_vals[i],1.0))
+                i+=1
+    elif method == 'none':
+        corrected_result = result
+    return corrected_result
 
-def make_SampleIds_rarefaction_columns_dict(rarefaction_list):
-    """maps SampleId to column in parsed rarefaction file output
-    
-    input:
-        rarefaction_list - ouput of parse_rarefaction.py. a nested list
-        of scores and SampleIds and other fields. 
-    
-    output:
-        map_from_Id_to_col - a dict which has as keys the SampleIds, and
-        as values the col they are in the in the parsed rarefaction list
-    """
-    
-    map_from_Id_to_col = {}
-    
-    # the first 3 entries in the rarefaction_list are not SampleIDs
-    # so we dump them
-    
-    Ids = rarefaction_list[0][3:]
-    
-    for Id in Ids:
-        map_from_Id_to_col[Id] = Ids.index(Id)
-    
-    return map_from_Id_to_col
-        
-    
-def extract_rarefaction_scores_at_depth(depth, rarefaction_list):
-    """makes rarefaction matrix with row=iteration and col=SampleId
-    
-    input:
-        depth - an integer which corresponds to the depth of the
-        rarefaction. also called the "sequences per sample" in the 
-        rarefaction file
-        
-        rarefaction_list - ouput of parse_rarefaction.py. a nested list
-        of scores and SampleIds and other fields. 
-    
-    output:
-        result - a matrix with rows=rarefaction scores at a given depth
-        and iteration, and cols=SampleIds.
-    
-    """
-    # make and populate an array that has as rows rarefaction values
-    # at the same depth and iteration and as cols SampleIds.
-    
-    score_matrix = []
-    
-    # the 4th element of rarefaction_list is a list of scores for each
-    # different SampleId
-    
-    for line in rarefaction_list[3]:
-        if line[0] == depth:
-            # the first two elements are just rarefaction depth and 
-            # iteration, throw these away
-            score_matrix.append(line[2:])
-    
-    # raise error if rarefaction depth not found in rarefaction file
-    if score_matrix == []:
-        raise ValueError(('Specified depth ({0}) was not found in '+\
-                    'the rarefaction file.').format(depth))
-                        
-    
-    score_matrix_elements = []
-    
-    for line in score_matrix:
-        score_matrix_elements.append(line)
-    
-    result = array(score_matrix_elements) 
-    
-    # raise error if any rarefaction score at spec. depth is Nan
-    if isnan(result).any():
-        raise ValueError(('Specified depth ({0}) has NaNs for some '+\
-                            'rarefaction scores.').format(depth))
-    
-    return result
-
-
-def convert_SampleIds_to_rarefaction_mtx(chosen_SampleIds,score_matrix,\
-                                        map_from_SampleIds_to_cols):
-    """converts list of SampleIDs to score mtx from rarefaction file
-    
-    input:
-        chosen_SampleIds - a list of SampleIds
-        
-        score_matrix - a matrix created by
-        extract_rarefaction_scores_at_depth which represents the
-        rarefaction scores for a given depth
-        
-        map_from_SampleIds_to_cols - a dict which maps a SampleId to 
-        the column its scores are in in the score matrix
-    
-    output:
-        reduced_scores_matrix - a matrix which is the input scores mtx
-        with only the cols that correspond to the chosen_SampleIds
-    
-    """
-    #create and populate a list that specifies the r_array columns which
-    #correspond to the name_list
-    
-    cols=[]
-    
-    for Id in chosen_SampleIds:
-        cols.append(map_from_SampleIds_to_cols[Id])
-        
-    # grab only the columns we need based on a passed list of names and
-    # a dictionary to convert between those names and the proper cols
-    reduced_scores_matrix = score_matrix.take(cols, axis=1)
-    
-    return reduced_scores_matrix
-    
-    
-
-def compare_alpha_diversities(rarefaction_lines, mapping_lines, 
-                              category, depth, test_type='nonparametric',
-                              num_permutations=999):
-    """compares alpha diversities
-    
-    inputs:
-        rarefaction_file - rarefaction file which gives scores for 
-        various rarefactions and depths
-        
-        mapping_file - file that has ID's and categories that the ID's
-        fall in
-        
-        category - the category to be compared, is a string
-        
-        depth - the depth of the rarefaction_file to use, is an integer
-
-        test_type - the type of t-test to perform, is a string. Must be either
-        'parametric' or 'nonparametric'
-
-        num_permutations - the number of Monte Carlo permutations to use if
-        test_type is 'nonparametric', is an integer
-    
-    outputs:
-        results - a nested dictionary which specifies the category as
-        the top level key, and as its value, dictionaries which give the
-        results of the t_two_sample test for all unique pairs of values
-        in the specified category
-    
+def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
+    test_type='nonparametric', num_permutations=999):
+    """Compares alpha diversity values for differences per category treatment.
+    Notes: 
+     Returns a defaultdict which as keys has the pairs of treatments being 
+     compared, and as values, lists of (pval,tval) tuples for each comparison at
+     for a given iteration.     
+    Inputs:
+     rarefaction_lines - list of lines, result of multiple rarefactions.
+     mapping_lines - list of lines, mapping file lines. 
+     category - str, the category to be compared, eg 'Treatment' or 'Age'.
+     depth - int, depth of the rarefaction file to use.
+     test_type - str, the type of t-test to perform. Must be either
+     'parametric' or 'nonparametric'.
+     num_permutations - int, the number of Monte Carlo permutations to use if
+     test_type is 'nonparametric'.    
     """
     if test_type == 'nonparametric' and num_permutations < 1:
         raise ValueError("Invalid number of permutations: %d. Must be greater "
@@ -286,43 +134,43 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines,
      
     rarefaction_data = parse_rarefaction(rarefaction_lines)
     mapping_data = parse_mapping_file_to_dict(mapping_lines)[0]
-    value_pairs = make_value_pairs_from_category(mapping_data, category)
+    # samid_pairs, treatment_pairs are in the same order
+    samid_pairs, treatment_pairs = sampleId_pairs(mapping_data, 
+        rarefaction_data, category)
     
-    category_values_Ids = make_category_values_Id_dict(mapping_data, 
-                                                       category)
+    # extract only rows of the rarefaction data that are at the given depth
+    rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
     
-    SampleId_pairs = map_category_value_pairs_to_Ids(value_pairs,
-                                                    category_values_Ids)
-    
-    map_from_Id_to_col = make_SampleIds_rarefaction_columns_dict(
-                                                       rarefaction_data)
-    
-    reduced_rarefaction_mtx = extract_rarefaction_scores_at_depth(depth,
-                                                       rarefaction_data)
-    
-    results = {category:{}}
-    
-    for pair in range(len(SampleId_pairs)):
-        # Must flatten the matrix because t_two_sample only operates on
-        # non-nested sequences (otherwise we'll get the wrong degrees of
-        # freedom).
-        i=(convert_SampleIds_to_rarefaction_mtx(SampleId_pairs[pair][0],
-                                                reduced_rarefaction_mtx,
-                                                map_from_Id_to_col)).flatten()
-        
-        j=(convert_SampleIds_to_rarefaction_mtx(SampleId_pairs[pair][1],
-                                                reduced_rarefaction_mtx,
-                                                map_from_Id_to_col)).flatten()
-
-        if test_type == 'parametric':
-            obs_t, p_val = t_two_sample(i,j)
-        elif test_type == 'nonparametric':
-            obs_t, _, _, p_val = mc_t_two_sample(i,j,
-                                                 permutations=num_permutations)
-            p_val = format_p_value_for_num_iters(p_val, num_permutations)
+    # Average each col of the rarefaction mtx. Computing t test on averages over
+    # all iterations. Avoids more comps which kills signifigance. 
+    rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
+    sids = rarefaction_data[0][3:] # 0-2 are header strings
+    results = {}
+    for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
+        # if there is only 1 sample for each treatment in a comparison, and mc
+        # using mc method, will error (e.g. mc_t_two_sample([1],[1]).
+        if len(sid_pair[0])==1 and len(sid_pair[1])==1:
+            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
+            results[t_key]= (None,None)
         else:
-            raise ValueError("Invalid test type '%s'." % test_type)
-
-        results[category][(str(value_pairs[pair][0]),
-                           str(value_pairs[pair][1]))] = obs_t, p_val
+            pair0_indices = [sids.index(i) for i in sid_pair[0]]
+            pair1_indices = [sids.index(i) for i in sid_pair[1]]
+            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
+            i = rare_mat.take(pair0_indices)
+            j = rare_mat.take(pair1_indices)
+            # found discussion of how to quickly check an array for nan here:
+            # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
+            if isnan(np_min(i)) or isnan(np_min(j)):
+                results[t_key]= (None,None)
+                continue
+            if test_type == 'parametric':
+                obs_t, p_val = t_two_sample(i,j)
+            elif test_type == 'nonparametric':
+                obs_t, _, _, p_val = mc_t_two_sample(i,j, 
+                    permutations=num_permutations)
+                p_val = float(format_p_value_for_num_iters(p_val, 
+                    num_iters=num_permutations))
+            else:
+                raise ValueError("Invalid test type '%s'." % test_type)
+            results[t_key]= (obs_t,p_val)
     return results

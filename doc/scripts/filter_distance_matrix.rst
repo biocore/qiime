@@ -7,7 +7,7 @@
 
 **Description:**
 
-
+Remove samples from a distance matrix based on a mapping file or an otu table or a list of sample ids.
 
 
 **Usage:** :file:`filter_distance_matrix.py [options]`
@@ -33,7 +33,7 @@
 	-m, `-`-mapping_fp
 		Path to the mapping file
 	-s, `-`-valid_states
-		String containing valid states, e.g. 'STUDY_NAME:DOG'
+		String containing valid states, e.g. 'STUDY_NAME:DOB'
 	`-`-negate
 		Discard specified samples (instead of keeping them) [default: False]
 
@@ -47,18 +47,18 @@ Filter samples ids listed in sample_id_list.txt from dm.txt
 
 ::
 
-	filter_distance_matrix.py -i dm.txt -o dm_out.txt --sample_id_fp sample_id_list.txt
+	filter_distance_matrix.py -i dm.txt -o dm_out_sample_list.txt --sample_id_fp sample_id_list.txt
 
 Filter samples ids in otu_table.biom from dm.txt
 
 ::
 
-	filter_distance_matrix.py -i dm.txt -o dm_out.txt -t otu_table.biom
+	filter_distance_matrix.py -i dm.txt -o dm_out_otu_table.txt -t otu_table.biom
 
 Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run "`filter_samples_from_otu_table.py <./filter_samples_from_otu_table.html>`_ -h" for additional information on how metadata filtering can be specified.)
 
 ::
 
-	filter_distance_matrix.py -i dm.txt -o dm_out4.txt -m Fasting_Map.txt -s "DOB:20061218"
+	filter_distance_matrix.py -i dm.txt -o dm_out_mapping_file.txt -m Fasting_Map.txt -s "DOB:20061218"
 
 

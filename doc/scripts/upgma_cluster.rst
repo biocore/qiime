@@ -36,7 +36,7 @@ To perform UPGMA clustering on a single distance matrix (e.g.: beta_div.txt, a r
 
 ::
 
-	upgma_cluster.py -i beta_div.txt -o beta_div_cluster.tre
+	upgma_cluster.py -i $PWD/beta_div.txt -o $PWD/beta_div_cluster.tre
 
 **UPGMA Cluster (Multiple Files):**
 
@@ -44,6 +44,6 @@ The script also functions in batch mode if a folder is supplied as input. This s
 
 ::
 
-	upgma_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/
+	upgma_cluster.py -i $PWD/beta_div_folder -o $PWD/beta_div_folder_results/
 
 

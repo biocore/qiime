@@ -28,17 +28,17 @@ Specifically, we check that:
        barcodes are appended (error)
     - There are no duplicates when barcodes and added demultiplex 
        fields (-j option) are combined (error)
-    - Data fields are not found passed the Description column (warning)
+    - Data fields are not found beyond the Description column (warning)
       
     Details about the metadata mapping file format can be found here:
     http://www.qiime.org/documentation/file_formats.html#metadata-mapping-files
     
-    Errors and warnings are saved to a log file.  Errors are generally caused 
-    by problems with the headers, and should be resolved before attempting to 
-    correct any warnings.  Duplicate SampleIDs will also create errors.
+    Errors and warnings are saved to a log file.  Errors can be caused by
+    problems with the headers, invalid characters in barcodes or primers, or
+    by duplications in SampleIDs or barcodes.
     
-    Warnings can arise from invalid characters, non-DNA characters,
-    duplicate sample descriptions/barcodes, or missing data fields.
+    Warnings can arise from invalid characters and variable length barcodes that
+    are not specified with the --variable_len_barcode.
     Warnings will contain a reference to the cell (row,column) that the 
     warning arose from.
     
@@ -71,37 +71,37 @@ Specifically, we check that:
 	**[REQUIRED]**
 		
 	-m, `-`-mapping_fp
-		Metadata mapping file filepath
+		Metadata mapping filepath
 	
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		Required output directory for log file and corrected mapping file, log file, and html file. [default: ./]
+		Required output directory for log file, corrected mapping file, and html file. [default: ./]
 	-v, `-`-verbose
 		Enable printing information to standard out [default: True]
 	-c, `-`-char_replace
 		Changes the default character used to replace invalid characters found in the mapping file.  Must be a valid character (alphanumeric, period, or underscore).[default: _]
 	-b, `-`-not_barcoded
-		Use -b if barcodes are not present. [default: False]
+		Use -b if barcodes are not present.  BarcodeSequence header still required.  [default: False]
 	-B, `-`-variable_len_barcodes
 		Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]
 	-p, `-`-disable_primer_check
-		Use -p to disable checks for primers. [default: False]
+		Use -p to disable checks for primers.  LinkerPrimerSequence header still required.  [default: False]
 	-j, `-`-added_demultiplex_field
-		Use -j to add a field to use in the mapping file as an additional demultiplexing option to the barcode.  All combinations of barcodes/primers and the these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column header "run_prefix".  [default: None]
+		Use -j to add a field to use in the mapping file as additional demultiplexing (can be used with or without barcodes).  All combinations of barcodes/primers and the these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column header "run_prefix".  [default: None]
 
 
 **Output:**
 
-A log file, html file, and corrected_mapping.txt file will be written to the current directory directory.
+A log file, html file, and corrected_mapping.txt file will be written to the current output directory.
 
 
 **Example:**
 
-Check the test_mapping.txt mapping file for problems, supplying the required mapping file.
+Check the Fasting_Map.txt mapping file for problems, supplying the required mapping file, and output the results in the check_id_map_output directory
 
 ::
 
-	check_id_map.py -m test_mapping.txt
+	check_id_map.py -m Fasting_Map.txt -o check_id_map_output
 
 

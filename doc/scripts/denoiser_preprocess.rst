@@ -55,6 +55,6 @@ Remove primer CATGCTGCCTCCCGTAGGAGT from reads before running phase I
 
 ::
 
-	denoiser_preprocess.py -i 454Reads.sff.txt -f split_lib_filtered_seqs.fasta -p CATGCTGCCTCCCGTAGGAGT 
+	denoiser_preprocess.py -i Fasting_Example.sff.txt -f seqs.fna -p CATGCTGCCTCCCGTAGGAGT 
 
 
