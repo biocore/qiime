@@ -3,6 +3,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
 * ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
 * Modified add_qiime_labels script to use normal metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
+* otu_category_significance.py now makes better use of the BIOM Table API, addressing a performance issue when using CSMat as the sparse backend.
 * Required biom-format version is now 1.1.2.
 
 QIIME 1.6.0 (18 Dec 2012)
