@@ -31,7 +31,7 @@ The following are required by QIIME:
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * Numpy 1.5.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
-* biom-format 1.1.1 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.1.1.tar.gz>`_) (license: GPL)
+* biom-format 1.1.2 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.1.2.tar.gz>`_) (license: GPL)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
