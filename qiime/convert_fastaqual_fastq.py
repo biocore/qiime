@@ -94,6 +94,15 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
         sequence = fasta_data[1]
         qual = qual_data[1]
 
+        # check whether the entries are actually (at least nominally) synch'd
+        if qual_header != label:
+            raise KeyError, ("QUAL header (%s) does not match "
+                             "FASTA header (%s)") % (qual_header, label)
+
+        if len(sequence) != len(qual):
+            raise KeyError, ("Sequence length does not match QUAL length for "
+                             "label (%s)") % label
+
         if multiple_output_files:
             output_file_path = path.join(output_directory,
                     path.splitext(path.split(fasta_file_path)[1])[0] + \
@@ -119,7 +128,7 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
         fastq_file.write(sequence + '\n')
         fastq_file.write('+' + fastq_quality_header + '\n')
 
-        for qual_score in qual_scores:
+        for qual_score in qual:
             # increment the qual score by the asciiIncrement (default 33),
             # and print the corresponding character, which represents that 
             # position's quality.
