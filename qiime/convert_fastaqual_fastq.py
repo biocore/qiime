@@ -42,16 +42,28 @@ def convert_fastaqual_fastq(fasta_file_path, qual_file_path,
     if conversion_type == 'fastaqual_to_fastq':
         convert_fastq(fasta_file_path, qual_file_path, output_directory,
         multiple_output_files, ascii_increment,
-        full_fastq, full_fasta_headers);
+        full_fastq, full_fasta_headers)
 
     elif conversion_type == 'fastq_to_fastaqual':
         convert_fastaqual(fasta_file_path, output_directory,
         multiple_output_files, ascii_increment,
-        full_fastq, full_fasta_headers);
+        full_fastq, full_fasta_headers)
 
     else:
-        raise ValueError,('conversion_type must be fastaqual_to_fastq '+ \
+        raise ValueError,('conversion_type must be fastaqual_to_fastq '
          'or fastq_to_fastaqual.')
+
+def get_filename_with_new_ext(original_file_path, new_ext, output_directory):
+    """Returns the original file name, but with a different extension
+
+    E.g.
+    get_filname_with_new_ext('/Users/shared/test.fasta', '.fastq', '.')
+    returns
+    'test.fastq'
+    """
+    return path.join(output_directory,
+    path.splitext(path.split(original_file_path)[1])[0] + new_ext)
+
 
 def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
         multiple_output_files=False, ascii_increment=33,
@@ -75,8 +87,9 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
     # if we're not using multiple output files, we can open the one (and only)
     # output file right now
     if not multiple_output_files:
-        output_file_path = path.join(output_directory,
-        path.splitext(path.split(fasta_file_path)[1])[0] + '.fastq')
+        output_file_path = get_filename_with_new_ext(fasta_file_path,
+                                                     '.fastq',
+                                                     output_directory)
 
         fastq_file = open(output_file_path, 'w')
 
@@ -104,9 +117,9 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
                              "label (%s)") % label
 
         if multiple_output_files:
-            output_file_path = path.join(output_directory,
-                    path.splitext(path.split(fasta_file_path)[1])[0] + \
-                    '_' + sample_id + '.fastq')
+            output_file_path = get_filename_with_new_ext(fasta_file_path,
+                                                 '_' + sample_id + '.fastq',
+                                                 output_directory)
 
             # when we use multiple output files, we close each file after each
             # sequence is written to avoid using up all the file handles, so
@@ -170,13 +183,19 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
     # if we are NOT using multiple output files, then open our two (and only)
     # output files here
     if not multiple_output_files:
-        fasta_out_fp = path.join(output_directory,
-            path.splitext(path.split(fastq_fp)[1])[0] + '.fna')
-        qual_out_fp = path.join(output_directory,
-            path.splitext(path.split(fastq_fp)[1])[0] + '.qual')
+        fasta_out_fp = get_filename_with_new_ext(fastq_fp,
+                                                 '.fna',
+                                                 output_directory)
+        qual_out_fp = get_filename_with_new_ext(fastq_fp,
+                                                 '.qual',
+                                                 output_directory)
 
         fasta_out_f = open(fasta_out_fp, 'w')
         qual_out_f = open(qual_out_fp, 'w')
+
+    else:
+        fasta_out_lookup = {}
+        qual_out_lookup = {}
 
     for header, sequence, qual in MinimalFastqParser(open(fastq_fp, 'U'),
                                                      strict=False):
@@ -184,13 +203,13 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         sample_id = label.split('_')[0]
 
         if multiple_output_files:
-            fasta_out_fp = path.join(output_directory,
-                path.splitext(path.split(fastq_fp)[1])[0] + \
-                 '_' + sample_id + '.fna')
+            fasta_out_fp = get_filename_with_new_ext(fastq_fp,
+                                     '_' + sample_id + '.fna',
+                                     output_directory)
 
-            qual_out_fp = path.join(output_directory,
-                        path.splitext(path.split(fastq_fp)[1])[0] +'_'+ \
-                        sample_id +'.qual')
+            qual_out_fp = get_filename_with_new_ext(fastq_fp,
+                                     '_' + sample_id + '.qual',
+                                     output_directory)
 
             fasta_out_f = open(fasta_out_fp, 'a')
             qual_out_f = open(qual_out_fp, 'a')
@@ -203,7 +222,7 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         for qual_char in qual:
             if (ord(qual_char) - ascii_increment) < 0: 
                 raise ValueError,("Output qual scores are negative values. "
-                 "Use different ascii_increment value than %s" %\
+                 "Use different ascii_increment value than %s" %
                  str(ascii_increment))
             else:
                 qual_scores.append(str(ord(qual_char) - ascii_increment))
