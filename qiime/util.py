@@ -1754,24 +1754,6 @@ class DistanceMatrix(DenseTable):
     def is_symmetric_and_hollow(self):
         """Returns True if the distance matrix is symmetric and hollow."""
         return is_symmetric_and_hollow(self._data)
-    
-    def get_adjacent_distances(self,sample_ids):
-        """Return the distances between the adjacent sample_ids as a list
-        """
-        filtered_sample_ids = [sid for sid in sample_ids if sid in self]
-        if len(filtered_sample_ids) < 2:
-            raise ValueError, \
-             ("At least two of your sample_ids must be present in the"
-             " distance matrix. Only %d are present." % len(filtered_sample_ids))
-        results = []
-        for i in range(len(filtered_sample_ids)):
-            try:
-                results.append(self[filtered_sample_ids[i]][filtered_sample_ids[i+1]])
-            except IndexError:
-                # no more samples ids are present
-                break
-        return results
-
 
 class MetadataMap():
     """This class represents a QIIME metadata mapping file.
@@ -2128,3 +2110,28 @@ def add_filename_suffix(filepath, suffix):
     """
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
+
+
+def get_adjacent_distances(dm,sample_ids):
+    """Return the distances between the adjacent sample_ids as a list
+    """
+    filtered_idx = []
+    for sid in sample_ids:
+        try:
+            filtered_idx.append(dm[0].index(sid))
+        except ValueError:
+            pass
+        
+    if len(filtered_idx) < 2:
+        raise ValueError, \
+         ("At least two of your sample_ids must be present in the"
+         " distance matrix. Only %d are present." % len(filtered_idx))
+    results = []
+    for i in range(len(filtered_idx)):
+        try:
+            results.append(dm[1][filtered_idx[i]][filtered_idx[i+1]])
+        except IndexError:
+            # no more samples ids are present
+            break
+    return results
+

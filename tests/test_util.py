@@ -46,7 +46,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
     qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-    is_valid_git_sha1)
+    is_valid_git_sha1,get_adjacent_distances)
 
 import numpy
 from numpy import array, asarray
@@ -95,6 +95,32 @@ class TopLevelTests(TestCase):
         for dir in  self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
+
+    def test_get_adjacent_distances(self):
+        """ extracting adjacent distances works as expected
+        """
+        dm1_str = ["\ts1\ts2\ts3", "s1\t0\t2\t4", "s2\t2\t0\t3.2",
+                        "s3\t4\t3.2\t0"]
+        dm1 = parse_distmat(dm1_str)
+        # error cases: fewer than 2 valid sample ids
+        self.assertRaises(ValueError,get_adjacent_distances,dm1,[])
+        self.assertRaises(ValueError,get_adjacent_distances,dm1,['s1'])
+        self.assertRaises(ValueError,get_adjacent_distances,dm1,['s0','s1'])
+        self.assertRaises(ValueError,get_adjacent_distances,dm1,['s1','s4'])
+        
+        # one pair of valid distances
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s2']),[2])
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s1']),[0])
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s3']),[4])
+        self.assertEqual(get_adjacent_distances(dm1,['s2','s3']),[3.2])
+        
+        # multiple valid distances
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s2','s3']),[2,3.2])
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s3','s2','s1']),[4,3.2,2])
+        
+        # mixed valid and invalid distances ignores invalid distances
+        self.assertEqual(get_adjacent_distances(dm1,['s1','s3','s4','s5','s6','s2','s1']),
+                         [4,3.2,2])
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
@@ -1279,7 +1305,6 @@ AAAAAAA
         obs=_chk_asarray([[1,1,1,1],[2,2,2,2],[3,3,3,3]],0)
         self.assertEqual(obs,exp)
 
-
 class BlastSeqsTests(TestCase):
     """ Tests of the qiime_blast_seqs function (will move to PyCogent eventually)
     """
@@ -1401,6 +1426,7 @@ class BlastXSeqsTests(TestCase):
         self.assertEqual(actual['eco:b0001'][0][0]['SUBJECT ID'],'eco:b0001')
         self.assertEqual(actual['eco:b0122'][0][0]['SUBJECT ID'],'eco:b0122')
         self.assertEqual(actual['eco:b0122'][0][1]['SUBJECT ID'],'eco:b0015')
+
 
 pr_refseqs1 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (A)
 MKRISTTITTTITITTGNGAG
@@ -1631,6 +1657,9 @@ class SubSampleFastaTests(TestCase):
         
         self.assertEqual(actual_results, self.expected_lines_20_perc)
 
+
+
+
 class DistanceMatrixTests(TestCase):
     """Tests for the DistanceMatrix class."""
 
@@ -1641,10 +1670,6 @@ class DistanceMatrixTests(TestCase):
 
         # Create a 3x3 matrix.
         self.dm1 = DistanceMatrix(array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]),
-            ['s1', 's2', 's3'], ['s1', 's2', 's3'])
-        self.dm2 = DistanceMatrix(array([[0, 2, 4], 
-                                         [2, 0, 3], 
-                                         [4, 3, 0]]),
             ['s1', 's2', 's3'], ['s1', 's2', 's3'])
 
         # A distance matrix similar to the overview tutorial's unifrac dm. I
@@ -1674,20 +1699,6 @@ class DistanceMatrixTests(TestCase):
                                  \t0.727\t0.578\t0.623\t0.0"]
         sample_ids, matrix_data = parse_distmat(self.overview_dm_str)
         self.overview_dm = DistanceMatrix(matrix_data, sample_ids, sample_ids)
-
-    def test_get_adjacent_distances(self):
-        """ extracting adjacent distances works as expected
-        """
-        # error cases: fewer than 2 valid sample ids
-        self.assertRaises(ValueError,self.dm2.get_adjacent_distances,[])
-        self.assertRaises(ValueError,self.dm2.get_adjacent_distances,['s1'])
-        self.assertRaises(ValueError,self.dm2.get_adjacent_distances,['s0','s1'])
-        self.assertRaises(ValueError,self.dm2.get_adjacent_distances,['s1','s4'])
-        
-        # one pair of valid distances
-        self.assertEqual(self.dm2.get_adjacent_distances(['s1','s2']),[2])
-        self.assertEqual(self.dm2.get_adjacent_distances(['s1','s1']),[0])
-        self.assertEqual(self.dm2.get_adjacent_distances(['s1','s3']),[4])
 
     def test_parseDistanceMatrix(self):
         """Test parsing a distance matrix into a DistanceMatrix instance."""
