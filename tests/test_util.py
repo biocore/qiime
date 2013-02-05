@@ -121,6 +121,11 @@ class TopLevelTests(TestCase):
         # mixed valid and invalid distances ignores invalid distances
         self.assertEqual(get_adjacent_distances(dm1,['s1','s3','s4','s5','s6','s2','s1']),
                          [4,3.2,2])
+        # strict=True results in missing sample ids raising an error
+        self.assertRaises(ValueError,get_adjacent_distances,
+                                     dm1,
+                                     ['s1','s3','s4','s5','s6','s2','s1'],
+                                     strict=True)
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
