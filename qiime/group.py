@@ -177,7 +177,8 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
 
 def get_adjacent_distances(dist_matrix_header,
                            dist_matrix,
-                           sample_ids,strict=False):
+                           sample_ids,
+                           strict=False):
     """Return the distances between the adjacent sample_ids as a list
     
     dm: distance matrix tuple of (sample_ids, data), e.g. the output
@@ -194,7 +195,7 @@ def get_adjacent_distances(dist_matrix_header,
        
     WARNING: Only symmetric, hollow distance matrices may be used as input.
     Asymmetric distance matrices, such as those obtained by the UniFrac Gain
-    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input. 
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
     
     """
     filtered_idx = []
@@ -207,11 +208,11 @@ def get_adjacent_distances(dist_matrix_header,
                  "Sample ID (%s) is not present in distance matrix" % sid
             else:
                 pass
-        
+    
     if len(filtered_idx) < 2:
         raise ValueError, \
          ("At least two of your sample_ids must be present in the"
-         " distance matrix. Only %d are present." % len(filtered_idx))
+         " distance matrix. %d are present." % len(filtered_idx))
     
     results = []
     for i in range(len(filtered_idx) - 1):
