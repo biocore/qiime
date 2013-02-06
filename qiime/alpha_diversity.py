@@ -124,12 +124,11 @@ class AlphaDiversityCalc(FunctionWithParams):
             tree = self.getTree(tree_path)
             # build envs dict: envs = {otu_id:{sample_id:count}}
             envs = {}
-            for observation_id in otu_table.ObservationIds:
+            for obs_v, obs_id, obs_md in otu_table.iterObservations():
                 obs = {}
-                for sample_id in otu_table.SampleIds:
-                    obs[sample_id] = otu_table.getValueByIds(observation_id,
-                                                             sample_id)
-                envs[observation_id] = obs
+                for sample_id, v in zip(otu_table.SampleIds, obs_v):
+                    obs[sample_id] = v
+                envs[obs_id] = obs
             
             new_sample_names, result = self.Metric(tree, envs, **self.Params)
             ordered_res = zeros(len(sample_names), 'float')
