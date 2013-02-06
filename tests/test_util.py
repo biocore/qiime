@@ -1279,7 +1279,6 @@ AAAAAAA
         obs=_chk_asarray([[1,1,1,1],[2,2,2,2],[3,3,3,3]],0)
         self.assertEqual(obs,exp)
 
-
 class BlastSeqsTests(TestCase):
     """ Tests of the qiime_blast_seqs function (will move to PyCogent eventually)
     """
@@ -1401,6 +1400,7 @@ class BlastXSeqsTests(TestCase):
         self.assertEqual(actual['eco:b0001'][0][0]['SUBJECT ID'],'eco:b0001')
         self.assertEqual(actual['eco:b0122'][0][0]['SUBJECT ID'],'eco:b0122')
         self.assertEqual(actual['eco:b0122'][0][1]['SUBJECT ID'],'eco:b0015')
+
 
 pr_refseqs1 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (A)
 MKRISTTITTTITITTGNGAG
@@ -1630,7 +1630,9 @@ class SubSampleFastaTests(TestCase):
          [line.strip() for line in open(self.output_filepath, "U")]
         
         self.assertEqual(actual_results, self.expected_lines_20_perc)
- 
+
+
+
 
 class DistanceMatrixTests(TestCase):
     """Tests for the DistanceMatrix class."""
@@ -1641,7 +1643,7 @@ class DistanceMatrixTests(TestCase):
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
 
         # Create a 3x3 matrix.
-        self.dm = DistanceMatrix(array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]),
+        self.dm1 = DistanceMatrix(array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]),
             ['s1', 's2', 's3'], ['s1', 's2', 's3'])
 
         # A distance matrix similar to the overview tutorial's unifrac dm. I
@@ -1684,19 +1686,19 @@ class DistanceMatrixTests(TestCase):
     def test_Size(self):
         """Test returning of dm's size."""
         self.assertEqual(self.single_ele_dm.Size, 1)
-        self.assertEqual(self.dm.Size, 3)
+        self.assertEqual(self.dm1.Size, 3)
         self.assertEqual(self.overview_dm.Size, 9)
 
     def test_max(self):
         """Test returning of dm's maximum-valued element."""
         self.assertEqual(self.single_ele_dm.max(), 0)
-        self.assertEqual(self.dm.max(), 6)
+        self.assertEqual(self.dm1.max(), 6)
         self.assertFloatEqual(self.overview_dm.max(), 0.8)
 
     def test_DataMatrix(self):
         """Test returning of dm's internal matrix of distances."""
         self.assertEqual(self.single_ele_dm.DataMatrix, array([[0]]))
-        self.assertEqual(self.dm.DataMatrix,
+        self.assertEqual(self.dm1.DataMatrix,
             array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]))
         self.assertFloatEqual(self.overview_dm.DataMatrix,
             self.overview_dm._data)
@@ -1704,7 +1706,7 @@ class DistanceMatrixTests(TestCase):
     def test_flatten(self):
         """Test flattening various dms."""
         self.assertEqual(self.single_ele_dm.flatten(), [])
-        self.assertEqual(self.dm.flatten(), [1, 4, 5])
+        self.assertEqual(self.dm1.flatten(), [1, 4, 5])
         exp = [0.625, 0.623, 0.60999999999999999, 0.57699999999999996,
             0.72899999999999998, 0.80000000000000004, 0.72099999999999997,
             0.76500000000000001, 0.61499999999999999, 0.64200000000000002,
@@ -1722,7 +1724,7 @@ class DistanceMatrixTests(TestCase):
     def test_flatten_all(self):
         """Test flattening various dms including all elements."""
         self.assertEqual(self.single_ele_dm.flatten(lower=False), [0])
-        self.assertEqual(self.dm.flatten(lower=False),
+        self.assertEqual(self.dm1.flatten(lower=False),
             [0, 1, 4, 2, 2, 5, 4, 3, 6])
         exp = [0.0, 0.625, 0.623, 0.60999999999999999, 0.57699999999999996,
             0.72899999999999998, 0.80000000000000004, 0.72099999999999997,
@@ -1772,13 +1774,13 @@ class DistanceMatrixTests(TestCase):
     def test_biom_type(self):
         """Make sure the BIOM type is right."""
         self.assertEqual(self.single_ele_dm._biom_type, "Distance matrix")
-        self.assertEqual(self.dm._biom_type, "Distance matrix")
+        self.assertEqual(self.dm1._biom_type, "Distance matrix")
         self.assertEqual(self.overview_dm._biom_type, "Distance matrix")
 
     def test_biom_matrix_type(self):
         """Make sure the BIOM matrix type is right."""
         self.assertEqual(self.single_ele_dm._biom_matrix_type, "dense")
-        self.assertEqual(self.dm._biom_matrix_type, "dense")
+        self.assertEqual(self.dm1._biom_matrix_type, "dense")
         self.assertEqual(self.overview_dm._biom_matrix_type, "dense")
 
     def test_getBiomFormatObject(self):
@@ -1816,7 +1818,7 @@ class DistanceMatrixTests(TestCase):
                'type': 'Distance matrix',
                'id': None,
                'matrix_element_type': 'int'}
-        obs = self.dm.getBiomFormatObject("foo")
+        obs = self.dm1.getBiomFormatObject("foo")
         del obs['date']
         self.assertEqual(obs, exp)
 
@@ -1872,7 +1874,7 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(obs, exp)
 
         exp = ('s1', 's2', 's3')
-        obs = self.dm.SampleIds
+        obs = self.dm1.SampleIds
         self.assertEqual(obs, exp)
 
         obs = self.single_ele_dm.SampleIds
@@ -1881,7 +1883,7 @@ class DistanceMatrixTests(TestCase):
     def test_is_symmetric_and_hollow(self):
         """Test is_symmetric_and_hollow method with various dms."""
         self.assertTrue(self.single_ele_dm.is_symmetric_and_hollow())
-        self.assertTrue(not self.dm.is_symmetric_and_hollow())
+        self.assertTrue(not self.dm1.is_symmetric_and_hollow())
         self.assertTrue(self.overview_dm.is_symmetric_and_hollow())
 
 
