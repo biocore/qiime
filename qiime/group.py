@@ -175,6 +175,50 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
                     result[field_state][comp_field_state] = group[2]
     return result
 
+def get_adjacent_distances(dist_matrix_header,
+                           dist_matrix,
+                           sample_ids,strict=False):
+    """Return the distances between the adjacent sample_ids as a list
+    
+    dm: distance matrix tuple of (sample_ids, data), e.g. the output
+        of qiime.parse.parse_distance_matrix
+    sample_ids: a list of sample ids
+    strict: boolean indicating whether to raise ValueError if a 
+        sample_id is not in dm (default: False; sample_ids not in 
+        dm are ignored)
+       
+    The output of this function will be a list of the distances
+    between the adjacent sample_ids. This could subsequently be
+    used, for example, to plot unifrac distances between days in
+    a timeseries, as d1 to d2, d2 to d3, d3 to d4, and so on.
+       
+    WARNING: Only symmetric, hollow distance matrices may be used as input.
+    Asymmetric distance matrices, such as those obtained by the UniFrac Gain
+    metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input. 
+    
+    """
+    filtered_idx = []
+    for sid in sample_ids:
+        try:
+            filtered_idx.append(dist_matrix_header.index(sid))
+        except ValueError:
+            if strict:
+                raise ValueError,\
+                 "Sample ID (%s) is not present in distance matrix" % sid
+            else:
+                pass
+        
+    if len(filtered_idx) < 2:
+        raise ValueError, \
+         ("At least two of your sample_ids must be present in the"
+         " distance matrix. Only %d are present." % len(filtered_idx))
+    
+    results = []
+    for i in range(len(filtered_idx) - 1):
+        results.append(dist_matrix[filtered_idx[i]][filtered_idx[i+1]])
+    return results
+
+
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
     """Validates the input data to make sure it can be used and makes sense.
