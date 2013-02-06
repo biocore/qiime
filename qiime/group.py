@@ -189,9 +189,11 @@ def get_adjacent_distances(dist_matrix_header,
         dm are ignored)
        
     The output of this function will be a list of the distances
-    between the adjacent sample_ids. This could subsequently be
-    used, for example, to plot unifrac distances between days in
-    a timeseries, as d1 to d2, d2 to d3, d3 to d4, and so on.
+    between the adjacent sample_ids, and a list of the pair of sample ids
+    corresponding to each distance. This could subsequently be used, for 
+    example, to plot unifrac distances between days in a timeseries, as 
+    d1 to d2, d2 to d3, d3 to d4, and so on. The list of pairs of sample
+    ids are useful primarily in labeling axes when strict=False
        
     WARNING: Only symmetric, hollow distance matrices may be used as input.
     Asymmetric distance matrices, such as those obtained by the UniFrac Gain
@@ -199,15 +201,19 @@ def get_adjacent_distances(dist_matrix_header,
     
     """
     filtered_idx = []
+    filtered_sids = []
     for sid in sample_ids:
         try:
-            filtered_idx.append(dist_matrix_header.index(sid))
+            idx = dist_matrix_header.index(sid)
         except ValueError:
             if strict:
                 raise ValueError,\
                  "Sample ID (%s) is not present in distance matrix" % sid
             else:
                 pass
+        else:
+            filtered_idx.append(idx)
+            filtered_sids.append(sid)
     
     if len(filtered_idx) < 2:
         raise ValueError, \
@@ -217,11 +223,10 @@ def get_adjacent_distances(dist_matrix_header,
     distance_results = []
     header_results = []
     for i in range(len(filtered_idx) - 1):
-        idx1 = filtered_idx[i]
-        idx2 = filtered_idx[i+1]
-        distance_results.append(dist_matrix[idx1][idx2])
-        header_results.append((dist_matrix_header[idx1], 
-                               dist_matrix_header[idx2]))
+        distance_results.append(
+         dist_matrix[filtered_idx[i]][filtered_idx[i+1]])
+        header_results.append(
+         (filtered_sids[i], filtered_sids[i+1]))
     return distance_results, header_results
 
 
