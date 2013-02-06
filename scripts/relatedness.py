@@ -18,8 +18,8 @@ from qiime.parse import parse_newick, PhyloNode
 from qiime.relatedness_library import nri, nti
 
 script_info = {}
-script_info['brief_description'] = "Calculate NRI and NTI using formulas from Phylocom 4.2/3.41"
-script_info['script_description'] = "This script calculates NRI and NTI from a path to a Newick formatted tree and a path to a comma separated list of ids in that tree that form the group whose NRI/NTI you want to test. The tree is not required to have distances. If none are found script will use the number of nodes (self inclusive) as their distance from one another. NRI and NTI are calculated as described in the Phylocom manual, not as in Webb 2002, or Webb 2000. The Phylocom manual is freely available on the web and Webb 2002 can be found in the Annual Review of Ecology and Systematics: Phylogenies and Community Ecology Webb 2002."
+script_info['brief_description'] = "Calculate NRI (net relatedness index) and NTI (nearest taxon index) using the formulas from Phylocom 4.2/3.41 and Webb 2002."
+script_info['script_description'] = "This script calculates NRI and NTI from a path to a Newick formatted tree and a path to a comma separated list of ids in that tree that form the group whose NRI/NTI you want to test. The tree is not required to have distances. If none are found script will use the number of nodes (self inclusive) as their distance from one another. NRI and NTI are calculated as described in the Phylocom manual (which is a slightly modified version of that found in Webb 2002, and Webb 2000). The Phylocom manual is freely available on the web and Webb 2002 can be found in the Annual Review of Ecology and Systematics: Phylogenies and Community Ecology Webb 2002."
 script_info['script_usage'] = [\
     ("Calculate both NRI and NTI from the given tree and group of taxa:",
      "",
@@ -46,46 +46,45 @@ def main():
        parse_command_line_parameters(**script_info)
 
     tr = parse_newick(open(opts.tree_fp),PhyloNode)
-    tip_dists, all_nodes = tr.tipToTipDistances() # tipTo returns a list of actual node objects
+    tip_dists, all_nodes = tr.tipToTipDistances() #all_nodes is list node objs
     all_ids = [node.Name for node in all_nodes]
     
-
     o = open(opts.taxa_fp)
     group_ids = [i.strip() for i in o.readline().split(',')]
     o.close()
     # check that there are at least 2 ids in the group, otherwise the math fails
     if len(group_ids) < 2:
-        option_parser.error('you must have at least 2 taxa specified' +\
-         ' in the taxa file or the math will fail.')
-
-    # make sure specified taxa are in the tree, break at first failure
-    for i in group_ids:
-        try:
-            all_ids.index(i)
-        except ValueError:
-            option_parser.error('Taxa '+i+' not found in the tree. You may'+\
-                ' have specified an internal node.')
-
-    if len(all_ids)==len(group_ids): #m ust be the same set of ids if above check passes
+        option_parser.error('Not enough taxa in the taxa file.You must have '+\
+         ' at least 2 taxa specified' +\
+         ' in the taxa file or the standard deviation of the distance will '+\
+         ' be zero, causing both NRI and NTI to fail.')
+    # check that all_ids contains every group_id
+    if not set(group_ids).issubset(all_ids):
+        raise option_parser.error('There are taxa in the taxa file which are '+\
+            'not found in the tree. You may have specified an internal node.')
+    # check that all_ids != group_ids
+    if len(all_ids)==len(group_ids): #must be same set if above passes
         option_parser.error('The taxa_ids you specified contain every tip'+\
-            ' in the tree. The NRI and NTI formulas will fail with these values'+\
+            ' in the tree. The NRI and NTI formulas will fail '+\
             ' because there is no standard deviation of mpd or mntd, and thus'+\
-            ' division by zero will occur. In addition, the concept of over/under'+\
+            ' division by zero. In addition, the concept of over/under'+\
             ' dispersion of a group of taxa (what NRI/NTI measure) is done in'+\
-            ' reference to the tree they are a part of. If the group being tested'+\
-            ' is the entire tree, the idea of over/under dispersion does not make'+\
-            ' much sense.')
+            ' reference to the tree they are a part of. If the group being'+\
+            ' tested is the entire tree, the idea of over/under dispersion '+\
+            ' makes little sense.')
 
     # mapping from string of method name to function handle
     method_lookup = {'nri':nri, 'nti':nti}
 
     methods = opts.methods.split(',')
     for method in methods:
-       if method not in method_lookup:
-           option_parser.error("unknown method: %s; valid methods are: %s" % (method, ', '.join(method_lookup.keys())))
+        if method not in method_lookup:
+            option_parser.error("Unknown method: %s; valid methods are: %s" % \
+                (method, ', '.join(method_lookup.keys())))
     
     for method in methods:
-       print method+':', method_lookup[method](tip_dists, all_ids, group_ids, iters=opts.iters)
+        print method+':', method_lookup[method](tip_dists, all_ids, group_ids, 
+            iters=opts.iters)
 
 if __name__ == "__main__":
     main()
