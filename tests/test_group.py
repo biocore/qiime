@@ -4,7 +4,9 @@
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Ram Rideout", "Jeremy Widmann"]
+__credits__ = ["Jai Ram Rideout",
+               "Greg Caporaso",
+               "Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"

@@ -4,7 +4,9 @@
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Ram Rideout", "Jeremy Widmann"]
+__credits__ = ["Jai Ram Rideout",
+               "Greg Caporaso",
+               "Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -181,8 +183,10 @@ def get_adjacent_distances(dist_matrix_header,
                            strict=False):
     """Return the distances between the adjacent sample_ids as a list
     
-    dm: distance matrix tuple of (sample_ids, data), e.g. the output
-        of qiime.parse.parse_distance_matrix
+    dist_matrix_header: distance matrix headers, e.g. the output
+        of qiime.parse.parse_distmat (element 0)
+    dist_matrix: distance matrix, e.g., the output of 
+        qiime.parse.parse_distmat (element 1)
     sample_ids: a list of sample ids
     strict: boolean indicating whether to raise ValueError if a 
         sample_id is not in dm (default: False; sample_ids not in 
