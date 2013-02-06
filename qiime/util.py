@@ -2125,7 +2125,11 @@ def get_adjacent_distances(dm,sample_ids,strict=False):
        The output of this function will be a list of the distances
         between the adjacent sample_ids. This could subsequently be
         used, for example, to plot unifrac distances between days in
-        a timeseries, as d1 to d2, d2 to d3, d3 to d4, and so on. 
+        a timeseries, as d1 to d2, d2 to d3, d3 to d4, and so on.
+       
+       Warning: the input must be a distance matrix. Specifically, 
+        it must be symmetric as only distances from the upper triangle
+        will be extracted. 
     
     """
     filtered_idx = []
@@ -2136,18 +2140,15 @@ def get_adjacent_distances(dm,sample_ids,strict=False):
             if strict:
                 raise ValueError,\
                  "Sample ID (%s) is not present in distance matrix" % sid
-            pass
+            else:
+                pass
         
     if len(filtered_idx) < 2:
         raise ValueError, \
          ("At least two of your sample_ids must be present in the"
          " distance matrix. Only %d are present." % len(filtered_idx))
     results = []
-    for i in range(len(filtered_idx)):
-        try:
-            results.append(dm[1][filtered_idx[i]][filtered_idx[i+1]])
-        except IndexError:
-            # no more samples ids are present
-            break
+    for i in range(len(filtered_idx) - 1):
+        results.append(dm[1][filtered_idx[i]][filtered_idx[i+1]])
     return results
 
