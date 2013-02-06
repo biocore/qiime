@@ -4,7 +4,9 @@
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Ram Rideout", "Jeremy Widmann"]
+__credits__ = ["Jai Ram Rideout",
+               "Greg Caporaso",
+               "Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -14,8 +16,9 @@ __status__ = "Development"
 from numpy import array, matrix
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field
-from qiime.group import get_grouped_distances, get_all_grouped_distances,\
-    get_field_state_comparisons, _get_indices, _get_groupings, _validate_input
+from qiime.group import (get_grouped_distances, get_all_grouped_distances,
+    get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
+    get_adjacent_distances)
 
 class GroupTests(TestCase):
     """Tests of the group module."""
@@ -245,6 +248,58 @@ class GroupTests(TestCase):
                 array([[10.0, 0.0003], [0.0003, 0.0]]),
                 self.small_mapping_header, self.small_mapping,
                 self.small_field, ['SampleFieldState1'])
+
+    def test_get_adjacent_distances(self):
+        """ extracting adjacent distances works as expected
+        """
+        dm_str = ["\ts1\ts2\ts3", "s1\t0\t2\t4", "s2\t2\t0\t3.2",
+                        "s3\t4\t3.2\t0"]
+        dm_header, dm = parse_distmat(dm_str)
+        # error cases: fewer than 2 valid sample ids
+        self.assertRaises(ValueError,
+                          get_adjacent_distances,dm_header, dm,
+                          [])
+        self.assertRaises(ValueError,
+                          get_adjacent_distances,dm_header, dm,
+                          ['s1'])
+        self.assertRaises(ValueError,
+                          get_adjacent_distances,dm_header, dm,
+                          ['s0','s1'])
+        self.assertRaises(ValueError,
+                          get_adjacent_distances,dm_header, dm,
+                          ['s1','s4'])
+        
+        # one pair of valid distances
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s2']),
+                         ([2],[('s1','s2')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s1']),
+                         ([0],[('s1','s1')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s3']),
+                         ([4],[('s1','s3')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s2','s3']),
+                         ([3.2],[('s2','s3')]))
+        
+        # multiple valid distances
+        self.assertEqual(get_adjacent_distances(dm_header, 
+                                                dm, 
+                                                ['s1','s2','s3']),
+                         ([2,3.2],[('s1','s2'),('s2','s3')]))
+        self.assertEqual(get_adjacent_distances(dm_header, 
+                                                dm, 
+                                                ['s1','s3','s2','s1']),
+                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
+        
+        # mixed valid and invalid distances ignores invalid distances
+        self.assertEqual(get_adjacent_distances(dm_header, 
+                                                dm, 
+                                                ['s1','s3','s4','s5','s6','s2','s1']),
+                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
+        # strict=True results in missing sample ids raising an error
+        self.assertRaises(ValueError,get_adjacent_distances,
+                                     dm_header, 
+                                     dm,
+                                     ['s1','s3','s4','s5','s6','s2','s1'],
+                                     strict=True)
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""

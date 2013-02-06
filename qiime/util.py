@@ -1755,7 +1755,6 @@ class DistanceMatrix(DenseTable):
         """Returns True if the distance matrix is symmetric and hollow."""
         return is_symmetric_and_hollow(self._data)
 
-
 class MetadataMap():
     """This class represents a QIIME metadata mapping file.
     
