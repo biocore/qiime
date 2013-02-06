@@ -82,7 +82,8 @@ def nri(distmat, marginals, group, iters):
     group_marginals = [marginals.index(i) for i in group] 
     mn_x_obs = mpd(reduce_mtx(distmat, group_marginals))
     mn_x_n, sd_x_n = random_mpd(distmat, len(group_marginals), iters)
-    if abs(0.0 - sd_x_n)<.00001:
+    #if abs(0.0 - sd_x_n)<.00001:
+    if abs(sd_x_n)<.00001:
         raise ValueError('The standard deviation of the means of the random'+\
             ' draws from the distance matrix was less than .00001. This is'+\
             ' likely do to a phylogeny with distances to all tips equal.'+\
@@ -124,7 +125,7 @@ def nti(distmat, marginals, group, iters):
     group_marginals = [marginals.index(i) for i in group] 
     mn_y_obs = mntd(reduce_mtx(distmat, group_marginals))
     mn_y_n, sd_y_n = random_mntd(distmat, len(group_marginals), iters)
-    if abs(0.0 - sd_y_n)<.00001:
+    if abs(sd_y_n)<.00001:
         raise ValueError('The standard deviation of the means of the random'+\
             ' draws from the distance matrix was less than .00001. This is'+\
             ' likely do to a phylogeny with distances to all tips equal.'+\
