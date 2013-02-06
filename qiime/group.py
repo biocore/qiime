@@ -214,10 +214,15 @@ def get_adjacent_distances(dist_matrix_header,
          ("At least two of your sample_ids must be present in the"
          " distance matrix. %d are present." % len(filtered_idx))
     
-    results = []
+    distance_results = []
+    header_results = []
     for i in range(len(filtered_idx) - 1):
-        results.append(dist_matrix[filtered_idx[i]][filtered_idx[i+1]])
-    return results
+        idx1 = filtered_idx[i]
+        idx2 = filtered_idx[i+1]
+        distance_results.append(dist_matrix[idx1][idx2])
+        header_results.append((dist_matrix_header[idx1], 
+                               dist_matrix_header[idx2]))
+    return distance_results, header_results
 
 
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,

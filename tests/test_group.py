@@ -269,29 +269,29 @@ class GroupTests(TestCase):
         
         # one pair of valid distances
         self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s2']),
-                         [2])
+                         ([2],[('s1','s2')]))
         self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s1']),
-                         [0])
+                         ([0],[('s1','s1')]))
         self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s3']),
-                         [4])
+                         ([4],[('s1','s3')]))
         self.assertEqual(get_adjacent_distances(dm_header, dm, ['s2','s3']),
-                         [3.2])
+                         ([3.2],[('s2','s3')]))
         
         # multiple valid distances
         self.assertEqual(get_adjacent_distances(dm_header, 
                                                 dm, 
                                                 ['s1','s2','s3']),
-                         [2,3.2])
+                         ([2,3.2],[('s1','s2'),('s2','s3')]))
         self.assertEqual(get_adjacent_distances(dm_header, 
                                                 dm, 
                                                 ['s1','s3','s2','s1']),
-                         [4,3.2,2])
+                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
         
         # mixed valid and invalid distances ignores invalid distances
         self.assertEqual(get_adjacent_distances(dm_header, 
                                                 dm, 
                                                 ['s1','s3','s4','s5','s6','s2','s1']),
-                         [4,3.2,2])
+                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
         # strict=True results in missing sample ids raising an error
         self.assertRaises(ValueError,get_adjacent_distances,
                                      dm_header, 
