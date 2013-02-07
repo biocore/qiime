@@ -894,13 +894,11 @@ class UsearchOtuPickerTests(TestCase):
         # Should only get 6 clusters
         exp_otu_ids = [str(x) for x in range(6)]
         
-        exp_clusters = [['uclust_test_seqs_0'],
-                        ['uclust_test_seqs_1'],
-                        ['uclust_test_seqs_2'],
-                        ['uclust_test_seqs_3'],
-                        ['uclust_test_seqs_4'],
-                        ['uclust_test_seqs_7']
-                       ]
+        exp_clusters =\
+         [['uclust_test_seqs_0', 'uclust_test_seqs_6',
+         'uclust_test_seqs_9'], ['uclust_test_seqs_1'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_3', 'uclust_test_seqs_5', 'uclust_test_seqs_8'],
+         ['uclust_test_seqs_4'], ['uclust_test_seqs_7']]
         
         app = UsearchOtuPicker(params={'save_intermediate_files':False,
                                        'db_filepath':self.tmp_ref_database,
