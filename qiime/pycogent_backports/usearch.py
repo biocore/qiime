@@ -71,8 +71,7 @@ class Usearch(CommandLineApplication):
 
         '--targetalnfract':ValuedParameter('--',Name='targetalnfract',Delimiter=' ',IsPath=False),
 
-        # Disable reverse comparison option, if norev is disabled
-        # memory usage is expected to double for uclust
+        # Enable reverse strand matching.  Will double memory.
         '--rev':FlagParameter('--',Name='rev'),
         
         # Maximum hits before quitting search (default 1, 0=infinity).
@@ -1165,7 +1164,7 @@ def usearch_qf(
     minsize = 4,
     abundance_skew = 2.0,
     db_filepath = None,
-    rev = True,
+    rev = False,
     label_prefix = "",
     label_suffix = "",
     retain_label_as_comment = False,
