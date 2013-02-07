@@ -34,7 +34,7 @@ from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
-from cogent.app.usearch import usearch_qf
+from qiime.pycogent_backports.usearch import usearch_qf
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -935,7 +935,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          'minsize':4,
          'abundance_skew':2,
          'db_filepath':None,
-         'rev':True,
+         'rev':False,
          'label_prefix':"",
          'label_suffix':"",
          'retain_label_as_comment':False,
@@ -1082,7 +1082,7 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
          'minsize':4,
          'abundance_skew':2,
          'db_filepath':None,
-         'rev':True,
+         'rev':False,
          'label_prefix':"",
          'label_suffix':"",
          'retain_label_as_comment':False,

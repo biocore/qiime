@@ -491,7 +491,8 @@ def main():
         'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
         'verbose':verbose,
-        'minlen':minlen}
+        'minlen':minlen,
+        'rev':enable_rev_strand_match}
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
@@ -517,7 +518,8 @@ def main():
         'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
         'verbose':verbose,
-        'minlen':minlen}
+        'minlen':minlen,
+        'rev':enable_rev_strand_match}
         
         
         otu_picker = otu_picker_constructor(params)
