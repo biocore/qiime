@@ -222,6 +222,28 @@ def run_core_qiime_analyses(
                         '%s/taxa_summary_plots/area_charts.html'\
                           % taxa_plots_output_dir,
                         "Taxonomic summary results"))
+    for c in categories:
+        taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,c)
+        run_summarize_taxa_through_plots(
+         otu_table_fp=biom_fp,
+         mapping_fp=mapping_fp,
+         output_dir=taxa_plots_output_dir,
+         mapping_cat=c, 
+         sort=True,
+         command_handler=command_handler,
+         params=params,
+         qiime_config=qiime_config,
+         logger=logger, 
+         status_update_callback=status_update_callback)
+
+        index_links.append(('Taxa summary bar plots',
+                            '%s/taxa_summary_plots/bar_charts.html'\
+                              % taxa_plots_output_dir,
+                            "Taxonomic summary results (by %s)" % c))
+        index_links.append(('Taxa summary area plots',
+                            '%s/taxa_summary_plots/area_charts.html'\
+                              % taxa_plots_output_dir,
+                            "Taxonomic summary results (by %s)" % c))
     
     # OTU category significance and supervised learning
     for category in categories:
