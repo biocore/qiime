@@ -28,12 +28,12 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info={}
-script_info['brief_description'] = """A workflow for running a core set of downstream QIIME analyses."""
-script_info['script_description'] = """This script plugs several QIIME steps together to form a basic downstream data analysis workflow beginning with a BIOM table, mapping file, and optional phylogenetic tree."""
+script_info['brief_description'] = """A workflow for running a core set of QIIME diversity analyses."""
+script_info['script_description'] = """This script plugs several QIIME diversity analyses together to form a basic workflow beginning with a BIOM table, mapping file, and optional phylogenetic tree."""
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("","Run basic and categorical analyses at 20 sequences/sample, with categorical analyses focusing on the SampleType and day categories. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/otu_table.biom -o $PWD/core_output -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre -e 20"))
+script_info['script_usage'].append(("","Run diversity analyses at 20 sequences/sample, with categorical analyses focusing on the SampleType and day categories. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/otu_table.biom -o $PWD/core_output -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre -e 20"))
 
 script_info['script_usage_output_to_remove'] = ['$PWD/core_output']
 
@@ -47,7 +47,7 @@ script_info['required_options'] = [
  make_option('-m','--mapping_fp',type='existing_filepath',
     help='the mapping filepath [REQUIRED]'),
  make_option('-e','--sampling_depth',type='int',default=None,
-    help=('Sequencing depth to use for even sampling and maximum'
+    help=('Sequencing depth to use for even sub-sampling and maximum'
           ' rarefaction depth. You should review the output of'
           ' print_biom_table_summary.py to decide on this value'
           ' [default: %default]')),
