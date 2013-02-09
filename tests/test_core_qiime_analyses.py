@@ -11,7 +11,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-
 from shutil import rmtree
 from os.path import exists, join
 from cogent.util.unit_test import TestCase, main
@@ -129,11 +128,19 @@ class CoreQiimeAnalysesTests(TestCase):
                         parallel=False,
                         status_update_callback=no_status_updates)
         
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
-        self.assertTrue(exists('%s/arare_max20' % self.test_out))
-        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
+        # Basic sanity test that output directories and files exist
+        fps = [
+         '%s/bdiv_even20' % self.test_out,
+         '%s/arare_max20' % self.test_out,
+         '%s/taxa_plots' % self.test_out,
+         '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
+         '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out,
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out,
+         '%s/index.html' % self.test_out
+        ]
+        for fp in fps:
+            self.assertTrue(exists(fp))
 
     def test_run_core_qiime_analyses_no_categories(self):
         """run_core_qiime_analyses functions without categories
@@ -151,11 +158,23 @@ class CoreQiimeAnalysesTests(TestCase):
                         parallel=False,
                         status_update_callback=no_status_updates)
         
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
-        self.assertTrue(exists('%s/arare_max20' % self.test_out))
-        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
+        # Basic sanity test that output directories and files exist
+        fps = [
+         '%s/bdiv_even20' % self.test_out,
+         '%s/arare_max20' % self.test_out,
+         '%s/taxa_plots' % self.test_out,
+         '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
+         '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
+         '%s/index.html' % self.test_out
+        ]
+        for fp in fps:
+            self.assertTrue(exists(fp))
+            
+        # categorical output files don't exist
+        self.assertFalse(exists(
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out))
+        self.assertFalse(exists(
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out))
 
     def test_run_core_qiime_analyses_no_tree(self):
         """run_core_qiime_analyses functions without tree
@@ -175,115 +194,21 @@ class CoreQiimeAnalysesTests(TestCase):
          parallel=False,
          status_update_callback=no_status_updates)
         
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
-        self.assertTrue(exists('%s/arare_max20' % self.test_out))
-        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
-
-
-    # def test_run_core_qiime_analyses_serial(self):
-    #     """run_core_qiime_analyses: functions (serially) using default qiime params
-    #     """
-    #     # this takes a long time, so use a longer sigalrm
-    #     restart_timeout(600)
-    #     run_core_qiime_analyses(
-    #         fna_fps=self.fasting_fna_fp,
-    #         qual_fps=self.fasting_qual_fp,
-    #         mapping_fp=self.fasting_mapping_fp,
-    #         output_dir=self.wf_out,
-    #         command_handler=call_commands_serially,
-    #         params=self.run_core_qiime_analyses_params1,
-    #         qiime_config=self.qiime_config,
-    #         categories='BarcodeSequence',
-    #         sampling_depth=100,
-    #         arare_min_rare_depth=10,
-    #         arare_num_steps=10,
-    #         reference_tree_fp=None,
-    #         parallel=False,
-    #         status_update_callback=no_status_updates)
-    #     
-    #     # Basic sanity test of OTU table as details are tested 
-    #     # in the pick_otus_through_otu_table tests
-    #     otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-    #     otu_table = parse_biom_table(open(otu_table_fp,'U'))
-    #     sample_ids = list(otu_table.SampleIds)
-    #     expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-    #                            'PC.593','PC.607','PC.634','PC.635','PC.636']
-    #     sample_ids.sort()
-    #     expected_sample_ids.sort()
-    #     self.assertEqual(sample_ids,expected_sample_ids)
-    #     # even sampling directory exists
-    #     self.assertTrue(exists('%s/bdiv_even100' % self.wf_out))
-    # 
-    # def test_run_core_qiime_analyses_serial_alt_params(self):
-    #     """run_core_qiime_analyses: functions as expected (serially, alt params)
-    #     """
-    #     # Single category and sampling_depth=None
-    #     # this takes a long time, so use a longer sigalrm
-    #     restart_timeout(600)
-    #     run_core_qiime_analyses(
-    #         fna_fps=self.fasting_fna_fp,
-    #         qual_fps=self.fasting_qual_fp,
-    #         mapping_fp=self.fasting_mapping_fp,
-    #         output_dir=self.wf_out,
-    #         command_handler=call_commands_serially,
-    #         params=self.run_core_qiime_analyses_params1,
-    #         qiime_config=self.qiime_config,
-    #         categories='BarcodeSequence',
-    #         sampling_depth=None,
-    #         arare_min_rare_depth=10,
-    #         arare_num_steps=10,
-    #         reference_tree_fp=None,
-    #         parallel=False,
-    #         status_update_callback=no_status_updates)
-    #     
-    #     # Basic sanity test of OTU table as details are tested 
-    #     # in the pick_otus_through_otu_table tests
-    #     otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-    #     otu_table = parse_biom_table(open(otu_table_fp,'U'))
-    #     sample_ids = list(otu_table.SampleIds)
-    #     expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-    #                            'PC.593','PC.607','PC.634','PC.635','PC.636']
-    #     sample_ids.sort()
-    #     expected_sample_ids.sort()
-    #     self.assertEqual(sample_ids,expected_sample_ids)
-    #     # even sampling directory exists (different depth may be chosen on 
-    #     # different systems due to rounding)
-    #     self.assertEqual(len(glob('%s/bdiv_even*' % self.wf_out)),1)
-    # 
-    # def test_run_core_qiime_analyses_parallel(self):
-    #     """run_core_qiime_analyses: functions as expected in parallel
-    #     """
-    #     # this takes a long time, so use a longer sigalrm
-    #     restart_timeout(600)
-    #     run_core_qiime_analyses(
-    #         fna_fps=self.fasting_fna_fp,
-    #         qual_fps=self.fasting_qual_fp,
-    #         mapping_fp=self.fasting_mapping_fp,
-    #         output_dir=self.wf_out,
-    #         command_handler=call_commands_serially,
-    #         params=self.run_core_qiime_analyses_params1,
-    #         qiime_config=self.qiime_config,
-    #         categories='BarcodeSequence',
-    #         sampling_depth=100,
-    #         arare_min_rare_depth=10,
-    #         arare_num_steps=10,
-    #         reference_tree_fp=None,
-    #         parallel=True,
-    #         status_update_callback=no_status_updates)
-    #     
-    #     # Basic sanity test of OTU table as details are tested 
-    #     # in the pick_otus_through_otu_table tests
-    #     otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-    #     otu_table = parse_biom_table(open(otu_table_fp,'U'))
-    #     sample_ids= list(otu_table.SampleIds)
-    #     expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-    #                            'PC.593','PC.607','PC.634','PC.635','PC.636']
-    #     sample_ids.sort()
-    #     expected_sample_ids.sort()
-    #     self.assertEqual(sample_ids,expected_sample_ids)
-
+        # Basic sanity test that output directories and files exist
+        fps = [
+         '%s/bdiv_even20' % self.test_out,
+         '%s/arare_max20' % self.test_out,
+         '%s/taxa_plots' % self.test_out,
+         '%s/bdiv_even20/bray_curtis_dm.txt' % self.test_out,
+         '%s/arare_max20/SampleType_observed_species.txt' % self.test_out,
+         '%s/index.html' % self.test_out
+        ]
+        for fp in fps:
+            self.assertTrue(exists(fp))
+        
+        # phylogenetic diversity output files do not exist
+        self.assertFalse(exists(
+         '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out))
 
 if __name__ == "__main__":
     main()
