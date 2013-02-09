@@ -27,7 +27,8 @@ from qiime.workflow import (print_to_stdout,
                             WorkflowLogger,
                             log_input_md5s,
                             call_commands_serially,
-                            get_params_str)
+                            get_params_str,
+                            run_summarize_taxa_through_plots)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -199,6 +200,28 @@ def run_core_qiime_analyses(
                         '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
                           % arare_full_output_dir,
                         "Alpha rarefaction results"))
+    
+    taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
+    run_summarize_taxa_through_plots(
+     otu_table_fp=biom_fp,
+     mapping_fp=mapping_fp,
+     output_dir=taxa_plots_output_dir,
+     mapping_cat=None, 
+     sort=True,
+     command_handler=command_handler,
+     params=params,
+     qiime_config=qiime_config,
+     logger=logger, 
+     status_update_callback=status_update_callback)
+
+    index_links.append(('Taxa summary bar plots',
+                        '%s/taxa_summary_plots/bar_charts.html'\
+                          % taxa_plots_output_dir,
+                        "Taxonomic summary results"))
+    index_links.append(('Taxa summary area plots',
+                        '%s/taxa_summary_plots/area_charts.html'\
+                          % taxa_plots_output_dir,
+                        "Taxonomic summary results"))
     
     # OTU category significance and supervised learning
     for category in categories:

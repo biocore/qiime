@@ -132,6 +132,8 @@ class CoreQiimeAnalysesTests(TestCase):
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
         self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
+        self.assertTrue(exists('%s/arare_max20' % self.test_out))
+        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
 
 
     # def test_run_core_qiime_analyses_serial(self):
