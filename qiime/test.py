@@ -174,7 +174,20 @@ def run_script_usage_tests(qiime_test_data_dir,
     return result_summary, len(failed_tests)
 
 def get_test_data():
-    """
+    """ return a small data set with properties convenient for testing qiime
+    
+    Convenient properties of this test data set include:
+    
+     - Samples form a meaningful pattern in unifrac PCoA space (fecal, L_palm,
+       and tongue samples cluster independently).
+     - Sample categories differ in alpha diversity (fecal < tongue < L_palm).
+     - A small reference collection is included.
+     - When clustered against this reference at 97% identity, some of the 
+       reads hit the reference and some do not. Some of the input reads are <60% 
+       similar to any of the reference sequences.
+     - Two of the samples (f2, f3) contain identical sequences.
+     - One sample (not16S.1) contains seqs that are not 16s and all drop out.
+     - One sample (f4) has seqs that are all identical.
     """
     result = {}
     seqs = """>f2_1271 HWI-EAS440_0386:1:30:4487:20156#0/1 orig_bc=ACCAGACGATGC new_bc=ACCAGACGATGC bc_diffs=0
@@ -616,7 +629,7 @@ not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	14174	randomly gene
 def get_test_data_fps():
     """ Returns test data as dict of filepaths. 
     
-    Filepaths are created with the TempFile module, and therefore do not 
+    Filepaths are created with the tempfile module, and therefore do not 
     explcitly need to be cleaned up.
     """
     test_data = get_test_data()
