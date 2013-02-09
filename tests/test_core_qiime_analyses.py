@@ -113,8 +113,8 @@ class CoreQiimeAnalysesTests(TestCase):
                           parallel=False,
                           status_update_callback=no_status_updates)
 
-    def test_run_core_qiime_analyses_serial(self):
-        """run_core_qiime_analyses: functions (serially) using default qiime params
+    def test_run_core_qiime_analyses(self):
+        """run_core_qiime_analyses functions with categories
         """
         # this takes a long time, so use a longer sigalrm
         run_core_qiime_analyses(
@@ -125,6 +125,28 @@ class CoreQiimeAnalysesTests(TestCase):
                         params=parse_qiime_parameters({}),
                         qiime_config=self.qiime_config,
                         categories=['SampleType','days_since_epoch'],
+                        tree_fp=self.test_data['tree'][0],
+                        parallel=False,
+                        status_update_callback=no_status_updates)
+        
+        # Basic sanity test of OTU table as details are tested 
+        # in the pick_otus_through_otu_table tests
+        self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
+        self.assertTrue(exists('%s/arare_max20' % self.test_out))
+        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
+
+    def test_run_core_qiime_analyses_no_categories(self):
+        """run_core_qiime_analyses functions without categories
+        """
+        # this takes a long time, so use a longer sigalrm
+        run_core_qiime_analyses(
+                        self.test_data['biom'][0],
+                        self.test_data['map'][0],
+                        20,
+                        output_dir=self.test_out,
+                        params=parse_qiime_parameters({}),
+                        qiime_config=self.qiime_config,
+                        categories=None,
                         tree_fp=self.test_data['tree'][0],
                         parallel=False,
                         status_update_callback=no_status_updates)
