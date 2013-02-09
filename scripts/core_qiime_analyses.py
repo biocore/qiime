@@ -33,7 +33,7 @@ script_info['script_description'] = """This script plugs several QIIME steps tog
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("","Run basic and categorical analyses at 20 sequences/sample, with categorical analyses focusing on the SampleType and day categories. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/otu_table.biom -o $PWD/core_output -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre"))
+script_info['script_usage'].append(("","Run basic and categorical analyses at 20 sequences/sample, with categorical analyses focusing on the SampleType and day categories. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/otu_table.biom -o $PWD/core_output -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre -e 20"))
 
 script_info['script_usage_output_to_remove'] = ['$PWD/core_output']
 
