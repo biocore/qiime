@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann",
