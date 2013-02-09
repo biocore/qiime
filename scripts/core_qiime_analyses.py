@@ -59,11 +59,15 @@ script_info['optional_options'] = [\
           ' to the default behavior. See'        
           ' http://www.qiime.org/documentation/qiime_parameters_files.html'
           ' [if omitted, default values will be used]')),
- make_option('-a','--parallel',action='store_true',
-    dest='parallel',default=False,
+ make_option('-a','--parallel',action='store_true',default=False,
     help=('Run in parallel where available. Specify number of'
           ' jobs to start with -O or in the parameters file.'
           ' [default: %default]')),
+ make_option('--nonphylogenetic_diversity',action='store_true',default=False,
+    help=('Apply non-phylogenetic alpha and beta diversity calculations. This'
+          ' is useful if, for example, you are working with non-amplicon BIOM'
+          ' tables, or if a reliable tree is not available (e.g., if you\'re '
+          ' working with ITS amplicons) [default: %default]')),
  make_option('-t','--tree_fp',type='existing_filepath',
     help=('Path to the tree file if one should be used.'
           ' [default: no tree will be used]')),
@@ -85,12 +89,15 @@ def main():
     
     input_biom_fp = opts.input_biom_fp
     output_dir = opts.output_dir
-    categories = opts.categories.split(',')
+    categories = opts.categories
+    if categories != None:
+        categories = categories.split(',')
     tree_fp = opts.tree_fp
     mapping_fp = opts.mapping_fp
     verbose = opts.verbose
     parallel = opts.parallel
     sampling_depth = opts.sampling_depth
+    nonphylogenetic_diversity = opts.nonphylogenetic_diversity
     
     if opts.parameter_fp != None:
         try:
@@ -102,6 +109,10 @@ def main():
         params = parse_qiime_parameters(parameter_f)
     else:
         params = parse_qiime_parameters([])
+    
+    if nonphylogenetic_diversity:
+        params['beta_diversity']['metrics'] = 'bray_curtis'
+        params['alpha_diversity']['metrics'] = 'observed_species,chao1'
     
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']

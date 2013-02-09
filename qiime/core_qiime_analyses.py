@@ -41,7 +41,7 @@ __status__ = "Development"
 
 def format_index_link(link_description,relative_path):
     
-    return '<td>%s</td><td> <a href="%s">%s</a></td>' % (link_description,
+    return '<td>%s</td><td> <a href="%s" target="_blank">%s</a></td>' % (link_description,
                                         re.sub('/+','/',relative_path),
                                         split(relative_path)[1])
 
