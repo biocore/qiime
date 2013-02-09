@@ -213,6 +213,29 @@ def run_core_qiime_analyses(
                         '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
                           % arare_full_output_dir,
                         "Alpha rarefaction results"))
+                        
+    collated_alpha_diversity_fps = \
+     glob('%s/alpha_div_collated/*txt' % arare_full_output_dir)
+    try:
+        params_str = get_params_str(params['compare_alpha_diversity'])
+    except KeyError:
+        params_str = ''
+    for c in categories:
+        for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
+            alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
+            alpha_comparison_output_fp = '%s/%s_%s.txt' % \
+             (arare_full_output_dir,c,alpha_metric)
+            compare_alpha_cmd = \
+             'compare_alpha_diversity.py -i %s -m %s -c %s -d %s -o %s -n 1000 %s' %\
+             (collated_alpha_diversity_fp, mapping_fp, c, 
+              sampling_depth, alpha_comparison_output_fp, params_str)
+            commands.append([('Compare alpha diversity (%s, %s)' %\
+                               (category,alpha_metric),
+                              compare_alpha_cmd)])
+            index_links.append(
+             ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
+              alpha_comparison_output_fp,
+              "Alpha rarefaction results"))
     
     taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
     run_summarize_taxa_through_plots(
@@ -226,6 +249,7 @@ def run_core_qiime_analyses(
      qiime_config=qiime_config,
      logger=logger, 
      status_update_callback=status_update_callback)
+    
 
     index_links.append(('Taxa summary bar plots',
                         '%s/taxa_summary_plots/bar_charts.html'\
@@ -274,26 +298,9 @@ def run_core_qiime_analyses(
         commands.append([('OTU category significance (%s)' % category, 
                           category_significance_cmd)])
                           
-        supervised_learning_dir = \
-         '%s/supervised_learning_%s' % (output_dir, category)
-        try:
-            params_str = get_params_str(params['supervised_learning'])
-        except KeyError:
-            params_str = ''
-        # Build the supervised_learning command
-        supervised_learning_cmd = \
-         'supervised_learning.py -i %s -m %s -c %s -o %s %s' %\
-         (biom_fp, mapping_fp, category, 
-          supervised_learning_dir, params_str)
-        commands.append([('Supervised learning (%s)' % category, 
-                          supervised_learning_cmd)])
-                          
         index_links.append(('Category significance (%s)' % category,
                     category_signifance_fp,
                     "Category results"))
-        index_links.append(('Supervised learning (%s)' % category,
-                    supervised_learning_dir,
-                    "Supervised learning results"))
     
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
