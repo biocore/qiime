@@ -56,8 +56,8 @@ script_info['required_options'] = [
 script_info['optional_options'] = [\
  make_option('-p','--parameter_fp',type='existing_filepath',
     help=('path to the parameter file, which specifies changes'
-          ' to the default behavior. See'        
-          ' http://www.qiime.org/documentation/qiime_parameters_files.html'
+          ' to the default behavior. For more information, see'        
+          ' www.qiime.org/documentation/qiime_parameters_files.html'
           ' [if omitted, default values will be used]')),
  make_option('-a','--parallel',action='store_true',default=False,
     help=('Run in parallel where available. Specify number of'
