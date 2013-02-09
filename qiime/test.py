@@ -636,7 +636,6 @@ def get_test_data_fps():
     temp_dir = get_qiime_temp_dir()
     result = {}
     for k, v in test_data.items():
-        print v
         f = NamedTemporaryFile(prefix=k,dir=temp_dir)
         f.write('\n'.join(v))
         f.flush()
