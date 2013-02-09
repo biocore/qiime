@@ -1,0 +1,62 @@
+# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# The nonparametric p-values were calculated using 999 Monte Carlo permutations.
+# The nonparametric p-values contain the correct number of significant digits.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in the groups).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+All within SampleType	All between SampleType	-11.4203033834	3.49930476027e-13	1.57468714212e-11	0.001	0.045
+All within SampleType	Tongue vs. Tongue	-0.391549563853	0.707037124472	1	1.000	1.000
+All within SampleType	feces vs. feces	0.574606936281	0.576171159208	1	0.618	1.000
+All within SampleType	L_palm vs. L_palm	1.92861800567	0.095115628378	1	0.222	1.000
+All within SampleType	Tongue vs. feces	-12.0251201378	9.10556026201e-09	4.0975021179e-07	0.001	0.045
+All within SampleType	Tongue vs. Other	-6.96335263309	0.000116843397476	0.00525795288643	0.020	0.900
+All within SampleType	Tongue vs. L_palm	-4.99030457819	0.00054507120767	0.0245282043452	0.002	0.090
+All within SampleType	feces vs. Other	-10.0507337929	1.51747844231e-06	6.8286529904e-05	0.002	0.090
+All within SampleType	feces vs. L_palm	-9.98642266745	9.4999076757e-08	4.27495845406e-06	0.001	0.045
+All within SampleType	Other vs. L_palm	-6.96335263309	0.000116843397476	0.00525795288643	0.026	1.000
+All between SampleType	Tongue vs. Tongue	-5.12748149058	2.16249655906e-05	0.000973123451579	0.023	1.000
+All between SampleType	feces vs. feces	11.6069050224	5.2462701333e-13	2.36082155998e-11	0.001	0.045
+All between SampleType	L_palm vs. L_palm	-2.32559401729	0.0277967663274	1	0.021	0.945
+All between SampleType	Tongue vs. feces	-0.54752222958	0.58759651491	1	0.633	1.000
+All between SampleType	Tongue vs. Other	-1.7109456296	0.098149949166	1	0.124	1.000
+All between SampleType	Tongue vs. L_palm	3.06872092069	0.00453084970316	0.203888236642	0.003	0.135
+All between SampleType	feces vs. Other	-2.42503748715	0.0215377872526	0.969200426368	0.018	0.810
+All between SampleType	feces vs. L_palm	1.76164782015	0.0871196355404	1	0.095	1.000
+All between SampleType	Other vs. L_palm	-1.7109456296	0.098149949166	1	0.127	1.000
+Tongue vs. Tongue	feces vs. feces	-0.200401499238	0.849062904893	1	1.000	1.000
+Tongue vs. Tongue	L_palm vs. L_palm	N/A	N/A	N/A	N/A	N/A
+Tongue vs. Tongue	Tongue vs. feces	-86.1755401575	7.46129306275e-12	3.35758187824e-10	0.115	1.000
+Tongue vs. Tongue	Tongue vs. Other	N/A	N/A	N/A	N/A	N/A
+Tongue vs. Tongue	Tongue vs. L_palm	-5.12221222643	0.0144045891772	0.648206512972	0.039	1.000
+Tongue vs. Tongue	feces vs. Other	N/A	N/A	N/A	N/A	N/A
+Tongue vs. Tongue	feces vs. L_palm	-42.5187644834	1.03869734419e-09	4.67413804887e-08	0.095	1.000
+Tongue vs. Tongue	Other vs. L_palm	N/A	N/A	N/A	N/A	N/A
+feces vs. feces	L_palm vs. L_palm	3.23433249585	0.0230942753857	1	0.141	1.000
+feces vs. feces	Tongue vs. feces	-19.5037193098	1.86994421235e-10	8.41474895558e-09	0.001	0.045
+feces vs. feces	Tongue vs. Other	-10.9648197939	3.41776001591e-05	0.00153799200716	0.032	1.000
+feces vs. feces	Tongue vs. L_palm	-7.43843517259	7.34496155786e-05	0.00330523270104	0.003	0.135
+feces vs. feces	feces vs. Other	-16.0151443736	2.3170645114e-07	1.04267903013e-05	0.006	0.270
+feces vs. feces	feces vs. L_palm	-16.3035984907	1.49325766483e-09	6.71965949174e-08	0.001	0.045
+feces vs. feces	Other vs. L_palm	-10.9648197939	3.41776001591e-05	0.00153799200716	0.037	1.000
+L_palm vs. L_palm	Tongue vs. feces	-40.787439477	1.38808672659e-09	6.24639026967e-08	0.123	1.000
+L_palm vs. L_palm	Tongue vs. Other	N/A	N/A	N/A	N/A	N/A
+L_palm vs. L_palm	Tongue vs. L_palm	-1.09610996628	0.353138197845	1	0.227	1.000
+L_palm vs. L_palm	feces vs. Other	N/A	N/A	N/A	N/A	N/A
+L_palm vs. L_palm	feces vs. L_palm	-16.0932768438	8.69402162938e-07	3.91230973322e-05	0.073	1.000
+L_palm vs. L_palm	Other vs. L_palm	N/A	N/A	N/A	N/A	N/A
+Tongue vs. feces	Tongue vs. Other	-23.6067396835	1.10317045884e-08	4.96426706478e-07	0.016	0.720
+Tongue vs. feces	Tongue vs. L_palm	8.32186626828	8.32140958564e-06	0.000374463431354	0.002	0.090
+Tongue vs. feces	feces vs. Other	-34.0733937773	1.12169375953e-11	5.0476219179e-10	0.003	0.135
+Tongue vs. feces	feces vs. L_palm	19.842867174	1.19666168224e-11	5.38497757007e-10	0.001	0.045
+Tongue vs. feces	Other vs. L_palm	-23.6067396835	1.10317045884e-08	4.96426706478e-07	0.015	0.675
+Tongue vs. Other	Tongue vs. L_palm	5.93582807242	0.00403846702169	0.181731015976	0.011	0.495
+Tongue vs. Other	feces vs. Other	N/A	N/A	N/A	N/A	N/A
+Tongue vs. Other	feces vs. L_palm	24.7215583105	7.66083719844e-09	3.4473767393e-07	0.023	1.000
+Tongue vs. Other	Other vs. L_palm	N/A	N/A	N/A	N/A	N/A
+Tongue vs. L_palm	feces vs. Other	-8.90374210863	0.000111845701103	0.00503305654964	0.007	0.315
+Tongue vs. L_palm	feces vs. L_palm	-4.38922236331	0.00135770714308	0.0610968214388	0.002	0.090
+Tongue vs. L_palm	Other vs. L_palm	-5.93582807242	0.00403846702169	0.181731015976	0.010	0.450
+feces vs. Other	feces vs. L_palm	35.6824958634	7.09537286384e-12	3.19291778873e-10	0.004	0.180
+feces vs. Other	Other vs. L_palm	N/A	N/A	N/A	N/A	N/A
+feces vs. L_palm	Other vs. L_palm	-24.7215583105	7.66083719844e-09	3.4473767393e-07	0.024	1.000

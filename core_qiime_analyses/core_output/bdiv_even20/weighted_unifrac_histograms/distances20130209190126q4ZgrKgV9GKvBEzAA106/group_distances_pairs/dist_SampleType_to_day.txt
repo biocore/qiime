@@ -1,0 +1,28 @@
+Other:22_to_feces:22	1.0
+Other:22_to_feces:23	1.0	1.0	1.0
+Other:22_to_Tongue:21	1.0
+Other:22_to_L_palm:21	1.0
+Other:22_to_L_palm:22	1.0
+Other:22_to_Tongue:22	1.0
+Other:22_to_Other:22
+feces:22_to_feces:23	0.047803	0.0	0.0717045
+feces:22_to_Tongue:21	0.610390342105
+feces:22_to_L_palm:21	0.436902552632
+feces:22_to_L_palm:22	0.3612685
+feces:22_to_Tongue:22	0.552224
+feces:22_to_feces:22
+feces:23_to_Tongue:21	0.638981342105	0.610390342105	0.653276842105
+feces:23_to_L_palm:21	0.437541552632	0.436902552632	0.437861052632
+feces:23_to_L_palm:22	0.3898595	0.3612685	0.404155
+feces:23_to_Tongue:22	0.580815	0.552224	0.5951105
+feces:23_to_feces:23	0.047803	0.0239015	0.0717045
+Tongue:21_to_L_palm:21	0.592568421053
+Tongue:21_to_L_palm:22	0.472015105263
+Tongue:21_to_Tongue:22	0.157079710526
+Tongue:21_to_Tongue:21
+L_palm:21_to_L_palm:22	0.228595052632
+L_palm:21_to_Tongue:22	0.436184815789
+L_palm:21_to_L_palm:21
+L_palm:22_to_Tongue:22	0.3156315
+L_palm:22_to_L_palm:22
+Tongue:22_to_Tongue:22
