@@ -9,7 +9,9 @@ from datetime import datetime
 from numpy import array
 from cogent.util.misc import safe_md5
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_mapping_file, parse_qiime_parameters
+from qiime.parse import (parse_mapping_file, 
+                        parse_qiime_parameters,
+                        mapping_file_to_dict)
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
                         create_dir, guess_even_sampling_depth,
@@ -22,7 +24,10 @@ from qiime.workflow import (print_to_stdout,
                             run_beta_diversity_through_plots,
                             run_qiime_alpha_rarefaction,
                             generate_log_fp,
-                            WorkflowLogger,log_input_md5s)
+                            WorkflowLogger,
+                            log_input_md5s,
+                            call_commands_serially,
+                            get_params_str)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -70,8 +75,8 @@ def run_core_qiime_analyses(
     mapping_fp,
     sampling_depth,
     output_dir,
-    command_handler,
     qiime_config,
+    command_handler=call_commands_serially,
     tree_fp=None,
     params=None,
     categories=None,
@@ -81,21 +86,28 @@ def run_core_qiime_analyses(
     status_update_callback=print_to_stdout):
     """
     """
-    # Prepare some variables for the later steps
-    mapping_categories = parse_mapping_file(open(mapping_fp,'U'))[1]
-    if categories:
-        # split categories skipping any empty strings (to handle
-        # e.g. trailing commas)
-        categories = [c for c in categories.split(',') if c]
+    # Validate categories provided by the users
+    mapping_data, mapping_categories, _ = parse_mapping_file(open(mapping_fp,'U'))
+    if categories != None:
         for c in categories:
-            if c not in mapping_categories:
+            try:
+                cat_idx = mapping_categories.index(c)
+            except IndexError:
                 raise ValueError, ("Category '%s' is not a column header "
                  "in your mapping file. "
                  "Categories are case and white space sensitive. Valid "
                  "choices are: (%s)" % (c,', '.join(mapping_categories)))
+            category_values = []
+            for e in mapping_data:
+                category_values.append(e[cat_idx])
+            if len(set(category_values)) < 2:
+                raise ValueError, ("Category '%s' contains only one value. "
+                 "Categories analyzed here require at least two values.")
+            
     else:
         categories= []
-        
+    
+    # prep some variables
     if params == None:
         params = parse_qiime_parameters([])
         
@@ -105,6 +117,8 @@ def run_core_qiime_analyses(
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    
+    # begin logging
     log_fp = generate_log_fp(output_dir)
     index_links.append(('Master run log',log_fp,'Log files'))
     logger = WorkflowLogger(log_fp,
@@ -115,7 +129,7 @@ def run_core_qiime_analyses(
         input_fps.append(tree_fp)
     log_input_md5s(logger,input_fps)
     
-
+    
     bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
     even_dm_fps = run_beta_diversity_through_plots(
      otu_table_fp=biom_fp, 
