@@ -157,6 +157,30 @@ class CoreQiimeAnalysesTests(TestCase):
         self.assertTrue(exists('%s/arare_max20' % self.test_out))
         self.assertTrue(exists('%s/taxa_plots' % self.test_out))
 
+    def test_run_core_qiime_analyses_no_tree(self):
+        """run_core_qiime_analyses functions without tree
+        """
+        # this takes a long time, so use a longer sigalrm
+        run_core_qiime_analyses(
+                        self.test_data['biom'][0],
+                        self.test_data['map'][0],
+                        20,
+                        output_dir=self.test_out,
+                        params=parse_qiime_parameters({}),
+                        qiime_config=self.qiime_config,
+                        categories=['SampleType'],
+                        tree_fp=None,
+                        parallel=False,
+                        status_update_callback=no_status_updates)
+        
+        # Basic sanity test of OTU table as details are tested 
+        # in the pick_otus_through_otu_table tests
+        self.assertTrue(exists('%s/bdiv_even20' % self.test_out))
+        self.assertTrue(exists('%s/arare_max20' % self.test_out))
+        self.assertTrue(exists('%s/taxa_plots' % self.test_out))
+        
+        raise NotImplementedError, "Add test of non-tree-based tests."
+
 
     # def test_run_core_qiime_analyses_serial(self):
     #     """run_core_qiime_analyses: functions (serially) using default qiime params
