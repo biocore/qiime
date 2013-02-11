@@ -65,6 +65,8 @@ class CoreQiimeAnalysesTests(TestCase):
         self.test_data = get_test_data_fps()
         
         self.qiime_config = load_qiime_config()
+        self.qiime_config['jobs_to_start'] = 2
+        self.qiime_config['seconds_to_sleep'] = 1
         
         # Define number of seconds a test can run for before timing out 
         # and failing
@@ -126,6 +128,35 @@ class CoreQiimeAnalysesTests(TestCase):
                         categories=['SampleType','days_since_epoch'],
                         tree_fp=self.test_data['tree'][0],
                         parallel=False,
+                        status_update_callback=no_status_updates)
+        
+        # Basic sanity test that output directories and files exist
+        fps = [
+         '%s/bdiv_even20' % self.test_out,
+         '%s/arare_max20' % self.test_out,
+         '%s/taxa_plots' % self.test_out,
+         '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
+         '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out,
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out,
+         '%s/index.html' % self.test_out
+        ]
+        for fp in fps:
+            self.assertTrue(exists(fp))
+
+    def test_run_core_qiime_analyses_parallel(self):
+        """run_core_qiime_analyses functions with categories in parallel
+        """
+        run_core_qiime_analyses(
+                        self.test_data['biom'][0],
+                        self.test_data['map'][0],
+                        20,
+                        output_dir=self.test_out,
+                        params=parse_qiime_parameters({}),
+                        qiime_config=self.qiime_config,
+                        categories=['SampleType','days_since_epoch'],
+                        tree_fp=self.test_data['tree'][0],
+                        parallel=True,
                         status_update_callback=no_status_updates)
         
         # Basic sanity test that output directories and files exist
