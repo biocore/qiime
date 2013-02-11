@@ -1012,7 +1012,7 @@ jnlp_middle_block = """\">
     <resources>
         <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
 
-        <jar href="topiaryexplorer0.9.6.jar" />
+        <jar href="topiaryexplorer1.0.jar" />
         <jar href="lib/core.jar" />
         <jar href="lib/itext.jar" />
         <jar href="lib/pdf.jar" />
