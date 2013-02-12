@@ -15,6 +15,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters,get_options_lookup
 from qiime.util import make_option
 from os import mkdir
+from os.path import isdir, isfile, split
 from os.path import splitext,split,join,isfile, isdir
 from qiime.process_sff import prep_sffs_in_dir
 
@@ -55,13 +56,17 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if opts.output_dir:
-        #try to make the output directory
-        try:
-            mkdir(opts.output_dir)
-        except OSError:
-            pass
+        mkdir(opts.output_dir)
     else:
-        opts.output_dir = opts.input_dir
+        if isfile(opts.input_dir):
+            opts.output_dir = split(opts.input_dir)[0]
+            # if output_dir is empty at this point, then a relative path was
+            # passed, and the input file is in the current directory
+            if opts.output_dir == '':
+                opts.output_dir = '.'
+
+        elif isdir(opts.input_dir):
+            opts.output_dir = opts.input_dir
     
     if opts.no_trim and not opts.use_sfftools:
         raise ValueError, "When using the --no_trim option you must have the sfftools installed and must also pass the --use_sfftools option"
