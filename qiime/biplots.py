@@ -56,24 +56,20 @@ def get_taxa_prevalence(tax_counts):
     return prevalence
 
 def remove_rare_taxa(taxdata,nkeep=-1):
-    """Keeps only requested number of taxa. Removes empty taxa."""
-    if nkeep > 0 and nkeep < len(taxdata['prevalence']):
-        ixs = argsort(taxdata['prevalence'])
-        ixs = ixs[::-1][:nkeep]
-        taxdata['counts'] = taxdata['counts'][ixs,:]
-        tmp = [taxdata['lineages'][idx] for idx in ixs]
-        taxdata['lineages'] = tmp
-        taxdata['prevalence'] = taxdata['prevalence'][ixs]
+    """Keeps only requested number of taxa. Removes empty taxa."""    
+    # If less than zero and greater than length of taxa, nkeep =  fix to max
+    
+    if nkeep <= 0 or nkeep>len(taxdata['prevalence']):
+        nkeep=len(taxdata['prevalence'])
+    
+    ixs = argsort(taxdata['prevalence'])
+    ixs = ixs[::-1][:nkeep]
+    taxdata['counts'] = taxdata['counts'][ixs,:]
+    tmp = [taxdata['lineages'][idx] for idx in ixs]
+    taxdata['lineages'] = tmp
+    taxdata['prevalence'] = taxdata['prevalence'][ixs]
 
-    # remove empty taxa
-    tax_sums = taxdata['counts'].sum(1)
-    for i in xrange(len(tax_sums)-1,-1,-1):
-        if tax_sums[i] == 0:
-            taxdata['counts'] = delete(taxdata['counts'], i, 0)
-            taxdata['lineages'] = delete(taxdata['lineages'], i, 0)
-            taxdata['prevalence'] = delete(taxdata['prevalence'], i, 0)
-
-
+    
     #Write taxa points and labels if requested
 def make_mage_taxa(taxa, num_coords, pct_var, scaled=False, scalars=None,
                    radius=1,
