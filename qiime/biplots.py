@@ -60,7 +60,6 @@ def remove_rare_taxa(taxdata,nkeep=-1):
     if nkeep > 0 and nkeep < len(taxdata['prevalence']):
         ixs = argsort(taxdata['prevalence'])
         ixs = ixs[::-1][:nkeep]
-        ixs.sort()
         taxdata['counts'] = taxdata['counts'][ixs,:]
         tmp = [taxdata['lineages'][idx] for idx in ixs]
         taxdata['lineages'] = tmp
