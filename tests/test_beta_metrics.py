@@ -16,7 +16,7 @@ import numpy
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
-from qiime.beta_metrics import (_reorder_unifrac_res, make_unifrac_metric)
+from qiime.beta_metrics import (_reorder_unifrac_res, make_unifrac_metric, make_unifrac_row_metric)
 from qiime.parse import parse_newick
 from cogent.core.tree import PhyloNode
 from cogent.maths.unifrac.fast_tree import (unifrac)
@@ -163,8 +163,110 @@ class FunctionTests(TestCase):
         self.assertEqual(res[0,0], 0)
         self.assertEqual(res[0,3], 0.0)
         self.assertEqual(res[0,1], 1.0)
-        
-        
+
+    def test_make_unifrac_row_metric3(self):
+        treestr = '((((tax7:0.1):.98,tax8:.3, tax4:.3):.4, '+\
+            '((tax6:.09):0.43):0.5):.2,'+\
+            '(tax9:0.3, endbigtaxon:.08));' # taxa 1,2,3 removed
+        tree = parse_newick(treestr, PhyloNode)
+
+        otu_data = numpy.array([
+            [7,1,0,0,0,0,0,0,0], # 1 now zeros
+            [4,2,0,0,0,1,0,0,0], 
+            [2,4,0,0,0,1,0,0,0],
+            [1,7,0,0,0,0,0,0,0], # 4 now zeros
+            [0,8,0,0,0,0,0,0,0],
+            [0,7,1,0,0,0,0,0,0],
+            [0,4,2,0,0,0,2,0,0],
+            [0,2,4,0,0,0,1,0,0],
+            [0,1,7,0,0,0,0,0,0],
+            [0,0,8,0,0,0,0,0,0],
+            [0,0,7,1,0,0,0,0,0],
+            [0,0,4,2,0,0,0,3,0],
+            [0,0,2,4,0,0,0,1,0],
+            [0,0,1,7,0,0,0,0,0],
+            [0,0,0,8,0,0,0,0,0],
+            [0,0,0,7,1,0,0,0,0],
+            [0,0,0,4,2,0,0,0,4],
+            [0,0,0,2,4,0,0,0,1],
+            [0,0,0,1,7,0,0,0,0]
+            ])
+
+        unif = make_unifrac_metric(False, unifrac, True)
+        warnings.filterwarnings('ignore')
+        res = unif(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names)
+        warnings.resetwarnings()
+        envs = make_envs_dict(self.l19_data, self.l19_sample_names,
+            self.l19_taxon_names)
+        self.assertEqual(res[0,0], 0)
+        self.assertEqual(res[0,3], 0.0)
+        self.assertEqual(res[0,1], 1.0)
+
+        warnings.filterwarnings('ignore')
+        unif_row = make_unifrac_row_metric(False, unifrac, True)
+        for i, sam_name in enumerate(self.l19_sample_names):
+            if i in [0,3,4,5,8,9]: continue 
+            # these have no data and are warned "meaningless".
+            # I Would prefer if they matched res anyway though
+            res_row = unif_row(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names, sam_name)
+            for j in range(len(self.l19_sample_names)):
+                if j in [0,3,4,5,8,9]: continue # ok if meaningless number in zero sample
+                self.assertEqual(res_row[j], res[i,j])
+        warnings.resetwarnings()
+
+
+    def test_make_unifrac_row_metric2(self):
+        """ samples with no seqs, and identical samples, should behave correctly
+        """
+        tree = parse_newick(self.l19_treestr, PhyloNode)
+        unif = make_unifrac_metric(False, unifrac, True)
+        otu_data = numpy.array([
+            [0,0,0,0,0,0,0,0,0],#sam1 zeros
+            [4,2,0,0,0,1,0,0,0],
+            [2,4,0,0,0,1,0,0,0],
+            [1,7,0,0,0,0,0,0,0],
+            [0,8,0,0,0,0,0,0,0],
+            [0,7,1,0,0,0,0,0,0],
+            [0,4,2,0,0,0,2,0,0],
+            [0,2,4,0,0,0,1,0,0],
+            [0,1,7,0,0,0,0,0,0],
+            [0,0,8,0,0,0,0,0,0],
+            [0,0,7,1,0,0,0,0,0],
+            [0,0,4,2,0,0,0,3,0],
+            [0,0,2,4,0,0,0,1,0],
+            [0,0,0,0,0,0,0,0,0],#sam14 zeros
+            [0,0,0,8,0,0,0,0,0],
+            [0,0,2,4,0,0,0,1,0], #sam 16 now like sam 13
+            [0,0,0,4,2,0,0,0,4],
+            [0,0,0,2,4,0,0,0,1],
+            [0,0,0,1,7,0,0,0,0]
+            ])
+        warnings.filterwarnings('ignore')
+        res = unif(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names)
+        envs = make_envs_dict(self.l19_data, self.l19_sample_names,
+            self.l19_taxon_names)
+        self.assertEqual(res[0,0], 0)
+        self.assertEqual(res[0,13], 0.0)
+        self.assertEqual(res[12,15], 0.0)
+        self.assertEqual(res[0,1], 1.0)
+        warnings.resetwarnings()
+
+        warnings.filterwarnings('ignore')
+        unif_row = make_unifrac_row_metric(False, unifrac, True)
+        for i, sam_name in enumerate(self.l19_sample_names):
+            if i in [0]: continue 
+            # these have no data and are warned "meaningless".
+            # I Would prefer if they matched res anyway though
+            res_row = unif_row(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names, sam_name)
+            for j in range(len((self.l19_sample_names))):
+                if j in [0]: continue # ok if meaningless number in zero sample
+                self.assertEqual(res_row[j], res[i,j])
+        warnings.resetwarnings()
+
 #run tests if called from command line
 if __name__ == '__main__':
     main()
