@@ -12,8 +12,8 @@ __email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
  
 
-from qiime.util import parse_command_line_parameters,get_options_lookup
-from qiime.util import make_option
+from qiime.util import (parse_command_line_parameters,get_options_lookup
+                        make_option, create_dir)
 from os import mkdir
 from os.path import isdir, isfile, split
 from os.path import splitext,split,join,isfile, isdir
@@ -54,26 +54,26 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    output_dir = opts.output_dir
     
-    if opts.output_dir:
-        mkdir(opts.output_dir)
+    if output_dir:
+        create_dir(output_dir)
     else:
         if isfile(opts.input_dir):
-            opts.output_dir = split(opts.input_dir)[0]
-            # if output_dir is empty at this point, then a relative path was
+            # if output_dir is empty after the split, then a relative path was
             # passed, and the input file is in the current directory
-            if opts.output_dir == '':
-                opts.output_dir = '.'
+            output_dir = split(opts.input_dir)[0] or '.'
 
         elif isdir(opts.input_dir):
-            opts.output_dir = opts.input_dir
+            output_dir = opts.input_dir
     
     if opts.no_trim and not opts.use_sfftools:
         raise ValueError, "When using the --no_trim option you must have the sfftools installed and must also pass the --use_sfftools option"
         
     prep_sffs_in_dir(
         opts.input_dir,
-        opts.output_dir,
+        output_dir,
         make_flowgram=opts.make_flowgram,
         convert_to_flx=opts.convert_to_FLX,
         use_sfftools=opts.use_sfftools,
