@@ -56,7 +56,11 @@ def get_taxa_prevalence(tax_counts):
     return prevalence
 
 def remove_rare_taxa(taxdata,nkeep=-1):
-    """Keeps only requested number of taxa. Removes empty taxa."""    
+    """Keeps only requested number of taxa. Removes empty taxa.
+       
+    if nkeep<0 or greater than the number of taxa, the algorithm will return
+    all the taxa correctly formated
+    """    
     # If less than zero or greater than length of taxa, nkeep = fix to max
     if nkeep <= 0 or nkeep>len(taxdata['prevalence']):
         nkeep=len(taxdata['prevalence'])
