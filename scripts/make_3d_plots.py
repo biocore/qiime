@@ -459,12 +459,14 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
         # get average relative abundance of taxa
         data['taxa']['prevalence'] = get_taxa_prevalence(data['taxa']['counts'])
-        remove_rare_taxa(data['taxa'],nkeep=opts.n_taxa_keep)
         # get coordinates of taxa (weighted mean of sample scores)
         data['taxa']['coord'] = get_taxa_coords(data['taxa']['counts'],
             data['coord'][1])
-        data['taxa']['coord']
-
+        
+        # trim results, do NOT change order
+        # check: https://github.com/qiime/qiime/issues/677
+        remove_rare_taxa(data['taxa'],nkeep=opts.n_taxa_keep)
+        
         # write taxa coords if requested
         if not opts.biplot_output_file is None:
             output = make_biplot_scores_output(data['taxa'])            

@@ -89,9 +89,33 @@ class BiplotTests(TestCase):
         taxdata['counts'] = otu_table
         taxdata['lineages'] = np.array(['A','B','C'])
         bp.remove_rare_taxa(taxdata,nkeep=2)
-        self.assertFloatEqual(taxdata['counts'], otu_table[1:3,:])
-        self.assertFloatEqual(taxdata['prevalence'], np.array([.5,1]))
-        self.assertFloatEqual(taxdata['lineages'], np.array(['B','C']))
+        
+        exp_otu_table = np.array([[0,2,2,1],
+                                  [1,1,1,1]],float)
+        exp_prevalence = np.array([1,.5])
+        exp_lineages = np.array(['C','B'])
+        self.assertFloatEqual(taxdata['counts'],     exp_otu_table)
+        self.assertFloatEqual(taxdata['prevalence'], exp_prevalence)
+        self.assertFloatEqual(taxdata['lineages'],   exp_lineages)
+
+    def test_remove_rare_taxa_not_valid_number(self):
+        otu_table = np.array([  [2,0,0,1],
+                                [1,1,1,1],
+                                [0,2,2,1]],float)
+        taxdata = {}
+        taxdata['prevalence'] = np.array([0,.5,1])
+        taxdata['counts'] = otu_table
+        taxdata['lineages'] = np.array(['A','B','C'])
+        bp.remove_rare_taxa(taxdata,nkeep=-2)
+        
+        exp_otu_table = np.array([[0,2,2,1],
+                                  [1,1,1,1],
+                                  [2,0,0,1]],float)
+        exp_prevalence = np.array([1,.5,0])
+        exp_lineages = np.array(['C','B','A'])
+        self.assertFloatEqual(taxdata['counts'],     exp_otu_table)
+        self.assertFloatEqual(taxdata['prevalence'], exp_prevalence)
+        self.assertFloatEqual(taxdata['lineages'],   exp_lineages)
 
     def test_scale_taxa_data_matrix(self):
         coord = np.array([  [1,4,7,0],
