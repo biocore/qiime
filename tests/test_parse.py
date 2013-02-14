@@ -5,7 +5,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout"] #remember to add yourself
+               "Jai Ram Rideout","Will Van Treuren"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -69,6 +69,8 @@ class TopLevelTests(TestCase):
         
         self.legacy_otu_table1 = legacy_otu_table1
         self.otu_table1 = otu_table1
+        self.otu_table_without_leading_comment = \
+            otu_table_without_leading_comment
         self.expected_lineages1 = expected_lineages1
         self.taxa_summary1 = taxa_summary1
         self.taxa_summary1_expected = taxa_summary1_expected
@@ -501,6 +503,26 @@ eigvals\t4.94\t1.79\t1.50
                       [1722,4903,17], [589,2074,34]]),
                self.expected_lineages1)
         self.assertEqual(obs, exp)
+
+        # test that the modified parse_classic performs correctly on OTU tables
+        # without leading comments
+        data = self.otu_table_without_leading_comment
+        data_f = (data.split('\n'))
+        obs = parse_classic_otu_table(data_f)
+        sams = ['let-7i','miR-7','miR-17n','miR-18a','miR-19a','miR-22',
+            'miR-25','miR-26a']
+        otus = ['A2M', 'AAAS', 'AACS', 'AADACL1']
+        vals = array([\
+            [-0.2,  0.03680505,  0.205,  0.23,  0.66,  0.08,  -0.373,  0.26],
+            [-0.09,  -0.25,  0.274,  0.15,  0.12,  0.29,  0.029,  -0.1148452],
+            [0.33,  0.19,  0.27,  0.28,  0.19,  0.25,  0.089,  0.14],
+            [0.49,  -0.92,  -0.723,  -0.23,  0.08,  0.49,  -0.386,  -0.64]])
+        exp = (sams, otus, vals, []) # no lineages
+        # because float comps in arrays always errors
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        self.assertEqual(obs[3], exp[3])
+        self.assertTrue(all((obs[2]==exp[2]).tolist()))
     
     def test_parse_classic_otu_table_floats_in_table(self):
         """parse_classic_otu_table functions using an OTU table containing floats
@@ -1076,6 +1098,11 @@ OTU ID	Fing	Key	NA	Consensus Lineage
 3	1722.1	4903.2	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589.6	2074.4	34.5	Bacteria; Cyanobacteria; Chloroplasts; vectors
 """
+
+
+otu_table_without_leading_comment = '#OTU ID\tlet-7i\tmiR-7\tmiR-17n\tmiR-18a\tmiR-19a\tmiR-22\tmiR-25\tmiR-26a\nA2M\t-0.2\t0.03680505\t0.205\t0.23\t0.66\t0.08\t-0.373\t0.26\nAAAS\t-0.09\t-0.25\t0.274\t0.15\t0.12\t0.29\t0.029\t-0.114845199\nAACS\t0.33\t0.19\t0.27\t0.28\t0.19\t0.25\t0.089\t0.14\nAADACL1\t0.49\t-0.92\t-0.723\t-0.23\t0.08\t0.49\t-0.386\t-0.64'
+
+
 
 taxa_summary1 = """#Full OTU Counts
 Taxon	Even1	Even2	Even3
