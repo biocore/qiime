@@ -80,8 +80,17 @@ def make_unifrac_row_metric(weighted, metric, is_symmetric):
             sample_names: list of unique strings
         """
         envs = make_envs_dict(data, sample_names, taxon_names)
-        unifrac_res = fast_unifrac_one_sample(one_sample_name,
-            tree, envs, weighted=weighted, metric=metric,**kwargs)
+        try:
+            unifrac_res = fast_unifrac_one_sample(one_sample_name,
+                tree, envs, weighted=weighted, metric=metric,**kwargs)
+        except ValueError as e:
+            if 'one_sample_name not found' in str(e):
+                warnings.warn('unifrac had no information on sample ' +\
+                    one_sample_name +\
+                     ". Distances involving that sample aren't meaningful")
+                unifrac_res = (numpy.array([0.0]),[one_sample_name]) # self only
+            else:
+                raise e
         dist_mtx = _reorder_unifrac_res_one_sample(unifrac_res,
             sample_names)
         return dist_mtx
@@ -144,8 +153,9 @@ def _reorder_unifrac_res_one_sample(unifrac_res, sample_names_in_desired_order):
     """ reorder unifrac result
     
     unifrac res is distmtx,sample_names.  sample names not in unifrac's
-    sample names (not in tree, all zeros in otu table(?)) will be included, 
-    with a user warning.
+    sample names (not in tree, all zeros in otu table(?)) will be included.
+    No user warning is printed for this one_sample case, that must be handled
+    by this function's caller.
     
     """
     sample_names = sample_names_in_desired_order
@@ -160,8 +170,6 @@ def _reorder_unifrac_res_one_sample(unifrac_res, sample_names_in_desired_order):
             
             # make dist zero if both absent, else dist=1. dist to self is 0
             if sam_i not in unifrac_sample_names:
-                warnings.warn('unifrac had no information for sample ' +\
-                 sam_i + ". Distances involving that sample aren't meaningful")
                 dist_arry[i] = 1.0
                         
             # sam_i is present, so get unifrac dist
