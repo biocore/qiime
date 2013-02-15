@@ -2,24 +2,13 @@
 # File created on 09 Feb 2013
 from __future__ import division
 import re
-from os import makedirs, listdir
 from glob import glob
-from os.path import split, splitext, join, dirname, abspath
-from datetime import datetime
-from numpy import array
-from cogent.util.misc import safe_md5
-from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import (parse_mapping_file, 
-                        parse_qiime_parameters,
-                        mapping_file_to_dict)
-from qiime.util import (compute_seqs_per_library_stats,
-                        get_qiime_scripts_dir,
-                        create_dir, guess_even_sampling_depth,
-                        get_interesting_mapping_fields,qiime_system_call,
-                        get_qiime_library_version)
+from os.path import split, splitext, join
 from biom.parse import parse_biom_table
-from cogent.core.moltype import IUPAC_DNA_ambiguities
-import os
+from qiime.parse import (parse_mapping_file, 
+                         parse_qiime_parameters)
+from qiime.util import (get_qiime_scripts_dir,
+                        create_dir)
 from qiime.workflow import (print_to_stdout,
                             run_beta_diversity_through_plots,
                             run_qiime_alpha_rarefaction,
@@ -71,7 +60,7 @@ def generate_index_page(index_links,index_fp):
     open(index_fp,'w').write(''.join(index_lines))
 
 
-def run_core_qiime_analyses(
+def run_core_diversity_analyses(
     biom_fp,
     mapping_fp,
     sampling_depth,
