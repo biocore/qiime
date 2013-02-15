@@ -49,8 +49,7 @@ script_info['required_options'] = [
  make_option('-e','--sampling_depth',type='int',default=None,
     help=('Sequencing depth to use for even sub-sampling and maximum'
           ' rarefaction depth. You should review the output of'
-          ' print_biom_table_summary.py to decide on this value'
-          ' [default: %default]')),
+          ' print_biom_table_summary.py to decide on this value.')),
     ]
 
 script_info['optional_options'] = [\
@@ -135,7 +134,7 @@ def main():
     else:
         status_update_callback = no_status_updates
     
-    run_core_qiime_analyses(
+    run_core_diversity_analyses(
         biom_fp=input_biom_fp,
         mapping_fp=mapping_fp,
         sampling_depth=sampling_depth,

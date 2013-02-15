@@ -81,12 +81,12 @@ class CoreQiimeAnalysesTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_run_core_qiime_analyses_error_on_invalid_category(self):
-        """run_core_qiime_analyses: error raised on invalid categories
+    def test_run_core_diversity_analyses_error_on_invalid_category(self):
+        """run_core_diversity_analyses: error raised on invalid categories
         """
         # too few values in 'month' category
         self.assertRaises(ValueError,
-                          run_core_qiime_analyses,
+                          run_core_diversity_analyses,
                           self.test_data['biom'][0],
                           self.test_data['map'][0],
                           20,
@@ -100,7 +100,7 @@ class CoreQiimeAnalysesTests(TestCase):
         
         # invalid category name
         self.assertRaises(ValueError,
-                          run_core_qiime_analyses,
+                          run_core_diversity_analyses,
                           self.test_data['biom'][0],
                           self.test_data['map'][0],
                           20,
@@ -112,10 +112,10 @@ class CoreQiimeAnalysesTests(TestCase):
                           parallel=False,
                           status_update_callback=no_status_updates)
 
-    def test_run_core_qiime_analyses(self):
-        """run_core_qiime_analyses functions with categories
+    def test_run_core_diversity_analyses(self):
+        """run_core_diversity_analyses functions with categories
         """
-        run_core_qiime_analyses(
+        run_core_diversity_analyses(
                         self.test_data['biom'][0],
                         self.test_data['map'][0],
                         20,
@@ -141,10 +141,10 @@ class CoreQiimeAnalysesTests(TestCase):
         for fp in fps:
             self.assertTrue(exists(fp))
 
-    def test_run_core_qiime_analyses_parallel(self):
-        """run_core_qiime_analyses functions with categories in parallel
+    def test_run_core_diversity_analyses_parallel(self):
+        """run_core_diversity_analyses functions with categories in parallel
         """
-        run_core_qiime_analyses(
+        run_core_diversity_analyses(
                         self.test_data['biom'][0],
                         self.test_data['map'][0],
                         20,
@@ -170,11 +170,11 @@ class CoreQiimeAnalysesTests(TestCase):
         for fp in fps:
             self.assertTrue(exists(fp))
 
-    def test_run_core_qiime_analyses_no_categories(self):
-        """run_core_qiime_analyses functions without categories
+    def test_run_core_diversity_analyses_no_categories(self):
+        """run_core_diversity_analyses functions without categories
         """
         # this takes a long time, so use a longer sigalrm
-        run_core_qiime_analyses(
+        run_core_diversity_analyses(
                         self.test_data['biom'][0],
                         self.test_data['map'][0],
                         20,
@@ -204,11 +204,11 @@ class CoreQiimeAnalysesTests(TestCase):
         self.assertFalse(exists(
          '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out))
 
-    def test_run_core_qiime_analyses_no_tree(self):
-        """run_core_qiime_analyses functions without tree
+    def test_run_core_diversity_analyses_no_tree(self):
+        """run_core_diversity_analyses functions without tree
         """
         # this takes a long time, so use a longer sigalrm
-        run_core_qiime_analyses(
+        run_core_diversity_analyses(
          self.test_data['biom'][0],
          self.test_data['map'][0],
          20,
