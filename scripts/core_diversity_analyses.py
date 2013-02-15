@@ -73,10 +73,8 @@ script_info['optional_options'] = [\
  make_option('-c','--categories', type='string',
     help=('The metadata category or categories to compare'
           ' (i.e., column headers in the mapping file)'
-          ' for the otu_category_significance,'
-          ' supervised_learning.py, and cluster_quality.py steps.'
-          ' Pass a comma-separated list if more than one category'
-          ' [default: %default; skip these steps]')),
+          ' for categorical analyses '
+          ' [default: %default; do not perform categorical analyses]')),
  options_lookup['jobs_to_start_workflow']
 ]
 script_info['version'] = __version__
