@@ -11,6 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+import sys
+from StringIO import StringIO
 from shutil import rmtree
 from os.path import exists, join
 from cogent.util.unit_test import TestCase, main
@@ -48,6 +50,7 @@ from qiime.core_qiime_analyses import run_core_qiime_analyses
 class CoreQiimeAnalysesTests(TestCase):
     
     def setUp(self):
+
         
         self.files_to_remove = []
         self.dirs_to_remove = []
@@ -68,6 +71,14 @@ class CoreQiimeAnalysesTests(TestCase):
         self.qiime_config['jobs_to_start'] = 2
         self.qiime_config['seconds_to_sleep'] = 1
         
+        # suppress stderr during tests (one of the systems calls in the 
+        # workflow prints a warning, and we can't suppress that warning with 
+        # warnings.filterwarnings) here because it comes from within the code 
+        # executed through the system call. Found this trick here:
+        # http://stackoverflow.com/questions/9949633/suppressing-print-as-stdout-python
+        self.saved_stderr = sys.stderr
+        sys.stderr = StringIO()
+        
         # Define number of seconds a test can run for before timing out 
         # and failing
         initiate_timeout(120)
@@ -76,6 +87,10 @@ class CoreQiimeAnalysesTests(TestCase):
     def tearDown(self):
         
         disable_timeout()
+        
+        # reset sys.stderr
+        sys.stderr = self.saved_stderr
+        
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
@@ -117,7 +132,6 @@ class CoreQiimeAnalysesTests(TestCase):
     def test_run_core_qiime_analyses(self):
         """run_core_qiime_analyses functions with categories
         """
-        # this takes a long time, so use a longer sigalrm
         run_core_qiime_analyses(
                         self.test_data['biom'][0],
                         self.test_data['map'][0],
