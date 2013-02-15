@@ -129,7 +129,9 @@ def run_core_diversity_analyses(
      params=params,
      qiime_config=qiime_config,
      sampling_depth=sampling_depth,
-     histogram_categories=categories,
+     # force suppression of distance histograms - boxplots work better
+     # in this context, and are created below.
+     histogram_categories=[],
      tree_fp=tree_fp,
      parallel=parallel,
      logger=logger,
