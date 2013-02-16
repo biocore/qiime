@@ -6,7 +6,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * otu_category_significance.py now makes better use of the BIOM Table API, addressing a performance issue when using CSMat as the sparse backend.
 * Required biom-format version is now 1.1.2.
 * Added qiime.group.get_adjacent_distances, which is useful for plotting distances between "adjacent" sample ids in a list provided by the user. This is useful, for example, in plotting distances between adjacent temporal samples in a time series.
-* core_qiime_analyses.py has been re-factored to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
+* core_qiime_analyses.py has been replaced with core_diversity_analyses.py. This follows a re-factoring to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
