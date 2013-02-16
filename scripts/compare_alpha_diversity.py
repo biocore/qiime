@@ -42,7 +42,7 @@ controlled by this script; when multiple_rarefactions.py is called, the -n optio
 specifies the number of iterations that have occurred. The multiple comparison
 correction takes into account the number of between group comparisons.
 
-If t-scores and/or p-values are None for any of your comparisons there are two
+If t-scores and/or p-values are None for any of your comparisons there are three
 possible reasons. The first is that there were undefined values in your collated
 alpha diversity input file. This occurs if there were too few sequences in one 
 or more of the samples in the groups involved in those comparisons to compute 
@@ -53,6 +53,9 @@ The second is that you had some comparison where each treatment was represented
 by only a single sample. It is not possible to perform a t_two_sample test on 
 two samples each of length 1, so it will give you None,None for tval,pval 
 instead.
+The third possibility occurs when using the nonparamteric t test with small 
+datasets where the monte carlo simulations return no p-value because the
+distribution of the data has almost no variance.
 The multiple comparisons correction will not penalize you for comparisons that
 return as None regardless of origin. 
 """
