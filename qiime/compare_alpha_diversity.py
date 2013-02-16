@@ -168,8 +168,11 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
             elif test_type == 'nonparametric':
                 obs_t, _, _, p_val = mc_t_two_sample(i,j, 
                     permutations=num_permutations)
-                p_val = float(format_p_value_for_num_iters(p_val, 
-                    num_iters=num_permutations))
+                if p_val != None: 
+                    p_val = float(format_p_value_for_num_iters(p_val, 
+                        num_iters=num_permutations))
+                elif p_val ==  None: #None will error in format_p_val
+                    obs_t, p_val = None, None
             else:
                 raise ValueError("Invalid test type '%s'." % test_type)
             results[t_key]= (obs_t,p_val)
