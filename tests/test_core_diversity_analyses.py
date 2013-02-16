@@ -30,7 +30,7 @@ from qiime.workflow import (no_status_updates,
                             WorkflowError)
 from qiime.core_diversity_analyses import run_core_diversity_analyses
 
-class CoreQiimeAnalysesTests(TestCase):
+class CoreDiversityAnalysesTests(TestCase):
     
     def setUp(self):
 
