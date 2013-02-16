@@ -5,7 +5,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder",
-               "Antonio Gonzalez Pena", "Jai Ram Rideout"]
+               "Antonio Gonzalez Pena", "Jai Ram Rideout","Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -485,7 +485,7 @@ def parse_classic_otu_table(lines,count_map_f=int):
     for i, line in enumerate(lines):
         line = line.strip()
         if line:
-            if i == 1 and line.startswith('#OTU ID') and not sample_ids:
+            if (i==1 or i==0) and line.startswith('#OTU ID') and not sample_ids:
                 # we've got a legacy OTU table
                 try:
                     sample_ids, has_metadata = process_otu_table_sample_ids(
