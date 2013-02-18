@@ -12,7 +12,7 @@ __email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
  
 
-from qiime.util import (parse_command_line_parameters,get_options_lookup
+from qiime.util import (parse_command_line_parameters,get_options_lookup,
                         make_option, create_dir)
 from os import mkdir
 from os.path import isdir, isfile, split
@@ -65,7 +65,7 @@ def main():
             # passed, and the input file is in the current directory
             output_dir = split(opts.input_dir)[0] or '.'
 
-        elif isdir(opts.input_dir):
+        else: # opts.input_dir is a directory
             output_dir = opts.input_dir
     
     if opts.no_trim and not opts.use_sfftools:
