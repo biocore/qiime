@@ -273,7 +273,7 @@ def run_core_diversity_analyses(
                               % taxa_plots_output_dir,
                             "Taxonomic summary results (by %s)" % c))
     
-    # OTU category significance and supervised learning
+    # OTU category significance
     for category in categories:
         category_signifance_fp = \
          '%s/category_significance_%s.txt' % (output_dir, category)
