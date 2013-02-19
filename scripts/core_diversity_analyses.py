@@ -108,8 +108,12 @@ def main():
         params = parse_qiime_parameters([])
     
     if nonphylogenetic_diversity:
-        params['beta_diversity']['metrics'] = 'bray_curtis'
-        params['alpha_diversity']['metrics'] = 'observed_species,chao1'
+        # if the user specified --nonphylogenetic_diversity and they 
+        # didn't define metrics in a parameters file, define them here
+        if 'metrics' not in params['beta_diversity']:
+            params['beta_diversity']['metrics'] = 'bray_curtis'
+        if 'metrics' not in params['alpha_diversity']:
+            params['alpha_diversity']['metrics'] = 'observed_species,chao1'
     
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']
