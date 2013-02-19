@@ -5,10 +5,11 @@ import re
 from glob import glob
 from os.path import split, splitext, join
 from biom.parse import parse_biom_table
-from qiime.parse import (parse_mapping_file, 
-                         parse_qiime_parameters)
+from qiime.parse import (parse_qiime_parameters,
+                         parse_mapping_file_to_dict)
 from qiime.util import (get_qiime_scripts_dir,
-                        create_dir)
+                        create_dir,
+                        MetadataMap)
 from qiime.workflow import (print_to_stdout,
                             run_beta_diversity_through_plots,
                             run_qiime_alpha_rarefaction,
@@ -76,23 +77,21 @@ def run_core_diversity_analyses(
     status_update_callback=print_to_stdout):
     """
     """
-    # Validate categories provided by the users
-    mapping_data, mapping_categories, _ = parse_mapping_file(open(mapping_fp,'U'))
+
     if categories != None:
+        # Validate categories provided by the users
+        mapping_data, mapping_comments = \
+         parse_mapping_file_to_dict(open(mapping_fp,'U'))
+        metadata_map = MetadataMap(mapping_data, mapping_comments)
         for c in categories:
-            try:
-                cat_idx = mapping_categories.index(c)
-            except IndexError:
+            if c not in metadata_map.CategoryNames:
                 raise ValueError, ("Category '%s' is not a column header "
                  "in your mapping file. "
                  "Categories are case and white space sensitive. Valid "
-                 "choices are: (%s)" % (c,', '.join(mapping_categories)))
-            category_values = []
-            for e in mapping_data:
-                category_values.append(e[cat_idx])
-            if len(set(category_values)) < 2:
+                 "choices are: (%s)" % (c,', '.join(metadata_map.CategoryNames)))
+            if metadata_map.hasSingleCategoryValue(c):
                 raise ValueError, ("Category '%s' contains only one value. "
-                 "Categories analyzed here require at least two values.")
+                 "Categories analyzed here require at least two values." % c)
             
     else:
         categories= []
