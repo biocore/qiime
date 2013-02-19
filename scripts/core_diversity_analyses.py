@@ -30,7 +30,10 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description'] = """A workflow for running a core set of QIIME diversity analyses."""
-script_info['script_description'] = """This script plugs several QIIME diversity analyses together to form a basic workflow beginning with a BIOM table, mapping file, and optional phylogenetic tree."""
+script_info['script_description'] = """This script plugs several QIIME diversity analyses together to form a basic workflow beginning with a BIOM table, mapping file, and optional phylogenetic tree. 
+
+The included scripts are those run by the workflow scripts alpha_rarefaction.py, beta_diversity_through_plots.py, summarize_taxa_through_plots.py, plus the (non-workflow) scripts make_distance_boxplots.py, compare_alpha_diversity.py, and otu_category_significance.py. To update parameters to the workflow scripts, you should pass the same parameters file that you would pass if calling the workflow script directly.
+"""
 
 script_info['script_usage'] = []
 
