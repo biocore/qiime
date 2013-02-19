@@ -470,7 +470,7 @@ def process_otu_table_sample_ids(sample_id_fields):
     # column is included.
     return sample_ids, has_metadata
 
-def parse_classic_otu_table(lines,count_map_f=int):
+def parse_classic_otu_table(lines,count_map_f=int, remove_empty_rows=False):
     """parses a classic otu table (sample ID x OTU ID map)
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
@@ -508,6 +508,9 @@ def parse_classic_otu_table(lines,count_map_f=int):
                 else:
                     # current line is OTU line in OTU table
                     fields = line.split('\t')
+                    # validate that there are no empty rows
+                    if remove_empty_rows and sum(array(map(float,fields[1:])))==0.0:
+                        continue
                     # grab the OTU ID
                     otu_id = fields[0].strip()
                     otu_ids.append(otu_id)
