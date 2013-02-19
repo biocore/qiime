@@ -63,7 +63,8 @@ script_info['optional_options'] = [\
           ' jobs to start with -O or in the parameters file.'
           ' [default: %default]')),
  make_option('--nonphylogenetic_diversity',action='store_true',default=False,
-    help=('Apply non-phylogenetic alpha and beta diversity calculations. This'
+    help=('Apply non-phylogenetic alpha (chao1 and observed_species) and'
+          ' beta (bray_curtis) diversity calculations. This'
           ' is useful if, for example, you are working with non-amplicon BIOM'
           ' tables, or if a reliable tree is not available (e.g., if you\'re '
           ' working with ITS amplicons) [default: %default]')),
