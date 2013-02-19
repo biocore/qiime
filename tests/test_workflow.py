@@ -30,15 +30,17 @@ from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
-from qiime.workflow import (run_qiime_data_preparation,
+from qiime.workflow import (
+    run_qiime_data_preparation,
     run_pick_reference_otus_through_otu_table,
     run_beta_diversity_through_plots,
     run_qiime_alpha_rarefaction,
     run_jackknifed_beta_diversity,
     call_commands_serially,
-    no_status_updates,WorkflowError,
-    print_commands,print_to_stdout,run_core_qiime_analyses,
-    run_summarize_taxa_through_plots, run_ampliconnoise)
+    no_status_updates,
+    WorkflowError,
+    run_summarize_taxa_through_plots,
+    run_ampliconnoise)
 
 
 # function to stop/start the timeout with longer
@@ -211,108 +213,6 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
-
-    def test_run_core_qiime_analyses_serial(self):
-        """run_core_qiime_analyses: functions (serially) using default qiime params
-        """
-        # this takes a long time, so use a longer sigalrm
-        restart_timeout(600)
-        run_core_qiime_analyses(
-            fna_fps=self.fasting_fna_fp,
-            qual_fps=self.fasting_qual_fp,
-            mapping_fp=self.fasting_mapping_fp,
-            output_dir=self.wf_out,
-            command_handler=call_commands_serially,
-            params=self.run_core_qiime_analyses_params1,
-            qiime_config=self.qiime_config,
-            categories='BarcodeSequence',
-            sampling_depth=100,
-            arare_min_rare_depth=10,
-            arare_num_steps=10,
-            reference_tree_fp=None,
-            parallel=False,
-            status_update_callback=no_status_updates)
-        
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids = list(otu_table.SampleIds)
-        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-                               'PC.593','PC.607','PC.634','PC.635','PC.636']
-        sample_ids.sort()
-        expected_sample_ids.sort()
-        self.assertEqual(sample_ids,expected_sample_ids)
-        # even sampling directory exists
-        self.assertTrue(exists('%s/bdiv_even100' % self.wf_out))
-
-    def test_run_core_qiime_analyses_serial_alt_params(self):
-        """run_core_qiime_analyses: functions as expected (serially, alt params)
-        """
-        # Single category and sampling_depth=None
-        # this takes a long time, so use a longer sigalrm
-        restart_timeout(600)
-        run_core_qiime_analyses(
-            fna_fps=self.fasting_fna_fp,
-            qual_fps=self.fasting_qual_fp,
-            mapping_fp=self.fasting_mapping_fp,
-            output_dir=self.wf_out,
-            command_handler=call_commands_serially,
-            params=self.run_core_qiime_analyses_params1,
-            qiime_config=self.qiime_config,
-            categories='BarcodeSequence',
-            sampling_depth=None,
-            arare_min_rare_depth=10,
-            arare_num_steps=10,
-            reference_tree_fp=None,
-            parallel=False,
-            status_update_callback=no_status_updates)
-        
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids = list(otu_table.SampleIds)
-        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-                               'PC.593','PC.607','PC.634','PC.635','PC.636']
-        sample_ids.sort()
-        expected_sample_ids.sort()
-        self.assertEqual(sample_ids,expected_sample_ids)
-        # even sampling directory exists (different depth may be chosen on 
-        # different systems due to rounding)
-        self.assertEqual(len(glob('%s/bdiv_even*' % self.wf_out)),1)
-
-    def test_run_core_qiime_analyses_parallel(self):
-        """run_core_qiime_analyses: functions as expected in parallel
-        """
-        # this takes a long time, so use a longer sigalrm
-        restart_timeout(600)
-        run_core_qiime_analyses(
-            fna_fps=self.fasting_fna_fp,
-            qual_fps=self.fasting_qual_fp,
-            mapping_fp=self.fasting_mapping_fp,
-            output_dir=self.wf_out,
-            command_handler=call_commands_serially,
-            params=self.run_core_qiime_analyses_params1,
-            qiime_config=self.qiime_config,
-            categories='BarcodeSequence',
-            sampling_depth=100,
-            arare_min_rare_depth=10,
-            arare_num_steps=10,
-            reference_tree_fp=None,
-            parallel=True,
-            status_update_callback=no_status_updates)
-        
-        # Basic sanity test of OTU table as details are tested 
-        # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids= list(otu_table.SampleIds)
-        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-                               'PC.593','PC.607','PC.634','PC.635','PC.636']
-        sample_ids.sort()
-        expected_sample_ids.sort()
-        self.assertEqual(sample_ids,expected_sample_ids)
         
     def test_run_pick_reference_otus_through_otu_table(self):
         """run_pick_reference_otus_through_otu_table generates expected results"""
