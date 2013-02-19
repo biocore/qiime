@@ -356,8 +356,8 @@ def parse_coords(lines):
     lines = filter(None, lines) #remove any blank lines
     
     #now last 2 lines are eigvals and % variation, so read them
-    eigvals = asarray(map(float, lines[-2].split('\t')[1:]))
-    pct_var = asarray(map(float, lines[-1].split('\t')[1:]))
+    eigvals = asarray(lines[-2].split('\t')[1:], dtype=float)
+    pct_var = asarray(lines[-1].split('\t')[1:], dtype=float)
     
     #finally, dump the rest of the lines into a table
     header, result = [], []
@@ -515,9 +515,9 @@ def parse_classic_otu_table(lines,count_map_f=int, remove_empty_rows=False):
                         # added in a try/except to handle OTU tables containing
                         # floating numbers
                         try:
-                            valid_fields = asarray(map(count_map_f,fields[1:-1]))
+                            valid_fields = asarray(fields[1:-1], dtype=count_map_f)
                         except ValueError:
-                            valid_fields = asarray(map(float, fields[1:-1]))
+                            valid_fields = asarray(fields[1:-1], dtype=float)
                         # validate that there are no empty rows
                         if remove_empty_rows and (valid_fields>=0).all() and \
                            sum(valid_fields)==0.0:
@@ -528,9 +528,9 @@ def parse_classic_otu_table(lines,count_map_f=int, remove_empty_rows=False):
                         # added in a try/except to handle OTU tables containing
                         # floating numbers
                         try:
-                            valid_fields = asarray(map(count_map_f,fields[1:]))
+                            valid_fields = asarray(fields[1:], dtype=count_map_f)
                         except ValueError:
-                            valid_fields = asarray(map(float, fields[1:]))
+                            valid_fields = asarray(fields[1:], dtype=float)
                         # validate that there are no empty rows
                         if remove_empty_rows and (valid_fields>=0.0).all() and \
                            sum(valid_fields)==0.0:
@@ -840,7 +840,7 @@ def parse_fastq_qual_score(fastq_lines):
         ascii_to_phred_f = ascii_to_phred64
     
     for header, seq, qual in MinimalFastqParser(fastq_lines):
-        results[header] = asarray(map(ascii_to_phred_f,qual))
+        results[header] = asarray(qual, dtype=ascii_to_phred_f)
     return results
 
 def MinimalQualParser(infile,value_cast_f=int, full_header=False):
@@ -849,7 +849,7 @@ def MinimalQualParser(infile,value_cast_f=int, full_header=False):
         curr_id = rec[0][1:]
         curr_qual = ' '.join(rec[1:])
         try:
-            parts = asarray(map(value_cast_f, curr_qual.split()))
+            parts = asarray(curr_qual.split(), dtype=value_cast_f)
         except ValueError:
             raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
         if full_header:
