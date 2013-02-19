@@ -84,7 +84,11 @@ class BiplotTests(TestCase):
         otu_table = np.array([  [2,0,0,1],
                                 [1,1,1,1],
                                 [0,2,2,1]],float)
+        coord = np.array([  [1,4,7,0],
+                            [2,5,8,1],
+                            [3,6,9,2]],float)
         taxdata = {}
+        taxdata['coord'] = coord
         taxdata['prevalence'] = np.array([0,.5,1])
         taxdata['counts'] = otu_table
         taxdata['lineages'] = np.array(['A','B','C'])
@@ -102,7 +106,11 @@ class BiplotTests(TestCase):
         otu_table = np.array([  [2,0,0,1],
                                 [1,1,1,1],
                                 [0,2,2,1]],float)
+        coord = np.array([  [1,4,7,0],
+                            [2,5,8,1],
+                            [3,6,9,2]],float)
         taxdata = {}
+        taxdata['coord'] = coord
         taxdata['prevalence'] = np.array([0,.5,1])
         taxdata['counts'] = otu_table
         taxdata['lineages'] = np.array(['A','B','C'])
