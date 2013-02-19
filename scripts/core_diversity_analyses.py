@@ -15,7 +15,8 @@ from qiime.util import make_option
 from os import makedirs
 from qiime.util import (load_qiime_config, 
                         parse_command_line_parameters, 
-                        get_options_lookup)
+                        get_options_lookup,
+                        create_dir)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (print_commands,
                             call_commands_serially, 
@@ -115,12 +116,8 @@ def main():
                                    parallel,
                                    option_parser)
     
-    try:
-        makedirs(output_dir)
-    except OSError:
-        option_parser.error("Output directory already exists. Please choose"
-            " a different directory, or force overwrite with -f.")
-        
+    create_dir(output_dir,fail_on_exist=True)
+    
     command_handler = call_commands_serially
     
     if verbose:
