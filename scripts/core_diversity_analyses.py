@@ -73,7 +73,8 @@ script_info['optional_options'] = [\
  make_option('-c','--categories', type='string',
     help=('The metadata category or categories to compare'
           ' (i.e., column headers in the mapping file)'
-          ' for categorical analyses '
+          ' for categorical analyses. These should be passed '
+          ' as a comma-separated list'
           ' [default: %default; do not perform categorical analyses]')),
  options_lookup['jobs_to_start_workflow']
 ]
