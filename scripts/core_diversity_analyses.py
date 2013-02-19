@@ -74,7 +74,7 @@ script_info['optional_options'] = [\
     help=('The metadata category or categories to compare'
           ' (i.e., column headers in the mapping file)'
           ' for categorical analyses. These should be passed '
-          ' as a comma-separated list'
+          ' as a comma-separated list.'
           ' [default: %default; do not perform categorical analyses]')),
  options_lookup['jobs_to_start_workflow']
 ]
@@ -98,13 +98,7 @@ def main():
     nonphylogenetic_diversity = opts.nonphylogenetic_diversity
     
     if opts.parameter_fp != None:
-        try:
-            parameter_f = open(opts.parameter_fp)
-        except IOError:
-            raise IOError,\
-             "Can't open parameters file (%s). Does it exist? Do you have read access?"\
-             % opts.parameter_fp
-        params = parse_qiime_parameters(parameter_f)
+        params = parse_qiime_parameters(open(opts.parameter_fp,'U'))
     else:
         params = parse_qiime_parameters([])
     
