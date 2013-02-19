@@ -25,7 +25,7 @@ def get_taxa(taxa_fname,sample_ids_kept=None):
     taxa_f = open(taxa_fname, 'U')
 
     sample_ids, otu_ids, otu_table, lineages =\
-        parse_otu_table(taxa_f,count_map_f=float)
+        parse_otu_table(taxa_f,count_map_f=float,remove_empty_rows=True)
     if sample_ids_kept:
         sam_idxs = [sample_ids.index(sam) for sam in sample_ids_kept]
         otu_table = otu_table[:,sam_idxs]
@@ -33,7 +33,7 @@ def get_taxa(taxa_fname,sample_ids_kept=None):
 
 
 def get_taxa_coords(tax_counts,sample_coords):
-    """Returns the PCoA coords of each taxon based on the coords of the samples."""    
+    """Returns the PCoA coords of each taxon based on the coords of the samples."""
     # normalize taxa counts along each row/sample (i.e. to get relative abundance)
     tax_counts = apply_along_axis(lambda x: x/float(sum(x)), 0, tax_counts)
     # normalize taxa counts along each column/taxa (i.e. to make PCoA score contributions sum to 1)
@@ -67,6 +67,8 @@ def remove_rare_taxa(taxdata,nkeep=-1):
     
     ixs = argsort(taxdata['prevalence'])
     ixs = ixs[::-1][:nkeep]
+    
+    taxdata['coord'] = taxdata['coord'][ixs,:]
     taxdata['counts'] = taxdata['counts'][ixs,:]
     tmp = [taxdata['lineages'][idx] for idx in ixs]
     taxdata['lineages'] = tmp
