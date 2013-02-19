@@ -20,7 +20,7 @@ import re
 from cogent.util.dict2d import Dict2D
 from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
-from numpy import array, concatenate, repeat, zeros, nan
+from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
@@ -222,7 +222,7 @@ def parse_distmat(lines):
             header = map(strip, line.split('\t')[1:])
         else:
             result.append(map(float, line.split('\t')[1:]))
-    return header, array(result)
+    return header, asarray(result)
 
 def parse_matrix(lines):
     """Parser for a matrix file Tab delimited. skips first lines if led
@@ -239,7 +239,7 @@ def parse_matrix(lines):
             entries = line.split('\t')
             result.append(map(float, entries[1:]))
             row_headers.append(entries[0])
-    return col_headers, row_headers, array(result)
+    return col_headers, row_headers, asarray(result)
 
 def parse_distmat_to_dict(table):
     """Parse a dist matrix into an 2d dict indexed by sample ids.
@@ -356,8 +356,8 @@ def parse_coords(lines):
     lines = filter(None, lines) #remove any blank lines
     
     #now last 2 lines are eigvals and % variation, so read them
-    eigvals = array(map(float, lines[-2].split('\t')[1:]))
-    pct_var = array(map(float, lines[-1].split('\t')[1:]))
+    eigvals = asarray(map(float, lines[-2].split('\t')[1:]))
+    pct_var = asarray(map(float, lines[-1].split('\t')[1:]))
     
     #finally, dump the rest of the lines into a table
     header, result = [], []
@@ -366,7 +366,7 @@ def parse_coords(lines):
         header.append(fields[0])
         result.append(map(float, fields[1:]))
 
-    return header, array(result), eigvals, pct_var
+    return header, asarray(result), eigvals, pct_var
 
 def parse_rarefaction_fname(name_string):
     """returns base, seqs/sam, iteration, extension.  seqs, iters as ints
@@ -508,34 +508,39 @@ def parse_classic_otu_table(lines,count_map_f=int, remove_empty_rows=False):
                 else:
                     # current line is OTU line in OTU table
                     fields = line.split('\t')
-                    # validate that there are no empty rows
-                    if remove_empty_rows and sum(array(map(float,fields[1:])))==0.0:
-                        continue
-                    # grab the OTU ID
-                    otu_id = fields[0].strip()
-                    otu_ids.append(otu_id)
+                    
                     if has_metadata:
                         # if there is OTU metadata the last column gets appended
                         # to the metadata list
                         # added in a try/except to handle OTU tables containing
                         # floating numbers
                         try:
-                            otu_table.append(array(map(count_map_f,
-                                                       fields[1:-1])))
+                            valid_fields = asarray(map(count_map_f,fields[1:-1]))
                         except ValueError:
-                            otu_table.append(array(map(float, fields[1:-1])))
-                            
+                            valid_fields = asarray(map(float, fields[1:-1]))
+                        # validate that there are no empty rows
+                        if remove_empty_rows and (valid_fields>=0).all() and \
+                           sum(valid_fields)==0.0:
+                            continue
                         metadata.append(map(strip, fields[-1].split(';')))
                     else:
                         # otherwise all columns are appended to otu_table
                         # added in a try/except to handle OTU tables containing
                         # floating numbers
                         try:
-                            otu_table.append(array(map(count_map_f,fields[1:])))
+                            valid_fields = asarray(map(count_map_f,fields[1:]))
                         except ValueError:
-                            otu_table.append(array(map(float, fields[1:])))
+                            valid_fields = asarray(map(float, fields[1:]))
+                        # validate that there are no empty rows
+                        if remove_empty_rows and (valid_fields>=0.0).all() and \
+                           sum(valid_fields)==0.0:
+                            continue
+                    otu_table.append(valid_fields)
+                    # grab the OTU ID    
+                    otu_id = fields[0].strip()
+                    otu_ids.append(otu_id)
                         
-    return sample_ids, otu_ids, array(otu_table), metadata
+    return sample_ids, otu_ids, asarray(otu_table), metadata
 parse_otu_table = parse_classic_otu_table
 
 
@@ -585,7 +590,7 @@ def make_envs_dict(abund_mtx, sample_names, taxon_names):
             "Shape of matrix %s doesn't match # samples and # taxa (%s and %s)"%\
             (abund_mtx.shape, num_samples, num_seqs)
     envs_dict = {}
-    sample_names=array(sample_names)
+    sample_names=asarray(sample_names)
     for i, taxon in enumerate(abund_mtx.T):
         
         nonzeros=taxon.nonzero() # this removes zero values to reduce memory
@@ -835,7 +840,7 @@ def parse_fastq_qual_score(fastq_lines):
         ascii_to_phred_f = ascii_to_phred64
     
     for header, seq, qual in MinimalFastqParser(fastq_lines):
-        results[header] = array(map(ascii_to_phred_f,qual))
+        results[header] = asarray(map(ascii_to_phred_f,qual))
     return results
 
 def MinimalQualParser(infile,value_cast_f=int, full_header=False):
@@ -844,7 +849,7 @@ def MinimalQualParser(infile,value_cast_f=int, full_header=False):
         curr_id = rec[0][1:]
         curr_qual = ' '.join(rec[1:])
         try:
-            parts = array(map(value_cast_f, curr_qual.split()))
+            parts = asarray(map(value_cast_f, curr_qual.split()))
         except ValueError:
             raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
         if full_header:
@@ -924,7 +929,7 @@ def parse_trflp(lines):
             
         data.append(current_row)
     
-    return sample_ids, otu_ids, array(data).transpose()
+    return sample_ids, otu_ids, asarray(data).transpose()
     
 def parse_denoiser_mapping(denoiser_map):
     """ read a denoiser mapping file into a dictionary """
