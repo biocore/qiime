@@ -33,7 +33,7 @@ QIIME command line interfaces should adhere to the following standards:
  
  * Your usage string should be defined in a variable called ``usage_str`` as a multiline string outside of the function that is using it. This makes the code look neater, and will help automated documentation tools find that text (eventually). 
 
- * Scripts that process a metadata mapping file and a data file (biom-formatted otu table, distance matrix, principal coordinates file, etc.) within QIIME, should execute faultlessly in the case where sample identifiers exist only in the mapping file but not in the data files.
+ * Scripts that process a metadata mapping file and a data file (biom-formatted otu table, distance matrix, principal coordinates file, etc.) within QIIME, should always ignore sample identifiers that exist in the mapping file, but not in the data file.
 
 
 Naming command line options
