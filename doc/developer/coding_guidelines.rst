@@ -27,11 +27,13 @@ QIIME command line interfaces should adhere to the following standards:
 
  * Non-required options must contain their default values in the help string. Typically your help string should end with ``[default: %default]``. optparse will replace ``%default`` with the default value you provide. In some case using ``%default`` is not possible, for example if -o refers to an output file, and the default behavior is to name the output file based on the name of the input file. In that case you should be as descriptive as possible. In this case ``[default: <input_fp>.out]`` is a good way to list the default value.
 
- * You must test for the presence of required_options, and call parser.error if the user fails to provide a required option
+ * You must test for the presence of required_options, and call parser.error if the user fails to provide a required option.
 
  * if you have been passing dest= to parser.add_option, note that you do not need to do this -- dest will be generated from the long format option (e.g., the value passed to --input_file will be stored in input_file)
  
  * Your usage string should be defined in a variable called ``usage_str`` as a multiline string outside of the function that is using it. This makes the code look neater, and will help automated documentation tools find that text (eventually). 
+
+ * Scripts that process a metadata mapping file and a data file (biom-formatted otu table, distance matrix, principal coordinates file, etc.) within QIIME, should always ignore sample identifiers that exist in the mapping file, but not in the data file.
 
 
 Naming command line options
