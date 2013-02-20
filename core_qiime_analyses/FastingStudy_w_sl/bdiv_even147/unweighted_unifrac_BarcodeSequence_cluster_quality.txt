@@ -1,6 +1,0 @@
-dissimilarity ratio between/within (large for clustered data):
-nan
-dissimilarities between clusters: mean, std, num:
-0.698122856553	0.067027053121	28
-dissimilarities within clusters: mean, std, num:
-nan	0.0	0
