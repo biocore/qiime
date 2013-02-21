@@ -18,7 +18,7 @@ from qiime.util import (load_qiime_config,
                         parse_command_line_parameters,
                         get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import (run_pick_reference_otus_through_otu_table,
+from qiime.workflow.util import (run_pick_reference_otus_through_otu_table,
                             print_commands,
                             call_commands_serially,
                             print_to_stdout,

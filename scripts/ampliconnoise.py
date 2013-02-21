@@ -16,7 +16,7 @@ from qiime.util import make_option
 from os import makedirs
 from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import (run_ampliconnoise, print_commands,
+from qiime.workflow.util import (run_ampliconnoise, print_commands,
     call_commands_serially, print_to_stdout, no_status_updates,
     validate_and_set_jobs_to_start)
 import os
