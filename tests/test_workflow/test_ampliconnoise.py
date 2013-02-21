@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# File created on 30 Mar 2010
+# File created on 20 Feb 2013
 from __future__ import division
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,7 +16,7 @@ from shutil import rmtree
 from glob import glob
 from tarfile import open as open_tarfile
 from os.path import join, exists, getsize, split, splitext, dirname
-from os import makedirs, system, chdir, getcwd
+from os import makedirs, system
 from numpy import array, absolute
 from cogent import LoadTree, LoadSeqs
 from cogent.parse.fasta import MinimalFastaParser
@@ -25,40 +25,28 @@ from cogent.util.misc import remove_files
 from cogent.app.util import ApplicationNotFoundError
 from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
-from qiime.util import load_qiime_config, count_seqs
+from qiime.util import (load_qiime_config,
+                        count_seqs,
+                        get_qiime_temp_dir)
 from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
-from qiime.workflow.util import (
-    run_qiime_data_preparation,
-    run_pick_reference_otus_through_otu_table,
-    call_commands_serially,
-    no_status_updates,
-    WorkflowError,
-    run_ampliconnoise)
+from qiime.workflow.util import (call_commands_serially,
+                                 no_status_updates,
+                                 WorkflowError)
+from qiime.workflow.ampliconnoise import (run_ampliconnoise)
+from qiime.test import initiate_timeout, disable_timeout
 
-
-# function to stop/start the timeout with longer
-# timer for certain tests
-def restart_timeout(seconds):
-    disable_timeout()
-    initiate_timeout(seconds)
-
-class WorkflowTests(TestCase):
+class AmpliconNoiseWorkflowTests(TestCase):
     
     def setUp(self):
         """ """
-        self.start_dir = getcwd()
         self.qiime_config = load_qiime_config()
         self.dirs_to_remove = []
         self.files_to_remove = []
         
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
-        if not exists(self.tmp_dir):
-            makedirs(self.tmp_dir)
-            # if test creates the temp dir, also remove it
-            self.dirs_to_remove.append(self.tmp_dir)
+        self.tmp_dir = get_qiime_temp_dir()
         
         self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='qiime_wf_out',suffix='',result_constructor=str)
@@ -183,32 +171,52 @@ class WorkflowTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        # change back to the start dir - some workflows change directory
-        chdir(self.start_dir)
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
+
+    def test_run_ampliconnoise(self):
+        """ ampliconnoise workflow functions as expected """
+        test_dir = dirname(os.path.abspath(__file__))
+        sff_txt_fp = join(test_dir,'..',
+                                  'test_support_files',
+                                  'Fasting_Example.sff.txt')
+        output_fp = join(self.wf_out,'ampliconnoise_out.fna')
+        output_dir = join(self.wf_out,'ampliconnoise_out.fna_dir')
         
-    def test_unsupported_options_handled_nicely(self):
-        """WorkflowError raised on unsupported option """
-        self.params['beta_diversity']['blah'] = self.fasting_otu_table_fp
-        self.assertRaises(WorkflowError,run_beta_diversity_through_plots,
-         self.fasting_otu_table_fp, 
-         self.fasting_mapping_fp,
-         self.wf_out, 
-         call_commands_serially,
-         self.params,
-         self.qiime_config,
-         tree_fp=self.fasting_tree_fp,
-         parallel=False, 
-         status_update_callback=no_status_updates)
+        self.files_to_remove.append(output_fp)
+        self.dirs_to_remove.append(output_dir)
         
+        run_ampliconnoise(mapping_fp=self.fasting_mapping_fp,
+                          output_dir=output_dir,
+                          command_handler=call_commands_serially,
+                          params=parse_qiime_parameters([]),
+                          qiime_config=self.qiime_config,
+                          logger=None, 
+                          status_update_callback=no_status_updates,
+                          chimera_alpha=-3.8228,
+                          chimera_beta=0.6200,
+                          sff_txt_fp=sff_txt_fp,
+                          numnodes=2,
+                          suppress_perseus=True,
+                          output_filepath=output_fp, 
+                          platform='flx',
+                          seqnoise_resolution=None,
+                          truncate_len=None)
+                          
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(output_dir,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+        # Check that a reasonable number of sequences were written
+        # to the output file
+        seq_count, a, b = count_seqs(output_fp)
+        self.assertTrue(seq_count > 500,
+            ("Sanity check of sequence count failed - "
+            "fewer than 1000 sequences in output file."))
 
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
@@ -17329,7 +17337,6 @@ parallel:seconds_to_sleep	1"""
 run_core_qiime_analyses_params1 = """
 parallel:jobs_to_start	2
 parallel:seconds_to_sleep	2"""
-
 
 if __name__ == "__main__":
     main()
