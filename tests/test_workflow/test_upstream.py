@@ -176,6 +176,10 @@ class UpstreamWorkflowTests(TestCase):
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
           'reference_seqs_fp':self.test_data['refseqs'][0]}
+        self.params['align_seqs'] = \
+         {'template_fp':self.test_data['refseqs_aligned'][0]}
+        self.params['filter_alignment'] = \
+         {'lane_mask_fp':self.test_data['refseqs_aligned_lanemask'][0]}
         actual_tree_fp, actual_otu_table_fp = run_pick_otus_through_otu_table(
          self.test_data['seqs'][0], 
          self.test_out, 
@@ -251,6 +255,10 @@ class UpstreamWorkflowTests(TestCase):
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
           'reference_seqs_fp':self.test_data['refseqs'][0]}
+        self.params['align_seqs'] = \
+         {'template_fp':self.test_data['refseqs_aligned'][0]}
+        self.params['filter_alignment'] = \
+         {'lane_mask_fp':self.test_data['refseqs_aligned_lanemask'][0]}
         actual_tree_fp, actual_otu_table_fp = run_pick_otus_through_otu_table(
          self.test_data['seqs'][0], 
          self.test_out, 
