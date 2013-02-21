@@ -30,14 +30,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-"""
-This file contains the QIIME workflow functions which string together 
-independent scripts. For usage examples see the related files in the 
-scripts directory:
- - 
-"""
-
-
 def generate_log_fp(output_dir,
                     basefile_name='log',
                     suffix='txt',
