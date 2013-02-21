@@ -17,12 +17,11 @@ from glob import glob
 from os.path import exists, join, getsize
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
-from qiime.util import (load_qiime_config, 
+from qiime.util import (load_qiime_config,
+                        get_tmp_filename,
                         get_qiime_temp_dir,
                         create_dir)
-from qiime.parse import (parse_qiime_parameters)
-from biom.parse import parse_biom_table
+from qiime.parse import parse_qiime_parameters
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
@@ -31,12 +30,6 @@ from qiime.workflow.util import (call_commands_serially,
                                  WorkflowError)
 from qiime.workflow.downstream import run_beta_diversity_through_plots
 
-
-# function to stop/start the timeout with longer
-# timer for certain tests
-def restart_timeout(seconds):
-    disable_timeout()
-    initiate_timeout(seconds)
 
 class WorkflowTests(TestCase):
     
