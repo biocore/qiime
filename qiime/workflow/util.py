@@ -37,7 +37,7 @@ scripts directory:
  - 
 """
 
-## Start utilities used by the workflow functions
+
 def generate_log_fp(output_dir,
                     basefile_name='log',
                     suffix='txt',
@@ -176,19 +176,6 @@ def log_input_md5s(logger,fps):
         if fp != None:
             logger.write("%s: %s\n" % (fp, safe_md5(open(fp)).hexdigest()))
     logger.write("\n")
-    
-
-## End utilities used by the workflow functions
-
-## Begin task-specific workflow functions
-
-    
-    
-## Start reference otu picking workflow
-
-
-## Begin task-specific workflow functions
-
 
 
 
