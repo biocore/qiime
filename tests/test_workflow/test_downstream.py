@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,16 +16,11 @@ import sys
 from StringIO import StringIO
 from shutil import rmtree
 from glob import glob
-from tarfile import open as open_tarfile
-from os.path import join, exists, getsize, split, splitext, dirname
 from os import makedirs, system
-from numpy import array, absolute
-from cogent import LoadTree, LoadSeqs
-from cogent.parse.fasta import MinimalFastaParser
+from os.path import join, exists, getsize, split, splitext
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.util import ApplicationNotFoundError
-from cogent.parse.binary_sff import parse_binary_sff
+from biom.parse import parse_biom_table
 from qiime.compare_alpha_diversity import compare_alpha_diversities
 from qiime.util import (get_tmp_filename,
                         load_qiime_config,
@@ -33,8 +28,9 @@ from qiime.util import (get_tmp_filename,
                         get_qiime_temp_dir,
                         create_dir)
 from qiime.parse import (parse_qiime_parameters,
-    parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
-from biom.parse import parse_biom_table
+                         parse_distmat_to_dict,
+                         parse_distmat,
+                         parse_taxa_summary_table)
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
