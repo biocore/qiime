@@ -39,7 +39,7 @@ from qiime.workflow.upstream import (run_pick_reference_otus_through_otu_table,
                                      run_qiime_data_preparation)
 from qiime.test import initiate_timeout, disable_timeout
 
-class WorkflowTests(TestCase):
+class UpstreamWorkflowTests(TestCase):
     
     def setUp(self):
         """ """
