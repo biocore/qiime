@@ -27,16 +27,15 @@ from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import load_qiime_config, count_seqs
 from qiime.parse import (parse_qiime_parameters,
-    parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
+                         parse_distmat_to_dict,
+                         parse_distmat,
+                         parse_taxa_summary_table)
 from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
-from qiime.workflow.util import (
-    run_qiime_data_preparation,
-    run_pick_reference_otus_through_otu_table,
-    call_commands_serially,
-    no_status_updates,
-    WorkflowError,
-    run_ampliconnoise)
+from qiime.workflow.util import (call_commands_serially,
+                                 no_status_updates,
+                                 WorkflowError)
+from qiime.workflow.downstream import run_beta_diversity_through_plots
 
 
 # function to stop/start the timeout with longer
