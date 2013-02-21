@@ -27,11 +27,14 @@ from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import (load_qiime_config,
                         count_seqs,
-                        get_qiime_temp_dir)
+                        get_qiime_temp_dir,
+                        create_dir)
 from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from biom.parse import parse_biom_table
-from qiime.test import initiate_timeout, disable_timeout
+from qiime.test import (initiate_timeout,
+                        disable_timeout,
+                        get_test_data_fps)
 from qiime.workflow.util import (call_commands_serially,
                                  no_status_updates,
                                  WorkflowError)
@@ -43,135 +46,28 @@ class UpstreamWorkflowTests(TestCase):
     
     def setUp(self):
         """ """
-        self.qiime_config = load_qiime_config()
-        self.dirs_to_remove = []
+        self.test_data = get_test_data_fps()
         self.files_to_remove = []
+        self.dirs_to_remove = []
         
-        self.tmp_dir = get_qiime_temp_dir()
+        # Create example output directory
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='core_qiime_analyses_test_',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
         
-        self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='qiime_wf_out',suffix='',result_constructor=str)
-        self.dirs_to_remove.append(self.wf_out)
+        self.qiime_config = load_qiime_config()
+        self.params = parse_qiime_parameters([])
         
-        self.fasting_mapping_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='qiime_wf_mapping',suffix='.txt')
-        fasting_mapping_f = open(self.fasting_mapping_fp,'w')
-        fasting_mapping_f.write(fasting_map)
-        fasting_mapping_f.close()
-        self.files_to_remove.append(self.fasting_mapping_fp)
-        
-        self.fasting_seqs_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_seqs',suffix='.fasta')
-        fasting_seqs_f = open(self.fasting_seqs_fp,'w')
-        fasting_seqs_f.write(fasting_seqs_subset)
-        fasting_seqs_f.close()
-        self.files_to_remove.append(self.fasting_seqs_fp)
-        
-        self.fasting_fna_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_fna',suffix='.fasta')
-        fasting_seqs_f = open(self.fasting_fna_fp,'w')
-        fasting_seqs_f.write(fasting_tutorial_fna)
-        fasting_seqs_f.close()
-        self.files_to_remove.append(self.fasting_fna_fp)
-
-        self.fasting_qual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_qual',suffix='.qual')
-        fasting_seqs_f = open(self.fasting_qual_fp,'w')
-        fasting_seqs_f.write(fasting_tutorial_qual)
-        fasting_seqs_f.close()
-        self.files_to_remove.append(self.fasting_qual_fp)
-        
-        self.fasting_seqs_denoiser_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_denoiser_seqs',suffix='.fasta')
-        fasting_seqs_f = open(self.fasting_seqs_denoiser_fp,'w')
-        fasting_seqs_f.write('\n'.join(fasting_seqs_subset.split('\n')[:44]))
-        fasting_seqs_f.close()
-        self.files_to_remove.append(self.fasting_seqs_denoiser_fp)
-        
-        self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_otu_table',suffix='.biom')
-        fasting_otu_table_f = open(self.fasting_otu_table_fp,'w')
-        fasting_otu_table_f.write(fasting_subset_otu_table)
-        fasting_otu_table_f.close()
-        self.files_to_remove.append(self.fasting_otu_table_fp)
-        
-        self.fasting_tree_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_tree',suffix='.tre')
-        fasting_tree_f = open(self.fasting_tree_fp,'w')
-        fasting_tree_f.write(fasting_subset_tree)
-        fasting_tree_f.close()
-        self.files_to_remove.append(self.fasting_tree_fp)
-        
-        self.template_aln_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='wf_template',suffix='.fasta')
-        template_aln_f = open(self.template_aln_fp,'w')
-        template_aln_f.write(template_alignment_subset)
-        template_aln_f.close()
-        self.files_to_remove.append(self.template_aln_fp)
-        
-        self.lanemask_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='wf_lanemask',suffix='.txt')
-        lanemask_f = open(self.lanemask_fp,'w')
-        lanemask_f.write(lanemask)
-        lanemask_f.close()
-        self.files_to_remove.append(self.lanemask_fp)
-        
-        self.fasting_subset_fna = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='wf_denoise_fna',suffix='.fasta')
-        sff_f = open(self.fasting_subset_fna,'w')
-        sff_f.write(fasting_subset_fna)
-        sff_f.close()
-        self.files_to_remove.append(self.fasting_subset_fna)
-        
-        self.fasting_subset_qual = get_tmp_filename(tmp_dir=self.tmp_dir,
-         prefix='wf_denoise_qual',suffix='.qual')
-        sff_f = open(self.fasting_subset_qual,'w')
-        sff_f.write(fasting_subset_qual)
-        sff_f.close()
-        self.files_to_remove.append(self.fasting_subset_qual)
-
-        working_dir = self.qiime_config['working_dir'] or './'
-        jobs_dir = join(working_dir,'jobs')
-        if not exists(jobs_dir):
-            # only clean up the jobs dir if it doesn't already exist
-            self.dirs_to_remove.append(jobs_dir)
-        self.params = parse_qiime_parameters(qiime_parameters_f)
-        self.params['align_seqs']['template_fp'] = self.template_aln_fp
-        self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
-        
-        self.pick_ref_otus_seqs1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
-        f = open(self.pick_ref_otus_seqs1,'w')
-        f.write(pick_ref_otus_seqs1)
-        f.close()
-        self.files_to_remove.append(self.pick_ref_otus_seqs1)
-        
-        self.pick_ref_otus_refseqs1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
-        f = open(self.pick_ref_otus_refseqs1,'w')
-        f.write(pick_ref_otus_refseqs1)
-        f.close()
-        self.files_to_remove.append(self.pick_ref_otus_refseqs1)
-        
-        self.pick_ref_otus_tax1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
-        f = open(self.pick_ref_otus_tax1,'w')
-        f.write(pick_ref_otus_tax1)
-        f.close()
-        self.files_to_remove.append(self.pick_ref_otus_tax1)
-        
-        self.pick_ref_otus_params1 =\
-         parse_qiime_parameters(pick_ref_otus_params1.split('\n'))
-        
-        self.run_core_qiime_analyses_params1 =\
-         parse_qiime_parameters(run_core_qiime_analyses_params1.split('\n'))
-        
-        initiate_timeout(240)
-        
+        initiate_timeout(60)
     
     def tearDown(self):
         """ """
         disable_timeout()
+        
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
@@ -182,35 +78,34 @@ class UpstreamWorkflowTests(TestCase):
     def test_run_pick_reference_otus_through_otu_table(self):
         """run_pick_reference_otus_through_otu_table generates expected results"""
         run_pick_reference_otus_through_otu_table(
-         self.pick_ref_otus_seqs1,
-         self.pick_ref_otus_refseqs1,
-         self.wf_out,
-         self.pick_ref_otus_tax1,
+         self.test_data['seqs'][0],
+         self.test_data['refseqs'][0],
+         self.test_out,
+         self.test_data['refseqs_tax'][0],
          call_commands_serially,
-         self.pick_ref_otus_params1, 
+         self.params, 
          self.qiime_config, 
          parallel=False,
          status_update_callback=no_status_updates)
 
-        input_file_basename = splitext(split(self.pick_ref_otus_seqs1)[1])[0]
-        otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
+        otu_table_fp = join(self.test_out,'uclust_ref_picked_otus',
          'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        expected_sample_ids = ['S1','S2','S3']
+        expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
         self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
         num_otus = len(otu_map_lines)
         otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
-        self.assertEqual(num_otus,4)
+        self.assertEqual(num_otus,3)
 
         # parse the otu table
-        input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        expected_sample_ids = ['S1','S2','S3']
+        expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
         # sample IDs are as expected
         self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
@@ -218,52 +113,48 @@ class UpstreamWorkflowTests(TestCase):
         
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table,5)
+        self.assertEqual(number_seqs_in_otu_table,117)
         
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.ObservationMetadata),4)
+        self.assertEqual(len(otu_table.ObservationMetadata),3)
 
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
         
     def test_run_pick_reference_otus_through_otu_table_parallel(self):
-        """run_pick_reference_otus_through_otu_table generates expected results"""
+        """run_pick_reference_otus_through_otu_table generates expected results in parallel
+        """
         run_pick_reference_otus_through_otu_table(
-         self.pick_ref_otus_seqs1,
-         self.pick_ref_otus_refseqs1,
-         self.wf_out,
-         None,
+         self.test_data['seqs'][0],
+         self.test_data['refseqs'][0],
+         self.test_out,
+         self.test_data['refseqs_tax'][0],
          call_commands_serially,
-         self.pick_ref_otus_params1, 
+         self.params, 
          self.qiime_config, 
          parallel=True,
          status_update_callback=no_status_updates)
 
-        input_file_basename = splitext(split(self.pick_ref_otus_seqs1)[1])[0]
-        otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
+        otu_table_fp = join(self.test_out,'uclust_ref_picked_otus',
          'otu_table.biom')
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
 
-        # Number of OTUs matches manually confirmed result -- 
-        # in parallel there are no new clusters so num otus will be 4
+        # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
         num_otus = len(otu_map_lines)
         otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
-        otu_map_seqs = []
-        for o in otu_map_lines:
-            otu_map_seqs.extend(o.strip().split()[1:])
-        self.assertEqual(num_otus,4)
-        self.assertFalse("S1_s0" in otu_map_seqs)
-        self.assertFalse("S1_s7" in otu_map_seqs)
-        self.assertTrue("S3_s4" in otu_map_seqs)
+        self.assertEqual(num_otus,3)
 
         # parse the otu table
-        input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        expected_sample_ids = ['S1','S2','S3']
+        expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
         # sample IDs are as expected
         self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
@@ -271,20 +162,20 @@ class UpstreamWorkflowTests(TestCase):
         
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table,5)
+        self.assertEqual(number_seqs_in_otu_table,117)
         
-        # No tax provided
-        self.assertEqual(otu_table.ObservationMetadata,None)
+        # One tax assignment per otu
+        self.assertEqual(len(otu_table.ObservationMetadata),3)
 
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_data_preparation(self):
         """run_qiime_data_preparation generates expected results"""
         actual_tree_fp, actual_otu_table_fp = run_qiime_data_preparation(
          self.fasting_seqs_fp, 
-         self.wf_out, 
+         self.test_out, 
          call_commands_serially,
          self.params, 
          self.qiime_config, 
@@ -292,19 +183,19 @@ class UpstreamWorkflowTests(TestCase):
          status_update_callback=no_status_updates)
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
-        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
+        otu_map_fp = join(self.test_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,
+        alignment_fp = join(self.test_out,
          'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        failures_fp = join(self.wf_out,
+        failures_fp = join(self.test_out,
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,
+        taxonomy_assignments_fp = join(self.test_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.biom')
-        tree_fp = join(self.wf_out,'rep_set.tre')
+        otu_table_fp = join(self.test_out,'otu_table.biom')
+        tree_fp = join(self.test_out,'rep_set.tre')
         
         self.assertEqual(actual_tree_fp,tree_fp)
         self.assertEqual(actual_otu_table_fp,otu_table_fp)
@@ -349,7 +240,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
         
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_data_preparation_muscle(self):
@@ -361,7 +252,7 @@ class UpstreamWorkflowTests(TestCase):
         
         run_qiime_data_preparation(
          self.fasting_seqs_fp, 
-         self.wf_out, 
+         self.test_out, 
          call_commands_serially,
          self.params, 
          self.qiime_config, 
@@ -369,16 +260,16 @@ class UpstreamWorkflowTests(TestCase):
          status_update_callback=no_status_updates)
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
-        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
+        otu_map_fp = join(self.test_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,
+        alignment_fp = join(self.test_out,
          'muscle_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,
+        taxonomy_assignments_fp = join(self.test_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.biom')
-        tree_fp = join(self.wf_out,'rep_set.tre')        
+        otu_table_fp = join(self.test_out,'otu_table.biom')
+        tree_fp = join(self.test_out,'rep_set.tre')        
          
         # Number of OTUs falls within a range that was manually 
         # confirmed
@@ -406,7 +297,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(otu_table_fp) > 0)
         
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
         # parse the otu table
@@ -429,7 +320,7 @@ class UpstreamWorkflowTests(TestCase):
         """
         run_qiime_data_preparation(
          self.fasting_seqs_fp, 
-         self.wf_out, 
+         self.test_out, 
          call_commands_serially,
          self.params, 
          self.qiime_config, 
@@ -438,19 +329,19 @@ class UpstreamWorkflowTests(TestCase):
          
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
-        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
+        otu_map_fp = join(self.test_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,
+        alignment_fp = join(self.test_out,
          'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        failures_fp = join(self.wf_out,
+        failures_fp = join(self.test_out,
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,
+        taxonomy_assignments_fp = join(self.test_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.biom')
-        tree_fp = join(self.wf_out,'rep_set.tre')
+        otu_table_fp = join(self.test_out,'otu_table.biom')
+        tree_fp = join(self.test_out,'rep_set.tre')
         
         # Number of OTUs falls within a range that was manually 
         # confirmed
@@ -492,7 +383,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
         
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
 
