@@ -31,3 +31,13 @@ pip-log.txt
 
 #OS X files
 .DS_Store
+
+# compile denoiser files
+qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.hi
+qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.o
+qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame
+qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame.hi
+qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame.o
+qiime/support_files/denoiser/FlowgramAlignment/FlowgramUtils.hi
+qiime/support_files/denoiser/FlowgramAlignment/FlowgramUtils.o
+scripts/FlowgramAli_4frame
