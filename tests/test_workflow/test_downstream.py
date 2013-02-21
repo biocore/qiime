@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# File created on 30 Mar 2010
+# File created on 20 Feb 2013
 from __future__ import division
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,7 +16,7 @@ from shutil import rmtree
 from glob import glob
 from tarfile import open as open_tarfile
 from os.path import join, exists, getsize, split, splitext, dirname
-from os import makedirs, system, chdir, getcwd
+from os import makedirs, system
 from numpy import array, absolute
 from cogent import LoadTree, LoadSeqs
 from cogent.parse.fasta import MinimalFastaParser
@@ -25,40 +25,31 @@ from cogent.util.misc import remove_files
 from cogent.app.util import ApplicationNotFoundError
 from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
-from qiime.util import load_qiime_config, count_seqs
+from qiime.util import (load_qiime_config,
+                        count_seqs,
+                        get_qiime_temp_dir)
 from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
-from qiime.workflow.util import (
-    run_qiime_data_preparation,
-    run_pick_reference_otus_through_otu_table,
-    call_commands_serially,
-    no_status_updates,
-    WorkflowError,
-    run_ampliconnoise)
+from qiime.workflow.util import (call_commands_serially,
+                                 no_status_updates,
+                                 WorkflowError)
+from qiime.workflow.downstream import (run_beta_diversity_through_plots,
+                                       run_qiime_alpha_rarefaction,
+                                       run_jackknifed_beta_diversity,
+                                       run_summarize_taxa_through_plots)
+from qiime.test import initiate_timeout, disable_timeout
 
-
-# function to stop/start the timeout with longer
-# timer for certain tests
-def restart_timeout(seconds):
-    disable_timeout()
-    initiate_timeout(seconds)
-
-class WorkflowTests(TestCase):
+class DownstreamWorkflowTests(TestCase):
     
     def setUp(self):
         """ """
-        self.start_dir = getcwd()
         self.qiime_config = load_qiime_config()
         self.dirs_to_remove = []
         self.files_to_remove = []
         
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
-        if not exists(self.tmp_dir):
-            makedirs(self.tmp_dir)
-            # if test creates the temp dir, also remove it
-            self.dirs_to_remove.append(self.tmp_dir)
+        self.tmp_dir = get_qiime_temp_dir()
         
         self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='qiime_wf_out',suffix='',result_constructor=str)
@@ -183,19 +174,18 @@ class WorkflowTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        # change back to the start dir - some workflows change directory
-        chdir(self.start_dir)
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
-        
-    def test_unsupported_options_handled_nicely(self):
-        """WorkflowError raised on unsupported option """
-        self.params['beta_diversity']['blah'] = self.fasting_otu_table_fp
-        self.assertRaises(WorkflowError,run_beta_diversity_through_plots,
+
+         
+    def test_run_beta_diversity_through_plots(self):
+        """ run_beta_diversity_through_plots generates expected results
+        """
+        run_beta_diversity_through_plots(
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
          self.wf_out, 
@@ -206,49 +196,513 @@ class WorkflowTests(TestCase):
          parallel=False, 
          status_update_callback=no_status_updates)
         
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+         
+    def test_run_beta_diversity_through_plots_even_sampling(self):
+        """ run_beta_diversity_through_plots functions with even sampling
+        """
+        run_beta_diversity_through_plots(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         sampling_depth=147,
+         tree_fp=self.fasting_tree_fp,
+         parallel=False, 
+         status_update_callback=no_status_updates)
+        
+        otu_table_basename = \
+         splitext(split(self.fasting_otu_table_fp)[1])[0] + '_even147'
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertFalse('PC.355' in dm,
+                         "Even sampling does not drop expected sample.")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertFalse('PC.355' in dm,
+                         "Even sampling does not drop expected sample.")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+
+
+      
+    def test_run_beta_diversity_through_plots_parallel(self):
+        """run_beta_diversity_through_plots (parallel) generates expected results
+        """
+        run_beta_diversity_through_plots(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         parallel=True, 
+         status_update_callback=no_status_updates)
+        
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_qiime_alpha_rarefaction(self):
+        """ run_qiime_alpha_rarefaction generates expected results """
+
+        run_qiime_alpha_rarefaction(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         num_steps=10, 
+         parallel=False, 
+         min_rare_depth=10,\
+         status_update_callback=no_status_updates)
+         
+        pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'html_plots','PD_whole_treecol_3_row_4_ave.png')
+        pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_plots','PD_whole_treeTreatment.png')
+        pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_tables','PD_whole_treeTreatment.txt')
+        pd_collated_fp = join(self.wf_out,'alpha_div_collated',
+         'PD_whole_tree.txt')
+        
+        # For all samples, test that PD generally increases 
+        # with more sequences -- this may occasionally fail, but
+        # it should be rare (because rarefaction is done randomly)
+        pd_collated_f = list(open(pd_collated_fp))
+        for col in range(3,11):
+            pd_step1 = pd_collated_f[1].strip().split()[col]
+            pd_step5 = pd_collated_f[5].strip().split()[col]
+            pd_step11 = pd_collated_f[11].strip().split()[col]
+            self.assertTrue(pd_step1 < pd_step5 < pd_step11,
+             "PD did not increase with more sequences.")
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(pd_control_plot_fp) > 0)
+        self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
+        self.assertTrue(getsize(pd_averages_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_qiime_alpha_rarefaction_parallel(self):
+        """run_qiime_alpha_rarefaction (parallel) generates expected results
+        """
+    
+        run_qiime_alpha_rarefaction(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         num_steps=10, 
+         parallel=True, 
+         min_rare_depth=10,\
+         status_update_callback=no_status_updates)
+         
+        pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'html_plots','PD_whole_treecol_3_row_4_ave.png')
+        pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_plots','PD_whole_treeTreatment.png')
+        pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_tables','PD_whole_treeTreatment.txt')
+        pd_collated_fp = join(self.wf_out,'alpha_div_collated',
+         'PD_whole_tree.txt')
+        
+        # For all samples, test that PD generally increases 
+        # with more sequences -- this may occasionally fail, but
+        # it should be rare (because rarefaction is done randomly)
+        pd_collated_f = list(open(pd_collated_fp))
+        for col in range(3,11):
+            pd_step1 = pd_collated_f[1].strip().split()[col]
+            pd_step5 = pd_collated_f[5].strip().split()[col]
+            pd_step11 = pd_collated_f[11].strip().split()[col]
+            self.assertTrue(pd_step1 < pd_step5 < pd_step11,
+             "PD did not increase with more sequences.")
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(pd_control_plot_fp) > 0)
+        self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
+        self.assertTrue(getsize(pd_averages_fp) > 0)
+        
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
          
-    def test_run_ampliconnoise(self):
-        """ ampliconnoise workflow functions as expected """
-        test_dir = dirname(os.path.abspath(__file__))
-        sff_txt_fp = join(test_dir,
-                                  'test_support_files',
-                                  'Fasting_Example.sff.txt')
-        output_fp = join(self.wf_out,'ampliconnoise_out.fna')
-        output_dir = join(self.wf_out,'ampliconnoise_out.fna_dir')
+    def test_run_jackknifed_beta_diversity(self):
+        """ run_jackknifed_beta_diversity generates expected results """
+
+        run_jackknifed_beta_diversity(
+         self.fasting_otu_table_fp,
+         self.fasting_tree_fp,
+         100,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         mapping_fp=self.fasting_mapping_fp,
+         parallel=False,
+         status_update_callback=no_status_updates)
+         
+        weighted_unifrac_upgma_tree_fp = join(self.wf_out,
+         'weighted_unifrac',
+         'upgma_cmp','jackknife_named_nodes.tre')
+        unweighted_unifrac_upgma_tree_fp = join(
+         self.wf_out,'unweighted_unifrac','upgma_cmp',
+         'jackknife_named_nodes.tre')
         
-        self.files_to_remove.append(output_fp)
-        self.dirs_to_remove.append(output_dir)
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,
+         'unweighted_unifrac_%s.txt' % input_file_basename)
+        weighted_unifrac_dm_fp = join(self.wf_out,
+         'weighted_unifrac_%s.txt' % input_file_basename)
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
         
-        run_ampliconnoise(mapping_fp=self.fasting_mapping_fp,
-                          output_dir=output_dir,
-                          command_handler=call_commands_serially,
-                          params=parse_qiime_parameters([]),
-                          qiime_config=self.qiime_config,
-                          logger=None, 
-                          status_update_callback=no_status_updates,
-                          chimera_alpha=-3.8228,
-                          chimera_beta=0.6200,
-                          sff_txt_fp=sff_txt_fp,
-                          numnodes=2,
-                          suppress_perseus=True,
-                          output_filepath=output_fp, 
-                          platform='flx',
-                          seqnoise_resolution=None,
-                          truncate_len=None)
-                          
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+         
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(output_dir,'log*.txt'))[0]
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-        # Check that a reasonable number of sequences were written
-        # to the output file
-        seq_count, a, b = count_seqs(output_fp)
-        self.assertTrue(seq_count > 500,
-            ("Sanity check of sequence count failed - "
-            "fewer than 1000 sequences in output file."))
+    def test_run_jackknifed_beta_diversity_parallel(self):
+        """run_jackknifed_beta_diversity (parallel) generates expected results
+        """
+    
+        run_jackknifed_beta_diversity(
+         self.fasting_otu_table_fp,
+         self.fasting_tree_fp,
+         100,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         mapping_fp=self.fasting_mapping_fp,
+         parallel=True,
+         status_update_callback=no_status_updates)
+         
+        weighted_unifrac_upgma_tree_fp = join(self.wf_out,
+         'weighted_unifrac',
+         'upgma_cmp','jackknife_named_nodes.tre')
+        unweighted_unifrac_upgma_tree_fp = join(
+         self.wf_out,'unweighted_unifrac','upgma_cmp',
+         'jackknife_named_nodes.tre')
+         
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,
+         'unweighted_unifrac_%s.txt' % input_file_basename)
+        weighted_unifrac_dm_fp = join(self.wf_out,
+         'weighted_unifrac_%s.txt' % input_file_basename)
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+         
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+  
+    def test_run_summarize_taxa_through_plots(self):
+        """ run_summarize_taxa_through_plots generates expected results when
+            using a parameters file """
+        
+        # define the params and mapping_category
+        params=self.params
+    
+        try:
+            mapping_cat=params['summarize_otu_by_cat']['mapping_category']
+        except:
+            mapping_cat=None
+        
+        sort=True
+        
+        run_summarize_taxa_through_plots(
+         self.fasting_otu_table_fp,
+         self.fasting_mapping_fp,
+         self.wf_out,
+         mapping_cat,
+         sort,
+         call_commands_serially,
+         params,
+         self.qiime_config,
+         status_update_callback=no_status_updates)
+        
+        if mapping_cat:
+            new_otu_table_fp=join(self.wf_out,
+                                  '%s_otu_table.biom' % (mapping_cat))
+        else:
+            new_otu_table_fp=self.fasting_otu_table_fp
+           
+        input_file_basename = splitext(split(new_otu_table_fp)[1])[0]
+        
+        # this is the default levels from summarize_taxa, but cannot import
+        # script to get these values
+        try:
+            sum_levels=params['summarize_taxa']['level']
+        except:
+            sum_levels=[2,3,4,5,6]
+            
+        # Check that the OTU table file have non-zero size
+        self.assertTrue(getsize(new_otu_table_fp) > 0)
+        
+        exp_head=['Control','Fast']
+        exp_lineages='Root;Bacteria;Actinobacteria'
+
+        # Check that summarized taxonomy files have non-zero size
+        for i in sum_levels:
+            sum_taxa_file=join(self.wf_out,input_file_basename+'_sorted_L%s.txt' \
+                            % (str(i)))
+            header,lineages,otu_table=parse_taxa_summary_table(\
+                                                open(sum_taxa_file).readlines())
+            
+            # validate the first lineage
+            self.assertEqual(lineages[0],exp_lineages)
+            
+            # validate the header
+            self.assertEqual(header,exp_head)
+            
+            #verify file is not empty
+            self.assertTrue(getsize(sum_taxa_file) > 0)
+        
+        # Check the html files are generated
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+    
+    
+    def test_run_summarize_taxa_through_plots_no_params(self):
+        """ run_summarize_taxa_through_plots generates expected results when
+            not passing a parameters file """
+        
+        # define the params and mapping_category
+        params=None
+        try:
+            mapping_cat=params['summarize_otu_by_cat']['mapping_category']
+        except:
+            mapping_cat=None
+        
+        sort=False
+        
+        run_summarize_taxa_through_plots(
+         self.fasting_otu_table_fp,
+         self.fasting_mapping_fp,
+         self.wf_out,
+         mapping_cat,
+         sort,
+         call_commands_serially,
+         params,
+         self.qiime_config,
+         status_update_callback=no_status_updates)
+        
+        if mapping_cat:
+            new_otu_table_fp=join(self.wf_out,
+                                  '%s_otu_table.biom' % (mapping_cat))
+        else:
+            new_otu_table_fp=self.fasting_otu_table_fp
+           
+        input_file_basename = splitext(split(new_otu_table_fp)[1])[0]
+        
+        # this is the default levels from summarize_taxa, but cannot import
+        # script to get these values
+        try:
+            sum_levels=params['summarize_taxa']['level']
+        except:
+            sum_levels=[2,3,4,5,6]
+            
+        # Check that the OTU table file have non-zero size
+        self.assertTrue(getsize(new_otu_table_fp) > 0)
+        
+        exp_head=['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607', 
+                   'PC.634', 'PC.635', 'PC.636']
+        exp_lineages=['Root;Bacteria','Root;Bacteria;Actinobacteria',
+'Root;Bacteria;Actinobacteria;Actinobacteria',
+'Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae',
+'Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales']
+
+        # Check that summarized taxonomy files have non-zero size
+        for i in sum_levels:
+            sum_taxa_file=join(self.wf_out,input_file_basename+'_L%s.txt' \
+                            % (str(i)))
+            header,lineages,otu_table=parse_taxa_summary_table(\
+                                                open(sum_taxa_file).readlines())
+
+            # validate the header is in a list of valid headers based on level
+            self.assertTrue(lineages[0] in exp_lineages)
+
+            # validate the header
+            self.assertEqual(header,exp_head)
+            
+            #verify file is not empty
+            self.assertTrue(getsize(sum_taxa_file) > 0)
+        
+        # Check the html files are generated
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'bar_charts.html')) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+
 
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
@@ -17369,7 +17823,6 @@ parallel:seconds_to_sleep	1"""
 run_core_qiime_analyses_params1 = """
 parallel:jobs_to_start	2
 parallel:seconds_to_sleep	2"""
-
 
 if __name__ == "__main__":
     main()

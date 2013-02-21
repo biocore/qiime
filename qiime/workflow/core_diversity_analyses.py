@@ -10,15 +10,16 @@ from qiime.parse import (parse_qiime_parameters,
 from qiime.util import (get_qiime_scripts_dir,
                         create_dir,
                         MetadataMap)
-from qiime.workflow.util import (print_to_stdout,
+from qiime.workflow.downstream import (
                             run_beta_diversity_through_plots,
                             run_qiime_alpha_rarefaction,
+                            run_summarize_taxa_through_plots)
+from qiime.workflow.util import (print_to_stdout,
                             generate_log_fp,
                             WorkflowLogger,
                             log_input_md5s,
                             call_commands_serially,
-                            get_params_str,
-                            run_summarize_taxa_through_plots)
+                            get_params_str)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
