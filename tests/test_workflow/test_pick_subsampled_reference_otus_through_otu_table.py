@@ -19,31 +19,23 @@ from numpy import array
 from cogent import LoadTree, LoadSeqs
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import load_qiime_config, count_seqs, get_tmp_filename
+from qiime.util import (load_qiime_config,
+                        count_seqs,
+                        get_tmp_filename,
+                        get_qiime_temp_dir)
 from qiime.workflow.util import (call_commands_serially,no_status_updates,WorkflowError)
 from qiime.parse import (parse_qiime_parameters,
                          fields_to_dict)
+from qiime.test import (initiate_timeout,
+                        disable_timeout,
+                        get_test_data_fps)
 from qiime.workflow.pick_subsampled_reference_otus_through_otu_table import (
                                 pick_subsampled_open_reference_otus,
                                 iterative_pick_subsampled_open_reference_otus,
                                 final_repset_from_iteration_repsets)
 from biom.parse import parse_biom_table
 
-## The test case timing code included in this file is adapted from
-## recipes provided at:
-##  http://code.activestate.com/recipes/534115-function-timeout/
-##  http://stackoverflow.com/questions/492519/timeout-on-a-python-function-call
-class TimeExceededError(Exception):
-    pass
-
-
 allowed_seconds_per_test = 500
-
-def timeout(signum, frame):
-    raise TimeExceededError,\
-     "Test failed to run in allowed time (%d seconds)."\
-      % allowed_seconds_per_test
-
 
 class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
     """ """
@@ -63,7 +55,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
          "pick_otus:max_accepts	1",
          "pick_otus:stepwords	8"])
         
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
+        self.test_data = get_test_data_fps()
+        
         if not exists(self.tmp_dir):
             makedirs(self.tmp_dir)
             # if test creates the temp dir, also remove it
@@ -94,14 +88,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_fp2)
         
-        signal.signal(signal.SIGALRM, timeout)
-        # set the 'alarm' to go off in allowed_seconds seconds
-        signal.alarm(allowed_seconds_per_test)
+        initiate_timeout(allowed_seconds_per_test)
     
     def tearDown(self):
         """ """
         # turn off the alarm
-        signal.alarm(0)
+        disable_timeout()
         # change back to the start dir - some workflows change directory
         chdir(self.start_dir)
         remove_files(self.files_to_remove)
@@ -406,8 +398,8 @@ A""".split('\n')
     def test_pick_subsampled_open_reference_otus(self):
         """pick_subsampled_open_reference_otus functions as expected
         """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
@@ -442,20 +434,20 @@ A""".split('\n')
         # confirm that the new reference sequences is the same length as the
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
-                         count_seqs(self.pick_ref_otus_refseqs2)[0]+
+                         count_seqs(self.test_data['refseqs'][0])[0]+
                          len([o for o in otu_table.ObservationIds 
-                              if not o.startswith('r')]))
+                              if o.startswith('wf.test.otu')]))
         
         # spot check a few of the otus to confirm that we're getting reference and new
         # otus in the final otu map. This is done on the OTU map singletons get filtered
         # before building the otu table
         final_otu_map = fields_to_dict(open(final_otu_map_fp))
-        self.assertTrue('r102' in final_otu_map,\
-         "Reference OTU (r102) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.ReferenceOTU5' in final_otu_map,\
-         "Failure OTU (wf.test.otu.ReferenceOTU5) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
-         "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU1) is not in the final OTU map.")
+        self.assertTrue('295053' in final_otu_map,\
+         "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in final_otu_map,\
+         "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.ReferenceOTU0' in final_otu_map,\
+         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # confirm that tax/align/tree files exist
         tree_fp = '%s/rep_set.tre' % self.wf_out
@@ -465,7 +457,7 @@ A""".split('\n')
         num_tree_tips = len(LoadTree(tree_fp).tips())
         num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
         self.assertEqual(num_tree_tips,num_align_seqs)
-        self.assertTrue(num_tree_tips > 30)
+        self.assertEqual(num_tree_tips,7)
         # OTU table minus pynast failures has same number of otus as aligned
         # sequences
         otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
