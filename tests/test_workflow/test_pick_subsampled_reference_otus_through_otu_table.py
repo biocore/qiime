@@ -48,15 +48,15 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.dirs_to_remove = []
         self.files_to_remove = []
         
-        # use 'fast' uclust settings for reduced runtime
-        self.params = parse_qiime_parameters([
-         "pick_otus:max_rejects	8",
-         "pick_otus:word_length	8",
-         "pick_otus:max_accepts	1",
-         "pick_otus:stepwords	8"])
-        
         self.tmp_dir = get_qiime_temp_dir()
         self.test_data = get_test_data_fps()
+        
+        # use 'fast' uclust settings for reduced runtime
+        self.params = parse_qiime_parameters([
+         "assign_taxonomy:id_to_taxonomy_fp	%s" % self.test_data['refseqs_tax'][0],
+         "assign_taxonomy:reference_seqs_fp	%s" % self.test_data['refseqs'][0],
+         "align_seqs:template_fp	%s" % self.test_data['refseqs_aligned'][0],
+         "filter_alignment:lane_mask_fp	%s" % self.test_data['refseqs_aligned_lanemask'][0]])
         
         if not exists(self.tmp_dir):
             makedirs(self.tmp_dir)
@@ -457,7 +457,7 @@ A""".split('\n')
         num_tree_tips = len(LoadTree(tree_fp).tips())
         num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
         self.assertEqual(num_tree_tips,num_align_seqs)
-        self.assertEqual(num_tree_tips,7)
+        self.assertEqual(num_tree_tips,6)
         # OTU table minus pynast failures has same number of otus as aligned
         # sequences
         otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
@@ -468,8 +468,8 @@ A""".split('\n')
     def test_pick_subsampled_open_reference_otus_suppress_assign_tax(self):
         """pick_subsampled_open_reference_otus functions without assign tax step
         """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
@@ -494,8 +494,8 @@ A""".split('\n')
     def test_pick_subsampled_open_reference_otus_suppress_align_and_tree(self):
         """pick_subsampled_open_reference_otus functions without align/tree step
         """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
@@ -577,15 +577,15 @@ A""".split('\n')
     def test_pick_subsampled_open_reference_otus_parallel(self):
         """pick_subsampled_open_reference_otus functions as expected
         """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
                                   params=self.params,
-                                  qiime_config=self.qiime_config,
                                   prefilter_refseqs_fp=None,
+                                  qiime_config=self.qiime_config,
                                   step1_otu_map_fp=None,
                                   step1_failures_fasta_fp=None,
                                   parallel=True,
@@ -613,19 +613,20 @@ A""".split('\n')
         # confirm that the new reference sequences is the same length as the
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
-                         count_seqs(self.pick_ref_otus_refseqs2)[0]+
-                         len([o for o in otu_table.ObservationIds if not o.startswith('r')]))
+                         count_seqs(self.test_data['refseqs'][0])[0]+
+                         len([o for o in otu_table.ObservationIds 
+                              if o.startswith('wf.test.otu')]))
         
         # spot check a few of the otus to confirm that we're getting reference and new
         # otus in the final otu map. This is done on the OTU map singletons get filtered
         # before building the otu table
         final_otu_map = fields_to_dict(open(final_otu_map_fp))
-        self.assertTrue('r102' in final_otu_map,\
-         "Reference OTU (r102) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.ReferenceOTU5' in final_otu_map,\
-         "Failure OTU (wf.test.otu.ReferenceOTU5) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
-         "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU1) is not in the final OTU map.")
+        self.assertTrue('295053' in final_otu_map,\
+         "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in final_otu_map,\
+         "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.ReferenceOTU0' in final_otu_map,\
+         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # confirm that tax/align/tree files exist
         tree_fp = '%s/rep_set.tre' % self.wf_out
@@ -635,7 +636,7 @@ A""".split('\n')
         num_tree_tips = len(LoadTree(tree_fp).tips())
         num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
         self.assertEqual(num_tree_tips,num_align_seqs)
-        self.assertTrue(num_tree_tips > 30)
+        self.assertEqual(num_tree_tips,6)
         # OTU table minus pynast failures has same number of otus as aligned
         # sequences
         otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
@@ -752,8 +753,9 @@ A""".split('\n')
         """pick_subsampled_open_reference_otus raises error on refseqs in params file
         """
         self.assertRaises(WorkflowError,
-         pick_subsampled_open_reference_otus,input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+         pick_subsampled_open_reference_otus,
+                                  input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
