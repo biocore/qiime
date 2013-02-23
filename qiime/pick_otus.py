@@ -35,6 +35,8 @@ from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
+from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs
+from qiime.pycogent_backports.dnaclust import Dnaclust
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -1458,6 +1460,99 @@ class MothurOtuPicker(OtuPicker):
                 break
         return my_otus
 
+class DnaclustOtuPicker(OtuPicker):
+
+    Name = 'DnaclustOtuPicker'
+
+    def __init__(self, params):
+        """Return new DnaclustOtuPicker object with specified params.
+
+        Valid params are:
+
+        Similarity
+            Similarity threshold for OTUs (default 0.97)
+        """
+
+        _params = {'similarity': 0.97,
+            'threads': 1,
+            'no-k-mer-filter': True,
+            'left-gaps-allowed': False,
+            'no-overlap': False}
+        """        _params = {'--similarity': params['similarity'],
+         '--threads': params['threads'],
+         '--no-k-mer-filter': True}
+#         '--left-gaps-allowed': False,
+#         '--no-overlap': False}
+        """
+        _params.update(params)
+
+        OtuPicker.__init__(self, _params)
+        print params
+
+    def __call__(self, seq_path, result_path=None, log_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+        """
+
+        results = dnaclust_from_seqs(seq_path,
+            no_overlap = self.Params['no-overlap'],
+            threads = self.Params['threads'],
+            left_gaps_allowed = self.Params['left-gaps-allowed'],
+            HALT_EXEC = False,
+            params = None)
+
+        """
+
+        dnaclust_params = copy(self.Params)      
+        print dnaclust_params['--threads']
+        #print dnaclust_params['threads']
+        dnaclust = Dnaclust(dnaclust_params,HALT_EXEC=True)
+        if self.Params['left-gaps-allowed']:
+            dnaclust.Parameters['--left-gaps-allowed'].on()
+        else:
+            dnaclust.Parameters['--left-gaps-allowed'].off()
+
+        print 'testB' + str(dnaclust_params)
+        results = dnaclust(seq_path)
+        """
+
+        log_lines = []
+
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            count = 0
+            for line in results['StdOut'].readlines():
+                of.write('%s\t%s' % (str(count),line))
+                count += 1
+
+            of.close()
+            result = None
+            log_lines.append('Result path: %s' % result_path)
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
+
+        
+        return result
+
+        #clusters = dnaclust_from_seqs(
+        #    seq_path,
+        #    similarity = self.Params['Similarity'])
+        #    HALT_EXEC=HALT_EXEC)
+
+
+
 # Some functions to support merging OTU tables
 # generated one after another. This functionality is currently available
 # via Qiime/scripts/merge_otu_maps.py and will be incorporated into the
@@ -1500,7 +1595,9 @@ otu_picking_method_constructors = {
     'uclust': UclustOtuPicker,
     'uclust_ref':UclustReferenceOtuPicker,
     'usearch': UsearchOtuPicker,
-    'usearch_ref': UsearchReferenceOtuPicker
+    'usearch_ref': UsearchReferenceOtuPicker,
+    'dnaclust': DnaclustOtuPicker
+#    'dnaclust_ref': DnaclustReferenceOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()

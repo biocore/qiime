@@ -42,6 +42,8 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 7. usearch (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
 
+8. dnaclust (Ghodsi, M 2011), fast clustering tool for highly similar sequences.
+
 The primary inputs for pick_otus.py are:
 
 1. A FASTA file containing sequences to be clustered
@@ -91,6 +93,8 @@ script_info['script_usage'].append(("""""","""The sequence similarity parameter 
 script_info['script_usage'].append(("""Usearch_qf ('usearch quality filter')""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:""","""%prog -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2"""))
 
 script_info['script_usage'].append(("""Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
+
+script_info['script_usage'].append(("""Dnaclust (dnaclust) example where de novo clustering is used with similarity of 99\%:""","""""","""%prog -i seqs.fna -m dnaclust --similarity 0.99"""))
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
@@ -321,7 +325,19 @@ script_info['optional_options'] = [
               type='string'),
               
     make_option('--minlen', default=64, help=("Minimum length of sequence "
-                "allowed for usearch. [default: %default]"), type='int')
+                "allowed for usearch. [default: %default]"), type='int'),
+
+    make_option('--no_overlap', default=False, help=("Cluster sequences "
+                "such that the cluster centers are at least twice the radius "
+                "of the other centers (DNACLUST). [default: False]"),
+                action='store_true'),
+
+    make_option('--left_gaps_allowed', default=False, help=("Allow for gaps "
+                "on the left of the shorter string in semi-global alignment "
+                "(DNACLUST). [default: False]"), action='store_true'),
+
+    make_option('--threads', default=1, help=("Number of threads to use "
+                "(DNACLUST). [default: 1]"), type='int')
     ]
 
 script_info['version'] = __version__
@@ -370,6 +386,10 @@ def main():
     remove_usearch_logs = opts.remove_usearch_logs
     minlen = opts.minlen
 
+    # dnaclust/dnaclust-ref specific parameters
+    no_overlap = opts.no_overlap
+    left_gaps_allowed = opts.left_gaps_allowed
+    threads = opts.threads
     
     if user_sort and not suppress_presort_by_abundance_uclust:
         option_parser.error("Cannot pass -B/--user_sort without -D/--suppress_presort_by_abundance_uclust, as your input would be resorted by abundance. To presort your own sequences before passing to uclust, pass -DB.")
@@ -583,6 +603,17 @@ def main():
                    result_path=result_path, log_path=log_path,
                    blast_db=opts.blast_db,refseqs_fp=opts.refseqs_fp)
     
+    ## dnaclust
+    elif otu_picking_method == 'dnaclust':
+        params = {'similarity': opts.similarity,
+                  'threads': threads,
+                  'no-overlap': no_overlap,
+                  'left-gaps-allowed': left_gaps_allowed}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
+
+
     ## other -- shouldn't be able to get here as a KeyError would have
     ## been raised earlier
     else:
