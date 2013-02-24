@@ -143,7 +143,8 @@ script_info['optional_options'] = [
               
     make_option('-r', '--refseqs_fp',type='existing_filepath',
         help=('Path to reference sequences to search against when using -m '
-              'blast, -m uclust_ref, or -m usearch_ref [default: %default]')),
+              'blast, -m uclust_ref, -m usearch_ref, or -m dnaclust-ref '
+              ' [default: %default]')),
               
     make_option('-b', '--blast_db',type='string',
         help=('Pre-existing database to blast against when using -m blast '
@@ -608,7 +609,8 @@ def main():
         params = {'similarity': opts.similarity,
                   'threads': threads,
                   'no-overlap': no_overlap,
-                  'left-gaps-allowed': left_gaps_allowed}
+                  'left-gaps-allowed': left_gaps_allowed,
+                  'refseqs_fp': refseqs_fp}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)

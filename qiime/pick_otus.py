@@ -36,7 +36,7 @@ from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
 from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs
-from qiime.pycogent_backports.dnaclust import Dnaclust
+from qiime.pycogent_backports.dnaclust import Dnaclust, DnaclustRef
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -1469,21 +1469,23 @@ class DnaclustOtuPicker(OtuPicker):
 
         Valid params are:
 
-        Similarity
+        similarity
             Similarity threshold for OTUs (default 0.97)
+        threads
+            Number of threads to use (default 1)
+        left-gaps-allowed
+            Allow left gaps in alignments
+        no-overlap 
+            Clusters centers at twice the radius apart
         """
 
         _params = {'similarity': 0.97,
             'threads': 1,
             'no-k-mer-filter': True,
             'left-gaps-allowed': False,
+            'refseqs_fp': None,
             'no-overlap': False}
-        """        _params = {'--similarity': params['similarity'],
-         '--threads': params['threads'],
-         '--no-k-mer-filter': True}
-#         '--left-gaps-allowed': False,
-#         '--no-overlap': False}
-        """
+
         _params.update(params)
 
         OtuPicker.__init__(self, _params)
@@ -1500,26 +1502,13 @@ class DnaclustOtuPicker(OtuPicker):
         """
 
         results = dnaclust_from_seqs(seq_path,
+            similarity = self.Params['similarity'],
             no_overlap = self.Params['no-overlap'],
             threads = self.Params['threads'],
             left_gaps_allowed = self.Params['left-gaps-allowed'],
-            HALT_EXEC = False,
+            reference_path =  self.Params['refseqs_fp'],
+            HALT_EXEC = True,
             params = None)
-
-        """
-
-        dnaclust_params = copy(self.Params)      
-        print dnaclust_params['--threads']
-        #print dnaclust_params['threads']
-        dnaclust = Dnaclust(dnaclust_params,HALT_EXEC=True)
-        if self.Params['left-gaps-allowed']:
-            dnaclust.Parameters['--left-gaps-allowed'].on()
-        else:
-            dnaclust.Parameters['--left-gaps-allowed'].off()
-
-        print 'testB' + str(dnaclust_params)
-        results = dnaclust(seq_path)
-        """
 
         log_lines = []
 
@@ -1527,31 +1516,43 @@ class DnaclustOtuPicker(OtuPicker):
             # if the user provided a result_path, write the 
             # results to file with one tab-separated line per 
             # cluster
+
+            cluster_file = results['StdOut']
+            if self.Params['refseqs_fp']:
+                cluster_file = results['denovo.clusters']
+
             of = open(result_path,'w')
-            count = 0
-            for line in results['StdOut'].readlines():
-                of.write('%s\t%s' % (str(count),line))
-                count += 1
+            # DNACLUST does not give denovo clusterings a name,
+            # so we just prepend a count to each cluster.
+            otu_count = 0
+            for line in cluster_file.readlines():
+                of.write('%s\t%s' % (str(otu_count),line))
+                otu_count += 1
+
+            if self.Params['refseqs_fp']:
+                cluster_file = results['db.clusters']
+
+                for line in cluster_file.readlines():
+                    if len(line.split()) > 1:
+                        of.write('%s' % line)
 
             of.close()
             result = None
             log_lines.append('Result path: %s' % result_path)
- 
+        else:
+            result = {}
+            otu_count = 0
+            for line in results['StdOut'].readlines():
+                result[str(otu_count)] = line.strip().split()
+                otu_count += 1            
+
         if log_path:
             # if the user provided a log file path, log the run
             log_file = open(log_path,'w')
             log_lines = [str(self)] + log_lines
             log_file.write('\n'.join(log_lines))
 
-        
         return result
-
-        #clusters = dnaclust_from_seqs(
-        #    seq_path,
-        #    similarity = self.Params['Similarity'])
-        #    HALT_EXEC=HALT_EXEC)
-
-
 
 # Some functions to support merging OTU tables
 # generated one after another. This functionality is currently available
