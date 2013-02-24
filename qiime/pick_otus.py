@@ -36,7 +36,6 @@ from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
 from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs, dnaclust_get_clusters
-from qiime.pycogent_backports.dnaclust import Dnaclust, DnaclustRef
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
