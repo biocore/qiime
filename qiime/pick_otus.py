@@ -35,7 +35,7 @@ from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
-from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs
+from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs, dnaclust_get_clusters
 from qiime.pycogent_backports.dnaclust import Dnaclust, DnaclustRef
 
 class OtuPicker(FunctionWithParams):
@@ -1507,47 +1507,29 @@ class DnaclustOtuPicker(OtuPicker):
             threads = self.Params['threads'],
             left_gaps_allowed = self.Params['left-gaps-allowed'],
             reference_path =  self.Params['refseqs_fp'],
-            HALT_EXEC = True,
-            params = None)
+            HALT_EXEC = False)
 
         log_lines = []
 
+        clusters = dnaclust_get_clusters(
+                reference_path = self.Params['refseqs_fp'],
+                results = results)
+
         if result_path:
-            # if the user provided a result_path, write the 
+            # If the user provided a result_path, write the 
             # results to file with one tab-separated line per 
-            # cluster
-
-            cluster_file = results['StdOut']
-            if self.Params['refseqs_fp']:
-                cluster_file = results['denovo.clusters']
-
-            of = open(result_path,'w')
-            # DNACLUST does not give denovo clusterings a name,
-            # so we just prepend a count to each cluster.
-            otu_count = 0
-            for line in cluster_file.readlines():
-                of.write('%s\t%s' % (str(otu_count),line))
-                otu_count += 1
-
-            if self.Params['refseqs_fp']:
-                cluster_file = results['db.clusters']
-
-                for line in cluster_file.readlines():
-                    if len(line.split()) > 1:
-                        of.write('%s' % line)
-
-            of.close()
+            # cluster.
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+                 
             result = None
+
             log_lines.append('Result path: %s' % result_path)
-        else:
-            result = {}
-            otu_count = 0
-            for line in results['StdOut'].readlines():
-                result[str(otu_count)] = line.strip().split()
-                otu_count += 1            
 
         if log_path:
-            # if the user provided a log file path, log the run
+            # if the user provided a log file path, log the run.
             log_file = open(log_path,'w')
             log_lines = [str(self)] + log_lines
             log_file.write('\n'.join(log_lines))
