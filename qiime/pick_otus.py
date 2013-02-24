@@ -1580,7 +1580,6 @@ otu_picking_method_constructors = {
     'usearch': UsearchOtuPicker,
     'usearch_ref': UsearchReferenceOtuPicker,
     'dnaclust': DnaclustOtuPicker
-#    'dnaclust_ref': DnaclustReferenceOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()
