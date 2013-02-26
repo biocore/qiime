@@ -862,58 +862,6 @@ A""".split('\n')
         for o in otu_table.iterObservations():
             self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
 
-    def test_pick_subsampled_open_reference_otus_parallel_suppress_step4(self):
-        """pick_subsampled_open_reference_otus functions as expected in parallel wo step4
-        """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
-                                  output_dir=self.wf_out,
-                                  percent_subsample=0.5,
-                                  new_ref_set_id='wf.test.otu',
-                                  command_handler=call_commands_serially,
-                                  params=self.params,
-                                  qiime_config=self.qiime_config,
-                                  prefilter_refseqs_fp=None,
-                                  step1_otu_map_fp=None,
-                                  step1_failures_fasta_fp=None,
-                                  parallel=True,
-                                  suppress_step4=True,
-                                  logger=None,
-                                  status_update_callback=no_status_updates)
-        final_otu_map_fp = '%s/final_otu_map.txt' % self.wf_out
-        final_failure_fp = '%s/final_failures.txt' % self.wf_out
-        final_repset_fp = '%s/rep_set.fna' % self.wf_out
-        new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
-        
-        self.assertTrue(exists(final_otu_map_fp),"Final OTU map doesn't exist")
-        self.assertTrue(exists(final_failure_fp),"Final failures file doesn't exist")
-        self.assertTrue(exists(final_repset_fp),"Final representative set doesn't exist")
-        self.assertTrue(exists(new_refseqs_fp),"New refseqs file doesn't exist")
-        
-        otu_table_fp = '%s/otu_table_mc2.biom' % self.wf_out
-        self.assertTrue(exists(otu_table_fp),"OTU table doesn't exist.")
-        otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        for row in otu_table.iterObservationData():
-            self.assertTrue(sum(row) >= 2,"Singleton OTU detected in OTU table.")
-        self.assertEqual(len(otu_table.ObservationIds),count_seqs(final_repset_fp)[0])
-        
-        # confirm that the new reference sequences is the same length as the
-        # input reference sequences plus the number of new non-singleton otus
-        self.assertEqual(count_seqs(new_refseqs_fp)[0],
-                         count_seqs(self.pick_ref_otus_refseqs2)[0]+
-                         len([o for o in otu_table.ObservationIds if not o.startswith('r')]))
-        
-        # spot check a few of the otus to confirm that we're getting reference and new
-        # otus in the final otu map. This is done on the OTU map singletons get filtered
-        # before building the otu table
-        final_otu_map = fields_to_dict(open(final_otu_map_fp))
-        self.assertTrue('r102' in final_otu_map,\
-         "Reference OTU (r102) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.ReferenceOTU5' in final_otu_map,\
-         "Failure OTU (wf.test.otu.ReferenceOTU5) is not in the final OTU map.")
-        self.assertFalse('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
-         "Step4 (clean-up) OTUs are present in the final OTU map but shouldn't be.")
-
     def test_pick_subsampled_open_reference_otus_invalid_input(self):
         """pick_subsampled_open_reference_otus raises error on refseqs in params file
         """
