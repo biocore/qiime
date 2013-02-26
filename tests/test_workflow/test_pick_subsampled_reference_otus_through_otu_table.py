@@ -556,57 +556,106 @@ A""".split('\n')
     def test_pick_subsampled_open_reference_otus_no_prefilter(self):
         """pick_subsampled_open_reference_otus functions as expected without prefilter
         """
-        pick_subsampled_open_reference_otus(input_fp=self.fasting_seqs_fp1, 
-                                  refseqs_fp=self.pick_ref_otus_refseqs2,
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
                                   percent_subsample=0.5,
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
                                   params=self.params,
-                                  qiime_config=self.qiime_config,
                                   prefilter_refseqs_fp=None,
                                   prefilter_percent_id=None,
+                                  qiime_config=self.qiime_config,
                                   step1_otu_map_fp=None,
                                   step1_failures_fasta_fp=None,
                                   parallel=False,
                                   suppress_step4=False,
                                   logger=None,
                                   status_update_callback=no_status_updates)
-        final_otu_map_fp = '%s/final_otu_map.txt' % self.wf_out
+                                  
+        prefilter_output_directory = '%s/prefilter_otus/'
+        self.assertFalse(exists(prefilter_output_directory))
+        
+        otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
         new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
-        
-        self.assertTrue(exists(final_otu_map_fp),"Final OTU map doesn't exist")
+        tree_fp = '%s/rep_set.tre' % self.wf_out
+        aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
+        otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
+        pynast_failures_fp = '%s/pynast_aligned_seqs/rep_set_failures.fasta' % self.wf_out
+
+        self.assertTrue(exists(otu_map_w_singletons_fp),"OTU map doesn't exist")
         self.assertFalse(exists(final_failure_fp),\
                          "Final failures file shouldn't exist, but it does")
         self.assertTrue(exists(final_repset_fp),"Final representative set doesn't exist")
         self.assertTrue(exists(new_refseqs_fp),"New refseqs file doesn't exist")
+        self.assertTrue(exists(tree_fp),"Final tree doesn't exist")
+        self.assertTrue(exists(aln_fp),"Final alignment doesn't exist")
+        self.assertTrue(exists(otu_table_fp),"Final BIOM table doesn't exist")
+        self.assertTrue(exists(pynast_failures_fp),"PyNAST failures file doesn't exist")
         
-        otu_table_fp = '%s/otu_table_mc2.biom' % self.wf_out
-        self.assertTrue(exists(otu_table_fp),"OTU table doesn't exist.")
+        # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         for row in otu_table.iterObservationData():
             self.assertTrue(sum(row) >= 2,"Singleton OTU detected in OTU table.")
-        self.assertEqual(len(otu_table.ObservationIds),count_seqs(final_repset_fp)[0])
+        # number of OTUs in final OTU table equals the number of seequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ObservationIds),count_seqs(aln_fp)[0])
+        # ... and that number is 6 (note: this is the same as without the prefilter
+        # because these reads are getting filtered from the final otu table because
+        # they fail to align with PyNAST)
+        self.assertEqual(len(otu_table.ObservationIds),6)
+        
+        # sequences that are ordinarily prefiltered are in the OTU map
+        otu_map_seq_ids = []
+        for l in open(otu_map_w_singletons_fp,'U'):
+            otu_map_seq_ids.extend(l.strip().split()[1:])
+        self.assertTrue('t1_1' in otu_map_seq_ids)
+        self.assertTrue('p1_2' in otu_map_seq_ids)
+        self.assertTrue('not16S.1_130' in otu_map_seq_ids)
+        self.assertTrue('not16S.1_151' in otu_map_seq_ids)
         
         # confirm that the new reference sequences is the same length as the
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
-                         count_seqs(self.pick_ref_otus_refseqs2)[0]+
+                         count_seqs(self.test_data['refseqs'][0])[0] +
                          len([o for o in otu_table.ObservationIds 
-                              if not o.startswith('r')]))
+                              if o.startswith('wf.test.otu')]) +
+                         count_seqs(pynast_failures_fp)[0])
         
         # spot check a few of the otus to confirm that we're getting reference and new
         # otus in the final otu map. This is done on the OTU map singletons get filtered
         # before building the otu table
-        final_otu_map = fields_to_dict(open(final_otu_map_fp))
-        self.assertTrue('r102' in final_otu_map,\
-         "Reference OTU (r102) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.ReferenceOTU5' in final_otu_map,\
-         "Failure OTU (wf.test.otu.ReferenceOTU5) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU1' in final_otu_map,\
-         "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU1) is not in the final OTU map.")
+        otu_map = fields_to_dict(open(otu_map_w_singletons_fp))
+        self.assertTrue('295053' in otu_map,\
+         "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in otu_map,\
+         "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.ReferenceOTU0' in otu_map,\
+         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
+
+        # confirm that number of tips in the tree is the same as the number of sequences
+        # in the alignment
+        num_tree_tips = len(LoadTree(tree_fp).tips())
+        num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
+        self.assertEqual(num_tree_tips,num_align_seqs)
+        self.assertEqual(num_tree_tips,6)
+        
+        # OTU table without singletons or pynast failures has same number of 
+        # otus as there are aligned sequences
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
+        
+        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        obs_idx = otu_table.getObservationIndex('295053')
+        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+         ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", 
+          "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
+        # All observations have 'taxonomy' metadata, and are at least assigned
+        # to 'bacteria'
+        for o in otu_table.iterObservations():
+            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
 
 
     def test_pick_subsampled_open_reference_otus_parallel(self):
