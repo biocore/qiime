@@ -472,8 +472,6 @@ A""".split('\n')
          "Failure OTU (42684) is not in the final OTU map.")
         self.assertTrue('wf.test.otu.ReferenceOTU0' in otu_map,\
          "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU0' in otu_map,\
-         "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU0) is not in the final OTU map.")
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
@@ -687,8 +685,6 @@ A""".split('\n')
          "Failure OTU (42684) is not in the final OTU map.")
         self.assertTrue('wf.test.otu.ReferenceOTU0' in otu_map,\
          "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
-        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU0' in otu_map,\
-         "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU0) is not in the final OTU map.")
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
