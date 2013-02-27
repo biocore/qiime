@@ -21,7 +21,7 @@ from qiime.workflow.util import (print_commands,
                                  print_to_stdout,
                                  no_status_updates,
                                  validate_and_set_jobs_to_start)
-from qiime.workflow.downstream import run_qiime_alpha_rarefaction
+from qiime.workflow.downstream import run_alpha_rarefaction
 
 qiime_config = load_qiime_config()
 
@@ -133,7 +133,7 @@ def main():
     else:
         status_update_callback = no_status_updates
      
-    run_qiime_alpha_rarefaction(otu_table_fp=otu_table_fp,\
+    run_alpha_rarefaction(otu_table_fp=otu_table_fp,\
      mapping_fp=mapping_fp,\
      output_dir=output_dir,\
      command_handler=command_handler,\

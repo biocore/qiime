@@ -4,7 +4,10 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski", "Jesse Stombaugh"]
+__credits__ = ["Greg Caporaso",
+               "Kyle Bittinger",
+               "Justin Kuczynski",
+               "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,24 +15,24 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import sys
+import os
 import re
+from glob import glob
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs, listdir
-from glob import glob
 from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
 from numpy import array
 from cogent.util.misc import safe_md5
 from cogent.parse.fasta import MinimalFastaParser
+from cogent.core.moltype import IUPAC_DNA_ambiguities
+from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file, parse_qiime_parameters
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
                         create_dir, guess_even_sampling_depth,
                         get_interesting_mapping_fields,qiime_system_call,
                         get_qiime_library_version)
-from biom.parse import parse_biom_table
-from cogent.core.moltype import IUPAC_DNA_ambiguities
-import os
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
@@ -89,7 +92,8 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     # of samples
     if color_by_interesting_fields_only:
         mapping_fields =\
-          get_interesting_mapping_fields(mapping_data, mapping_header) or mapping_header
+          get_interesting_mapping_fields(mapping_data, mapping_header) or\
+          mapping_header
     else:
         mapping_fields = mapping_header
     mapping_fields = ','.join(mapping_fields)
@@ -203,7 +207,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Build the continuous-coloring 3d plots command
             continuous_3d_command = \
              '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,\
+              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,
                mapping_fp, params_str)
     
             # Prep the discrete-coloring 3d plots command
@@ -220,7 +224,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Build the discrete-coloring 3d plots command
             discrete_3d_command = \
              '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,\
+              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,
                mapping_fp, params_str)
        
             commands.append([\
@@ -245,7 +249,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Build the continuous-coloring 3d plots command
             continuous_2d_command = \
              '%s %s/make_2d_plots.py -p %s -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_2d_dir,\
+              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_2d_dir,
                mapping_fp, params_str)
                
             # Prep the discrete-coloring 3d plots command
@@ -262,7 +266,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Build the discrete-coloring 2d plots command
             discrete_2d_command = \
              '%s %s/make_2d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_2d_dir,\
+              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_2d_dir,
                mapping_fp, params_str)
        
             commands.append([\
@@ -302,8 +306,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     
     return dm_fps
 
-
-def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
+def run_alpha_rarefaction(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config, tree_fp=None,
     num_steps=10, parallel=False, logger=None, min_rare_depth=10,
     max_rare_depth=None,status_update_callback=print_to_stdout):
@@ -363,13 +366,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth, \
+         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth,
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth, \
+         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth,
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
@@ -390,20 +393,19 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         # Build the alpha diversity command
         alpha_diversity_cmd = \
          "%s %s/parallel_alpha_diversity.py -T -i %s -o %s %s" %\
-         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
+         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir,
           params_str)
     else:  
         # Build the alpha diversity command
         alpha_diversity_cmd = \
          "%s %s/alpha_diversity.py -i %s -o %s %s" %\
-         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
+         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir,
           params_str)
 
     commands.append(\
      [('Alpha diversity on rarefied OTU tables',alpha_diversity_cmd)])
      
     # Prep the alpha diversity collation command
-    # python $qdir/collate_alpha.py -i Fasting_Alpha_Metrics/ -o Fasting_Alpha_Collated/
     alpha_collated_dir = '%s/alpha_div_collated/' % output_dir
     try:
         makedirs(alpha_collated_dir)
@@ -443,6 +445,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
                     status_update_callback,
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
+run_qiime_alpha_rarefaction = run_alpha_rarefaction
 
 def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     output_dir, command_handler, params, qiime_config, mapping_fp,
@@ -511,18 +514,10 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         params_str = get_params_str(params['multiple_rarefactions_even_depth'])
     except KeyError:
         params_str = ''
-    # if parallel:
-    #     params_str += ' %s' % get_params_str(params['parallel'])  
-    #     # Build the parallel rarefaction command
-    #     rarefaction_cmd = \
-    #      '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
-    #      (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,\
-    #       seqs_per_sample, rarefaction_dir, params_str)
-    # else:
-    # Build the serial rarefaction command
+    # Build the rarefaction command
     rarefaction_cmd = \
      '%s %s/multiple_rarefactions_even_depth.py -i %s -d %d -o %s %s' %\
-     (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample, \
+     (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,
       rarefaction_dir, params_str)
     commands.append([('Rarefaction', rarefaction_cmd)])
 
@@ -577,7 +572,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
              '%s %s/beta_diversity.py -i %s -o %s %s' %\
              (python_exe_fp, script_dir, rarefaction_dir, dm_dir, params_str)
         commands.append(\
-         [('Beta diversity on rarefied OTU tables (%s)' % beta_diversity_metric,\
+         [('Beta diversity on rarefied OTU tables (%s)' % beta_diversity_metric,
            beta_div_rarefied_cmd)])
 
         # Prep the hierarchical clustering command (for rarefied 
@@ -598,7 +593,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
          '%s %s/upgma_cluster.py -i %s -o %s %s' %\
          (python_exe_fp, script_dir, dm_dir, upgma_dir, params_str)
         commands.append(\
-         [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,\
+         [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,
            hierarchical_cluster_cmd)])
         
 
@@ -608,7 +603,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
          (python_exe_fp, script_dir, upgma_dir, upgma_dir + "/consensus.tre",
             params_str)
         commands.append(\
-         [('consensus on rarefied distance matrices (%s)' % beta_diversity_metric,\
+         [('consensus on rarefied distance matrices (%s)' % beta_diversity_metric,
            consensus_tree_cmd)])
            
            
@@ -631,11 +626,10 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         else:
             raise RuntimeError('master tree method "%s" not found' % (master_tree,))
         tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\
-         (python_exe_fp, script_dir, upgma_dir, master_tree_fp, \
+         (python_exe_fp, script_dir, upgma_dir, master_tree_fp, 
           tree_compare_dir, params_str)
         commands.append(\
-         [('Tree compare (%s)' % beta_diversity_metric,\
-           tree_compare_cmd)])
+         [('Tree compare (%s)' % beta_diversity_metric, tree_compare_cmd)])
            
         # Prep the PCoA command
         pcoa_dir = '%s/pcoa/' % metric_output_dir
@@ -702,7 +696,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
     """ Run the data preparation for summarizing taxonomies and generating plots
     
         The steps performed by this function are:
-          1) Summarize OTU by Categore
+          1) Summarize OTU by Category
           2) Summarize Taxonomy
           3) Plot Taxonomy Summary
           
@@ -761,7 +755,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         # Build the summarize otu by category command
         summarize_otu_by_cat_cmd = \
          "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m %s %s" %\
-         (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp, \
+         (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp,
           mapping_cat, params_str)
         
         commands.append(\
@@ -790,7 +784,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         else:
             sort_otu_table_cmd = \
              "%s %s/sort_otu_table.py -i %s -o %s -m %s %s" %\
-             (python_exe_fp, script_dir, otu_table_fp, sorted_fp, \
+             (python_exe_fp, script_dir, otu_table_fp, sorted_fp,
               mapping_fp, params_str)
         
         commands.append([('Sort OTU Table',sort_otu_table_cmd)])
@@ -811,8 +805,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         
     # Build the summarize taxonomy command
     summarize_taxa_cmd = '%s %s/summarize_taxa.py -i %s -o %s %s' %\
-     (python_exe_fp, script_dir, otu_table_fp, \
-      output_dir, params_str)
+     (python_exe_fp, script_dir, otu_table_fp, output_dir, params_str)
     
     commands.append([('Summarize Taxonomy',summarize_taxa_cmd)])
 

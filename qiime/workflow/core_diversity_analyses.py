@@ -12,7 +12,7 @@ from qiime.util import (get_qiime_scripts_dir,
                         MetadataMap)
 from qiime.workflow.downstream import (
                             run_beta_diversity_through_plots,
-                            run_qiime_alpha_rarefaction,
+                            run_alpha_rarefaction,
                             run_summarize_taxa_through_plots)
 from qiime.workflow.util import (print_to_stdout,
                             generate_log_fp,
@@ -185,7 +185,7 @@ def run_core_diversity_analyses(
         
     ## Alpha rarefaction workflow
     arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
-    run_qiime_alpha_rarefaction(
+    run_alpha_rarefaction(
      otu_table_fp=biom_fp,
      mapping_fp=mapping_fp,
      output_dir=arare_full_output_dir,

@@ -38,7 +38,7 @@ from qiime.workflow.util import (call_commands_serially,
                                  no_status_updates,
                                  WorkflowError)
 from qiime.workflow.downstream import (run_beta_diversity_through_plots,
-                                       run_qiime_alpha_rarefaction,
+                                       run_alpha_rarefaction,
                                        run_jackknifed_beta_diversity,
                                        run_summarize_taxa_through_plots)
 from qiime.test import initiate_timeout, disable_timeout
@@ -227,10 +227,10 @@ class DownstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_qiime_alpha_rarefaction(self):
-        """ run_qiime_alpha_rarefaction generates expected results """
+    def test_run_alpha_rarefaction(self):
+        """ run_alpha_rarefaction generates expected results """
 
-        run_qiime_alpha_rarefaction(
+        run_alpha_rarefaction(
          self.test_data['biom'][0], 
          self.test_data['map'][0],
          self.test_out, 
@@ -269,11 +269,11 @@ class DownstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_qiime_alpha_rarefaction_parallel(self):
-        """ run_qiime_alpha_rarefaction generates expected results when run in parallel
+    def test_run_alpha_rarefaction_parallel(self):
+        """ run_alpha_rarefaction generates expected results when run in parallel
         """
 
-        run_qiime_alpha_rarefaction(
+        run_alpha_rarefaction(
          self.test_data['biom'][0], 
          self.test_data['map'][0],
          self.test_out, 
