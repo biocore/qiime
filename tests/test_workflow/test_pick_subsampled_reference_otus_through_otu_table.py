@@ -558,7 +558,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                                   new_ref_set_id='wf.test.otu',
                                   command_handler=call_commands_serially,
                                   params=parse_qiime_parameters(
-                                   ['pick_otus:refseqs_fp %s' % self.pick_ref_otus_refseqs2]),
+                                   ['pick_otus:refseqs_fp %s' % self.test_data['refseqs'][0]]),
                                   prefilter_refseqs_fp=None,
                                   qiime_config=self.qiime_config,
                                   step1_otu_map_fp=None,
