@@ -14,9 +14,7 @@ __status__ = "Development"
 import sys
 from StringIO import StringIO
 from shutil import rmtree
-from os.path import (join, exists, getsize, split, splitext, dirname)
-from os import makedirs, system, chdir, getcwd
-from shutil import rmtree
+from os.path import exists
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.util import (get_qiime_temp_dir,
@@ -26,8 +24,7 @@ from qiime.parse import (parse_qiime_parameters)
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
-from qiime.workflow.util import (no_status_updates,
-                                 WorkflowError)
+from qiime.workflow.util import (no_status_updates)
 from qiime.workflow.core_diversity_analyses import run_core_diversity_analyses
 
 class CoreDiversityAnalysesTests(TestCase):

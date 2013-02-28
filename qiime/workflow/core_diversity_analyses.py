@@ -3,12 +3,10 @@
 from __future__ import division
 import re
 from glob import glob
-from os.path import split, splitext, join
-from biom.parse import parse_biom_table
+from os.path import split, splitext
 from qiime.parse import (parse_qiime_parameters,
                          parse_mapping_file_to_dict)
-from qiime.util import (get_qiime_scripts_dir,
-                        create_dir,
+from qiime.util import (create_dir,
                         MetadataMap)
 from qiime.workflow.downstream import (
                             run_beta_diversity_through_plots,
@@ -105,8 +103,6 @@ def run_core_diversity_analyses(
     index_fp = '%s/index.html' % output_dir
     index_links = []
     commands = []
-    python_exe_fp = qiime_config['python_exe_fp']
-    script_dir = get_qiime_scripts_dir()
     
     # begin logging
     log_fp = generate_log_fp(output_dir)
