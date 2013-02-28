@@ -24,7 +24,9 @@ from qiime.util import (load_qiime_config,
                         count_seqs,
                         get_tmp_filename,
                         get_qiime_temp_dir)
-from qiime.workflow.util import (call_commands_serially,no_status_updates,WorkflowError)
+from qiime.workflow.util import (call_commands_serially,
+                                 no_status_updates,
+                                 WorkflowError)
 from qiime.parse import (parse_qiime_parameters,
                          fields_to_dict)
 from qiime.test import (initiate_timeout,

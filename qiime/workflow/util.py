@@ -2,28 +2,19 @@
 # File created on 30 Dec 2009.
 from __future__ import division
 import sys
-import re
-from subprocess import Popen, PIPE, STDOUT
-from os import makedirs, listdir
-from glob import glob
+import os
 from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
-from numpy import array
 from cogent.util.misc import safe_md5
-from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_mapping_file, parse_qiime_parameters
-from qiime.util import (compute_seqs_per_library_stats,
-                        get_qiime_scripts_dir,
-                        create_dir, guess_even_sampling_depth,
-                        get_interesting_mapping_fields,qiime_system_call,
-                        get_qiime_library_version)
 from biom.parse import parse_biom_table
-from cogent.core.moltype import IUPAC_DNA_ambiguities
-import os
+from qiime.util import (qiime_system_call,
+                        get_qiime_library_version)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski"]
+__credits__ = ["Greg Caporaso",
+               "Kyle Bittinger",
+               "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"

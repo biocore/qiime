@@ -27,7 +27,7 @@ from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
 from qiime.workflow.util import (no_status_updates,
-                            WorkflowError)
+                                 WorkflowError)
 from qiime.workflow.core_diversity_analyses import run_core_diversity_analyses
 
 class CoreDiversityAnalysesTests(TestCase):
