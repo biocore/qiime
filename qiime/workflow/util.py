@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # File created on 30 Dec 2009.
 from __future__ import division
-import sys
-import os
-from os.path import split, splitext, join, dirname, abspath
-from datetime import datetime
-from cogent.util.misc import safe_md5
-from biom.parse import parse_biom_table
-from qiime.util import (qiime_system_call,
-                        get_qiime_library_version)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -20,6 +12,13 @@ __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
+
+import sys
+from os.path import join
+from datetime import datetime
+from cogent.util.misc import safe_md5
+from qiime.util import (qiime_system_call,
+                        get_qiime_library_version)
 
 def generate_log_fp(output_dir,
                     basefile_name='log',

@@ -11,7 +11,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import os
 from shutil import rmtree
 from glob import glob
 from os.path import exists, join, getsize
