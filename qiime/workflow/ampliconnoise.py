@@ -12,32 +12,14 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import os
-import sys
-import re
-from subprocess import Popen, PIPE, STDOUT
-from os import makedirs, listdir
-from glob import glob
-from os.path import split, splitext, join, dirname, abspath
-from datetime import datetime
-from numpy import array
-from cogent.util.misc import safe_md5
-from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.moltype import IUPAC_DNA_ambiguities
-from biom.parse import parse_biom_table
-from qiime.parse import parse_mapping_file, parse_qiime_parameters
-from qiime.util import (compute_seqs_per_library_stats,
-                        get_qiime_scripts_dir,
-                        create_dir,
-                        guess_even_sampling_depth,
-                        get_interesting_mapping_fields,
-                        qiime_system_call,
-                        get_qiime_library_version)
+from qiime.parse import parse_mapping_file
+from qiime.util import (create_dir,
+                        get_qiime_scripts_dir)
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
-                                 log_input_md5s,
-                                 call_commands_serially,
-                                 get_params_str)
+                                 log_input_md5s)
 
 def run_ampliconnoise(mapping_fp,
     output_dir, command_handler, params, qiime_config,

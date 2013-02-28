@@ -14,29 +14,18 @@ __status__ = "Development"
 import os
 from shutil import rmtree
 from glob import glob
-from tarfile import open as open_tarfile
-from os.path import join, exists, getsize, split, splitext, dirname
-from os import makedirs, system
-from numpy import array, absolute
-from cogent import LoadTree, LoadSeqs
-from cogent.parse.fasta import MinimalFastaParser
+from os.path import join, exists, getsize, dirname
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
-from cogent.parse.binary_sff import parse_binary_sff
-from qiime.util import (load_qiime_config,
+from qiime.util import (get_tmp_filename,
+                        load_qiime_config,
                         count_seqs,
                         get_qiime_temp_dir)
-from qiime.parse import (parse_qiime_parameters,
-    parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
-from biom.parse import parse_biom_table
+from qiime.parse import (parse_qiime_parameters)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.workflow.util import (call_commands_serially,
-                                 no_status_updates,
-                                 WorkflowError)
-from qiime.workflow.ampliconnoise import (run_ampliconnoise)
-from qiime.test import initiate_timeout, disable_timeout
+                                 no_status_updates)
+from qiime.workflow.ampliconnoise import run_ampliconnoise
 
 class AmpliconNoiseWorkflowTests(TestCase):
     
