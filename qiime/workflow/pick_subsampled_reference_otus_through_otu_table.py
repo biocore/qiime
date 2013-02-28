@@ -10,30 +10,18 @@ __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
- 
-from os import makedirs
+
 from os.path import split, splitext, getsize, exists
-from random import random
 from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
 from cogent.util.misc import create_dir, remove_files
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import (parse_command_line_parameters, 
-                        make_option, 
-                        get_options_lookup,
-                        load_qiime_config,
-                        get_qiime_scripts_dir,
-                        subsample_fasta)
+from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,
                           filter_otus_from_otu_map)
-from qiime.parse import parse_qiime_parameters
-from qiime.workflow import (print_commands,
-                            call_commands_serially,
-                            print_to_stdout,
-                            no_status_updates,
-                            validate_and_set_jobs_to_start,
+from qiime.workflow.util import (print_to_stdout,
                             WorkflowLogger,
                             generate_log_fp,
                             log_input_md5s,
@@ -568,8 +556,6 @@ def pick_subsampled_open_reference_otus(input_fp,
     input_basename, input_ext = splitext(input_filename)
     create_dir(output_dir)
     commands = []
-    python_exe_fp = qiime_config['python_exe_fp']
-    script_dir = get_qiime_scripts_dir()
     if logger == None:
         logger = WorkflowLogger(generate_log_fp(output_dir),
                                 params=params,
@@ -595,8 +581,6 @@ def pick_subsampled_open_reference_otus(input_fp,
     else:
         if prefilter_percent_id != None:
             prefilter_dir = '%s/prefilter_otus/' % output_dir
-            prefilter_otu_map_fp = \
-             '%s/%s_otus.txt' % (prefilter_dir,input_basename)
             prefilter_failures_list_fp = '%s/%s_failures.txt' % \
              (prefilter_dir,input_basename)
             prefilter_pick_otu_cmd = pick_reference_otus(\
@@ -868,6 +852,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                             logger=logger,
                             close_logger_on_success=False)
             commands = []
+            
     if close_logger_on_success:
         logger.close()
     
