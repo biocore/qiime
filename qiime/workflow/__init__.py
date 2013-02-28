@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """workflow: provides support for wrapping individual QIIME scripts 
-             to faciliate common, more complex analyses
+             to facilitate common, more complex analyses
 """
 
 __author__ = "The QIIME Development Team"
