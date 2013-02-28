@@ -11,7 +11,7 @@ __status__ = "Development"
 
 # Reviewed by William Walters
 
-from os.path import sep, split, splitext, exists
+from os.path import sep, split, splitext, exists, join
 from shutil import rmtree
 from os import chmod
 
@@ -20,8 +20,9 @@ from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.util import get_tmp_filename, create_dir
 
-from qiime.convert_fastaqual_fastq import convert_fastq, convert_fastaqual,\
- convert_fastaqual_fastq
+from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
+                                           convert_fastaqual_fastq,
+                                           get_filename_with_new_ext)
 
 class MakeFastqTests(TestCase):
     """ Unit tests for the convert_fastaqual_fastq.py module """
@@ -31,10 +32,10 @@ class MakeFastqTests(TestCase):
 
         self.qual_file_path = get_tmp_filename(prefix='qual_', suffix='.qual')
         self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')
-        self.nolabel_qual_file_path = get_tmp_filename(prefix='qual_', \
-        suffix='.qual')
-        self.noseq_qual_file_path = get_tmp_filename(prefix='qual_', \
-        suffix='.qual')
+        self.nolabel_qual_file_path = get_tmp_filename(prefix='qual_', 
+                                                       suffix='.qual')
+        self.noseq_qual_file_path = get_tmp_filename(prefix='qual_',
+                                                     suffix='.qual')
         
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
@@ -52,15 +53,15 @@ class MakeFastqTests(TestCase):
         noseq_qual_file = open(self.noseq_qual_file_path, 'w')
         noseq_qual_file.write(noseq_qual_test_string)
         noseq_qual_file.close()
-        self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_', \
-        suffix = '/')
+        self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_',
+                                                     suffix = '/')
         create_dir(self.read_only_output_dir)
         # Need read only directory to test errors for files written during
         # fastq/fasta iteration.
         chmod(self.read_only_output_dir, 0577)
 
         self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
-         suffix = '/')
+                                           suffix = '/')
         self.output_dir += sep
 
         create_dir(self.output_dir)
@@ -80,8 +81,11 @@ class MakeFastqTests(TestCase):
         """ Handles conversions with default settings """
         convert_fastq(self.fasta_file_path, self.qual_file_path,
          output_directory=self.output_dir)
-        actual_output_file_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.fastq'
+
+        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
+                                                          '.fastq',
+                                                          self.output_dir)
+
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
         actual_output_file.close()
@@ -93,8 +97,11 @@ class MakeFastqTests(TestCase):
         """ Properly retains full fasta headers """
         convert_fastq(self.fasta_file_path, self.qual_file_path, \
         full_fasta_headers = True, output_directory = self.output_dir)
-        actual_output_file_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.fastq'
+
+        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
+                                                          '.fastq',
+                                                          self.output_dir)
+
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
         actual_output_file.close()
@@ -107,8 +114,12 @@ class MakeFastqTests(TestCase):
         convert_fastq(self.fasta_file_path, self.qual_file_path, \
         full_fasta_headers = True, full_fastq = True, \
         output_directory = self.output_dir)
-        actual_output_file_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.fastq'
+
+        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
+                                                          '.fastq',
+                                                          self.output_dir)
+
+
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
         actual_output_file.close()
@@ -119,14 +130,19 @@ class MakeFastqTests(TestCase):
     def test_multiple_output_files(self):
         """ properly writes multiple fasta files for each sampleID"""
         convert_fastq(self.fasta_file_path, self.qual_file_path,
-         multiple_output_files = True, output_directory = self.output_dir)
+                      multiple_output_files = True,
+                      output_directory = self.output_dir,
+                      per_file_buffer_size=23)
+
         sample_ids = [('PC.634', expected_fastq_634_default), 
                 ('PC.354', expected_fastq_354_default), 
                 ('PC.481', expected_fastq_481_default)]
         for sample_id, expected_output in sample_ids:
-            actual_output_file_path = self.output_dir + \
-                    splitext(split(self.fasta_file_path)[1])[0] +'_%s.fastq' %\
-                    sample_id
+            actual_output_file_path = get_filename_with_new_ext(
+                                                    self.fasta_file_path,
+                                                    '_' + sample_id + '.fastq',
+                                                    self.output_dir)
+
             actual_output_file = open(actual_output_file_path)
             actual_output = actual_output_file.read()
             actual_output_file.close()
@@ -201,11 +217,18 @@ class MakeFastaqualTests(TestCase):
     def test_default_settings(self):
         """ Converting to fasta/qual files handles default settings """
         convert_fastaqual(self.fasta_file_path,
-         output_directory = self.output_dir)
-        actual_output_fasta_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.fna'
-        actual_output_qual_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.qual'
+                          output_directory = self.output_dir)
+
+        actual_output_fasta_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '.fna',
+                                                self.output_dir)
+
+        actual_output_qual_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '.qual',
+                                                self.output_dir)
+
         actual_output_fasta = open(actual_output_fasta_path)
         actual_output_qual = open(actual_output_qual_path)
         actual_fasta = actual_output_fasta.read()
@@ -222,10 +245,17 @@ class MakeFastaqualTests(TestCase):
         """ Full headers written to fasta/qual files """
         convert_fastaqual(self.fasta_file_path, full_fasta_headers = True,
          output_directory = self.output_dir)
-        actual_output_fasta_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.fna'
-        actual_output_qual_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '.qual'
+
+        actual_output_fasta_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '.fna',
+                                                self.output_dir)
+
+        actual_output_qual_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '.qual',
+                                                self.output_dir)
+
         actual_output_fasta = open(actual_output_fasta_path)
         actual_output_qual = open(actual_output_qual_path)
         actual_fasta = actual_output_fasta.read()
@@ -241,7 +271,10 @@ class MakeFastaqualTests(TestCase):
     def test_multiple_output_files(self):
         """ Creates one file per sampleID for fasta/qual output """
         convert_fastaqual(self.fasta_file_path, 
-         multiple_output_files = True, output_directory = self.output_dir)
+                          multiple_output_files = True,
+                          output_directory = self.output_dir,
+                          per_file_buffer_size=23)
+
         sample_id_s = [('PC.634', expected_fasta_634_default, \
         expected_qual_634_default), \
                 ('PC.354', expected_fasta_354_default, \
@@ -249,12 +282,16 @@ class MakeFastaqualTests(TestCase):
                 ('PC.481', expected_fasta_481_default, \
                 expected_qual_481_default)]
         for sample_id, expected_fasta, expected_qual in sample_id_s:
-            actual_output_fasta_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '_%s.fna' %\
-                sample_id
-            actual_output_qual_path = self.output_dir + \
-                splitext(split(self.fasta_file_path)[1])[0] + '_%s.qual' %\
-                sample_id
+            actual_output_fasta_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '_' + sample_id + '.fna',
+                                                self.output_dir)
+
+            actual_output_qual_path = get_filename_with_new_ext(
+                                                self.fasta_file_path,
+                                                '_' + sample_id + '.qual',
+                                                self.output_dir)
+
             actual_output_fasta = open(actual_output_fasta_path)
             actual_output_qual = open(actual_output_qual_path)
             actual_fasta = actual_output_fasta.read()
@@ -325,6 +362,20 @@ class ConvertFastaqualTests(TestCase):
         self.assertRaises(ValueError, convert_fastaqual_fastq, \
         self.fasta_file_path, self.qual_file_path, conversion_type = 'soijdfl',\
          output_directory = self.output_dir)
+
+    def test_get_filename_with_new_ext(self):
+        """ Tests proper function of the utility function. """
+        test_paths = [('/from/root/test.xxx', 'test.yyy'),
+                      ('../relative/path/test.xxx', 'test.yyy'),
+                      ('/double/extension/in/filename/test.zzz.xxx',
+                                                            'test.zzz.yyy')]
+
+        for input, exp_output in test_paths:
+            exp_output = join(self.output_dir, exp_output)
+
+            self.assertEquals(
+                    get_filename_with_new_ext(input, '.yyy', self.output_dir),
+                    exp_output)
          
 fasta_test_string = '''>PC.634_1 FLP3FBN01ELBSX orig_bc=GCAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=1
 CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTTACCTCACCAACTAGCTAATGCGCCGCAGGTCCATCCATGTTCACGCCTTGATGGGCGCTTTAATATACTGAGCATGCGCTCTGTATACCTATCCGGTTTTAGCTACCGTTTCCAGCAGTTATCCCGGACACATGGGCTAGG
