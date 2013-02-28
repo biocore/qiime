@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""parallel: provides support for task farming QIIME steps
+"""workflow: provides support for wrapping individual QIIME scripts 
+             to faciliate common, more complex analyses
 """
 
 __author__ = "The QIIME Development Team"
