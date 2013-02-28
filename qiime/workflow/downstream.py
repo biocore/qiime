@@ -16,22 +16,12 @@ __status__ = "Development"
 
 import sys
 import os
-import re
-from glob import glob
-from subprocess import Popen, PIPE, STDOUT
-from os import makedirs, listdir
 from os.path import split, splitext, join, dirname, abspath
-from datetime import datetime
-from numpy import array
-from cogent.util.misc import safe_md5
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.core.moltype import IUPAC_DNA_ambiguities
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file, parse_qiime_parameters
-from qiime.util import (compute_seqs_per_library_stats,
-                        get_qiime_scripts_dir,
-                        create_dir, guess_even_sampling_depth,
-                        get_interesting_mapping_fields,qiime_system_call,
+from qiime.util import (get_qiime_scripts_dir,
+                        create_dir,
+                        get_interesting_mapping_fields,
                         get_qiime_library_version)
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
@@ -196,10 +186,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Prep the continuous-coloring 3d plots command
             continuous_3d_dir = '%s/%s_3d_continuous/' %\
              (output_dir, beta_diversity_metric)
-            try:
-                makedirs(continuous_3d_dir)
-            except OSError:
-                pass
+            create_dir(continuous_3d_dir)
             try:
                 params_str = get_params_str(params['make_3d_plots'])
             except KeyError:
@@ -213,10 +200,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Prep the discrete-coloring 3d plots command
             discrete_3d_dir = '%s/%s_3d_discrete/' %\
              (output_dir, beta_diversity_metric)
-            try:
-                makedirs(discrete_3d_dir)
-            except OSError:
-                pass
+            create_dir(discrete_3d_dir)
             try:
                 params_str = get_params_str(params['make_3d_plots'])
             except KeyError:
@@ -238,10 +222,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Prep the continuous-coloring 3d plots command
             continuous_2d_dir = '%s/%s_2d_continuous/' %\
              (output_dir, beta_diversity_metric)
-            try:
-                makedirs(continuous_2d_dir)
-            except OSError:
-                pass
+            create_dir(continuous_2d_dir)
             try:
                 params_str = get_params_str(params['make_2d_plots'])
             except KeyError:
@@ -255,10 +236,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Prep the discrete-coloring 3d plots command
             discrete_2d_dir = '%s/%s_2d_discrete/' %\
              (output_dir, beta_diversity_metric)
-            try:
-                makedirs(discrete_2d_dir)
-            except OSError:
-                pass
+            create_dir(discrete_2d_dir)
             try:
                 params_str = get_params_str(params['make_2d_plots'])
             except KeyError:
@@ -279,10 +257,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
             # Prep the discrete-coloring 3d plots command
             histograms_dir = '%s/%s_histograms/' %\
              (output_dir, beta_diversity_metric)
-            try:
-                makedirs(histograms_dir)
-            except OSError:
-                pass
+            create_dir(histograms_dir)
             try:
                 params_str = get_params_str(params['make_distance_histograms'])
             except KeyError:
@@ -353,10 +328,7 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
     max_rare_depth = int(max_rare_depth)
     
     rarefaction_dir = '%s/rarefaction/' % output_dir
-    try:
-        makedirs(rarefaction_dir)
-    except OSError:
-        pass
+    create_dir(rarefaction_dir)
     try:
         params_str = get_params_str(params['multiple_rarefactions'])
     except KeyError:
@@ -378,10 +350,7 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
     
     # Prep the alpha diversity command
     alpha_diversity_dir = '%s/alpha_div/' % output_dir
-    try:
-        makedirs(alpha_diversity_dir)
-    except OSError:
-        pass
+    create_dir(alpha_diversity_dir)
     try:
         params_str = get_params_str(params['alpha_diversity'])
     except KeyError:
@@ -407,10 +376,7 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
      
     # Prep the alpha diversity collation command
     alpha_collated_dir = '%s/alpha_div_collated/' % output_dir
-    try:
-        makedirs(alpha_collated_dir)
-    except OSError:
-        pass
+    create_dir(alpha_collated_dir)
     try:
         params_str = get_params_str(params['collate_alpha'])
     except KeyError:
@@ -423,10 +389,7 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
 
     # Prep the make rarefaction plot command(s)
     rarefaction_plot_dir = '%s/alpha_rarefaction_plots/' % output_dir
-    try:
-        makedirs(rarefaction_plot_dir)
-    except OSError:
-        pass
+    create_dir(rarefaction_plot_dir)
     try:
         params_str = get_params_str(params['make_rarefaction_plots'])
     except KeyError:
@@ -506,10 +469,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
 
     # Prep rarefaction command
     rarefaction_dir = '%s/rarefaction/' % output_dir
-    try:
-        makedirs(rarefaction_dir)
-    except OSError:
-        pass
+    create_dir(rarefaction_dir)
     try:
         params_str = get_params_str(params['multiple_rarefactions_even_depth'])
     except KeyError:
@@ -545,10 +505,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
         # Prep the beta diversity command (for rarefied OTU tables)
         dm_dir = '%s/rare_dm/' % metric_output_dir
-        try:
-            makedirs(dm_dir)
-        except OSError:
-            pass
+        create_dir(dm_dir)
         # the metrics parameter needs to be ignored as we need to run
         # beta_diversity one metric at a time to keep the per-metric
         # output files in separate directories
@@ -578,10 +535,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         # Prep the hierarchical clustering command (for rarefied 
         # distance matrices)
         upgma_dir = '%s/rare_upgma/' % metric_output_dir
-        try:
-            makedirs(upgma_dir)
-        except OSError:
-            pass
+        create_dir(upgma_dir)
 
         try:
             params_str = get_params_str(params['upgma_cluster'])
@@ -609,10 +563,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
         # Prep the tree compare command
         tree_compare_dir = '%s/upgma_cmp/' % metric_output_dir
-        try:
-            makedirs(tree_compare_dir)
-        except OSError:
-            pass
+        create_dir(tree_compare_dir)
         try:
             params_str = get_params_str(params['tree_compare'])
         except KeyError:
@@ -633,10 +584,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
         # Prep the PCoA command
         pcoa_dir = '%s/pcoa/' % metric_output_dir
-        try:
-            makedirs(pcoa_dir)
-        except OSError:
-            pass
+        create_dir(pcoa_dir)
         try:
             params_str = get_params_str(params['principal_coordinates'])
         except KeyError:
@@ -649,10 +597,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
         # Prep the 2D plots command
         plots_2d_dir = '%s/2d_plots/' % metric_output_dir
-        try:
-            makedirs(plots_2d_dir)
-        except OSError:
-            pass
+        create_dir(plots_2d_dir)
         try:
             params_str = get_params_str(params['make_2d_plots'])
         except KeyError:
@@ -666,10 +611,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
          
         # Prep the 3D plots command
         plots_3d_dir = '%s/3d_plots/' % metric_output_dir
-        try:
-            makedirs(plots_3d_dir)
-        except OSError:
-            pass
+        create_dir(plots_3d_dir)
         try:
             params_str = get_params_str(params['make_3d_plots'])
         except KeyError:
@@ -824,10 +766,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
 
     # Prep the plot taxa summary plot command(s)
     taxa_summary_plots_dir = '%s/taxa_summary_plots/' % output_dir
-    try:
-        makedirs(taxa_summary_plots_dir)
-    except OSError:
-        pass
+    create_dir(taxa_summary_plots_dir)
         
     try:
         params_str = get_params_str(params['plot_taxa_summary'])
