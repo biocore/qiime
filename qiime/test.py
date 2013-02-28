@@ -17,7 +17,6 @@ from os import chdir, getcwd
 from shutil import copytree, rmtree
 from glob import glob
 from site import addsitedir
-from sys import path
 from tempfile import NamedTemporaryFile
 from cogent.util.misc import remove_files
 from qiime.util import qiime_system_call, get_qiime_temp_dir
