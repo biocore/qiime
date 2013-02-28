@@ -11,37 +11,29 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import os
 import sys
 from StringIO import StringIO
 from shutil import rmtree
 from glob import glob
-from os import makedirs, system
 from os.path import join, exists, getsize, split, splitext
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from biom.parse import parse_biom_table
 from qiime.compare_alpha_diversity import compare_alpha_diversities
 from qiime.util import (get_tmp_filename,
                         load_qiime_config,
-                        count_seqs,
                         get_qiime_temp_dir,
                         create_dir)
 from qiime.parse import (parse_qiime_parameters,
-                         parse_distmat_to_dict,
-                         parse_distmat,
-                         parse_taxa_summary_table)
+                         parse_distmat_to_dict)
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
 from qiime.workflow.util import (call_commands_serially,
-                                 no_status_updates,
-                                 WorkflowError)
+                                 no_status_updates)
 from qiime.workflow.downstream import (run_beta_diversity_through_plots,
                                        run_alpha_rarefaction,
                                        run_jackknifed_beta_diversity,
                                        run_summarize_taxa_through_plots)
-from qiime.test import initiate_timeout, disable_timeout
 
 class DownstreamWorkflowTests(TestCase):
     
@@ -149,8 +141,6 @@ class DownstreamWorkflowTests(TestCase):
          parallel=False, 
          status_update_callback=no_status_updates)
 
-        otu_table_basename = \
-         splitext(split(self.test_data['biom'][0])[1])[0] + '_even147'
         unweighted_unifrac_dm_fp = join(self.test_out,'unweighted_unifrac_dm.txt')
         weighted_unifrac_dm_fp = join(self.test_out,'weighted_unifrac_dm.txt')
         unweighted_unifrac_pc_fp = join(self.test_out,'unweighted_unifrac_pc.txt')

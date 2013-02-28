@@ -14,20 +14,17 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import sys
-import os
-from os.path import split, splitext, join, dirname, abspath
+from os.path import split, splitext, join
 from biom.parse import parse_biom_table
-from qiime.parse import parse_mapping_file, parse_qiime_parameters
+from qiime.parse import parse_mapping_file
 from qiime.util import (get_qiime_scripts_dir,
                         create_dir,
                         get_interesting_mapping_fields,
-                        get_qiime_library_version)
+                        compute_seqs_per_library_stats)
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
                                  log_input_md5s,
-                                 call_commands_serially,
                                  get_params_str)
 
 
@@ -663,7 +660,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
     
     # Prep the summarize otu by category command
     try:
-        otu_table_f = open(otu_table_fp,'U')
+        open(otu_table_fp,'U')
     except IOError,e:
         logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
                      ' %s\n' % otu_table_fp +
