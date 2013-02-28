@@ -11,19 +11,13 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import sys
-import re
-import os
-from glob import glob
-from os.path import split, splitext, join, abspath
-from qiime.parse import parse_qiime_parameters
+from os.path import split, splitext, abspath
 from qiime.util import (get_qiime_scripts_dir,
                         create_dir)
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
                                  log_input_md5s,
-                                 call_commands_serially,
                                  get_params_str)
 
 def run_pick_otus_through_otu_table(input_fp, 

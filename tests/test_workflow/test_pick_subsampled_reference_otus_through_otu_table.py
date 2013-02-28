@@ -11,12 +11,10 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-import signal
 from glob import glob
-from os import makedirs, system, chdir, getcwd
+from os import chdir, getcwd
 from os.path import exists
 from shutil import rmtree
-from numpy import array
 from cogent import LoadTree, LoadSeqs
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
