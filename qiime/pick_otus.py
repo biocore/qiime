@@ -1523,7 +1523,7 @@ class DnaclustOtuPicker(OtuPicker):
                 result_out.write(cluster_id + "\t" +\
                  "\t".join(clusters[cluster_id]) + '\n')
                  
-            result = None
+            clusters = None
 
             log_lines.append('Result path: %s' % result_path)
 
