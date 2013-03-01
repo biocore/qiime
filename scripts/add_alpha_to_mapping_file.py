@@ -68,7 +68,8 @@ make_option('-x','--missing_value_name',type="string",
     help='bin prefix name for the sample identifiers that exist in the '
         'mapping file (mapping_fp) but not in the alpha diversity file '
         '(alpha_fp) [default: %default].', default='N/A'),
-make_option('--binning_method', type='string', default='equal',
+make_option('--binning_method', type='choice', choices=['equal', 'quantile'],
+    default='equal',
     help='Select the method name to create the bins, the options are '
     '\'equal\' and \'quantile\'. Both methods work over the normalized alpha '
     'diversity values. On the one hand \'equal\' will assign the bins on '
