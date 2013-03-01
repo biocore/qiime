@@ -67,7 +67,7 @@ from cogent.util.misc import (create_dir,
                               handle_error_codes)
 from cogent.util.option_parsing import (parse_command_line_parameters,
                                         make_option)
-from cogent.maths.stats.test import is_symmetric_and_hollow
+from qiime.pycogent_backports.test import is_symmetric_and_hollow
 
 from qiime import __version__ as qiime_library_version
 from qiime.parse import (parse_distmat,

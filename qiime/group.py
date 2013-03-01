@@ -14,7 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from numpy import array
-from cogent.maths.stats.test import is_symmetric_and_hollow
+from qiime.pycogent_backports.test import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
 def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,

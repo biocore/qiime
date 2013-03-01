@@ -14,7 +14,7 @@ __status__ = "Development"
 from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from cogent.maths.stats.test import mc_t_two_sample, t_two_sample
+from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
 from itertools import combinations
 from collections import defaultdict
 from qiime.otu_category_significance import fdr_correction

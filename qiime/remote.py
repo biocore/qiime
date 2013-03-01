@@ -209,6 +209,7 @@ def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
                 try:
                     cell_data = row.custom[cleaned_header].text
                 except KeyError:
+                    print row.custom.keys()
                     raise GoogleSpreadsheetError("Could not map header '%s' "
                             "to Google Spreadsheet's internal representation "
                             "of the header. We suggest changing the name of "

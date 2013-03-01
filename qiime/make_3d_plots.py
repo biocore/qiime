@@ -24,7 +24,7 @@ from cogent.util.misc import flatten
 from qiime.format import format_coords
 from cogent.maths.stats.util import Numbers
 from qiime.sort import natsort, signed_natsort
-from cogent.maths.stats.test import ANOVA_one_way
+from qiime.pycogent_backports.test import ANOVA_one_way
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
 from numpy import (array, shape, apply_along_axis, dot, delete, vstack, sqrt,
