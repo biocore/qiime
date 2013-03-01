@@ -1533,7 +1533,7 @@ class DnaclustOtuPicker(OtuPicker):
             log_lines = [str(self)] + log_lines
             log_file.write('\n'.join(log_lines))
 
-        return result
+        return clusters
 
 # Some functions to support merging OTU tables
 # generated one after another. This functionality is currently available
