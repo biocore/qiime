@@ -18,12 +18,12 @@ from qiime.util import (load_qiime_config,
                         parse_command_line_parameters,
                         get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import (run_pick_reference_otus_through_otu_table,
-                            print_commands,
-                            call_commands_serially,
-                            print_to_stdout,
-                            no_status_updates,
-                            validate_and_set_jobs_to_start)
+from qiime.workflow.upstream import run_pick_reference_otus_through_otu_table
+from qiime.workflow.util import (print_commands,
+                                 call_commands_serially,
+                                 print_to_stdout,
+                                 no_status_updates,
+                                 validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()

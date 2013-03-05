@@ -3,22 +3,21 @@
 from __future__ import division
 import re
 from glob import glob
-from os.path import split, splitext, join
-from biom.parse import parse_biom_table
+from os.path import split, splitext
 from qiime.parse import (parse_qiime_parameters,
                          parse_mapping_file_to_dict)
-from qiime.util import (get_qiime_scripts_dir,
-                        create_dir,
+from qiime.util import (create_dir,
                         MetadataMap)
-from qiime.workflow import (print_to_stdout,
+from qiime.workflow.downstream import (
                             run_beta_diversity_through_plots,
-                            run_qiime_alpha_rarefaction,
+                            run_alpha_rarefaction,
+                            run_summarize_taxa_through_plots)
+from qiime.workflow.util import (print_to_stdout,
                             generate_log_fp,
                             WorkflowLogger,
                             log_input_md5s,
                             call_commands_serially,
-                            get_params_str,
-                            run_summarize_taxa_through_plots)
+                            get_params_str)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -104,8 +103,6 @@ def run_core_diversity_analyses(
     index_fp = '%s/index.html' % output_dir
     index_links = []
     commands = []
-    python_exe_fp = qiime_config['python_exe_fp']
-    script_dir = get_qiime_scripts_dir()
     
     # begin logging
     log_fp = generate_log_fp(output_dir)
@@ -184,7 +181,7 @@ def run_core_diversity_analyses(
         
     ## Alpha rarefaction workflow
     arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
-    run_qiime_alpha_rarefaction(
+    run_alpha_rarefaction(
      otu_table_fp=biom_fp,
      mapping_fp=mapping_fp,
      output_dir=arare_full_output_dir,
