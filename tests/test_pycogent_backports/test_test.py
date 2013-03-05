@@ -2,7 +2,7 @@
 """Unit tests for statistical tests and utility functions.
 """
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
+from cogent.maths.stats.test import tail, G_2_by_2,G_fit, likelihoods,\
     posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, \
     mc_t_two_sample, _permute_observations, t_one_observation, correlation, \
     correlation_test, correlation_matrix, z_test, z_tailed_prob, \
@@ -659,9 +659,14 @@ class StatTests(TestsHelper):
         x = array([3.02])
         self.assertFloatEqual(t_two_sample(x,sample),(-1.5637254,0.1929248))
         self.assertFloatEqual(t_two_sample(sample, x),(1.5637254,0.1929248))
+
         #can't do the test if both samples have single item
         self.assertEqual(t_two_sample(x,x), (None, None))
-   
+
+        # Test special case if t=0.
+        self.assertFloatEqual(t_two_sample([2], [1, 2, 3]), (0.0, 1.0))
+        self.assertFloatEqual(t_two_sample([1, 2, 3], [2]), (0.0, 1.0))
+
     def test_t_one_observation(self):
         """t_one_observation should match p. 228 of Sokal and Rohlf"""
         sample = array([4.02, 3.88, 3.34, 3.87, 3.18])

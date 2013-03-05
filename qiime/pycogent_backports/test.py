@@ -520,7 +520,10 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
 
             # Negate the t-statistic because we swapped the order of the inputs
             # in the t_one_observation call, as well as tails.
-            return (-t, prob)
+            if t != 0:
+                t = -t
+
+            return (t, prob)
 
         #otherwise, calculate things properly
         x1 = mean(a)
