@@ -2,7 +2,7 @@
 """Unit tests for statistical tests and utility functions.
 """
 from cogent.util.unit_test import TestCase, main
-from cogent.maths.stats.test import tail, G_2_by_2,G_fit, likelihoods,\
+from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
     posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, \
     mc_t_two_sample, _permute_observations, t_one_observation, correlation, \
     correlation_test, correlation_matrix, z_test, z_tailed_prob, \
