@@ -16,7 +16,7 @@ __status__ = "Development"
 from qiime.util import (parse_command_line_parameters,
                         make_option, load_qiime_config, get_qiime_temp_dir)
 from qiime.test import run_script_usage_tests
-from qiime.workflow import generate_log_fp
+from qiime.workflow.util import generate_log_fp
 from os.path import join
 
 qiime_config = load_qiime_config()
