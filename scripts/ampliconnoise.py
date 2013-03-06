@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski"]
+__credits__ = ["Justin Kuczynski","Jose A. Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -63,8 +63,8 @@ script_info['script_usage'] = [("","Run ampliconnoise, write output to anoise_ou
 script_info['output_description']= "a fasta file of sequences, with labels as:'>sample1_0' , '>sample1_1' ..."
 script_info['required_options'] = [
  options_lookup['mapping_fp'],
- make_option('-i','--sff_filepath',help='sff.txt filepath'),
- make_option('-o','--output_filepath',help='the output file'),
+ make_option('-i','--sff_filepath',type='existing_filepath',help='sff.txt filepath'),
+ make_option('-o','--output_filepath',type='new_filepath',help='the output file'),
 
 
 ]
