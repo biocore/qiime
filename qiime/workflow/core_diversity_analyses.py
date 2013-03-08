@@ -106,7 +106,7 @@ def run_core_diversity_analyses(
     
     # begin logging
     log_fp = generate_log_fp(output_dir)
-    index_links.append(('Master run log',log_fp,'Log files'))
+    index_links.append(('Master run log',log_fp,'Run summary data'))
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
@@ -114,7 +114,20 @@ def run_core_diversity_analyses(
     if tree_fp != None:
         input_fps.append(tree_fp)
     log_input_md5s(logger,input_fps)
-    
+
+    try:
+        params_str = get_params_str(params['print_biom_table_summary'])
+    except KeyError:
+        params_str = ''
+    biom_table_stats_output_fp = '%s/biom_table_summary.txt' % output_dir
+    print_biom_table_summary_cmd = \
+     "print_biom_table_summary.py -i %s -o %s --suppress_md5 %s" % \
+     (biom_fp, biom_table_stats_output_fp,params_str)
+    index_links.append(('BIOM table statistics',
+                        biom_table_stats_output_fp,
+                        'Run summary data'))
+    commands.append([('Generate BIOM table summary',
+                      print_biom_table_summary_cmd)])
     
     bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
     even_dm_fps = run_beta_diversity_through_plots(
