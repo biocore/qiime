@@ -37,6 +37,7 @@ def format_index_link(link_description,relative_path):
 def generate_index_page(index_links,
                         index_fp,
                         order=['Run summary data']):
+    """ generate the top-level index page """
     # get containing directory for index_fp
     top_level_dir = split(split(index_fp)[0])[1]
     index_page_header = get_index_page_header()
@@ -48,6 +49,10 @@ def generate_index_page(index_links,
         except KeyError:
             d[e[2]] = [(e[0],e[1])]
     index_lines.append('<table border=1>\n')
+    
+    # Determine the order the data should be presented in. This should be
+    # the order that the user requested, followed by any categories that
+    # the user didn't include in the order parameter. 
     ordered_table_entries = order + [k for k in d if k not in order]
     for k in ordered_table_entries:
         v = d[k]
