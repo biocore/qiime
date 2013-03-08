@@ -3,6 +3,7 @@
 """
 
 from copy import copy
+import types
 import sys
 from optparse import (OptionParser, OptionGroup, Option, 
                       OptionValueError)
@@ -71,13 +72,12 @@ def check_multiple_choice(option, opt, value):
     split_char = ';' if ';' in value else ','
     values = value.split(split_char)
     for v in values:
-        if v in option.mchoices:
-            return value
-        else:
-            choices = ", ".join(map(repr, option.mchoices))
-            raise Option.OptionValueError(
-                _("option %s: invalid choice: %r (choose from %s)")
+        if v not in option.mchoices:
+            choices = ",".join(map(repr, option.mchoices))
+            raise OptionValueError(
+                "option %s: invalid choice: %r (choose from %s)"
                 % (opt, value, choices))
+    return values
 
 class CogentOption(Option):
     ATTRS = Option.ATTRS + ['mchoices']
@@ -112,8 +112,8 @@ class CogentOption(Option):
     # create (e.g., an output dir which will contain many result files)
     TYPE_CHECKER["new_dirpath"] = check_new_dirpath
     # for cases where the user is passing one or more values
-    # as comma- or semicolon-separated list - 
-    # values are returned as a list
+    # as comma- or semicolon-separated list
+    # choices are returned as a list
     TYPE_CHECKER["multiple_choice"] = check_multiple_choice
 
     def _check_multiple_choice(self):
