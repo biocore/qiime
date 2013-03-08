@@ -354,6 +354,7 @@ def iterative_pick_subsampled_open_reference_otus(
                               parallel=False,
                               suppress_step4=False,
                               logger=None,
+                              suppress_md5=False,
                               status_update_callback=print_to_stdout):
     """ Call the pick_subsampled_open_reference_otus workflow on multiple inputs
          and handle processing of the results.
@@ -404,6 +405,7 @@ def iterative_pick_subsampled_open_reference_otus(
                                      parallel=parallel,
                                      suppress_step4=suppress_step4,
                                      logger=logger,
+                                     suppress_md5=suppress_md5,
                                      status_update_callback=status_update_callback)
         ## perform post-iteration file shuffling whether the previous iteration's
         ## data previously existed or was just computed.
@@ -535,6 +537,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                               parallel=False,
                               suppress_step4=False,
                               logger=None,
+                              suppress_md5=False,
                               status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -563,8 +566,12 @@ def pick_subsampled_open_reference_otus(input_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-
-    log_input_md5s(logger,[input_fp,refseqs_fp,step1_otu_map_fp,step1_failures_fasta_fp])
+    
+    if not suppress_md5:
+        log_input_md5s(logger,[input_fp,
+                               refseqs_fp,
+                               step1_otu_map_fp,
+                               step1_failures_fasta_fp])
     
     # if the user has not passed a different reference collection for the pre-filter,
     # used the main refseqs_fp. this is useful if the user wants to provide a smaller
