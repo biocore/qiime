@@ -76,7 +76,7 @@ def get_index_page_header():
 """
     
 def get_index_page_footer():
-    return """<p><b>Need help?</b><br>You can get find answers to your questions on the <a href="http://forum.qiime.org">QIIME Forum</a>.<br>See the <a href="http://qiime.org/tutorials/index.html">QIIME tutorials</a> for examples of additional analyses that can be run.<br>You can find or documentation of the QIIME scripts in the <a href="http://qiime.org/scripts/index.html">QIIME script index</a>.
+    return """<p><b>Need help?</b><br>You can get answers to your questions on the <a href="http://forum.qiime.org">QIIME Forum</a>.<br>See the <a href="http://qiime.org/tutorials/index.html">QIIME tutorials</a> for examples of additional analyses that can be run.<br>You can find documentation of the QIIME scripts in the <a href="http://qiime.org/scripts/index.html">QIIME script index</a>.
 </body></html>"""
 
 
