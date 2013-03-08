@@ -130,6 +130,7 @@ def run_core_diversity_analyses(
         input_fps.append(tree_fp)
     log_input_md5s(logger,input_fps)
 
+    # run print_biom_table_summary.py on input BIOM table
     try:
         params_str = get_params_str(params['print_biom_table_summary'])
     except KeyError:
@@ -143,6 +144,24 @@ def run_core_diversity_analyses(
                         'Run summary data'))
     commands.append([('Generate BIOM table summary',
                       print_biom_table_summary_cmd)])
+    
+    # filter samples with fewer observations than the requested sampling_depth. 
+    # since these get filtered for some analyses (eg beta diversity after
+    # even sampling) it's useful to filter them here so they're filtered 
+    # from all analyses.
+    filtered_biom_fp = "%s/table_mc%d.biom" % (output_dir, sampling_depth)
+    filter_samples_cmd = "filter_samples_from_otu_table.py -i %s -o %s -n %d" %\
+     (biom_fp,filtered_biom_fp,sampling_depth)
+    commands.append([('Filter low sequence count samples from table (minimum sequence count: %d)' % sampling_depth,
+                      filter_samples_cmd)])
+    biom_fp = filtered_biom_fp
+    
+    # run initial commands and reset the command list
+    command_handler(commands, 
+                    status_update_callback, 
+                    logger,
+                    close_logger_on_success=False)
+    commands = []
     
     bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
     even_dm_fps = run_beta_diversity_through_plots(
@@ -316,6 +335,11 @@ def run_core_diversity_analyses(
         index_links.append(('Category significance (%s)' % category,
                     category_signifance_fp,
                     "Category results"))
+    
+    commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
+    index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
+                        '%s.gz' % filtered_biom_fp,
+                        'Run summary data'))
     
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
