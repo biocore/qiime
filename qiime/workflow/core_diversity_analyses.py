@@ -34,7 +34,9 @@ def format_index_link(link_description,relative_path):
                                         re.sub('/+','/',relative_path),
                                         split(relative_path)[1])
 
-def generate_index_page(index_links,index_fp):
+def generate_index_page(index_links,
+                        index_fp,
+                        order=['Run summary data']):
     # get containing directory for index_fp
     top_level_dir = split(split(index_fp)[0])[1]
     index_page_header = get_index_page_header()
@@ -46,7 +48,9 @@ def generate_index_page(index_links,index_fp):
         except KeyError:
             d[e[2]] = [(e[0],e[1])]
     index_lines.append('<table border=1>\n')
-    for k,v in d.items():
+    ordered_table_entries = order + [k for k in d if k not in order]
+    for k in ordered_table_entries:
+        v = d[k]
         index_lines.append(
          '<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center>%s</td></tr>\n' % k)
         for description,path in v:
@@ -223,7 +227,7 @@ def run_core_diversity_analyses(
     index_links.append(('Alpha rarefaction plots',
                         '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
                           % arare_full_output_dir,
-                        "Alpha rarefaction results"))
+                        "Alpha diversity results"))
                         
     collated_alpha_diversity_fps = \
      glob('%s/alpha_div_collated/*txt' % arare_full_output_dir)
@@ -246,7 +250,7 @@ def run_core_diversity_analyses(
             index_links.append(
              ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
               alpha_comparison_output_fp,
-              "Alpha rarefaction results"))
+              "Alpha diversity results"))
     
     taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
     run_summarize_taxa_through_plots(
