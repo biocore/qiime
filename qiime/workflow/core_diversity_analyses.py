@@ -37,7 +37,7 @@ def format_index_link(link_description,relative_path):
 def generate_index_page(index_links,index_fp):
     # get containing directory for index_fp
     top_level_dir = split(split(index_fp)[0])[1]
-    index_page_header = "<html><head><title>QIIME results</title></head><body>\n"
+    index_page_header = get_index_page_header()
     index_lines = [index_page_header]
     d = {}
     for e in index_links:
@@ -48,16 +48,27 @@ def generate_index_page(index_links,index_fp):
     index_lines.append('<table border=1>\n')
     for k,v in d.items():
         index_lines.append(
-         '<tr colspan=2 align=center bgcolor=wheat><td colspan=2 align=center>%s</td></tr>\n' % k)
+         '<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center>%s</td></tr>\n' % k)
         for description,path in v:
             path = re.sub('.*%s' % top_level_dir,'./',path)
             index_lines.append('<tr>%s</tr>\n' % format_index_link(description,path))
-    index_lines.append('</table>')
+    index_lines.append('</table>\n')
     
-    index_page_footer = "</body></html>"
+    index_page_footer = get_index_page_footer()
     index_lines.append(index_page_footer)
     
     open(index_fp,'w').write(''.join(index_lines))
+
+def get_index_page_header():
+    return """<html>
+<head><title>QIIME results</title></head>
+<body>
+<a href="http://www.qiime.org"><img src=\"http://qiime.org/_static/wordpressheader.png\" alt="www.qiime.org""/></a><p>
+"""
+    
+def get_index_page_footer():
+    return """<p><b>Need help?</b><br>You can get find answers to your questions on the <a href="http://forum.qiime.org">QIIME Forum</a>.<br>See the <a href="http://qiime.org/tutorials/index.html">QIIME tutorials</a> for examples of additional analyses that can be run.<br>You can find or documentation of the QIIME scripts in the <a href="http://qiime.org/scripts/index.html">QIIME script index</a>.
+</body></html>"""
 
 
 def run_core_diversity_analyses(
