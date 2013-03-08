@@ -183,6 +183,7 @@ def run_core_diversity_analyses(
      tree_fp=tree_fp,
      parallel=parallel,
      logger=logger,
+     suppress_md5=True,
      status_update_callback=status_update_callback)
     
     for bdiv_metric, dm_fp in even_dm_fps:
@@ -246,6 +247,7 @@ def run_core_diversity_analyses(
      logger=logger,
      min_rare_depth=arare_min_rare_depth,
      max_rare_depth=sampling_depth,
+     suppress_md5=True,
      status_update_callback=status_update_callback)
     
     index_links.append(('Alpha rarefaction plots',
@@ -286,7 +288,8 @@ def run_core_diversity_analyses(
      command_handler=command_handler,
      params=params,
      qiime_config=qiime_config,
-     logger=logger, 
+     logger=logger,
+     suppress_md5=True,
      status_update_callback=status_update_callback)
     
 
@@ -309,7 +312,8 @@ def run_core_diversity_analyses(
          command_handler=command_handler,
          params=params,
          qiime_config=qiime_config,
-         logger=logger, 
+         logger=logger,
+         suppress_md5=True,
          status_update_callback=status_update_callback)
 
         index_links.append(('Taxa summary bar plots',
