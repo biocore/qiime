@@ -28,6 +28,14 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+_index_headers = {
+     "run_summary": "Run summary data",
+     "beta_diversity_even": "Beta diversity results (even sampling: %d)",
+     "alpha_diversity": "Alpha diversity results",
+     "taxa_summary": "Taxonomic summary results",
+     "taxa_summary_categorical": "Taxonomic summary results (by %s)",
+     "otu_category_sig": "Category results"}
+
 def format_index_link(link_description,relative_path):
     
     return '<td>%s</td><td> <a href="%s" target="_blank">%s</a></td>' % (link_description,
@@ -36,7 +44,7 @@ def format_index_link(link_description,relative_path):
 
 def generate_index_page(index_links,
                         index_fp,
-                        order=['Run summary data']):
+                        order=[_index_headers['run_summary']]):
     """ generate the top-level index page """
     # get containing directory for index_fp
     top_level_dir = split(split(index_fp)[0])[1]
@@ -96,7 +104,6 @@ def run_core_diversity_analyses(
     status_update_callback=print_to_stdout):
     """
     """
-
     if categories != None:
         # Validate categories provided by the users
         mapping_data, mapping_comments = \
@@ -126,7 +133,7 @@ def run_core_diversity_analyses(
     
     # begin logging
     log_fp = generate_log_fp(output_dir)
-    index_links.append(('Master run log',log_fp,'Run summary data'))
+    index_links.append(('Master run log',log_fp,_index_headers['run_summary']))
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
@@ -146,7 +153,7 @@ def run_core_diversity_analyses(
      (biom_fp, biom_table_stats_output_fp,params_str)
     index_links.append(('BIOM table statistics',
                         biom_table_stats_output_fp,
-                        'Run summary data'))
+                        _index_headers['run_summary']))
     commands.append([('Generate BIOM table summary',
                       print_biom_table_summary_cmd)])
     
@@ -201,36 +208,36 @@ def run_core_diversity_analyses(
             index_links.append(('Distance boxplots (%s)' % bdiv_metric,
                                 '%s/%s_Distances.pdf' % \
                                  (boxplots_output_dir,category),
-                                'Beta diversity results (even sampling: %d)' % sampling_depth))
+                                _index_headers['beta_diversity_even'] % sampling_depth))
             index_links.append(('Distance boxplots statistics (%s)' % bdiv_metric,
                                 '%s/%s_Stats.txt' % \
                                  (boxplots_output_dir,category),
-                                'Beta diversity results (even sampling: %d)' % sampling_depth))
+                                _index_headers['beta_diversity_even'] % sampling_depth))
             
         index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
                             '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
                              (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
                             '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
                              (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
                             '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
                              (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
                             '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
                              (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         index_links.append(('Distance matrix (%s)' % bdiv_metric,
                             '%s/%s_dm.txt' % \
                              (bdiv_even_output_dir,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         index_links.append(('Principal coordinate matrix (%s)' % bdiv_metric,
                             '%s/%s_pc.txt' % \
                              (bdiv_even_output_dir,bdiv_metric),
-                            'Beta diversity results (even sampling: %d)' % sampling_depth))
+                            _index_headers['beta_diversity_even'] % sampling_depth))
         
     ## Alpha rarefaction workflow
     arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
@@ -253,7 +260,7 @@ def run_core_diversity_analyses(
     index_links.append(('Alpha rarefaction plots',
                         '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
                           % arare_full_output_dir,
-                        "Alpha diversity results"))
+                        _index_headers['alpha_diversity']))
                         
     collated_alpha_diversity_fps = \
      glob('%s/alpha_div_collated/*txt' % arare_full_output_dir)
@@ -276,7 +283,7 @@ def run_core_diversity_analyses(
             index_links.append(
              ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
               alpha_comparison_output_fp,
-              "Alpha diversity results"))
+              _index_headers['alpha_diversity']))
     
     taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
     run_summarize_taxa_through_plots(
@@ -296,11 +303,11 @@ def run_core_diversity_analyses(
     index_links.append(('Taxa summary bar plots',
                         '%s/taxa_summary_plots/bar_charts.html'\
                           % taxa_plots_output_dir,
-                        "Taxonomic summary results"))
+                        _index_headers['taxa_summary']))
     index_links.append(('Taxa summary area plots',
                         '%s/taxa_summary_plots/area_charts.html'\
                           % taxa_plots_output_dir,
-                        "Taxonomic summary results"))
+                        _index_headers['taxa_summary']))
     for c in categories:
         taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,c)
         run_summarize_taxa_through_plots(
@@ -319,11 +326,11 @@ def run_core_diversity_analyses(
         index_links.append(('Taxa summary bar plots',
                             '%s/taxa_summary_plots/bar_charts.html'\
                               % taxa_plots_output_dir,
-                            "Taxonomic summary results (by %s)" % c))
+                            _index_headers['taxa_summary_categorical'] % c))
         index_links.append(('Taxa summary area plots',
                             '%s/taxa_summary_plots/area_charts.html'\
                               % taxa_plots_output_dir,
-                            "Taxonomic summary results (by %s)" % c))
+                            _index_headers['taxa_summary_categorical'] % c))
     
     # OTU category significance
     for category in categories:
@@ -343,12 +350,12 @@ def run_core_diversity_analyses(
                           
         index_links.append(('Category significance (%s)' % category,
                     category_signifance_fp,
-                    "Category results"))
+                    _index_headers['otu_category_sig']))
     
     commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
     index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
                         '%s.gz' % filtered_biom_fp,
-                        'Run summary data'))
+                        _index_headers['run_summary']))
     
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
