@@ -1,0 +1,40 @@
+# observed_species.txt
+# SampleID
+xaxis: 10.0	11.0	12.0	13.0	14.0	15.0	16.0	17.0	18.0	19.0	20.0	
+xmax: 21.0
+>> p2
+color #7cecf4
+series 5.7	5.7	6.1	6.4	6.9	7.5	7.3	8.3	8.2	8.1	8.5	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f1
+color #ff0000
+series 1.9	2.0	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f2
+color #0000ff
+series 1.8	2.2	2.0	2.1	2.3	2.2	2.4	2.9	2.5	3.0	2.8	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f3
+color #f27304
+series 2.0	1.9	1.8	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f4
+color #008000
+series 1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t2
+color #5da09e
+series 2.8	2.8	3.0	2.9	3.0	3.0	3.0	3.0	3.0	3.0	3.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> not16S.1
+color #91278d
+series 1.7	1.7	1.9	2.0	2.0	1.9	1.9	1.9	1.9	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t1
+color #f49ac2
+series 2.1	2.9	3.1	3.4	3.3	3.3	3.2	3.3	3.2	3.7	3.6	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> p1
+color #ffff00
+series 2.1	2.1	2.7	2.5	2.4	2.9	2.8	3.0	3.5	3.4	3.4	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
