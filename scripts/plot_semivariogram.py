@@ -39,9 +39,9 @@ script_info['script_usage'].append(
 script_info['output_description']="""The resulting output file consists of a pdf image containing the plot between the two distances matrices and the fitted model"""
 
 script_info['required_options']=[\
- make_option('-x', '--input_path_x',type='existing_path',\
+ make_option('-x', '--input_path_x',type='existing_filepath',\
      help='path to distance matrix to be displayed in the x axis'),\
- make_option('-y', '--input_path_y',type='existing_path',\
+ make_option('-y', '--input_path_y',type='existing_filepath',\
      help='path to distance matrix to be displayed in the y axis'),\
  make_option('-o', '--output_path',type='new_path',
      help='output path. directory for batch processing, '+\

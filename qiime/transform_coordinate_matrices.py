@@ -143,7 +143,6 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
                                             coords=coords2,\
                                             eigvals=eigvals2,\
                                             pct_var=pct_var2)
-        open('./randomized_coords2.txt','w').write(randomized_coords2)
     else:
         randomized_coords2 = None
         
