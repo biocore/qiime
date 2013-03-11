@@ -465,7 +465,7 @@ def _color_box_plot(plot_axes, box_plot, colors):
     # example:
     # http://matplotlib.sourceforge.net/examples/pylab_examples/
     #     boxplot_demo2.html
-    if len(colors) != len(box_plot['boxes'])
+    if len(colors) != len(box_plot['boxes']):
         raise ValueError("Not enough colors were supplied to color each "
                          "boxplot.")
 
