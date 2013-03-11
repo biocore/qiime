@@ -75,8 +75,6 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
     """
     # Make sure our input makes sense.
     for distribution in distributions:
-        if len(distribution) == 0:
-            raise ValueError("Some of the provided distributions are empty.")
         try:
             map(float, distribution)
         except:
@@ -90,7 +88,23 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
     box_plot = boxplot(distributions, positions=x_values, whis=whisker_length,
                        widths=box_width)
 
+    # TODO check case where all distributions are empty
     if box_colors is not None:
+        if _is_single_matplotlib_color(box_colors):
+            box_colors = [box_colors] * len(box_plot['boxes'])
+        else:
+            # We check against the number of input distributions because mpl
+            # will only return non-empty boxplots from the boxplot() call
+            # above.
+            if len(box_colors) != len(distributions):
+                raise ValueError("Not enough colors were supplied to color "
+                                 "each boxplot.")
+
+            # Filter out colors corresponding to empty distributions.
+            box_colors = [color for distribution, color in zip(distributions,
+                                                               box_colors)
+                          if distribution]
+
         _color_box_plot(plot_axes, box_plot, box_colors)
 
     # Set up the various plotting options, such as x- and y-axis labels, plot
@@ -203,8 +217,6 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     assert (len(x_locations) == num_points), "The number of x_locations " +\
             "does not match the number of data points."
 
-    # Create the figure to put the plots on, as well as a list to store an
-    # example of each distribution's plot (needed for the legend).
     result, plot_axes = _create_plot()
 
     # Iterate over each data point, and plot each of the distributions at that
@@ -430,65 +442,58 @@ def _plot_box_data(plot_axes, distribution, distribution_color,
                    distribution_width, x_position, whisker_length,
                    error_bar_type):
     """Returns the result of plotting a single boxplot in matplotlib."""
-    box_plot = plot_axes.boxplot([distribution], positions=[x_position],
-                                 widths=distribution_width,
-                                 whis=whisker_length)
-    _color_box_plot(plot_axes, box_plot, distribution_color)
-    return box_plot
+    result = None
+
+    if len(distribution) > 0:
+        result = plot_axes.boxplot([distribution], positions=[x_position],
+                                     widths=distribution_width,
+                                     whis=whisker_length)
+        _color_box_plot(plot_axes, result, [distribution_color])
+
+    return result
 
 def _color_box_plot(plot_axes, box_plot, colors):
-    """Fill each box in the box plot with the specified color or colors.
+    """Color boxes in the box plot with the specified colors.
 
-    If colors is a single string or tuple, all boxes are colored with it. If a
-    list or tuple of colors is provided, each box will be colored with its
-    corresponding color. If any of the colors are None, the box will not be
-    colored (the default will be used).
+    If any of the colors are None, the box will not be colored.
 
     The box_plot argument must be the dictionary returned by the call to
-    matplotlib's boxplot function, and the color argument must be a valid
-    matplotlib color.
+    matplotlib's boxplot function, and the colors argument must consist of
+    valid matplotlib colors.
     """
-    # Note: the following code is largely taken from a matplotlib boxplot
+    # Note: the following code is largely taken from this matplotlib boxplot
     # example:
     # http://matplotlib.sourceforge.net/examples/pylab_examples/
     #     boxplot_demo2.html
-    num_boxes = len(box_plot['boxes'])
+    if len(colors) != len(box_plot['boxes'])
+        raise ValueError("Not enough colors were supplied to color each "
+                         "boxplot.")
 
-    if _is_single_matplotlib_color(colors):
-        box_colors = [colors] * num_boxes
-    else:
-        if len(colors) != num_boxes:
-            raise ValueError("Not enough colors were supplied to color each "
-                             "boxplot.")
-        box_colors = colors
-
-    for box_num in range(num_boxes):
-        box_color = box_colors[box_num]
-
-        if box_color is not None:
-            box = box_plot['boxes'][box_num]
-            boxX = []
-            boxY = []
+    for box, median, color in zip(box_plot['boxes'],
+                                  box_plot['medians'],
+                                  colors):
+        if color is not None:
+            box_x = []
+            box_y = []
 
             # There are five points in the box. The first is the same as
             # the last.
-            for j in range(5):
-                boxX.append(box.get_xdata()[j])
-                boxY.append(box.get_ydata()[j])
+            for i in range(5):
+                box_x.append(box.get_xdata()[i])
+                box_y.append(box.get_ydata()[i])
 
-            boxCoords = zip(boxX,boxY)
-            boxPolygon = Polygon(boxCoords, facecolor=box_color)
-            plot_axes.add_patch(boxPolygon)
+            box_coords = zip(box_x, box_y)
+            box_polygon = Polygon(box_coords, facecolor=color)
+            plot_axes.add_patch(box_polygon)
 
             # Draw the median lines back over what we just filled in with
             # color.
-            median = box_plot['medians'][box_num]
-            medianX = []
-            medianY = []
-            for j in range(2):
-                medianX.append(median.get_xdata()[j])
-                medianY.append(median.get_ydata()[j])
-                plot_axes.plot(medianX, medianY, 'black')
+            median_x = []
+            median_y = []
+            for i in range(2):
+                median_x.append(median.get_xdata()[i])
+                median_y.append(median.get_ydata()[i])
+                plot_axes.plot(median_x, median_y, 'black')
 
 def _is_single_matplotlib_color(color):
     """Returns True if color is a single (not a list) mpl color."""
