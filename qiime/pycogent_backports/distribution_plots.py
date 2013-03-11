@@ -88,7 +88,6 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
     box_plot = boxplot(distributions, positions=x_values, whis=whisker_length,
                        widths=box_width)
 
-    # TODO check case where all distributions are empty
     if box_colors is not None:
         if _is_single_matplotlib_color(box_colors):
             box_colors = [box_colors] * len(box_plot['boxes'])

@@ -352,10 +352,55 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(len(ax.get_xticklabels()), 3)
         self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
 
+    def test_generate_box_plots_empty_distributions(self):
+        """Test functions correctly with empty distributions."""
+        fig = generate_box_plots([[1, 2, 3], [], [4, 5, 6]], [1, 4, 10],
+                                 ["Data 1", "Data 2", "Data 3"], "Test",
+                                 "x-axis label", "y-axis label")
+        ax = fig.get_axes()[0]
+        self.assertEqual(ax.get_title(), "Test")
+        self.assertEqual(ax.get_xlabel(), "x-axis label")
+        self.assertEqual(ax.get_ylabel(), "y-axis label")
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
+
+        # All distributions are empty.
+        fig = generate_box_plots([[], [], []], [1, 4, 10],
+                                 ["Data 1", "Data 2", "Data 3"], "Test",
+                                 "x-axis label", "y-axis label")
+        ax = fig.get_axes()[0]
+        self.assertEqual(ax.get_title(), "Test")
+        self.assertEqual(ax.get_xlabel(), "x-axis label")
+        self.assertEqual(ax.get_ylabel(), "y-axis label")
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
+
+    def test_generate_box_plots_box_colors(self):
+        """Test correctly handles coloring of box plots."""
+        # Coloring works with all empty distributions.
+        fig = generate_box_plots([[], [], []],
+                                 box_colors=['blue', 'red', 'yellow'])
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
+        fig = generate_box_plots([[], [], []], box_colors='pink')
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
+        # Coloring works with some empty distributions.
+        fig = generate_box_plots([[], [1, 2, 3.5], []],
+                                 box_colors=['blue', 'red', 'yellow'])
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
     def test_generate_box_plots_invalid_input(self):
         """Test correctly throws error on invalid input."""
         # Non-numeric entries in distribution.
         self.assertRaises(ValueError, generate_box_plots, [[1, 'foo', 3]])
+
+        # Number of colors doesn't match number of distributions.
+        self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3], [],
+                          [4, 5, 6]], box_colors=['blue', 'red'])
 
         # Invalid legend.
         self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3]],
