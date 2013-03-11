@@ -91,11 +91,11 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
     result += '# Entries marked with "N/A" could not be calculated because ' + \
               'at least one of the groups\n# of distances was empty, ' + \
               'both groups each contained only a single distance, or\n' + \
-              '# the test could not be performed (e.g. no variance in the ' + \
-              'groups).\nGroup 1\tGroup 2\tt statistic\tParametric ' + \
-              'p-value\tParametric p-value (Bonferroni-corrected)\t' + \
-              'Nonparametric p-value\tNonparametric p-value ' + \
-              '(Bonferroni-corrected)\n'
+              '# the test could not be performed (e.g. no variance in ' + \
+              'groups with the same mean).\nGroup 1\tGroup 2\t' + \
+              't statistic\tParametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\n'
 
     stats = _perform_pairwise_tests(labels, dists, tail_type, num_permutations)
     for stat in stats:
