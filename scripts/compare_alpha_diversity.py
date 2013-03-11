@@ -40,7 +40,10 @@ rarefaction at depth 480, the scores for the alpha diversity metrics of those
 10 iterations would be averaged (within sample). The iterations are not 
 controlled by this script; when multiple_rarefactions.py is called, the -n option 
 specifies the number of iterations that have occurred. The multiple comparison
-correction takes into account the number of between group comparisons.
+correction takes into account the number of between group comparisons. If you do
+not know the the rarefaction depth available or you want to use the deepest 
+rarefaction level available then do not pass the -d or --depth option and it will 
+defualt to using the deepest available. 
 
 If t-scores and/or p-values are None for any of your comparisons there are three
 possible reasons. The first is that there were undefined values in your collated
@@ -75,8 +78,14 @@ script_info['script_usage'].append(("Comparing alpha diversities",
 
 script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
-"t-distribution instead of Monte Carlo permutations.",
+"t-distribution instead of Monte Carlo permutations at rarefaction depth 100.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o "
+"PD_d100_parametric.txt -t parametric"))
+
+script_info['script_usage'].append(("Parametric t-test",
+"The following command runs a parametric two sample t-test using the "
+"t-distribution instead of Monte Carlo permutations at the greatest depth available.",
+"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -o "
 "PD_d100_parametric.txt -t parametric"))
 
 script_info['output_description']= """
@@ -105,12 +114,6 @@ script_info['required_options']=[
   type='string',
   dest='category',
   help='category for comparison [REQUIRED]'),
- make_option('-d',
-  '--depth',
-  action='store',
-  type='string',
-  dest='depth',
-  help='depth of rarefaction file to use [REQUIRED]'),
  make_option('-o',
   '--output_filepath',
   action='store',
@@ -133,7 +136,10 @@ script_info['optional_options'] = [
   make_option('-p', '--correction_method', type='choice',
   choices=correction_types, help='method to use for correcting multiple '
   'comparisons. Available methods are bonferroni, fdr, or none. '
-  '[default: %default]', default='bonferroni')]
+  '[default: %default]', default='bonferroni'),
+   make_option('-d', '--depth', type='int', default=None, dest='depth',
+  help='depth of rarefaction file to use [default: %default]')]
+
 
 script_info['version'] = __version__
 
@@ -146,7 +152,7 @@ def main():
     rarefaction_lines = open(opts.alpha_diversity_fp, 'U')
     mapping_lines = open(opts.mapping_fp, 'U')
     category = opts.category
-    depth = int(opts.depth)
+    depth = opts.depth
     output_path = opts.output_fp
 
     result = compare_alpha_diversities(rarefaction_lines, mapping_lines,
