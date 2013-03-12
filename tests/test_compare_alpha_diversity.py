@@ -266,6 +266,22 @@ class TopLevelTests(TestCase):
             test_type=test_type)
         self.assertEqual(observed_results, expected_results)
 
+        # test that it works when no depth is passed
+        category = 'Dose'
+        depth = None #should return depth = 850
+        test_type = 'parametric'
+        observed_results = compare_alpha_diversities(self.rarefaction_file,
+            self.mapping_file, category=category, depth=depth, 
+            test_type=test_type)
+
+        # hardcoded order of the terms in the keys otherwise would comps fail
+        expected_results = \
+            {'Control,2xDose': (3.3159701868634883, 0.1864642327553255),
+             '1xDose,2xDose': (-0.48227871733885291, 0.66260803238173183),
+             'Control,1xDose': (0.83283756452373126, 0.49255115337550748)}
+        self.assertEqual(observed_results, expected_results)
+
+
 
 if __name__ == "__main__":
     main()
