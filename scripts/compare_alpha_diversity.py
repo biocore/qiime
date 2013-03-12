@@ -86,7 +86,7 @@ script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
 "t-distribution instead of Monte Carlo permutations at the greatest depth available.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -o "
-"PD_d100_parametric.txt -t parametric"))
+"PD_dmax_parametric.txt -t parametric"))
 
 script_info['output_description']= """
 Script generates an output file that is a table of TreatmentPair by (tval,pval). 

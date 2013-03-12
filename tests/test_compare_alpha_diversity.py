@@ -276,9 +276,11 @@ class TopLevelTests(TestCase):
 
         # hardcoded order of the terms in the keys otherwise would comps fail
         expected_results = \
-            {'Control,2xDose': (None, None),
+            {'Control,2xDose': (3.3159701868634883, 0.1864642327553255),
              '1xDose,2xDose': (-0.48227871733885291, 0.66260803238173183),
-             'Control,1xDose': (None,None)}
+             'Control,1xDose': (0.83283756452373126, 0.49255115337550748)}
+        self.assertEqual(observed_results, expected_results)
+
 
 
 if __name__ == "__main__":
