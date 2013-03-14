@@ -1488,7 +1488,6 @@ class DnaclustOtuPicker(OtuPicker):
         _params.update(params)
 
         OtuPicker.__init__(self, _params)
-        print params
 
     def __call__(self, seq_path, result_path=None, log_path=None):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.

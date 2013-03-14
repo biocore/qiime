@@ -3144,8 +3144,8 @@ class DnaclustOtuPickerTests(TestCase):
         self.assertEqual(expected.keys(), observed.keys())
 
         for key in expected.keys():
-            self.assertEqual(set(expected[key]),
-                    set(observed[key]))
+            self.assertEqual(set(observed[key]),
+                    set(expected[key]))
 
     def test_call_default_params(self):
         """ DnaclustOtuPicker.__call__ expected clusters with default params. """
