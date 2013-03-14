@@ -38,7 +38,7 @@ When working with Illumina data you typically want to filter singleton OTUs (i.e
 
 In QIIME 1.4.0-dev and later, you can filter singleton OTUs with this command::
 	
-	filter_otus_from_otu_table.py -i $PWD/ucr/otu_table.biom -o $PWD/ucr/otu_table_mc2.biom -c 2
+	filter_otus_from_otu_table.py -i $PWD/ucr/otu_table.biom -o $PWD/ucr/otu_table_mc2.biom -n 2
 
 You'll notice that depending on your version of QIIME, the extension on your OTU table file will differ. In QIIME 1.4.0 and earlier, it will be ``.txt``. In QIIME 1.4.0-dev and later it will be ``.biom``. We'll continue this example assuming that your OTU table ends with ``.txt`` (if you're working with QIIME 1.4.0-dev or later, you likely decided to go with option 2 for OTU picking).
 
