@@ -125,7 +125,6 @@ class DnaclustRef(CommandLineApplication):
             result[extension] = ResultPath(\
              Path=data + '.' + extension,\
              IsWritten=True)
-            print str(data + '.' + extension)
         return result
 
 def dnaclust_from_seqs(seq_path,
