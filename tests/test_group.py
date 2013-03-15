@@ -18,7 +18,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field, parse_coords
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
     get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
-    get_adjacent_distances, get_adjacent_coordinates)
+    get_adjacent_distances, get_ordered_coordinates)
 
 class GroupTests(TestCase):
     """Tests of the group module."""
@@ -301,8 +301,8 @@ class GroupTests(TestCase):
                                      ['s1','s3','s4','s5','s6','s2','s1'],
                                      strict=True)
                                      
-    def test_get_adjacent_coordinates(self):
-        """get_adjacent_coordinates functions as expected """
+    def test_get_ordered_coordinates(self):
+        """get_ordered_coordinates functions as expected """
         pc_lines = ["pc vector number\t1\t2\t3\t4",
                     "s1\t-0.049\t0.245\t0.146\t-0.036",
                     "s5\t-0.267\t-0.228\t-0.024\t-0.095",
@@ -321,7 +321,7 @@ class GroupTests(TestCase):
                            [-0.328, -0.299, -0.025, 0.051],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1','s2','s3','s4','s5']
-        actual_coords, actual_sids = get_adjacent_coordinates(
+        actual_coords, actual_sids = get_ordered_coordinates(
          pc[0],pc[1],['s1','s2','s3','s4','s5'])
         self.assertEqual(actual_coords,expected_coords)
         self.assertEqual(actual_sids,expected_sids)
@@ -330,7 +330,7 @@ class GroupTests(TestCase):
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1','s5']
-        actual_coords, actual_sids = get_adjacent_coordinates(
+        actual_coords, actual_sids = get_ordered_coordinates(
          pc[0],pc[1],['s1','s5'])
         self.assertEqual(actual_coords,expected_coords)
         self.assertEqual(actual_sids,expected_sids)
@@ -339,7 +339,7 @@ class GroupTests(TestCase):
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1','s5']
-        actual_coords, actual_sids = get_adjacent_coordinates(
+        actual_coords, actual_sids = get_ordered_coordinates(
          pc[0],pc[1],['s1','s6','s5'])
         self.assertEqual(actual_coords,expected_coords)
         self.assertEqual(actual_sids,expected_sids)
@@ -348,7 +348,7 @@ class GroupTests(TestCase):
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1','s5']
-        self.assertRaises(ValueError,get_adjacent_coordinates,
+        self.assertRaises(ValueError,get_ordered_coordinates,
                           pc[0],pc[1],['s1','s6','s5'],strict=True)
         
         
