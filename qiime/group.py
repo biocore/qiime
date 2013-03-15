@@ -199,9 +199,9 @@ def get_adjacent_coordinates(coordinate_header,
     """
     adjacent_coordinates = []
     adjacent_sids = []
-    for sample_id in sample_ids:
+    for sid in sample_ids:
         try:
-            coordinate_idx = coordinate_header.index(sample_id)
+            coordinate_idx = coordinate_header.index(sid)
         except ValueError:
             if strict:
                 raise ValueError,\
@@ -210,7 +210,7 @@ def get_adjacent_coordinates(coordinate_header,
                 pass
         else:
             adjacent_coordinates.append(coordinate_matrix[coordinate_idx])
-            adjacent_sids.append(sample_id)
+            adjacent_sids.append(sid)
     return adjacent_coordinates, adjacent_sids
 
 def get_adjacent_distances(dist_matrix_header,

@@ -313,6 +313,7 @@ class GroupTests(TestCase):
 "",
 "eigvals\t191.54513205\t169.992802105\t30.457371584\t19.1928594257",
 "%% variation explained\t18.1312168454\t16.0911234034\t2.88302397885"]
+
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.002, 0.216, -0.052, -0.085],
@@ -324,6 +325,33 @@ class GroupTests(TestCase):
          pc[0],pc[1],['s1','s2','s3','s4','s5'])
         self.assertEqual(actual_coords,expected_coords)
         self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        actual_coords, actual_sids = get_adjacent_coordinates(
+         pc[0],pc[1],['s1','s5'])
+        self.assertEqual(actual_coords,expected_coords)
+        self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        actual_coords, actual_sids = get_adjacent_coordinates(
+         pc[0],pc[1],['s1','s6','s5'])
+        self.assertEqual(actual_coords,expected_coords)
+        self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        self.assertRaises(ValueError,get_adjacent_coordinates,
+                          pc[0],pc[1],['s1','s6','s5'],strict=True)
+        
+        
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""
