@@ -181,15 +181,15 @@ def get_adjacent_coordinates(coordinate_header,
                              coordinate_matrix,
                              sample_ids,
                              strict=False):
-    """ Return the coordinate vectors associated with sample_ids
+    """ Return the coordinate vectors associated with sample_ids in order
     
         coordinate_header: sample ids corresponding to vectors
          in coordinate_matrix (element 0 of output of 
          qiime.parse.parse_coords)
         coordinate_matrix: the coordinate vectors (element 1 of
          output of qiime.parse.parse_coords)
-        sample_ids: sample ids for which coordinates should be 
-         extracted
+        sample_ids: ordered sample ids for which coordinates should 
+         be extracted
         strict: raise an error if a sample id is not present
          in coordinate_header
         
