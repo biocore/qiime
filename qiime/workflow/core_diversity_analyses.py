@@ -102,6 +102,7 @@ def run_core_diversity_analyses(
     arare_num_steps=10,
     parallel=False,
     suppress_taxa_summary=False,
+    suppress_beta_diversity=False,
     status_update_callback=print_to_stdout):
     """
     """
@@ -176,69 +177,70 @@ def run_core_diversity_analyses(
                     close_logger_on_success=False)
     commands = []
     
-    bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
-    even_dm_fps = run_beta_diversity_through_plots(
-     otu_table_fp=biom_fp, 
-     mapping_fp=mapping_fp,
-     output_dir=bdiv_even_output_dir,
-     command_handler=command_handler,
-     params=params,
-     qiime_config=qiime_config,
-     sampling_depth=sampling_depth,
-     # force suppression of distance histograms - boxplots work better
-     # in this context, and are created below.
-     histogram_categories=[],
-     tree_fp=tree_fp,
-     parallel=parallel,
-     logger=logger,
-     suppress_md5=True,
-     status_update_callback=status_update_callback)
+    if not suppress_beta_diversity:
+        bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
+        even_dm_fps = run_beta_diversity_through_plots(
+         otu_table_fp=biom_fp, 
+         mapping_fp=mapping_fp,
+         output_dir=bdiv_even_output_dir,
+         command_handler=command_handler,
+         params=params,
+         qiime_config=qiime_config,
+         sampling_depth=sampling_depth,
+         # force suppression of distance histograms - boxplots work better
+         # in this context, and are created below.
+         histogram_categories=[],
+         tree_fp=tree_fp,
+         parallel=parallel,
+         logger=logger,
+         suppress_md5=True,
+         status_update_callback=status_update_callback)
     
-    for bdiv_metric, dm_fp in even_dm_fps:
-        for category in categories:
-            boxplots_output_dir = '%s/%s_boxplots/' % (bdiv_even_output_dir,bdiv_metric)
-            try:
-                params_str = get_params_str(params['make_distance_boxplots'])
-            except KeyError:
-                params_str = ''
-            boxplots_cmd = \
-             'make_distance_boxplots.py -d %s -f %s -o %s -m %s -n 999 %s' %\
-             (dm_fp, category, boxplots_output_dir, mapping_fp, params_str)
-            commands.append([('Boxplots (%s)' % category,
-                              boxplots_cmd)])
-            index_links.append(('Distance boxplots (%s)' % bdiv_metric,
-                                '%s/%s_Distances.pdf' % \
-                                 (boxplots_output_dir,category),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('Distance boxplots statistics (%s)' % bdiv_metric,
-                                '%s/%s_Stats.txt' % \
-                                 (boxplots_output_dir,category),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
+        for bdiv_metric, dm_fp in even_dm_fps:
+            for category in categories:
+                boxplots_output_dir = '%s/%s_boxplots/' % (bdiv_even_output_dir,bdiv_metric)
+                try:
+                    params_str = get_params_str(params['make_distance_boxplots'])
+                except KeyError:
+                    params_str = ''
+                boxplots_cmd = \
+                 'make_distance_boxplots.py -d %s -f %s -o %s -m %s -n 999 %s' %\
+                 (dm_fp, category, boxplots_output_dir, mapping_fp, params_str)
+                commands.append([('Boxplots (%s)' % category,
+                                  boxplots_cmd)])
+                index_links.append(('Distance boxplots (%s)' % bdiv_metric,
+                                    '%s/%s_Distances.pdf' % \
+                                     (boxplots_output_dir,category),
+                                    _index_headers['beta_diversity_even'] % sampling_depth))
+                index_links.append(('Distance boxplots statistics (%s)' % bdiv_metric,
+                                    '%s/%s_Stats.txt' % \
+                                     (boxplots_output_dir,category),
+                                    _index_headers['beta_diversity_even'] % sampling_depth))
             
-        index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                            '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
-                             (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
-        index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                            '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
-                             (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
-        index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
-                            '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
-                             (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
-        index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
-                            '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
-                             (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
-        index_links.append(('Distance matrix (%s)' % bdiv_metric,
-                            '%s/%s_dm.txt' % \
-                             (bdiv_even_output_dir,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
-        index_links.append(('Principal coordinate matrix (%s)' % bdiv_metric,
-                            '%s/%s_pc.txt' % \
-                             (bdiv_even_output_dir,bdiv_metric),
-                            _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
+                                '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
+                                '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
+                                '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
+                                '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('Distance matrix (%s)' % bdiv_metric,
+                                '%s/%s_dm.txt' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
+            index_links.append(('Principal coordinate matrix (%s)' % bdiv_metric,
+                                '%s/%s_pc.txt' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
+                                _index_headers['beta_diversity_even'] % sampling_depth))
         
     ## Alpha rarefaction workflow
     arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
@@ -269,14 +271,14 @@ def run_core_diversity_analyses(
         params_str = get_params_str(params['compare_alpha_diversity'])
     except KeyError:
         params_str = ''
-    for c in categories:
+    for category in categories:
         for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
             alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
             alpha_comparison_output_fp = '%s/%s_%s.txt' % \
-             (arare_full_output_dir,c,alpha_metric)
+             (arare_full_output_dir,category,alpha_metric)
             compare_alpha_cmd = \
              'compare_alpha_diversity.py -i %s -m %s -c %s -d %s -o %s -n 999 %s' %\
-             (collated_alpha_diversity_fp, mapping_fp, c, 
+             (collated_alpha_diversity_fp, mapping_fp, category, 
               sampling_depth, alpha_comparison_output_fp, params_str)
             commands.append([('Compare alpha diversity (%s, %s)' %\
                                (category,alpha_metric),
@@ -310,13 +312,13 @@ def run_core_diversity_analyses(
                             '%s/taxa_summary_plots/area_charts.html'\
                               % taxa_plots_output_dir,
                             _index_headers['taxa_summary']))
-        for c in categories:
-            taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,c)
+        for category in categories:
+            taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,category)
             run_summarize_taxa_through_plots(
              otu_table_fp=biom_fp,
              mapping_fp=mapping_fp,
              output_dir=taxa_plots_output_dir,
-             mapping_cat=c, 
+             mapping_cat=category, 
              sort=True,
              command_handler=command_handler,
              params=params,
@@ -328,11 +330,11 @@ def run_core_diversity_analyses(
             index_links.append(('Taxa summary bar plots',
                                 '%s/taxa_summary_plots/bar_charts.html'\
                                   % taxa_plots_output_dir,
-                                _index_headers['taxa_summary_categorical'] % c))
+                                _index_headers['taxa_summary_categorical'] % category))
             index_links.append(('Taxa summary area plots',
                                 '%s/taxa_summary_plots/area_charts.html'\
                                   % taxa_plots_output_dir,
-                                _index_headers['taxa_summary_categorical'] % c))
+                                _index_headers['taxa_summary_categorical'] % category))
     
     # OTU category significance
     for category in categories:

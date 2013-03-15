@@ -74,7 +74,9 @@ script_info['optional_options'] = [\
           ' tables, or if a reliable tree is not available (e.g., if you\'re '
           ' working with ITS amplicons) [default: %default]')),
  make_option('--suppress_taxa_summary',action='store_true',default=False,
-    help=('Suppress generation of taxa summary plots [default: %default]')),
+    help=('Suppress generation of taxa summary plots. [default: %default]')),
+ make_option('--suppress_beta_diversity',action='store_true',default=False,
+    help=('Suppress beta diversity analyses. [default: %default]')),
  make_option('-t','--tree_fp',type='existing_filepath',
     help=('Path to the tree file if one should be used.'
           ' [default: no tree will be used]')),
@@ -110,6 +112,7 @@ def main():
     nonphylogenetic_diversity = opts.nonphylogenetic_diversity
     print_only = opts.print_only
     suppress_taxa_summary = opts.suppress_taxa_summary
+    suppress_beta_diversity = opts.suppress_beta_diversity
     
     if opts.parameter_fp != None:
         params = parse_qiime_parameters(open(opts.parameter_fp,'U'))
@@ -158,6 +161,7 @@ def main():
         arare_num_steps=10,
         parallel=parallel,
         suppress_taxa_summary=suppress_taxa_summary,
+        suppress_beta_diversity=suppress_beta_diversity,
         status_update_callback=status_update_callback)
 
 if __name__ == "__main__":
