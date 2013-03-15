@@ -101,6 +101,7 @@ def run_core_diversity_analyses(
     arare_min_rare_depth=10,
     arare_num_steps=10,
     parallel=False,
+    suppress_taxa_summary=False,
     status_update_callback=print_to_stdout):
     """
     """
@@ -285,36 +286,13 @@ def run_core_diversity_analyses(
               alpha_comparison_output_fp,
               _index_headers['alpha_diversity']))
     
-    taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
-    run_summarize_taxa_through_plots(
-     otu_table_fp=biom_fp,
-     mapping_fp=mapping_fp,
-     output_dir=taxa_plots_output_dir,
-     mapping_cat=None, 
-     sort=True,
-     command_handler=command_handler,
-     params=params,
-     qiime_config=qiime_config,
-     logger=logger,
-     suppress_md5=True,
-     status_update_callback=status_update_callback)
-    
-
-    index_links.append(('Taxa summary bar plots',
-                        '%s/taxa_summary_plots/bar_charts.html'\
-                          % taxa_plots_output_dir,
-                        _index_headers['taxa_summary']))
-    index_links.append(('Taxa summary area plots',
-                        '%s/taxa_summary_plots/area_charts.html'\
-                          % taxa_plots_output_dir,
-                        _index_headers['taxa_summary']))
-    for c in categories:
-        taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,c)
+    if not suppress_taxa_summary:
+        taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
         run_summarize_taxa_through_plots(
          otu_table_fp=biom_fp,
          mapping_fp=mapping_fp,
          output_dir=taxa_plots_output_dir,
-         mapping_cat=c, 
+         mapping_cat=None, 
          sort=True,
          command_handler=command_handler,
          params=params,
@@ -322,15 +300,39 @@ def run_core_diversity_analyses(
          logger=logger,
          suppress_md5=True,
          status_update_callback=status_update_callback)
+    
 
         index_links.append(('Taxa summary bar plots',
                             '%s/taxa_summary_plots/bar_charts.html'\
                               % taxa_plots_output_dir,
-                            _index_headers['taxa_summary_categorical'] % c))
+                            _index_headers['taxa_summary']))
         index_links.append(('Taxa summary area plots',
                             '%s/taxa_summary_plots/area_charts.html'\
                               % taxa_plots_output_dir,
-                            _index_headers['taxa_summary_categorical'] % c))
+                            _index_headers['taxa_summary']))
+        for c in categories:
+            taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,c)
+            run_summarize_taxa_through_plots(
+             otu_table_fp=biom_fp,
+             mapping_fp=mapping_fp,
+             output_dir=taxa_plots_output_dir,
+             mapping_cat=c, 
+             sort=True,
+             command_handler=command_handler,
+             params=params,
+             qiime_config=qiime_config,
+             logger=logger,
+             suppress_md5=True,
+             status_update_callback=status_update_callback)
+
+            index_links.append(('Taxa summary bar plots',
+                                '%s/taxa_summary_plots/bar_charts.html'\
+                                  % taxa_plots_output_dir,
+                                _index_headers['taxa_summary_categorical'] % c))
+            index_links.append(('Taxa summary area plots',
+                                '%s/taxa_summary_plots/area_charts.html'\
+                                  % taxa_plots_output_dir,
+                                _index_headers['taxa_summary_categorical'] % c))
     
     # OTU category significance
     for category in categories:
