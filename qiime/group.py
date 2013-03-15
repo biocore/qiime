@@ -177,6 +177,42 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
                     result[field_state][comp_field_state] = group[2]
     return result
 
+def get_adjacent_coordinates(coordinate_header,
+                             coordinate_matrix,
+                             sample_ids,
+                             strict=False):
+    """ Return the coordinate vectors associated with sample_ids
+    
+        coordinate_header: sample ids corresponding to vectors
+         in coordinate_matrix (element 0 of output of 
+         qiime.parse.parse_coords)
+        coordinate_matrix: the coordinate vectors (element 1 of
+         output of qiime.parse.parse_coords)
+        sample_ids: sample ids for which coordinates should be 
+         extracted
+        strict: raise an error if a sample id is not present
+         in coordinate_header
+        
+        The output of this function will be a tuple of the coordinate 
+         vectors corresponding to each sample id, and those sample_ids:
+         (adjacent_coordinates, adjacent_sids).
+    """
+    adjacent_coordinates = []
+    adjacent_sids = []
+    for sample_id in sample_ids:
+        try:
+            coordinate_idx = coordinate_header.index(sample_id)
+        except ValueError:
+            if strict:
+                raise ValueError,\
+                 "Sample ID (%s) is not present in distance matrix" % sid
+            else:
+                pass
+        else:
+            adjacent_coordinates.append(coordinate_matrix[coordinate_idx])
+            adjacent_sids.append(sample_id)
+    return adjacent_coordinates, adjacent_sids
+
 def get_adjacent_distances(dist_matrix_header,
                            dist_matrix,
                            sample_ids,
