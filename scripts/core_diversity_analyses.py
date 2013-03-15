@@ -77,6 +77,10 @@ script_info['optional_options'] = [\
     help=('Suppress generation of taxa summary plots. [default: %default]')),
  make_option('--suppress_beta_diversity',action='store_true',default=False,
     help=('Suppress beta diversity analyses. [default: %default]')),
+ make_option('--suppress_alpha_diversity',action='store_true',default=False,
+    help=('Suppress alpha diversity analyses. [default: %default]')),
+ make_option('--suppress_otu_category_significance',action='store_true',default=False,
+    help=('Suppress OTU/category significance analysis. [default: %default]')),
  make_option('-t','--tree_fp',type='existing_filepath',
     help=('Path to the tree file if one should be used.'
           ' [default: no tree will be used]')),
@@ -113,6 +117,8 @@ def main():
     print_only = opts.print_only
     suppress_taxa_summary = opts.suppress_taxa_summary
     suppress_beta_diversity = opts.suppress_beta_diversity
+    suppress_alpha_diversity = opts.suppress_alpha_diversity
+    suppress_otu_category_significance = opts.suppress_otu_category_significance
     
     if opts.parameter_fp != None:
         params = parse_qiime_parameters(open(opts.parameter_fp,'U'))
@@ -162,6 +168,8 @@ def main():
         parallel=parallel,
         suppress_taxa_summary=suppress_taxa_summary,
         suppress_beta_diversity=suppress_beta_diversity,
+        suppress_alpha_diversity=suppress_alpha_diversity,
+        suppress_otu_category_significance=suppress_otu_category_significance,
         status_update_callback=status_update_callback)
 
 if __name__ == "__main__":

@@ -103,6 +103,8 @@ def run_core_diversity_analyses(
     parallel=False,
     suppress_taxa_summary=False,
     suppress_beta_diversity=False,
+    suppress_alpha_diversity=False,
+    suppress_otu_category_significance=False,
     status_update_callback=print_to_stdout):
     """
     """
@@ -241,52 +243,53 @@ def run_core_diversity_analyses(
                                 '%s/%s_pc.txt' % \
                                  (bdiv_even_output_dir,bdiv_metric),
                                 _index_headers['beta_diversity_even'] % sampling_depth))
-        
-    ## Alpha rarefaction workflow
-    arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
-    run_alpha_rarefaction(
-     otu_table_fp=biom_fp,
-     mapping_fp=mapping_fp,
-     output_dir=arare_full_output_dir,
-     command_handler=command_handler,
-     params=params,
-     qiime_config=qiime_config,
-     tree_fp=tree_fp,
-     num_steps=arare_num_steps,
-     parallel=parallel,
-     logger=logger,
-     min_rare_depth=arare_min_rare_depth,
-     max_rare_depth=sampling_depth,
-     suppress_md5=True,
-     status_update_callback=status_update_callback)
     
-    index_links.append(('Alpha rarefaction plots',
-                        '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
-                          % arare_full_output_dir,
-                        _index_headers['alpha_diversity']))
+    if not suppress_alpha_diversity:
+        ## Alpha rarefaction workflow
+        arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
+        run_alpha_rarefaction(
+         otu_table_fp=biom_fp,
+         mapping_fp=mapping_fp,
+         output_dir=arare_full_output_dir,
+         command_handler=command_handler,
+         params=params,
+         qiime_config=qiime_config,
+         tree_fp=tree_fp,
+         num_steps=arare_num_steps,
+         parallel=parallel,
+         logger=logger,
+         min_rare_depth=arare_min_rare_depth,
+         max_rare_depth=sampling_depth,
+         suppress_md5=True,
+         status_update_callback=status_update_callback)
+    
+        index_links.append(('Alpha rarefaction plots',
+                            '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
+                              % arare_full_output_dir,
+                            _index_headers['alpha_diversity']))
                         
-    collated_alpha_diversity_fps = \
-     glob('%s/alpha_div_collated/*txt' % arare_full_output_dir)
-    try:
-        params_str = get_params_str(params['compare_alpha_diversity'])
-    except KeyError:
-        params_str = ''
-    for category in categories:
-        for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
-            alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
-            alpha_comparison_output_fp = '%s/%s_%s.txt' % \
-             (arare_full_output_dir,category,alpha_metric)
-            compare_alpha_cmd = \
-             'compare_alpha_diversity.py -i %s -m %s -c %s -d %s -o %s -n 999 %s' %\
-             (collated_alpha_diversity_fp, mapping_fp, category, 
-              sampling_depth, alpha_comparison_output_fp, params_str)
-            commands.append([('Compare alpha diversity (%s, %s)' %\
-                               (category,alpha_metric),
-                              compare_alpha_cmd)])
-            index_links.append(
-             ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
-              alpha_comparison_output_fp,
-              _index_headers['alpha_diversity']))
+        collated_alpha_diversity_fps = \
+         glob('%s/alpha_div_collated/*txt' % arare_full_output_dir)
+        try:
+            params_str = get_params_str(params['compare_alpha_diversity'])
+        except KeyError:
+            params_str = ''
+        for category in categories:
+            for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
+                alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
+                alpha_comparison_output_fp = '%s/%s_%s.txt' % \
+                 (arare_full_output_dir,category,alpha_metric)
+                compare_alpha_cmd = \
+                 'compare_alpha_diversity.py -i %s -m %s -c %s -d %s -o %s -n 999 %s' %\
+                 (collated_alpha_diversity_fp, mapping_fp, category, 
+                  sampling_depth, alpha_comparison_output_fp, params_str)
+                commands.append([('Compare alpha diversity (%s, %s)' %\
+                                   (category,alpha_metric),
+                                  compare_alpha_cmd)])
+                index_links.append(
+                 ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
+                  alpha_comparison_output_fp,
+                  _index_headers['alpha_diversity']))
     
     if not suppress_taxa_summary:
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
@@ -336,25 +339,26 @@ def run_core_diversity_analyses(
                                   % taxa_plots_output_dir,
                                 _index_headers['taxa_summary_categorical'] % category))
     
-    # OTU category significance
-    for category in categories:
-        category_signifance_fp = \
-         '%s/category_significance_%s.txt' % (output_dir, category)
-        try:
-            params_str = get_params_str(params['otu_category_significance'])
-        except KeyError:
-            params_str = ''
-        # Build the OTU cateogry significance command
-        category_significance_cmd = \
-         'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
-         (biom_fp, mapping_fp, category, 
-          category_signifance_fp, params_str)
-        commands.append([('OTU category significance (%s)' % category, 
-                          category_significance_cmd)])
+    if not suppress_otu_category_significance:
+        # OTU category significance
+        for category in categories:
+            category_signifance_fp = \
+             '%s/category_significance_%s.txt' % (output_dir, category)
+            try:
+                params_str = get_params_str(params['otu_category_significance'])
+            except KeyError:
+                params_str = ''
+            # Build the OTU cateogry significance command
+            category_significance_cmd = \
+             'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
+             (biom_fp, mapping_fp, category, 
+              category_signifance_fp, params_str)
+            commands.append([('OTU category significance (%s)' % category, 
+                              category_significance_cmd)])
                           
-        index_links.append(('Category significance (%s)' % category,
-                    category_signifance_fp,
-                    _index_headers['otu_category_sig']))
+            index_links.append(('Category significance (%s)' % category,
+                        category_signifance_fp,
+                        _index_headers['otu_category_sig']))
     
     commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
     index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
