@@ -199,6 +199,10 @@ def get_ordered_coordinates(coordinate_header,
         Note that the output order can be a subset of the input order
          if some values from order are not present in coordinate_header 
          and strict == False.
+        
+        This function can be used in a way analogous to 
+         get_adjacent_distances to plot get a set of coordinates that
+         might be connected by a line, for example.
     """
     ordered_coordinates = []
     ordered_headers = []
