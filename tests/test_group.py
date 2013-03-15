@@ -15,10 +15,10 @@ __status__ = "Development"
 
 from numpy import array, matrix
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import parse_mapping_file, parse_distmat, group_by_field
+from qiime.parse import parse_mapping_file, parse_distmat, group_by_field, parse_coords
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
     get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
-    get_adjacent_distances)
+    get_adjacent_distances, get_ordered_coordinates)
 
 class GroupTests(TestCase):
     """Tests of the group module."""
@@ -300,6 +300,58 @@ class GroupTests(TestCase):
                                      dm,
                                      ['s1','s3','s4','s5','s6','s2','s1'],
                                      strict=True)
+                                     
+    def test_get_ordered_coordinates(self):
+        """get_ordered_coordinates functions as expected """
+        pc_lines = ["pc vector number\t1\t2\t3\t4",
+                    "s1\t-0.049\t0.245\t0.146\t-0.036",
+                    "s5\t-0.267\t-0.228\t-0.024\t-0.095",
+                    "s3\t-0.285\t-0.260\t-0.017\t-0.070",
+                    "s2\t-0.002\t0.216\t-0.052\t-0.085",
+                    "s4\t-0.328\t-0.299\t-0.025\t0.051",
+                    "",
+                    "",
+                    "eigvals\t191.54\t169.99\t30.45\t19.19",
+                    "%% variation explained\t18.13\t16.09\t2.88\t1.66"]
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.002, 0.216, -0.052, -0.085],
+                           [-0.285, -0.260, -0.017, -0.070],
+                           [-0.328, -0.299, -0.025, 0.051],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s2','s3','s4','s5']
+        actual_coords, actual_sids = get_ordered_coordinates(
+         pc[0],pc[1],['s1','s2','s3','s4','s5'])
+        self.assertEqual(actual_coords,expected_coords)
+        self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        actual_coords, actual_sids = get_ordered_coordinates(
+         pc[0],pc[1],['s1','s5'])
+        self.assertEqual(actual_coords,expected_coords)
+        self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        actual_coords, actual_sids = get_ordered_coordinates(
+         pc[0],pc[1],['s1','s6','s5'])
+        self.assertEqual(actual_coords,expected_coords)
+        self.assertEqual(actual_sids,expected_sids)
+
+        pc = parse_coords(pc_lines)
+        expected_coords = [[-0.049, 0.245, 0.146, -0.036],
+                           [-0.267, -0.228, -0.024, -0.095]]
+        expected_sids = ['s1','s5']
+        self.assertRaises(ValueError,get_ordered_coordinates,
+                          pc[0],pc[1],['s1','s6','s5'],strict=True)
+        
+        
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""
