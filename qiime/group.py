@@ -177,6 +177,49 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
                     result[field_state][comp_field_state] = group[2]
     return result
 
+def get_ordered_coordinates(coordinate_header,
+                            coordinate_matrix,
+                            order,
+                            strict=False):
+    """ Return coordinate vectors in order
+    
+        coordinate_header: ids corresponding to vectors
+         in coordinate_matrix (element 0 of output of 
+         qiime.parse.parse_coords)
+        coordinate_matrix: the coordinate vectors (element 1 of
+         output of qiime.parse.parse_coords)
+        order: ordered ids from coordinate_header (usually sample 
+         ids) for coordinates that should be extracted
+        strict: raise an error if an id from order is not present
+         in coordinate_header (default: that id is ignored)
+        
+        The output of this function will be a tuple of the coordinate 
+         vectors corresponding to each id in order, and the id order:
+         (ordered_coordinates, ordered_ids)
+        Note that the output order can be a subset of the input order
+         if some ids from order are not present in coordinate_header 
+         and strict == False.
+        
+        This function can be used in a way analogous to 
+         get_adjacent_distances to get a set of coordinates that
+         might be connected by a line, for example.
+    """
+    ordered_coordinates = []
+    ordered_ids = []
+    for o in order:
+        try:
+            coordinate_idx = coordinate_header.index(o)
+        except ValueError:
+            if strict:
+                raise ValueError,\
+                 "ID (%s) is not present in coordinate matrix" % o
+            else:
+                pass
+        else:
+            ordered_coordinates.append(coordinate_matrix[coordinate_idx])
+            ordered_ids.append(o)
+    return ordered_coordinates, ordered_ids
+
 def get_adjacent_distances(dist_matrix_header,
                            dist_matrix,
                            sample_ids,
