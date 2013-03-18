@@ -5,7 +5,6 @@ import operator
 import numpy
 import os
 import sys
-from os.path import isfile, abspath
 from qiime.collate_alpha import write_output_file, make_output_row
 from qiime.parse import (filter_otus_by_lineage, parse_matrix,
     parse_rarefaction_fname)
