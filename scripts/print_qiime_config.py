@@ -702,7 +702,6 @@ class Qiime_config(TestCase):
         version_string = stdout.strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-#             pass_test = version in acceptable_version
             pass_test = False
             if version[0] == minimum_version[0]:
                 if version[1] == minimum_version[1]:
