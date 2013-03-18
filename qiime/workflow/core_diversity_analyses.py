@@ -282,7 +282,7 @@ def run_core_diversity_analyses(
                 compare_alpha_cmd = \
                  'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
                  (collated_alpha_diversity_fp, mapping_fp, category, 
-                  sampling_depth, alpha_comparison_output_fp, params_str)
+                  alpha_comparison_output_fp, params_str)
                 commands.append([('Compare alpha diversity (%s, %s)' %\
                                    (category,alpha_metric),
                                   compare_alpha_cmd)])
