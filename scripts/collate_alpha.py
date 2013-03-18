@@ -5,6 +5,7 @@ import operator
 import numpy
 import os
 import sys
+from os.path import isfile, abspath
 from qiime.collate_alpha import write_output_file, make_output_row
 from qiime.parse import (filter_otus_by_lineage, parse_matrix,
     parse_rarefaction_fname)
@@ -87,7 +88,7 @@ def main():
         os.makedirs(output_dir)
     
     file_names = os.listdir(input_dir)
-    file_names = [fname for fname in file_names if not fname.startswith('.') and os.path.isfile(fname)]
+    file_names = [fname for fname in file_names if not fname.startswith('.')]
 
     if example_filepath is None:
         # table row is base_name, seqs_per_sam, iters, ext
