@@ -87,7 +87,7 @@ def main():
         os.makedirs(output_dir)
     
     file_names = os.listdir(input_dir)
-    file_names = [fname for fname in file_names if not fname.startswith('.')]
+    file_names = [fname for fname in file_names if not fname.startswith('.') and os.path.isfile(fname)]
 
     if example_filepath is None:
         # table row is base_name, seqs_per_sam, iters, ext
