@@ -55,6 +55,7 @@ class QiimeCommand(object):
     _output_description = """ """
     _required_options = []
     _optional_options = []
+    _disallow_positional_arguments = True
     _version = __version__
     
     def __init__(self):
@@ -110,6 +111,7 @@ class QiimeCommand(object):
         result['required_options'] = self._required_options
         result['optional_options'] = self._optional_options
         result['version'] = self._version
+        result['disallow_positional_arguments'] = self._disallow_positional_arguments
         return result
     
     def run_command(self,params,args):
