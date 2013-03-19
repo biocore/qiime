@@ -11,11 +11,4 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from qiime.command import cl_main
-from qiime.cl_interfaces import CoreDiversityAnalyses
-from sys import argv
-
-cmd = CoreDiversityAnalyses()
-script_info = cmd.getScriptInfo()
-if __name__ == "__main__":
-    cl_main(cmd,argv)
+from qiime.cl_interfaces.core_diversity_analyses import CoreDiversityAnalyses
