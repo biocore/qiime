@@ -12,3 +12,4 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.cl_interfaces.core_diversity_analyses import CoreDiversityAnalyses
+from qiime.cl_interfaces.pick_subsampled_reference_otus_through_otu_table import PickSubsampledReferenceOtusThroughOtuTable
