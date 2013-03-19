@@ -44,6 +44,13 @@ def format_parameter_name(p):
     else:
         return '--%s' % p
 
+def format_parameter_value(v):
+    if type(v) == list:
+        result = ','.join(v)
+    else:
+        result = v
+    return result
+
 def call_qiime_command(cmd,options,arguments):
     """ Call a QIIME command from using its object
     
@@ -64,7 +71,7 @@ def call_qiime_command(cmd,options,arguments):
     faux_argv = ['cmd']
     for k,v in options.items():
         faux_argv.append(format_parameter_name(k))
-        faux_argv.append(v)
+        faux_argv.append(format_parameter_value(v))
     faux_argv += [format_parameter_name(a) for a in arguments]
     sys.argv = [e for e in faux_argv if len(e.strip()) > 0]
     cl_main(cmd, sys.argv)
