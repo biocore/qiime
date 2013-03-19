@@ -62,6 +62,7 @@ class QiimeCommand(object):
         """
         """
         self._optional_options.extend(self._standard_options)
+        self._construct_option_lookup()
     
     def __call__(self,options,arguments,argv,logger=None):
         """
@@ -69,6 +70,20 @@ class QiimeCommand(object):
         close_logger_on_success = self._start_logging(options,arguments,argv,logger)
         self.run_command(options,arguments)
         self._stop_logging(options,arguments,argv,close_logger_on_success)
+    
+    def _construct_option_lookup(self):
+        """
+        """
+        _optional_options = {}
+        _required_options = {}
+        
+        for e in self._optional_options:
+            _optional_options[e._long_opts[0].lstrip('--')] = e
+        for e in self._required_options:
+            _required_options[e._long_opts[0].lstrip('--')] = e
+        
+        self._optional_options = _optional_options
+        self._required_options = _required_options
 
     def _start_logging(self,
                        params,
@@ -108,8 +123,8 @@ class QiimeCommand(object):
         result['script_usage'] = self._script_usage
         result['script_usage_output_to_remove'] = self._script_usage_output_to_remove
         result['output_description'] = self._output_description
-        result['required_options'] = self._required_options
-        result['optional_options'] = self._optional_options
+        result['required_options'] = self._required_options.values()
+        result['optional_options'] = self._optional_options.values()
         result['version'] = self._version
         result['disallow_positional_arguments'] = self._disallow_positional_arguments
         return result
