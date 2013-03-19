@@ -36,6 +36,14 @@ def cl_main(cmd, argv):
     except QiimeCommandError, e:
         option_parser.error(e)
 
+def format_parameter_name(p):
+    if p.startswith('-'):
+        return p
+    elif len(p) == 1:
+        return '-%s' % p
+    else:
+        return '--%s' % p
+
 def call_qiime_command(cmd,options,arguments):
     """ Call a QIIME command from using its object
     
@@ -55,11 +63,11 @@ def call_qiime_command(cmd,options,arguments):
     sys_argv = sys.argv
     faux_argv = ['cmd']
     for k,v in options.items():
-        faux_argv.append(k)
+        faux_argv.append(format_parameter_name(k))
         faux_argv.append(v)
-    faux_argv += arguments  
-    sys.argv = [e for e in faux_argv if len(e.strip()) > 0] 
-    cl_main(cmd, faux_argv)
+    faux_argv += [format_parameter_name(a) for a in arguments]
+    sys.argv = [e for e in faux_argv if len(e.strip()) > 0]
+    cl_main(cmd, sys.argv)
     sys.argv = sys_argv
 
 class QiimeCommandError(IOError):
