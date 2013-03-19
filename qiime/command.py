@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+import sys
 from os import makedirs
 from qiime.util import (make_option,
                         load_qiime_config,
@@ -34,6 +35,32 @@ def cl_main(cmd, argv):
             argv = argv)
     except QiimeCommandError, e:
         option_parser.error(e)
+
+def call_qiime_command(cmd,options,arguments):
+    """ Call a QIIME command from using its object
+    
+        I hate myself for this code... 
+        
+        The big idea here is that if this turns out to be
+        useful, we'll refactor the underlying objects so they're 
+        able to handle either command line input or api-level input
+        cleanly. For that reason I'm getting it to work for now, 
+        and will revise from here to come up with something less
+        awful. Part of the awfulness stems from the fact that 
+        cogent.util.option_parsing.parse_command_line_parameters
+        works with sys.argv, rather than a local copy of that value.
+        For that reason I need to actually modify sys.argv here, 
+        until I patch cogent.
+    """
+    sys_argv = sys.argv
+    faux_argv = ['cmd']
+    for k,v in options.items():
+        faux_argv.append(k)
+        faux_argv.append(v)
+    faux_argv += arguments  
+    sys.argv = [e for e in faux_argv if len(e.strip()) > 0] 
+    cl_main(cmd, faux_argv)
+    sys.argv = sys_argv
 
 class QiimeCommandError(IOError):
     pass
