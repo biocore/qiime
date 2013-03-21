@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Dan Knights",
-               "Jai Ram Rideout", "Daniel McDonald"]
+               "Jai Ram Rideout", "Daniel McDonald", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Catherine Lozupone"
@@ -14,8 +14,9 @@ __status__ = "Development"
 
 
 from optparse import OptionParser
-from os.path import split, splitext, join
+from os.path import isdir, split, splitext, join
 from os import listdir
+from glob import glob
 from string import strip
 import sys
 import numpy as np
@@ -26,6 +27,7 @@ from qiime.pycogent_backports.test import calc_contingency_expected, \
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
+from biom.parse import parse_biom_table
 from biom.exception import TableException
 
 """Look for OTUs that are associated with a category. Currently can do:
@@ -796,3 +798,132 @@ def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
         all_results = aggregate_multiple_results_G_test(all_results)
         output = output_results_G_test(all_results, taxonomy_all_OTUs)
     return output
+
+
+def single_file_otu_cat_sig(otu_table_fp, otu_include_fp, output_fp, \
+                            verbose, category_mapping_fp, individual_column, \
+                            reference_sample_column, conv_output_fp, \
+                            relative_abundance, filter, test, category, \
+                            threshold):
+    
+    category_mapping = open(category_mapping_fp,'U')
+    category_mapping = parse_mapping_file(category_mapping)
+    if not category:
+        if test != 'paired_T':
+            raise ValueError('a category in the category mapping file must be' +\
+                ' specified with the -c option for this test')
+
+    if threshold and threshold != 'None':
+        threshold = float(threshold)
+
+    if otu_include_fp and otu_include_fp != 'None':
+        otu_include = open(otu_include_fp)
+    else:
+        otu_include = None
+
+    if not isdir(otu_table_fp):
+        # if single file, process normally
+        otu_table = open(otu_table_fp,'U')
+        try:
+            otu_table = parse_biom_table(otu_table)
+        except AttributeError:
+            otu_table = parse_biom_table_str(otu_table)
+        #synchronize the mapping file with the otu table
+        category_mapping, removed_samples = sync_mapping_to_otu_table(otu_table, \
+                        category_mapping)
+        if removed_samples:
+            print "Warning, the following samples were in the category mapping file " +\
+                            "but not the OTU table and will be ignored: "
+            for i in removed_samples:
+                    print i + '\n'
+
+        if test == 'longitudinal_correlation' or test == 'paired_T':
+            converted_otu_table = longitudinal_otu_table_conversion_wrapper(otu_table,
+                category_mapping, individual_column, reference_sample_column)
+            if conv_output_fp:
+                of = open(conv_output_fp, 'w')
+                of.write(format_biom_table(converted_otu_table))
+                of.close()
+            if test == 'longitudinal_correlation':
+                #set the otu_include list to all of the OTUs, this effectively
+                #deactivates the filter for correlation, because the filtered OTU_list is
+                #rewritten with the otu_include list in the test_wrapper
+                if not otu_include:
+                    otu_include = set(otu_table.ObservationIds)
+                output = test_wrapper('correlation', converted_otu_table, \
+                    category_mapping, category, threshold, filter, otu_include, \
+                    999999999.0, True)
+            elif test == 'paired_T':
+                output = test_wrapper('paired_T', converted_otu_table, \
+                    category_mapping, category, threshold, \
+                    filter, otu_include, 999999999.0, True, \
+                    individual_column, reference_sample_column)
+        else:
+            output = test_wrapper(test, otu_table, category_mapping, \
+                category, threshold, filter, otu_include, \
+                otu_table_relative_abundance=relative_abundance)
+        return output
+
+# takes in a directory, the result of multiple_rarefaction_even_depth.py
+# computes otu cat sig on each table, and aggregates the results
+def multiple_files_collate_results(otu_table_fp, otu_include_fp, output_fp, \
+                            verbose, category_mapping_fp, individual_column, \
+                            reference_sample_column, conv_output_fp, \
+                            relative_abundance, filter, test, category, \
+                            threshold):
+
+    category_mapping = open(category_mapping_fp,'U')
+    category_mapping = parse_mapping_file(category_mapping)
+    if not category:
+        if test != 'paired_T':
+            raise ValueError('a category in the category mapping file must be' +\
+                ' specified with the -c option for this test')
+
+    if threshold and threshold != 'None':
+        threshold = float(threshold)
+
+    if otu_include_fp and otu_include_fp != 'None':
+        otu_include = open(otu_include_fp)
+    else:
+        otu_include = None
+
+    if test != 'longitudinal_correlation' and test != 'paired_T':
+                otu_table_paths = glob('%s/*biom' % otu_table_fp)
+                # if directory, get aggregated results
+                parsed_otu_tables = []
+                for path in otu_table_paths:
+                    ot = open(path,'U')
+                    ot = parse_biom_table(ot)
+                    parsed_otu_tables.append(ot)
+
+                #synchronize the mapping file with the otu table
+                #checks with just the first OTU table and assumes that all otu tables
+                #have the same collection of samples
+                category_mapping, removed_samples = sync_mapping_to_otu_table(parsed_otu_tables[0], \
+                            category_mapping)
+                if removed_samples:
+                    print "Warning, the following samples were in the category mapping file " +\
+                                "but not the OTU table and will be ignored: "
+                    for i in removed_samples:
+                            print i + '\n'
+
+                output = test_wrapper_multiple(test, parsed_otu_tables, \
+                    category_mapping, category, threshold, filter, otu_include,\
+                    otu_table_relative_abundance=relative_abundance)
+    else:
+        raise ValueError("the longitudinal_correlation and paired_T options cannot be run on a directory")
+    return output
+
+
+
+
+
+
+
+
+
+
+
+
+
+
