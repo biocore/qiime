@@ -13,11 +13,11 @@ __email__ = "wendel@colorado.edu"
 __status__ = "Development"
  
 
-from os.path import isdir, join
-from os import listdir, makedirs
+from os.path import isdir, isfile, join, basename, exists
+from os import listdir, makedirs, getcwd
 from glob import glob
 from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple,\
-    sync_mapping_to_otu_table, single_file_otu_cat_sig, multiple_files_collate_results
+    sync_mapping_to_otu_table
 from qiime.longitudinal_otu_category_significance import \
     longitudinal_otu_table_conversion_wrapper
 from qiime.util import parse_command_line_parameters
@@ -228,66 +228,64 @@ script_info['required_options']=[\
         help='path to the otu table in biom format, or to a directory ' + \
              'containing OTU tables',type='existing_path'),\
     make_option('-m','--category_mapping_fp',type='existing_filepath',
-        help='path to category mapping file')
+        help='path to category mapping file'),
+    make_option('-o', '--output_fp', dest='output_fp', help='path to the output '
+                'file or directory', type='new_filepath')
 ]
 
 script_info['optional_options']=[\
     make_option('-c', '--category', dest='category', type='string', default=None,\
         help='name of the category over which to run the analysis'),\
     make_option('-s','--test', dest='test', default='ANOVA',\
-        help='the type of statistical test to run. options are: ' +\
-        'g_test: determines whether OTU presence/absence is associated ' +\
-        'with a category using the G test of Independence.      ' +\
-        'ANOVA: determines whether OTU abundance is associated with a ' +\
-        'category.      ' +\
-        'correlation: determines whether OTU abundance is correlated ' +\
-        'with a continuous variable in the category mapping file.     ' +\
-        'longitudinal_correlation: determine whether OTU relative ' +\
-        'abundance is correlated with a continuous variable in the ' +\
-        'category mapping file in longitudinal study designs such as ' +\
-        'with timeseries data.     paired_T: determine whether OTU ' +\
+        help='the type of statistical test to run. options are: '
+        'g_test: determines whether OTU presence/absence is associated '
+        'with a category using the G test of Independence.      '
+        'ANOVA: determines whether OTU abundance is associated with a '
+        'category.      ' 
+        'correlation: determines whether OTU abundance is correlated ' 
+        'with a continuous variable in the category mapping file.     ' 
+        'longitudinal_correlation: determine whether OTU relative ' 
+        'abundance is correlated with a continuous variable in the ' 
+        'category mapping file in longitudinal study designs such as ' 
+        'with timeseries data.     paired_T: determine whether OTU ' 
         'relative abundance goes up or down in response to a treatment. [default: %default]',
         type="choice",choices=["g_test", "ANOVA", "correlation", \
         "longitudinal_correlation", "paired_T"]),
-    make_option('-o','--output_fp', dest='output_fp', \
-        default= 'otu_category_significance_results.txt',\
-        help='path to output file. [default: %default]',
-        type='new_filepath'),\
     make_option('-f','--filter', dest='filter', type='float', \
         default= 0.25, \
-        help='minimum fraction of samples that must contain the OTU for the ' +\
-        'OTU to be included in the analysis. For longitudinal options, is ' +\
-        'the fraction of individuals/sites that were not ' +\
-        'ignored because of the OTU not being observed in any of the ' +\
+        help='minimum fraction of samples that must contain the OTU for the ' 
+        'OTU to be included in the analysis. For longitudinal options, is ' 
+        'the fraction of individuals/sites that were not ' 
+        'ignored because of the OTU not being observed in any of the ' 
         'samples from that individual/site. [default: %default]'),\
     make_option('-t','--threshold', dest='threshold', default=None, type='float', \
-        help='threshold under which to consider something absent: ' +\
-        'Only used if you have numerical data that should be converted to ' +\
-        'present or absent based on a threshold. Should be None for ' +\
+        help='threshold under which to consider something absent: ' 
+        'Only used if you have numerical data that should be converted to ' 
+        'present or absent based on a threshold. Should be None for ' 
         'categorical data or with the correlation test. default value is None'),\
     make_option('-l', '--otu_include_fp', type='existing_filepath', default=None,\
-        help='path to a file with a list of OTUs to evaluate. By default ' +\
-        'evaluates all OTUs that pass the minimum sample filter. If a ' +\
-        'filepath is given here in which each OTU name one wishes to ' +\
+        help='path to a file with a list of OTUs to evaluate. By default ' 
+        'evaluates all OTUs that pass the minimum sample filter. If a ' 
+        'filepath is given here in which each OTU name one wishes to ' 
         'evaluate is on a separate line, will apply this additional filter'),\
     make_option('-z', '--reference_sample_column', dest='reference_sample_column',\
         default='reference_sample', type='string',\
-        help='This column specifies the sample to which all other samples ' +\
-        'within an individual are compared. For instance, for timeseries ' +\
-        'data, it would usually be the initial timepoint before a treatment ' +\
-        'began. The reference samples should be marked with a 1, and ' +\
+        help='This column specifies the sample to which all other samples ' 
+        'within an individual are compared. For instance, for timeseries ' 
+        'data, it would usually be the initial timepoint before a treatment ' 
+        'began. The reference samples should be marked with a 1, and ' 
         'other samples with a 0.'),\
     make_option('-n','--individual_column', dest='individual_column', \
         default='individual', type='string',\
-        help='name of the column in the category mapping file that ' +\
+        help='name of the column in the category mapping file that ' 
         'designates which sample is from which individual.'),\
     make_option('-b', '--converted_otu_table_output_fp', type='new_filepath',\
-        default=None, help='the test options longitudinal_correlation and ' +\
-        'paired_T convert the original OTU table into one in which samples ' +\
-        'that are ignored because they are never observed in an individual ' +\
-        'are replaced with the ignore number 999999999 and the OTU counts are ' +\
-        'the change in relative abundance compared to the designated reference ' +\
-        'sample. If a filepath is given with the -b option ' +\
+        default=None, help='the test options longitudinal_correlation and ' 
+        'paired_T convert the original OTU table into one in which samples ' 
+        'that are ignored because they are never observed in an individual ' 
+        'are replaced with the ignore number 999999999 and the OTU counts are ' 
+        'the change in relative abundance compared to the designated reference ' 
+        'sample. If a filepath is given with the -b option ' 
         'this converted OTU table will be saved to this path.'),\
     make_option('--relative_abundance', default=False, help='Some of the '
         'statistical tests, such as Pearson correlation and ANOVA, convert '
@@ -295,8 +293,8 @@ script_info['optional_options']=[\
         'calculations. This parameter can be set if a user wishes to disable '
         'this step. (e.g. if an OTU table has already been converted '
         'to relative abundances.)'),\
-    make_option('-w', '--collate_results', dest='collate_results', type='string',\
-        default='negate_collate', help='When passing in a directory of OTU tables, '
+    make_option('-w', '--collate_results', dest='collate_results',
+        default='negate_collate',help='When passing in a directory of OTU tables, '
         'this parameter gives you the option of collating those resulting '
         'values. For example, if your input directory contained multiple '
         'rarefied OTU tables at the same depth, pass in the option "collate" '
@@ -304,8 +302,8 @@ script_info['optional_options']=[\
         'over all rarefied tables. If your input directory contained OTU tables '
         'that contained different taxonomic levels, filtering levels, etc '
         'then you would pass in the option "negate_collate". '
-        '[default: %default]')]
-
+        '[default: %default]',type="choice",choices=["collate", "negate_collate"])]
+    
 script_info['version'] = __version__
 
 def main():
@@ -326,82 +324,151 @@ def main():
     collate_results = opts.collate_results
 
 
-    # Used when otu cat sig results file being created for every biom
-    # table located within a directory
-    if collate_results == 'negate_collate':
-        # raise error if the sweep is attempted on a single biom table
-        if isdir(otu_table_fp) is False:
-            raise ValueError('the sweep function can only be called on a' +\
-                ' directory, and you provided a single biom table.')
-        
-        # if directory is OK, perform otu cat sig on each containing file
-        # the results naming convention is:
-        # biom_table_name + statistical test + category being compared
-        if isdir(otu_table_fp) is True:
+    # check mapping file
+    category_mapping = open(category_mapping_fp,'U')
+    category_mapping = parse_mapping_file(category_mapping)
+    if not category:
+        if test != 'paired_T':
+            opt.error('a category in the category mapping file must be' +\
+                ' specified with the -c option for this test')
+
+    # set up threshold value for filtering, if any
+    if threshold and threshold != 'None':
+        threshold = float(threshold)
+
+    # if specifying a list of OTUs to look at specifically
+    if otu_include_fp and otu_include_fp != 'None':
+        otu_include = open(otu_include_fp)
+    else:
+        otu_include = None
+
+    # if only passing in a single OTU table
+    if isdir(otu_table_fp) is False:
+        # raise error if collate option is being passed to single table
+        if collate_results == 'collate':
+            option_parser.error('Cannot collate the results of only one table.'
+                ' Please rerun the command without passing the -w option')
+        else:
+            #open and parse the biom table fp
+            otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+
+            # run the statistical test
+            output = test_wrapper(test, otu_table, category_mapping, \
+                            category, threshold, filter, otu_include, \
+                            otu_table_relative_abundance=relative_abundance)
             
+            # write output
+            output_file = open(output_fp, 'w')
+            output_file.write('\n'.join(output))
+            output_file.close()
+
+    # if the user has passed in a directory
+    if isdir(otu_table_fp) is True:
+
+        # negate_collate to return an results file on a per table basis
+        if collate_results == 'negate_collate':
+      
             # build list of otu tables
-            otu_tables = glob('%s/*biom' % otu_table_fp)
+            otu_table_paths = glob('%s/*biom' % otu_table_fp)
 
-            for table in otu_tables:
+            # if output dir doesn't exist, then make it
+            if exists(output_fp):
+                pass
+            else:
+                makedirs(output_fp)
+
+            for otu_table_fp in otu_table_paths:
+                #open and parse the biom table fp
+                otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+
+                #synchronize the mapping file with the otu table
+                category_mapping, removed_samples = \
+                sync_mapping_to_otu_table(otu_table, category_mapping)
+                if removed_samples:
+                    print "Warning, the following samples were in the category mapping file " +\
+                                    "but not the OTU table and will be ignored: "
+                    for i in removed_samples:
+                            print i + '\n'
+
                 # create naming convention for output file
-                naming_output = otu_table_fp.split('/')[-1]
-                output_fp_sweep = "%s_%s_%s_%s.txt" \
-                % (table.replace(".biom",""),naming_output,test,category)
+                # will look like: otu_table_ANOVA_Treatment.txt
+                output_basename = basename(otu_table_fp)
+                output_basename = output_basename.replace(".biom","")
+                output_fp_sweep = "%s_%s_%s.txt" % \
+                    (output_basename,test,category)
 
-                # run otu cat sig on a single input table   
-                output = single_file_otu_cat_sig(table, otu_include_fp, output_fp_sweep, \
-                            verbose, category_mapping_fp, individual_column, \
-                            reference_sample_column, conv_output_fp, \
-                            relative_abundance, filter, test, category, \
-                            threshold)
-                
+                # if the convert_otu_table_fp is passed, save the converted table
+                if test == 'longitudinal_correlation' or test == 'paired_T':
+                    converted_otu_table = longitudinal_otu_table_conversion_wrapper(table, \
+                    category_mapping, individual_column, reference_sample_column)
+                    if conv_output_fp:
+                        of = open(conv_output_fp, 'w')
+                        of.write(format_biom_table(converted_otu_table))
+                        of.close()
+                    if test == 'longitudinal_correlation':
+                        #set the otu_include list to all of the OTUs, this effectively
+                        #deactivates the filter for correlation, because the filtered OTU_list is
+                        #rewritten with the otu_include list in the test_wrapper
+                        if not otu_include:
+                            otu_include = set(otu_table.ObservationIds)
+                        output = test_wrapper('correlation', converted_otu_table, \
+                            category_mapping, category, threshold, filter, otu_include, \
+                            999999999.0, True)
+                    elif test == 'paired_T':
+                        output = test_wrapper('paired_T', converted_otu_table, \
+                            category_mapping, category, threshold, \
+                            filter, otu_include, 999999999.0, True, \
+                            individual_column, reference_sample_column)
+
+                # run test single input table from the directory  
+                else:
+                    output = test_wrapper(test, otu_table, category_mapping, \
+                        category, threshold, filter, otu_include, \
+                        otu_table_relative_abundance=relative_abundance)
+                    
                 # write output file with new naming convention
-                output_file = open(output_fp_sweep, 'w')
+                output_file = open(join(output_fp,output_fp_sweep), 'w')
                 output_file.write('\n'.join(output))
                 output_file.close()
 
-    # Use when the input dir contains rarefied OTU tables, and you want
-    # to collate the p-values, results into one results file       
-    if collate_results == 'collate':
-        if isdir(otu_table_fp) is False:
-            raise ValueError('the collate_multiple_files can only be called ' +\
-                'on a directory, and you provided a single biom table.')
-        if isdir(otu_table_fp) is True:
-            output = multiple_files_collate_results(otu_table_fp, otu_include_fp, output_fp, \
-                            verbose, category_mapping_fp, individual_column, \
-                            reference_sample_column, conv_output_fp, \
-                            relative_abundance, filter, test, category, \
-                            threshold)
 
-        output_file = open(output_fp, 'w')
-        output_file.write('\n'.join(output))
-        output_file.close()
+        # Use when the input dir contains rarefied OTU tables, and you want
+        # to collate the p-values & results into one results file       
+        if collate_results == 'collate':
+            if test != 'longitudinal_correlation' and test != 'paired_T':
+                # get biom tables
+                otu_table_paths = glob('%s/*biom' % otu_table_fp)
 
-    # if only a single biom table is passed, run otu cat sig on it alone
-    elif isdir(otu_table_fp) is False:
-        output = single_file_otu_cat_sig(otu_table_fp, otu_include_fp, output_fp, \
-                            verbose, category_mapping_fp, individual_column, \
-                            reference_sample_column, conv_output_fp, \
-                            relative_abundance, filter, test, category, \
-                            threshold)
-        
-        output_file = open(output_fp, 'w')
-        output_file.write('\n'.join(output))
-        output_file.close()
+                #get aggregated tables
+                parsed_otu_tables= []
+                for otu_table_fp in otu_table_paths:
+                    otu_table = open(otu_table_fp, 'U')
+                    otu_table = parse_biom_table(otu_table)
+                    parsed_otu_tables.append(otu_table)
+
+                #synchronize the mapping file with the otu table
+                #checks with just the first OTU table and assumes that all otu tables
+                #have the same collection of samples
+                category_mapping, removed_samples = sync_mapping_to_otu_table(parsed_otu_tables[0],category_mapping)
+                if removed_samples:
+                    print "Warning, the following samples were in the category mapping file " +\
+                                "but not the OTU table and will be ignored: "
+                    for i in removed_samples:
+                            print i + '\n'
+
+                # get output from statistical test            
+                output = test_wrapper_multiple(test, parsed_otu_tables, \
+                    category_mapping, category, threshold, filter, otu_include,\
+                    otu_table_relative_abundance=relative_abundance)
+
+                #write out aggregated results
+                output_file = open(output_fp, 'w')
+                output_file.write('\n'.join(output))
+                output_file.close()
+
+            else:
+                option_parser.error("You cannot collate the results obtained from "
+                    "using the longitudinal_correlation and paired_T options.")
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
