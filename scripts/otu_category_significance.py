@@ -225,7 +225,7 @@ predicted by the p value.
 
 script_info['required_options']=[
     make_option('-i','--otu_table_fp',
-        help='path to the otu table in biom format, or to a directory ' + 
+        help='path to the otu table in biom format, or to a directory '  
              'containing OTU tables',type='existing_path'),
     make_option('-m','--category_mapping_fp',type='existing_filepath',
         help='path to category mapping file'),
@@ -324,14 +324,13 @@ def main():
     category = opts.category
     threshold = opts.threshold
     collate_results = opts.collate_results
-    print collate_results
 
     # check mapping file
     category_mapping = open(category_mapping_fp,'U')
     category_mapping = parse_mapping_file(category_mapping)
     if not category:
         if test != 'paired_T':
-            option_parser.error('a category in the category mapping file must be' +\
+            option_parser.error('a category in the category mapping file must be'
                 ' specified with the -c option for this test')
 
     # set up threshold value for filtering, if any
@@ -355,8 +354,8 @@ def main():
             otu_table = parse_biom_table(open(otu_table_fp, 'U'))
 
             # run the statistical test
-            output = test_wrapper(test, otu_table, category_mapping, \
-                            category, threshold, filter, otu_include, \
+            output = test_wrapper(test, otu_table, category_mapping, 
+                            category, threshold, filter, otu_include, 
                             otu_table_relative_abundance=relative_abundance)
             
             # write output
@@ -385,7 +384,7 @@ def main():
 
                 #synchronize the mapping file with the otu table
                 category_mapping, removed_samples = \
-                sync_mapping_to_otu_table(otu_table, category_mapping)
+                    sync_mapping_to_otu_table(otu_table, category_mapping)
                 if removed_samples:
                     print "Warning, the following samples were in the category mapping file " +\
                                     "but not the OTU table and will be ignored: "
@@ -401,8 +400,8 @@ def main():
 
                 # if the convert_otu_table_fp is passed, save the converted table
                 if test == 'longitudinal_correlation' or test == 'paired_T':
-                    converted_otu_table = longitudinal_otu_table_conversion_wrapper(table, \
-                    category_mapping, individual_column, reference_sample_column)
+                    converted_otu_table = longitudinal_otu_table_conversion_wrapper(table, 
+                        category_mapping, individual_column, reference_sample_column)
                     if conv_output_fp:
                         of = open(conv_output_fp, 'w')
                         of.write(format_biom_table(converted_otu_table))
@@ -413,19 +412,19 @@ def main():
                         #rewritten with the otu_include list in the test_wrapper
                         if not otu_include:
                             otu_include = set(otu_table.ObservationIds)
-                        output = test_wrapper('correlation', converted_otu_table, \
-                            category_mapping, category, threshold, filter, otu_include, \
+                        output = test_wrapper('correlation', converted_otu_table, 
+                            category_mapping, category, threshold, filter, otu_include, 
                             999999999.0, True)
                     elif test == 'paired_T':
-                        output = test_wrapper('paired_T', converted_otu_table, \
-                            category_mapping, category, threshold, \
-                            filter, otu_include, 999999999.0, True, \
+                        output = test_wrapper('paired_T', converted_otu_table, 
+                            category_mapping, category, threshold, 
+                            filter, otu_include, 999999999.0, True, 
                             individual_column, reference_sample_column)
 
                 # run test single input table from the directory  
                 else:
-                    output = test_wrapper(test, otu_table, category_mapping, \
-                        category, threshold, filter, otu_include, \
+                    output = test_wrapper(test, otu_table, category_mapping, 
+                        category, threshold, filter, otu_include, 
                         otu_table_relative_abundance=relative_abundance)
                     
                 # write output file with new naming convention
@@ -451,7 +450,8 @@ def main():
                 #synchronize the mapping file with the otu table
                 #checks with just the first OTU table and assumes that all otu tables
                 #have the same collection of samples
-                category_mapping, removed_samples = sync_mapping_to_otu_table(parsed_otu_tables[0],category_mapping)
+                category_mapping, removed_samples = \
+                    sync_mapping_to_otu_table(parsed_otu_tables[0],category_mapping)
                 if removed_samples:
                     print "Warning, the following samples were in the category mapping file " +\
                                 "but not the OTU table and will be ignored: "
@@ -459,8 +459,8 @@ def main():
                             print i + '\n'
 
                 # get output from statistical test            
-                output = test_wrapper_multiple(test, parsed_otu_tables, \
-                    category_mapping, category, threshold, filter, otu_include,\
+                output = test_wrapper_multiple(test, parsed_otu_tables, 
+                    category_mapping, category, threshold, filter, otu_include,
                     otu_table_relative_abundance=relative_abundance)
 
                 #write out aggregated results
