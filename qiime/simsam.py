@@ -137,6 +137,25 @@ def combine_sample_dicts(sample_dicts):
     return otu_mtx, all_otu_ids
 
 def create_replicated_mapping_file(map_f, num_replicates):
+    """Returns a formatted mapping file with replicated sample IDs.
+
+    Each sample ID will have an ascending integer appended to it from the range
+    [0, num_replicates - 1]. For example, if there are two input sample IDs, S1
+    and S2, with 3 replicates each, the output will be:
+        S1.0
+        S1.1
+        S1.2
+        S2.0
+        S2.1
+        S2.2
+
+    All other metadata columns will simply be copied to the output mapping
+    file. The order of input sample IDs is preserved.
+
+    Arguments:
+        map_f - input mapping file to replicate (file-like object)
+        num_replicates - number of replicates at each sample
+    """
     if num_replicates < 1:
         raise ValueError("Must specify at least one sample replicate (was "
                          "provided %d)." % num_replicates)
