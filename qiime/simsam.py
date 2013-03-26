@@ -270,4 +270,4 @@ def simsam_range_to_files(table,
         if output_mapping_lines != None:
             output_map_fp   = join(output_dir,'%s_n%d_d%f.txt' % 
              (output_map_basename, simulated_sample_size, dissimilarity))
-            open(output_map_fp,'w').write('\n'.join(output_mapping_lines))
+            open(output_map_fp,'w').write(''.join(output_mapping_lines))
