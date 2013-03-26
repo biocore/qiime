@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -14,6 +14,8 @@ __status__ = "Development"
 import numpy
 import random
 
+from qiime.format import format_mapping_file
+from qiime.parse import parse_mapping_file
 from qiime.util import make_option
 
 from qiime.util import parse_command_line_parameters
@@ -133,3 +135,35 @@ def combine_sample_dicts(sample_dicts):
             otu_mtx[indices[otu],i] = abund
 
     return otu_mtx, all_otu_ids
+
+def create_replicated_mapping_file(map_f, num_replicates):
+    """Returns a formatted mapping file with replicated sample IDs.
+
+    Each sample ID will have an ascending integer appended to it from the range
+    [0, num_replicates - 1]. For example, if there are two input sample IDs, S1
+    and S2, with 3 replicates each, the output will be:
+        S1.0
+        S1.1
+        S1.2
+        S2.0
+        S2.1
+        S2.2
+
+    All other metadata columns will simply be copied to the output mapping
+    file. The order of input sample IDs is preserved.
+
+    Arguments:
+        map_f - input mapping file to replicate (file-like object)
+        num_replicates - number of replicates at each sample
+    """
+    if num_replicates < 1:
+        raise ValueError("Must specify at least one sample replicate (was "
+                         "provided %d)." % num_replicates)
+    map_data, header, comments = parse_mapping_file(map_f)
+
+    rep_map_data = []
+    for row in map_data:
+        for rep_num in range(num_replicates):
+            rep_map_data.append(['%s.%i' % (row[0], rep_num)] + row[1:])
+
+    return format_mapping_file(header, rep_map_data, comments)
