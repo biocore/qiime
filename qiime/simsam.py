@@ -236,9 +236,8 @@ def simsam_range_to_files(table,
                           dissimilarities,
                           output_dir,
                           mapping_f=None,
-                          table_output_basename="table",
-                          map_output_basename="map",
-                          ):
+                          output_table_basename="table",
+                          output_map_basename="map"):
     """Applies sim_otu_table over a range of parameters, writing output to file
     
      table: the input table to simulate samples from
@@ -252,6 +251,10 @@ def simsam_range_to_files(table,
      mapping_f: file handle for metadata mapping file, if 
       a mapping file should be created with the samples from
       each simulated table
+     output_table_basename: basename for output table files 
+      (default: table)
+     output_map_basename: basename for output mapping files 
+      (default: map)
     """
     create_dir(output_dir)
     for e in simsam_range(table,tree,simulated_sample_sizes,dissimilarities,mapping_f):
@@ -261,9 +264,10 @@ def simsam_range_to_files(table,
         dissimilarity = e[3]
         
         output_table_fp = join(output_dir,'%s_n%d_d%f.biom' %
-         (table_output_basename, simulated_sample_size, dissimilarity))
-        output_map_fp   = join(output_dir,'%s_n%d_d%f.txt' % 
-         (map_output_basename, simulated_sample_size, dissimilarity))
+         (output_table_basename, simulated_sample_size, dissimilarity))
         open(output_table_fp,'w').write(format_biom_table(output_table))
+        
         if output_mapping_lines != None:
+            output_map_fp   = join(output_dir,'%s_n%d_d%f.txt' % 
+             (output_map_basename, simulated_sample_size, dissimilarity))
             open(output_map_fp,'w').write('\n'.join(output_mapping_lines))

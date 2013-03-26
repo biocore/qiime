@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-from os.path import join
+from os.path import join, split, splitext
 from cogent.parse.tree import DndParser
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,
                         parse_command_line_parameters, make_option)
@@ -71,17 +71,25 @@ def main():
     otu_table = parse_biom_table(otu_table_fh)
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
-    if opts.mapping_fp:
-        mapping_f = open(opts.mapping_fp,'U')
+    mapping_fp = opts.mapping_fp
+    if mapping_fp:
+        mapping_f = open(mapping_fp,'U')
+        input_map_basename = splitext(split(mapping_fp)[1])[0]
     else:
         mapping_f = None
+        input_map_basename = None
+    
+    input_table_basename = splitext(split(otu_table_fp)[1])[0]
     
     simsam_range_to_files(otu_table,
                           tree,
                           simulated_sample_sizes=map(int,opts.num.split(',')),
                           dissimilarities=map(float,opts.dissim.split(',')),
                           output_dir=output_dir,
-                          mapping_f=mapping_f)
+                          mapping_f=mapping_f,
+                          output_table_basename=input_table_basename,
+                          output_map_basename=input_map_basename)
+                          
 
 if __name__ == "__main__":
     main()
