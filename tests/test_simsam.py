@@ -27,7 +27,6 @@ import subprocess
 import numpy
 
 import qiime.simsam
-from qiime.simsam import simsam_range
 
 class SimsamTests(TestCase):
 
@@ -261,32 +260,32 @@ class SimsamTests(TestCase):
     def test_simsam_range_correct_number_of_output(self):
         """simsam_range yields correct number of output tables
         """
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [1],[0.1],self.tutorial_map)
         self.assertEqual(len(list(actual)),1)
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [1,2],[0.1],self.tutorial_map)
         self.assertEqual(len(list(actual)),2)
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [2],[0.1,0.001],self.tutorial_map)
         self.assertEqual(len(list(actual)),2)
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [1,2],[0.1,0.001],self.tutorial_map)
         self.assertEqual(len(list(actual)),4)
     
     def test_simsam_range_correct_size_of_output(self):
         """simsam_range yields tables with correct number of samples"""
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [1],[0.1],self.tutorial_map)
         actual = list(actual)
         self.assertEqual(len(actual[0][0].SampleIds),len(self.tutorial_otu_table.SampleIds))
         
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [2],[0.1],self.tutorial_map)
         actual = list(actual)
         self.assertEqual(len(actual[0][0].SampleIds),2*len(self.tutorial_otu_table.SampleIds))
         
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,
                               [4],[0.1],self.tutorial_map)
         actual = list(actual)
         self.assertEqual(len(actual[0][0].SampleIds),4*len(self.tutorial_otu_table.SampleIds))
@@ -294,7 +293,7 @@ class SimsamTests(TestCase):
     def test_simsam_range_functions_without_mapping_file(self):
         """simsam_range yields correct number of output tables
         """
-        actual = simsam_range(self.tutorial_otu_table,self.tutorial_tree,[1],[0.1])
+        actual = simsam_range.simsam_range(self.tutorial_otu_table,self.tutorial_tree,[1],[0.1])
         self.assertEqual(len(list(actual)),1)
 
 
