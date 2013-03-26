@@ -13,10 +13,10 @@ __status__ = "Development"
 
 import numpy
 import random
-
-from qiime.format import format_mapping_file
+from biom.table import table_factory
+from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option
+from qiime.util import make_option, create_dir
 
 from qiime.util import parse_command_line_parameters
 from qiime.sort import natsort
@@ -167,3 +167,65 @@ def create_replicated_mapping_file(map_f, num_replicates):
             rep_map_data.append(['%s.%i' % (row[0], rep_num)] + row[1:])
 
     return format_mapping_file(header, rep_map_data, comments)
+
+def simsam_range(table,
+                 tree,
+                 simulated_sample_sizes,
+                 dissimilarities,
+                 mapping_f=None):
+    if mapping_f != None:
+        # if the user provided a mapping file, load it into
+        # a list for repeated use, and define the function for
+        # processing the mapping file
+        mapping_lines = list(mapping_f)
+        process_map = create_replicated_mapping_file
+    else:
+        # otherwise create a dummy function for processing the
+        # mapping file so we don't have to check whether it 
+        # exists on every iteration
+        mapping_lines = None
+        def process_map(mapping_lines, simulated_sample_size):
+            return None
+    
+    for simulated_sample_size in simulated_sample_sizes:
+        # create the output mapping file data
+        output_mapping_lines = \
+         process_map(mapping_lines, simulated_sample_size)
+        for dissimilarity in dissimilarities:
+            # create the simulated otu table
+            output_sample_ids, output_otu_ids, output_data, output_metadata = \
+             sim_otu_table(table.SampleIds,
+                           table.ObservationIds,
+                           table.iterSamples(),
+                           table.ObservationMetadata,
+                           tree,
+                           simulated_sample_size,
+                           dissimilarity)
+            output_table = table_factory(output_data,
+                                         output_sample_ids,
+                                         output_otu_ids,
+                                         observation_metadata=output_metadata)
+            yield (output_table,
+                   output_mapping_lines,
+                   simulated_sample_size,
+                   dissimilarity)
+
+def simsam_range_to_fs(table,
+                       tree,
+                       simulated_sample_sizes,
+                       dissimilarities,
+                       output_dir,
+                       mapping_f=None):
+    create_dir(output_dir)
+    for e in simsam_range(table,tree,simulated_sample_sizes,dissimilarities,mapping_f):
+        output_table = e[0]
+        output_mapping_lines = e[1]
+        simulated_sample_size = e[2]
+        dissimilarity = e[3]
+        
+        output_table_fp = join(output_dir,'table_n%d_d%f.biom' % 
+                               (simulated_sample_size,dissimilarity))
+        output_map_fp   = join(output_dir,'map_n%d_d%f.txt' % 
+                               (simulated_sample_size,dissimilarity))
+        open(output_table_fp,'w').write(format_biom_table(output_table))
+        open(output_map_fp,'w').write(output_mapping_lines)
