@@ -11,12 +11,19 @@ __maintainer__ = "Justin Kucyznski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
+from os.path import exists
+
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
-from qiime.util import get_qiime_scripts_dir, load_qiime_config
 from biom.table import table_factory
+from qiime.util import (get_qiime_scripts_dir,
+                        load_qiime_config,
+                        get_tmp_filename,
+                        get_qiime_temp_dir,
+                        create_dir)
+import qiime.simsam
 
 import tempfile
 import string
@@ -26,12 +33,19 @@ import shutil
 import subprocess
 import numpy
 
-import qiime.simsam
 
 class SimsamTests(TestCase):
 
     def setUp(self):
         self.dirs_to_remove = []
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='qiime_parallel_tests_',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
+        
         self.map_f = map_lines.split('\n')
         self.tutorial_map = tutorial_map.split('\n')
         self.tutorial_tree = DndParser(tutorial_tree)
@@ -295,6 +309,19 @@ class SimsamTests(TestCase):
         """
         actual = qiime.simsam.simsam_range(self.tutorial_otu_table,self.tutorial_tree,[1],[0.1])
         self.assertEqual(len(list(actual)),1)
+    
+    def test_simsam_range_to_files(self):
+        """simsam_range_to_files functions as expected """
+        qiime.simsam.simsam_range_to_files(self.tutorial_otu_table,
+                                        self.tutorial_tree,
+                                        [2],
+                                        [0.1],
+                                        output_dir=self.test_out,
+                                        mapping_f=self.tutorial_map,
+                                        table_output_basename="hello",
+                                        map_output_basename="world")
+        self.assertTrue(exists('%s/hello_n2_d0.100000.biom' % self.test_out))
+        self.assertTrue(exists('%s/world_n2_d0.100000.txt' % self.test_out))
 
 
 map_lines = """#SampleID\tTreatment\tDescription
