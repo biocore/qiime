@@ -33,7 +33,7 @@ traverses rootward on the tree a distance specified by '-d' to a point x. It the
 (call that new tip 'o2'), and reassigns all observations of the original OTU to the tip/OTU 'o2'.
 """
 script_info['script_usage'] = [("","Create an OTU table with 3 related samples for each sample in otu_table.biom with dissimilarities of 0.001.","%prog -i otu_table.biom -t rep_set.tre -o simsam_out1 -d .001 -n 3")]
-script_info['script_usage'].append(("","Create OTU tables with 2,3 and 4 related samples for each sample in otu_table.biom with dissimilarities of 0.001 and 0.01. Additionally create new mapping files with metadata for each of the new samples for use in downstream analyses.","%prog -i otu_table.biom -t rep_set.tre -o simsam_out2 -d .001,.01 -n 2,3,4 -m map.txt"))
+script_info['script_usage'].append(("","Create OTU tables with 2, 3 and 4 related samples for each sample in otu_table.biom with dissimilarities of 0.001 and 0.01. Additionally create new mapping files with metadata for each of the new samples for use in downstream analyses.","%prog -i otu_table.biom -t rep_set.tre -o simsam_out2 -d .001,.01 -n 2,3,4 -m map.txt"))
 script_info['output_description']= """
 The output directory will contain an OTU table with samples named:
 'original_sample_0, original_sample_1 ...'
