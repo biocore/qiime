@@ -63,9 +63,11 @@ class SimsamTests(TestCase):
         treefh.close()
 
         scripts_dir = get_qiime_scripts_dir()
-        cmd = scripts_dir+'/simsam.py -i %s -t %s -o %s -d .003 -n 3  ' %\
-         (otuf, treef, maindir+'/simsam_out.txt')
-        proc = subprocess.Popen(cmd,shell=True, 
+        out_dir = os.path.join(maindir, 'simsam_out')
+        cmd = os.path.join(scripts_dir,
+                           'simsam.py -i %s -t %s -o %s -d .003 -n 3  ' %
+                           (otuf, treef, out_dir))
+        proc = subprocess.Popen(cmd,shell=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         scriptout, scripterr = proc.communicate()
 
@@ -76,7 +78,7 @@ class SimsamTests(TestCase):
 
         num_replicates = 3 # ensure this matches cmd above
 
-        res = open(maindir+'/simsam_out.txt','U')
+        res = open(os.path.join(out_dir, 'otuf_n%d' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 
@@ -125,8 +127,10 @@ class SimsamTests(TestCase):
         treefh.close()
 
         scripts_dir = get_qiime_scripts_dir()
-        cmd = scripts_dir+'/simsam.py -i %s -t %s -o %s -d 0 -n 3  ' %\
-         (otuf, treef, maindir+'/simsam_out.txt')
+        out_dir = os.path.join(maindir, 'simsam_out')
+        cmd = os.path.join(scripts_dir,
+                           'simsam.py -i %s -t %s -o %s -d 0 -n 3  ' %
+                           (otuf, treef, out_dir))
 
         proc = subprocess.Popen(cmd,shell=True, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -138,7 +142,7 @@ class SimsamTests(TestCase):
             raise RuntimeError('script returned stderr: ' + scripterr)
 
         num_replicates = 3 # ensure this matches cmd above
-        res = open(maindir+'/simsam_out.txt','U')
+        res = open(os.path.join(out_dir, 'otuf_n%d' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 
@@ -164,7 +168,6 @@ class SimsamTests(TestCase):
             for j in range(num_replicates):
                 res_sam = res_sams.next()
                 self.assertEqual(res_sam, orig_sam)
-
 
     def test_sim_otu_table(self):
         """ simulated otu table should be right order, number of seqs
