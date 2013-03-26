@@ -15,7 +15,7 @@ from os.path import join
 from cogent.parse.tree import DndParser
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,
                         parse_command_line_parameters, make_option)
-from qiime.simsam import simsam_range_to_fs
+from qiime.simsam import simsam_range_to_files
 from qiime.format import format_biom_table
 from biom.table import table_factory
 from biom.parse import parse_biom_table
@@ -76,12 +76,12 @@ def main():
     else:
         mapping_f = None
     
-    simsam_range_to_fs(otu_table,
-                       tree,
-                       simulated_sample_sizes=map(int,opts.num.split(',')),
-                       dissimilarities=map(float,opts.dissim.split(',')),
-                       output_dir=output_dir,
-                       mapping_f=mapping_f)
+    simsam_range_to_files(otu_table,
+                          tree,
+                          simulated_sample_sizes=map(int,opts.num.split(',')),
+                          dissimilarities=map(float,opts.dissim.split(',')),
+                          output_dir=output_dir,
+                          mapping_f=mapping_f)
 
 if __name__ == "__main__":
     main()

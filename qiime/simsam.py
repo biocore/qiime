@@ -174,6 +174,25 @@ def simsam_range(table,
                  simulated_sample_sizes,
                  dissimilarities,
                  mapping_f=None):
+    """Applies sim_otu_table over a range of parameters
+    
+     table: the input table to simulate samples from
+     tree: tree related OTUs in input table
+     simulated_sample_sizes: a list of ints defining how many
+      output samples should be create per input sample
+     dissimilarities: a list of floats containing the 
+      dissimilarities to use in simulating tables
+     mapping_f: file handle for metadata mapping file, if 
+      a mapping file should be created with the samples from 
+      each simulated table
+     
+     This function will yield tuples with the following form:
+      (output table, output mapping lines, simulated_sample_size, dissimilarity)
+     
+     If the user does not provide mapping_f, the tuples will look like:
+      (output table, None, simulated_sample_size, dissimilarity)
+    
+    """
     if mapping_f != None:
         # if the user provided a mapping file, load it into
         # a list for repeated use, and define the function for
@@ -211,12 +230,26 @@ def simsam_range(table,
                    simulated_sample_size,
                    dissimilarity)
 
-def simsam_range_to_fs(table,
-                       tree,
-                       simulated_sample_sizes,
-                       dissimilarities,
-                       output_dir,
-                       mapping_f=None):
+def simsam_range_to_files(table,
+                          tree,
+                          simulated_sample_sizes,
+                          dissimilarities,
+                          output_dir,
+                          mapping_f=None):
+    """Applies sim_otu_table over a range of parameters, writing output to file
+    
+     table: the input table to simulate samples from
+     tree: tree related OTUs in input table
+     simulated_sample_sizes: a list of ints defining how many
+      output samples should be create per input sample
+     dissimilarities: a list of floats containing the
+      dissimilarities to use in simulating tables
+     output_dir: the directory where all output tables and 
+      mapping files should be written
+     mapping_f: file handle for metadata mapping file, if 
+      a mapping file should be created with the samples from
+      each simulated table
+    """
     create_dir(output_dir)
     for e in simsam_range(table,tree,simulated_sample_sizes,dissimilarities,mapping_f):
         output_table = e[0]
