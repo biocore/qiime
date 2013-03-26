@@ -56,7 +56,8 @@ script_info['optional_options'] = [
  make_option('-m', '--mapping_fp', type='existing_filepath',
     help='the mapping filepath. If provided, an output mapping file '
          'containing the replicated sample IDs (with all other metadata '
-         'columns copied over) will also be created.', default=None)
+         'columns copied over) will also be created [default: %default]',
+         default=None)
 ]
 script_info['version'] = __version__
 
