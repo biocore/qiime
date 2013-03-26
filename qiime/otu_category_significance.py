@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Dan Knights",
-               "Jai Ram Rideout", "Daniel McDonald", "Luke Ursell"]
+               "Jai Ram Rideout", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Catherine Lozupone"
@@ -14,9 +14,8 @@ __status__ = "Development"
 
 
 from optparse import OptionParser
-from os.path import isdir, split, splitext, join
+from os.path import split, splitext, join
 from os import listdir
-from glob import glob
 from string import strip
 import sys
 import numpy as np
@@ -27,7 +26,6 @@ from qiime.pycogent_backports.test import calc_contingency_expected, \
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
-from biom.parse import parse_biom_table
 from biom.exception import TableException
 
 """Look for OTUs that are associated with a category. Currently can do:
