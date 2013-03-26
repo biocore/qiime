@@ -81,7 +81,7 @@ class SimsamTests(TestCase):
 
         num_replicates = 3 # ensure this matches cmd above
 
-        res = open(os.path.join(out_dir, 'otuf_n%d' % num_replicates), 'U')
+        res = open(os.path.join(out_dir, 'table_n%d_d0.003000.biom' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 
@@ -145,7 +145,7 @@ class SimsamTests(TestCase):
             raise RuntimeError('script returned stderr: ' + scripterr)
 
         num_replicates = 3 # ensure this matches cmd above
-        res = open(os.path.join(out_dir, 'otuf_n%d' % num_replicates), 'U')
+        res = open(os.path.join(out_dir, 'table_n%d_d0.000000.biom' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 

@@ -72,6 +72,8 @@ def main():
     tree = DndParser(tree_fh)
     if opts.mapping_fp:
         mapping_f = open(opts.mapping_fp,'U')
+    else:
+        mapping_f = None
     
     simsam_range_to_fs(otu_table,
                        tree,
