@@ -48,7 +48,7 @@ def format_parameter_value(v):
     if type(v) == list:
         result = ','.join(v)
     else:
-        result = v
+        result = str(v)
     return result
 
 def call_qiime_command(cmd,options,arguments):
