@@ -14,11 +14,11 @@ __status__ = "Development"
 
 import numpy
 import random
+from os.path import join
 from biom.table import table_factory
 from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
 from qiime.util import make_option, create_dir
-
 from qiime.util import parse_command_line_parameters
 from qiime.sort import natsort
 
@@ -229,4 +229,5 @@ def simsam_range_to_fs(table,
         output_map_fp   = join(output_dir,'map_n%d_d%f.txt' % 
                                (simulated_sample_size,dissimilarity))
         open(output_table_fp,'w').write(format_biom_table(output_table))
-        open(output_map_fp,'w').write(output_mapping_lines)
+        if output_mapping_lines != None:
+            open(output_map_fp,'w').write('\n'.join(output_mapping_lines))

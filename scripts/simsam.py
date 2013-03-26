@@ -15,7 +15,7 @@ from os.path import join
 from cogent.parse.tree import DndParser
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,
                         parse_command_line_parameters, make_option)
-from qiime.simsam import create_replicated_mapping_file, sim_otu_table
+from qiime.simsam import simsam_range_to_fs
 from qiime.format import format_biom_table
 from biom.table import table_factory
 from biom.parse import parse_biom_table
@@ -45,11 +45,9 @@ script_info['required_options'] = [
  make_option('-i','--otu_table',help='the input otu table',type='existing_filepath'),
  make_option('-t','--tree_file',help='tree file',type='existing_filepath'),
  options_lookup['output_dir'],
- make_option('-d','--dissim',help='dissimilarity between nodes up the tree',
-    type='float'),
+ make_option('-d','--dissim',help='dissimilarity between nodes up the tree, as a single value or comma-separated list of values'),
  make_option('-n','--num',
-    help='number of simulated samples per input sample',
-    type='int')
+    help='number of simulated samples per input sample, as a single value or comma-separated list of values')
 
 ]
 script_info['optional_options'] = [
@@ -72,29 +70,15 @@ def main():
     otu_table = parse_biom_table(otu_table_fh)
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
-    num = opts.num
-
-    res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
-     sim_otu_table(otu_table.SampleIds, otu_table.ObservationIds, otu_table.iterSamples(), 
-                   otu_table.ObservationMetadata, tree, num, opts.dissim)
-
-    rich_table = table_factory(res_otu_mtx,res_sam_names,res_otus,
-    observation_metadata=res_otu_metadata)
-
-    out_otu_table_fh = open(join(output_dir,
-            add_filename_suffix(otu_table_fp, '_n%d' % num)), 'w')
-    out_otu_table_fh.write(format_biom_table(rich_table))
-    out_otu_table_fh.close()
-
-    mapping_fp = opts.mapping_fp
-    if mapping_fp:
-        mapping_fh = open(mapping_fp, 'U')
-        out_mapping_fh = open(join(output_dir,
-                add_filename_suffix(mapping_fp, '_n%d' % num)), 'w')
-        out_mapping_fh.write(create_replicated_mapping_file(mapping_fh, num))
-        out_mapping_fh.close()
-        mapping_fh.close()
-
+    if opts.mapping_fp:
+        mapping_f = open(opts.mapping_fp,'U')
+    
+    simsam_range_to_fs(otu_table,
+                       tree,
+                       simulated_sample_sizes=map(int,opts.num.split(',')),
+                       dissimilarities=map(float,opts.dissim.split(',')),
+                       output_dir=output_dir,
+                       mapping_f=mapping_f)
 
 if __name__ == "__main__":
     main()
