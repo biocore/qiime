@@ -18,6 +18,7 @@ from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
 from biom.table import table_factory
+from qiime.parse import parse_mapping_file
 from qiime.util import (get_qiime_scripts_dir,
                         load_qiime_config,
                         get_tmp_filename,
@@ -322,6 +323,13 @@ class SimsamTests(TestCase):
                                         output_map_basename="world")
         self.assertTrue(exists('%s/hello_n2_d0.100000.biom' % self.test_out))
         self.assertTrue(exists('%s/world_n2_d0.100000.txt' % self.test_out))
+        
+        # confirm same sample ids in table and mapping file
+        t = parse_biom_table(open('%s/hello_n2_d0.100000.biom' % self.test_out))
+        d, _, _ = \
+         parse_mapping_file(open('%s/world_n2_d0.100000.txt' % self.test_out))
+        mapping_sample_ids = [e[0] for e in d]
+        self.assertEqualItems(t.SampleIds,mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription
