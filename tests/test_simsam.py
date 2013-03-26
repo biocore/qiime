@@ -96,7 +96,7 @@ class SimsamTests(TestCase):
 
         num_replicates = 3 # ensure this matches cmd above
 
-        res = open(os.path.join(out_dir, 'otuf_n%d_d0.003000.biom' % num_replicates), 'U')
+        res = open(os.path.join(out_dir, 'otuf_n%d_d0.003.biom' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 
@@ -160,7 +160,7 @@ class SimsamTests(TestCase):
             raise RuntimeError('script returned stderr: ' + scripterr)
 
         num_replicates = 3 # ensure this matches cmd above
-        res = open(os.path.join(out_dir, 'otuf_n%d_d0.000000.biom' % num_replicates), 'U')
+        res = open(os.path.join(out_dir, 'otuf_n%d_d0.0.biom' % num_replicates), 'U')
         orig_table = parse_biom_table(open(otuf,'U'))
         res_table = parse_biom_table(res)
 
@@ -321,13 +321,13 @@ class SimsamTests(TestCase):
                                         mapping_f=self.tutorial_map,
                                         output_table_basename="hello",
                                         output_map_basename="world")
-        self.assertTrue(exists('%s/hello_n2_d0.100000.biom' % self.test_out))
-        self.assertTrue(exists('%s/world_n2_d0.100000.txt' % self.test_out))
+        self.assertTrue(exists('%s/hello_n2_d0.1.biom' % self.test_out))
+        self.assertTrue(exists('%s/world_n2_d0.1.txt' % self.test_out))
         
         # confirm same sample ids in table and mapping file
-        t = parse_biom_table(open('%s/hello_n2_d0.100000.biom' % self.test_out))
+        t = parse_biom_table(open('%s/hello_n2_d0.1.biom' % self.test_out))
         d, _, _ = \
-         parse_mapping_file(open('%s/world_n2_d0.100000.txt' % self.test_out))
+         parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
         self.assertEqualItems(t.SampleIds,mapping_sample_ids)
 
