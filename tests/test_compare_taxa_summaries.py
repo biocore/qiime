@@ -41,7 +41,7 @@ class CompareTaxaSummariesTests(TestCase):
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         # How many times to test a stochastic p-value.
-        self.p_val_tests = 10
+        self.p_val_tests = 20
 
         self.taxa_summary1 = (['Even1','Even2','Even3'],
             ['Bacteria;Actinobacteria;Actinobacteria(class);Actinobacteridae',
