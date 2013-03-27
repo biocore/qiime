@@ -137,7 +137,7 @@ def combine_sample_dicts(sample_dicts):
 
     return otu_mtx, all_otu_ids
 
-def create_replicated_mapping_file(map_f, num_replicates):
+def create_replicated_mapping_file(map_f, num_replicates, sample_ids):
     """Returns a formatted mapping file with replicated sample IDs.
 
     Each sample ID will have an ascending integer appended to it from the range
@@ -156,6 +156,9 @@ def create_replicated_mapping_file(map_f, num_replicates):
     Arguments:
         map_f - input mapping file to replicate (file-like object)
         num_replicates - number of replicates at each sample
+        sample_ids - only sample IDs in the mapping file that are in this list
+            will be replicated. Sample IDs in the mapping file that are not
+            found in this list will not be added to the resulting mapping file
     """
     if num_replicates < 1:
         raise ValueError("Must specify at least one sample replicate (was "
@@ -164,8 +167,9 @@ def create_replicated_mapping_file(map_f, num_replicates):
 
     rep_map_data = []
     for row in map_data:
-        for rep_num in range(num_replicates):
-            rep_map_data.append(['%s.%i' % (row[0], rep_num)] + row[1:])
+        if row[0] in sample_ids:
+            for rep_num in range(num_replicates):
+                rep_map_data.append(['%s.%i' % (row[0], rep_num)] + row[1:])
 
     return format_mapping_file(header, rep_map_data, comments)
 
@@ -204,13 +208,13 @@ def simsam_range(table,
         # mapping file so we don't have to check whether it 
         # exists on every iteration
         mapping_lines = None
-        def process_map(mapping_lines, simulated_sample_size):
+        def process_map(mapping_lines, simulated_sample_size, sample_ids):
             return None
     
     for simulated_sample_size in simulated_sample_sizes:
         # create the output mapping file data
         output_mapping_lines = \
-         process_map(mapping_lines, simulated_sample_size)
+         process_map(mapping_lines, simulated_sample_size, table.SampleIds)
         for dissimilarity in dissimilarities:
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
