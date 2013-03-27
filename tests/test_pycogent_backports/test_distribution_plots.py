@@ -255,16 +255,10 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(len(result['caps']), 2)
 
     def test_plot_box_data_empty(self):
-        """_plot_box_data() should not error when given empty list of data,
-        but should not plot anything."""
+        """Should ignore empty distribution."""
         fig, ax = _create_plot()
         result = _plot_box_data(ax, [], 'blue', 0.33, 55, 1.5, 'stdv')
-        self.assertEqual(result.__class__.__name__, "dict")
-        self.assertEqual(len(result['boxes']), 0)
-        self.assertEqual(len(result['medians']), 0)
-        self.assertEqual(len(result['whiskers']), 0)
-        self.assertEqual(len(result['fliers']), 0)
-        self.assertEqual(len(result['caps']), 0)
+        self.assertTrue(result is None)
 
     def test_calc_data_point_locations_invalid_widths(self):
         """_calc_data_point_locations() should raise a ValueError
@@ -358,13 +352,55 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(len(ax.get_xticklabels()), 3)
         self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
 
+    def test_generate_box_plots_empty_distributions(self):
+        """Test functions correctly with empty distributions."""
+        fig = generate_box_plots([[1, 2, 3], [], [4, 5, 6]], [1, 4, 10],
+                                 ["Data 1", "Data 2", "Data 3"], "Test",
+                                 "x-axis label", "y-axis label")
+        ax = fig.get_axes()[0]
+        self.assertEqual(ax.get_title(), "Test")
+        self.assertEqual(ax.get_xlabel(), "x-axis label")
+        self.assertEqual(ax.get_ylabel(), "y-axis label")
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
+
+        # All distributions are empty.
+        fig = generate_box_plots([[], [], []], [1, 4, 10],
+                                 ["Data 1", "Data 2", "Data 3"], "Test",
+                                 "x-axis label", "y-axis label")
+        ax = fig.get_axes()[0]
+        self.assertEqual(ax.get_title(), "Test")
+        self.assertEqual(ax.get_xlabel(), "x-axis label")
+        self.assertEqual(ax.get_ylabel(), "y-axis label")
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
+
+    def test_generate_box_plots_box_colors(self):
+        """Test correctly handles coloring of box plots."""
+        # Coloring works with all empty distributions.
+        fig = generate_box_plots([[], [], []],
+                                 box_colors=['blue', 'red', 'yellow'])
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
+        fig = generate_box_plots([[], [], []], box_colors='pink')
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
+        # Coloring works with some empty distributions.
+        fig = generate_box_plots([[], [1, 2, 3.5], []],
+                                 box_colors=['blue', 'red', 'yellow'])
+        ax = fig.get_axes()[0]
+        self.assertEqual(len(ax.get_xticklabels()), 3)
+
     def test_generate_box_plots_invalid_input(self):
         """Test correctly throws error on invalid input."""
-        # Empty distribution.
-        self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3], []])
-
         # Non-numeric entries in distribution.
         self.assertRaises(ValueError, generate_box_plots, [[1, 'foo', 3]])
+
+        # Number of colors doesn't match number of distributions.
+        self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3], [],
+                          [4, 5, 6]], box_colors=['blue', 'red'])
 
         # Invalid legend.
         self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3]],
@@ -473,33 +509,27 @@ class DistributionPlotsTests(TestCase):
 
     def test_color_box_plot(self):
         """Should not throw an exception when passed the proper input."""
-        # Single color.
-        fig, ax = _create_plot()
-        box_plot = boxplot(self.ValidTypicalBoxData)
-        _color_box_plot(ax, box_plot, 'blue')
-
-        # Multiple colors.
         fig, ax = _create_plot()
         box_plot = boxplot(self.ValidTypicalBoxData)
         _color_box_plot(ax, box_plot, ['blue', 'w', (1, 1, 0.9)])
 
-        # Multiple colors (some are None).
+        # Some colors are None.
         fig, ax = _create_plot()
         box_plot = boxplot(self.ValidTypicalBoxData)
         _color_box_plot(ax, box_plot, ['blue', None, (1, 1, 0.9)])
 
-        # Multiple colors (all are None).
+        # All colors are None.
         fig, ax = _create_plot()
         box_plot = boxplot(self.ValidTypicalBoxData)
         _color_box_plot(ax, box_plot, [None, None, None])
 
     def test_color_box_plot_invalid_input(self):
         """Should throw an exception on invalid input."""
-        # Single invalid color.
+        # Invalid color.
         fig, ax = _create_plot()
         box_plot = boxplot(self.ValidTypicalBoxData)
         self.assertRaises(ValueError, _color_box_plot, ax, box_plot,
-                          'foobarbaz')
+                          ['red', 'foobarbaz', 'blue'])
 
         # Wrong number of colors.
         fig, ax = _create_plot()

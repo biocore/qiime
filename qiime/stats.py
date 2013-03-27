@@ -32,7 +32,7 @@ from numpy import argsort, min as np_min, max as np_max
 from numpy.random import permutation
 from cogent.util.misc import combinate
 
-from cogent.maths.stats.test import (mantel_test, mc_t_two_sample,
+from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
@@ -91,11 +91,11 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
     result += '# Entries marked with "N/A" could not be calculated because ' + \
               'at least one of the groups\n# of distances was empty, ' + \
               'both groups each contained only a single distance, or\n' + \
-              '# the test could not be performed (e.g. no variance in the ' + \
-              'groups).\nGroup 1\tGroup 2\tt statistic\tParametric ' + \
-              'p-value\tParametric p-value (Bonferroni-corrected)\t' + \
-              'Nonparametric p-value\tNonparametric p-value ' + \
-              '(Bonferroni-corrected)\n'
+              '# the test could not be performed (e.g. no variance in ' + \
+              'groups with the same mean).\nGroup 1\tGroup 2\t' + \
+              't statistic\tParametric p-value\tParametric p-value ' + \
+              '(Bonferroni-corrected)\tNonparametric p-value\t' + \
+              'Nonparametric p-value (Bonferroni-corrected)\n'
 
     stats = _perform_pairwise_tests(labels, dists, tail_type, num_permutations)
     for stat in stats:

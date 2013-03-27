@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso, Justin Kuczynski"]
+__credits__ = ["Greg Caporaso, Justin Kuczynski, Kyle Patnode"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -143,7 +143,6 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
                                             coords=coords2,\
                                             eigvals=eigvals2,\
                                             pct_var=pct_var2)
-        open('./randomized_coords2.txt','w').write(randomized_coords2)
     else:
         randomized_coords2 = None
         

@@ -206,7 +206,7 @@ class StatsTests(TestCase):
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
-# the test could not be performed (e.g. no variance in the groups).
+# the test could not be performed (e.g. no variance in groups with the same mean).
 Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
 foo	bar	-6.6	0.00708047956412	0.0212414386924	0.095	0.285
 foo	baz	-9.79795897113	0.000608184944463	0.00182455483339	0.101	0.303
@@ -220,7 +220,7 @@ bar	baz	-3.0	0.0576688856224	0.173006656867	0.217	0.651
         exp = """# The tests of significance were performed using a two-sided Student's two-sample t-test.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
-# the test could not be performed (e.g. no variance in the groups).
+# the test could not be performed (e.g. no variance in groups with the same mean).
 Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
 foo	bar	-6.6	0.00708047956412	0.0212414386924	N/A	N/A
 foo	baz	-9.79795897113	0.000608184944463	0.00182455483339	N/A	N/A
@@ -237,7 +237,7 @@ bar	baz	-3.0	0.0576688856224	0.173006656867	N/A	N/A
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
-# the test could not be performed (e.g. no variance in the groups).
+# the test could not be performed (e.g. no variance in groups with the same mean).
 Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
 foo	bar	-6.6	0.00354023978206	0.0106207193462	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
 foo	baz	-9.79795897113	0.000304092472232	0.000912277416695	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
@@ -254,7 +254,7 @@ bar	baz	-3.0	0.0288344428112	0.0865033284337	Too few iters to compute p-value (n
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
-# the test could not be performed (e.g. no variance in the groups).
+# the test could not be performed (e.g. no variance in groups with the same mean).
 Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
 foo	bar	N/A	N/A	N/A	N/A	N/A
 """

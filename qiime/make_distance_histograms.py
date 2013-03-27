@@ -15,7 +15,7 @@ from matplotlib import use
 use('Agg',warn=False)
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
-from cogent.maths.stats.test import t_two_sample
+from qiime.pycogent_backports.test import t_two_sample
 from numpy import array, mean, average, arange, concatenate
 from collections import defaultdict
 from string import strip

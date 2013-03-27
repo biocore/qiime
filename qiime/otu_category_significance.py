@@ -21,8 +21,8 @@ import sys
 import numpy as np
 from numpy import argsort, mean, array
 from cogent.util.dict2d import Dict2D
-from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
-    ANOVA_one_way, correlation, t_paired
+from qiime.pycogent_backports.test import calc_contingency_expected, \
+    G_fit_from_Dict2D, ANOVA_one_way, correlation, t_paired
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file

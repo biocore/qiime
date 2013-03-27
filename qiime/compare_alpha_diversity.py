@@ -14,7 +14,7 @@ __status__ = "Development"
 from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from cogent.maths.stats.test import mc_t_two_sample, t_two_sample
+from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
 from itertools import combinations
 from collections import defaultdict
 from qiime.otu_category_significance import fdr_correction
@@ -111,8 +111,8 @@ def _correct_compare_alpha_results(result, method):
         corrected_result = result
     return corrected_result
 
-def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
-    test_type='nonparametric', num_permutations=999):
+def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, 
+    depth=None, test_type='nonparametric', num_permutations=999):
     """Compares alpha diversity values for differences per category treatment.
     Notes: 
      Returns a defaultdict which as keys has the pairs of treatments being 
@@ -122,7 +122,8 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
      rarefaction_lines - list of lines, result of multiple rarefactions.
      mapping_lines - list of lines, mapping file lines. 
      category - str, the category to be compared, eg 'Treatment' or 'Age'.
-     depth - int, depth of the rarefaction file to use.
+     depth - int, depth of the rarefaction file to use. if None, then will use 
+     the deepest available in the file. 
      test_type - str, the type of t-test to perform. Must be either
      'parametric' or 'nonparametric'.
      num_permutations - int, the number of Monte Carlo permutations to use if
@@ -139,6 +140,11 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, depth,
         rarefaction_data, category)
     
     # extract only rows of the rarefaction data that are at the given depth
+    # if depth is not given default to the deepest rarefaction available
+    # rarefaction file is not guaranteed to be in order of rarefaction depth
+    if depth == None:
+        depth = array(rarefaction_data[3])[:,0].max()
+
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
     
     # Average each col of the rarefaction mtx. Computing t test on averages over

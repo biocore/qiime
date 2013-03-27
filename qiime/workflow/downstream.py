@@ -28,12 +28,22 @@ from qiime.workflow.util import (print_to_stdout,
                                  get_params_str)
 
 
-def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
-    output_dir, command_handler, params, qiime_config,
-    color_by_interesting_fields_only=True,sampling_depth=None,
-    histogram_categories=None,
-    tree_fp=None, parallel=False, logger=None, suppress_3d_plots=False,
-    suppress_2d_plots=False,status_update_callback=print_to_stdout):
+def run_beta_diversity_through_plots(otu_table_fp, 
+                                     mapping_fp,
+                                     output_dir,
+                                     command_handler,
+                                     params,
+                                     qiime_config,
+                                     color_by_interesting_fields_only=True,
+                                     sampling_depth=None,
+                                     histogram_categories=None,
+                                     tree_fp=None,
+                                     parallel=False,
+                                     logger=None,
+                                     suppress_3d_plots=False,
+                                     suppress_2d_plots=False,
+                                     suppress_md5=False,
+                                     status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -63,7 +73,8 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     else:
         close_logger_on_success = False
     
-    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
+    if not suppress_md5:
+        log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
     
     mapping_data, mapping_header, mapping_comments =\
      parse_mapping_file(open(mapping_fp,'U'))
@@ -278,10 +289,20 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     
     return dm_fps
 
-def run_alpha_rarefaction(otu_table_fp, mapping_fp,
-    output_dir, command_handler, params, qiime_config, tree_fp=None,
-    num_steps=10, parallel=False, logger=None, min_rare_depth=10,
-    max_rare_depth=None,status_update_callback=print_to_stdout):
+def run_alpha_rarefaction(otu_table_fp, 
+                          mapping_fp,
+                          output_dir,
+                          command_handler,
+                          params,
+                          qiime_config,
+                          tree_fp=None,
+                          num_steps=10,
+                          parallel=False,
+                          logger=None,
+                          min_rare_depth=10,
+                          max_rare_depth=None,
+                          suppress_md5=False,
+                          status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -305,18 +326,10 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+
+    if not suppress_md5:
+        log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
     
-    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
-    
-    # Prep the rarefaction command
-    try:
-        open(otu_table_fp,'U')
-    except IOError,e:
-        logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
-                     ' %s\n' % otu_table_fp +
-                     'Original Error:\n%s\n' % str(e))
-        logger.close()
-        raise IOError,e
     if max_rare_depth == None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
          compute_seqs_per_library_stats(parse_biom_table(open(otu_table_fp,'U')))
@@ -407,10 +420,19 @@ def run_alpha_rarefaction(otu_table_fp, mapping_fp,
                     close_logger_on_success=close_logger_on_success)
 run_qiime_alpha_rarefaction = run_alpha_rarefaction
 
-def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
-    output_dir, command_handler, params, qiime_config, mapping_fp,
-    parallel=False,logger=None,
-    status_update_callback=print_to_stdout, master_tree=None):
+def run_jackknifed_beta_diversity(otu_table_fp,
+                                  tree_fp,
+                                  seqs_per_sample,
+                                  output_dir,
+                                  command_handler,
+                                  params,
+                                  qiime_config,
+                                  mapping_fp,
+                                  parallel=False,
+                                  logger=None,
+                                  suppress_md5=False,
+                                  status_update_callback=print_to_stdout,
+                                  master_tree=None):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -444,7 +466,8 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     else:
         close_logger_on_success = False
     
-    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
+    if not suppress_md5:
+        log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
     
     try:
         beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
@@ -497,8 +520,6 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         commands.append(\
          [('UPGMA on full distance matrix: %s' % beta_diversity_metric,\
            hierarchical_cluster_cmd)])
-           
-           
            
         # Prep the beta diversity command (for rarefied OTU tables)
         dm_dir = '%s/rare_dm/' % metric_output_dir
@@ -629,9 +650,17 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
                     close_logger_on_success=close_logger_on_success)
     
 
-def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
-    output_dir, mapping_cat, sort, command_handler, params, qiime_config,
-    logger=None, status_update_callback=print_to_stdout):
+def run_summarize_taxa_through_plots(otu_table_fp, 
+                                     mapping_fp,
+                                     output_dir,
+                                     mapping_cat,
+                                     sort,
+                                     command_handler,
+                                     params,
+                                     qiime_config,
+                                     logger=None, 
+                                     suppress_md5=False,
+                                     status_update_callback=print_to_stdout):
     """ Run the data preparation for summarizing taxonomies and generating plots
     
         The steps performed by this function are:
@@ -656,17 +685,9 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-    log_input_md5s(logger,[otu_table_fp,mapping_fp])
     
-    # Prep the summarize otu by category command
-    try:
-        open(otu_table_fp,'U')
-    except IOError,e:
-        logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
-                     ' %s\n' % otu_table_fp +
-                     'Original Error:\n%s\n' % str(e))
-        logger.close()
-        raise IOError,e
+    if not suppress_md5:
+        log_input_md5s(logger,[otu_table_fp,mapping_fp])
     
     # if mapping category not passed via command-line, 
     # check if it is passed in params file
