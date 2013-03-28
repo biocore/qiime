@@ -30,13 +30,11 @@ This command runs the 'help' command and returns a list of all of the options av
 
 Filter otu table by 1%
 ----------------------
-This is done to remove otus that show up in less than 1% of the samples, i.e. they are very rare. setting the threshold at 5% would remove more otus and so on and so forth
-PERHAPS SOME HELP HERE ON WHY WE DO THIS?. Before the rest of the analysis is run the OTU table needs to be filtered by one percent. The number of samples in the OTU table can be obtained by running print_biom_table_summary.py on the OTU table.
-To filter the OTU table Run the following command: ::
+This command will filter any OTUs that are present in less than 1% of the samples. Note that this value is determined by your dataset, in some cases is fine to run with all your samples or a different minimum percent. The number of samples in the OTU table can be obtained by running per_library_stats.py on the OTU table. To filter the OTU table Run the following command: ::
 
     filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7
 
-This command will create an output file named :file:`filtered_otu_table.biom`, this is s new otu table that has been sampled to 1% the input to the -s command should be 1 percent of the samples in the original OTU table.
+This command will create an output file named :file:`filtered_otu_table.biom`, this is thew new otu table that has all OTUs appearing in les than 1% of the samples removed. The input to the -s command should be 1 percent of the samples in the original OTU table.
 
 Rarefy to 100 sequences
 -----------------------
