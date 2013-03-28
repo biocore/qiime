@@ -26,19 +26,12 @@ To check that it is running properly, run the following command: ::
 
     R --slave --vanilla --args -h < sourcetracker_for_qiime.r
 
-This command runs the 'help' command and returns a list of all of the options available to the terminal. The first few lines of the return are shown below. 
-
-.. note::
-
-    * -i otu table: QIIME-formatted OTU table (first line is a comment line starting with '#', second line starts with '#OTU ID' followed by sample names). You must supply either this or the taxon table via '-t'.
-    * -t taxon table: output from QIIME script summarize_taxa.py. You must supply either this or the otu table via '-i'.
-    * -m mapfile: mapping file with an 'Env' column giving the source environments, and a 'SourceSink' column giving 'source' for source samples and 'sink' for sink samples.
-    * -n number of restarts of Gibbs sampling (default 10)
-    * -b number of burn-in iterations for Gibbs sampling (default 100)
+This command runs the 'help' command and returns a list of all of the options available to the terminal.
 
 Filter otu table by 1%
----------------------
-PERHAPS SOME HELP HERE ON WHY WE DO THIS?. Before the rest of the analysis is run the OTU table needs to be filtered by one percent. The number of samples in the OTU table can be obtained by running per_library_stats.py on the OTU table.
+----------------------
+This is done to remove otus that show up in less than 1% of the samples, i.e. they are very rare. setting the threshold at 5% would remove more otus and so on and so forth
+PERHAPS SOME HELP HERE ON WHY WE DO THIS?. Before the rest of the analysis is run the OTU table needs to be filtered by one percent. The number of samples in the OTU table can be obtained by running print_biom_table_summary.py on the OTU table.
 To filter the OTU table Run the following command: ::
 
     filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7
