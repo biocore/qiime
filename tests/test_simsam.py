@@ -230,6 +230,43 @@ class SimsamTests(TestCase):
                 self.assertEqual(otu_mtx[:,i].sum(),
                  res_otu_mtx[:,num_replicates*i+j].sum())
 
+    def test_sim_otu_table_new_otus(self):
+        """Test large dissim to obtain OTUs that weren't in original table."""
+        sample_ids = ['samB','samA']
+        otu_ids = ['C','A']
+        otu_mtx = numpy.array([ [3,9],
+                                [5,0],
+                                ])
+        otu_metadata = [{'tax':'otu_C is cool'},{'tax':''}]
+        tree = DndParser("(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);")
+        num_replicates = 3
+
+        # Huge dissimilarity to ensure we get new OTUs.
+        dissimilarity = 100000
+
+        rich_table = table_factory(otu_mtx,sample_ids,otu_ids,
+            observation_metadata=otu_metadata)
+
+        otu_id_results = []
+        otu_md_results = []
+        for i in range(1000):
+            res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
+                    qiime.simsam.sim_otu_table(sample_ids, otu_ids,
+                            rich_table.iterSamples(), otu_metadata, tree,
+                            num_replicates, dissimilarity)
+            otu_id_results.extend(res_otus)
+            otu_md_results.extend(res_otu_metadata)
+
+        # We should see all OTUs show up at least once.
+        self.assertContains(otu_id_results, 'A')
+        self.assertContains(otu_id_results, 'B')
+        self.assertContains(otu_id_results, 'C')
+        self.assertContains(otu_id_results, 'D')
+
+        # We should see at least one blank metadata entry since A and B are not
+        # in the original table.
+        self.assertContains(otu_md_results, None)
+
     def test_get_new_otu_id_small(self):
         """ small dissim should return old tip id"""
         tree = DndParser("(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);")
