@@ -42,7 +42,7 @@ This command will rarefy the sequences to a depth of 100.
 To rarefy the sequences run the following command: ::
     single_rarefaction.py -i filtered_otu_table.biom  -o filtered_otu_table_100.biom -d 100
     
-This command creates a new otu table named :file:`filtered_otu_table_100.biom` with the sequences rarefied to a depth of 100.
+This command creates a new otu table named :file:`filtered_otu_table_100.biom` with the sequences rarefied to a depth of 100 each sample will contain exactly 100 sequences per sample. This step ensures that all samples compared will contain an equal number of sequences, which may affect the results of the comparisons.This step will also increase run time in downstream commands.
 
 Convert table from .biom to .txt
 --------------------------------
@@ -56,7 +56,8 @@ This creates a file named :file:`filtered_otu_table_100.txt` which is the OTU ta
 Run SourceTracker
 -----------------
 
-When running SourceTracker it is important to note that a column titled 'SourceSink' is required and the categories in this column must be 'source', 'sink', or 'NA'. A column titled 'ENV' is also required the categories in this column are the names that are related to source an sink. us 'NA' for samples to not be included.
+Note: The mapping must contain two columns titled 'SourceSink', and 'Env'. These columns were added to the test dataset by opening the mapping file in excel and adding the new columns. In this data set the sources are 'Outdoor Air', 'Human Skin', 'Human Mouth'... each row that represents a sample taken from one of these was labeled 'source' in the SourceSink column. Likewise the sink samples: 'NICU Incubator', 'NICU BabyBedside',... are labeled 'sink' under the SourceSink 
+Column. each row in the 'Env' column should contain the name of the source and sink samples that will be used in the analysis, for example. 'Outdoor Air', 'Human Skin', 'Human Mouth'... Any sample that will not be used in the analysis should contain 'NA' in the 'SourceSink' and 'Env' columns.
 
 In order to run SourceTracker run the following command: ::
 
