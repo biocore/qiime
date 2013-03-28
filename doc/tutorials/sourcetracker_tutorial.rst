@@ -6,7 +6,7 @@ SourceTracker
 
 Introduction
 ------------
-This tutorial explains how to use the SourceTracker software. SourceTracker is a software package designed to predict the relationship between microbial communities. These are 'Source' and 'Sink' 
+This tutorial explains how to use the SourceTracker 0.9.4 software. SourceTracker is a software package designed to predict the relationship between microbial communities.' 
 
 Please note that this tutorial does not attempt to cover every possible usage of Source Tracker. Instead, it attempts to provide useful examples to give you an idea of how to use these statistical methods in your own analysis.
 
@@ -36,14 +36,6 @@ This command will filter any OTUs that are present in less than 1% of the sample
 
 This command will create an output file named :file:`filtered_otu_table.biom`, this is thew new otu table that has all OTUs appearing in les than 1% of the samples removed. The input to the -s command should be 1 percent of the samples in the original OTU table.
 
-Rarefy to 100 sequences
------------------------
-This command will rarefy the sequences to a depth of 100. 
-To rarefy the sequences run the following command: ::
-    single_rarefaction.py -i filtered_otu_table.biom  -o filtered_otu_table_100.biom -d 100
-    
-This command creates a new otu table named :file:`filtered_otu_table_100.biom` with the sequences rarefied to a depth of 100 each sample will contain exactly 100 sequences per sample. This step ensures that all samples compared will contain an equal number of sequences, which may affect the results of the comparisons.This step will also increase run time in downstream commands.
-
 Convert table from .biom to .txt
 --------------------------------
 SourceTracker does not work with the biom format. In order to run SourceTracker the OTU table needs to be converted to .txt.
@@ -56,7 +48,7 @@ This creates a file named :file:`filtered_otu_table_100.txt` which is the OTU ta
 Run SourceTracker
 -----------------
 
-Note: The mapping must contain two columns titled 'SourceSink', and 'Env'. These columns were added to the test dataset by opening the mapping file in excel and adding the new columns. In this data set the sources are 'Outdoor Air', 'Human Skin', 'Human Mouth'... each row that represents a sample taken from one of these was labeled 'source' in the SourceSink column. Likewise the sink samples: 'NICU Incubator', 'NICU BabyBedside',... are labeled 'sink' under the SourceSink 
+Note: The mapping must contain two columns titled 'SourceSink', and 'Env'. These columns were added to the mapping file by opening it in excel and adding the new columns. In this data set the sources are 'Outdoor Air', 'Human Skin', 'Human Mouth'... each row that represents a sample taken from one of these was labeled 'source' in the SourceSink column. Likewise the sink samples: 'NICU Incubator', 'NICU BabyBedside',... are labeled 'sink' under the SourceSink 
 Column. each row in the 'Env' column should contain the name of the source and sink samples that will be used in the analysis, for example. 'Outdoor Air', 'Human Skin', 'Human Mouth'... Any sample that will not be used in the analysis should contain 'NA' in the 'SourceSink' and 'Env' columns.
 
 In order to run SourceTracker run the following command: ::
