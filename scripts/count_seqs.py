@@ -26,7 +26,7 @@ script_info['script_usage'] = [\
   "%prog -i in.fasta"),
  ("",
   "Count the sequences in a fasta file and a fastq file and write results to file. Note that fastq files can only be processed if they end with .fastq -- all other files are assumed to be fasta.",
-  "%prog -i in1.fasta,in2.fastq -o seq_counts.txt"),
+  "%prog -i in1.fasta,in2.fasta -o seq_counts.txt"),
   ("",
    "Count the sequences all .fasta files in current directory and write results to stdout. Note that -i option must be quoted.",
    "%prog -i \"*.fasta\"")]
@@ -34,7 +34,7 @@ script_info['output_description']= ""
 script_info['required_options'] = [\
  # input_fps needs to be a string, not a existing_filepath, so wildcards can
  # be passed in
- make_option('-i','--input_fps', type='string',
+ make_option('-i','--input_fps', type='existing_filepaths',
         help='the input filepaths (comma-separated)'),
 ]
 script_info['optional_options'] = [
@@ -70,12 +70,12 @@ def main():
        parse_command_line_parameters(**script_info)
     suppress_errors = opts.suppress_errors
     input_fps = []
-    for e in opts.input_fps.split(','):
+    for e in opts.input_fps:
         input_fps.extend(glob(e))
     input_fps = set(input_fps)
     if len(input_fps) == 0:
         option_parser.error(\
-         "No filepaths match pattern(s) passed via -i: %s" % ''.join(opts.input_fps))
+         "No filepaths match pattern(s) passed via -i: %s" % ','.join(opts.input_fps))
         
     output_fp = opts.output_fp
 
