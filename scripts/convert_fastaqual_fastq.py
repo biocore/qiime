@@ -2,7 +2,8 @@
 
 __author__ = "Adam Robbins-Pianka, Abhisaar Yadav"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav"]
+__credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav",
+                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Adam Robbins-Pianka"
