@@ -68,8 +68,7 @@ def run_supervised_learning(predictor_fp, response_fp, response_name,
     return app_result
 
 def pooled_standard_deviation(input_variances):
-    """Returns the average variance, aka standard deviation,
-    for a set of input standard deviations
+    """Returns the average standard deviation for a list of st dev's
 
     Input is a list of floats (ideally), and the error type
     Output is a single float value
@@ -84,8 +83,7 @@ def pooled_standard_deviation(input_variances):
     return pooled_sd
 
 def calc_baseline_error_to_observed_error(baseline_error, est_error):
-    '''Calculate baseline error to observed error for results file,
-        essentially just (baseline_error / obs_error)
+    '''Calculate (baseline error / observed error) for results file.
 
         Input two values, return single value float
     '''
