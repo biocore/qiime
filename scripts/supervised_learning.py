@@ -54,6 +54,14 @@ filter_otus_from_otu_table.py -i otu_table_rarefied200.txt -s 10
 For an overview of the application of supervised classification to microbiota, \
 see PubMed ID 21039646.
 
+This script also has the ability to collate the supervised learning results \
+produced on an input directory. For example, in order to reduce any variation \
+introduced through producing a rarefied OTU table, the user can run \
+multiple_rarefactions_even_depth.py on the OTU table, and then pass that directory \
+into supervised_learning.py. The user can then pass a -w collate_results filepath \
+to produce a single results file that contains the average estimated generalization \
+error of the classified, and the pooled standard deviation (for cv5 and cv10 errortypes).
+
 This script requires that R be installed and in the search path. To install R \
 visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
 command "install.packages("randomForest")", then type q() to exit."""
@@ -65,6 +73,12 @@ script_info['script_usage'].append(("""Simple example of random forests classifi
 script_info['script_usage'].append(("""Running with 10-fold cross-validation for improved estimates of generalization error and feature importances""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_cv10 -e cv10"""))
 
 script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_ntree1000 --ntree 1000"""))
+
+script_info['script_usage'].append(("Run 10-fold cross validation on a directory of OTU tables rarefied at an even depth""","""""","""%prog -i rarefied_tables/ -m Fasting_Map.txt -c Treatment -o sl_rarefied_tables_cv10 -e cv10"""))
+
+script_info['script_usage'].append(("Run 10-fold cross validation on a directory of OTU tables rarefied at an even depth and collate the results into a single file""","""""","""%prog -i rarefied_tables/ -m Fasting_Map.txt -c Treatment -o sl_rarefied_tables_cv10 -e cv10 -w sl_cv10_sweep.txt"""))
+
+
 
 script_info['script_usage_output_to_remove'] = ['ml','ml_cv10','ml_ntree1000']
 
