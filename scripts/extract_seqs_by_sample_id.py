@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso","Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -36,7 +36,8 @@ script_info['output_description']="""The script produces a fasta file containing
 
 script_info['required_options']=[
  options_lookup['fasta_as_primary_input'],
- make_option('-o','--output_fasta_fp',help='the output fasta file')
+ make_option('-o','--output_fasta_fp',type="new_filepath",
+  help='the output fasta file')
 ]
 
 script_info['optional_options']=[
