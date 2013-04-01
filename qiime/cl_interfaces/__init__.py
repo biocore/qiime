@@ -11,11 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from qiime.command import cl_main
-from qiime.cl_interfaces import PickSubsampledReferenceOtusThroughOtuTable
-from sys import argv
-
-cmd = PickSubsampledReferenceOtusThroughOtuTable()
-script_info = cmd.getScriptInfo()
-if __name__ == "__main__":
-    cl_main(cmd,argv)
+from qiime.cl_interfaces.core_diversity_analyses import CoreDiversityAnalyses
+from qiime.cl_interfaces.pick_subsampled_reference_otus_through_otu_table import PickSubsampledReferenceOtusThroughOtuTable
+from qiime.cl_interfaces.split_libraries_fastq import SplitLibrariesFastq
+from qiime.cl_interfaces.check_id_map import CheckIdMap

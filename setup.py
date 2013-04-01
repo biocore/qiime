@@ -88,7 +88,7 @@ setup(name='QIIME',
       maintainer_email=__email__,
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
-                'qiime/denoiser','qiime/workflow'],
+                'qiime/denoiser','qiime/workflow','qiime/cl_interfaces'],
       scripts=glob('scripts/*py')+glob('scripts/ec2*')+
               glob('scripts/FlowgramAli_4frame'),
       package_data={'qiime':
