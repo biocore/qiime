@@ -162,7 +162,7 @@ def main():
     # verify that category is in mapping file
     map_list = parse_mapping_file(open(mapping_file,'U').readlines())
     if not category in map_list[1][1:]:
-        print "Category '%s' not found in mapping file columns:" %(category)
+        option_parser.error("Category '%s' not found in mapping file columns:" %(category))
         print map_list[1][1:]
         exit(1)
 

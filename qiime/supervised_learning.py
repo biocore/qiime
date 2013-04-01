@@ -2,7 +2,7 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Dan Knights"]
+__credits__ = ["Dan Knights", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Dan Knights"
@@ -70,28 +70,18 @@ def run_supervised_learning(predictor_fp, response_fp, response_name,
 def pooled_standard_deviation(input_variances):
     """Returns the average standard deviation for a list of st dev's
 
-    Input is a list of floats (ideally), and the error type
+    Input is a list of floats (ideally)
     Output is a single float value
     """
-
-    # convert every number in list to a float
-    vars = [float(i) for i in input_variances]
-    
-    # compute pooled variance
-    pooled_sd = sqrt(mean(square(vars)))
-
-    return pooled_sd
+    # compute and return pooled standard deviation
+    return sqrt(mean(square([float(i) for i in input_variances])))
 
 def calc_baseline_error_to_observed_error(baseline_error, est_error):
     '''Calculate (baseline error / observed error) for results file.
 
         Input two values, return single value float
     '''
-    baseline_error = float(baseline_error)
-    est_error = float(est_error)
-
-    ratio = baseline_error / est_error
-    return ratio
+    return float(baseline_error) / float(est_error)
 
 def assemble_results(input_averages, input_variances, baseline_error, errortype,
                     ntree):
@@ -110,11 +100,8 @@ def assemble_results(input_averages, input_variances, baseline_error, errortype,
         Ratio baseline error to observed error  1.33333
         Number of trees 500
 ''' 
-    # convert shorthand error type to long description
-
-    results = []
-    results.append('Model   Random Forests')
-    results.append('Error type    %s' % errortype)
+    # initiate the results file
+    results = ['Model   Random Forests', 'Error type    %s' % errortype]
 
     # average together the input_averages (regardless of errortype)
     ave_error = float(mean(input_averages))
