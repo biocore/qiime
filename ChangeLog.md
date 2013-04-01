@@ -10,6 +10,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * Fixed a bug in make_3d_plots.py related to biplot calculations. This bug would change the placement of taxonomic groups based on how many taxa were included in the biplot analysis. Examples and additional details can be found here: [#677](https://github.com/qiime/qiime/issues/677).
 * Major refactoring of workflow tests and organization of workflow code. The workflow library code and tests have now been split apart into separate files. This makes it a lot more manageable, which will support a more general refactoring of the workflow code in the future to make it easier to develop new workflows. The workflow tests have also been updated to use the new test data described in [#582](https://github.com/qiime/qiime/issues/582), which is now accessible through ``qiime.test. get_test_data()`` and ``qiime.test.get_test_data_fps()``. This provides improved testing of boundary cases in each workflow, as well as more consistent tests across the workflows.
 * simsam.py now has a -m/--mapping_fp option and writes output to a directory instead of a single file. -n/--num and -d/--dissim now accept a single number or comma-separated list of values.
+* supervised_learning.py can now handle input directorys of otu tables, can write a single collated results file if the input directory is of rarefied otu tables, and the -o output fp option is now a required parameter
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
