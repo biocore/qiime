@@ -35,6 +35,7 @@ from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from cogent.app.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import usearch_qf
+from qiime.pycogent_backports.dnaclust import dnaclust_from_seqs, dnaclust_get_clusters
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -1458,6 +1459,81 @@ class MothurOtuPicker(OtuPicker):
                 break
         return my_otus
 
+class DnaclustOtuPicker(OtuPicker):
+
+    Name = 'DnaclustOtuPicker'
+
+    def __init__(self, params):
+        """Return new DnaclustOtuPicker object with specified params.
+
+        Valid params are:
+
+        similarity
+            Similarity threshold for OTUs (default 0.97)
+        threads
+            Number of threads to use (default 1)
+        left-gaps-allowed
+            Allow left gaps in alignments
+        no-overlap 
+            Clusters centers at twice the radius apart
+        """
+
+        _params = {'similarity': 0.97,
+            'threads': 1,
+            'no-k-mer-filter': True,
+            'left-gaps-allowed': False,
+            'refseqs_fp': None,
+            'no-overlap': False}
+
+        _params.update(params)
+
+        OtuPicker.__init__(self, _params)
+
+    def __call__(self, seq_path, result_path=None, log_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+        """
+
+        results = dnaclust_from_seqs(seq_path,
+            similarity = self.Params['similarity'],
+            no_overlap = self.Params['no-overlap'],
+            threads = self.Params['threads'],
+            left_gaps_allowed = self.Params['left-gaps-allowed'],
+            reference_path =  self.Params['refseqs_fp'],
+            HALT_EXEC = False)
+
+        log_lines = []
+
+        clusters = dnaclust_get_clusters(
+                reference_path = self.Params['refseqs_fp'],
+                results = results)
+
+        if result_path:
+            # If the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster.
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+                 
+            clusters = None
+
+            log_lines.append('Result path: %s' % result_path)
+
+        if log_path:
+            # if the user provided a log file path, log the run.
+            log_file = open(log_path,'w')
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
+
+        return clusters
+
 # Some functions to support merging OTU tables
 # generated one after another. This functionality is currently available
 # via Qiime/scripts/merge_otu_maps.py and will be incorporated into the
@@ -1500,7 +1576,8 @@ otu_picking_method_constructors = {
     'uclust': UclustOtuPicker,
     'uclust_ref':UclustReferenceOtuPicker,
     'usearch': UsearchOtuPicker,
-    'usearch_ref': UsearchReferenceOtuPicker
+    'usearch_ref': UsearchReferenceOtuPicker,
+    'dnaclust': DnaclustOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()

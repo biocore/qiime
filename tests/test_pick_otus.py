@@ -26,7 +26,8 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
-    UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker)
+    UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
+    DnaclustOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -3106,6 +3107,71 @@ class PickOtusStandaloneFunctions(TestCase):
         actual123 = map_otu_map_files(\
          [self.otu_map1_file,self.otu_map2_file,['a\t110 221']])
         self.assertEqual(exp123,actual123)
+
+class DnaclustOtuPickerTests(TestCase):
+    """ Tests of dnaclust OTU picker. """
+
+    def setUp(self):
+        self.temp_dir = load_qiime_config()['temp_dir']
+        self.tmp_seq_filepath1 = get_tmp_filename(
+         prefix='DnaclustOtuPickerTest_',
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1,'w')
+        seq_file.write(dna_seqs_dnaclust)
+        seq_file.close()        
+        
+        self.temp_ref_filepath1 = get_tmp_filename(
+         prefix='DnaclustOtuPickerTest_',
+         suffix='.fasta')
+        ref_file = open(self.temp_ref_filepath1,'w')
+        ref_file.write(dna_seqs_dnaclust_ref)
+        ref_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath1,
+          self.temp_ref_filepath1]
+
+        self._dirs_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+
+    def compareClusters(self, expected, observed):
+        """ Assert the clusters are identical. """
+        self.assertEqual(expected.keys(), observed.keys())
+
+        for key in expected.keys():
+            self.assertEqual(set(observed[key]),
+                    set(expected[key]))
+
+    def test_call_default_params(self):
+        """ DnaclustOtuPicker.__call__ expected clusters with default params. """
+
+        app = DnaclustOtuPicker(params={'similarity': ".97",
+                  'threads': 1,
+                  'no-overlap': False,
+                  'left-gaps-allowed': False,
+                  'refseqs_fp': None})
+
+        otus = app(self.tmp_seq_filepath1)
+
+        self.compareClusters(dna_seqs_dnaclust_97_results, otus)
+
+    def test_call_reference(self):
+        """ DnaclustOtuPicker.__call__ expected clusters with reference sequence. """
+
+        app = DnaclustOtuPicker(params={'similarity': ".95",
+                  'threads': 1,
+                  'no-overlap': False,
+                  'left-gaps-allowed': False,
+                  'refseqs_fp': self.temp_ref_filepath1})
+
+        otus = app(self.tmp_seq_filepath1)
+
+        self.compareClusters(dna_seqs_dnaclust_95_ref_results, otus)
     
 dna_seqs_1 = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
@@ -3367,6 +3433,40 @@ GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAG
 >chimera
 CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
 """
+
+dna_seqs_dnaclust = """>dnaclust_test_seqs_0 some comment0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>dnaclust_test_seqs_1 some comment1
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>dnaclust_test_seqs_2 some comment2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>dnaclust_test_seqs_3 some comment3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>dnaclust_test_seqs_4 some comment4
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>dnaclust_test_seqs_5 some comment4_again
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>dnaclust_test_seqs_6 some comment6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>dnaclust_test_seqs_7 some comment7
+AACCCCCACGGTGGATGCCACACGCCCCATACCAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+"""
+
+dna_seqs_dnaclust_ref = """>dnaclust_test_seqs_6_ref
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCTT
+"""
+
+dna_seqs_dnaclust_97_results = {'dnaclust_0': ['dnaclust_test_seqs_7', 'dnaclust_test_seqs_0', 'dnaclust_test_seqs_1', 'dnaclust_test_seqs_5'],\
+                     'dnaclust_1': ['dnaclust_test_seqs_2'],\
+                     'dnaclust_2': ['dnaclust_test_seqs_3'],\
+                     'dnaclust_3': ['dnaclust_test_seqs_4'],\
+                     'dnaclust_4': ['dnaclust_test_seqs_6']}
+
+dna_seqs_dnaclust_95_ref_results = {'dnaclust_0': ['dnaclust_test_seqs_7', 'dnaclust_test_seqs_0', 'dnaclust_test_seqs_1', 'dnaclust_test_seqs_5'],\
+                     'dnaclust_1': ['dnaclust_test_seqs_2'],\
+                     'dnaclust_2': ['dnaclust_test_seqs_3'],\
+                     'dnaclust_3': ['dnaclust_test_seqs_4'],\
+                     'dnaclust_test_seqs_6_ref': ['dnaclust_test_seqs_6']}
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
