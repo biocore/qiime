@@ -2,7 +2,7 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Dan Knights"]
+__credits__ = ["Dan Knights", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Dan Knights"
@@ -11,7 +11,7 @@ __status__ = "Development"
 
 from os import remove, path, devnull
 from os.path import join, split, splitext, exists
-from numpy import array, set_printoptions, nan
+from numpy import array, set_printoptions, nan, sqrt, mean, square
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from qiime.util import get_qiime_project_dir
@@ -66,7 +66,70 @@ def run_supervised_learning(predictor_fp, response_fp, response_name,
     remove(join(output_dir, splitext(split(predictor_fp)[1])[0] + '.txt'))
 
     return app_result
+
+def pooled_standard_deviation(input_variances):
+    """Returns the average standard deviation for a list of st dev's
+
+    Input is a list of floats (ideally)
+    Output is a single float value
+    """
+    # compute and return pooled standard deviation
+    return sqrt(mean(square([float(i) for i in input_variances])))
+
+def calc_baseline_error_to_observed_error(baseline_error, est_error):
+    '''Calculate (baseline error / observed error) for results file.
+
+        Input two values, return single value float
+    '''
+    return float(baseline_error) / float(est_error)
+
+def assemble_results(input_averages, input_variances, baseline_error, errortype,
+                    ntree):
+    '''The summary format below is done on the R backend, so
+        if a directory of input tables is used, form a results file
+        that matches this format.
+
+        Inputs: list of averages, list of variances, baseline error, and 
+            error type (oob, loo, cv5, cv10), and ntree
+        Output: a list of lines to write out in the format below
+
+        Model    Random Forest
+        Error type  leave-one-out cross validation
+        Estimated error (mean +/- s.d.) 0.33333 +/- 0.50000
+        Baseline error (for random guessing)    0.44444
+        Ratio baseline error to observed error  1.33333
+        Number of trees 500
+''' 
+    # initiate the results file
+    results = ['Model   Random Forests', 'Error type    %s' % errortype]
+
+    # average together the input_averages (regardless of errortype)
+    ave_error = float(mean(input_averages))
+
+    # a stdev is return for errortypes cv5, cv10 so get pooled st dev
+    if errortype in ['cv5', 'cv10']:
+        ave_stdev = pooled_standard_deviation(input_variances)
+        est_error = '%s +/- %s' % (ave_error, ave_stdev)
+        est_error_line = '\t'.join(['Estimated Error (mean +/- s.d)',
+                                est_error])
+        
+    # no stdev is provided for oob or loo, so only return est error
+    elif errortype in ['oob', 'loo']:
+        est_error_line = '\t'.join(['Estimated Error (mean)', str(ave_error)])
+
+    # write Baseline Error line    
+    results.append(est_error_line)
+    results.append('\t'.join(['Baseline Error (for random guessing', 
+                            str(baseline_error)]))
     
+    # write Ratio error line
+    ratio = calc_baseline_error_to_observed_error(baseline_error, ave_error)
+    results.append('\t'.join(['Ratio baseline error to observed error', str(ratio)]))
+
+    # write Number of Trees line
+    results.append('\t'.join(['Number of trees', str(ntree)]))
+
+    return results   
     
 class RSupervisedLearner(CommandLineApplication):
     """ ApplicationController for detrending ordination coordinates
