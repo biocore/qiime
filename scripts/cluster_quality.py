@@ -55,7 +55,8 @@ make_option('-s', '--short',action="store_true",
             'the ratio of mean dissimilarities between/within clusters'+\
             ' instead of more detailed output'),
 
-make_option('--metric', default='ratio',
+make_option('--metric', default='ratio', type='choice',
+     choices=['ratio'],
      help='choice of quality metric to apply. Currently only one option '+\
      'exists, the ratio of mean(distances between samples from different '+\
      'clusters) to mean(distances between samples from the same cluster) '+\
