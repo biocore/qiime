@@ -2,7 +2,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -156,7 +156,7 @@ class BetaDiversityCalcTests(TestCase):
 
         for metric in metrics:
             # do it
-            single_file_beta(input_path, metric, tree_path, output_dir,
+            single_file_beta(input_path, [metric], tree_path, output_dir,
                 rowids=None)
             sams, dmtx = parse_distmat(open(output_dir + '/' +\
                 metric + '_' + in_fname))
@@ -167,7 +167,7 @@ class BetaDiversityCalcTests(TestCase):
                 rows = sams[i]
                 row_outname = output_dir + '/' + metric + '_' +\
                     in_fname
-                single_file_beta(input_path, metric, tree_path, output_dir,
+                single_file_beta(input_path, [metric], tree_path, output_dir,
                     rowids=rows)
                 col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
 
@@ -191,7 +191,7 @@ class BetaDiversityCalcTests(TestCase):
                 
                 row_outname = output_dir + '/ft/' + metric + '_' +\
                     in_fname
-                single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
+                single_file_beta(input_path, [metric], tree_path, output_dir+'/ft/',
                     rowids=rows,full_tree=True)
                 col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
 
@@ -206,7 +206,7 @@ class BetaDiversityCalcTests(TestCase):
                         self.assertFloatEqual(row_v1, full_v1)
 
             # # do it with full tree
-            single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
+            single_file_beta(input_path, [metric], tree_path, output_dir+'/ft/',
                 rowids=None,full_tree=True)
             sams_ft, dmtx_ft = parse_distmat(open(output_dir + '/ft/' +\
                 metric + '_' + in_fname))
