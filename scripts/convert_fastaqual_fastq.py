@@ -2,7 +2,8 @@
 
 __author__ = "Adam Robbins-Pianka, Abhisaar Yadav"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav"]
+__credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav",
+                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Adam Robbins-Pianka"
@@ -59,13 +60,13 @@ script_info['optional_options'] = [
                 'exist. [default: %default]', default="."),
                 
             make_option('-c', '--conversion_type',
-                type = str,
+                type = 'choice', choices=['fastaqual_to_fastq', 'fastq_to_fastaqual'],
                 help = 'type of conversion: fastaqual_to_fastq or '+\
                 'fastq_to_fastaqual [default: %default]', default = \
                 "fastaqual_to_fastq"),
 
             make_option('-a', '--ascii_increment',
-                type = int,
+                type = 'int',
                 help = 'The number to add (subtract if coverting from FASTQ) '+\
                 'to the quality score to get the ASCII character (or numeric '+\
                 'quality score). [default: %default]', default = 33),

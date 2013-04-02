@@ -20,9 +20,10 @@ from qiime.util import (load_qiime_config,
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.util import (print_commands,
                             call_commands_serially, 
-                            print_to_stdout, 
+                            print_to_stdout,
                             no_status_updates,
-                            validate_and_set_jobs_to_start)
+                            validate_and_set_jobs_to_start,
+                            print_commands)
 from qiime.workflow.core_diversity_analyses import run_core_diversity_analyses
 
 qiime_config = load_qiime_config()
@@ -72,6 +73,14 @@ script_info['optional_options'] = [\
           ' is useful if, for example, you are working with non-amplicon BIOM'
           ' tables, or if a reliable tree is not available (e.g., if you\'re '
           ' working with ITS amplicons) [default: %default]')),
+ make_option('--suppress_taxa_summary',action='store_true',default=False,
+    help=('Suppress generation of taxa summary plots. [default: %default]')),
+ make_option('--suppress_beta_diversity',action='store_true',default=False,
+    help=('Suppress beta diversity analyses. [default: %default]')),
+ make_option('--suppress_alpha_diversity',action='store_true',default=False,
+    help=('Suppress alpha diversity analyses. [default: %default]')),
+ make_option('--suppress_otu_category_significance',action='store_true',default=False,
+    help=('Suppress OTU/category significance analysis. [default: %default]')),
  make_option('-t','--tree_fp',type='existing_filepath',
     help=('Path to the tree file if one should be used.'
           ' [default: no tree will be used]')),
@@ -81,6 +90,10 @@ script_info['optional_options'] = [\
           ' for categorical analyses. These should be passed '
           ' as a comma-separated list.'
           ' [default: %default; do not perform categorical analyses]')),
+ make_option('-w','--print_only',action='store_true',\
+        dest='print_only',help='Print the commands but don\'t call them -- '+\
+        'useful for debugging or recovering from failed runs. [default: %default]',
+        default=False),\
  options_lookup['jobs_to_start_workflow']
 ]
 script_info['version'] = __version__
@@ -101,6 +114,11 @@ def main():
     parallel = opts.parallel
     sampling_depth = opts.sampling_depth
     nonphylogenetic_diversity = opts.nonphylogenetic_diversity
+    print_only = opts.print_only
+    suppress_taxa_summary = opts.suppress_taxa_summary
+    suppress_beta_diversity = opts.suppress_beta_diversity
+    suppress_alpha_diversity = opts.suppress_alpha_diversity
+    suppress_otu_category_significance = opts.suppress_otu_category_significance
     
     if opts.parameter_fp != None:
         params = parse_qiime_parameters(open(opts.parameter_fp,'U'))
@@ -125,7 +143,10 @@ def main():
     
     create_dir(output_dir,fail_on_exist=True)
     
-    command_handler = call_commands_serially
+    if print_only:
+        command_handler = print_commands
+    else:
+        command_handler = call_commands_serially
     
     if verbose:
         status_update_callback = print_to_stdout
@@ -145,6 +166,10 @@ def main():
         arare_min_rare_depth=10,
         arare_num_steps=10,
         parallel=parallel,
+        suppress_taxa_summary=suppress_taxa_summary,
+        suppress_beta_diversity=suppress_beta_diversity,
+        suppress_alpha_diversity=suppress_alpha_diversity,
+        suppress_otu_category_significance=suppress_otu_category_significance,
         status_update_callback=status_update_callback)
 
 if __name__ == "__main__":

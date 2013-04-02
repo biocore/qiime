@@ -27,6 +27,7 @@ def run_pick_otus_through_otu_table(input_fp,
                                qiime_config,
                                parallel=False,
                                logger=None,
+                               suppress_md5=False,
                                status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -58,7 +59,8 @@ def run_pick_otus_through_otu_table(input_fp,
     else:
         close_logger_on_success = False
     
-    log_input_md5s(logger,[input_fp])
+    if not suppress_md5:
+        log_input_md5s(logger,[input_fp])
     
     # Prep the OTU picking command
     try:
@@ -320,6 +322,7 @@ def run_pick_reference_otus_through_otu_table(
                               qiime_config,
                               parallel=False,
                               logger=None,
+                              suppress_md5=False,
                               status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -356,7 +359,8 @@ def run_pick_reference_otus_through_otu_table(
     else:
         close_logger_on_success = False
 
-    log_input_md5s(logger,[input_fp,refseqs_fp,taxonomy_fp])
+    if not suppress_md5:
+        log_input_md5s(logger,[input_fp,refseqs_fp,taxonomy_fp])
 
     # Prep the OTU picking command
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)

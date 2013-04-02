@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder","Greg Caporaso"]
+__credits__ = ["Jens Reeder","Greg Caporaso","Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -72,7 +72,7 @@ script_info['optional_options'] = [\
                     '[default: %default]'),
 
     make_option('-m','--map_fname', action='store',
-                type='string', dest='map_fname',
+                type='existing_filepath', dest='map_fname',
                 help='name of mapping file, Has to contain '+\
                     'field LinkerPrimerSequence. '+\
                     '[REQUIRED unless --primer specified]'),

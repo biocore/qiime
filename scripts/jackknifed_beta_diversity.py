@@ -106,12 +106,13 @@ def main():
     
     if opts.parameter_fp:
         try:
-            parameter_f = open(opts.parameter_fp)
+            parameter_f = open(opts.parameter_fp, 'U')
         except IOError:
             raise IOError,\
              "Can't open parameters file (%s). Does it exist? Do you have read access?"\
              % opts.parameter_fp
         params = parse_qiime_parameters(parameter_f)
+        parameter_f.close()
     else:
         params = parse_qiime_parameters([]) 
         # empty list returns empty defaultdict for now

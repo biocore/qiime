@@ -60,21 +60,6 @@ class Test_make_cluster_jobs(TestCase):
                                       "test_qsub", "oe",
                                       self.command))
 
-    def test_submit_jobs(self):
-        """submit jobs via qsub works"""
-        
-        filenames = make_jobs([self.command], "test_qsub", self.queue) 
-        submit_jobs(filenames)
-        
-        for i in range(10):
-            if exists(self.tmp_result_file):
-                return
-            else:
-                #wait for job to finish
-                sleep(10)
-        self.fail("The test job apparently never finished.\n"
-                  +"check the jobs error log and check the queue status\n.")
-              
 
 if __name__ == "__main__":
     main()

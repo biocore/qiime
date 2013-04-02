@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#file test_make_otu_heatmap_html.py
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
@@ -16,9 +15,10 @@ import shutil
 from shutil import rmtree
 from os.path import join
 from cogent.util.unit_test import TestCase, main
-from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
-                                       filter_by_otu_hits,line_converter,\
-                                       get_log_transform,generate_heatmap_plots)
+from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,
+                                         filter_by_otu_hits,
+                                         get_log_transform,
+                                         generate_heatmap_plots)
 from qiime.util import create_dir,get_qiime_project_dir
 from biom.table import table_factory
 
@@ -27,19 +27,9 @@ class TopLevelTests(TestCase):
 
     def setUp(self):
         """define some top-level data"""
-
-        #self.col_header=['Sample1', 'Sample2']
-        #self.row_header=['OTU1','OTU2']
-        #self.otu_table=array([[0,0],[1,5]])
-        #self.lineages=[['Bacteria'],['Archaea']]
-
-        #self.data={}
-        #self.data['otu_counts']=self.col_header,self.row_header,self.otu_table,\
-        #                        self.lineages
         self.output_dir='/tmp/'
         
         otu_table_vals = array([[0,0],[1,5]])
-        #{(0,0):0.0,(1,0):1.0, (1,1):5.0}
 
         self.otu_table = table_factory(otu_table_vals,
                                         ['Sample1', 'Sample2'],
@@ -49,8 +39,7 @@ class TopLevelTests(TestCase):
                                          {"taxonomy": ["Archaea"]}])
 
         filt_otu_table_vals = array([[1,5]])
-        #{(0,0):1.0, (0,1):5.0}
-        
+
         self.filt_otu_table = table_factory(filt_otu_table_vals,
                                              ['Sample1', 'Sample2'],
                                              ['OTU2'],
@@ -73,10 +62,6 @@ class TopLevelTests(TestCase):
     def test_create_javascript_array(self):
         """create_javascript_array: takes a numpy array and generates a
 javascript array"""
-        #self.rows=[['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
-        #           ['Consensus Lineage','Archaea']]
-        
-        #obs=create_javascript_array(self.rows)
         obs = create_javascript_array(self.filt_otu_table)
 
         self.assertEqual(obs,exp_js_array)        
@@ -86,28 +71,13 @@ javascript array"""
         exp = array([['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
                          ['Consensus Lineage','Archaea;']])
         
-        #obs = filter_by_otu_hits(self.num_otu_hits,self.data)
         obs = filter_by_otu_hits(self.num_otu_hits, self.otu_table)
-
-        #self.assertEqual(obs,exp)
-        #self.assertEqual( obs == self.filt_otu_table, True)
 
         # see note in test_get_log_transform about this assert
         self.assertEqual(obs._data.items(), self.filt_otu_table._data.items())
     
     def test_get_log_transform(self):
-        #data = array([[0,1,2],[1000,0,0]])
-        #logdata = get_log_transform(data,eps=None)
-
-        # set zeros to 1/2s
-        #exp = log(array([[.5,1,2],[1000,.5,.5]]))
-        # translate to 0
-        #exp -= exp.min()
-
-        #self.assertFloatEqual(logdata, exp)
-
         orig_data = array([[0,1,2],[1000,0,0]])
-        #{(0,1):1.0, (0,2):2,(1,0):1000.0}
 
         orig_otu_table = table_factory(orig_data,
                                         ['Sample1', 'Sample2', 'Sample3'],
@@ -117,7 +87,6 @@ javascript array"""
                                          {"taxonomy": ["Archaea"]}])
 
         exp_data = array([[0,0.69314718,1.38629436],[7.60090246,0,0]])
-        #{(0,1):0.69314718, (0,2):1.38629436,(1,0):7.60090246}
         exp_otu_table = table_factory(exp_data,
                                        ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
@@ -179,10 +148,10 @@ javascript array"""
                          exp_js_output_file)
         
 exp_js_array='''\
-    var OTU_table=new Array();\n\
-    var i=0;\n\
-    for (i==0;i<4;i++) {\n\
-    OTU_table[i]=new Array();}\n\
+var OTU_table=new Array();\n\
+var i=0;\n\
+for (i==0;i<4;i++) {\n\
+OTU_table[i]=new Array();}\n\
 OTU_table[0][0]='#OTU ID';\n\
 OTU_table[0][1]='OTU2';\n\
 OTU_table[1][0]='Sample1';\n\
@@ -194,10 +163,11 @@ OTU_table[3][1]='Archaea';\n\
 '''
 
 exp_js_output_file="""\
-var otu_num_cutoff=3;    var OTU_table=new Array();
-    var i=0;
-    for (i==0;i<5;i++) {
-    OTU_table[i]=new Array();}
+var otu_num_cutoff=3;
+var OTU_table=new Array();
+var i=0;
+for (i==0;i<5;i++) {
+OTU_table[i]=new Array();}
 OTU_table[0][0]='#OTU ID';
 OTU_table[0][1]='OTU2';
 OTU_table[0][2]='OTU1';
