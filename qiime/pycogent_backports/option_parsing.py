@@ -69,8 +69,8 @@ def check_new_path(option, opt, value):
     return value
 
 def check_multiple_choice(option, opt, value):
-    split_char = ';' if ';' in value else ','
-    values = value.split(split_char)
+    #split_char = ';' if ';' in value else ','
+    values = value.split(option.split_char)
     for v in values:
         if v not in option.mchoices:
             choices = ",".join(map(repr, option.mchoices))
@@ -80,7 +80,7 @@ def check_multiple_choice(option, opt, value):
     return values
 
 class CogentOption(Option):
-    ATTRS = Option.ATTRS + ['mchoices']
+    ATTRS = Option.ATTRS + ['mchoices','split_char']
 
     TYPES = Option.TYPES + ("existing_path",
                             "new_path",
@@ -125,6 +125,9 @@ class CogentOption(Option):
                 raise OptionError(
                     "choices must be a list of strings ('%s' supplied)"
                     % str(type(self.mchoices)).split("'")[1], self)
+            if self.split_char is None:
+                raise OptionError(
+                    "must supply the split_char for type '%s'" % self.type, self)
         elif self.mchoices is not None:
             raise OptionError(
                 "must not supply mchoices for type %r" % self.type, self)
