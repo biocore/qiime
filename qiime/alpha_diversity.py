@@ -354,7 +354,7 @@ def multiple_file_alpha(input_path, output_path, metrics_list, tree_path=None):
             tree_path)
 
 
-def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
+def single_file_cup(otu_filepath, metrics_list, outfilepath, r, alpha, f, ci_type):
     """Compute variations of the conditional uncovered probability.
 
     otufilepath: path to otu_table file
@@ -372,7 +372,6 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
 
     The opposite of uncovered probability is sometimes called coverage.
     """
-    metrics_list = metrics.split(',')
     calcs = []
 
     params = {'r': r,
