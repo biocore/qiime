@@ -3,7 +3,7 @@
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
-    "William Van Treuren"]
+    "William Van Treuren", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -283,8 +283,7 @@ alph.lladser_pe,
 alph.lladser_ci]
 #starr, not yet needs tests]
 
-def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
-    metrics_list = metrics.split(',')
+def single_file_alpha(infilepath, metrics_list, outfilepath, tree_path):
     calcs = []
     for metric in metrics_list:
         try:
@@ -314,7 +313,7 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
         stderr.write(str(e)+'\n')
         exit(1)
 
-def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
+def multiple_file_alpha(input_path, output_path, metrics_list, tree_path=None):
     """ performs minimal error checking on input args, then calls os.system
     to execute single_file_alpha for each file in the input directory
 
@@ -328,7 +327,6 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    metrics_list = metrics.split(',')
     for metric in metrics_list:
         try:
             metric_f = get_nonphylogenetic_metric(metric)
@@ -352,7 +350,7 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
         # future: try to make sure fname is a valid otu file
 
         single_file_alpha(os.path.join(input_path, fname), 
-            metrics, os.path.join(output_path,'alpha_'+fname),
+            metrics_list, os.path.join(output_path,'alpha_'+fname),
             tree_path)
 
 
