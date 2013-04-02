@@ -76,7 +76,7 @@ def check_multiple_choice(option, opt, value):
             choices = ",".join(map(repr, option.mchoices))
             raise OptionValueError(
                 "option %s: invalid choice: %r (choose from %s)"
-                % (opt, value, choices))
+                % (opt, v, choices))
     return values
 
 class CogentOption(Option):
