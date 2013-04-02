@@ -126,8 +126,7 @@ class CogentOption(Option):
                     "choices must be a list of strings ('%s' supplied)"
                     % str(type(self.mchoices)).split("'")[1], self)
             if self.split_char is None:
-                raise OptionError(
-                    "must supply the split_char for type '%s'" % self.type, self)
+                self.split_char = ','
         elif self.mchoices is not None:
             raise OptionError(
                 "must not supply mchoices for type %r" % self.type, self)
