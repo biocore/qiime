@@ -1,0 +1,10 @@
+#SampleID	BarcodeSequence	LinkerPrimerSequence	SampleType	year	month	day	subject	days_since_epoch	Description
+f1	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	feces	2008	10	22	1	14174	fecal1
+f2	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	14175	fecal2
+f3	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	14175	identical sequences to fecal2
+f4	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	14175	all sequences identical, map to GG 295053 at 97 percent id
+p1	AACGCACGCTAG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	21	1	14173	palm1, contains one randomly generated sequence
+p2	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	22	1	14174	palm2
+t1	AGTGAGAGAAGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	21	1	14173	tongue1, contains one randomly generated sequence
+t2	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	22	1	14174	tongue2
+not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	14174	randomly generated sequence plus some variants, these should not map to 16S

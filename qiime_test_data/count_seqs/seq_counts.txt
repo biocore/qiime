@@ -1,0 +1,4 @@
+
+3  : in1.fasta (Sequence lengths (mean +/- std): 256.6667 +/- 13.8884)
+6  : in2.fasta (Sequence lengths (mean +/- std): 260.5000 +/- 12.2440)
+9  : Total

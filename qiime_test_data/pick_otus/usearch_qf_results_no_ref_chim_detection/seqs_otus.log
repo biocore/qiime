@@ -1,0 +1,31 @@
+UsearchOtuPicker parameters:
+Application:usearch
+abundance_skew:2.0
+chimeras_retention:union
+cluster_size_filtering:True
+count_start:0
+db_filepath:None
+de_novo_chimera_detection:True
+derep_fullseq:False
+global_alignment:True
+label_prefix:
+label_suffix:
+maxrejects:500
+minlen:64
+minsize:2
+output_dir:usearch_qf_results_no_ref_chim_detection/
+perc_id_blast:0.97
+percent_id:0.97
+percent_id_err:0.97
+reference_chimera_detection:False
+remove_usearch_logs:False
+retain_label_as_comment:False
+rev:True
+save_intermediate_files:True
+sizein:True
+sizeout:True
+slots:16769023
+verbose:False
+w:64
+Num OTUs:25
+Num failures:73
