@@ -1,0 +1,1 @@
+  python /Users/caporaso/code/Qiime/scripts/poller.py -f /Users/caporaso/code/qiime_test_data/parallel_blast/blast_out//BLAST_fCy_/expected_out_files.txt -m /Users/caporaso/code/qiime_test_data/parallel_blast/blast_out//BLAST_fCy_/merge_map.txt -d /Users/caporaso/code/qiime_test_data/parallel_blast/blast_out//BLAST_fCy_/deletion_list.txt -t 1 

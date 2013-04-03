@@ -1,0 +1,110 @@
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_0.biom arare_max100//alpha_div//alpha_rarefaction_100_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_1.biom arare_max100//alpha_div//alpha_rarefaction_100_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_2.biom arare_max100//alpha_div//alpha_rarefaction_100_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_3.biom arare_max100//alpha_div//alpha_rarefaction_100_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_4.biom arare_max100//alpha_div//alpha_rarefaction_100_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_5.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_5.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_5.biom arare_max100//alpha_div//alpha_rarefaction_100_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_6.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_6.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_6.biom arare_max100//alpha_div//alpha_rarefaction_100_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_7.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_7.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_7.biom arare_max100//alpha_div//alpha_rarefaction_100_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_8.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_8.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_8.biom arare_max100//alpha_div//alpha_rarefaction_100_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_100_9.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_9.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_100_9.biom arare_max100//alpha_div//alpha_rarefaction_100_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_0.biom arare_max100//alpha_div//alpha_rarefaction_10_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_1.biom arare_max100//alpha_div//alpha_rarefaction_10_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_2.biom arare_max100//alpha_div//alpha_rarefaction_10_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_3.biom arare_max100//alpha_div//alpha_rarefaction_10_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_4.biom arare_max100//alpha_div//alpha_rarefaction_10_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_5.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_5.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_5.biom arare_max100//alpha_div//alpha_rarefaction_10_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_6.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_6.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_6.biom arare_max100//alpha_div//alpha_rarefaction_10_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_7.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_7.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_7.biom arare_max100//alpha_div//alpha_rarefaction_10_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_8.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_8.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_8.biom arare_max100//alpha_div//alpha_rarefaction_10_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_10_9.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_9.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_10_9.biom arare_max100//alpha_div//alpha_rarefaction_10_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_0.biom arare_max100//alpha_div//alpha_rarefaction_19_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_1.biom arare_max100//alpha_div//alpha_rarefaction_19_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_2.biom arare_max100//alpha_div//alpha_rarefaction_19_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_3.biom arare_max100//alpha_div//alpha_rarefaction_19_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_4.biom arare_max100//alpha_div//alpha_rarefaction_19_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_5.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_5.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_5.biom arare_max100//alpha_div//alpha_rarefaction_19_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_6.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_6.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_6.biom arare_max100//alpha_div//alpha_rarefaction_19_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_7.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_7.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_7.biom arare_max100//alpha_div//alpha_rarefaction_19_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_8.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_8.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_8.biom arare_max100//alpha_div//alpha_rarefaction_19_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_19_9.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_9.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_19_9.biom arare_max100//alpha_div//alpha_rarefaction_19_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_0.biom arare_max100//alpha_div//alpha_rarefaction_28_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_1.biom arare_max100//alpha_div//alpha_rarefaction_28_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_2.biom arare_max100//alpha_div//alpha_rarefaction_28_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_3.biom arare_max100//alpha_div//alpha_rarefaction_28_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_4.biom arare_max100//alpha_div//alpha_rarefaction_28_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_5.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_5.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_5.biom arare_max100//alpha_div//alpha_rarefaction_28_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_6.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_6.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_6.biom arare_max100//alpha_div//alpha_rarefaction_28_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_7.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_7.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_7.biom arare_max100//alpha_div//alpha_rarefaction_28_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_8.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_8.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_8.biom arare_max100//alpha_div//alpha_rarefaction_28_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_28_9.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_9.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_28_9.biom arare_max100//alpha_div//alpha_rarefaction_28_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_0.biom arare_max100//alpha_div//alpha_rarefaction_37_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_1.biom arare_max100//alpha_div//alpha_rarefaction_37_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_2.biom arare_max100//alpha_div//alpha_rarefaction_37_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_3.biom arare_max100//alpha_div//alpha_rarefaction_37_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_4.biom arare_max100//alpha_div//alpha_rarefaction_37_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_5.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_5.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_5.biom arare_max100//alpha_div//alpha_rarefaction_37_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_6.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_6.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_6.biom arare_max100//alpha_div//alpha_rarefaction_37_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_7.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_7.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_7.biom arare_max100//alpha_div//alpha_rarefaction_37_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_8.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_8.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_8.biom arare_max100//alpha_div//alpha_rarefaction_37_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_37_9.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_9.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_37_9.biom arare_max100//alpha_div//alpha_rarefaction_37_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_46_0.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_0.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_0.biom arare_max100//alpha_div//alpha_rarefaction_46_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_46_1.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_1.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_1.biom arare_max100//alpha_div//alpha_rarefaction_46_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_46_2.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_2.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_2.biom arare_max100//alpha_div//alpha_rarefaction_46_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_46_3.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_3.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_3.biom arare_max100//alpha_div//alpha_rarefaction_46_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/alpha_diversity.py -i arare_max100//rarefaction/rarefaction_46_4.biom -o arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_4.biom -t rep_set.tre -m PD_whole_tree,chao1,observed_species 
+ mv arare_max100//alpha_div//ALDIV_IB0_/alpha_rarefaction_46_4.biom arare_max100//alpha_div//alpha_rarefaction_46_4.biom   
