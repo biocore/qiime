@@ -78,6 +78,8 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     params = eval(str(opts))
+
+    params['metrics'] = ','.join(opts.metrics)
     
     parallel_runner = ParallelAlphaDiversity(
                         cluster_jobs_fp=opts.cluster_jobs_fp,
