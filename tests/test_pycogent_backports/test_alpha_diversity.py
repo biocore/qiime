@@ -27,7 +27,8 @@ import qiime.pycogent_backports.alpha_diversity as alph
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
-__credits__ = ["Rob Knight","Justin Kuczynski, William Van Treuren"]
+__credits__ = ["Rob Knight","Justin Kuczynski, William Van Treuren",
+                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -347,7 +348,7 @@ class diversity_tests(TestCase):
         self.files_to_remove.append(self.tmp_outfile)
 
         # Not much testing here, just make sure we get back a (formatted) matrix with the right dimensions
-        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci', self.tmp_outfile,
+        single_file_cup(self.tmp_file, ['lladser_pe','lladser_ci'], self.tmp_outfile,
                         r=4, alpha=0.95, f=10, ci_type="ULCL")
         observed = open(self.tmp_outfile,"U").readlines()
         self.assertEqual(len(observed), 3)
@@ -364,7 +365,7 @@ class diversity_tests(TestCase):
         fh.write(bt_string)
         fh.close()
 
-        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci', self.tmp_outfile,
+        single_file_cup(self.tmp_file, ['lladser_pe','lladser_ci'], self.tmp_outfile,
                         r=4, alpha=0.95, f=10, ci_type="ULCL")
         observed = open(self.tmp_outfile,"U").readlines()
         expected=["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
