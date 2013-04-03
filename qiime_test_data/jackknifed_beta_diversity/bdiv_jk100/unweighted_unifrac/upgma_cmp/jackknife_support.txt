@@ -1,0 +1,10 @@
+#total support trees considered: 11
+#node support is fractional - in range [0,1]
+node1	0.636363636364
+node0	1.0
+node3	0.727272727273
+node2	1.0
+node5	0.727272727273
+node4	0.818181818182
+node7	0.636363636364
+node6	0.727272727273

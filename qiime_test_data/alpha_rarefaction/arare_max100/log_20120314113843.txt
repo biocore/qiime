@@ -1,0 +1,61 @@
+Logging started at 11:38:43 on 14 Mar 2012
+QIIME version: 1.4.0-dev, svn revision 2809
+
+qiime_config values:
+blastmat_dir	/Applications/blast-2.2.22/data/
+topiaryexplorer_project_dir	/Users/caporaso/code/TopiaryExplorer-0.9.1/
+pynast_template_alignment_fp	/Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
+cluster_jobs_fp	/Users/caporaso/code/Qiime/scripts/start_parallel_jobs.py
+assign_taxonomy_reference_seqs_fp	/Users/caporaso/data/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+torque_queue	friendlyq
+template_alignment_lanemask_fp	/Users/caporaso/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
+jobs_to_start	2
+cloud_environment	False
+qiime_scripts_dir	/Users/caporaso/code/Qiime/scripts
+denoiser_min_per_core	50
+python_exe_fp	python
+temp_dir	/Users/caporaso/temp
+blastall_fp	blastall
+seconds_to_sleep	6
+assign_taxonomy_id_to_taxonomy_fp	/Users/caporaso/data/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
+
+parameter file values:
+parallel:jobs_to_start	2
+
+Input file md5 sums:
+otu_table.biom: dda91090fbdc0f69056852247bcd924f
+Fasting_Map.txt: e16159d7122035797076d66b1a287962
+rep_set.tre: fdd11da9dcf4b2d55187c6021bd0d181
+
+Executing commands.
+
+# Alpha rarefaction command 
+python /Users/caporaso/code/Qiime/scripts/parallel_multiple_rarefactions.py -T -i otu_table.biom -m 10 -x 100 -s 9 -o arare_max100//rarefaction/  --jobs_to_start 2
+
+Stdout:
+
+Stderr:
+
+# Alpha diversity on rarefied OTU tables command 
+python /Users/caporaso/code/Qiime/scripts/parallel_alpha_diversity.py -T -i arare_max100//rarefaction/ -o arare_max100//alpha_div/  -t rep_set.tre --jobs_to_start 2
+
+Stdout:
+
+Stderr:
+
+# Collate alpha command 
+python /Users/caporaso/code/Qiime/scripts/collate_alpha.py -i arare_max100//alpha_div/ -o arare_max100//alpha_div_collated/ 
+
+Stdout:
+
+Stderr:
+
+# Rarefaction plot: All metrics command 
+python /Users/caporaso/code/Qiime/scripts/make_rarefaction_plots.py -i arare_max100//alpha_div_collated/ -m Fasting_Map.txt -o arare_max100//alpha_rarefaction_plots/ 
+
+Stdout:
+
+Stderr:
+
+
+Logging stopped at 11:39:54 on 14 Mar 2012

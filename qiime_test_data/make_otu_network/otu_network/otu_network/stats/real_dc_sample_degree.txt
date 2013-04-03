@@ -1,0 +1,10 @@
+# Just Sample degree counts
+Degree	Sample Count
+48	1
+62	1
+63	1
+64	2
+78	1
+81	1
+83	1
+91	1

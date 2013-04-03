@@ -1,0 +1,6 @@
+# Number of entries refers to the number of rows (or cols) retained in each
+# distance matrix after filtering the distance matrices to include only those
+# samples that were in both distance matrices. p-value contains the correct
+# number of significant digits.
+DM1	DM2	CDM	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
+weighted_unifrac_dm.txt	unweighted_unifrac_dm.txt	PH_dm.txt	9	1.00000	0.01	99	greater
