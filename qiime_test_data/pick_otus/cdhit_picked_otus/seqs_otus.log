@@ -1,0 +1,7 @@
+CdHitOtuPicker parameters:
+-M:400
+Algorithm:cdhit: "longest-sequence-first list removal algorithm"
+Application:cdhit
+Similarity:0.97
+No prefix-based prefiltering.
+Result path: cdhit_picked_otus//seqs_otus.txt

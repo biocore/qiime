@@ -1,0 +1,110 @@
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_0.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_0.biom arare_max100//rarefaction//rarefaction_10_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_1.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_1.biom arare_max100//rarefaction//rarefaction_10_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_2.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_2.biom arare_max100//rarefaction//rarefaction_10_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_3.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_3.biom arare_max100//rarefaction//rarefaction_10_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_4.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_4.biom arare_max100//rarefaction//rarefaction_10_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_5.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_5.biom arare_max100//rarefaction//rarefaction_10_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_6.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_6.biom arare_max100//rarefaction//rarefaction_10_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_7.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_7.biom arare_max100//rarefaction//rarefaction_10_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_8.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_8.biom arare_max100//rarefaction//rarefaction_10_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_9.biom  -d 10 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_10_9.biom arare_max100//rarefaction//rarefaction_10_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_0.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_0.biom arare_max100//rarefaction//rarefaction_19_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_1.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_1.biom arare_max100//rarefaction//rarefaction_19_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_2.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_2.biom arare_max100//rarefaction//rarefaction_19_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_3.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_3.biom arare_max100//rarefaction//rarefaction_19_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_4.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_4.biom arare_max100//rarefaction//rarefaction_19_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_5.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_5.biom arare_max100//rarefaction//rarefaction_19_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_6.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_6.biom arare_max100//rarefaction//rarefaction_19_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_7.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_7.biom arare_max100//rarefaction//rarefaction_19_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_8.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_8.biom arare_max100//rarefaction//rarefaction_19_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_9.biom  -d 19 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_19_9.biom arare_max100//rarefaction//rarefaction_19_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_0.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_0.biom arare_max100//rarefaction//rarefaction_28_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_1.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_1.biom arare_max100//rarefaction//rarefaction_28_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_2.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_2.biom arare_max100//rarefaction//rarefaction_28_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_3.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_3.biom arare_max100//rarefaction//rarefaction_28_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_4.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_4.biom arare_max100//rarefaction//rarefaction_28_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_5.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_5.biom arare_max100//rarefaction//rarefaction_28_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_6.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_6.biom arare_max100//rarefaction//rarefaction_28_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_7.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_7.biom arare_max100//rarefaction//rarefaction_28_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_8.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_8.biom arare_max100//rarefaction//rarefaction_28_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_9.biom  -d 28 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_28_9.biom arare_max100//rarefaction//rarefaction_28_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_0.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_0.biom arare_max100//rarefaction//rarefaction_37_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_1.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_1.biom arare_max100//rarefaction//rarefaction_37_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_2.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_2.biom arare_max100//rarefaction//rarefaction_37_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_3.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_3.biom arare_max100//rarefaction//rarefaction_37_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_4.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_4.biom arare_max100//rarefaction//rarefaction_37_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_5.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_5.biom arare_max100//rarefaction//rarefaction_37_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_6.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_6.biom arare_max100//rarefaction//rarefaction_37_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_7.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_7.biom arare_max100//rarefaction//rarefaction_37_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_8.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_8.biom arare_max100//rarefaction//rarefaction_37_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_9.biom  -d 37 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_37_9.biom arare_max100//rarefaction//rarefaction_37_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_0.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_0.biom arare_max100//rarefaction//rarefaction_46_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_1.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_1.biom arare_max100//rarefaction//rarefaction_46_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_2.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_2.biom arare_max100//rarefaction//rarefaction_46_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_3.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_3.biom arare_max100//rarefaction//rarefaction_46_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_4.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_4.biom arare_max100//rarefaction//rarefaction_46_4.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_5.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_5.biom arare_max100//rarefaction//rarefaction_46_5.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_6.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_6.biom arare_max100//rarefaction//rarefaction_46_6.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_7.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_7.biom arare_max100//rarefaction//rarefaction_46_7.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_8.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_8.biom arare_max100//rarefaction//rarefaction_46_8.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_9.biom  -d 46 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_46_9.biom arare_max100//rarefaction//rarefaction_46_9.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_0.biom  -d 55 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_0.biom arare_max100//rarefaction//rarefaction_55_0.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_1.biom  -d 55 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_1.biom arare_max100//rarefaction//rarefaction_55_1.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_2.biom  -d 55 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_2.biom arare_max100//rarefaction//rarefaction_55_2.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_3.biom  -d 55 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_3.biom arare_max100//rarefaction//rarefaction_55_3.biom   
+   python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_4.biom  -d 55 
+ mv arare_max100//rarefaction//RARIF_7gv_/rarefaction_55_4.biom arare_max100//rarefaction//rarefaction_55_4.biom   

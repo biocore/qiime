@@ -1,0 +1,10 @@
+11458037	No blast hit	None	None
+11469739	No blast hit	None	None
+11472384	No blast hit	None	None
+11468680	No blast hit	None	None
+11472286	Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.	3e-17	EU883771
+11480235	No blast hit	None	None
+11469752	Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.	2e-15	EU883771
+11460543	No blast hit	None	None
+11460523	No blast hit	None	None
+11480408	No blast hit	None	None
