@@ -306,17 +306,8 @@ def main():
                             sample_color_prefs_and_map_data_from_options(opts)
     
     
-    scaling_methods=opts.scaling_method
-    plot_scaled=False
-    plot_unscaled=False
-    for i in scaling_methods:
-        if i.lower() == 'scaled':
-            plot_scaled=True
-        elif i.lower() == 'unscaled':
-            plot_unscaled=True
-            
-    if not (plot_scaled or plot_unscaled):
-        raise ValueError, 'You must choose a valid scaling method (scaled or unscaled)'
+    plot_scaled= 'scaled' in opts.scaling_method
+    plot_unscaled= 'unscaled' in opts.scaling_method
     
     if opts.output_format == 'invue':
         # validating the number of points for interpolation
