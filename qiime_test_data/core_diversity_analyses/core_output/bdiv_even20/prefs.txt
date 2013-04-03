@@ -1,0 +1,55 @@
+{
+'background_color':'black',
+
+'sample_coloring':
+	{
+		'BarcodeSequence':
+		{
+			'column':'BarcodeSequence',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'SampleType':
+		{
+			'column':'SampleType',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'day':
+		{
+			'column':'day',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'days_since_epoch':
+		{
+			'column':'days_since_epoch',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		}
+	},
+'MONTE_CARLO_GROUP_DISTANCES':
+	{
+		'BarcodeSequence': 10,
+		'SampleType': 10,
+		'day': 10,
+		'days_since_epoch': 10
+	},
+'FIELDS':
+	[
+		'days_since_epoch',
+		'SampleType',
+		'BarcodeSequence',
+		'day'
+	],
+'taxonomy_coloring':
+	{
+		'Level_1':
+		{
+			'column':'1',
+			'colors':
+			{
+				'Root;Bacteria':('red0',(0,100,100))
+			}
+		}
+	},
+'ball_scale':'1.000000',
+'arrow_line_color':'white',
+'arrow_head_color':'red'
+}

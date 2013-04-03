@@ -1,0 +1,41 @@
+{
+'background_color':'black',
+
+'sample_coloring':
+	{
+		'Treatment':
+		{
+			'column':'Treatment',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'DOB':
+		{
+			'column':'DOB',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		}
+	},
+'MONTE_CARLO_GROUP_DISTANCES':
+	{
+		'Treatment': 10,
+		'DOB': 10
+	},
+'FIELDS':
+	[
+		'DOB',
+		'Treatment'
+	],
+'taxonomy_coloring':
+	{
+		'Level_1':
+		{
+			'column':'1',
+			'colors':
+			{
+				'Root;Bacteria':('red0',(0,100,100))
+			}
+		}
+	},
+'ball_scale':'1.000000',
+'arrow_line_color':'white',
+'arrow_head_color':'red'
+}
