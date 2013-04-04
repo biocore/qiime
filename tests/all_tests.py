@@ -9,7 +9,7 @@ import re
 from sys import exit
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
-                       make_option, get_tmp_filename)
+                       make_option, get_tmp_filename, get_qiime_project_dir)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
@@ -94,7 +94,7 @@ def main():
                     bad_tests.append(unittest_name)
     
     num_script_usage_example_failures = 0
-    qiime_test_data_dir = qiime_config['qiime_test_data_dir']
+    qiime_test_data_dir = join(get_qiime_project_dir(),'qiime_test_data')
     if not opts.suppress_script_usage_tests and qiime_test_data_dir != None:
         if opts.script_tests != None:
             script_tests = opts.script_tests.split(',')

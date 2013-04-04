@@ -1,0 +1,2 @@
+Method name	R statistic	p-value	Number of permutations
+ANOSIM	0.8125	0.03	99

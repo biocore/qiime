@@ -76,11 +76,9 @@ script_info['script_usage'].append(("""Running with 1,000 trees for improved gen
 
 script_info['script_usage'].append(("Run 10-fold cross validation on a directory of OTU tables rarefied at an even depth""","""""","""%prog -i rarefied_tables/ -m Fasting_Map.txt -c Treatment -o sl_rarefied_tables_cv10 -e cv10"""))
 
-script_info['script_usage'].append(("Run 10-fold cross validation on a directory of OTU tables rarefied at an even depth and collate the results into a single file""","""""","""%prog -i rarefied_tables/ -m Fasting_Map.txt -c Treatment -o sl_rarefied_tables_cv10 -e cv10 -w sl_cv10_sweep.txt"""))
+script_info['script_usage'].append(("Run 10-fold cross validation on a directory of OTU tables rarefied at an even depth and collate the results into a single file""","""""","""%prog -i rarefied_tables/ -m Fasting_Map.txt -c Treatment -o sl_rarefied_tables_cv10_sweep -e cv10 -w sl_cv10_sweep.txt"""))
 
-
-
-script_info['script_usage_output_to_remove'] = ['ml','ml_cv10','ml_ntree1000']
+script_info['script_usage_output_to_remove'] = ['ml','ml_cv10','ml_ntree1000','sl_rarefied_tables_cv10','sl_rarefied_tables_cv10_sweep']
 
 # this example is better suited for the tutorial as it's going to be difficult to use in 
 # automated testing

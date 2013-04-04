@@ -1,0 +1,17 @@
+usearch --mergesort /Users/jrideout/dev/qiime_test_data/pick_otus/seqs.fna --output /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/len_sorted.fasta --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/sortlen.log
+Started Thu Oct 18 14:21:57 2012
+Version 5.2.32
+8.6Gb RAM
+
+File size 4.79e+04 bytes
+Read split 0 pos=0 bytes=47885
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+         myutils           4           0  100.0%       128.0kb
+----------------  ----------  ----------  ------  ------------
+           Total           4           0  100.0%       128.0kb
+
+Finished Thu Oct 18 14:21:57 2012
+Elapsed time 00:00
+Max memory 987.1kb

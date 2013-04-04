@@ -1,0 +1,18 @@
+# Sample and OTU degree counts
+Degree	Both Count 
+1	306
+2	64
+3	21
+4	17
+5	3
+6	4
+7	3
+9	1
+48	1
+62	1
+63	1
+64	2
+78	1
+81	1
+83	1
+91	1

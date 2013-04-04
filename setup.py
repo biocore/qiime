@@ -3,7 +3,7 @@
 from __future__ import division
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
-from os import chdir, getcwd, listdir, chmod
+from os import chdir, getcwd, listdir, chmod, walk
 from os.path import join, abspath
 from subprocess import call
 from glob import glob
@@ -78,6 +78,23 @@ if app_path("ghc"):
 else:
     print "GHC not installed, so cannot build the Denoiser binary."
 
+# compile the list of all qiime_test_data files that need to be installed. 
+# these must be relative file paths, beginning after the qiime_test_data
+# directory
+qiime_test_data_files = []
+for root, dnames, fnames in walk('qiime_test_data'):
+    try:
+        # strip 'qiime_test_data/' from the beginning of root
+        root = root.split('/',1)[1]
+    except IndexError:
+        # if there is no '/', then we're in qiime_test_data itself
+        # so there is nothing to do
+        continue
+    else:
+        # if there is a slash, we're in a script test data directory,
+        # so compile all relative filepaths
+        for fname in fnames:
+            qiime_test_data_files.append(join(root,fname))
 
 setup(name='QIIME',
       version=__version__,
@@ -88,7 +105,7 @@ setup(name='QIIME',
       maintainer_email=__email__,
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
-                'qiime/denoiser','qiime/workflow'],
+                'qiime/denoiser','qiime/workflow','qiime_test_data'],
       scripts=glob('scripts/*py')+glob('scripts/ec2*')+
               glob('scripts/FlowgramAli_4frame'),
       package_data={'qiime':
@@ -100,7 +117,8 @@ setup(name='QIIME',
                     'support_files/js/*js',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
-                    'support_files/denoiser/TestData/*']},
+                    'support_files/denoiser/TestData/*'],
+                    'qiime_test_data':qiime_test_data_files},
       long_description=long_description
 )
 

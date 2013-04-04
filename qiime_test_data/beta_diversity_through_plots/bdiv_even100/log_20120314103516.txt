@@ -1,0 +1,145 @@
+Logging started at 10:35:16 on 14 Mar 2012
+QIIME version: 1.4.0-dev, svn revision 2805
+
+qiime_config values:
+blastmat_dir	/Applications/blast-2.2.22/data/
+topiaryexplorer_project_dir	/Users/caporaso/code/TopiaryExplorer-0.9.1/
+pynast_template_alignment_fp	/Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
+cluster_jobs_fp	/Users/caporaso/code/Qiime/scripts/start_parallel_jobs.py
+assign_taxonomy_reference_seqs_fp	/Users/caporaso/data/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+torque_queue	friendlyq
+template_alignment_lanemask_fp	/Users/caporaso/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
+jobs_to_start	2
+cloud_environment	False
+qiime_scripts_dir	/Users/caporaso/code/Qiime/scripts
+denoiser_min_per_core	50
+python_exe_fp	python
+temp_dir	/Users/caporaso/temp
+blastall_fp	blastall
+seconds_to_sleep	6
+assign_taxonomy_id_to_taxonomy_fp	/Users/caporaso/data/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
+
+parameter file values:
+parallel:jobs_to_start	2
+
+Input file md5 sums:
+otu_table.biom: dda91090fbdc0f69056852247bcd924f
+Fasting_Map.txt: e16159d7122035797076d66b1a287962
+rep_set.tre: fdd11da9dcf4b2d55187c6021bd0d181
+
+Executing commands.
+
+# Sample OTU table at 100 seqs/sample command 
+python /Users/caporaso/code/Qiime/scripts/single_rarefaction.py -i otu_table.biom -o bdiv_even100//otu_table_even100.biom -d 100
+
+Stdout:
+
+Stderr:
+
+# Build prefs file command 
+python /Users/caporaso/code/Qiime/scripts/make_prefs_file.py -m Fasting_Map.txt -o bdiv_even100//prefs.txt  --mapping_headers_to_use Treatment,DOB
+
+Stdout:
+
+Stderr:
+
+# Beta Diversity (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/beta_diversity.py -i bdiv_even100//otu_table_even100.biom -o bdiv_even100/ --metrics weighted_unifrac  -t rep_set.tre 
+
+Stdout:
+
+Stderr:
+
+# Rename distance matrix (weighted_unifrac) command 
+mv bdiv_even100//weighted_unifrac_otu_table_even100.txt bdiv_even100//weighted_unifrac_dm.txt
+
+Stdout:
+
+Stderr:
+
+# Principal coordinates (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/principal_coordinates.py -i bdiv_even100//weighted_unifrac_dm.txt -o bdiv_even100//weighted_unifrac_pc.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 3D plots (continuous coloring, weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_3d_plots.py -p bdiv_even100//prefs.txt -i bdiv_even100//weighted_unifrac_pc.txt -o bdiv_even100//weighted_unifrac_3d_continuous/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 3D plots (discrete coloring, weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_3d_plots.py -b "Treatment,DOB" -i bdiv_even100//weighted_unifrac_pc.txt -o bdiv_even100//weighted_unifrac_3d_discrete/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 2D plots (continuous coloring, weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_2d_plots.py -p bdiv_even100//prefs.txt -i bdiv_even100//weighted_unifrac_pc.txt -o bdiv_even100//weighted_unifrac_2d_continuous/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 2D plots (discrete coloring, weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_2d_plots.py -b "Treatment,DOB" -i bdiv_even100//weighted_unifrac_pc.txt -o bdiv_even100//weighted_unifrac_2d_discrete/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Beta Diversity (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/beta_diversity.py -i bdiv_even100//otu_table_even100.biom -o bdiv_even100/ --metrics unweighted_unifrac  -t rep_set.tre 
+
+Stdout:
+
+Stderr:
+
+# Rename distance matrix (unweighted_unifrac) command 
+mv bdiv_even100//unweighted_unifrac_otu_table_even100.txt bdiv_even100//unweighted_unifrac_dm.txt
+
+Stdout:
+
+Stderr:
+
+# Principal coordinates (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/principal_coordinates.py -i bdiv_even100//unweighted_unifrac_dm.txt -o bdiv_even100//unweighted_unifrac_pc.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 3D plots (continuous coloring, unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_3d_plots.py -p bdiv_even100//prefs.txt -i bdiv_even100//unweighted_unifrac_pc.txt -o bdiv_even100//unweighted_unifrac_3d_continuous/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 3D plots (discrete coloring, unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_3d_plots.py -b "Treatment,DOB" -i bdiv_even100//unweighted_unifrac_pc.txt -o bdiv_even100//unweighted_unifrac_3d_discrete/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 2D plots (continuous coloring, unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_2d_plots.py -p bdiv_even100//prefs.txt -i bdiv_even100//unweighted_unifrac_pc.txt -o bdiv_even100//unweighted_unifrac_2d_continuous/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# Make 2D plots (discrete coloring, unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/make_2d_plots.py -b "Treatment,DOB" -i bdiv_even100//unweighted_unifrac_pc.txt -o bdiv_even100//unweighted_unifrac_2d_discrete/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+
+Logging stopped at 10:35:24 on 14 Mar 2012
