@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
  
-from qiime.pycogent_backports.option_parsing import make_option, parse_command_line_parameters
+from qiime.util import make_option, parse_command_line_parameters
 from qiime.alpha_diversity import (single_file_alpha, multiple_file_alpha,
 list_known_metrics)
 import os
