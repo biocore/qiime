@@ -1,5 +1,5 @@
 usearch --id 0.97 --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/assign_reads_to_otus.uc --query /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/seqs.fna --global --db /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/enumerated_otus.fasta --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/assign_reads_to_otus.log
-Started Thu Apr  4 07:47:15 2013
+Started Thu Apr  4 08:05:54 2013
 Version 5.2.236
 17Gb RAM
 
@@ -52,7 +52,7 @@ Fast alignment heuristics:
 Database seqs       98
 Query seqs          1334
 Queries with hits   636 (47.7%)
-Database load time  1.00s
+Database load time  0s
 Search time         0s
 Throughput          0.0 seqs/sec
 Query sequences     1334
@@ -71,6 +71,6 @@ Query sequences     1334
 ----------------  ----------  ----------  ------  ------------
            Total       18012        1613  100.0%          25Mb
 
-Finished Thu Apr  4 07:47:16 2013
-Elapsed time 00:01
+Finished Thu Apr  4 08:05:54 2013
+Elapsed time 00:00
 Max memory 17Mb

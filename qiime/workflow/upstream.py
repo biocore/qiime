@@ -416,7 +416,7 @@ def run_pick_reference_otus_through_otu_table(
     commands.append([('Pick OTUs', pick_otus_cmd)])
 
     # Prep the OTU table building command
-    otu_table_fp = '%s/otu_table.biom' % pick_otu_dir
+    otu_table_fp = '%s/otu_table.biom' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:

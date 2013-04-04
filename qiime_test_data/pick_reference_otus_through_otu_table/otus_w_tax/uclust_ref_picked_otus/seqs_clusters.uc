@@ -1,4 +1,4 @@
-# uclust --maxrejects 500 --input /Users/caporaso/temp/UclustExactMatchFilterTaHWva0zr6E3n6YslNgX.fasta --id 0.97 --w 12 --stepwords 20 --usersort --maxaccepts 20 --libonly --stable_sort --lib /Users/caporaso/data/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna --uc /Users/caporaso/data/qiime_test_data/pick_reference_otus_through_otu_table/otus_w_tax//uclust_ref_picked_otus/seqs_clusters.uc
+# uclust --maxrejects 500 --input /Users/caporaso/temp/UclustExactMatchFilter95KX6KgGr0rUTzlCYdAS.fasta --id 0.97 --w 12 --stepwords 20 --usersort --maxaccepts 20 --libonly --stable_sort --lib /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_w_tax//uclust_ref_picked_otus/seqs_clusters.uc
 # version=1.2.22
 # Tab-separated fields:
 # 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel

@@ -1,4 +1,4 @@
-Logging started at 07:47:14 on 04 Apr 2013
+Logging started at 08:05:51 on 04 Apr 2013
 QIIME version: 1.6.0-dev
 
 qiime_config values:
@@ -42,11 +42,11 @@ Stdout:
 Stderr:
 
 # Make OTU table command 
-python /Users/caporaso/code/Qiime/scripts/make_otu_table.py -i /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch//usearch_ref_picked_otus/seqs_otus.txt -t /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/taxa.txt -o /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch//usearch_ref_picked_otus/otu_table.biom 
+python /Users/caporaso/code/Qiime/scripts/make_otu_table.py -i /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch//usearch_ref_picked_otus/seqs_otus.txt -t /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/taxa.txt -o /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch//otu_table.biom 
 
 Stdout:
 
 Stderr:
 
 
-Logging stopped at 07:47:16 on 04 Apr 2013
+Logging stopped at 08:05:54 on 04 Apr 2013

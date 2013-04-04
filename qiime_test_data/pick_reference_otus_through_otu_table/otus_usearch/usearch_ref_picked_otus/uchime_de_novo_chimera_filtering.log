@@ -1,5 +1,5 @@
 usearch --usersort --chimeras /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/de_novo_chimeras.fasta --abskew 2.0 --uchime /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_error_corrected.fasta --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/uchime_de_novo_chimera_filtering.log --nonchimeras /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/de_novo_non_chimeras.fasta
-Started Thu Apr  4 07:47:15 2013
+Started Thu Apr  4 08:05:53 2013
 Version 5.2.236
 17Gb RAM
 
@@ -60,6 +60,6 @@ Highest-abundance sequences
 ----------------  ----------  ----------  ------  ------------
            Total       29842        4953  100.0%         2.6Mb
 
-Finished Thu Apr  4 07:47:15 2013
+Finished Thu Apr  4 08:05:53 2013
 Elapsed time 00:00
 Max memory 17Mb

@@ -1,5 +1,5 @@
 usearch --cluster /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/len_sorted.fasta --slots 16769023 --sizeout --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/derep.uc --w 12 --seedsout /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/dereplicated_seqs.fasta --maxrejects 500 --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/derep.log --minlen 64 --derep_subseq
-Started Thu Apr  4 07:47:14 2013
+Started Thu Apr  4 08:05:52 2013
 Version 5.2.236
 17Gb RAM
 
@@ -68,6 +68,6 @@ Avg cluster id      100.0%
 ----------------  ----------  ----------  ------  ------------
            Total        8882         785  100.0%          23Mb
 
-Finished Thu Apr  4 07:47:14 2013
+Finished Thu Apr  4 08:05:52 2013
 Elapsed time 00:00
 Max memory 283Mb

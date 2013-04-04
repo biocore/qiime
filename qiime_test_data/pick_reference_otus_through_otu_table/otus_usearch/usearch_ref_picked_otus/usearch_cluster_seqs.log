@@ -1,5 +1,5 @@
 usearch --usersort --id 0.97 --slots 16769023 --sizeout --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_seqs_post_chimera.uc --query /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/abundance_sorted_minsize_4.fasta --w 12 --maxrejects 500 --sizein --db /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/usearch_cluster_seqs.log
-Started Thu Apr  4 07:47:15 2013
+Started Thu Apr  4 08:05:53 2013
 Version 5.2.236
 17Gb RAM
 
@@ -52,7 +52,7 @@ Fast alignment heuristics:
 Database seqs       10
 Query seqs          66
 Queries with hits   49 (74.2%)
-Database load time  0s
+Database load time  1.00s
 Search time         0s
 Throughput          0.0 seqs/sec
 Query sequences     66
@@ -71,6 +71,6 @@ Query sequences     66
 ----------------  ----------  ----------  ------  ------------
            Total        2546        1277  100.0%          23Mb
 
-Finished Thu Apr  4 07:47:15 2013
-Elapsed time 00:00
+Finished Thu Apr  4 08:05:54 2013
+Elapsed time 00:01
 Max memory 551Mb

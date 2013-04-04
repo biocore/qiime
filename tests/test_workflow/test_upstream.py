@@ -80,8 +80,7 @@ class UpstreamWorkflowTests(TestCase):
         input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
         otu_map_fp = join(self.test_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        otu_table_fp = join(self.test_out,'uclust_ref_picked_otus',
-         'otu_table.biom')
+        otu_table_fp = join(self.test_out,'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
         self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
@@ -129,8 +128,7 @@ class UpstreamWorkflowTests(TestCase):
         input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
         otu_map_fp = join(self.test_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        otu_table_fp = join(self.test_out,'uclust_ref_picked_otus',
-         'otu_table.biom')
+        otu_table_fp = join(self.test_out,'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2']
         self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
