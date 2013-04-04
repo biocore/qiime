@@ -15,8 +15,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
  
-from qiime.pycogent_backports.option_parsing import make_option, \
-                                                parse_command_line_parameters
+from qiime.util import make_option, parse_command_line_parameters
 from qiime.util import get_options_lookup, create_dir
 from qiime.make_3d_plots import generate_3d_plots, generate_3d_plots_invue
 from qiime.parse import parse_coords,group_by_field,group_by_fields
