@@ -37,7 +37,9 @@ script_info['script_usage'] = []
 script_info['script_usage'].append(("","Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_w_tax/ -t $PWD/taxa.txt"))
  
 script_info['script_usage'].append(("","Pick OTUs and create an OTU table against a reference set of OTUs without adding taxonomy assignments. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus/"))
- 
+
+script_info['script_usage'].append(("","Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs using usearch_ref. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_usearch/ -p $PWD/usearch_params.txt -t $PWD/taxa.txt"))
+
 script_info['script_usage_output_to_remove'] = ['$PWD/otus/','$PWD/otus_w_tax/']
  
 script_info['output_description']= ""
