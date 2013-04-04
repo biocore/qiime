@@ -28,7 +28,7 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""",
 """In this example, the user supplies a tree file and a text file\
  containing the jackknife support information, which results in a pdf file:""",
- """%prog -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf"""))
+"""%prog -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf"""))
 script_info['output_description']="""The result of this script is a pdf file."""
 script_info['required_options']=[\
  make_option('-m', '--master_tree', type='existing_filepath',
@@ -36,8 +36,7 @@ script_info['required_options']=[\
  make_option('-s', '--support', type='existing_filepath',
  	help='This is the path to the bootstrap support file'),
  make_option('-o', '--output_file', type='new_filepath',
- 	help="This is the filename where the output should be written. \
- 	If the suffix does not contain .pdf, then it will be attached")
+ 	help="This is the filename where the output should be written.")
 ]
 script_info['optional_options']=[]
 script_info['version'] = __version__
