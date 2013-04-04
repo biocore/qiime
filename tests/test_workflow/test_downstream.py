@@ -63,7 +63,7 @@ class DownstreamWorkflowTests(TestCase):
         self.saved_stderr = sys.stderr
         sys.stderr = StringIO()
         
-        initiate_timeout(60)
+        initiate_timeout(120)
     
     def tearDown(self):
         """ """
