@@ -13,8 +13,7 @@ __status__ = "Development"
  
 
 
-from qiime.pycogent_backports.option_parsing import parse_command_line_parameters
-from qiime.pycogent_backports.option_parsing import make_option
+from qiime.util import parse_command_line_parameters, make_option
 from glob import glob
 from os.path import join
 from qiime.util import get_options_lookup
