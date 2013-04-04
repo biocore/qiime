@@ -188,13 +188,14 @@ def run_pick_otus_through_otu_table(input_fp,
         except KeyError:
             params_str = ''
         
-        # Grab the OTU picker parameters
+        # Grab the taxonomy assignment parameters
         try:
             # Want to find a cleaner strategy for this: the parallel script
             # is method-specific, so doesn't take a --assignment_method
             # option. This works for now though.
             d = params['assign_taxonomy'].copy()
-            del d['assignment_method']
+            if 'assignment_method' in d:
+                del d['assignment_method']
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
