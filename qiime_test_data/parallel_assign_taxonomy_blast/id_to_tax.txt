@@ -1,0 +1,5 @@
+AY800210	Archaea;Euryarchaeota;Halobacteriales;uncultured
+EU883771	Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.
+EF503699	Archaea;Crenarchaeota;uncultured;uncultured
+DQ260310	Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
+EF503697	Archaea;Crenarchaeota;uncultured;uncultured

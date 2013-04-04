@@ -1,0 +1,4 @@
+cmbuild parameters:
+{'--gapthresh': 1.0}
+cmalign parameters:
+{'--sub': True, '--gapthresh': 1.0}

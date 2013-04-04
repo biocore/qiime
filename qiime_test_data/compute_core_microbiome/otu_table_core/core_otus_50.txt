@@ -1,0 +1,12 @@
+# Core OTUs across 50 % of samples.
+63	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+70	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+73	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+92	[u'Root', u'k__Bacteria', u'p__Firmicutes', u'c__Clostridia', u'o__Clostridiales', u'f__Lachnospiraceae']
+275	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+319	[u'Root', u'k__Bacteria', u'p__Firmicutes', u'c__Clostridia', u'o__Clostridiales', u'f__Lachnospiraceae']
+371	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__Rikenellaceae']
+378	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__Bacteroidaceae']
+394	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+396	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
+399	[u'Root', u'k__Bacteria', u'p__Firmicutes', u'c__Clostridia', u'o__Clostridiales', u'f__Lachnospiraceae']

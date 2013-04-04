@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp codebase="file:/Users/caporaso/code/TopiaryExplorer-0.9.1/">
+    
+    <information>
+    <title>TopiaryExplorer</title>
+    <vendor>University of Colorado</vendor>
+    <description>TopiaryExplorer</description>
+    
+    <offline-allowed/>
+     
+
+  </information>
+  
+  <security>
+      <all-permissions/>
+  </security>
+  
+  <resources>
+    <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
+    
+    <jar href="topiaryexplorer0.9.6.jar" />
+    <jar href="lib/core.jar" />
+    <jar href="lib/itext.jar" />
+    <jar href="lib/pdf.jar" />
+    <jar href="lib/ojdbc14.jar" />
+    <jar href="lib/opengl.jar" />
+    <jar href="lib/mysql-connector-java-5.1.10-bin.jar" />
+    <jar href="lib/javaws.jar" />
+    <jar href="lib/classes12.jar" />
+    <jar href="lib/jogl.jar" />
+    <jar href="lib/guava-r09.jar" />
+
+  </resources>
+  
+  <application-desc main-class="topiaryexplorer.TopiaryExplorer">
+  <argument>/Users/caporaso/data/qiime_test_data/make_tep/make_tep_output/otu_table.tep</argument>
+    </application-desc>
+</jnlp>

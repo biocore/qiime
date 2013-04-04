@@ -1,0 +1,15 @@
+usearch --usersort --sizeout --sizein --output /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/abundance_sorted.fasta --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/minsize_0_abundance_sort.log --sortsize /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/dereplicated_seqs.fasta
+Started Thu Oct 18 14:21:57 2012
+Version 5.2.32
+8.6Gb RAM
+
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+         myutils           2           0  100.0%        64.0kb
+----------------  ----------  ----------  ------  ------------
+           Total           2           0  100.0%        64.0kb
+
+Finished Thu Oct 18 14:21:57 2012
+Elapsed time 00:00
+Max memory 946.2kb
