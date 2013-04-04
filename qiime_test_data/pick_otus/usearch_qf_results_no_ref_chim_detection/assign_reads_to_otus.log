@@ -1,0 +1,76 @@
+usearch --id 0.97 --uc /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/assign_reads_to_otus.uc --query /Users/jrideout/dev/qiime_test_data/pick_otus/seqs.fna --global --db /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/enumerated_otus.fasta --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/assign_reads_to_otus.log
+Started Thu Oct 18 14:23:30 2012
+Version 5.2.32
+8.6Gb RAM
+
+Algorithm:
+  Database search
+  Fast search (U-sorting) enabled
+  Similarity computed from a global alignment
+
+Word-counting heuristics:
+  Word length for database index 8
+  Step words 8
+  Bump fraction 50%
+
+U-sorted search termination:
+  Max accepts 1
+  Max rejects 32
+  Word count rejection enabled
+
+Accept criteria:
+  Min id 97.0%
+
+Query set:
+  Filename /Users/jrideout/dev/qiime_test_data/pick_otus/seqs.fna
+  File size 47.9kb
+  Sequence type nucelotide
+
+Database:
+  Filename /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/enumerated_otus.fasta
+  Size 50 seqs
+  Sequence type nucelotide
+
+Substitution scores:
+  Match score 1.0
+  Mismatch score -2.0
+
+Gap penalties:
+     10.00  Open penalty (internal gaps)
+      0.50  Open penalty (end gaps)
+      1.00  Ext. penalty (internal gaps)
+      0.50  Ext. penalty (end gaps)
+
+Fast alignment heuristics:
+  HSP seed word length 5
+  One-hit HSP seeding
+  Exact word seeds (neighborhoods disabled)
+  Min HSP length 32
+  Band radius 16
+
+
+Database seqs       50
+Query seqs          153
+Queries with hits   80 (52.3%)
+Database load time  0s
+Search time         0s
+Throughput          0.0 seqs/sec
+Query sequences     153
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+           seqdb         103           0   77.5%          13Mb
+          windex       10048         283   12.0%         2.0Mb
+           ultra          25           0    7.3%         1.2Mb
+            mx_h         499          65    2.0%       323.3kb
+         myutils           4           0    0.8%       128.0kb
+       hspfinder         398         199    0.3%        43.4kb
+          alpha2          25           0    0.0%       5863.0b
+        comppath           1           0    0.0%       4307.0b
+           dpmem           2           0    0.0%       1528.0b
+----------------  ----------  ----------  ------  ------------
+           Total       11105         547  100.0%          16Mb
+
+Finished Thu Oct 18 14:23:30 2012
+Elapsed time 00:00
+Max memory 3.9Mb

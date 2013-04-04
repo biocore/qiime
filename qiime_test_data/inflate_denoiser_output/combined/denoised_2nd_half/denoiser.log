@@ -1,0 +1,207 @@
+Denoiser version: 1.5.0-dev
+SFF file: Fasting_Example_2nd_half.sff.txt
+Fasta file: split_libraries_output_2nd_half/seqs.fna
+Preprocess dir: None
+Primer sequence: YATGCTGCCTCCCGTAGGAGT
+Running on cluster: False
+Num CPUs: 1
+Squeeze Seqs: True
+tmpdir: denoised_2nd_half
+percent_id threshold: 0.97
+Minimal sequence coverage for first phase: 1
+Low cut-off: 3.75
+High cut-off: 4.50
+Error profile: /Users/jocl2979/qiime_software/qiime-1.5.0-dev/lib/qiime/support_files/denoiser/Data/FLX_error_profile.dat
+Maximal number of iteration: None
+
+Sequences in barcode mapping: 638
+Truncated flowgrams written: 638
+Filter flowgrams by prefix matching
+Prefix matching: removed 213 out of 638 seqs
+Remaining number of sequences: 425
+Clustersize	#
+1:		360
+2:		30
+3:		9
+4:		6
+5:		4
+6:		5
+7:		3
+9:		2
+11:		1
+12:		2
+14:		2
+15:		1
+Round 1:
+Rounds remaining in worst case: 65
+Filtering with FLP3FBN01C1B5E: 425 flowgrams
+Round 2:
+Rounds remaining in worst case: 64
+Filtering with FLP3FBN01B27CZ: 413 flowgrams
+Round 3:
+Rounds remaining in worst case: 61
+Filtering with FLP3FBN01BHLXV: 399 flowgrams
+Round 4:
+Rounds remaining in worst case: 59
+Filtering with FLP3FBN01AMPHD: 388 flowgrams
+Round 5:
+Rounds remaining in worst case: 56
+Filtering with FLP3FBN01CLZGK: 380 flowgrams
+Round 6:
+Rounds remaining in worst case: 55
+Filtering with FLP3FBN01DJ7Y0: 378 flowgrams
+Round 7:
+Rounds remaining in worst case: 53
+Filtering with FLP3FBN01BCXZU: 366 flowgrams
+Round 8:
+Rounds remaining in worst case: 52
+Filtering with FLP3FBN01DWFUS: 361 flowgrams
+Round 9:
+Rounds remaining in worst case: 50
+Filtering with FLP3FBN01CEL0P: 353 flowgrams
+Round 10:
+Rounds remaining in worst case: 49
+Filtering with FLP3FBN01DXZGT: 351 flowgrams
+Round 11:
+Rounds remaining in worst case: 48
+Filtering with FLP3FBN01C77VC: 349 flowgrams
+Round 12:
+Rounds remaining in worst case: 47
+Filtering with FLP3FBN01D07UJ: 345 flowgrams
+Round 13:
+Rounds remaining in worst case: 45
+Filtering with FLP3FBN01DWLJX: 340 flowgrams
+Round 14:
+Rounds remaining in worst case: 44
+Filtering with FLP3FBN01ASJ6H: 339 flowgrams
+Round 15:
+Rounds remaining in worst case: 43
+Filtering with FLP3FBN01CNBHT: 337 flowgrams
+Round 16:
+Rounds remaining in worst case: 42
+Filtering with FLP3FBN01B5NT1: 331 flowgrams
+Round 17:
+Rounds remaining in worst case: 41
+Filtering with FLP3FBN01DMOT4: 325 flowgrams
+Round 18:
+Rounds remaining in worst case: 40
+Filtering with FLP3FBN01AZ92N: 318 flowgrams
+Round 19:
+Rounds remaining in worst case: 39
+Filtering with FLP3FBN01BI3RV: 315 flowgrams
+Round 20:
+Rounds remaining in worst case: 38
+Filtering with FLP3FBN01A44JU: 313 flowgrams
+Round 21:
+Rounds remaining in worst case: 36
+Filtering with FLP3FBN01BZ72V: 307 flowgrams
+Round 22:
+Rounds remaining in worst case: 33
+Filtering with FLP3FBN01AIWWA: 297 flowgrams
+Round 23:
+Rounds remaining in worst case: 32
+Filtering with FLP3FBN01B4PVG: 295 flowgrams
+Round 24:
+Rounds remaining in worst case: 30
+Filtering with FLP3FBN01DAQ2Q: 288 flowgrams
+Round 25:
+Rounds remaining in worst case: 29
+Filtering with FLP3FBN01CAKFA: 284 flowgrams
+Round 26:
+Rounds remaining in worst case: 28
+Filtering with FLP3FBN01D32U0: 282 flowgrams
+Round 27:
+Rounds remaining in worst case: 27
+Filtering with FLP3FBN01EF1R5: 278 flowgrams
+Round 28:
+Rounds remaining in worst case: 26
+Filtering with FLP3FBN01C73G0: 274 flowgrams
+Round 29:
+Rounds remaining in worst case: 25
+Filtering with FLP3FBN01DYIFI: 271 flowgrams
+Round 30:
+Rounds remaining in worst case: 23
+Filtering with FLP3FBN01BR1S4: 267 flowgrams
+Round 31:
+Rounds remaining in worst case: 20
+Filtering with FLP3FBN01DTNE9: 264 flowgrams
+Round 32:
+Rounds remaining in worst case: 19
+Filtering with FLP3FBN01DO0PN: 259 flowgrams
+Round 33:
+Rounds remaining in worst case: 18
+Filtering with FLP3FBN01CXMVM: 255 flowgrams
+Round 34:
+Rounds remaining in worst case: 16
+Filtering with FLP3FBN01AP4SS: 253 flowgrams
+Round 35:
+Rounds remaining in worst case: 15
+Filtering with FLP3FBN01B2YIQ: 248 flowgrams
+Round 36:
+Rounds remaining in worst case: 14
+Filtering with FLP3FBN01DHLY4: 246 flowgrams
+Round 37:
+Rounds remaining in worst case: 13
+Filtering with FLP3FBN01CSLHO: 244 flowgrams
+Round 38:
+Rounds remaining in worst case: 12
+Filtering with FLP3FBN01BZNMV: 242 flowgrams
+Round 39:
+Rounds remaining in worst case: 11
+Filtering with FLP3FBN01EON7J: 241 flowgrams
+Round 40:
+Rounds remaining in worst case: 10
+Filtering with FLP3FBN01EU5A3: 240 flowgrams
+Round 41:
+Rounds remaining in worst case: 9
+Filtering with FLP3FBN01ADKEK: 239 flowgrams
+Round 42:
+Rounds remaining in worst case: 8
+Filtering with FLP3FBN01B1MJU: 238 flowgrams
+Round 43:
+Rounds remaining in worst case: 7
+Filtering with FLP3FBN01DBIH6: 236 flowgrams
+Round 44:
+Rounds remaining in worst case: 6
+Filtering with FLP3FBN01AYFQO: 233 flowgrams
+Round 45:
+Rounds remaining in worst case: 5
+Filtering with FLP3FBN01AXR34: 229 flowgrams
+Round 46:
+Rounds remaining in worst case: 4
+Filtering with FLP3FBN01BI3Q6: 225 flowgrams
+Round 47:
+Rounds remaining in worst case: 3
+Filtering with FLP3FBN01EG5XE: 222 flowgrams
+Round 48:
+Rounds remaining in worst case: 2
+Filtering with FLP3FBN01BE4FD: 221 flowgrams
+Round 49:
+Rounds remaining in worst case: 1
+Filtering with FLP3FBN01DVJS5: 219 flowgrams
+Secondary clustering removed 116 flowgrams
+Finished clustering
+Writing Clusters
+Clustersize	#
+1:		100
+2:		2
+3:		5
+4:		3
+5:		5
+6:		5
+7:		1
+8:		4
+9:		3
+10:		2
+11:		4
+12:		1
+13:		4
+14:		2
+20:		1
+23:		1
+25:		1
+27:		1
+29:		1
+30:		1
+35:		1
+41:		1

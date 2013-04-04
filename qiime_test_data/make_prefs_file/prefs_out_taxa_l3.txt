@@ -1,0 +1,76 @@
+{
+'background_color':'black',
+
+'sample_coloring':
+	{
+		'SampleID':
+		{
+			'column':'SampleID',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'BarcodeSequence':
+		{
+			'column':'BarcodeSequence',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'LinkerPrimerSequence':
+		{
+			'column':'LinkerPrimerSequence',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'Treatment':
+		{
+			'column':'Treatment',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'DOB':
+		{
+			'column':'DOB',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'Description':
+		{
+			'column':'Description',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		}
+	},
+'MONTE_CARLO_GROUP_DISTANCES':
+	{
+		'SampleID': 10,
+		'BarcodeSequence': 10,
+		'LinkerPrimerSequence': 10,
+		'Treatment': 10,
+		'DOB': 10,
+		'Description': 10
+	},
+'FIELDS':
+	[
+		'Description',
+		'DOB',
+		'BarcodeSequence',
+		'SampleID',
+		'LinkerPrimerSequence',
+		'Treatment'
+	],
+'taxonomy_coloring':
+	{
+		'Level_2':
+		{
+			'column':'2',
+			'colors':
+			{
+				'Root;k__Bacteria;Other':('red0',(0,100,100)),
+				'Root;k__Bacteria;p__Actinobacteria':('red26.6666666667',(26,100,100)),
+				'Root;k__Bacteria;p__Bacteroidetes':('red53.3333333333',(53,100,100)),
+				'Root;k__Bacteria;p__Deferribacteres':('red80.0',(80,100,100)),
+				'Root;k__Bacteria;p__Firmicutes':('red106.666666667',(106,100,100)),
+				'Root;k__Bacteria;p__Proteobacteria':('red133.333333333',(133,100,100)),
+				'Root;k__Bacteria;p__TM7':('red160.0',(160,100,100)),
+				'Root;k__Bacteria;p__Tenericutes':('red186.666666667',(186,100,100))
+			}
+		}
+	},
+'ball_scale':'1.000000',
+'arrow_line_color':'white',
+'arrow_head_color':'red'
+}

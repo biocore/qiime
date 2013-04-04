@@ -1,0 +1,2 @@
+FP1 FP2 Included_dimensions MC_p_value Count_better M^2
+unweighted_unifrac_pc.txt weighted_unifrac_pc.txt 3 0.000 0 0.343
