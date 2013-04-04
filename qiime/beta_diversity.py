@@ -185,7 +185,7 @@ class BetaDiversityCalc(FunctionWithParams):
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
-def single_file_beta(input_path, metrics_list, tree_path, output_dir,
+def single_file_beta(input_path, metrics, tree_path, output_dir,
     rowids=None, full_tree=False):
     """ does beta diversity calc on a single otu table
 
@@ -194,11 +194,17 @@ def single_file_beta(input_path, metrics_list, tree_path, output_dir,
     table, doesn't call getSubTree()
     inputs:
      input_path (str)
-     metrics (str, comma delimited if more than 1 metric)
+     metrics (str, comma delimited if more than 1 metric; or list)
      tree_path (str)
      output_dir (str)
      rowids (comma separated str)
     """
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     otu_table = parse_biom_table(open(input_path,'U'))
 
     if isinstance(otu_table, DenseTable):
@@ -384,7 +390,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
             
             return format_matrix(row_dissims,rowids_list,otu_table.SampleIds)
                         
-def multiple_file_beta(input_path, output_dir, metrics_list, tree_path,
+def multiple_file_beta(input_path, output_dir, metrics, tree_path,
     rowids=None, full_tree=False):
     """ runs beta diversity for each input file in the input directory 
     
@@ -393,11 +399,17 @@ def multiple_file_beta(input_path, output_dir, metrics_list, tree_path,
 
     inputs:
      input_path (str)
-     metrics (str, comma delimited if more than 1 metric)
+     metrics (str, comma delimited if more than 1 metric; or list)
      tree_path (str)
      output_dir (str)
 
     """
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     try:
@@ -419,4 +431,4 @@ def multiple_file_beta(input_path, output_dir, metrics_list, tree_path,
     
     for fname in file_names:
         single_file_beta(os.path.join(input_path, fname),
-            metrics_list, tree_path, output_dir, rowids, full_tree)
+            metrics, tree_path, output_dir, rowids, full_tree)
