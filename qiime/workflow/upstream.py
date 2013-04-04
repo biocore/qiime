@@ -334,7 +334,7 @@ def run_pick_reference_otus_through_otu_table(
     
     # confirm that a valid otu picking method was supplied before doing
     # any work
-    reference_otu_picking_methods = ['blast','uclust_ref']
+    reference_otu_picking_methods = ['blast','uclust_ref','usearch_ref']
 
     try:
         otu_picking_method = params['pick_otus']['otu_picking_method']
