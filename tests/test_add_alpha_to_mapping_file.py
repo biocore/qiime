@@ -128,6 +128,11 @@ class TopLevelTests(TestCase):
         self.assertEquals(o_sample_ids, expected_sample_ids)
         self.assertEquals(o_data, expected_data)
 
+        # non-existant depth
+        with self.assertRaises(ValueError):
+            o_metrics, o_sample_ids, o_data = mean_alpha(
+                self.collated_alpha_dict_b, 111111)
+
         # files with non-matching sample ids should raise an exception
         with self.assertRaises(ValueError):
             o_metrics, o_sample_ids, o_data = mean_alpha(

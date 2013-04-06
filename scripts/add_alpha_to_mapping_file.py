@@ -96,13 +96,7 @@ def main():
     binning_method = opts.binning_method
     missing_value_name = opts.missing_value_name
     depth = opts.depth
-
-    # make sure the number of bins is an integer
-    try:
-        number_of_bins = int(opts.number_of_bins)
-    except ValueError:
-        raise ValueError, 'The number of bins must be an integer, not %s'\
-            % opts.number_of_bins
+    number_of_bins = opts.number_of_bins
 
     # if using collated data, make sure they specify a depth
     if depth is not None:
@@ -114,8 +108,11 @@ def main():
                 single_alpha_fp, 'U').readlines()
 
         # format the collated data
-        metrics, alpha_sample_ids, alpha_data = mean_alpha(alpha_dict,
-            depth)
+        try:
+            metrics, alpha_sample_ids, alpha_data = mean_alpha(alpha_dict,
+                depth)
+        except ValueError, e: # see mean_alpha for the possible exceptions
+            option_parser.error(e.message)
 
     # when not using collated data, the user can only specify one input file
     else:

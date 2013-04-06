@@ -159,10 +159,15 @@ def mean_alpha(alpha_dict, depth):
         metrics.append('{0}_even_{1}'.format(key, depth))
         identifiers, _, _, rarefaction_data = parse_rarefaction(value)
 
+        # check there are elements with the desired rarefaction depth
+        if sum([1 for row in rarefaction_data if row[0] == depth]) == 0:
+            raise ValueError, ("The depth %d does not exist in the collated "
+                "alpha diversity file for the metric: %s." % (depth, key))
+
         # check all the files have the same sample ids in the same order
         if sample_ids:
             if not sample_ids == identifiers[3:]:
-                raise (ValueError, "Non-matching sample ids were found in the "
+                raise ValueError, ("Non-matching sample ids were found in the "
                     "collated alpha diversity files. Make sure all the files "
                     "contain data for the same samples.")
         else:
