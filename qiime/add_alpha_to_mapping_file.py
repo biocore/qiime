@@ -161,8 +161,12 @@ def mean_alpha(alpha_dict, depth):
 
         # check there are elements with the desired rarefaction depth
         if sum([1 for row in rarefaction_data if row[0] == depth]) == 0:
+            # get a sorted list of strings with the available rarefaction depths
+            available_rarefaction_depths = map(str, sorted(list(set([row[0] for
+                row in rarefaction_data]))))
             raise ValueError, ("The depth %d does not exist in the collated "
-                "alpha diversity file for the metric: %s." % (depth, key))
+                "alpha diversity file for the metric: %s. The available depths "
+                "are: %s."%(depth, key,', '.join(available_rarefaction_depths)))
 
         # check all the files have the same sample ids in the same order
         if sample_ids:
