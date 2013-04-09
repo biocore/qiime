@@ -27,7 +27,7 @@ script_info={}
 script_info['brief_description']="""Parallel pick otus using usearch_ref"""
 script_info['script_description']="""This script works like the pick_otus.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with reference-based usearch and write the output to the $PWD/usearch_ref_otus/ directory. This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/usearch_ref_otus/ --sizeorder --max_accepts 10"""))
+script_info['script_usage'].append(("""Example""","""Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with reference-based usearch and write the output to the $PWD/usearch_ref_otus/ directory. This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/usearch_ref_otus/"""))
 
 script_info['output_description']=""""""
 
