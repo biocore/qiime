@@ -10,4 +10,4 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-print "\nThis script has been renamed pick_denovo_otus.py for clarity. For help, call pick_denovo_otus.py -h\n"
+print "\nThis script has been renamed pick_de_novo_otus.py for clarity. For help, call pick_denovo_otus.py -h\n"

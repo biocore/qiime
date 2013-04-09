@@ -439,4 +439,4 @@ def run_pick_closed_reference_otus(
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
 
-run_pick_reference_otus_through_otu_table = pick_closed_reference_otus
+run_pick_reference_otus_through_otu_table = run_pick_closed_reference_otus
