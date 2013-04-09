@@ -35,6 +35,8 @@ script_info['script_usage'] = []
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection and using usearch61 and usearch61_ref as the OTU picking methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_usearch/ -s 0.1 -p $PWD/ucrss_params.txt -m usearch"))
+
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. This is useful if you're working with marker genes that do not result in useful alignment (e.g., fungal ITS). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree"))
@@ -59,6 +61,12 @@ script_info['required_options'] = [
              help='the output directory'),
 ]
 script_info['optional_options'] = [
+ make_option('-m','--otu_picking_method',type='choice',
+     choices=['uclust','usearch61'],help=('The OTU picking method to use '
+     'for reference and de novo steps. Passing usearch61, for example, '
+     'means that usearch61 will be used for the de novo steps and '
+     'usearch61_ref will be used for reference steps. [default: %default]'),
+     default='uclust'),
  make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
@@ -123,6 +131,7 @@ def main():
     input_fps = opts.input_fps
     refseqs_fp = opts.reference_fp
     output_dir = opts.output_dir
+    otu_picking_method = opts.otu_picking_method
     verbose = opts.verbose
     print_only = False
     percent_subsample = opts.percent_subsample
@@ -131,6 +140,17 @@ def main():
     prefilter_percent_id = opts.prefilter_percent_id
     if prefilter_percent_id == 0.0:
         prefilter_percent_id = None
+    
+    if otu_picking_method == 'uclust':
+        denovo_otu_picking_method = 'uclust'
+        reference_otu_picking_method = 'uclust_ref'
+    elif otu_picking_method == 'usearch61':
+        denovo_otu_picking_method = 'usearch61'
+        reference_otu_picking_method = 'usearch61_ref'
+    else:
+        # it shouldn't be possible to get here
+        option_parser.error(\
+         'Unkown OTU picking method: %s' % otu_picking_method)
     
     parallel = opts.parallel
     # No longer checking that jobs_to_start > 2, but
@@ -196,6 +216,8 @@ def main():
                                   parallel=parallel,
                                   suppress_step4=opts.suppress_step4,
                                   logger=None,
+                                  denovo_otu_picking_method=denovo_otu_picking_method,
+                                  reference_otu_picking_method=reference_otu_picking_method,
                                   status_update_callback=status_update_callback)
     else:    
         iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
@@ -216,6 +238,8 @@ def main():
                               parallel=parallel,
                               suppress_step4=opts.suppress_step4,
                               logger=None,
+                              denovo_otu_picking_method=denovo_otu_picking_method,
+                              reference_otu_picking_method=reference_otu_picking_method,
                               status_update_callback=status_update_callback)
 
 
