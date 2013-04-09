@@ -69,7 +69,7 @@ Step 0: Prefilter (parallel)
 ----------------------------
 Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>`. All reads which fail to hit the reference set are discarded as likely sequencing error.
 
- .. warning:: If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as ``-p`` to ``pick_subsampled_reference_otus_through_otu_table.py``: ``pick_otus:enable_rev_strand_match True``. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow. 
+ .. warning:: If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as ``-p`` to ``pick_open_reference_otus.py``: ``pick_otus:enable_rev_strand_match True``. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow. 
 
 Step 1: Closed reference (parallel)
 -----------------------------------
@@ -103,7 +103,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
+	pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.
 
@@ -400,7 +400,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
+	pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. 
 
