@@ -16,7 +16,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * pick_reference_otus_through_otu_table.py now outputs otu_table.biom in top-level output directory rather than nested in the otu picking output directory.
 * pick_reference_otus_through_otu_table.py has been renamed pick_closed_reference_otus.py (issue #708).
 * pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
-* pick_otus_through_otu_table.py has been renamed pick_denovo_otus.py (issue #708).
+* pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
