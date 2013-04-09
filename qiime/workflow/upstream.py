@@ -335,7 +335,7 @@ def run_pick_closed_reference_otus(
     
     # confirm that a valid otu picking method was supplied before doing
     # any work
-    reference_otu_picking_methods = ['blast','uclust_ref','usearch_ref']
+    reference_otu_picking_methods = ['blast','uclust_ref','usearch61_ref']
 
     try:
         otu_picking_method = params['pick_otus']['otu_picking_method']
