@@ -260,26 +260,28 @@ class DistributionPlotsTests(TestCase):
         result = _plot_box_data(ax, [], 'blue', 0.33, 55, 1.5, 'stdv')
         self.assertTrue(result is None)
 
-    def test_calc_data_point_locations_invalid_widths(self):
-        """_calc_data_point_locations() should raise a ValueError
-        exception when it encounters bad widths."""
-        self.assertRaises(ValueError, _calc_data_point_locations, [1, 2, 3],
-                3, 2, -2, 0.5)
-        self.assertRaises(ValueError, _calc_data_point_locations, [1, 2, 3],
-                3, 2, 2, -0.5)
+    def test_calc_data_point_locations_invalid_x_values(self):
+        """Should raise error when invalid x_values are encountered."""
+        self.assertRaises(ValueError, _calc_data_point_locations, 3, [1, 10.5])
 
     def test_calc_data_point_locations_default_spacing(self):
-        """_calc_data_point_locations() should return an array containing
-        the x-axis locations for each data point, evenly spaced from 1..n."""
-        locs = _calc_data_point_locations(None, 4, 2, 0.25, 0.5)
-        self.assertEqual(locs, array([1.0, 2.0, 3.0, 4.0]))
+        """Should return evenly-spaced x-axis locations."""
+        locs = _calc_data_point_locations(4)
+        self.assertEqual(locs, array([1, 2, 3, 4]))
 
     def test_calc_data_point_locations_custom_spacing(self):
-        """_calc_data_point_locations() should return an array containing
-        the x-axis locations for each data point, spaced according to a custom
-        spacing scheme."""
-        locs = _calc_data_point_locations([3, 4, 10, 12], 4, 2, 0.25, 0.75)
-        self.assertEqual(locs, array([3.75, 5.0, 12.5, 15.0]))
+        """Should return non-evenly-spaced x-axis locations."""
+        # Scaling down from 3..12 to 1..4.
+        locs = _calc_data_point_locations(4, [3, 4, 10, 12])
+        self.assertFloatEqual(locs, array([1, 1.33333333, 3.33333333, 4]))
+
+        # Sorted order shouldn't affect scaling.
+        locs = _calc_data_point_locations(4, [4, 3, 12, 10])
+        self.assertFloatEqual(locs, array([1.33333333, 1, 4, 3.33333333]))
+
+        # Scaling up from 0.001..0.87 to 1..3.
+        locs = _calc_data_point_locations(3, [0.001, 0.2543, 0.87])
+        self.assertFloatEqual(locs, array([1, 1.58296893, 3]))
 
     def test_calc_data_point_ticks(self):
         """_calc_data_point_ticks() should return an array containing the
@@ -407,8 +409,7 @@ class DistributionPlotsTests(TestCase):
                           legend=('foo', 'bar', 'baz'))
 
     def test_generate_comparative_plots_bar(self):
-        """generate_comparative_plots() should return a valid barchart Figure
-        object."""
+        """Should return a valid barchart Figure object."""
         fig = generate_comparative_plots('bar', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['b', 'r', 'g'],
@@ -418,7 +419,8 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.3, 7.4, 17.6, 19.3])
+        self.assertFloatEqual(ax.get_xticks(),
+                              [1.1125, 2.0125, 3.8125, 4.1125])
 
     def test_generate_comparative_plots_insufficient_colors(self):
         """generate_comparative_plots() should work even when there aren't
@@ -442,8 +444,7 @@ class DistributionPlotsTests(TestCase):
             sys.stdout = saved_stdout
 
     def test_generate_comparative_plots_scatter(self):
-        """generate_comparative_plots() should return a valid scatterplot
-        Figure object."""
+        """Should return a valid scatterplot Figure object."""
         fig = generate_comparative_plots('scatter', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['^', '>', '<'],
@@ -453,7 +454,7 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.1, 7.2, 17.4, 19.1])
+        self.assertFloatEqual(ax.get_xticks(), [1.075, 1.975, 3.775, 4.075])
 
     def test_generate_comparative_plots_insufficient_symbols(self):
         """generate_comparative_plots() should work even when there aren't
@@ -485,8 +486,7 @@ class DistributionPlotsTests(TestCase):
                 "x-axis label", "y-axis label", "Test")
 
     def test_generate_comparative_plots_box(self):
-        """generate_comparative_plots() should return a valid boxplot Figure
-        object."""
+        """Should return a valid boxplot Figure object."""
         fig = generate_comparative_plots('box', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
@@ -496,7 +496,7 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.1, 7.2, 17.4, 19.1])
+        self.assertFloatEqual(ax.get_xticks(), [1.075, 1.975, 3.775, 4.075])
 
     def test_generate_comparative_plots_error(self):
         """generate_comparative_plots() should raise a ValueError for an
