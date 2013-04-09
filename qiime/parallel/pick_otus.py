@@ -16,7 +16,7 @@ from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
 from cogent.parse.fasta import MinimalFastaParser
 from math import ceil
-from os.path import basename
+from os.path import basename, join
 from re import compile
 
 class ParallelPickOtus(ParallelWrapper):
@@ -190,7 +190,7 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
 
         return commands, result_filepaths
 
-class ParallelPickOtusUsearchRef(ParallelPickOtus):
+class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
     
     # def _identify_files_to_remove(self,job_result_filepaths,params):
     #     """ Select the files to remove: by default remove all files
@@ -217,37 +217,32 @@ class ParallelPickOtusUsearchRef(ParallelPickOtus):
         # Create basenames for each of the output files. These will be filled
         # in to create the full list of files created by all of the runs.
         out_filenames = [job_prefix + '.%d_otus.log', 
-                         job_prefix + '.%d_otus.txt',]
-                         #job_prefix + '.%s_failures.txt']
+                         job_prefix + '.%d_otus.txt',
+                         job_prefix + '.%s_failures.txt']
     
         # Create lists to store the results
         commands = []
         result_filepaths = []
-
-        if params['suppress_reference_chimera_detection']:
-            suppress_reference_chimera_detection_str = '--suppress_reference_chimera_detection'
-        else:
-            suppress_reference_chimera_detection_str = ''
         
         # Iterate over the input files
         for i,fasta_fp in enumerate(fasta_fps):
             # Each run ends with moving the output file from the tmp dir to
             # the output_dir. Build the command to perform the move here.
+            iteration_working_dir = join(working_dir,str(i))
             rename_command, current_result_filepaths = self._get_rename_command(
                 [fn % i for fn in out_filenames],
-                working_dir,
+                iteration_working_dir,
                 output_dir)
             result_filepaths += current_result_filepaths
             
             command = \
-             '%s %s -i %s -r %s -m usearch_ref --suppress_new_clusters --suppress_de_novo_chimera_detection --suppress_cluster_size_filtering -o %s -s %s %s %s %s' %\
+             '%s %s -i %s -r %s -m usearch61_ref --suppress_new_clusters -o %s -s %s %s %s' %\
              (command_prefix,
               self._script_name,\
               fasta_fp,\
               params['refseqs_fp'],\
-              working_dir,\
+              iteration_working_dir,\
               params['similarity'],
-              suppress_reference_chimera_detection_str,
               rename_command,
               command_suffix)
 

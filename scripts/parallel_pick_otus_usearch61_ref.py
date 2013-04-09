@@ -15,7 +15,7 @@ __status__ = "Development"
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option)
-from qiime.parallel.pick_otus import ParallelPickOtusUsearchRef
+from qiime.parallel.pick_otus import ParallelPickOtusUsearch61Ref
 
 
 ############################
@@ -48,10 +48,6 @@ script_info['optional_options'] = [\
     make_option('-s','--similarity',action='store',\
           type='float',help='Sequence similarity '+\
           'threshold [default: %default]',default=0.97),
-              
-    make_option('-x', '--suppress_reference_chimera_detection', default=False,
-              help=("Suppress reference based chimera detection in usearch_qf. "
-              "[default: %default]"), action='store_true'),
         
  options_lookup['jobs_to_start'],
  options_lookup['retain_temp_files'],
@@ -73,7 +69,7 @@ def main():
     # create dict of command-line options
     params = eval(str(opts))
     
-    parallel_runner = ParallelPickOtusUsearchRef(
+    parallel_runner = ParallelPickOtusUsearch61Ref(
                                         cluster_jobs_fp=opts.cluster_jobs_fp,
                                         jobs_to_start=opts.jobs_to_start,
                                         retain_temp_files=opts.retain_temp_files,
