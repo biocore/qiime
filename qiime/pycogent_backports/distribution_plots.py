@@ -215,15 +215,16 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             "does not match the number of data points."
 
     if distribution_width is None:
-        min_width = max(x_locations)
+        # Find the smallest gap between consecutive data points and divide this
+        # by the number of distributions + 1 for some extra spacing between
+        # data points.
+        min_gap = max(x_locations)
         for i in range(len(x_locations) - 1):
-            curr_val = x_locations[i]
-            next_val = x_locations[i + 1]
-            curr_width = next_val - curr_val
-            if curr_width < min_width:
-                min_width = curr_width
+            curr_gap = x_locations[i + 1] - x_locations[i]
+            if curr_gap < min_gap:
+                min_gap = curr_gap
 
-        distribution_width = min_width / float(num_distributions + 1)
+        distribution_width = min_gap / float(num_distributions + 1)
     else:
         if distribution_width <= 0:
             raise ValueError("The width of a distribution cannot be less than "
@@ -388,8 +389,12 @@ def _calc_data_point_locations(num_points, x_values=None):
 
         # Scale to the range [1, num_points]. Taken from
         # http://www.heatonresearch.com/wiki/Range_Normalization
-        x_locs = array([(((x_val - min(x_values)) * (num_points - 1)) /
-            float(max(x_values) - min(x_values))) + 1 for x_val in x_values])
+        x_min = min(x_values)
+        x_max = max(x_values)
+        x_range = x_max - x_min
+        n_range = num_points - 1
+        x_locs = array([(((x_val - x_min) * n_range) / float(x_range)) + 1
+                        for x_val in x_values])
 
     return x_locs
 
