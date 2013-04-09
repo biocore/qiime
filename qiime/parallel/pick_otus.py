@@ -190,6 +190,71 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
 
         return commands, result_filepaths
 
+class ParallelPickOtusUsearchRef(ParallelPickOtus):
+    
+    # def _identify_files_to_remove(self,job_result_filepaths,params):
+    #     """ Select the files to remove: by default remove all files
+    #     """
+    #     if params['save_uc_files']:
+    #         # keep any .uc files that get created
+    #         result =\
+    #          [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
+    #     else:
+    #         result = [job_result_filepaths]
+    #     
+    #     return result
+    
+    def _get_job_commands(self,
+                          fasta_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate pick_otus commands which should be run
+        """
+        # Create basenames for each of the output files. These will be filled
+        # in to create the full list of files created by all of the runs.
+        out_filenames = [job_prefix + '.%d_otus.log', 
+                         job_prefix + '.%d_otus.txt',]
+                         #job_prefix + '.%s_failures.txt']
+    
+        # Create lists to store the results
+        commands = []
+        result_filepaths = []
+
+        if params['suppress_reference_chimera_detection']:
+            suppress_reference_chimera_detection_str = '--suppress_reference_chimera_detection'
+        else:
+            suppress_reference_chimera_detection_str = ''
+        
+        # Iterate over the input files
+        for i,fasta_fp in enumerate(fasta_fps):
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            rename_command, current_result_filepaths = self._get_rename_command(
+                [fn % i for fn in out_filenames],
+                working_dir,
+                output_dir)
+            result_filepaths += current_result_filepaths
+            
+            command = \
+             '%s %s -i %s -r %s -m usearch_ref --suppress_new_clusters --suppress_de_novo_chimera_detection --suppress_cluster_size_filtering -o %s -s %s %s %s %s' %\
+             (command_prefix,
+              self._script_name,\
+              fasta_fp,\
+              params['refseqs_fp'],\
+              working_dir,\
+              params['similarity'],
+              suppress_reference_chimera_detection_str,
+              rename_command,
+              command_suffix)
+
+            commands.append(command)
+
+        return commands, result_filepaths
+
 class ParallelPickOtusBlast(ParallelPickOtus):
 
     def _precommand_initiation(self,input_fp,output_dir,working_dir,params):
