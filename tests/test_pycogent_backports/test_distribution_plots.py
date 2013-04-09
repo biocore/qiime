@@ -409,8 +409,7 @@ class DistributionPlotsTests(TestCase):
                           legend=('foo', 'bar', 'baz'))
 
     def test_generate_comparative_plots_bar(self):
-        """generate_comparative_plots() should return a valid barchart Figure
-        object."""
+        """Should return a valid barchart Figure object."""
         fig = generate_comparative_plots('bar', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['b', 'r', 'g'],
@@ -420,7 +419,8 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.3, 7.4, 17.6, 19.3])
+        self.assertFloatEqual(ax.get_xticks(),
+                              [1.1125, 2.0125, 3.8125, 4.1125])
 
     def test_generate_comparative_plots_insufficient_colors(self):
         """generate_comparative_plots() should work even when there aren't
@@ -444,8 +444,7 @@ class DistributionPlotsTests(TestCase):
             sys.stdout = saved_stdout
 
     def test_generate_comparative_plots_scatter(self):
-        """generate_comparative_plots() should return a valid scatterplot
-        Figure object."""
+        """Should return a valid scatterplot Figure object."""
         fig = generate_comparative_plots('scatter', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['^', '>', '<'],
@@ -455,7 +454,7 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.1, 7.2, 17.4, 19.1])
+        self.assertFloatEqual(ax.get_xticks(), [1.075, 1.975, 3.775, 4.075])
 
     def test_generate_comparative_plots_insufficient_symbols(self):
         """generate_comparative_plots() should work even when there aren't
@@ -487,8 +486,7 @@ class DistributionPlotsTests(TestCase):
                 "x-axis label", "y-axis label", "Test")
 
     def test_generate_comparative_plots_box(self):
-        """generate_comparative_plots() should return a valid boxplot Figure
-        object."""
+        """Should return a valid boxplot Figure object."""
         fig = generate_comparative_plots('box', self.ValidTypicalData,
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
@@ -498,7 +496,7 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(ax.get_xlabel(), "x-axis label")
         self.assertEqual(ax.get_ylabel(), "y-axis label")
         self.assertEqual(len(ax.get_xticklabels()), 4)
-        self.assertFloatEqual(ax.get_xticks(), [2.1, 7.2, 17.4, 19.1])
+        self.assertFloatEqual(ax.get_xticks(), [1.075, 1.975, 3.775, 4.075])
 
     def test_generate_comparative_plots_error(self):
         """generate_comparative_plots() should raise a ValueError for an
