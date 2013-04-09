@@ -28,7 +28,7 @@ from qiime.test import (initiate_timeout,
                         get_test_data_fps)
 from qiime.workflow.util import (call_commands_serially,
                                  no_status_updates)
-from qiime.workflow.upstream import (run_pick_reference_otus_through_otu_table,
+from qiime.workflow.upstream import (run_pick_closed_reference_otus,
                                      run_pick_de_novo_otus)
 
 class UpstreamWorkflowTests(TestCase):
@@ -64,9 +64,9 @@ class UpstreamWorkflowTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_run_pick_reference_otus_through_otu_table(self):
-        """run_pick_reference_otus_through_otu_table generates expected results"""
-        run_pick_reference_otus_through_otu_table(
+    def test_run_pick_closed_reference_otus(self):
+        """run_pick_closed_reference_otus generates expected results"""
+        run_pick_closed_reference_otus(
          self.test_data['seqs'][0],
          self.test_data['refseqs'][0],
          self.test_out,
@@ -111,10 +111,10 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
         
-    def test_run_pick_reference_otus_through_otu_table_parallel(self):
-        """run_pick_reference_otus_through_otu_table generates expected results in parallel
+    def test_run_pick_closed_reference_otus_parallel(self):
+        """run_pick_closed_reference_otus generates expected results in parallel
         """
-        run_pick_reference_otus_through_otu_table(
+        run_pick_closed_reference_otus(
          self.test_data['seqs'][0],
          self.test_data['refseqs'][0],
          self.test_out,

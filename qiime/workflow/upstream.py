@@ -313,7 +313,7 @@ def run_pick_de_novo_otus(input_fp,
 run_qiime_data_preparation = run_pick_otus_through_otu_table = run_pick_de_novo_otus
 
 
-def run_pick_reference_otus_through_otu_table(
+def run_pick_closed_reference_otus(
                               input_fp, 
                               refseqs_fp,
                               output_dir,
@@ -438,3 +438,5 @@ def run_pick_reference_otus_through_otu_table(
                     status_update_callback,
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
+
+run_pick_reference_otus_through_otu_table = pick_closed_reference_otus

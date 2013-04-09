@@ -18,7 +18,7 @@ from qiime.util import (load_qiime_config,
                         parse_command_line_parameters,
                         get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow.upstream import run_pick_reference_otus_through_otu_table
+from qiime.workflow.upstream import run_pick_closed_reference_otus
 from qiime.workflow.util import (print_commands,
                                  call_commands_serially,
                                  print_to_stdout,
@@ -129,7 +129,7 @@ def main():
     else:
         status_update_callback = no_status_updates
 
-    run_pick_reference_otus_through_otu_table(
+    run_pick_closed_reference_otus(
      input_fp, 
      reference_fp,
      output_dir,

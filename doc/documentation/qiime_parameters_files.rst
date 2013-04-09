@@ -45,7 +45,7 @@ Examples
 
 Below are some commonly used parameter files.
 
-Run OTU picking with uclust's default parameters (rather than QIIME's default parameters, which are more conservative but *much* slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust's ``--rev`` parameter). This information can be saved to a text file and passed to `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_, `pick_subsampled_reference_otus_through_otu_table.py <../scripts/pick_subsampled_reference_otus_through_otu_table.html>`_, or `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_.
+Run OTU picking with uclust's default parameters (rather than QIIME's default parameters, which are more conservative but *much* slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust's ``--rev`` parameter). This information can be saved to a text file and passed to `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, `pick_subsampled_reference_otus_through_otu_table.py <../scripts/pick_subsampled_reference_otus_through_otu_table.html>`_, or `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_.
 ::
 	
 	pick_otus:enable_rev_strand_match True
@@ -65,7 +65,7 @@ Workflow scripts
 You can find information on the QIIME workflow scripts at:
 
 	* `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_
-	* `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_
+	* `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_
 	* `pick_subsampled_reference_otus_through_otu_table.py <../scripts/pick_subsampled_reference_otus_through_otu_table.html>`_
 	* `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_
 	* `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_
