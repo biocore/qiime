@@ -35,7 +35,7 @@ script_info['script_usage'] = []
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
-script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection and using usearch61 and usearch61_ref as the OTU picking methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_usearch/ -s 0.1 -p $PWD/ucrss_params.txt -m usearch"))
+script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection and using usearch61 and usearch61_ref as the OTU picking methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_usearch/ -s 0.1 -p $PWD/ucrss_params.txt -m usearch61"))
 
 script_info['script_usage'].append(("","Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/","%prog -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt"))
 
@@ -45,6 +45,7 @@ script_info['script_usage'].append(("","Run the subsampled open-reference OTU pi
 
 script_info['script_usage_output_to_remove'] = ['$PWD/ucrss/',
                                                 '$PWD/ucrss_iter/',
+                                                '$PWD/ucrss_usearch/',
                                                 '$PWD/ucrss_iter_no_tree/',
                                                 '$PWD/ucrss_iter_no_tax/']
 
