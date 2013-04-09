@@ -224,6 +224,24 @@ class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
         commands = []
         result_filepaths = []
         
+        # Generate the parameters to pass to pick_otus.py. This must exclude
+        # parameters that get passed only to the parallel version 
+        # (e.g jobs_to_start) and values that get overwritten (e.g., 
+        # input_fasta_fp)
+        param_fields = []
+        ignored_params = set(["input_fasta_fp","output_dir","jobs_to_start",
+             "retain_temp_files","suppress_submit_jobs","poll_directly",
+             "cluster_jobs_fp","suppress_polling","job_prefix",
+             "seconds_to_sleep"])
+        for name, value in params.items():
+            if name in ignored_params or value == False:
+                pass
+            elif value == True:
+                param_fields.append('--%s' % name)
+            else:
+                param_fields.append('--%s %s' % (name,value))
+        params_str = ' '.join(param_fields)
+        
         # Iterate over the input files
         for i,fasta_fp in enumerate(fasta_fps):
             # Each run ends with moving the output file from the tmp dir to
@@ -236,16 +254,15 @@ class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
             result_filepaths += current_result_filepaths
             
             command = \
-             '%s %s -i %s -r %s -m usearch61_ref --suppress_new_clusters -o %s -s %s %s %s' %\
+             '%s %s -i %s -m usearch61_ref --suppress_new_clusters -o %s %s %s %s' %\
              (command_prefix,
-              self._script_name,\
-              fasta_fp,\
-              params['refseqs_fp'],\
-              iteration_working_dir,\
-              params['similarity'],
+              self._script_name,
+              fasta_fp,
+              iteration_working_dir,
+              params_str,
               rename_command,
               command_suffix)
-
+            print command
             commands.append(command)
 
         return commands, result_filepaths
