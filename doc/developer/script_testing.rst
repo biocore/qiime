@@ -81,7 +81,7 @@ Adding new script interface tests is easy. All you do is create a new test direc
 
 Full paths
 ----------
-We recommend specifying full paths for many of QIIME scripts, and importantly for workflow and parallel scripts. To do this in your usage example, replace the full path with $PWD. For example (from ``pick_otus_through_otu_table.py``)::
+We recommend specifying full paths for many of QIIME scripts, and importantly for workflow and parallel scripts. To do this in your usage example, replace the full path with $PWD. For example (from ``pick_de_novo_otus.py``)::
 
 	Simple example: The following command will start an analysis on seqs.fna (-i), which is a
 	post-split_libraries fasta file. The sequence identifiers in this file should be of the form
@@ -93,11 +93,11 @@ We recommend specifying full paths for many of QIIME scripts, and importantly fo
 	build an OTU table. All output files will be written to the directory specified by -o, and 
 	subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented 
 	here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
-	 pick_otus_through_otu_table.py -i $PWD/seqs.fna -o $PWD/otus/
+	 pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/otus/
 
 Cleaning up output files
 ------------------------
-Some scripts require that the user-specified output directory does not exist when the script runs, but we provide example output in the test directory. To automatically remove output directories prior to running the tests, add the ``script_usage_output_to_remove`` entry to your script info. For example, from ``pick_otus_through_otu_table.py``::
+Some scripts require that the user-specified output directory does not exist when the script runs, but we provide example output in the test directory. To automatically remove output directories prior to running the tests, add the ``script_usage_output_to_remove`` entry to your script info. For example, from ``pick_de_novo_otus.py``::
 
 	script_info['script_usage_output_to_remove'] = ['$PWD/otus/']
 

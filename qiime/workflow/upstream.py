@@ -20,7 +20,7 @@ from qiime.workflow.util import (print_to_stdout,
                                  log_input_md5s,
                                  get_params_str)
 
-def run_pick_otus_through_otu_table(input_fp, 
+def run_pick_de_novo_otus(input_fp, 
                                output_dir, 
                                command_handler,
                                params, 
@@ -310,7 +310,7 @@ def run_pick_otus_through_otu_table(input_fp,
                     close_logger_on_success=close_logger_on_success)
     
     return abspath(tree_fp), abspath(otu_table_fp)
-run_qiime_data_preparation = run_pick_otus_through_otu_table
+run_qiime_data_preparation = run_pick_otus_through_otu_table = run_pick_de_novo_otus
 
 
 def run_pick_reference_otus_through_otu_table(

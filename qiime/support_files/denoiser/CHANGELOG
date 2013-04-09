@@ -23,7 +23,7 @@ Fixed an issue with how centroids for a cluster are chosen. Output fasta file no
 
 
 == 0.83 ==
-Make scripts compatible with QIIME workflow scripts (pick_otus_through_otu_table.py). Compatible with the QIIME 1.0 release.
+Make scripts compatible with QIIME workflow scripts (pick_de_novo_otus.py). Compatible with the QIIME 1.0 release.
 
 
 == 0.81 ==

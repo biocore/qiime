@@ -7,7 +7,7 @@
 
 **Description:**
 
-Inflate denoiser results so they can be passed directly to `pick_otus.py <./pick_otus.html>`_, `parallel_pick_otus_uclust_ref.py <./parallel_pick_otus_uclust_ref.html>`_, or `pick_otus_through_otu_table.py <./pick_otus_through_otu_table.html>`_. Note that the results of this script have not be abundance sorted, so they must be before being passed to the OTU picker. The uclust OTU pickers incorporate this abundance presorting by default.
+Inflate denoiser results so they can be passed directly to `pick_otus.py <./pick_otus.html>`_, `parallel_pick_otus_uclust_ref.py <./parallel_pick_otus_uclust_ref.html>`_, or `pick_de_novo_otus.py <./pick_de_novo_otus.html>`_. Note that the results of this script have not be abundance sorted, so they must be before being passed to the OTU picker. The uclust OTU pickers incorporate this abundance presorting by default.
 
 The inflation process writes each centroid sequence n times, where n is the number of reads that cluster to that centroid, and writes each singleton once. Flowgram identifiers are mapped back to post-split_libraries identifiers in this process (i.e., identifiers in fasta fps).
 

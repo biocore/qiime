@@ -29,7 +29,7 @@ from qiime.test import (initiate_timeout,
 from qiime.workflow.util import (call_commands_serially,
                                  no_status_updates)
 from qiime.workflow.upstream import (run_pick_reference_otus_through_otu_table,
-                                     run_pick_otus_through_otu_table)
+                                     run_pick_de_novo_otus)
 
 class UpstreamWorkflowTests(TestCase):
     
@@ -158,8 +158,8 @@ class UpstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_pick_otus_through_otu_table(self):
-        """run_pick_otus_through_otu_table generates expected results"""
+    def test_run_pick_de_novo_otus(self):
+        """run_pick_de_novo_otus generates expected results"""
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
           'reference_seqs_fp':self.test_data['refseqs'][0]}
@@ -167,7 +167,7 @@ class UpstreamWorkflowTests(TestCase):
          {'template_fp':self.test_data['refseqs_aligned'][0]}
         self.params['filter_alignment'] = \
          {'lane_mask_fp':self.test_data['refseqs_aligned_lanemask'][0]}
-        actual_tree_fp, actual_otu_table_fp = run_pick_otus_through_otu_table(
+        actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
          self.test_data['seqs'][0], 
          self.test_out, 
          call_commands_serially,
@@ -236,8 +236,8 @@ class UpstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
-    def test_run_pick_otus_through_otu_table_parallel(self):
-        """run_pick_otus_through_otu_table generates expected results in parallel
+    def test_run_pick_de_novo_otus_parallel(self):
+        """run_pick_de_novo_otus generates expected results in parallel
         """
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
@@ -246,7 +246,7 @@ class UpstreamWorkflowTests(TestCase):
          {'template_fp':self.test_data['refseqs_aligned'][0]}
         self.params['filter_alignment'] = \
          {'lane_mask_fp':self.test_data['refseqs_aligned_lanemask'][0]}
-        actual_tree_fp, actual_otu_table_fp = run_pick_otus_through_otu_table(
+        actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
          self.test_data['seqs'][0], 
          self.test_out, 
          call_commands_serially,
@@ -315,8 +315,8 @@ class UpstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_pick_otus_through_otu_table_muscle(self):
-        """run_pick_otus_through_otu_table w muscle generates expected results
+    def test_run_pick_de_novo_otus_muscle(self):
+        """run_pick_de_novo_otus w muscle generates expected results
         """
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
@@ -326,7 +326,7 @@ class UpstreamWorkflowTests(TestCase):
          {'suppress_lane_mask_filter':None,
           'entropy_threshold':'0.10'}
         
-        run_pick_otus_through_otu_table(
+        run_pick_de_novo_otus(
          self.test_data['seqs'][0], 
          self.test_out, 
          call_commands_serially,

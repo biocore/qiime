@@ -47,7 +47,7 @@ That's it. The resulting OTU table (``otu_table_gg.biom``) can now be used in do
 Retraining RDP using a custom parameters file
 =============================================
 
-If you want to integrate retraining of the RDP classifier into your QIIME workflows, you can create a custom parameters file that can be used with the `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_ workflow script. If the ``gg_otus_4feb2011`` directory is in ``/home/qiime/``, the values in your custom parameters file would be::
+If you want to integrate retraining of the RDP classifier into your QIIME workflows, you can create a custom parameters file that can be used with the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ workflow script. If the ``gg_otus_4feb2011`` directory is in ``/home/qiime/``, the values in your custom parameters file would be::
 
 	assign_taxonomy:reference_seqs_fp	/home/qiime/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
 	assign_taxonomy:id_to_taxonomy_fp	/home/qiime/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
