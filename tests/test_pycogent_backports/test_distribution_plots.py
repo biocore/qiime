@@ -260,26 +260,28 @@ class DistributionPlotsTests(TestCase):
         result = _plot_box_data(ax, [], 'blue', 0.33, 55, 1.5, 'stdv')
         self.assertTrue(result is None)
 
-    def test_calc_data_point_locations_invalid_widths(self):
-        """_calc_data_point_locations() should raise a ValueError
-        exception when it encounters bad widths."""
-        self.assertRaises(ValueError, _calc_data_point_locations, [1, 2, 3],
-                3, 2, -2, 0.5)
-        self.assertRaises(ValueError, _calc_data_point_locations, [1, 2, 3],
-                3, 2, 2, -0.5)
+    def test_calc_data_point_locations_invalid_x_values(self):
+        """Should raise error when invalid x_values are encountered."""
+        self.assertRaises(ValueError, _calc_data_point_locations, 3, [1, 10.5])
 
     def test_calc_data_point_locations_default_spacing(self):
-        """_calc_data_point_locations() should return an array containing
-        the x-axis locations for each data point, evenly spaced from 1..n."""
-        locs = _calc_data_point_locations(None, 4, 2, 0.25, 0.5)
-        self.assertEqual(locs, array([1.0, 2.0, 3.0, 4.0]))
+        """Should return evenly-spaced x-axis locations."""
+        locs = _calc_data_point_locations(4)
+        self.assertEqual(locs, array([1, 2, 3, 4]))
 
     def test_calc_data_point_locations_custom_spacing(self):
-        """_calc_data_point_locations() should return an array containing
-        the x-axis locations for each data point, spaced according to a custom
-        spacing scheme."""
-        locs = _calc_data_point_locations([3, 4, 10, 12], 4, 2, 0.25, 0.75)
-        self.assertEqual(locs, array([3.75, 5.0, 12.5, 15.0]))
+        """Should return non-evenly-spaced x-axis locations."""
+        # Scaling down from 3..12 to 1..4.
+        locs = _calc_data_point_locations(4, [3, 4, 10, 12])
+        self.assertFloatEqual(locs, array([1, 1.33333333, 3.33333333, 4]))
+
+        # Sorted order shouldn't affect scaling.
+        locs = _calc_data_point_locations(4, [4, 3, 12, 10])
+        self.assertFloatEqual(locs, array([1.33333333, 1, 4, 3.33333333]))
+
+        # Scaling up from 0.001..0.87 to 1..3.
+        locs = _calc_data_point_locations(3, [0.001, 0.2543, 0.87])
+        self.assertFloatEqual(locs, array([1, 1.58296893, 3]))
 
     def test_calc_data_point_ticks(self):
         """_calc_data_point_ticks() should return an array containing the
