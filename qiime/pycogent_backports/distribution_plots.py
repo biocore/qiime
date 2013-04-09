@@ -370,6 +370,11 @@ def _calc_data_point_locations(x_values, num_points, num_distributions,
     if x_values is None:
         # Evenly space the x locations.
         x_values = range(1, num_points + 1)
+    else:
+        # Scale to the range [1..num_points]. http://www.heatonresearch.com/wiki/Range_Normalization
+        # TODO test with smaller range (scaling up)
+        x_values = [(((x_val - min(x_values)) * (num_points - 1)) / (max(x_values) - min(x_values))) + 1 for x_val in x_values]
+    print x_values
 
     assert (len(x_values) == num_points), "The number of x_values does not " +\
             "match the number of data points."
@@ -377,8 +382,8 @@ def _calc_data_point_locations(x_values, num_points, num_distributions,
     # Calculate the width of each grouping of distributions at a data point.
     # This is multiplied by the current x value to give us our final
     # absolute horizontal position for the current point.
-    return array([(dist_width * num_distributions + group_spacing) * x_val\
-                     for x_val in x_values])
+    return array([(dist_width * num_distributions + group_spacing) * x_val
+                  for x_val in x_values])
 
 def _calc_data_point_ticks(x_locations, num_distributions, distribution_width,
                            distribution_centered):
