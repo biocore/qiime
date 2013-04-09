@@ -355,6 +355,8 @@ def iterative_pick_subsampled_open_reference_otus(
                               suppress_step4=False,
                               logger=None,
                               suppress_md5=False,
+                              denovo_otu_picking_method='uclust',
+                              reference_otu_picking_method='uclust_ref',
                               status_update_callback=print_to_stdout):
     """ Call the pick_subsampled_open_reference_otus workflow on multiple inputs
          and handle processing of the results.
@@ -406,6 +408,8 @@ def iterative_pick_subsampled_open_reference_otus(
                                      suppress_step4=suppress_step4,
                                      logger=logger,
                                      suppress_md5=suppress_md5,
+                                     denovo_otu_picking_method=denovo_otu_picking_method,
+                                     reference_otu_picking_method=reference_otu_picking_method,
                                      status_update_callback=status_update_callback)
         ## perform post-iteration file shuffling whether the previous iteration's
         ## data previously existed or was just computed.
@@ -538,6 +542,8 @@ def pick_subsampled_open_reference_otus(input_fp,
                               suppress_step4=False,
                               logger=None,
                               suppress_md5=False,
+                              denovo_otu_picking_method='uclust',
+                              reference_otu_picking_method='uclust_ref',
                               status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -551,8 +557,17 @@ def pick_subsampled_open_reference_otus(input_fp,
     
     """
     # for now only allowing uclust for otu picking
-    denovo_otu_picking_method = 'uclust'
-    reference_otu_picking_method = 'uclust_ref'
+    allowed_denovo_otu_picking_methods = ['uclust','usearch61']
+    allowed_reference_otu_picking_methods = ['uclust_ref','usearch61_ref']
+    assert denovo_otu_picking_method in allowed_denovo_otu_picking_methods,\
+     "Unknown de novo OTU picking method: %s. Known methods are: %s"\
+     % (denovo_otu_picking_method,
+        ','.join(allowed_denovo_otu_picking_methods))
+
+    assert reference_otu_picking_method in allowed_reference_otu_picking_methods,\
+     "Unknown reference OTU picking method: %s. Known methods are: %s"\
+     % (reference_otu_picking_method,
+        ','.join(allowed_reference_otu_picking_methods))
     
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)
