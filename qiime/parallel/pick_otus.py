@@ -262,7 +262,6 @@ class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
               params_str,
               rename_command,
               command_suffix)
-            print command
             commands.append(command)
 
         return commands, result_filepaths
