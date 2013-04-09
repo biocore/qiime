@@ -367,7 +367,8 @@ def run_pick_closed_reference_otus(
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
     if parallel and (otu_picking_method == 'blast' or 
-                     otu_picking_method == 'uclust_ref'):
+                     otu_picking_method == 'uclust_ref' or
+                     otu_picking_method == 'usearch61_ref'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -403,7 +404,7 @@ def run_pick_closed_reference_otus(
         # Since this is reference-based OTU picking we always want to
         # suppress new clusters -- force it here.
         params_str+= ' --suppress_new_clusters'
-        logger.write("Forcing --suppress_new_clusters as this is reference-based OTU picking.\n\n")
+        logger.write("Forcing --suppress_new_clusters as this is closed-reference OTU picking.\n\n")
         # Build the OTU picking command
         pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -r %s -m %s %s' %\
          (python_exe_fp,
