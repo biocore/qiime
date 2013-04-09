@@ -663,7 +663,8 @@ def main():
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
-         log_path=log_path,HALT_EXEC=False)
+         log_path=log_path,otu_prefix=opts.uclust_otu_id_prefix,
+         HALT_EXEC=False)
          
     # usearch 6.1 reference OTU picking
     elif otu_picking_method == 'usearch61_ref':
@@ -686,7 +687,8 @@ def main():
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, refseqs_fp, result_path=result_path,
-         log_path=log_path, failure_path=failure_path, HALT_EXEC=False)
+         log_path=log_path, failure_path=failure_path, 
+         otu_prefix=opts.uclust_otu_id_prefix, HALT_EXEC=False)
              
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
