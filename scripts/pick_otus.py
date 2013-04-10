@@ -645,6 +645,7 @@ def main():
          
     # usearch 6.1 (de novo OTU picking only)
     elif otu_picking_method == 'usearch61':
+        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
         params = {
         'percent_id':opts.similarity,
         'wordlength':word_length,
@@ -663,11 +664,12 @@ def main():
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
-         log_path=log_path,otu_prefix=opts.uclust_otu_id_prefix,
+         log_path=log_path,otu_prefix=otu_prefix,
          HALT_EXEC=False)
          
     # usearch 6.1 reference OTU picking
     elif otu_picking_method == 'usearch61_ref':
+        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
         params = {
         'percent_id':opts.similarity,
         'wordlength':word_length,
@@ -688,7 +690,7 @@ def main():
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, refseqs_fp, result_path=result_path,
          log_path=log_path, failure_path=failure_path, 
-         otu_prefix=opts.uclust_otu_id_prefix, HALT_EXEC=False)
+         otu_prefix=otu_prefix, HALT_EXEC=False)
              
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
