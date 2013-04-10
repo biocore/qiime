@@ -415,7 +415,7 @@ def main():
     # Set default values according to clustering method
     if word_length != "default":
         try:
-            word_length = int(word_len)
+            word_length = int(word_length)
         except ValueError:
             raise ValueError,("--word_length must either be 'default' "
              "or an int value")
