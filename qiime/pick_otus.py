@@ -1180,8 +1180,8 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines.append('Reference database for OTU picking: %s' % 
                          abspath(refseqs_fp))
         
-        if failures:
-            if failure_path:
+        if len(failures) > 0:
+            if failure_path != None:
                 failure_file = open(failure_path,'w')
                 failure_file.write('\n'.join(failures))
                 failure_file.close()
@@ -1219,7 +1219,7 @@ class Usearch61OtuPicker(UclustOtuPickerBase):
         
         Some generic entries in params are:
     
-        Similarity: similarity threshold, default 0.97, corresponding to
+        percent_id: similarity threshold, default 0.97, corresponding to
          genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
          to the uclust application controllers)
         Application: 3rd-party application used
@@ -1319,7 +1319,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
         
         Some generic entries in params are:
     
-        Similarity: similarity threshold, default 0.97, corresponding to
+        percent_id: similarity threshold, default 0.97, corresponding to
          genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
          to the uclust application controllers)
         Application: 3rd-party application used
@@ -1408,7 +1408,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
         else:
             result = clusters
         
-        if failure_path and failures:
+        if failure_path != None and len(failures) > 0:
             self._write_failures(failure_path,failures)
         
         return result, failures
