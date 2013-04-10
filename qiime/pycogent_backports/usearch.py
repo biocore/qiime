@@ -1650,7 +1650,6 @@ def usearch61_ref_cluster(seq_path,
                           save_intermediate_files = True,
                           minlen = 64,
                           output_dir = '.',
-                          output_dir_denovo = '.',
                           remove_usearch_logs = False,
                           verbose = False,
                           wordlength = 8,
@@ -2228,9 +2227,9 @@ def parse_usearch61_clusters(clustered_uc_lines,
             # Need to split on semicolons for sequence IDs to handle case of 
             # abundance sorted data
             clusters[otu_prefix + curr_line[otu_id_ix]] =\
-             [curr_line[seq_id_ix].split(';')[0]]
+             [curr_line[seq_id_ix].split(';')[0].split()[0]]
         if curr_line[seed_hit_ix] == "H":
-            curr_id = curr_line[seq_id_ix].split(';')[0]
+            curr_id = curr_line[seq_id_ix].split(';')[0].split()[0]
             if ref_clustered:
                 try:
                     clusters[otu_prefix + curr_line[ref_id_ix]].append(curr_id)
