@@ -21,6 +21,7 @@ from glob import glob
 
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationError, get_tmp_filename
+from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import create_dir, get_random_directory_name, remove_files
 from qiime.pycogent_backports.usearch import (Usearch,
  clusters_from_blast_uc_file, usearch_fasta_sort_from_filepath,
@@ -39,6 +40,440 @@ from qiime.pycogent_backports.usearch import (Usearch,
  parse_usearch61_failures)
 
 
+class Usearch61Tests(TestCase):
+    """ Tests for usearch 6.1 functionality """
+    
+    def setUp(self):
+        # create the temporary input files
+        
+        self.output_dir = '/tmp/'
+        
+        self.dna_seqs_1 = dna_seqs_1
+        self.usearch_ref_seqs1 = usearch_ref_seqs1
+        self.dna_seqs_1_subset = dna_seqs_1_subset
+        self.dna_seqs_with_dups = dna_seqs_with_dups2
+        self.usearch61_dereplicated_uc_lines = usearch61_dereplicated_uc_lines
+        self.usearch61_clustered_uc_lines = usearch61_clustered_uc_lines
+        self.usearch61_clustered_uc_lines_ref =\
+         usearch61_clustered_uc_lines_ref
+        self.usearch61_clustered_ref_lines = usearch61_clustered_ref_lines
+        
+        self.tmp_dna_seqs_1 = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_dna_seqs_1,'w')
+        seq_file.write(self.dna_seqs_1)
+        seq_file.close()
+        
+        self.tmp_usearch_ref_seqs1 = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_usearch_ref_seqs1,'w')
+        seq_file.write(self.usearch_ref_seqs1)
+        seq_file.close()
+        
+        self.tmp_dna_seqs_1_subset = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_dna_seqs_1_subset,'w')
+        seq_file.write(self.dna_seqs_1_subset)
+        seq_file.close()
+        
+        self.tmp_dna_seqs_with_dups = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_dna_seqs_with_dups, "w")
+        seq_file.write(self.dna_seqs_with_dups)
+        seq_file.close()
+                 
+        self._files_to_remove =\
+         [self.tmp_dna_seqs_1, self.tmp_usearch_ref_seqs1,
+          self.tmp_dna_seqs_1_subset, self.tmp_dna_seqs_with_dups]
+          
+        self._dirs_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+                
+    def test_usearch61_ref_default_params(self):
+        """ usearch61 reference OTU picking works with default settings """
+        
+        clusters, failures = usearch61_ref_cluster(self.tmp_dna_seqs_1,
+         self.tmp_usearch_ref_seqs1, output_dir = self.output_dir,
+         save_intermediate_files = False, remove_usearch_logs = True)
+         
+        # Should all fall into single, de novo clusters
+         
+        expected_failures = []
+        
+        self.assertEqual(failures, expected_failures)
+        
+        expected_clusters = [['uclust_test_seqs_9'], ['uclust_test_seqs_8'],
+         ['uclust_test_seqs_3'], ['uclust_test_seqs_5'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_1'], ['uclust_test_seqs_0'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_6']]
+         
+        self.assertEqual(len(expected_clusters), 10)
+        
+        for curr_cluster in clusters.values():
+            self.assertTrue(curr_cluster in expected_clusters)
+
+        
+    def test_usearch61_ref_default_params_suppressed_clusters(self):
+        """ usearch61 reference OTU picking, suppressed clusters """
+        
+        clusters, failures = usearch61_ref_cluster(self.tmp_dna_seqs_1,
+         self.tmp_usearch_ref_seqs1, suppress_new_clusters=True,
+         output_dir = self.output_dir,
+         save_intermediate_files = False, remove_usearch_logs = True)
+         
+        # Should all fail as the reference database does not match.
+        
+        expected_clusters = {}
+         
+        expected_failures = ['uclust_test_seqs_0', 'uclust_test_seqs_9',
+         'uclust_test_seqs_4', 'uclust_test_seqs_7', 'uclust_test_seqs_2',
+         'uclust_test_seqs_1', 'uclust_test_seqs_3', 'uclust_test_seqs_8',
+         'uclust_test_seqs_6', 'uclust_test_seqs_5']
+        
+        self.assertEqual(clusters, expected_clusters)
+        
+        for curr_failure in failures:
+            self.assertTrue(curr_failure in expected_failures)
+            
+    def test_usearch61_ref_default_params_matches_ref(self):
+        """ usearch61 reference OTU picking, matches ref OTU IDs """
+        
+        clusters, failures = usearch61_ref_cluster(self.tmp_dna_seqs_1,
+         self.tmp_dna_seqs_1, suppress_new_clusters=True,
+         output_dir = self.output_dir,
+         save_intermediate_files = False, remove_usearch_logs = True)
+         
+        # Should all fall into single, ref-based clusters
+        
+        expected_clusters = {'uclust_test_seqs_5': ['uclust_test_seqs_5'],
+         'uclust_test_seqs_4': ['uclust_test_seqs_4'],
+         'uclust_test_seqs_7': ['uclust_test_seqs_7'],
+         'uclust_test_seqs_6': ['uclust_test_seqs_6'],
+         'uclust_test_seqs_1': ['uclust_test_seqs_1'],
+         'uclust_test_seqs_0': ['uclust_test_seqs_0'],
+         'uclust_test_seqs_3': ['uclust_test_seqs_3'],
+         'uclust_test_seqs_2': ['uclust_test_seqs_2'],
+         'uclust_test_seqs_9': ['uclust_test_seqs_9'],
+         'uclust_test_seqs_8': ['uclust_test_seqs_8']}
+         
+        expected_failures = []
+        
+        self.assertEqual(clusters, expected_clusters)
+        self.assertEqual(failures, expected_failures)
+        
+    def test_usearch61_ref_open_ref(self):
+        """ usearch61 does open reference OTU picking """
+        
+        clusters, failures = usearch61_ref_cluster(self.tmp_dna_seqs_1,
+         self.tmp_dna_seqs_1_subset, percent_id = 0.98, rev = True,
+         save_intermediate_files = False, minlen = 44,
+         output_dir = self.output_dir, remove_usearch_logs = True,
+         verbose = False, wordlength = 12, usearch_fast_cluster = False,
+         usearch61_sort_method = 'abundance', otu_prefix = "denovo",
+         usearch61_maxrejects = 100, usearch61_maxaccepts = 4,
+         sizeorder=True)
+         
+        # Should all fall into single, ref-based & denovo clusters
+        
+        expected_ref_results = {'uclust_test_seqs_1': ['uclust_test_seqs_1'],
+         'uclust_test_seqs_0': ['uclust_test_seqs_0'],
+         'uclust_test_seqs_3': ['uclust_test_seqs_3'],
+         'uclust_test_seqs_2': ['uclust_test_seqs_2']}
+         
+        expected_denovo_results = [['uclust_test_seqs_5'], 
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_8'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_6'], ['uclust_test_seqs_9']]
+         
+        self.assertEqual(len(clusters), 10)
+        
+        for curr_ref_result in expected_ref_results:
+            self.assertEqual(clusters[curr_ref_result],
+             expected_ref_results[curr_ref_result])
+        for curr_denovo_result in expected_denovo_results:
+            self.assertTrue(curr_denovo_result in clusters.values())
+         
+        expected_failures = []
+
+        self.assertEqual(failures, expected_failures)
+        
+    def test_usearch61_denovo_default_params(self):
+        """ usearch61 denovo OTU picking works with default settings """
+        
+        clusters = usearch61_denovo_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir, save_intermediate_files = False,
+         remove_usearch_logs = True)
+         
+        # Should all fall into single, de novo clusters
+        
+        expected_clusters = [['uclust_test_seqs_9'], ['uclust_test_seqs_8'],
+         ['uclust_test_seqs_3'], ['uclust_test_seqs_5'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_1'], ['uclust_test_seqs_0'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_6']]
+         
+        self.assertEqual(len(expected_clusters), 10)
+        
+        for curr_cluster in clusters.values():
+            self.assertTrue(curr_cluster in expected_clusters)
+        
+    def test_usearch61_denovo_length_sorting(self):
+        """ usearch61 denovo OTU picking works with length sorting """
+        
+        clusters = usearch61_denovo_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir, save_intermediate_files = False,
+         remove_usearch_logs = True, usearch61_sort_method = 'length')
+         
+        # Should all fall into single, de novo clusters
+        
+        expected_clusters = [['uclust_test_seqs_9'], ['uclust_test_seqs_8'],
+         ['uclust_test_seqs_3'], ['uclust_test_seqs_5'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_1'], ['uclust_test_seqs_0'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_6']]
+         
+        self.assertEqual(len(expected_clusters), 10)
+        
+        for curr_cluster in clusters.values():
+            self.assertTrue(curr_cluster in expected_clusters)
+        
+    def test_usearch61_denovo_no_sorting(self):
+        """ usearch61 denovo OTU picking works with no sorting """
+        
+        clusters = usearch61_denovo_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir, save_intermediate_files = False,
+         remove_usearch_logs = True, usearch61_sort_method = 'None')
+         
+        # Should all fall into single, de novo clusters
+        
+        expected_clusters = [['uclust_test_seqs_9'], ['uclust_test_seqs_8'],
+         ['uclust_test_seqs_3'], ['uclust_test_seqs_5'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_1'], ['uclust_test_seqs_0'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_6']]
+         
+        self.assertEqual(len(expected_clusters), 10)
+        
+        for curr_cluster in clusters.values():
+            self.assertTrue(curr_cluster in expected_clusters)
+        
+    def test_usearch61_denovo_fast_cluster(self):
+        """ usearch61 denovo OTU picking works with fast_cluster sorting """
+        
+        clusters = usearch61_denovo_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir, save_intermediate_files = False,
+         remove_usearch_logs = True, usearch61_sort_method = 'length',
+         usearch_fast_cluster = True)
+         
+        # Should all fall into single, de novo clusters
+        
+        expected_clusters = [['uclust_test_seqs_9'], ['uclust_test_seqs_8'],
+         ['uclust_test_seqs_3'], ['uclust_test_seqs_5'], ['uclust_test_seqs_4'],
+         ['uclust_test_seqs_1'], ['uclust_test_seqs_0'], ['uclust_test_seqs_2'],
+         ['uclust_test_seqs_7'], ['uclust_test_seqs_6']]
+         
+        self.assertEqual(len(expected_clusters), 10)
+        
+        for curr_cluster in clusters.values():
+            self.assertTrue(curr_cluster in expected_clusters)
+            
+    def test_sort_by_abundance_usearch61(self):
+        """ usearch61 sorts by abundance successfully """
+        
+        sorted_fna_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        sorted_uc_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.uc')
+        
+        output_fna_filepath, output_uc_filepath, app_result =\
+         sort_by_abundance_usearch61(self.tmp_dna_seqs_with_dups,
+         self.output_dir, remove_usearch_logs = True,
+         output_fna_filepath = sorted_fna_fp,
+         output_uc_filepath = sorted_uc_fp, log_name = "abundance_sorted.log")
+         
+        output_fna = [line for line in MinimalFastaParser(open(output_fna_filepath, "U"))]
+        
+        expected_fna = [('seq2;size=3;', 
+         'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC'),
+         ('seq1;size=1;',
+         'GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA')]        
+        
+        self._files_to_remove.append(sorted_fna_fp)
+        self._files_to_remove.append(sorted_uc_fp)
+        
+        self.assertEqual(output_fna, expected_fna)
+        
+    def test_sort_by_length_usearch61(self):
+        """ usearch61 sorts by length successfully """
+        
+        sorted_fna_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        
+        output_fna_filepath, app_result =\
+         sort_by_length_usearch61(self.tmp_usearch_ref_seqs1,
+         self.output_dir, remove_usearch_logs = True,
+         output_fna_filepath = sorted_fna_fp)
+         
+        output_fna = [line for line in MinimalFastaParser(open(output_fna_filepath, "U"))]
+        
+        expected_fna = [('ref1',
+         'CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCA'),
+         ('L07864',
+         'GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTAATGCATGGGAATCTGCCATATAGTGGGGGACAACTGGGGAAACCCAGGCTAATACCGCATAATCTCTACGGAGGAAAGGCTTC'),
+         ('EU199232',
+         'TACGCGCGGAAATCGAGCGAGATTGGGAACGCAAGTTCCTGAGTATTGCGGCGAACGGGTGAGTAAGACGTGGGTGATCTACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC')]        
+        self._files_to_remove.append(sorted_fna_fp)
+        
+        self.assertEqual(output_fna, expected_fna)
+        
+    def test_usearch61_cluster_ref(self):
+        """ usearch61 reference OTU picking application call successful """
+        
+        output_uc_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.uc')
+        
+        uc_fp, failures = usearch61_cluster_ref(self.tmp_dna_seqs_1,
+         self.tmp_dna_seqs_1, output_dir = self.output_dir,
+         remove_usearch_logs = True, output_uc_filepath=output_uc_fp)
+         
+        self._files_to_remove.append(uc_fp)
+         
+        actual_uc_lines = [line.strip() for line in open(uc_fp, "U")]
+        
+        # Difficult to test output, as numbers change between runs, for now
+        # just testing length of output, and order of lines changes as well.
+        
+        self.assertEqual(len(actual_uc_lines), 10)
+        
+    def test_usearch61_fast_cluster(self):
+        """ usearch61 fast cluster OTU picking application call successful """
+        
+        output_uc_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.uc')
+        
+        uc_fp, failures = usearch61_fast_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir,
+         remove_usearch_logs = True, output_uc_filepath=output_uc_fp)
+         
+        self._files_to_remove.append(uc_fp)
+         
+        actual_uc_lines = [line.strip() for line in open(uc_fp, "U")]
+        
+        # Difficult to test output, as numbers change between runs, for now
+        # just testing length of output, and order of lines changes as well.
+        
+        self.assertEqual(len(actual_uc_lines), 20)
+        
+    def test_usearch61_cluster_smallmem(self):
+        """ usearch61 smallmem OTU picking application call successful """
+        
+        output_uc_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.uc')
+        
+        uc_fp, failures = usearch61_smallmem_cluster(self.tmp_dna_seqs_1,
+         output_dir = self.output_dir,
+         remove_usearch_logs = True, output_uc_filepath=output_uc_fp)
+         
+        self._files_to_remove.append(uc_fp)
+         
+        actual_uc_lines = [line.strip() for line in open(uc_fp, "U")]
+        
+        # Difficult to test output, as numbers change between runs, for now
+        # just testing length of output, and order of lines changes as well.
+        
+        self.assertEqual(len(actual_uc_lines), 20)
+        
+    def test_parse_dereplicated_uc(self):
+        """ Parses dereplicated usearch61 uc file successfully """
+        
+        actual_derep_ids =\
+         parse_dereplicated_uc(self.usearch61_dereplicated_uc_lines)
+
+        expected_derep_ids = {'seq2': ['seq3', 'seq4'], 'seq1': []}
+         
+        self.assertEqual(actual_derep_ids, expected_derep_ids)
+        
+    def test_parse_usearch61_clusters_denovo(self):
+        """ Parses usearch61 de novo clusters uc file correctly """
+        
+        actual_parsed_clusters, failures =\
+         parse_usearch61_clusters(self.usearch61_clustered_uc_lines,
+         ref_clustered=False)
+        
+         
+        expected_parsed_clusters =\
+         ({'denovo0': ['seq2'], 'denovo1': ['seq1']})
+         
+        self.assertEqual(actual_parsed_clusters, expected_parsed_clusters)
+        
+    def test_parse_usearch61_clusters_ref(self):
+        """ Parses usearch61 ref clusters uc file correctly """
+        
+        actual_parsed_clusters, failures =\
+         parse_usearch61_clusters(self.usearch61_clustered_uc_lines_ref,
+         otu_prefix = '', ref_clustered=True)
+         
+        expected_parsed_clusters =\
+         ({'seq4': ['seq2'], 'seq1': ['seq1']})
+         
+        self.assertEqual(actual_parsed_clusters, expected_parsed_clusters)
+        
+    def test_merge_clusters_dereplicated_seqs(self):
+        """ Properly merges dereplicated and clustered sequences """
+        
+        derep_ids = {'seq2': ['seq3', 'seq4'], 'seq1': []}
+        
+        clustered_ids = ({'seq4': ['seq2'], 'seq1': ['seq1']})
+        
+        merged_ids = merge_clusters_dereplicated_seqs(clustered_ids,
+         derep_ids)
+         
+        expected_ids = {'seq1': ['seq1'], 'seq4': ['seq2', 'seq3', 'seq4']}
+        
+        self.assertEqual(merged_ids, expected_ids)
+        
+    def test_merge_failures_dereplicated_seqs(self):
+        """ Usearch61 properly merges dereplicated seqs, ref based failures """
+        
+        failures = ['seq2']
+        derep_ids = {'seq2': ['seq3', 'seq4'], 'seq1': []}
+        
+        merged_failures = merge_failures_dereplicated_seqs(failures,
+         derep_ids)
+         
+        expected_failures = ['seq2', 'seq3', 'seq4']
+        
+        self.assertEqual(merged_failures, expected_failures)
+        
+    def test_parse_usearch61_failures(self):
+        """ Writes failures out to fasta file """
+        
+        failures = ['seq2', 'seq3', 'seq4']
+        filtered_fna_fp = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        output_fp = parse_usearch61_failures(self.tmp_dna_seqs_with_dups,
+         failures, filtered_fna_fp)
+         
+        self._files_to_remove.append(output_fp)
+         
+        output_fna = [line for line in MinimalFastaParser(open(output_fp, "U"))]
+
+        expected_fna = [('seq2', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC'), ('seq3', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC'), ('seq4', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC')]
+        self.assertEqual(output_fna, expected_fna)
+        
+        
 class UsearchTests(TestCase):
 
     def setUp(self):
@@ -770,6 +1205,15 @@ CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 >uclust_test_seqs_9 some comment9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
 
+dna_seqs_1_subset = """>uclust_test_seqs_0 some comment0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_1 some comment1
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_2 some comment2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3 some comment3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT"""
+
 dna_seqs_3 = """>eco:b0001 thrL; thr operon leader peptide; K08278 thr operon leader peptide (N)
 atgaaacgcattagcaccaccattaccaccaccatcaccattaccacaggtaacggtgcg
 ggctga
@@ -999,6 +1443,16 @@ TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
 TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
 >seq4
 GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTT"""
+
+dna_seqs_with_dups2=""">seq1
+GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA
+>seq2
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
+>seq3
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
+>seq4
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC"""
+
 
 # Expected output file data
 uc_lines1 = """# usearch --id 0.97 --uc usearch_picked_otus/assign_reads_to_otus.uc --query seqs.fna --global --db usearch_picked_otus/enumerated_otus.fasta
@@ -1398,6 +1852,23 @@ TTATCCATT""".split('\n')
 expected_retained_chimeras_intersection = """>seq3
 TTATCCATT""".split('\n')
 
+usearch61_dereplicated_uc_lines = """S	0	80	*	*	*	*	*	seq2	*
+H	0	80	100.0	*	0	0	*	seq3	seq2
+H	0	80	100.0	*	0	0	*	seq4	seq2
+S	1	80	*	*	*	*	*	seq1	*
+C	0	3	*	*	*	*	*	seq2	*
+C	1	1	*	*	*	*	*	seq1	*""".split('\n')
+
+usearch61_clustered_uc_lines = """S	0	80	*	*	*	*	*	seq2;size=3;	*
+S	1	80	*	*	*	*	*	seq1;size=1;	*
+C	0	1	*	*	*	*	*	seq2;size=3;	*
+C	1	1	*	*	*	*	*	seq1;size=1;	*""".split('\n')
+
+usearch61_clustered_uc_lines_ref = """H	3	80	100.0	+	0	0	80M	seq2;size=3;	seq4
+H	0	80	100.0	+	0	0	80M	seq1;size=1;	seq1""".split('\n')
+
+usearch61_clustered_ref_lines = """H	0	80	100.0	+	0	0	80M	seq2;size=3;	seq2
+N	*	*	*	.	*	*	*	seq1;size=1;	*""".split('\n')
 
 if __name__ == '__main__':
     main()

@@ -764,7 +764,9 @@ class Usearch61OtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
         
-        self.assertEqual(obs_clusters, expected_clusters)
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
         
     def test_call_default_params_and_lower_id(self):
         """ clusters seqs within 95% identity with default parameters """
@@ -799,7 +801,11 @@ class Usearch61OtuPickerTests(TestCase):
          'denovo1': ['usearch_ecoli_seq_2bp_change'],
          'denovo2': ['usearch_ecoli_seq_1bp_change']}
         
-        self.assertEqual(obs_clusters, expected_clusters)
+        # should be exactly 3 clusters
+        self.assertEqual(len(obs_clusters), 3)
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
         
     def test_call_default_params_reversed_seq(self):
         """ Does not cluster reverse complemented sequence without --rev """
@@ -812,11 +818,13 @@ class Usearch61OtuPickerTests(TestCase):
         obs_clusters = app(self.tmp_seq_filepath_97perc_id_rc)
                                        
         # RC seq should fall into its own cluster
-        expected_clusters = {'denovo0': ['usearch_ecoli_seq', 
-        'usearch_ecoli_seq_1bp_change'],
-        'denovo1': ['usearch_ecoli_seq_2bp_change_rc']}
+        expected_clusters = [['usearch_ecoli_seq', 
+        'usearch_ecoli_seq_1bp_change'], ['usearch_ecoli_seq_2bp_change_rc']]
+                
+        self.assertEqual(len(obs_clusters), 2)
+        for result in obs_clusters:
+            self.assertTrue(obs_clusters[result] in expected_clusters)
         
-        self.assertEqual(obs_clusters, expected_clusters)
         
     def test_call_default_params_reversed_seq_w_rev(self):
         """ Does not cluster reverse complemented sequence without --rev """
@@ -1038,9 +1046,10 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
                     
         # Randomly selected match is used for equivalent matches, so need to 
         # test for results without order affecting output                   
-        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
-         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_2bp_change',
-         'usearch_ecoli_seq_1bp_change']}
+        expected_clusters =\
+         {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change']}
          
         for result in obs_clusters:
             for cluster in obs_clusters[result]:
@@ -1099,22 +1108,27 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         
         app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
                                             'output_dir':self.output_dir,
-                                            'remove_usearch_logs':True
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':True,
+                                            'rev':False
                                            })
         
-        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id_rc,
-         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
                                        
-        # RC seq should fall into its own cluster
+        # As seqs are not in same frame, should all fail.
         expected_clusters =\
-         {'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change'],
-         'usearch_ecoli_seq': ['usearch_ecoli_seq'], 
-         'usearch_ecoli_seq_2bp_change_rc': ['usearch_ecoli_seq_2bp_change_rc']}
+         {}
         
         self.assertEqual(obs_clusters, expected_clusters)
         
-        expected_failures = []
-        self.assertEqual(failures, expected_failures)
+        expected_failures = ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change',
+         'usearch_ecoli_seq_1bp_change']
+        self.assertEqual(len(failures), 3)
+        for curr_failure in failures:
+            self.assertTrue(curr_failure in expected_failures)
+
         
     def test_call_default_params_reversed_seq_w_rev(self):
         """ Does not cluster reverse complemented sequence without --rev """
@@ -1122,16 +1136,18 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
                                             'output_dir':self.output_dir,
                                             'remove_usearch_logs':True,
-                                            'rev':True
+                                            'rev':True,
+                                            'suppress_new_clusters':True
                                            })
         
-        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id_rc,
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
          refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
                                        
         # All seqs should fall into a single cluster
-        expected_clusters = {'usearch_ecoli_seq_2bp_change_rc': ['usearch_ecoli_seq_2bp_change_rc'],
-        'usearch_ecoli_seq': ['usearch_ecoli_seq'], 
-        'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change']}
+        expected_clusters =\
+         {'usearch_ecoli_seq_2bp_change_rc': ['usearch_ecoli_seq_2bp_change'],
+         'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change']}
         
         self.assertEqual(obs_clusters, expected_clusters)
         
@@ -1286,13 +1302,15 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         obs_clusters, failures = app(self.tmp_seqs_usearch_97perc_dups,
          refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
                                        
-        # All seqs should fall into a single cluster
+        # Should have ecoli match ecoli, and remaining seqs match 1bp change.
         expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
          'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change_dup1',
          'usearch_ecoli_seq_1bp_change_dup2']}
          
-        self.assertEqual(obs_clusters, expected_clusters)
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
         
         expected_failures = []
         self.assertEqual(failures, expected_failures)  
