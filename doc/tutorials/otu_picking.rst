@@ -4,7 +4,7 @@
 OTU picking strategies in QIIME
 ===============================
 
-QIIME provides three high-level protocols for OTU picking. These can be described as de novo, closed-reference, and open-reference OTU picking, and are accessible through `pick_de_novo_otus.py <>`_, `pick_closed_reference_otus.py <>`_, and `pick_open_reference_otus.py <>`_. Each of these protocol are described in this document, and commands are provided which illustrate how to run each of these with uclust and usearch 6.1 (i.e, usearch61).
+QIIME provides three high-level protocols for OTU picking. These can be described as de novo, closed-reference, and open-reference OTU picking, and are accessible through `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, and `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_. Each of these protocol are described in this document, and commands are provided which illustrate how to run each of these with uclust and usearch 6.1 (i.e, usearch61).
 
 Description of OTU picking processes
 ====================================
@@ -54,11 +54,11 @@ With uclust::
 
 With usearch61::
 
-	pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us/ -r $reference_seqs -t $reference_tax -p usearch_params.txt
+	pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us/ -r $reference_seqs -t $reference_tax -p usearch_ref_params.txt
 
-where the following information is in ``usearch_params.txt``::
+where the following information is in ``usearch_ref_params.txt``::
 	
-	pick_otus:otu_picking_method usearch61
+	pick_otus:otu_picking_method usearch61_ref
 
 You can find an additional example using closed-reference OTU picking in :ref:`illumina_overview_tutorial`.
 
