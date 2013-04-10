@@ -302,7 +302,8 @@ def run_alpha_rarefaction(otu_table_fp,
                           min_rare_depth=10,
                           max_rare_depth=None,
                           suppress_md5=False,
-                          status_update_callback=print_to_stdout):
+                          status_update_callback=print_to_stdout,
+                          plot_stderr_and_stddev=False):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -398,26 +399,52 @@ def run_alpha_rarefaction(otu_table_fp,
     commands.append([('Collate alpha',alpha_collated_cmd)])
 
     # Prep the make rarefaction plot command(s)
-    rarefaction_plot_dir = '%s/alpha_rarefaction_plots/' % output_dir
-    create_dir(rarefaction_plot_dir)
     try:
         params_str = get_params_str(params['make_rarefaction_plots'])
     except KeyError:
         params_str = ''
-    # Build the make rarefaction plot command(s)
-    #for metric in alpha_diversity_metrics:
-    make_rarefaction_plot_cmd =\
-         '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s' %\
-         (python_exe_fp, script_dir, alpha_collated_dir, mapping_fp,
-          rarefaction_plot_dir, params_str)
-    commands.append(\
-         [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
+    
+    if 'std_type' in params['make_rarefaction_plots'] or not plot_stderr_and_stddev:
+        rarefaction_plot_dir = '%s/alpha_rarefaction_plots/' % output_dir
+        create_dir(rarefaction_plot_dir)
+        
+        # Build the make rarefaction plot command(s)
+        #for metric in alpha_diversity_metrics:
+        make_rarefaction_plot_cmd =\
+             '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s' %\
+             (python_exe_fp, script_dir, alpha_collated_dir, mapping_fp,
+              rarefaction_plot_dir, params_str)
+        commands.append(\
+             [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
+    else:
+        rarefaction_plot_dir_stddev = '%s/alpha_rarefaction_plots_stddev/' % output_dir
+        rarefaction_plot_dir_stderr = '%s/alpha_rarefaction_plots_stderr/' % output_dir
+        create_dir(rarefaction_plot_dir_stddev)
+        create_dir(rarefaction_plot_dir_stderr)
+        
+        # Build the make rarefaction plot command(s)
+        # for metric in alpha_diversity_metrics:
+        make_rarefaction_plot_cmd =\
+             '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s --std_type stddev' %\
+             (python_exe_fp, script_dir, alpha_collated_dir, mapping_fp,
+              rarefaction_plot_dir_stddev, params_str)
+        commands.append(\
+             [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
+        make_rarefaction_plot_cmd =\
+             '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s --std_type stderr' %\
+             (python_exe_fp, script_dir, alpha_collated_dir, mapping_fp,
+              rarefaction_plot_dir_stderr, params_str)
+        commands.append(\
+             [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
+   
     
     # Call the command handler on the list of commands
     command_handler(commands,
                     status_update_callback,
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
+
+
 run_qiime_alpha_rarefaction = run_alpha_rarefaction
 
 def run_jackknifed_beta_diversity(otu_table_fp,
