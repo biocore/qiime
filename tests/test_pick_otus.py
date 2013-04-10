@@ -783,7 +783,7 @@ class Usearch61OtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
         
-        self.assertEqual(obs_clusters, expected_clusters)
+        self.assertEqualItems(obs_clusters, expected_clusters)
         
     def test_call_default_params_and_higher_id(self):
         """ clusters seqs within 99% identity with default parameters """
@@ -803,9 +803,8 @@ class Usearch61OtuPickerTests(TestCase):
         
         # should be exactly 3 clusters
         self.assertEqual(len(obs_clusters), 3)
-        for result in obs_clusters:
-            for cluster in obs_clusters[result]:
-                self.assertTrue(cluster in expected_clusters[result])
+        self.assertEqualItems(obs_clusters.keys(),expected_clusters.keys())
+        self.assertEqualItems(obs_clusters.values(),expected_clusters.values())
         
     def test_call_default_params_reversed_seq(self):
         """ Does not cluster reverse complemented sequence without --rev """
@@ -894,7 +893,7 @@ class Usearch61OtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
          'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq_2bp_change']}
         
-        self.assertEqual(obs_clusters, expected_clusters)
+        self.assertEqualItems(obs_clusters, expected_clusters)
         
     def test_call_default_params_minlen(self):
         """ Discards reads that fall below minlen setting """
@@ -929,7 +928,7 @@ class Usearch61OtuPickerTests(TestCase):
         expected_clusters = {'test0': ['usearch_ecoli_seq',
         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
         
-        self.assertEqual(obs_clusters, expected_clusters)
+        self.assertEqualItems(obs_clusters, expected_clusters)
           
     def test_usearch61_length_sorting(self):
         """ Sorting according to length, clusters seqs """
@@ -1335,7 +1334,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         
         expected_failures = ['usearch_ecoli_seq',
          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']
-        self.assertEqual(failures, expected_failures)
+        self.assertEqualItems(failures, expected_failures)
         
     def test_closed_reference_with_match_usearch61(self):
         """ usearch61 does closed reference OTU picking successfully """
