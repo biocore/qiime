@@ -42,8 +42,9 @@ where the following information is in ``usearch_params.txt``::
 	
 	pick_otus:otu_picking_method usearch61
 
-You can find an additional example using de novo OTU picking in :ref:`tutorial`.
+The key output files are ``otu_table.biom``, the OTU table, and ``rep_set.tre``, the phylogenetic tree relating the OTUs in the OTU table.
 
+You can find an additional example using de novo OTU picking in :ref:`tutorial`.
 
 Closed-reference OTU picking
 ----------------------------
@@ -54,11 +55,13 @@ With uclust::
 
 With usearch61::
 
-	pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us/ -r $reference_seqs -t $reference_tax -p usearch_ref_params.txt
+	pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us/ -r $reference_seqs -t $reference_tax -p $PWD/usearch_ref_params.txt
 
 where the following information is in ``usearch_ref_params.txt``::
 	
 	pick_otus:otu_picking_method usearch61_ref
+
+The key output file is ``otu_table.biom``, the OTU table. Note that there is no phylogenetic tree generated in this protocol - as all OTUs are defined by reference sequences, it is assumed that a tree already exists (which would likely be better than the one generated here).
 
 You can find an additional example using closed-reference OTU picking in :ref:`illumina_overview_tutorial`.
 
@@ -71,6 +74,82 @@ With uclust::
 
 With usearch61::
 
-	pick_open_reference_otus.py -i seqs.fna -o or_us/ -r $reference_seqs
-                        
+	pick_open_reference_otus.py -i seqs.fna -o or_us/ -r $reference_seqs -m usearch61
+
+The key output files are ``otu_table.biom``, the OTU table, and ``rep_set.tre``, the phylogenetic tree relating the OTUs in the OTU table.
+
 You can find an additional example using open-reference OTU picking in :ref:`open_reference_illumina`.
+
+Alternative processing parameters
+=================================
+
+De-replication of sequences
+--------------------------
+
+If you're interested only in dereplicated sequences as your OTU picking process, that is a special case of de novo clustering where the similarity threshold is 100%. To achieve that you can do the following.
+
+With uclust::
+	
+	pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_uc/ -p $PWD/uclust_dereplication_params.txt
+
+where the following is in $PWD/uclust_dereplication_params.txt::
+	
+	pick_otus:similarity 1.0
+
+With usearch61::
+	
+	pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_us/ -p $PWD/usearch_dereplication_params.txt
+
+where the following information is in ``usearch_dereplication_params.txt``::
+	
+	pick_otus:otu_picking_method usearch61
+	pick_otus:similarity 1.0
+
+Running usearch in size-order mode
+----------------------------------
+
+If you're interested in running the usearch OTU pickers in size-order mode (meaning that accepts are prioritized by the size of the cluster rather than the percent identity) should add the following lines to a parameters file::
+
+	pick_otus:sizeorder True 
+	pick_otus:maxaccepts 16
+	pick_otus:maxrejects 64
+	pick_otus:maxhits 1
+
+For example, in de novo mode::
+
+	pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/dn_us_sizeorder/ -p $PWD/dn_sizeorder_params.txt
+
+where the following information is in ``dn_sizeorder_params.txt``::
+	
+	pick_otus:otu_picking_method usearch61
+	pick_otus:sizeorder True 
+	pick_otus:max_accepts 16
+	pick_otus:max_rejects 64
+
+In closed-reference mode::
+
+	pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us_sizeorder/ -r $reference_seqs -t $reference_tax -p $PWD/cr_sizeorder_params.txt
+
+where the following information is in ``cr_sizeorder_params.txt``::
+	
+	pick_otus:otu_picking_method usearch61_ref
+	pick_otus:sizeorder True 
+	pick_otus:max_accepts 16
+	pick_otus:max_rejects 64
+
+In open-reference mode::
+
+	pick_open_reference_otus.py -i seqs.fna -o or_us_sizeorder/ -r $reference_seqs -m usearch61 -p $PWD/or_sizeorder_params.txt
+
+where the following information is in ``or_sizeorder_params.txt``::
+	
+	pick_otus:sizeorder True 
+	pick_otus:max_accepts 16
+	pick_otus:max_rejects 64
+
+
+
+Citing these tools
+==================
+
+If using these tools you should cite both QIIME and usearch or uclust. 
