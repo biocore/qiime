@@ -1,3 +1,5 @@
+.. _open_reference_illumina:
+
 =========================================================
  Open-reference OTU picking applied to Illumina data
 =========================================================
