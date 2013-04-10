@@ -63,7 +63,7 @@ class DownstreamWorkflowTests(TestCase):
         self.saved_stderr = sys.stderr
         sys.stderr = StringIO()
         
-        initiate_timeout(120)
+        initiate_timeout(180)
     
     def tearDown(self):
         """ """
@@ -254,6 +254,56 @@ class DownstreamWorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
         self.assertTrue(getsize(pd_averages_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+         
+    def test_run_alpha_rarefaction_stderr_and_stddev(self):
+        """ run_alpha_rarefaction generates expected results """
+
+        run_alpha_rarefaction(
+         self.test_data['biom'][0], 
+         self.test_data['map'][0],
+         self.test_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.test_data['tree'][0],
+         num_steps=5, 
+         parallel=False, 
+         min_rare_depth=3,
+         max_rare_depth=18,
+         status_update_callback=no_status_updates,
+         plot_stderr_and_stddev=True)
+         
+        html_fp_stderr = join(self.test_out,'alpha_rarefaction_plots_stderr',
+         'rarefaction_plots.html')
+        pd_averages_fp_stderr = join(self.test_out,'alpha_rarefaction_plots_stderr',
+         'average_tables','PD_whole_treeSampleType.txt')
+        html_fp_stddev = join(self.test_out,'alpha_rarefaction_plots_stddev',
+         'rarefaction_plots.html')
+        pd_averages_fp_stddev = join(self.test_out,'alpha_rarefaction_plots_stddev',
+         'average_tables','PD_whole_treeSampleType.txt')
+        pd_collated_fp = join(self.test_out,'alpha_div_collated',
+         'PD_whole_tree.txt')
+        
+        # Confirm that palm and gut alpha diversities are different,
+        # and suggestive of statistical significance (we only have a 
+        # few sequences, so we don't get significant results)
+        a = compare_alpha_diversities(open(pd_collated_fp), 
+                                      open(self.test_data['map'][0]),
+                                      'SampleType', 
+                                      18,
+                                      test_type='parametric')
+        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(html_fp_stderr) > 0)
+        self.assertTrue(getsize(pd_averages_fp_stderr) > 0)
+        self.assertTrue(getsize(html_fp_stddev) > 0)
+        self.assertTrue(getsize(pd_averages_fp_stddev) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
