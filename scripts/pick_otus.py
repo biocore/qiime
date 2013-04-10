@@ -432,7 +432,7 @@ def main():
         try:
             max_accepts = int(max_accepts)
         except ValueError:
-            raise ValueError,("--max_accepts must either be 'default' "
+            option_parser.error("--max_accepts must either be 'default' "
              "or an int value")
     if max_accepts == "default":
         if otu_picking_method in ["uclust", "uclust_ref"]:
@@ -445,7 +445,7 @@ def main():
         try:
             max_rejects = int(max_rejects)
         except ValueError:
-            raise ValueError,("--max_rejects must be either 'default' "
+            option_parser.error("--max_rejects must be either 'default' "
              "or an int value")
     if max_rejects == "default":
         if otu_picking_method in ["uclust", "uclust_ref"]:
@@ -462,43 +462,43 @@ def main():
         option_parser.error("Cannot pass -B/--user_sort without -D/--suppress_presort_by_abundance_uclust, as your input would be resorted by abundance. To presort your own sequences before passing to uclust, pass -DB.")
     
     if abundance_skew <= 1:
-        raise ValueError,('abundance skew must be > 1')
+        option_parser.error('abundance skew must be > 1')
     
     # Check for logical inputs
     if otu_picking_method in ['usearch', 'usearch_ref'] and \
      reference_chimera_detection and not db_filepath:
-        raise ValueError,('No reference filepath specified with '
+        option_parser.error('No reference filepath specified with '
          '--db_filepath option. Disable reference based chimera detection '
          'with --suppress_reference_chimera_detection or specify a reference '
          'fasta file with --db_filepath.')
          
     if chimeras_retention not in ['intersection', 'union']:
-        raise ValueError,('--chimeras_retention must be either union or '
+        option_parser.error('--chimeras_retention must be either union or '
          'intersection.')
          
     if usearch61_sort_method not in ['length', 'abundance', 'None']:
-        raise ValueError,("--usearch61_sort_method must be one of the "
+        option_parser.error("--usearch61_sort_method must be one of the "
          "following: length, abundance, None")
          
     if otu_picking_method in ['usearch61', 'usearch61_ref']:
         if usearch_fast_cluster:
             if enable_rev_strand_match:
-                raise ValueError,("--enable_rev_strand_match can not be "
+                option_parser.error("--enable_rev_strand_match can not be "
                 "enabled when using --usearch_fast_cluster.")
             if usearch61_sort_method != "length":
-                raise ValueError,("--usearch61_sort_method must be 'length' "
+                option_parser.error("--usearch61_sort_method must be 'length' "
                 "when --usearch_fast_cluster used.")
                 
     if otu_picking_method in ['usearch61']:
         if opts.suppress_new_clusters:
-            raise ValueError,("--suppress_new_clusters cannot be enabled when "
+            option_parser.error("--suppress_new_clusters cannot be enabled when "
              "using usearch61 as the OTU picking method as this is strictly "
              "de novo.  Use --otu_picking_method usearch61_ref and a reference "
              "database for closed reference OTU picking.")
              
     if sizeorder:
         if usearch61_sort_method != 'abundance':
-            raise ValueError,("To use --sizeorder, usearch61_sort_method must "
+            option_parser.error("To use --sizeorder, usearch61_sort_method must "
              "be abundance.")
              
          

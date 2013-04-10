@@ -30,7 +30,13 @@ from qiime.pycogent_backports.usearch import (Usearch,
  usearch_chimera_filter_ref_based, usearch_cluster_seqs,
  enumerate_otus, assign_reads_to_otus, usearch_qf, concatenate_fastas,
  get_retained_chimeras, assign_dna_reads_to_protein_database,
- assign_dna_reads_to_dna_database,)
+ assign_dna_reads_to_dna_database, usearch61_ref_cluster,
+ usearch61_denovo_cluster, sort_by_abundance_usearch61,
+ sort_by_length_usearch61, usearch61_cluster_ref,
+ usearch61_fast_cluster, usearch61_smallmem_cluster,
+ parse_dereplicated_uc, parse_usearch61_clusters,
+ merge_clusters_dereplicated_seqs, merge_failures_dereplicated_seqs,
+ parse_usearch61_failures)
 
 
 class UsearchTests(TestCase):
