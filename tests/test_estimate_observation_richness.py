@@ -19,7 +19,7 @@ from numpy import array
 
 from qiime.estimate_observation_richness import (
         AbstractObservationRichnessEstimator, EmptySampleError,
-        EmptyTableError)
+        EmptyTableError, ObservationRichnessInterpolator)
 
 class AbstractObservationRichnessEstimatorTests(TestCase):
     """Tests for the AbstractObservationRichnessEstimator class."""
@@ -76,6 +76,35 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
     def test_call(self):
         """Test call raises error."""
         self.assertRaises(NotImplementedError, self.abstract_estimator1)
+
+
+class ObservationRichnessInterpolatorTests(TestCase):
+    """Tests for the ObservationRichnessInterpolator class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.biom_table1 = parse_biom_table(biom_table_str1)
+        self.interpolator1 = ObservationRichnessInterpolator(self.biom_table1)
+
+    def test_constructor(self):
+        """Test instantiating an ObservationRichnessInterpolator."""
+        self.assertTrue(isinstance(self.interpolator1,
+                                   AbstractObservationRichnessEstimator))
+        self.assertTrue(isinstance(self.interpolator1,
+                                   ObservationRichnessInterpolator))
+
+    def test_call(self):
+        """Test __call__ computes correct interpolation data."""
+        # TODO fix
+        #obs = self.interpolator1(point_count=1)
+        #print obs
+
+        obs = self.interpolator1(point_count=2)
+        self.assertFloatEqual(obs, [[(1, 1.0), (15, 5)]])
+
+        obs = self.interpolator1(point_count=4)
+        self.assertFloatEqual(obs, [[(1, 1.0), (6, 3.7382617382617385),
+                                     (11, 4.666666666666667), (15, 5)]])
 
 
 # OTU ID S1 taxonomy
