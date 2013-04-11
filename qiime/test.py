@@ -75,8 +75,9 @@ def run_script_usage_tests(qiime_test_data_dir,
                            force_overwrite=False):
     """ Test script_usage examples when test data is present in qiime_test_data_dir
     
-        These tests are currently used with the qiime_test_data repository, which can
-        be found at https://github.com/qiime-dev/qiime_test_data
+        qiime_test_data_dir will typically point to the qiime_test_data
+        directory that is included with QIIME at the root level
+        (e.g. Qiime/qiime_test_data).
 
         Returns a result summary string and the number of script usage
         examples (i.e. commands) that failed.
