@@ -108,7 +108,7 @@ def main():
                working_dir=qiime_config['temp_dir'],
                verbose=True,
                tests=script_tests,
-               failure_log_fp='/Users/caporaso/outbox/f.txt',
+               failure_log_fp=None,
                force_overwrite=True,
                timeout=2)
 
