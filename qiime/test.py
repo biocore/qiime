@@ -146,7 +146,6 @@ def run_script_usage_tests(qiime_test_data_dir,
                 timed_out = True
             else:
                 disable_timeout()
-                timed_out = False
             
             total_tests += 1
             if timed_out:
