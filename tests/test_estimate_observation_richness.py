@@ -73,6 +73,10 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         self.assertFloatEqual(
                 self.abstract_estimator1.getFullRichnessEstimates(), [5.5])
 
+    def test_call(self):
+        """Test call raises error."""
+        self.assertRaises(NotImplementedError, self.abstract_estimator1)
+
 
 # OTU ID S1 taxonomy
 # OTU0   0  foo;bar;baz

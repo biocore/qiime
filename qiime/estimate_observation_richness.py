@@ -66,3 +66,6 @@ class AbstractObservationRichnessEstimator(object):
             richness_estimates.append(num_obs + estimated_unobserved_count)
 
         return richness_estimates
+
+    def __call__(self):
+        raise NotImplementedError("Subclasses must implement __call__.")
