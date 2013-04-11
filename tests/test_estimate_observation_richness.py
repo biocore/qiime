@@ -68,6 +68,11 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         obs = list(self.abstract_estimator1.getAbundanceFrequencyCounts())
         self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
+    def test_getFullRichnessEstimates(self):
+        """Test returns correct full observation richness estimates."""
+        self.assertFloatEqual(
+                self.abstract_estimator1.getFullRichnessEstimates(), [5.5])
+
 
 # OTU ID S1 taxonomy
 # OTU0   0  foo;bar;baz

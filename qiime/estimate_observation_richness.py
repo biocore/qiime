@@ -46,3 +46,23 @@ class AbstractObservationRichnessEstimator(object):
             for i in range(1, int(num_individuals + 1)):
                 samp_abundance_freq_count.append((samp_data == i).sum(0))
             yield samp_abundance_freq_count
+
+    def getFullRichnessEstimates(self):
+        richness_estimates = []
+
+        for num_obs, abundance_freqs in zip(self.getObservationCounts(),
+                self.getAbundanceFrequencyCounts()):
+            f1 = abundance_freqs[0]
+            f2 = abundance_freqs[1]
+
+            if f2 > 0:
+                estimated_unobserved_count = f1**2 / (2 * f2)
+            elif f2 == 0:
+                estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
+            else:
+                raise ValueError("Encountered a negative f2 value (%d), which "
+                                 "is invalid." % f2)
+
+            richness_estimates.append(num_obs + estimated_unobserved_count)
+
+        return richness_estimates
