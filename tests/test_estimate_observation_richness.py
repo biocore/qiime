@@ -13,10 +13,12 @@ __status__ = "Development"
 """Test suite for the estimate_observation_richness.py module."""
 
 from biom.parse import parse_biom_table
+from biom.table import Table
 from cogent.util.unit_test import TestCase, main
+from numpy import array
 
 from qiime.estimate_observation_richness import (
-        AbstractObservationRichnessEstimator)
+        AbstractObservationRichnessEstimator, EmptyTableError)
 
 class AbstractObservationRichnessEstimatorTests(TestCase):
     """Tests for the AbstractObservationRichnessEstimator class."""
@@ -33,6 +35,12 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         """Test instantiating an AbstractObservationRichnessEstimator."""
         self.assertTrue(isinstance(self.abstract_estimator1,
                                    AbstractObservationRichnessEstimator))
+
+    def test_constructor_empty_table(self):
+        """Test instantiating an estimator with an empty table."""
+        empty_table = Table(array([]), [], [])
+        self.assertRaises(EmptyTableError,
+                          AbstractObservationRichnessEstimator, empty_table)
 
     def test_getSampleCount(self):
         """Test estimator returns correct number of samples."""

@@ -12,8 +12,13 @@ __status__ = "Development"
 
 """Contains functionality to estimate the observation richness of samples."""
 
+class EmptyTableError(Exception):
+    pass
+
 class AbstractObservationRichnessEstimator(object):
     def __init__(self, biom_table):
+        if biom_table.isEmpty():
+            raise EmptyTableError("The input BIOM table cannot be empty.")
         self._biom_table = biom_table
 
     def getSampleCount(self):
