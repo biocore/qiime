@@ -110,7 +110,7 @@ def main():
                tests=script_tests,
                failure_log_fp=None,
                force_overwrite=True,
-               timeout=2)
+               timeout=240)
 
     print "==============\nResult summary\n=============="
 
