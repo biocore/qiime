@@ -72,7 +72,8 @@ def run_script_usage_tests(qiime_test_data_dir,
                            verbose=False,
                            tests=None,
                            failure_log_fp=None,
-                           force_overwrite=False):
+                           force_overwrite=False,
+                           timeout=60):
     """ Test script_usage examples when test data is present in qiime_test_data_dir
     
         These tests are currently used with the qiime_test_data repository, which can
@@ -135,11 +136,31 @@ def run_script_usage_tests(qiime_test_data_dir,
                 warnings.append('%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % test)
             cmd = usage_example[2].replace('%prog',script_fn)
             if verbose:
-                print '  %s' % cmd
-            stdout, stderr, return_value = qiime_system_call(cmd)
+                print '  %s' % cmd,
+            
+            timed_out = False
+            initiate_timeout(timeout)
+            try:
+                stdout, stderr, return_value = qiime_system_call(cmd)
+            except TimeExceededError:
+                timed_out = True
+            else:
+                disable_timeout()
+                timed_out = False
+            
             total_tests += 1
-            if return_value != 0:
+            if timed_out:
+                # Add a string instead of return_value - if fail_tests ever ends
+                # up being returned from this function we'll want to code this as 
+                # an int for consistency in the return value type.
+                failed_tests.append((cmd, "", "", "None, time exceeded"))
+                if verbose: print ": Timed out"
+            elif return_value != 0:
                 failed_tests.append((cmd, stdout, stderr, return_value))
+                if verbose: print ": Failed"
+            else:
+                pass
+                if verbose: print ": Pass"
         
         if verbose:
             print ''
@@ -151,7 +172,7 @@ def run_script_usage_tests(qiime_test_data_dir,
         else:
             i = 0
             for cmd, stdout, stderr, return_value in failed_tests:
-                failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %d\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,return_value, stdout, stderr))
+                failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %s\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,str(return_value), stdout, stderr))
         failure_log_f.close()
     
     
