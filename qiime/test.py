@@ -91,7 +91,7 @@ def run_script_usage_tests(qiime_test_data_dir,
         failure_log_fp = abspath(failure_log_fp)
 
     if tests == None:
-        tests = [split(d)[1] for d in glob('%s/*' % qiime_test_data_dir) if isdir(d)]
+        tests = [split(d)[1] for d in sorted(glob('%s/*' % qiime_test_data_dir)) if isdir(d)]
     
     if verbose:
         print 'Tests to run:\n %s' % ' '.join(tests)
