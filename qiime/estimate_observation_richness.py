@@ -97,6 +97,7 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
             size_results = []
             # size <= n
             for size in sizes:
+                # Equation 4 in Colwell 2012
                 curr_sum = 0
 
                 for k in range(1, n + 1):
