@@ -15,3 +15,12 @@ __status__ = "Development"
 class AbstractObservationRichnessEstimator(object):
     def __init__(self, biom_table):
         self._biom_table = biom_table
+
+    def getSampleCount(self):
+        return len(self._biom_table.SampleIds)
+
+    def getTotalIndividualCounts(self):
+        return self._biom_table.sum(axis='sample')
+
+    def getObservationCounts(self):
+        return [(e > 0).sum(0) for e in self._biom_table.iterSampleData()]

@@ -26,14 +26,26 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         # Single sample, 6 observations, one of which isn't observed in sample.
         self.biom_table1 = parse_biom_table(biom_table_str1)
 
+        self.abstract_estimator1 = \
+                AbstractObservationRichnessEstimator(self.biom_table1)
+
     def test_constructor(self):
         """Test instantiating an AbstractObservationRichnessEstimator."""
-        instance = AbstractObservationRichnessEstimator(self.biom_table1)
-        self.assertTrue(isinstance(instance,
+        self.assertTrue(isinstance(self.abstract_estimator1,
                                    AbstractObservationRichnessEstimator))
-        #self.assertEqual(instance.getSampleCount(), 1)
-        #self.assertEqual(instance.getTotalObservationCount(), 15)
-        #self.assertEqual(instance.getObservationCounts(), [5])
+
+    def test_getSampleCount(self):
+        """Test estimator returns correct number of samples."""
+        self.assertEqual(self.abstract_estimator1.getSampleCount(), 1)
+
+    def test_getTotalIndividualCounts(self):
+        """Returns correct total number of observed individuals per sample."""
+        self.assertEqual(self.abstract_estimator1.getTotalIndividualCounts(),
+                         [15])
+
+    def test_getObservationCounts(self):
+        """Returns correct number of (observed) observations per sample."""
+        self.assertEqual(self.abstract_estimator1.getObservationCounts(), [5])
 
 
 # OTU ID S1 taxonomy
