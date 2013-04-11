@@ -1298,6 +1298,7 @@ class Usearch61OtuPicker(UclustOtuPickerBase):
             for cluster_id in clusters:
                 result_out.write(cluster_id + "\t" +\
                  "\t".join(clusters[cluster_id]) + '\n')
+            result_out.close()
             result = None
         else:
             result = clusters
@@ -1404,6 +1405,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
             for cluster_id in clusters:
                 result_out.write(cluster_id + "\t" +\
                  "\t".join(clusters[cluster_id]) + '\n')
+            result_out.close()
             result = None
         else:
             result = clusters
