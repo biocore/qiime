@@ -15,11 +15,19 @@ __status__ = "Development"
 class EmptyTableError(Exception):
     pass
 
+class EmptySampleError(Exception):
+    pass
+
 class AbstractObservationRichnessEstimator(object):
     def __init__(self, biom_table):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
         self._biom_table = biom_table
+
+        for c in self.getTotalIndividualCounts():
+            if c < 1:
+                raise EmptySampleError("Encountered a sample without any "
+                                       "recorded observations.")
 
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
@@ -29,3 +37,12 @@ class AbstractObservationRichnessEstimator(object):
 
     def getObservationCounts(self):
         return [(e > 0).sum(0) for e in self._biom_table.iterSampleData()]
+
+    def getAbundanceFrequencyCounts(self):
+        for samp_data, num_individuals in zip(
+                self._biom_table.iterSampleData(),
+                self.getTotalIndividualCounts()):
+            samp_abundance_freq_count = []
+            for i in range(1, int(num_individuals + 1)):
+                samp_abundance_freq_count.append((samp_data == i).sum(0))
+            yield samp_abundance_freq_count
