@@ -170,9 +170,10 @@ def run_script_usage_tests(qiime_test_data_dir,
         if len(failed_tests) == 0:
             failure_log_f.write('All script interface tests passed.\n')
         else:
-            i = 0
+            i = 1
             for cmd, stdout, stderr, return_value in failed_tests:
                 failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %s\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,str(return_value), stdout, stderr))
+                i += 1
         failure_log_f.close()
     
     
