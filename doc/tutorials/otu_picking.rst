@@ -4,17 +4,19 @@
 OTU picking strategies in QIIME
 ===============================
 
-QIIME provides three high-level protocols for OTU picking. These can be described as de novo, closed-reference, and open-reference OTU picking, and are accessible through `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, and `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_. Each of these protocol are described in this document, and commands are provided which illustrate how to run each of these with uclust and usearch 6.1 (i.e, usearch61).
+QIIME provides three high-level protocols for OTU picking. These can be described as de novo, closed-reference, and open-reference OTU picking, and are accessible through `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, and `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_. Each of these protocols are described in this document, and commands are provided which illustrate how to run each of these with uclust and usearch 6.1 (i.e, usearch61).
 
 Description of OTU picking processes
 ====================================
 
-TODO: Discussion of pros and cons of each
+TODO: Discussion of protocols and pros and cons of each
 
 Running the OTU picking workflows
 =================================
 
-The same workflow commands are used for running OTU picking with usearch61 and uclust. To run the methods with usearch, that is either passed in a parameters file or on the command line, depending on the workflow. See :ref:`qiime_parameter_files` for information on parameter files.
+The same workflow commands are used for running OTU picking with usearch61 and uclust. To run the methods with usearch, you will need to either pass in a parameters file or specify -m usearch61 on the command line, depending on what workflow you are using. See :ref:`qiime_parameter_files` for information on parameter files.
+
+To run the methods with usearch, you will need to either pass in a parameters file or specify -m usearch61 on the command line, depending on what workflow you are using.
 
 Conventions used in these examples
 ----------------------------------
@@ -108,7 +110,7 @@ where the following information is in ``usearch_dereplication_params.txt``::
 Running usearch in size-order mode
 ----------------------------------
 
-If you're interested in running the usearch OTU pickers in size-order mode (meaning that accepts are prioritized by the size of the cluster rather than the percent identity) should add the following lines to a parameters file::
+If you're interested in running the usearch OTU pickers in size-order mode (meaning that accepts are prioritized by the size of the cluster rather than the percent identity), add the following lines to a parameters file::
 
 	pick_otus:sizeorder True 
 	pick_otus:maxaccepts 16
