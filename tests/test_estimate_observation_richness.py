@@ -75,24 +75,51 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = list(self.estimator1.getAbundanceFrequencyCounts())
         self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-    def test_call(self):
-        """Test __call__ computes correct estimates (inter/extrapolation)."""
+    def test_call_invalid_input(self):
+        """Test __call__ raises an error on invalid input."""
+        self.assertRaises(ValueError, self.estimator1, point_count=0)
+        self.assertRaises(ValueError, self.estimator1, estimate_type='foo')
+
+    def test_call_interpolate(self):
+        """Test __call__ computes correct estimates (interpolation)."""
         # Verified with iNEXT (http://glimmer.rstudio.com/tchsieh/inext/).
         # SE estimates differ because they use a different technique. SE
         # estimates have been verified against values in Colwell 2012 instead
         # (in a separate unit test).
-        obs = self.estimator1(point_count=1)
+        obs = self.estimator1(point_count=1, estimate_type='interpolation')
         self.assertFloatEqual(obs, [[(15, 5, 0.674199862463)]])
 
-        obs = self.estimator1(point_count=2)
+        obs = self.estimator1(point_count=2, estimate_type='interpolation')
         self.assertFloatEqual(obs, [[(1, 1.0, 0.250252397843),
                                      (15, 5, 0.674199862463)]])
 
-        obs = self.estimator1(point_count=4)
+        obs = self.estimator1(point_count=4, estimate_type='interpolation')
         self.assertFloatEqual(obs, [[(1, 1.0, 0.250252397843),
                                      (6, 3.7382617382617385, 0.676462867498),
                                      (11, 4.666666666666667, 0.669471144282),
                                      (15, 5, 0.674199862463)]])
+
+    def test_call_extrapolate(self):
+        """Test __call__ computes correct estimates (extrapolation)."""
+        # Verified with iNEXT. Differs slightly from their output because
+        # they've slightly modified Colwell 2012 equation 9, and we're using
+        # the original one.
+        obs = self.estimator1(point_count=1, estimate_type='extrapolation')
+        self.assertFloatEqual(obs, [[(15, 5, 0.674199862463)]])
+
+        obs = self.estimator1(point_count=2, estimate_type='extrapolation',
+                              endpoint=30)
+        # TODO fix expected variance
+        self.assertFloatEqual(obs, [[(15, 5, 0.674199862463),
+                                     (30, 5.4415544562981095, float('inf'))]])
+
+        obs = self.estimator1(point_count=4, estimate_type='extrapolation',
+                              endpoint=30)
+        # TODO fix expected variance
+        self.assertFloatEqual(obs, [[(15, 5, 0.674199862463),
+                                     (20, 5.2555272427983537, float('inf')),
+                                     (25, 5.38046614197245, float('inf')),
+                                     (30, 5.4415544562981095, float('inf'))]])
 
 
 class AbstractFullRichnessEstimatorTests(TestCase):
@@ -186,7 +213,7 @@ class MultinomialPointEstimatorTests(TestCase):
         self.estimator1 = MultinomialPointEstimator()
 
     def test_estimateExpectedObservationCount_interpolate(self):
-        """Test computing S_m using data from Colwell 2012 paper."""
+        """Test computing S(m) using data from Colwell 2012 paper."""
         # Verified against results in Colwell 2012 paper.
 
         # m = 1 (min)
@@ -208,6 +235,20 @@ class MultinomialPointEstimatorTests(TestCase):
         obs = self.estimator1.estimateExpectedObservationCount(237, 237,
                 self.colwell_fk, 112, self.chao1_estimator)
         self.assertFloatEqual(obs, 112.00)
+
+    def test_estimateExpectedObservationCount_extrapolate(self):
+        """Test computing S(n+m*) using data from Colwell 2012 paper."""
+        # Verified against results in Colwell 2012 paper.
+
+        # m = 237 (min)
+        obs = self.estimator1.estimateExpectedObservationCount(237, 237,
+                self.colwell_fk, 112, self.chao1_estimator)
+        self.assertFloatEqual(obs, 112)
+
+        # m = 337 (n+100)
+        obs = self.estimator1.estimateExpectedObservationCount(337, 237,
+                self.colwell_fk, 112, self.chao1_estimator)
+        self.assertFloatEqual(obs, 145.7369598336187)
 
     def test_estimateExpectedObservationCountStdErr_interpolate(self):
         """Test computing std err of S_m using data from Colwell 2012."""

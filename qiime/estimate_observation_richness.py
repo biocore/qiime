@@ -13,7 +13,7 @@ __status__ = "Development"
 """Contains functionality to estimate the observation richness of samples."""
 
 from math import factorial
-from numpy import ceil, sqrt
+from numpy import ceil, exp, sqrt
 
 class EmptyTableError(Exception):
     pass
@@ -54,7 +54,12 @@ class ObservationRichnessEstimator(object):
                 samp_abundance_freq_count.append((samp_data == i).sum(0))
             yield samp_abundance_freq_count
 
-    def __call__(self, point_count=40):
+    def __call__(self, point_count=40, estimate_type='both', endpoint=None):
+        if point_count < 1:
+            raise ValueError("The number of points to estimate must be "
+                             "greater than or equal to 1. Received a point "
+                             "count of %d."
+                             % point_count)
         per_sample_results = []
 
         for samp_data, num_obs, n, abundance_freqs in zip(
@@ -64,14 +69,26 @@ class ObservationRichnessEstimator(object):
                 self.getAbundanceFrequencyCounts()):
             samp_data = samp_data[samp_data > 0]
 
-            if point_count > 1:
-                step_size = int(ceil(n / (point_count - 1)))
-                sizes = range(1, n, step_size)
+            if estimate_type == 'interpolation':
+                if point_count > 1:
+                    step_size = int(ceil(n / (point_count - 1)))
+                    sizes = range(1, n, step_size)
+                else:
+                    sizes = []
+                sizes.append(n)
+            elif estimate_type == 'extrapolation':
+                if point_count > 1:
+                    step_size = int(ceil((endpoint - n) / (point_count - 1)))
+                    sizes = range(n, endpoint, step_size)
+                    sizes.append(endpoint)
+                else:
+                    sizes = [n]
+            elif estimate_type == 'both':
+                pass
             else:
-                sizes = []
-            sizes.append(n)
+                raise ValueError("Unrecognized estimate type '%s'." %
+                                 estimate_type)
 
-            # size <= n
             size_results = []
             for size in sizes:
                 exp_obs_count = \
@@ -134,16 +151,27 @@ class AbstractPointEstimator(object):
 class MultinomialPointEstimator(AbstractPointEstimator):
     def estimateExpectedObservationCount(self, m, n, fk, s_obs,
                                          full_richness_estimator):
-        # Equation 4 in Colwell 2012
-        accumulation = 0
+        if m <= n:
+            # Equation 4 in Colwell 2012
+            accumulation = 0
 
-        for k in range(1, n + 1):
-            alpha_km = self._calculate_alpha_km(n, k, m)
+            for k in range(1, n + 1):
+                alpha_km = self._calculate_alpha_km(n, k, m)
 
-            # k is 1..n while fk idxs are 0..n-1.
-            accumulation += alpha_km * fk[k - 1]
+                # k is 1..n while fk idxs are 0..n-1.
+                accumulation += alpha_km * fk[k - 1]
 
-        return s_obs - accumulation
+            estimate = s_obs - accumulation
+        else:
+            # Equation 9 in Colwell 2012
+            m_star = m - n
+            f_hat = \
+                full_richness_estimator.estimateUnobservedObservationCount(fk)
+            f1 = fk[0]
+
+            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
+
+        return estimate
 
     def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
                                                full_richness_estimator):
