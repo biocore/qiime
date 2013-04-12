@@ -57,15 +57,18 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
 
     def test_getTotalIndividualCounts(self):
         """Returns correct total number of observed individuals per sample."""
+        # Verified with iNEXT.
         self.assertEqual(self.abstract_estimator1.getTotalIndividualCounts(),
                          [15])
 
     def test_getObservationCounts(self):
         """Returns correct number of (observed) observations per sample."""
+        # Verified with iNEXT.
         self.assertEqual(self.abstract_estimator1.getObservationCounts(), [5])
 
     def test_getAbundanceFrequencyCounts(self):
         """Returns correct abundance frequency counts for each sample."""
+        # Verified with iNEXT.
         obs = list(self.abstract_estimator1.getAbundanceFrequencyCounts())
         self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
@@ -94,7 +97,7 @@ class ObservationRichnessInterpolatorTests(TestCase):
 
     def test_call(self):
         """Test __call__ computes correct interpolation data."""
-        # Verified against iNEXT (http://glimmer.rstudio.com/tchsieh/inext/).
+        # Verified with iNEXT (http://glimmer.rstudio.com/tchsieh/inext/).
         # SE estimates differ because they use a different technique. SE
         # estimates have been verified against values in Colwell 2012 instead
         # (in a separate unit test).
@@ -194,12 +197,14 @@ class Chao1FullRichnessEstimatorTests(TestCase):
 
     def test_estimateFullRichness(self):
         """Test returns correct Chao1 full observation richness estimate."""
+        # Verified with iNEXT.
         obs = self.chao1_estimator.estimateFullRichness(
                 self.abundance_frequency_counts1, 5)
         self.assertFloatEqual(obs, 5.5)
 
     def test_estimateUnobservedObservationCount(self):
         """Test returns correct Chao1 estimate of num unobserved obs."""
+        # Verified with iNEXT.
         obs = self.chao1_estimator.estimateUnobservedObservationCount(
                 self.abundance_frequency_counts1)
         self.assertFloatEqual(obs, 0.5)
