@@ -21,8 +21,8 @@ class EmptyTableError(Exception):
 class EmptySampleError(Exception):
     pass
 
-class AbstractObservationRichnessEstimator(object):
-    def __init__(self, biom_table, FullRichnessEstimator):
+class ObservationRichnessEstimator(object):
+    def __init__(self, biom_table, FullRichnessEstimator, PointEstimator):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
         self._biom_table = biom_table
@@ -33,6 +33,7 @@ class AbstractObservationRichnessEstimator(object):
                                        "recorded observations.")
 
         self.FullRichnessEstimator = FullRichnessEstimator
+        self.PointEstimator = PointEstimator
 
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
@@ -52,15 +53,6 @@ class AbstractObservationRichnessEstimator(object):
             for i in range(1, num_individuals + 1):
                 samp_abundance_freq_count.append((samp_data == i).sum(0))
             yield samp_abundance_freq_count
-
-    def __call__(self):
-        raise NotImplementedError("Subclasses must implement __call__.")
-
-
-class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
-    def __init__(self, biom_table, FullRichnessEstimator):
-        super(ObservationRichnessInterpolator, self).__init__(biom_table,
-                FullRichnessEstimator)
 
     def __call__(self, point_count=40):
         per_sample_results = []
@@ -82,56 +74,19 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
             # size <= n
             size_results = []
             for size in sizes:
-                exp_obs_count = self._estimate_expected_observation_count(size,
-                        n, abundance_freqs, num_obs)
-                exp_obs_count_var = \
-                        self._estimate_expected_observation_count_std_err(
-                                size, n, abundance_freqs, num_obs,
-                                exp_obs_count)
+                exp_obs_count = \
+                    self.PointEstimator.estimateExpectedObservationCount(size,
+                            n, abundance_freqs, num_obs,
+                            self.FullRichnessEstimator)
+                exp_obs_count_se = \
+                    self.PointEstimator.estimateExpectedObservationCountStdErr(
+                            size, n, abundance_freqs, num_obs, exp_obs_count,
+                            self.FullRichnessEstimator)
 
-                size_results.append((size, exp_obs_count, exp_obs_count_var))
+                size_results.append((size, exp_obs_count, exp_obs_count_se))
             per_sample_results.append(size_results)
 
         return per_sample_results
-
-    def _estimate_expected_observation_count(self, m, n, fk, s_obs):
-        # Equation 4 in Colwell 2012
-        accumulation = 0
-
-        for k in range(1, n + 1):
-            alpha_km = self._calculate_alpha_km(n, k, m)
-
-            # k is 1..n while fk idxs are 0..n-1.
-            accumulation += alpha_km * fk[k - 1]
-
-        return s_obs - accumulation
-
-    def _estimate_expected_observation_count_std_err(self, m, n, fk, s_obs,
-                                                     s_m):
-        # Equation 5 in Colwell 2012 gives unconditional variance, but they
-        # report the standard error (SE) (which is the same as the standard
-        # deviation in this case) in their tables and use this to construct
-        # confidence intervals. Thus, we compute SE as sqrt(variance).
-        s_est = self.FullRichnessEstimator.estimateFullRichness(fk, s_obs)
-        accumulation = 0
-
-        for k in range(1, n + 1):
-            alpha_km = self._calculate_alpha_km(n, k, m)
-
-            # k is 1..n while fk idxs are 0..n-1.
-            accumulation += (((1 - alpha_km)**2) * fk[k - 1])
-
-        # Convert variance to standard error.
-        return sqrt(accumulation - (s_m**2 / s_est))
-
-    def _calculate_alpha_km(self, n, k, m):
-        alpha_km = 0
-
-        if k <= (n - m):
-            alpha_km = ((factorial(n - k) * factorial(n - m)) /
-                        (factorial(n) * factorial(n - k - m)))
-
-        return alpha_km
 
 
 class AbstractFullRichnessEstimator(object):
@@ -162,3 +117,57 @@ class Chao1FullRichnessEstimator(AbstractFullRichnessEstimator):
             estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
 
         return estimated_unobserved_count
+
+
+class AbstractPointEstimator(object):
+    def estimateExpectedObservationCount(self, m, n, fk, s_obs,
+                                         full_richness_estimator):
+        raise NotImplementedError("Subclasses must implement "
+                                  "estimateExpectedObservationCount.")
+
+    def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
+                                               full_richness_estimator):
+        raise NotImplementedError("Subclasses must implement "
+                                  "estimateExpectedObservationCountStdErr.")
+
+
+class MultinomialPointEstimator(AbstractPointEstimator):
+    def estimateExpectedObservationCount(self, m, n, fk, s_obs,
+                                         full_richness_estimator):
+        # Equation 4 in Colwell 2012
+        accumulation = 0
+
+        for k in range(1, n + 1):
+            alpha_km = self._calculate_alpha_km(n, k, m)
+
+            # k is 1..n while fk idxs are 0..n-1.
+            accumulation += alpha_km * fk[k - 1]
+
+        return s_obs - accumulation
+
+    def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
+                                               full_richness_estimator):
+        # Equation 5 in Colwell 2012 gives unconditional variance, but they
+        # report the standard error (SE) (which is the same as the standard
+        # deviation in this case) in their tables and use this to construct
+        # confidence intervals. Thus, we compute SE as sqrt(variance).
+        s_est = full_richness_estimator.estimateFullRichness(fk, s_obs)
+        accumulation = 0
+
+        for k in range(1, n + 1):
+            alpha_km = self._calculate_alpha_km(n, k, m)
+
+            # k is 1..n while fk idxs are 0..n-1.
+            accumulation += (((1 - alpha_km)**2) * fk[k - 1])
+
+        # Convert variance to standard error.
+        return sqrt(accumulation - (s_m**2 / s_est))
+
+    def _calculate_alpha_km(self, n, k, m):
+        alpha_km = 0
+
+        if k <= (n - m):
+            alpha_km = ((factorial(n - k) * factorial(n - m)) /
+                        (factorial(n) * factorial(n - k - m)))
+
+        return alpha_km
