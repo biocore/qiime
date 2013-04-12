@@ -22,7 +22,7 @@ class EmptySampleError(Exception):
     pass
 
 class AbstractObservationRichnessEstimator(object):
-    def __init__(self, biom_table):
+    def __init__(self, biom_table, FullRichnessEstimator):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
         self._biom_table = biom_table
@@ -31,6 +31,8 @@ class AbstractObservationRichnessEstimator(object):
             if c < 1:
                 raise EmptySampleError("Encountered a sample without any "
                                        "recorded observations.")
+
+        self.FullRichnessEstimator = FullRichnessEstimator
 
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
@@ -51,35 +53,14 @@ class AbstractObservationRichnessEstimator(object):
                 samp_abundance_freq_count.append((samp_data == i).sum(0))
             yield samp_abundance_freq_count
 
-    def getFullRichnessEstimates(self):
-        richness_estimates = []
-
-        for num_obs, abundance_freqs in zip(self.getObservationCounts(),
-                self.getAbundanceFrequencyCounts()):
-            # Based on equation 15a and 15b (Chao1).
-            f1 = abundance_freqs[0]
-            f2 = abundance_freqs[1]
-
-            if f2 > 0:
-                estimated_unobserved_count = f1**2 / (2 * f2)
-            elif f2 == 0:
-                estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
-            else:
-                raise ValueError("Encountered a negative f2 value (%d), which "
-                                 "is invalid." % f2)
-
-            # S_est = S_obs + fhat_0
-            richness_estimates.append(num_obs + estimated_unobserved_count)
-
-        return richness_estimates
-
     def __call__(self):
         raise NotImplementedError("Subclasses must implement __call__.")
 
 
 class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
-    def __init__(self, biom_table):
-        super(ObservationRichnessInterpolator, self).__init__(biom_table)
+    def __init__(self, biom_table, FullRichnessEstimator):
+        super(ObservationRichnessInterpolator, self).__init__(biom_table,
+                FullRichnessEstimator)
 
     def __call__(self, point_count=40):
         per_sample_results = []
@@ -115,3 +96,32 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
             per_sample_results.append(size_results)
 
         return per_sample_results
+
+
+class AbstractFullRichnessEstimator(object):
+    def estimateFullRichness(self, abundance_frequency_counts,
+                             observation_count):
+        # S_est = S_obs + f_hat_0
+        return observation_count + self.estimateUnobservedObservationCount(
+                abundance_frequency_counts)
+
+    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
+        raise NotImplementedError("Subclasses must implement "
+                                  "estimateUnobservedObservationCount.")
+
+
+class Chao1FullRichnessEstimator(AbstractFullRichnessEstimator):
+    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
+        # Based on equation 15a and 15b of Colwell 2012.
+        f1 = abundance_frequency_counts[0]
+        f2 = abundance_frequency_counts[1]
+
+        if f2 > 0:
+            estimated_unobserved_count = f1**2 / (2 * f2)
+        elif f2 == 0:
+            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
+        else:
+            raise ValueError("Encountered a negative f2 value (%d), which is "
+                             "invalid." % f2)
+
+        return estimated_unobserved_count

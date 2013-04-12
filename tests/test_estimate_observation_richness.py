@@ -17,9 +17,9 @@ from biom.table import Table
 from cogent.util.unit_test import TestCase, main
 from numpy import array
 
-from qiime.estimate_observation_richness import (
-        AbstractObservationRichnessEstimator, EmptySampleError,
-        EmptyTableError, ObservationRichnessInterpolator)
+from qiime.estimate_observation_richness import (AbstractFullRichnessEstimator,
+        AbstractObservationRichnessEstimator, Chao1FullRichnessEstimator,
+        EmptySampleError, EmptyTableError, ObservationRichnessInterpolator)
 
 class AbstractObservationRichnessEstimatorTests(TestCase):
     """Tests for the AbstractObservationRichnessEstimator class."""
@@ -28,9 +28,9 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         # Single sample, 6 observations, one of which isn't observed in sample.
         self.biom_table1 = parse_biom_table(biom_table_str1)
-
-        self.abstract_estimator1 = \
-                AbstractObservationRichnessEstimator(self.biom_table1)
+        self.chao1_estimator = Chao1FullRichnessEstimator()
+        self.abstract_estimator1 = AbstractObservationRichnessEstimator(
+                self.biom_table1, self.chao1_estimator)
 
     def test_constructor(self):
         """Test instantiating an AbstractObservationRichnessEstimator."""
@@ -41,14 +41,15 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         """Test instantiating an estimator with an empty table."""
         empty_table = Table(array([]), [], [])
         self.assertRaises(EmptyTableError,
-                          AbstractObservationRichnessEstimator, empty_table)
+                          AbstractObservationRichnessEstimator, empty_table,
+                          self.chao1_estimator)
 
     def test_constructor_empty_sample(self):
         """Test instantiating an estimator with a sample that has no obs."""
         empty_sample_table = parse_biom_table(empty_sample_table_str)
         self.assertRaises(EmptySampleError,
                           AbstractObservationRichnessEstimator,
-                          empty_sample_table)
+                          empty_sample_table, self.chao1_estimator)
 
     def test_getSampleCount(self):
         """Test estimator returns correct number of samples."""
@@ -68,11 +69,6 @@ class AbstractObservationRichnessEstimatorTests(TestCase):
         obs = list(self.abstract_estimator1.getAbundanceFrequencyCounts())
         self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-    def test_getFullRichnessEstimates(self):
-        """Test returns correct full observation richness estimates."""
-        self.assertFloatEqual(
-                self.abstract_estimator1.getFullRichnessEstimates(), [5.5])
-
     def test_call(self):
         """Test call raises error."""
         self.assertRaises(NotImplementedError, self.abstract_estimator1)
@@ -84,7 +80,9 @@ class ObservationRichnessInterpolatorTests(TestCase):
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         self.biom_table1 = parse_biom_table(biom_table_str1)
-        self.interpolator1 = ObservationRichnessInterpolator(self.biom_table1)
+        self.chao1_estimator = Chao1FullRichnessEstimator()
+        self.interpolator1 = ObservationRichnessInterpolator(self.biom_table1,
+                self.chao1_estimator)
 
     def test_constructor(self):
         """Test instantiating an ObservationRichnessInterpolator."""
@@ -105,6 +103,48 @@ class ObservationRichnessInterpolatorTests(TestCase):
         obs = self.interpolator1(point_count=4)
         self.assertFloatEqual(obs, [[(1, 1.0), (6, 3.7382617382617385),
                                      (11, 4.666666666666667), (15, 5)]])
+
+
+class AbstractFullRichnessEstimatorTests(TestCase):
+    """Tests for the AbstractFullRichnessEstimator class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.abstract_estimator = AbstractFullRichnessEstimator()
+
+    def test_estimateFullRichness(self):
+        """Test should raise error."""
+        self.assertRaises(NotImplementedError,
+                          self.abstract_estimator.estimateFullRichness,
+                          [1, 2, 3], 6)
+
+    def test_estimateUnobservedObservationCount(self):
+        """Test should raise error."""
+        self.assertRaises(NotImplementedError,
+                self.abstract_estimator.estimateUnobservedObservationCount,
+                [1, 2, 3])
+
+
+class Chao1FullRichnessEstimatorTests(TestCase):
+    """Tests for the Chao1FullRichnessEstimator class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.abundance_frequency_counts1 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+                                            0, 0, 0]
+        self.chao1_estimator = Chao1FullRichnessEstimator()
+
+    def test_estimateFullRichness(self):
+        """Test returns correct Chao1 full observation richness estimate."""
+        obs = self.chao1_estimator.estimateFullRichness(
+                self.abundance_frequency_counts1, 5)
+        self.assertFloatEqual(obs, 5.5)
+
+    def test_estimateUnobservedObservationCount(self):
+        """Test returns correct Chao1 estimate of num unobserved obs."""
+        obs = self.chao1_estimator.estimateUnobservedObservationCount(
+                self.abundance_frequency_counts1)
+        self.assertFloatEqual(obs, 0.5)
 
 
 # OTU ID S1 taxonomy
