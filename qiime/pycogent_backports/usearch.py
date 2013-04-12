@@ -1489,8 +1489,8 @@ assign_dna_reads_to_protein_database =\
 
 ## Start usearch61 application controller
 
-class usearch61(CommandLineApplication):
-    """ usearch61 ApplicationController
+class Usearch61(CommandLineApplication):
+    """ Usearch61 ApplicationController
     
     """
     
@@ -1526,7 +1526,7 @@ class usearch61(CommandLineApplication):
          Delimiter=' ', IsPath=True),
         
         #### Parameters for sorting raw fasta files
-    	# specifies fasta filepath to sort by length
+        # specifies fasta filepath to sort by length
         '--sortbylength':ValuedParameter('--', Name='sortbylength',
           Delimiter=' ', IsPath=True),
             
@@ -1588,8 +1588,8 @@ class usearch61(CommandLineApplication):
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:
             raise ApplicationError,\
-             "Unsupported parameter(s) passed when calling usearch61: %s" %\
-              ' '.join(unsupported_parameters)
+             "Unsupported parameter(s) passed when calling %s: %s" %\
+              (self._command, ' '.join(unsupported_parameters))
         
         
         for v in allowed_values:
@@ -1641,7 +1641,7 @@ class usearch61(CommandLineApplication):
         """
         return help_str
 
-## Start usearch61 convenience functions
+## Start Usearch61 convenience functions
 
 def usearch61_ref_cluster(seq_path,
                           refseqs_fp,  
@@ -1664,7 +1664,7 @@ def usearch61_ref_cluster(seq_path,
                           ):
     """ Returns dictionary of cluster IDs:seq IDs
     
-    Overall function for de novo clustering with usearch61
+    Overall function for reference-based clustering with usearch61
     
     seq_path:  fasta filepath to be clustered with usearch61
     refseqs_fp: reference fasta filepath, used to cluster sequences against.
@@ -1690,27 +1690,33 @@ def usearch61_ref_cluster(seq_path,
     suppress_new_clusters: If True, will allow de novo clustering on top of
      reference clusters.
     HALT_EXEC: application controller option to halt execution.
+    
+    Description of analysis workflows
+    ---------------------------------
+    closed-reference approach:
+      dereplicate sequences first, do reference based clustering,
+      merge clusters/failures and dereplicated data,
+      write OTU mapping and failures file.
+      
+    open-reference approach:
+      dereplicate sequences first, do reference based clustering, parse failures,
+      sort failures fasta according to chosen method, cluster failures, merge
+      reference clustering results/de novo results/dereplicated data, write
+      OTU mapping file.
+          
+    Dereplication should save processing time for large datasets.
+
     """
     files_to_remove = []
     
     # Need absolute paths to avoid potential problems with app controller
     if output_dir:
-        output_dir = abspath(output_dir) + '/'
+        output_dir = join(abspath(output_dir), '')
 
     seq_path = abspath(seq_path)
     
-    ''' closed-reference approach:
-     dereplicate sequences first, do reference based clustering,
-     merge clusters/failures and dereplicated data,
-     write OTU mapping and failures file.
-        open-reference approach:
-     dereplicate sequences first, do reference based clustering, parse failures,
-      sort failures fasta according to chosen method, cluster failures, merge
-      reference clustering results/de novo results/dereplicated data, write
-      OTU mapping file.
-      
-    Dereplication should save processing time for large datasets.
-    '''
+
+    
     try:
         
         if verbose:
@@ -1765,13 +1771,13 @@ def usearch61_ref_cluster(seq_path,
         
     except ApplicationError:
         raise ApplicationError, ('Error running usearch61. Possible causes are '
-         'unsupported version (current supported version is usearch '+\
-         'v6.1.544) is installed or improperly formatted input file was '+\
+         'unsupported version (current supported version is usearch '
+         'v6.1.544) is installed or improperly formatted input file was '
          'provided')
         
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
-        raise ApplicationNotFoundError('usearch61 not found, is it properly '+\
+        raise ApplicationNotFoundError('usearch61 not found, is it properly '
          'installed?')
 
     
@@ -1953,7 +1959,7 @@ def sort_by_abundance_usearch61(seq_path,
     if not remove_usearch_logs:
         params['--log'] = log_filepath
     
-    app = usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
     
     app_result = app()
                
@@ -1989,7 +1995,7 @@ def sort_by_length_usearch61(seq_path,
     if not remove_usearch_logs:
         params['--log'] = log_filepath
     
-    app = usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
     
     app_result = app()
                
@@ -2052,7 +2058,7 @@ def usearch61_cluster_ref(intermediate_fasta,
     
     clusters_fp = output_uc_filepath
     
-    app = usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
     
     app_result = app()
     
@@ -2108,7 +2114,7 @@ def usearch61_fast_cluster(intermediate_fasta,
     
     clusters_fp = output_uc_filepath
     
-    app = usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
     
     app_result = app()
     
@@ -2169,7 +2175,7 @@ def usearch61_smallmem_cluster(intermediate_fasta,
     
     clusters_fp = output_uc_filepath
     
-    app = usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
     
     app_result = app()
     
