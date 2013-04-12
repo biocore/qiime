@@ -193,14 +193,31 @@ class Chao1FullRichnessEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.abundance_frequency_counts1 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
                                             0, 0, 0]
+        self.abundance_frequency_counts2 = [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+                                            0, 0, 0]
+        self.abundance_frequency_counts3 = self.abundance_frequency_counts2[:]
+        self.abundance_frequency_counts3[1] = -1
+
         self.chao1_estimator = Chao1FullRichnessEstimator()
 
     def test_estimateFullRichness(self):
         """Test returns correct Chao1 full observation richness estimate."""
         # Verified with iNEXT.
+
+        # f2 > 0
         obs = self.chao1_estimator.estimateFullRichness(
                 self.abundance_frequency_counts1, 5)
         self.assertFloatEqual(obs, 5.5)
+
+        # f2 == 0
+        obs = self.chao1_estimator.estimateFullRichness(
+                self.abundance_frequency_counts2, 4)
+        self.assertFloatEqual(obs, 4)
+
+        # f2 < 0
+        self.assertRaises(ValueError,
+                          self.chao1_estimator.estimateFullRichness,
+                          self.abundance_frequency_counts3, 4)
 
     def test_estimateUnobservedObservationCount(self):
         """Test returns correct Chao1 estimate of num unobserved obs."""

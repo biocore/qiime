@@ -152,12 +152,13 @@ class Chao1FullRichnessEstimator(AbstractFullRichnessEstimator):
         f1 = abundance_frequency_counts[0]
         f2 = abundance_frequency_counts[1]
 
+        if f1 < 0 or f2 < 0:
+            raise ValueError("Encountered a negative f1 or f2 value, which is "
+                             "invalid.")
+
         if f2 > 0:
             estimated_unobserved_count = f1**2 / (2 * f2)
-        elif f2 == 0:
-            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
         else:
-            raise ValueError("Encountered a negative f2 value (%d), which is "
-                             "invalid." % f2)
+            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
 
         return estimated_unobserved_count
