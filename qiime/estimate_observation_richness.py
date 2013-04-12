@@ -13,7 +13,7 @@ __status__ = "Development"
 """Contains functionality to estimate the observation richness of samples."""
 
 from math import factorial
-from numpy import ceil
+from numpy import ceil, sqrt
 
 class EmptyTableError(Exception):
     pass
@@ -84,7 +84,12 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
             for size in sizes:
                 exp_obs_count = self._estimate_expected_observation_count(size,
                         n, abundance_freqs, num_obs)
-                size_results.append((size, exp_obs_count))
+                exp_obs_count_var = \
+                        self._estimate_expected_observation_count_std_err(
+                                size, n, abundance_freqs, num_obs,
+                                exp_obs_count)
+
+                size_results.append((size, exp_obs_count, exp_obs_count_var))
             per_sample_results.append(size_results)
 
         return per_sample_results
@@ -94,16 +99,39 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
         accumulation = 0
 
         for k in range(1, n + 1):
-            if k <= (n - m):
-                alpha_km = ((factorial(n - k) * factorial(n - m)) /
-                            (factorial(n) * factorial(n - k - m)))
-            else:
-                alpha_km = 0
+            alpha_km = self._calculate_alpha_km(n, k, m)
 
             # k is 1..n while fk idxs are 0..n-1.
             accumulation += alpha_km * fk[k - 1]
 
         return s_obs - accumulation
+
+    def _estimate_expected_observation_count_std_err(self, m, n, fk, s_obs,
+                                                     s_m):
+        # Equation 5 in Colwell 2012 gives unconditional variance, but they
+        # report the standard error (SE) (which is the same as the standard
+        # deviation in this case) in their tables and use this to construct
+        # confidence intervals. Thus, we compute SE as sqrt(variance).
+        s_est = self.FullRichnessEstimator.estimateFullRichness(fk, s_obs)
+        accumulation = 0
+
+        for k in range(1, n + 1):
+            alpha_km = self._calculate_alpha_km(n, k, m)
+
+            # k is 1..n while fk idxs are 0..n-1.
+            accumulation += (((1 - alpha_km)**2) * fk[k - 1])
+
+        # Convert variance to standard error.
+        return sqrt(accumulation - (s_m**2 / s_est))
+
+    def _calculate_alpha_km(self, n, k, m):
+        alpha_km = 0
+
+        if k <= (n - m):
+            alpha_km = ((factorial(n - k) * factorial(n - m)) /
+                        (factorial(n) * factorial(n - k - m)))
+
+        return alpha_km
 
 
 class AbstractFullRichnessEstimator(object):
