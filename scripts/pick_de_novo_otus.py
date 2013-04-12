@@ -27,7 +27,7 @@ from qiime.workflow.util import (print_commands,
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 script_info={}
-script_info['brief_description'] = """A workflow script for picking OTUs through building OTU tables"""
+script_info['brief_description'] = """A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction."""
 script_info['script_description'] = """This script takes a sequence file and performs all processing steps through building the OTU table."""
 
 script_info['script_usage'] = []

@@ -29,8 +29,8 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = "Reference OTU picking/Shotgun UniFrac workflow."
-script_info['script_description'] = "This script picks OTUs using a reference-based method and constructs an OTU table. Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU to taxonomy. If full-length genomes are provided as the reference sequences, this script applies the Shotgun UniFrac method."
+script_info['brief_description'] = "Closed-reference OTU picking/Shotgun UniFrac workflow."
+script_info['script_description'] = "This script picks OTUs using a closed reference and constructs an OTU table. Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU to taxonomy. If full-length genomes are provided as the reference sequences, this script applies the Shotgun UniFrac method."
 
 script_info['script_usage'] = []
 
