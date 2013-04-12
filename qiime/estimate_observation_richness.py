@@ -79,27 +79,31 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
                 sizes = []
             sizes.append(n)
 
-            size_results = []
             # size <= n
+            size_results = []
             for size in sizes:
-                # Equation 4 in Colwell 2012
-                curr_sum = 0
-
-                for k in range(1, n + 1):
-                    if k <= (n - size):
-                        alpha_km = ((factorial(n - k) * factorial(n - size)) /
-                                    (factorial(n) * factorial(n - k - size)))
-                    else:
-                        alpha_km = 0
-
-                    # k is 1..n while abundance_freqs idxs are 0..n-1.
-                    curr_sum += alpha_km * abundance_freqs[k - 1]
-
-                size_results.append((size, num_obs - curr_sum))
-
+                exp_obs_count = self._estimate_expected_observation_count(size,
+                        n, abundance_freqs, num_obs)
+                size_results.append((size, exp_obs_count))
             per_sample_results.append(size_results)
 
         return per_sample_results
+
+    def _estimate_expected_observation_count(self, m, n, fk, s_obs):
+        # Equation 4 in Colwell 2012
+        accumulation = 0
+
+        for k in range(1, n + 1):
+            if k <= (n - m):
+                alpha_km = ((factorial(n - k) * factorial(n - m)) /
+                            (factorial(n) * factorial(n - k - m)))
+            else:
+                alpha_km = 0
+
+            # k is 1..n while fk idxs are 0..n-1.
+            accumulation += alpha_km * fk[k - 1]
+
+        return s_obs - accumulation
 
 
 class AbstractFullRichnessEstimator(object):
