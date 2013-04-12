@@ -76,8 +76,9 @@ def run_script_usage_tests(qiime_test_data_dir,
                            timeout=60):
     """ Test script_usage examples when test data is present in qiime_test_data_dir
     
-        These tests are currently used with the qiime_test_data repository, which can
-        be found at https://github.com/qiime-dev/qiime_test_data
+        qiime_test_data_dir will typically point to the qiime_test_data
+        directory that is included with QIIME at the root level
+        (e.g. Qiime/qiime_test_data).
 
         Returns a result summary string and the number of script usage
         examples (i.e. commands) that failed.
@@ -91,7 +92,7 @@ def run_script_usage_tests(qiime_test_data_dir,
         failure_log_fp = abspath(failure_log_fp)
 
     if tests == None:
-        tests = [split(d)[1] for d in glob('%s/*' % qiime_test_data_dir) if isdir(d)]
+        tests = [split(d)[1] for d in sorted(glob('%s/*' % qiime_test_data_dir)) if isdir(d)]
     
     if verbose:
         print 'Tests to run:\n %s' % ' '.join(tests)
