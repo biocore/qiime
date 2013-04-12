@@ -1204,12 +1204,12 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         
         return result
 
-class Usearch61OtuPicker(UclustOtuPickerBase):
+class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
     """ Usearch based OTU picker, de novo clustering only
    
     """
 
-    Name = 'usearch61OtuPicker'
+    Name = 'Usearch610DeNovoOtuPicker'
     
     def __init__(self, params):
         """Return new OtuPicker object with specified params.
@@ -1310,7 +1310,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
    
     """
 
-    Name = 'usearch61OtuPicker'
+    Name = 'Usearch61ReferenceOtuPicker'
     
     def __init__(self, params):
         """Return new OtuPicker object with specified params.
@@ -1410,7 +1410,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
         else:
             result = clusters
         
-        if failure_path != None and len(failures) > 0:
+        if failure_path is not None and len(failures) > 0:
             self._write_failures(failure_path,failures)
         
         return result, failures
@@ -1715,7 +1715,7 @@ otu_picking_method_constructors = {
     'uclust_ref':UclustReferenceOtuPicker,
     'usearch': UsearchOtuPicker,
     'usearch_ref': UsearchReferenceOtuPicker,
-    'usearch61': Usearch61OtuPicker,
+    'usearch61': Usearch610DeNovoOtuPicker,
     'usearch61_ref': Usearch61ReferenceOtuPicker
     }
     

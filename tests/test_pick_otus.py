@@ -28,7 +28,7 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
     UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
-    Usearch61OtuPicker, Usearch61ReferenceOtuPicker)
+    Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -694,7 +694,7 @@ class TrieOtuPickerTests(TestCase):
         actual = self.otu_picker_rev(self.small_seq_path_rev)
         self.assertEqual(actual,expected)
         
-class Usearch61OtuPickerTests(TestCase):
+class Usearch610DeNovoOtuPickerTests(TestCase):
     """ Tests for usearch 6.1 de novo functionality """
     
     def setUp(self):
@@ -709,28 +709,28 @@ class Usearch61OtuPickerTests(TestCase):
         self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
         
         self.tmp_seq_filepath_97perc_id = get_tmp_filename(\
-         prefix='Usearch61OtuPickerTest_',\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
          suffix='.fasta')
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
         
         self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(\
-         prefix='Usearch61OtuPickerTest_',\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
          suffix='.fasta')
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
         
         self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(\
-         prefix="Usearch61OtuPickerTest_",\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
          suffix=".fasta")
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
         
         self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(\
-         prefix="Usearch61OtuPickerTest_",\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
          suffix=".fasta")
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
@@ -753,7 +753,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params(self):
         """ clusters seqs within 97% identity with default parameters """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True
                                          })
@@ -771,7 +771,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params_and_lower_id(self):
         """ clusters seqs within 95% identity with default parameters """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'percent_id':0.95
@@ -788,7 +788,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params_and_higher_id(self):
         """ clusters seqs within 99% identity with default parameters """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'percent_id':0.99
@@ -809,7 +809,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params_reversed_seq(self):
         """ Does not cluster reverse complemented sequence without --rev """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True
                                          })
@@ -828,7 +828,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params_reversed_seq_w_rev(self):
         """ Does not cluster reverse complemented sequence without --rev """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'rev':True
@@ -849,7 +849,7 @@ class Usearch61OtuPickerTests(TestCase):
         create_dir(intermediate_files_dir)
         self._dirs_to_remove.append(intermediate_files_dir)
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':True,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':True,
                                           'output_dir':intermediate_files_dir,
                                           'remove_usearch_logs':False
                                          })
@@ -873,7 +873,7 @@ class Usearch61OtuPickerTests(TestCase):
         create_dir(intermediate_files_dir)
         self._dirs_to_remove.append(intermediate_files_dir)
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':True,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':True,
                                           'output_dir':intermediate_files_dir,
                                           'remove_usearch_logs':False,
                                           'usearch61_sort_method':'length',
@@ -898,7 +898,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_call_default_params_minlen(self):
         """ Discards reads that fall below minlen setting """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'minlen':101
@@ -914,7 +914,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_usearch61_params(self):
         """ usearch61 handles changes to other parameters """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'wordlength':25,
@@ -933,7 +933,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_usearch61_length_sorting(self):
         """ Sorting according to length, clusters seqs """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'usearch61_sort_method':'length'
@@ -951,7 +951,7 @@ class Usearch61OtuPickerTests(TestCase):
     def test_usearch61_sizeorder(self):
         """ Handles sizeorder option, clusters seqs """
         
-        app = Usearch61OtuPicker(params={'save_intermediate_files':False,
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
                                           'output_dir':self.output_dir,
                                           'remove_usearch_logs':True,
                                           'sizeorder':True
@@ -984,35 +984,35 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         self.dna_seqs_rc_single_seq = dna_seqs_rc_single_seq
         
         self.tmp_seq_filepath_97perc_id = get_tmp_filename(\
-         prefix='Usearch61OtuPickerTest_',\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
          suffix='.fasta')
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
         
         self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(\
-         prefix='Usearch61OtuPickerTest_',\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
          suffix='.fasta')
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
         
         self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(\
-         prefix="Usearch61OtuPickerTest_",\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
          suffix=".fasta")
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
         
         self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(\
-         prefix="Usearch61OtuPickerTest_",\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
          suffix=".fasta")
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
         seq_file.close()
         
         self.tmp_seqs_rc_single_seq = get_tmp_filename(\
-         prefix="Usearch61OtuPickerTest_",\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
          suffix=".fasta")
         seq_file = open(self.tmp_seqs_rc_single_seq, "w")
         seq_file.write(self.dna_seqs_rc_single_seq)
