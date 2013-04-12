@@ -192,18 +192,6 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
 
 class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
     
-    # def _identify_files_to_remove(self,job_result_filepaths,params):
-    #     """ Select the files to remove: by default remove all files
-    #     """
-    #     if params['save_uc_files']:
-    #         # keep any .uc files that get created
-    #         result =\
-    #          [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
-    #     else:
-    #         result = [job_result_filepaths]
-    #     
-    #     return result
-    
     def _get_job_commands(self,
                           fasta_fps,
                           output_dir,
