@@ -93,9 +93,8 @@ class ObservationRichnessInterpolatorTests(TestCase):
 
     def test_call(self):
         """Test __call__ computes correct interpolation data."""
-        # TODO fix
-        #obs = self.interpolator1(point_count=1)
-        #print obs
+        obs = self.interpolator1(point_count=1)
+        self.assertFloatEqual(obs, [[(15, 5)]])
 
         obs = self.interpolator1(point_count=2)
         self.assertFloatEqual(obs, [[(1, 1.0), (15, 5)]])

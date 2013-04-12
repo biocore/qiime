@@ -71,8 +71,12 @@ class ObservationRichnessInterpolator(AbstractObservationRichnessEstimator):
                 self.getTotalIndividualCounts(),
                 self.getAbundanceFrequencyCounts()):
             samp_data = samp_data[samp_data > 0]
-            step_size = int(ceil(n / (point_count - 1)))
-            sizes = range(1, n, step_size)
+
+            if point_count > 1:
+                step_size = int(ceil(n / (point_count - 1)))
+                sizes = range(1, n, step_size)
+            else:
+                sizes = []
             sizes.append(n)
 
             size_results = []
