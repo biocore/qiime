@@ -121,6 +121,26 @@ class ObservationRichnessEstimatorTests(TestCase):
                                      (25, 5.38046614197245, float('inf')),
                                      (30, 5.4415544562981095, float('inf'))]])
 
+    def test_get_interpolation_points(self):
+        obs = self.estimator1._get_interpolation_points(15, 12)
+        print obs
+
+        obs = self.estimator1._get_interpolation_points(15, 4)
+        self.assertEqual(obs, [1, 6, 11, 15])
+
+        obs = self.estimator1._get_interpolation_points(15, 5)
+        self.assertEqual(obs, [1, 5, 9, 13, 15])
+
+        obs = self.estimator1._get_interpolation_points(14, 4)
+        self.assertEqual(obs, [1, 6, 11, 14])
+
+        obs = self.estimator1._get_interpolation_points(14, 5)
+        self.assertEqual(obs, [1, 5, 9, 13, 14])
+
+        obs = self.estimator1._get_interpolation_points(14, 13)
+        print obs
+        #self.assertEqual(obs, [1, 5, 9, 13, 14])
+
 
 class AbstractFullRichnessEstimatorTests(TestCase):
     """Tests for the AbstractFullRichnessEstimator class."""

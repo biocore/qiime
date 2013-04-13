@@ -13,7 +13,7 @@ __status__ = "Development"
 """Contains functionality to estimate the observation richness of samples."""
 
 from math import factorial
-from numpy import ceil, exp, sqrt
+from numpy import ceil, sqrt
 
 class EmptyTableError(Exception):
     pass
@@ -67,27 +67,23 @@ class ObservationRichnessEstimator(object):
                 self.getObservationCounts(),
                 self.getTotalIndividualCounts(),
                 self.getAbundanceFrequencyCounts()):
+            # TODO samp_data not necessary?
             samp_data = samp_data[samp_data > 0]
 
-            if estimate_type == 'interpolation':
-                if point_count > 1:
-                    step_size = int(ceil(n / (point_count - 1)))
-                    sizes = range(1, n, step_size)
-                else:
-                    sizes = []
-                sizes.append(n)
-            elif estimate_type == 'extrapolation':
-                if point_count > 1:
-                    step_size = int(ceil((endpoint - n) / (point_count - 1)))
-                    sizes = range(n, endpoint, step_size)
-                    sizes.append(endpoint)
-                else:
-                    sizes = [n]
-            elif estimate_type == 'both':
-                pass
+            if point_count == 1:
+                sizes = [n]
             else:
-                raise ValueError("Unrecognized estimate type '%s'." %
-                                 estimate_type)
+                if estimate_type == 'interpolation':
+                    sizes = self._get_interpolation_points(n, point_count)
+                elif estimate_type == 'extrapolation':
+                    sizes = self._get_extrapolation_points(n, endpoint,
+                                                           point_count)
+                elif estimate_type == 'both':
+                    sizes = self._get_full_range_points(n, endpoint,
+                                                        point_count)
+                else:
+                    raise ValueError("Unrecognized estimate type '%s'." %
+                                     estimate_type)
 
             size_results = []
             for size in sizes:
@@ -104,6 +100,29 @@ class ObservationRichnessEstimator(object):
             per_sample_results.append(size_results)
 
         return per_sample_results
+
+    def _get_interpolation_points(self, stop, point_count):
+        #step_size = int(ceil(stop / (point_count - 1)))
+        step_size = stop // (point_count - 1)
+        sizes = range(1, stop, step_size)
+        sizes.append(stop)
+        return sizes
+
+    def _get_extrapolation_points(self, start, stop, point_count):
+        step_size = int(ceil((stop - start) / (point_count - 1)))
+        sizes = range(start, stop, step_size)
+        sizes.append(stop)
+        return sizes
+
+    def _get_full_range_points(self, median_point, stop, point_count):
+        half_point_count = point_count // 2
+        inter_sizes = self._get_interpolation_points(median_point,
+                half_point_count)
+        extra_sizes = self._get_extrapolation_points(median_point, stop,
+                half_point_count)
+
+        # Shared median point.
+        return inter_sizes + extra_sizes[1:]
 
 
 class AbstractFullRichnessEstimator(object):
