@@ -75,25 +75,24 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = list(self.estimator1.getAbundanceFrequencyCounts())
         self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-    def test_call_invalid_input(self):
-        """Test __call__ raises an error on invalid input."""
-        self.assertRaises(ValueError, self.estimator1, point_count=0)
-        self.assertRaises(ValueError, self.estimator1, estimate_type='foo')
-
     def test_call_interpolate(self):
         """Test __call__ computes correct estimates (interpolation)."""
         # Verified with iNEXT (http://glimmer.rstudio.com/tchsieh/inext/).
         # SE estimates differ because they use a different technique. SE
         # estimates have been verified against values in Colwell 2012 instead
         # (in a separate unit test).
-        obs = self.estimator1(point_count=1, estimate_type='interpolation')
+
+        # Just reference.
+        obs = self.estimator1(start=15, stop=15, step_size=1)
         self.assertFloatEqual(obs, [[(15, 5, 0.674199862463)]])
 
-        obs = self.estimator1(point_count=2, estimate_type='interpolation')
+        # start=1 and reference.
+        obs = self.estimator1(start=1, stop=1, step_size=1)
         self.assertFloatEqual(obs, [[(1, 1.0, 0.250252397843),
                                      (15, 5, 0.674199862463)]])
 
-        obs = self.estimator1(point_count=4, estimate_type='interpolation')
+        # Points in between start=1 and reference.
+        obs = self.estimator1(start=1, stop=15, step_size=5)
         self.assertFloatEqual(obs, [[(1, 1.0, 0.250252397843),
                                      (6, 3.7382617382617385, 0.676462867498),
                                      (11, 4.666666666666667, 0.669471144282),
@@ -104,42 +103,47 @@ class ObservationRichnessEstimatorTests(TestCase):
         # Verified with iNEXT. Differs slightly from their output because
         # they've slightly modified Colwell 2012 equation 9, and we're using
         # the original one.
-        obs = self.estimator1(point_count=1, estimate_type='extrapolation')
-        self.assertFloatEqual(obs, [[(15, 5, 0.674199862463)]])
 
-        obs = self.estimator1(point_count=2, estimate_type='extrapolation',
-                              endpoint=30)
+        obs = self.estimator1(start=15, stop=30, step_size=15)
         # TODO fix expected variance
         self.assertFloatEqual(obs, [[(15, 5, 0.674199862463),
                                      (30, 5.4415544562981095, float('inf'))]])
 
-        obs = self.estimator1(point_count=4, estimate_type='extrapolation',
-                              endpoint=30)
+        obs = self.estimator1(start=20, stop=30, step_size=5)
         # TODO fix expected variance
         self.assertFloatEqual(obs, [[(15, 5, 0.674199862463),
                                      (20, 5.2555272427983537, float('inf')),
                                      (25, 5.38046614197245, float('inf')),
                                      (30, 5.4415544562981095, float('inf'))]])
 
-    def test_get_interpolation_points(self):
-        obs = self.estimator1._get_interpolation_points(15, 12)
-        print obs
+    def test_call_full_range(self):
+        """Test __call__ computes correct estimates (inter/extrapolation)."""
+        # TODO test me!
+        pass
 
-        obs = self.estimator1._get_interpolation_points(15, 4)
-        self.assertEqual(obs, [1, 6, 11, 15])
+    def test_get_points_to_estimate_invalid_input(self):
+        """Raises an error on invalid input."""
+        # Invalid min.
+        self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
+                          0, 10, 1, 5)
 
-        obs = self.estimator1._get_interpolation_points(15, 5)
-        self.assertEqual(obs, [1, 5, 9, 13, 15])
+        # Invalid step_size.
+        self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
+                          1, 10, 0, 5)
 
-        obs = self.estimator1._get_interpolation_points(14, 4)
-        self.assertEqual(obs, [1, 6, 11, 14])
+        # max < min.
+        self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
+                          1, -1, 1, 5)
 
-        obs = self.estimator1._get_interpolation_points(14, 5)
-        self.assertEqual(obs, [1, 5, 9, 13, 14])
+    def test_get_points_to_estimate(self):
+        """Correctly calculates estimation points given range parameters."""
+        # Ref in range.
+        obs = self.estimator1._get_points_to_estimate(1, 5, 1, 4)
+        self.assertEqual(obs, [1, 2, 3, 4, 5])
 
-        obs = self.estimator1._get_interpolation_points(14, 13)
-        print obs
-        #self.assertEqual(obs, [1, 5, 9, 13, 14])
+        # Ref not in range.
+        obs = self.estimator1._get_points_to_estimate(5, 10, 2, 4)
+        self.assertEqual(obs, [4, 5, 7, 9])
 
 
 class AbstractFullRichnessEstimatorTests(TestCase):

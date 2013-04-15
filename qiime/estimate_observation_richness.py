@@ -12,6 +12,7 @@ __status__ = "Development"
 
 """Contains functionality to estimate the observation richness of samples."""
 
+from bisect import insort
 from math import factorial
 from numpy import ceil, sqrt
 
@@ -54,12 +55,7 @@ class ObservationRichnessEstimator(object):
                 samp_abundance_freq_count.append((samp_data == i).sum(0))
             yield samp_abundance_freq_count
 
-    def __call__(self, point_count=40, estimate_type='both', endpoint=None):
-        if point_count < 1:
-            raise ValueError("The number of points to estimate must be "
-                             "greater than or equal to 1. Received a point "
-                             "count of %d."
-                             % point_count)
+    def __call__(self, start=1, stop=None, step_size=None):
         per_sample_results = []
 
         for samp_data, num_obs, n, abundance_freqs in zip(
@@ -70,20 +66,9 @@ class ObservationRichnessEstimator(object):
             # TODO samp_data not necessary?
             samp_data = samp_data[samp_data > 0]
 
-            if point_count == 1:
-                sizes = [n]
-            else:
-                if estimate_type == 'interpolation':
-                    sizes = self._get_interpolation_points(n, point_count)
-                elif estimate_type == 'extrapolation':
-                    sizes = self._get_extrapolation_points(n, endpoint,
-                                                           point_count)
-                elif estimate_type == 'both':
-                    sizes = self._get_full_range_points(n, endpoint,
-                                                        point_count)
-                else:
-                    raise ValueError("Unrecognized estimate type '%s'." %
-                                     estimate_type)
+            # stop is inclusive. If the original individual count isn't
+            # included in this range, add it in the correct spot.
+            sizes = self._get_points_to_estimate(start, stop, step_size, n)
 
             size_results = []
             for size in sizes:
@@ -101,28 +86,20 @@ class ObservationRichnessEstimator(object):
 
         return per_sample_results
 
-    def _get_interpolation_points(self, stop, point_count):
-        #step_size = int(ceil(stop / (point_count - 1)))
-        step_size = stop // (point_count - 1)
-        sizes = range(1, stop, step_size)
-        sizes.append(stop)
-        return sizes
+    def _get_points_to_estimate(self, start, stop, step_size,
+                                reference_individual_count):
+        if start < 1 or step_size < 1:
+            raise ValueError("The minimum observation count and step size "
+                             "must both be greater than or equal to 1.")
 
-    def _get_extrapolation_points(self, start, stop, point_count):
-        step_size = int(ceil((stop - start) / (point_count - 1)))
-        sizes = range(start, stop, step_size)
-        sizes.append(stop)
-        return sizes
+        if start > stop:
+            raise ValueError("The minimum observation count must be less than "
+                             "or equal to the maximum observation count.")
 
-    def _get_full_range_points(self, median_point, stop, point_count):
-        half_point_count = point_count // 2
-        inter_sizes = self._get_interpolation_points(median_point,
-                half_point_count)
-        extra_sizes = self._get_extrapolation_points(median_point, stop,
-                half_point_count)
-
-        # Shared median point.
-        return inter_sizes + extra_sizes[1:]
+        points = range(start, stop + 1, step_size)
+        if reference_individual_count not in points:
+            insort(points, reference_individual_count)
+        return points
 
 
 class AbstractFullRichnessEstimator(object):
