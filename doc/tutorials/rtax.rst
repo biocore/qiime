@@ -31,7 +31,7 @@ Perform OTU picking
 
 Our procedure is to perform OTU picking on one read only, but then to obtain additional information from the second read at the taxonomic classification step.  So, start by running the standard one-read pipeline::
 
-    pick_otus_through_otu_table.py -i rtax_sample_data/forward_read.11k.fna -o pick_otus.out -v
+    pick_de_novo_otus.py -i rtax_sample_data/forward_read.11k.fna -o pick_otus.out -v
 
 In addition to choosing representative sequences, that produces taxonomy information using just the given read and the default classifier; this may be interesting for comparison with the RTAX results. (The PyNast part may fail on short sequences, given the default options, but the OTU representatives will be written to pick_otus.out/rep_set, which is really all we need). You can choose OTUs based on the forward or the reverse read here, or do it both ways to compare; the downstream RTAX classification doesn't care which read is which.
 

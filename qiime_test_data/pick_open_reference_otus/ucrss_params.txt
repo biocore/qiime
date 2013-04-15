@@ -1,0 +1,2 @@
+pick_otus:enable_rev_strand_match True
+align_seqs:min_length 75

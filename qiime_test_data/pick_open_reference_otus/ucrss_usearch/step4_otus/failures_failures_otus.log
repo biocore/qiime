@@ -1,0 +1,16 @@
+usearch61OtuPicker parameters:
+Application:usearch61
+minlen:64
+output_dir:/Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch//step4_otus/
+percent_id:0.97
+remove_usearch_logs:False
+rev:True
+save_intermediate_files:True
+sizeorder:False
+usearch61_maxaccepts:1
+usearch61_maxrejects:32
+usearch61_sort_method:abundance
+usearch_fast_cluster:False
+verbose:False
+wordlength:8
+Num OTUs:5

@@ -1,0 +1,8 @@
+New.0.CleanUp.ReferenceOTU1	k__Bacteria;p__Firmicutes;c__Bacilli;o__Lactobacillales;f__Streptococcaceae;g__Streptococcus;s__	0.910
+New.0.ReferenceOTU0	k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Prevotellaceae;g__Prevotella;s__melaninogenica	1.000
+New.0.CleanUp.ReferenceOTU2	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae;g__Oribacterium;s__	1.000
+New.0.CleanUp.ReferenceOTU5	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae;g__Blautia;s__	0.960
+879972	k__Bacteria;p__Firmicutes;c__Bacilli;o__Lactobacillales;f__Streptococcaceae;g__Streptococcus;s__infantis	0.990
+295053	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__	0.970
+New.0.CleanUp.ReferenceOTU4	k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales	1.000
+New.1.ReferenceOTU0	k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__	0.910

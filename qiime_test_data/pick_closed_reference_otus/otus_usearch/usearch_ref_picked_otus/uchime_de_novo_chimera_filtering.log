@@ -1,0 +1,65 @@
+usearch --usersort --chimeras /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/de_novo_chimeras.fasta --abskew 2.0 --uchime /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_error_corrected.fasta --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/uchime_de_novo_chimera_filtering.log --nonchimeras /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/de_novo_non_chimeras.fasta
+Started Thu Apr  4 08:05:53 2013
+Version 5.2.236
+17Gb RAM
+
+Minus strand search OFF
+    0.28  minh
+    8.00  xn
+    1.40  dn
+    1.00  xa
+    0.80  mindiv
+    0.75  id
+       2  maxp
+
+Highest-abundance sequences
+     52  Cluster1;size=52
+     50  Cluster0;size=50
+     45  Cluster2;size=45
+     43  Cluster8;size=43
+     40  Cluster4;size=40
+     40  Cluster6;size=40
+     30  Cluster3;size=30
+     28  Cluster10;size=28
+     27  Cluster9;size=27
+     26  Cluster19;size=26
+     23  Cluster7;size=23
+     23  Cluster14;size=23
+     22  Cluster5;size=22
+     19  Cluster11;size=19
+     18  Cluster31;size=18
+     18  Cluster28;size=18
+     16  Cluster12;size=16
+     15  Cluster20;size=15
+     14  Cluster26;size=14
+     13  Cluster30;size=13
+     13  Cluster13;size=13
+     13  Cluster15;size=13
+     13  Cluster16;size=13
+     12  Cluster25;size=12
+     12  Cluster17;size=12
+     11  Cluster46;size=11
+     11  Cluster23;size=11
+     11  Cluster42;size=11
+     10  Cluster55;size=10
+     10  Cluster21;size=10
+      9  Cluster18;size=9
+      9  Cluster24;size=9
+
+/Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_error_corrected.fasta: 102/418 chimeras found (24.4%)
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+          windex       27004        2621   81.2%         2.1Mb
+            mx_h         934         436   13.4%       350.1kb
+         myutils           3           0    3.7%        96.0kb
+           ultra          25          24    1.5%        40.1kb
+           dpmem           4           2    0.1%       2216.0b
+       hspfinder         398         396    0.1%       1536.0b
+           seqdb        1474        1474    0.0%        300.0b
+----------------  ----------  ----------  ------  ------------
+           Total       29842        4953  100.0%         2.6Mb
+
+Finished Thu Apr  4 08:05:53 2013
+Elapsed time 00:00
+Max memory 17Mb

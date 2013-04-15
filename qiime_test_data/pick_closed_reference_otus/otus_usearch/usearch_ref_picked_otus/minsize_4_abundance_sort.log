@@ -1,0 +1,15 @@
+usearch --sizeout --minsize 4 --sizein --output /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/abundance_sorted_minsize_4.fasta --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/minsize_4_abundance_sort.log --sortsize /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/de_novo_non_chimeras.fasta
+Started Thu Apr  4 08:05:53 2013
+Version 5.2.236
+17Gb RAM
+
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+         myutils           2           0  100.0%        64.0kb
+----------------  ----------  ----------  ------  ------------
+           Total           2           0  100.0%        64.0kb
+
+Finished Thu Apr  4 08:05:53 2013
+Elapsed time 00:00
+Max memory 13Mb

@@ -116,7 +116,7 @@ Trees an OTU tables created can then be utilized in the downstream QIIME analyse
 Workflow Scripts
 ================
 
-The Silva 104 reference set can be used in a workflow, such as `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_.  It is necessary to modify the `qiime_parameters.txt` file to correctly point to the Silva reference filepaths, and to use the dynamic alignment filtering rather than the 16S Lanemask.  See the `documentation <../documentation/file_formats.html#qiime-parameters>`_ for details about the `qiime_parameters.txt` file.
+The Silva 104 reference set can be used in a workflow, such as `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_.  It is necessary to modify the `qiime_parameters.txt` file to correctly point to the Silva reference filepaths, and to use the dynamic alignment filtering rather than the 16S Lanemask.  See the `documentation <../documentation/file_formats.html#qiime-parameters>`_ for details about the `qiime_parameters.txt` file.
 
 Parameters that should be modified:
 

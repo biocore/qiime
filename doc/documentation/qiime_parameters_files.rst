@@ -9,7 +9,7 @@ QIIME parameters files are used with the QIIME workflow scripts, which plug toge
 Motivation
 ==========
 
-The QIIME workflow scripts plug together two or more QIIME commands to facilitate running common processes. For example, `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_ combines OTU picking, representative sequence picking, taxonomy assignment, sequence alignment, alignment filtering, and tree building in a single QIIME command. If you were to run each of these steps yourself, you would run about seven different commands (depending a little on what options you use). Because each of these individual commands may have many options, it's not feasible to make of these options accessible through the `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_  interface (to see why, run ``pick_otus.py -h`` to get list of options for just that single script). However, we still want users to have control over the different options available in the individual scripts. To achieve that, you can pass a QIIME parameters file to the workflow scripts to modify options to the component scripts of the workflow.
+The QIIME workflow scripts plug together two or more QIIME commands to facilitate running common processes. For example, `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ combines OTU picking, representative sequence picking, taxonomy assignment, sequence alignment, alignment filtering, and tree building in a single QIIME command. If you were to run each of these steps yourself, you would run about seven different commands (depending a little on what options you use). Because each of these individual commands may have many options, it's not feasible to make of these options accessible through the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_  interface (to see why, run ``pick_otus.py -h`` to get list of options for just that single script). However, we still want users to have control over the different options available in the individual scripts. To achieve that, you can pass a QIIME parameters file to the workflow scripts to modify options to the component scripts of the workflow.
 
 Format
 ======
@@ -45,7 +45,7 @@ Examples
 
 Below are some commonly used parameter files.
 
-Run OTU picking with uclust's default parameters (rather than QIIME's default parameters, which are more conservative but *much* slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust's ``--rev`` parameter). This information can be saved to a text file and passed to `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_, `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_, `pick_subsampled_reference_otus_through_otu_table.py <../scripts/pick_subsampled_reference_otus_through_otu_table.html>`_, or `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_.
+Run OTU picking with uclust's default parameters (rather than QIIME's default parameters, which are more conservative but *much* slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust's ``--rev`` parameter). This information can be saved to a text file and passed to `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_, or `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_.
 ::
 	
 	pick_otus:enable_rev_strand_match True
@@ -54,7 +54,7 @@ Run OTU picking with uclust's default parameters (rather than QIIME's default pa
 	pick_otus:stepwords 8
 	pick_otus:word_length 8
 
-Run beta diversity with Unweighted UniFrac, Weighted UniFrac, Bray-Curtis, and Euclidean distance metrics. This can be used with `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ and `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_.
+Run beta diversity with Unweighted UniFrac, Weighted UniFrac, Bray-Curtis, and Euclidean distance metrics. This can be used with `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ and `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_.
 ::
 	
 	beta_diversity:metrics	bray_curtis,euclidean,unweighted_unifrac,weighted_unifrac
@@ -64,14 +64,14 @@ Workflow scripts
 
 You can find information on the QIIME workflow scripts at:
 
-	* `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_
-	* `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_
-	* `pick_subsampled_reference_otus_through_otu_table.py <../scripts/pick_subsampled_reference_otus_through_otu_table.html>`_
+	* `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_
+	* `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_
+	* `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_
 	* `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_
 	* `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_
 	* `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_
 	* `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_
-	* `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_
+	* `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_
 
 Why is there no longer an example parameters file included with QIIME?
 ======================================================================

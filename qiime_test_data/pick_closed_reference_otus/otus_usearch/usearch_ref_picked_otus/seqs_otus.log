@@ -1,0 +1,33 @@
+UsearchReferenceOtuPicker parameters:
+Application:usearch
+abundance_skew:2.0
+chimeras_retention:union
+cluster_size_filtering:True
+count_start:0
+db_filepath:None
+de_novo_chimera_detection:True
+derep_fullseq:False
+global_alignment:True
+label_prefix:
+label_suffix:
+maxrejects:500
+minlen:64
+minsize:4
+output_dir:/Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch//usearch_ref_picked_otus
+perc_id_blast:0.97
+percent_id:0.97
+percent_id_err:0.97
+reference_chimera_detection:False
+remove_usearch_logs:False
+retain_label_as_comment:False
+rev:False
+save_intermediate_files:True
+sizein:True
+sizeout:True
+slots:16769023
+suppress_new_clusters:True
+verbose:False
+w:12
+Num OTUs:49
+Num failures:698
+Reference database for OTU picking: /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna

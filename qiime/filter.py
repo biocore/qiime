@@ -533,7 +533,7 @@ def filter_otus_from_otu_map(input_otu_map_fp,
         
         There are two outputs from this function: the output file (which is the
          filtered otu map) and the list of retained otu ids as a set. Since I need
-         to return the retained ids for pick_subsampled_reference_otus_through_otu_table, 
+         to return the retained ids for pick_open_reference_otus, 
          this takes filepaths instead of file handles (since it can't be a generator 
          and return something).
     
