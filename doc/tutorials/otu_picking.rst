@@ -115,7 +115,6 @@ If you're interested in running the usearch OTU pickers in size-order mode (mean
 	pick_otus:sizeorder True 
 	pick_otus:maxaccepts 16
 	pick_otus:maxrejects 64
-	pick_otus:maxhits 1
 
 For example, in de novo mode::
 
