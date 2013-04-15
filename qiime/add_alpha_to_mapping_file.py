@@ -138,7 +138,7 @@ def mean_alpha(alpha_dict, depth):
     no extension, this name is usually the metric used to compute the alpha
     diversity.
     depth: selected depth to mean the computed alpha diversity values for the
-    alpha_dict data.
+    alpha_dict data. If None is passed the used depth will be the highest.
 
     Output:
     metrics: list of metric names i. e. the name of each collated alpha div file
@@ -148,16 +148,25 @@ def mean_alpha(alpha_dict, depth):
     """
 
     assert type(alpha_dict) == dict, "Input data must be a dictionary"
-    assert depth >= 0 and type(depth) == int, "The spcified depth must be a "+\
-        "positive integer."
+    assert depth == None or (depth >= 0 and type(depth) == int), "The "+\
+        "spcified depth must be a positive integer."
 
     metrics = []
     sample_ids = []
     data = []
 
+    if depth == None:
+        use_highest = True
+    else:
+        use_highest = False
+
     for key, value in alpha_dict.iteritems():
-        metrics.append('{0}_even_{1}'.format(key, depth))
         identifiers, _, _, rarefaction_data = parse_rarefaction(value)
+
+        # if depth is specified as None use the highest available
+        if use_highest:
+            depth = int(max([row[0] for row in rarefaction_data]))
+        metrics.append('{0}_even_{1}'.format(key, depth))
 
         # check there are elements with the desired rarefaction depth
         if sum([1 for row in rarefaction_data if row[0] == depth]) == 0:
