@@ -303,6 +303,16 @@ class MultinomialPointEstimatorTests(TestCase):
                 237, 237, self.colwell_fk, 112, 112, self.chao1_estimator)
         self.assertFloatEqual(obs, 9.22019783913399)
 
+    def test_estimateExpectedObservationCountStdErr_extrapolate(self):
+        """Test computing std err of S(n+m*) using data from Colwell 2012."""
+        # Verified against results in Colwell 2012 paper.
+
+        # m = 337 (n+100)
+        obs = self.estimator1.estimateExpectedObservationCountStdErr(
+                337, 237, self.colwell_fk, 112, 145.7369598336187,
+                self.chao1_estimator)
+        self.assertFloatEqual(obs, 12.20)
+
 
 # OTU ID S1 taxonomy
 # OTU0   0  foo;bar;baz

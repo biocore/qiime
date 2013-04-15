@@ -148,7 +148,7 @@ class MultinomialPointEstimator(AbstractPointEstimator):
     def estimateExpectedObservationCount(self, m, n, fk, s_obs,
                                          full_richness_estimator):
         if m <= n:
-            # Equation 4 in Colwell 2012
+            # Equation 4 in Colwell 2012.
             accumulation = 0
 
             for k in range(1, n + 1):
@@ -159,7 +159,7 @@ class MultinomialPointEstimator(AbstractPointEstimator):
 
             estimate = s_obs - accumulation
         else:
-            # Equation 9 in Colwell 2012
+            # Equation 9 in Colwell 2012.
             m_star = m - n
             f_hat = \
                 full_richness_estimator.estimateUnobservedObservationCount(fk)
@@ -171,21 +171,39 @@ class MultinomialPointEstimator(AbstractPointEstimator):
 
     def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
                                                full_richness_estimator):
-        # Equation 5 in Colwell 2012 gives unconditional variance, but they
-        # report the standard error (SE) (which is the same as the standard
-        # deviation in this case) in their tables and use this to construct
-        # confidence intervals. Thus, we compute SE as sqrt(variance).
-        s_est = full_richness_estimator.estimateFullRichness(fk, s_obs)
-        accumulation = 0
+        if m <= n:
+            # Equation 5 in Colwell 2012 gives unconditional variance, but they
+            # report the standard error (SE) (which is the same as the standard
+            # deviation in this case) in their tables and use this to construct
+            # confidence intervals. Thus, we compute SE as sqrt(variance).
+            s_est = full_richness_estimator.estimateFullRichness(fk, s_obs)
+            accumulation = 0
 
-        for k in range(1, n + 1):
-            alpha_km = self._calculate_alpha_km(n, k, m)
+            for k in range(1, n + 1):
+                alpha_km = self._calculate_alpha_km(n, k, m)
 
-            # k is 1..n while fk idxs are 0..n-1.
-            accumulation += (((1 - alpha_km)**2) * fk[k - 1])
+                # k is 1..n while fk idxs are 0..n-1.
+                accumulation += (((1 - alpha_km)**2) * fk[k - 1])
 
-        # Convert variance to standard error.
-        return sqrt(accumulation - (s_m**2 / s_est))
+            # Convert variance to standard error.
+            std_err_est = sqrt(accumulation - (s_m**2 / s_est))
+        else:
+            # Equation 10 in Colwell 2012.
+            f_hat = \
+                full_richness_estimator.estimateUnobservedObservationCount(fk)
+            m_star = m - n
+
+            accumulation = 0
+            for i in range(1, n + 1):
+                for j in range(1, n + 1):
+                    # TODO multiply covariance by partial derivative
+                    accumulation += self._calculate_covariance(fk[i - 1],
+                                                               fk[j - 1],
+                                                               s_obs, f_hat,
+                                                               i==j)
+            std_err_est = accumulation
+
+        return std_err_est
 
     def _calculate_alpha_km(self, n, k, m):
         alpha_km = 0
@@ -195,3 +213,11 @@ class MultinomialPointEstimator(AbstractPointEstimator):
                         (factorial(n) * factorial(n - k - m)))
 
         return alpha_km
+
+    def _calculate_covariance(self, f_i, f_j, s_obs, f_hat, same_var):
+        if same_var:
+            cov = f_i * (1 - f_i / (s_obs + f_hat))
+        else:
+            cov = -(f_i * f_j) / (s_obs + f_hat)
+
+        return cov
