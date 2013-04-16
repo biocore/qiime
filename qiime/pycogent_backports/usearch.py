@@ -27,7 +27,6 @@ from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
-
 from cogent.app.uclust import clusters_from_uc_file
 
 class UsearchParseError(Exception):
@@ -1412,15 +1411,17 @@ def usearch_qf(
         intermediate_files.append(output_filepath)
         
         # Enumerate the OTUs in the clusters
-        if verbose:
-            print "Enumerating OTUs..."
-        output_filepath =\
-         enumerate_otus(output_filepath, output_filepath =\
-         join(output_dir, 'enumerated_otus.fasta'), label_prefix=label_prefix,
-         label_suffix=label_suffix, count_start=count_start,
-         retain_label_as_comment=retain_label_as_comment)
+        if not suppress_new_clusters:
+            if verbose:
+                print "Enumerating OTUs..."
+            output_filepath =\
+             enumerate_otus(output_filepath, output_filepath =\
+             join(output_dir, 'enumerated_otus.fasta'),
+             label_prefix=label_prefix,
+             label_suffix=label_suffix, count_start=count_start,
+             retain_label_as_comment=retain_label_as_comment)
             
-        intermediate_files.append(output_filepath)
+            intermediate_files.append(output_filepath)
 
         
         # Get original sequence label identities
@@ -1445,7 +1446,13 @@ def usearch_qf(
          'installed?')
 
     # Get dict of clusters, list of failures
-    clusters, failures = clusters_from_blast_uc_file(open(clusters_file, "U"))
+    # Set OTU ID field to 9 for the case of closed reference OTU picking
+    if suppress_new_clusters:
+        otu_id_field = 9
+    else:
+        otu_id_field = 1
+    clusters, failures = clusters_from_blast_uc_file(open(clusters_file, "U"),
+     otu_id_field)
     
     # Remove temp files unless user specifies output filepath
     if not save_intermediate_files:
@@ -1479,3 +1486,824 @@ assign_dna_reads_to_protein_database =\
   assign_dna_reads_to_dna_database =\
   assign_dna_reads_to_database
 ## End uclust convenience functions
+
+## Start usearch61 application controller
+
+class Usearch61(CommandLineApplication):
+    """ Usearch61 ApplicationController
+    
+    """
+    
+    _command = 'usearch61'
+    _input_handler = '_input_as_parameters'
+    _parameters = {\
+        
+        #### IO filepaths specified by these values
+        
+        # Output file, used by several difference functions
+        '--output':ValuedParameter('--', Name='output', Delimiter=' ',
+            IsPath=True),
+        
+        # Output filename in uclust (.uc) format
+        '--uc':ValuedParameter('--', Name='uc', Delimiter=' ', IsPath=True),
+            
+        # log filepath
+        '--log':ValuedParameter('--', Name='log', Delimiter=' ', IsPath=True),
+        
+        # Uses to specify input file for reference based clustering
+        '--usearch_global':ValuedParameter('--', Name='usearch_global',
+         Delimiter=' ', IsPath=True),
+         
+        # Used to specify reference sequences to act as seeds
+        '--db':ValuedParameter('--', Name='db', Delimiter=' ', IsPath=True),
+        
+        # Default de novo clustering input fasta filepath, memory efficient
+        '--cluster_smallmem':ValuedParameter('--', Name='cluster_smallmem',
+         Delimiter=' ', IsPath=True),
+         
+        # Fast de novo clustering input fasta filepath
+        '--cluster_fast':ValuedParameter('--', Name='cluster_fast',
+         Delimiter=' ', IsPath=True),
+        
+        #### Parameters for sorting raw fasta files
+        # specifies fasta filepath to sort by length
+        '--sortbylength':ValuedParameter('--', Name='sortbylength',
+          Delimiter=' ', IsPath=True),
+            
+        # specifies fasta filepath to dereplicate, sort by abundance
+        '--derep_fulllength':ValuedParameter('--', Name='derep_fulllength',
+         Delimiter=' ', IsPath=True),
+         
+        # Adds label showing abundance of dereplicated sequences
+        '--sizeout':FlagParameter('--', Name='sizeout'),
+        
+        #### Other parameters for clustering/sorting
+        
+        # Needed to use data sorted by abundance and use sizeorder option
+        '--usersort':FlagParameter('--', Name='usersort'),
+        
+        # specifies percent identity for clustering
+        '--id':ValuedParameter('--', Name='id', Delimiter=' ', IsPath=False),
+        
+        # specifies minimum sequence length allowed
+        '--minseqlength':ValuedParameter('--', Name='minseqlength',
+         Delimiter=' ', IsPath=False),
+         
+        # if set as --strand both will enable reverse strand matching
+        '--strand':ValuedParameter('--', Name='strand', Delimiter=' ',
+         IsPath=False),
+        
+        # Word length to use, in base pairs
+        '--wordlength':ValuedParameter('--', Name='wordlength',
+         Delimiter=' ', IsPath=False),
+         
+        # Max rejects, lower = more speed, higher=higher accuracy
+        '--maxrejects':ValuedParameter('--', Name='maxrejects',
+         Delimiter=' ', IsPath=False),
+         
+        # Max accepts, should be greater than 1 for sizeorder option
+        '--maxaccepts':ValuedParameter('--', Name='maxaccepts',
+         Delimiter=' ', IsPath=False),
+         
+        # Option to cluster to most abundant seed
+        '--sizeorder':FlagParameter('--', Name='sizeorder')
+    }
+    
+     
+    _suppress_stdout = False
+    _suppress_stderr = False
+
+    def _input_as_parameters(self,data):
+        """ Set the input path (a fasta filepath)
+        """
+        # The list of values which can be passed on a per-run basis
+        allowed_values =  ['--uc', '--output', '--log',
+                           '--sortbylength', '--derep_fulllength', '--sizeout',
+                           '--minseqlength', '--strand', '--wordlength',
+                           '--maxrejects', '--usearch_global', '--db',
+                           '--cluster_smallmem', '--cluster_fast', '--id',
+                           '--maxaccepts', '--sizeorder', '--usersort'
+                           ]
+                           
+        unsupported_parameters = set(data.keys()) - set(allowed_values)
+        if unsupported_parameters:
+            raise ApplicationError,\
+             "Unsupported parameter(s) passed when calling %s: %s" %\
+              (self._command, ' '.join(unsupported_parameters))
+        
+        
+        for v in allowed_values:
+            # turn the parameter off so subsequent runs are not
+            # affected by parameter settings from previous runs
+            self.Parameters[v].off()
+            if v in data:
+                # turn the parameter on if specified by the user
+                self.Parameters[v].on(data[v])
+        
+        return ''
+        
+    def _get_result_paths(self,data):
+        """ Set the result paths """
+        
+        result = {}
+        
+        result['Output'] = ResultPath(\
+         Path=self.Parameters['--output'].Value,\
+         IsWritten=self.Parameters['--output'].isOn())
+         
+        result['ClusterFile'] = ResultPath(
+         Path = self.Parameters['--uc'].Value,
+         IsWritten=self.Parameters['--uc'].isOn())
+
+         
+        return result
+        
+    def _accept_exit_status(self,exit_status):
+        """ Test for acceptable exit status
+        
+            usearch can seg fault and still generate a parsable .uc file
+            so we explicitly check the exit status
+        
+        """
+        return exit_status == 0
+        
+    def getHelp(self):
+        """Method that points to documentation"""
+        help_str =\
+        """
+        USEARCH is hosted at:
+        http://www.drive5.com/usearch/
+
+        The following papers should be cited if this resource is used:
+
+        Edgar,RC, Haas,BJ, Clemente,JC, Quince,C, Knight,R (2011) UCHIME 
+        improves sensitivity and speed of chimera detection, Bioinformatics 
+        """
+        return help_str
+
+## Start Usearch61 convenience functions
+
+def usearch61_ref_cluster(seq_path,
+                          refseqs_fp,  
+                          percent_id = 0.97,
+                          rev = False,
+                          save_intermediate_files = True,
+                          minlen = 64,
+                          output_dir = '.',
+                          remove_usearch_logs = False,
+                          verbose = False,
+                          wordlength = 8,
+                          usearch_fast_cluster = False,
+                          usearch61_sort_method = 'abundance',
+                          otu_prefix = "denovo",
+                          usearch61_maxrejects = 32,
+                          usearch61_maxaccepts = 1,
+                          sizeorder = False,
+                          suppress_new_clusters = False,
+                          HALT_EXEC = False
+                          ):
+    """ Returns dictionary of cluster IDs:seq IDs
+    
+    Overall function for reference-based clustering with usearch61
+    
+    seq_path:  fasta filepath to be clustered with usearch61
+    refseqs_fp: reference fasta filepath, used to cluster sequences against.
+    percent_id:  percentage id to cluster at
+    rev: enable reverse strand matching for clustering
+    save_intermediate_files: Saves intermediate files created during clustering
+    minlen: minimum sequence length
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    remove_usearch_logs: Saves usearch log files
+    verbose: print current processing step to stdout
+    wordlength: word length to use for clustering
+    usearch_fast_cluster: Use usearch61 fast cluster option, not as memory
+     efficient as the default cluster_smallmem option, requires sorting by
+     length, and does not allow reverse strand matching.
+    usearch61_sort_method:  Sort sequences by abundance or length by using
+     functionality provided by usearch61, or do not sort by using None option.
+    otu_prefix: label to place in front of OTU IDs, used to prevent duplicate
+     IDs from appearing with reference based OTU picking.
+    usearch61_maxrejects: Number of rejects allowed by usearch61
+    usearch61_maxaccepts: Number of accepts allowed by usearch61
+    sizeorder: used for clustering based upon abundance of seeds (only applies
+     when doing open reference de novo clustering)
+    suppress_new_clusters: If True, will allow de novo clustering on top of
+     reference clusters.
+    HALT_EXEC: application controller option to halt execution.
+    
+    Description of analysis workflows
+    ---------------------------------
+    closed-reference approach:
+      dereplicate sequences first, do reference based clustering,
+      merge clusters/failures and dereplicated data,
+      write OTU mapping and failures file.
+      
+    open-reference approach:
+      dereplicate sequences first, do reference based clustering, parse failures,
+      sort failures fasta according to chosen method, cluster failures, merge
+      reference clustering results/de novo results/dereplicated data, write
+      OTU mapping file.
+          
+    Dereplication should save processing time for large datasets.
+
+    """
+    files_to_remove = []
+    
+    # Need absolute paths to avoid potential problems with app controller
+    if output_dir:
+        output_dir = join(abspath(output_dir), '')
+
+    seq_path = abspath(seq_path)
+    
+
+    
+    try:
+        
+        if verbose:
+            print "Presorting sequences according to abundance..."
+        intermediate_fasta, dereplicated_uc, app_result =\
+         sort_by_abundance_usearch61(seq_path, output_dir, rev,
+         minlen, remove_usearch_logs, HALT_EXEC,
+         output_fna_filepath=join(output_dir, 'abundance_sorted.fna'),
+         output_uc_filepath=join(output_dir, 'abundance_sorted.uc')) 
+        if not save_intermediate_files:
+            files_to_remove.append(intermediate_fasta)
+            files_to_remove.append(dereplicated_uc)
+            
+        if verbose:
+            print "Performing reference based clustering..."
+        clusters_fp, app_result = usearch61_cluster_ref(intermediate_fasta,
+         refseqs_fp, percent_id, rev, minlen, output_dir, 
+         remove_usearch_logs, wordlength, usearch61_maxrejects,
+         usearch61_maxaccepts, HALT_EXEC,
+         output_uc_filepath=join(output_dir, 'ref_clustered.uc'))
+        if not save_intermediate_files:
+            files_to_remove.append(clusters_fp)
+             
+        clusters, failures =\
+         parse_usearch61_clusters(open(clusters_fp, "U"), otu_prefix="", 
+         ref_clustered=True)
+        dereplicated_clusters =\
+         parse_dereplicated_uc(open(dereplicated_uc, "U"))
+        clusters = merge_clusters_dereplicated_seqs(clusters,
+         dereplicated_clusters)
+        failures = merge_failures_dereplicated_seqs(failures,
+         dereplicated_clusters)
+        
+        if not suppress_new_clusters and failures:
+            if verbose:
+                print "Parsing out sequences that failed to cluster..."
+            failures_fasta = parse_usearch61_failures(seq_path, set(failures),
+             output_fasta_fp = join(output_dir, "failures_parsed.fna"))
+            if not save_intermediate_files:
+                files_to_remove.append(failures_fasta)
+            denovo_clusters = usearch61_denovo_cluster(failures_fasta,
+             percent_id, rev, save_intermediate_files, minlen, output_dir,
+             remove_usearch_logs, verbose, wordlength, usearch_fast_cluster,
+             usearch61_sort_method, otu_prefix, usearch61_maxrejects,
+             usearch61_maxaccepts, sizeorder, HALT_EXEC)
+            failures = []
+        
+            # Merge ref and denovo clusters
+            clusters.update(denovo_clusters)
+        
+
+        
+    except ApplicationError:
+        raise ApplicationError, ('Error running usearch61. Possible causes are '
+         'unsupported version (current supported version is usearch '
+         'v6.1.544) is installed or improperly formatted input file was '
+         'provided')
+        
+    except ApplicationNotFoundError:
+        remove_files(files_to_remove)
+        raise ApplicationNotFoundError('usearch61 not found, is it properly '
+         'installed?')
+
+    
+    if not save_intermediate_files:
+        remove_files(files_to_remove)
+
+    
+    return clusters, failures
+
+def usearch61_denovo_cluster(seq_path,
+                             percent_id = 0.97,
+                             rev = False,
+                             save_intermediate_files = True,
+                             minlen = 64,
+                             output_dir = '.',
+                             remove_usearch_logs = False,
+                             verbose = False,
+                             wordlength = 8,
+                             usearch_fast_cluster = False,
+                             usearch61_sort_method = 'abundance',
+                             otu_prefix = "denovo",
+                             usearch61_maxrejects = 32,
+                             usearch61_maxaccepts = 1,
+                             sizeorder = False,
+                             HALT_EXEC = False,
+                             file_prefix = "denovo_"
+                             ):
+    """ Returns dictionary of cluster IDs:seq IDs
+    
+    Overall function for de novo clustering with usearch61
+    
+    seq_path:  fasta filepath to be clustered with usearch61
+    percent_id:  percentage id to cluster at
+    rev: enable reverse strand matching for clustering
+    save_intermediate_files: Saves intermediate files created during clustering
+    minlen: minimum sequence length
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    remove_usearch_logs: Saves usearch log files
+    verbose: print current processing step to stdout
+    wordlength: word length to use for clustering
+    usearch_fast_cluster: Use usearch61 fast cluster option, not as memory
+     efficient as the default cluster_smallmem option, requires sorting by
+     length, and does not allow reverse strand matching.
+    usearch61_sort_method:  Sort sequences by abundance or length by using
+     functionality provided by usearch61, or do not sort by using None option.
+    otu_prefix: label to place in front of OTU IDs, used to prevent duplicate
+     IDs from appearing with reference based OTU picking.
+    usearch61_maxrejects: Number of rejects allowed by usearch61
+    usearch61_maxaccepts: Number of accepts allowed by usearch61
+    sizeorder: used for clustering based upon abundance of seeds
+    HALT_EXEC: application controller option to halt execution.
+    """
+
+    files_to_remove = []
+    
+    # Need absolute paths to avoid potential problems with app controller
+    if output_dir:
+        output_dir = abspath(output_dir) + '/'
+    seq_path = abspath(seq_path)
+    
+    try:
+        if verbose and usearch61_sort_method != None and\
+         not usearch_fast_cluster:
+            print "Sorting sequences according to %s..." % usearch61_sort_method
+        
+        # fast sorting option automatically performs length sorting
+        if usearch61_sort_method == 'abundance' and not usearch_fast_cluster:
+            intermediate_fasta, dereplicated_uc, app_result =\
+             sort_by_abundance_usearch61(seq_path, output_dir, rev,
+             minlen, remove_usearch_logs, HALT_EXEC,
+             output_fna_filepath=join(output_dir,
+              file_prefix + 'abundance_sorted.fna'),
+             output_uc_filepath=join(output_dir,
+             file_prefix + 'abundance_sorted.uc')) 
+            if not save_intermediate_files:
+                files_to_remove.append(intermediate_fasta)
+                files_to_remove.append(dereplicated_uc)
+        elif usearch61_sort_method == 'length' and not usearch_fast_cluster:
+            intermediate_fasta, app_result =\
+             sort_by_length_usearch61(seq_path, output_dir, minlen,
+             remove_usearch_logs, HALT_EXEC,
+             output_fna_filepath=join(output_dir,
+             file_prefix + 'length_sorted.fna'))
+            if not save_intermediate_files:
+                files_to_remove.append(intermediate_fasta)
+        else:
+            intermediate_fasta = seq_path
+            
+        if verbose:
+            print "Clustering sequences de novo..."
+            
+        if usearch_fast_cluster:
+            clusters_fp, app_result = usearch61_fast_cluster(intermediate_fasta,
+             percent_id, minlen, output_dir, remove_usearch_logs, wordlength,
+             usearch61_maxrejects, usearch61_maxaccepts, HALT_EXEC,
+             output_uc_filepath=join(output_dir,
+             file_prefix + 'fast_clustered.uc'))
+            if not save_intermediate_files:
+                files_to_remove.append(clusters_fp)
+        else:
+            clusters_fp, app_result =\
+             usearch61_smallmem_cluster(intermediate_fasta, percent_id,
+             minlen, rev, output_dir, remove_usearch_logs, wordlength,
+             usearch61_maxrejects, usearch61_maxaccepts, sizeorder, HALT_EXEC,
+             output_uc_filepath=join(output_dir,
+             file_prefix + 'smallmem_clustered.uc'))
+            if not save_intermediate_files:
+                files_to_remove.append(clusters_fp)
+        
+    except ApplicationError:
+        raise ApplicationError, ('Error running usearch61. Possible causes are '
+         'unsupported version (current supported version is usearch '+\
+         'v6.1.544) is installed or improperly formatted input file was '+\
+         'provided')
+        
+    except ApplicationNotFoundError:
+        remove_files(files_to_remove)
+        raise ApplicationNotFoundError('usearch61 not found, is it properly '+\
+         'installed?')
+            
+    if usearch61_sort_method == 'abundance' and not usearch_fast_cluster:
+        de_novo_clusters, failures =\
+         parse_usearch61_clusters(open(clusters_fp, "U"), otu_prefix)
+        dereplicated_clusters =\
+         parse_dereplicated_uc(open(dereplicated_uc, "U"))
+        clusters = merge_clusters_dereplicated_seqs(de_novo_clusters,
+         dereplicated_clusters)
+
+    else:
+        clusters, failures =\
+         parse_usearch61_clusters(open(clusters_fp, "U"), otu_prefix)
+    
+    if not save_intermediate_files:
+        remove_files(files_to_remove)
+    
+    return clusters
+    
+#   Start fasta sorting functions
+
+def sort_by_abundance_usearch61(seq_path,
+                                output_dir = '.',
+                                rev = False,
+                                minlen = 64,
+                                remove_usearch_logs = False,
+                                HALT_EXEC = False,
+                                output_fna_filepath = None,
+                                output_uc_filepath = None,
+                                log_name = "abundance_sorted.log"):
+    """ usearch61 application call to sort fasta file by abundance.
+    
+    seq_path:  fasta filepath to be clustered with usearch61
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    rev: enable reverse strand matching for clustering/sorting
+    minlen: minimum sequence length
+    remove_usearch_logs: Saves usearch log files
+    HALT_EXEC: application controller option to halt execution
+    output_fna_filepath: path to write sorted fasta filepath
+    output_uc_filepath: path to write usearch61 generated .uc file
+    log_name: filepath to write usearch61 generated log file
+    """
+    
+    output_fna_filepath = output_fna_filepath or \
+     get_tmp_filename(prefix='abundance_sorted', suffix='.fna')
+    
+    output_uc_filepath = output_uc_filepath or \
+     get_tmp_filename(prefix='abundance_sorted', suffix='.uc')
+    
+    log_filepath = join(output_dir, log_name)
+    
+    params = {'--minseqlength':minlen,
+              '--sizeout':True,
+              '--derep_fulllength':seq_path,
+              '--output':output_fna_filepath,
+              '--uc':output_uc_filepath
+             }
+             
+    if rev:
+        params['--strand'] = 'both'
+    if not remove_usearch_logs:
+        params['--log'] = log_filepath
+    
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+               
+    return output_fna_filepath, output_uc_filepath, app_result
+    
+def sort_by_length_usearch61(seq_path,
+                             output_dir = ".",
+                             minlen = 64,
+                             remove_usearch_logs = False,
+                             HALT_EXEC = False,
+                             output_fna_filepath = None,
+                             log_name="length_sorted.log"):
+    """ usearch61 application call to sort fasta file by length.
+    
+    seq_path:  fasta filepath to be clustered with usearch61
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    minlen: minimum sequence length
+    remove_usearch_logs: Saves usearch log files
+    HALT_EXEC: application controller option to halt execution
+    output_fna_filepath: path to write sorted fasta filepath
+    log_name: filepath to write usearch61 generated log file
+    """
+    
+    output_fna_filepath = output_fna_filepath or \
+     get_tmp_filename(prefix='length_sorted', suffix='.fna')
+    
+    log_filepath = join(output_dir, log_name)
+    
+    params = {'--minseqlength':minlen,
+              '--sortbylength':seq_path,
+              '--output':output_fna_filepath
+             }
+    if not remove_usearch_logs:
+        params['--log'] = log_filepath
+    
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+               
+    return output_fna_filepath, app_result
+    
+#   End fasta sorting functions
+
+#   Start reference clustering functions
+
+def usearch61_cluster_ref(intermediate_fasta,
+                          refseqs_fp,
+                          percent_id=0.97,
+                          rev=False,
+                          minlen=64,
+                          output_dir=".",
+                          remove_usearch_logs=False,
+                          wordlength=8,
+                          usearch61_maxrejects=32,
+                          usearch61_maxaccepts=1,
+                          HALT_EXEC=False,
+                          output_uc_filepath = None,
+                          log_filepath = "ref_clustered.log"
+                          ):
+    """ Cluster input fasta seqs against reference database
+    
+    seq_path:  fasta filepath to be clustered with usearch61
+    refseqs_fp: reference fasta filepath, used to cluster sequences against.
+    percent_id:  percentage id to cluster at
+    rev: enable reverse strand matching for clustering
+    minlen: minimum sequence length
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    remove_usearch_logs: Saves usearch log files
+    wordlength: word length to use for clustering
+    usearch61_maxrejects: Number of rejects allowed by usearch61
+    usearch61_maxaccepts: Number of accepts allowed by usearch61
+    output_uc_filepath: path to write usearch61 generated .uc file
+    HALT_EXEC: application controller option to halt execution.
+    """
+
+    log_filepath = join(output_dir, log_filepath)
+    
+    params = {
+              '--usearch_global':intermediate_fasta,
+              '--db':refseqs_fp,
+              '--minseqlength':minlen,
+              '--id':percent_id,
+              '--uc':output_uc_filepath,
+              '--wordlength':wordlength,
+              '--maxrejects':usearch61_maxrejects,
+              '--maxaccepts':usearch61_maxaccepts,
+
+              }
+    
+    if not remove_usearch_logs:
+        params['--log'] = log_filepath
+    if rev:
+        params['--strand'] = 'both'
+    else:
+        params['--strand'] = 'plus'
+    
+    clusters_fp = output_uc_filepath
+    
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+    
+    return clusters_fp, app_result
+
+#   End reference clustering functions
+
+#   Start de novo clustering functions
+
+def usearch61_fast_cluster(intermediate_fasta,
+                           percent_id=0.97,
+                           minlen=64,
+                           output_dir=".",
+                           remove_usearch_logs=False,
+                           wordlength=8,
+                           usearch61_maxrejects=8,
+                           usearch61_maxaccepts=1,
+                           HALT_EXEC=False,
+                           output_uc_filepath=None,
+                           log_name="fast_clustered.log"):
+    """ Performs usearch61 de novo fast clustering via cluster_fast option
+    
+    Only supposed to be used with length sorted data (and performs length
+    sorting automatically) and does not support reverse strand matching
+    
+    intermediate_fasta:  fasta filepath to be clustered with usearch61
+    percent_id:  percentage id to cluster at
+    minlen: minimum sequence length
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    remove_usearch_logs: Saves usearch log files
+    wordlength: word length to use for initial high probability sequence matches
+    usearch61_maxrejects: Set to 'default' or an int value specifying max
+     rejects
+    HALT_EXEC: application controller option to halt execution
+    output_uc_filepath: Path to write clusters (.uc) file.
+    log_name: filepath to write usearch61 generated log file
+    """
+    
+    log_filepath = join(output_dir, log_name)
+    
+    params = {'--minseqlength':minlen,
+              '--cluster_fast':intermediate_fasta,
+              '--id':percent_id,
+              '--uc':output_uc_filepath,
+              '--wordlength':wordlength,
+              '--maxrejects':usearch61_maxrejects,
+              '--maxaccepts':usearch61_maxaccepts,
+              '--usersort':True
+              }
+    
+    if not remove_usearch_logs:
+        params['--log'] = log_filepath
+    
+    clusters_fp = output_uc_filepath
+    
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+    
+    return clusters_fp, app_result
+    
+def usearch61_smallmem_cluster(intermediate_fasta,
+                               percent_id=0.97,
+                               minlen=64,
+                               rev = False,
+                               output_dir=".",
+                               remove_usearch_logs=False,
+                               wordlength=8,
+                               usearch61_maxrejects=32,
+                               usearch61_maxaccepts=1,
+                               sizeorder=False,
+                               HALT_EXEC=False,
+                               output_uc_filepath=None,
+                               log_name="smallmem_clustered.log"):
+    """ Performs usearch61 de novo clustering via cluster_smallmem option
+    
+    Only supposed to be used with length sorted data (and performs length
+    sorting automatically) and does not support reverse strand matching
+    
+    intermediate_fasta:  fasta filepath to be clustered with usearch61
+    percent_id:  percentage id to cluster at
+    minlen: minimum sequence length
+    rev: will enable reverse strand matching if True
+    output_dir: directory to output log, OTU mapping, and intermediate files
+    remove_usearch_logs: Saves usearch log files
+    wordlength: word length to use for initial high probability sequence matches
+    usearch61_maxrejects: Set to 'default' or an int value specifying max
+     rejects
+    HALT_EXEC: application controller option to halt execution
+    output_uc_filepath: Path to write clusters (.uc) file.
+    log_name: filepath to write usearch61 generated log file
+    """
+    
+    log_filepath = join(output_dir, log_name)
+    
+    params = {'--minseqlength':minlen,
+              '--cluster_smallmem':intermediate_fasta,
+              '--id':percent_id,
+              '--uc':output_uc_filepath,
+              '--wordlength':wordlength,
+              '--maxrejects':usearch61_maxrejects,
+              '--maxaccepts':usearch61_maxaccepts,
+              '--usersort':True
+              }
+    
+    if sizeorder:
+        params['--sizeorder'] = True
+    if not remove_usearch_logs:
+        params['--log'] = log_filepath
+    if rev:
+        params['--strand'] = 'both'
+    else:
+        params['--strand'] = 'plus'
+    
+    clusters_fp = output_uc_filepath
+    
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+    
+    return clusters_fp, app_result
+    
+#   End de novo clustering functions
+
+#   Start parsing functions
+
+def parse_dereplicated_uc(dereplicated_uc_lines):
+    """ Return dict of seq ID:dereplicated seq IDs from dereplicated .uc lines
+    
+    dereplicated_uc_lines: list of lines of .uc file from dereplicated seqs from
+     usearch61 (i.e. open file of abundance sorted .uc data)
+    """
+    
+    dereplicated_clusters = {}
+    
+    seed_hit_ix = 0
+    seq_id_ix = 8
+    seed_id_ix = 9
+    
+    for line in dereplicated_uc_lines:
+        curr_line = line.strip().split('\t')
+        if curr_line[seed_hit_ix] == "S":
+            dereplicated_clusters[curr_line[seq_id_ix]] = []
+        if curr_line[seed_hit_ix] == "H":
+            curr_seq_id = curr_line[seq_id_ix]
+            dereplicated_clusters[curr_line[seed_id_ix]].append(curr_seq_id)
+    
+    return dereplicated_clusters
+    
+def parse_usearch61_clusters(clustered_uc_lines,
+                             otu_prefix = 'denovo',
+                             ref_clustered=False):
+    """ Returns dict of cluster ID:seq IDs
+    
+    clustered_uc_lines: lines from .uc file resulting from de novo clustering
+    otu_prefix: string added to beginning of OTU ID.
+    ref_clustered: If True, will attempt to create dict keys for clusters as
+     they are read from the .uc file, rather than from seed lines.
+    """
+    
+    clusters = {}
+    failures = []
+    
+    seed_hit_ix = 0
+    otu_id_ix = 1
+    seq_id_ix = 8
+    ref_id_ix = 9
+    
+    for line in clustered_uc_lines:
+        curr_line = line.strip().split('\t')
+        if curr_line[seed_hit_ix] == "S":
+            # Need to split on semicolons for sequence IDs to handle case of 
+            # abundance sorted data
+            clusters[otu_prefix + curr_line[otu_id_ix]] =\
+             [curr_line[seq_id_ix].split(';')[0].split()[0]]
+        if curr_line[seed_hit_ix] == "H":
+            curr_id = curr_line[seq_id_ix].split(';')[0].split()[0]
+            if ref_clustered:
+                try:
+                    clusters[otu_prefix + curr_line[ref_id_ix]].append(curr_id)
+                except KeyError:
+                    clusters[otu_prefix + curr_line[ref_id_ix]] = [curr_id]
+            else:
+                clusters[otu_prefix +\
+                 curr_line[otu_id_ix]].append(curr_id)
+        if curr_line[seed_hit_ix] == "N":
+            failures.append(curr_line[seq_id_ix].split(';')[0])
+    
+    return clusters, failures
+    
+def merge_clusters_dereplicated_seqs(de_novo_clusters,
+                                     dereplicated_clusters):
+    """ combines de novo clusters and dereplicated seqs to OTU id:seqs dict
+    
+    de_novo_clusters: dict of OTU ID:clustered sequences
+    dereplicated_clusters:  dict of seq IDs: dereplicated seq IDs
+    """
+    
+    clusters = {}
+    
+    for curr_denovo_key in de_novo_clusters.keys():
+        clusters[curr_denovo_key] = de_novo_clusters[curr_denovo_key]
+        curr_clusters = []
+        for curr_denovo_id in de_novo_clusters[curr_denovo_key]:
+            curr_clusters += dereplicated_clusters[curr_denovo_id]
+        clusters[curr_denovo_key] += curr_clusters
+
+    return clusters
+    
+def merge_failures_dereplicated_seqs(failures,
+                                     dereplicated_clusters):
+    """ Appends failures from dereplicated seqs to failures list
+    
+    failures: list of failures
+    dereplicated_clusters:  dict of seq IDs: dereplicated seq IDs
+    """
+    
+    curr_failures = set(failures)
+    dereplicated_ids = set(dereplicated_clusters)
+    
+    
+    for curr_failure in curr_failures:
+        if curr_failure in dereplicated_ids:
+            failures += dereplicated_clusters[curr_failure]
+
+    return failures
+    
+def parse_usearch61_failures(seq_path,
+                             failures,
+                             output_fasta_fp):
+    """ Parses seq IDs from failures list, writes to output_fasta_fp
+    
+    seq_path: filepath of original input fasta file.
+    failures: list/set of failure seq IDs
+    output_fasta_fp: path to write parsed sequences
+    """
+    
+    parsed_out = open(output_fasta_fp, "w")
+    
+    for label, seq in MinimalFastaParser(open(seq_path), "U"):
+        curr_label = label.split()[0]
+        if curr_label in failures:
+            parsed_out.write(">%s\n%s\n" % (label, seq))
+    parsed_out.close()
+    return output_fasta_fp
+
+#   End parsing functions
+    

@@ -1,0 +1,79 @@
+# usearch --usersort --id 0.97 --slots 16769023 --sizeout --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_seqs_post_chimera.uc --query /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/abundance_sorted_minsize_4.fasta --w 12 --maxrejects 500 --sizein --db /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/usearch_cluster_seqs.log
+# version=5.2.236
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+H	1	248	97.6	.	205	201	41M	Cluster1;size=52	r2
+N	*	232	*	*	*	*	*	Cluster0;size=50	*
+H	0	222	100.0	.	186	193	8M	Cluster2;size=45	r1
+H	0	238	100.0	.	181	181	10M	Cluster8;size=43	r1
+H	4	235	100.0	.	82	131	8M	Cluster4;size=40	r5
+N	*	239	*	*	*	*	*	Cluster6;size=40	*
+H	2	211	99.5	.	0	0	211M	Cluster3;size=30	r3
+N	*	248	*	*	*	*	*	Cluster10;size=28	*
+H	4	235	97.3	.	0	0	111M	Cluster9;size=27	r5
+H	2	238	100.0	.	134	123	9M	Cluster19;size=26	r3
+H	2	238	100.0	.	185	161	8M	Cluster19;size=26	r3
+H	4	239	100.0	.	67	1	8M	Cluster7;size=23	r5
+N	*	220	*	*	*	*	*	Cluster14;size=23	*
+N	*	241	*	*	*	*	*	Cluster5;size=22	*
+N	*	249	*	*	*	*	*	Cluster11;size=19	*
+H	2	248	100.0	.	164	168	9M	Cluster31;size=18	r3
+H	1	243	97.4	.	204	201	39M	Cluster28;size=18	r2
+H	2	232	100.0	.	106	128	10M	Cluster12;size=16	r3
+N	*	243	*	*	*	*	*	Cluster20;size=15	*
+H	0	237	100.0	.	195	156	8M	Cluster26;size=14	r1
+H	0	235	100.0	.	186	193	8M	Cluster30;size=13	r1
+H	3	242	100.0	.	61	127	8M	Cluster13;size=13	r4
+H	1	244	99.6	.	0	0	24MD219M	Cluster15;size=13	r2
+H	2	235	100.0	.	166	168	9M	Cluster16;size=13	r3
+H	2	235	100.0	.	48	142	8M	Cluster16;size=13	r3
+H	0	221	100.0	.	188	124	8M	Cluster25;size=12	r1
+H	0	242	100.0	.	185	193	8M	Cluster17;size=12	r1
+H	0	235	100.0	.	186	193	8M	Cluster42;size=11	r1
+H	4	235	100.0	.	203	204	32M	Cluster23;size=11	r5
+N	*	228	*	*	*	*	*	Cluster46;size=11	*
+H	1	253	97.6	.	207	201	41M	Cluster55;size=10	r2
+H	1	248	97.6	.	205	201	41M	Cluster21;size=10	r2
+H	3	230	100.0	.	42	190	8M	Cluster18;size=9	r4
+H	0	236	100.0	.	139	147	8M	Cluster24;size=9	r1
+H	3	235	100.0	.	61	127	8M	Cluster37;size=9	r4
+H	1	237	100.0	.	144	135	10M	Cluster40;size=8	r2
+H	3	218	98.4	.	157	158	61M	Cluster27;size=8	r4
+H	0	231	100.0	.	195	156	8M	Cluster33;size=7	r1
+H	4	226	100.0	.	203	221	12M	Cluster22;size=7	r5
+H	4	226	100.0	.	158	176	8M	Cluster22;size=7	r5
+H	2	238	100.0	.	185	161	8M	Cluster300;size=7	r3
+H	0	236	100.0	.	139	147	8M	Cluster57;size=7	r1
+H	0	236	100.0	.	185	193	8M	Cluster57;size=7	r1
+H	2	238	100.0	.	184	160	9M	Cluster68;size=7	r3
+N	*	216	*	*	*	*	*	Cluster44;size=6	*
+H	2	238	100.0	.	139	146	9M	Cluster35;size=6	r3
+H	2	238	100.0	.	185	161	8M	Cluster35;size=6	r3
+H	0	235	100.0	.	186	193	8M	Cluster29;size=6	r1
+N	*	235	*	*	*	*	*	Cluster32;size=5	*
+N	*	228	*	*	*	*	*	Cluster34;size=5	*
+H	3	237	100.0	.	61	127	8M	Cluster38;size=5	r4
+N	*	227	*	*	*	*	*	Cluster96;size=5	*
+H	0	242	100.0	.	185	193	8M	Cluster275;size=5	r1
+H	0	227	100.0	.	200	193	8M	Cluster45;size=5	r1
+H	1	248	97.4	.	205	204	38M	Cluster62;size=5	r2
+H	2	225	100.0	.	185	161	8M	Cluster61;size=5	r3
+N	*	250	*	*	*	*	*	Cluster66;size=5	*
+H	2	231	100.0	.	185	161	8M	Cluster50;size=5	r3
+H	2	240	100.0	.	185	161	8M	Cluster293;size=5	r3
+H	3	205	100.0	.	61	127	8M	Cluster52;size=4	r4
+N	*	231	*	*	*	*	*	Cluster51;size=4	*
+H	0	218	100.0	.	1	1	212M	Cluster36;size=4	r1
+H	0	231	100.0	.	186	193	8M	Cluster135;size=4	r1
+H	0	231	100.0	.	186	193	8M	Cluster139;size=4	r1
+H	4	231	98.2	.	1	1	110M	Cluster65;size=4	r5
+H	2	240	100.0	.	185	161	8M	Cluster70;size=4	r3
+H	3	214	100.0	.	159	158	13M	Cluster163;size=4	r4
+N	*	219	*	*	*	*	*	Cluster181;size=4	*
+N	*	235	*	*	*	*	*	Cluster113;size=4	*
+H	1	243	100.0	.	139	137	8M	Cluster282;size=4	r2
+N	*	210	*	*	*	*	*	Cluster193;size=4	*
