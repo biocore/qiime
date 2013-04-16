@@ -1180,11 +1180,10 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines.append('Reference database for OTU picking: %s' % 
                          abspath(refseqs_fp))
         
-        if len(failures) > 0:
-            if failure_path != None:
-                failure_file = open(failure_path,'w')
-                failure_file.write('\n'.join(failures))
-                failure_file.close()
+        if failure_path != None:
+            failure_file = open(failure_path,'w')
+            failure_file.write('\n'.join(failures))
+            failure_file.close()
 
         if log_path:
             self._write_log(log_path,log_lines)
@@ -1410,7 +1409,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
         else:
             result = clusters
         
-        if failure_path is not None and len(failures) > 0:
+        if failure_path:
             self._write_failures(failure_path,failures)
         
         return result, failures
