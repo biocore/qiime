@@ -13,8 +13,10 @@ __status__ = "Development"
 """Contains functionality to estimate the observation richness of samples."""
 
 from bisect import insort
+from csv import writer
 from math import factorial
 from numpy import ceil, sqrt
+from scipy.misc import derivative
 
 class EmptyTableError(Exception):
     pass
@@ -56,21 +58,23 @@ class ObservationRichnessEstimator(object):
             yield samp_abundance_freq_count
 
     def __call__(self, start=1, stop=None, step_size=None):
-        per_sample_results = []
+        results = RichnessEstimatesResults()
+        orig_indiv_counts = {}
 
-        for samp_data, num_obs, n, abundance_freqs in zip(
+        for samp_id, samp_data, num_obs, n, abundance_freqs in zip(
+                self._biom_table.SampleIds,
                 self._biom_table.iterSampleData(),
                 self.getObservationCounts(),
                 self.getTotalIndividualCounts(),
                 self.getAbundanceFrequencyCounts()):
             # TODO samp_data not necessary?
             samp_data = samp_data[samp_data > 0]
+            orig_indiv_counts[samp_id] = n
 
             # stop is inclusive. If the original individual count isn't
             # included in this range, add it in the correct spot.
             sizes = self._get_points_to_estimate(start, stop, step_size, n)
 
-            size_results = []
             for size in sizes:
                 exp_obs_count = \
                     self.PointEstimator.estimateExpectedObservationCount(size,
@@ -81,10 +85,10 @@ class ObservationRichnessEstimator(object):
                             size, n, abundance_freqs, num_obs, exp_obs_count,
                             self.FullRichnessEstimator)
 
-                size_results.append((size, exp_obs_count, exp_obs_count_se))
-            per_sample_results.append(size_results)
+                results.append((samp_id, size, exp_obs_count,
+                                exp_obs_count_se))
 
-        return per_sample_results
+        return RichnessEstimatesResults(results, orig_indiv_counts)
 
     def _get_points_to_estimate(self, start, stop, step_size,
                                 reference_individual_count):
@@ -131,6 +135,8 @@ class Chao1FullRichnessEstimator(AbstractFullRichnessEstimator):
 
         return estimated_unobserved_count
 
+    #def evaluatePartialDerivative(self, abundance_frequency_counts):
+
 
 class AbstractPointEstimator(object):
     def estimateExpectedObservationCount(self, m, n, fk, s_obs,
@@ -169,6 +175,22 @@ class MultinomialPointEstimator(AbstractPointEstimator):
 
         return estimate
 
+    def estimateExpectedObservationCount2(self, new_val, idx, fk, m, n, s_obs,
+                                          full_richness_estimator):
+        # This is just temporary (for testing).
+        new_fk = fk[:]
+        new_fk[idx] = new_val
+
+        # Equation 9 in Colwell 2012.
+        m_star = m - n
+        f_hat = \
+            full_richness_estimator.estimateUnobservedObservationCount(new_fk)
+        f1 = new_fk[0]
+
+        estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
+
+        return estimate
+
     def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
                                                full_richness_estimator):
         if m <= n:
@@ -191,17 +213,22 @@ class MultinomialPointEstimator(AbstractPointEstimator):
             # Equation 10 in Colwell 2012.
             f_hat = \
                 full_richness_estimator.estimateUnobservedObservationCount(fk)
-            m_star = m - n
 
             accumulation = 0
             for i in range(1, n + 1):
+                pd_fi = derivative(self.estimateExpectedObservationCount2,
+                        fk[i - 1], args=(i - 1, fk, m, n, s_obs,
+                        full_richness_estimator), dx=1, order=5)
+
                 for j in range(1, n + 1):
-                    # TODO multiply covariance by partial derivative
-                    accumulation += self._calculate_covariance(fk[i - 1],
+                    pd_fj = derivative(self.estimateExpectedObservationCount2,
+                            fk[j - 1], args=(j - 1, fk, m, n, s_obs,
+                            full_richness_estimator), dx=1, order=5)
+                    accumulation += (pd_fi * pd_fj * self._calculate_covariance(fk[i - 1],
                                                                fk[j - 1],
                                                                s_obs, f_hat,
-                                                               i==j)
-            std_err_est = accumulation
+                                                               i==j))
+            std_err_est = sqrt(accumulation)
 
         return std_err_est
 
@@ -221,3 +248,41 @@ class MultinomialPointEstimator(AbstractPointEstimator):
             cov = -(f_i * f_j) / (s_obs + f_hat)
 
         return cov
+
+
+class RichnessEstimatesResults(object):
+    _num_cols = 4
+    _default_header = ['SampleID', 'Size', 'Estimate', 'Std Err']
+
+    def __init__(self):
+        self.RawEstimatesData = []
+        self._samples = {}
+
+    def getSampleCount(self):
+        return len(self._reference_sample_counts)
+
+    def addSample(self, sample_id, individual_count):
+        if sample_id in self._samples:
+            raise ValueError("Sample '%s' has already been added to the list "
+                             "of results." % sample_id)
+        else:
+            self._samples[sample_id] = individual_count
+
+    def addSampleEstimate(self, sample_id, size, estimate, estimate_std_err):
+        if sample_id in self._samples:
+            self.RawEstimatesData.append([sample_id, size, estimate,
+                                          estimate_std_err])
+
+    def saveRawData(self, out_fp, delimiter='\t', header=None):
+        if header is None:
+            header = self._default_header
+        else:
+            if len(header) != self._num_cols:
+                raise ValueError("The supplied header must have exactly %d "
+                                 "values." % self._num_cols)
+
+        with open(out_fp, 'wb') as out_f:
+            raw_data_writer = writer(out_f, delimiter=delimiter)
+
+            raw_data_writer.writerow(header)
+            raw_data_writer.writerows(self._estimates_data)
