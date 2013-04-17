@@ -22,8 +22,8 @@ script_info={}
 script_info['brief_description']="""Reformat ARB FASTA files"""
 script_info['script_description']="""This script fixes ARB FASTA formatting by repairing incorrect line break chararcters, stripping spaces and replacing "." with "-" characters."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Fix the input ARB FASTA format file arb.fasta and print the result to stdout:""","""fix_arb_fasta.py -i arb.fasta"""))
-script_info['script_usage'].append(("""Example saving to an output file:""","""Fix the input ARB FASTA format file arb.fasta and print the result to fixed.fasta:""","""fix_arb_fasta.py -i arb.fasta -o fixed.fasta"""))
+script_info['script_usage'].append(("""Example:""","""Fix the input ARB FASTA format file arb.fasta and print the result to stdout:""","""%prog -f arb.fasta"""))
+script_info['script_usage'].append(("""Example saving to an output file:""","""Fix the input ARB FASTA format file arb.fasta and print the result to fixed.fasta:""","""%prog -f arb.fasta -o fixed.fasta"""))
 script_info['output_description']="""The reformatted sequences are written to stdout or to the file path provided with -o."""
 script_info['required_options']=[options_lookup['input_fasta']]
 script_info['optional_options']=[
