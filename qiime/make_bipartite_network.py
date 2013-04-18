@@ -2,7 +2,7 @@
 
 __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME Project" 
-__credits__ = ["Will Van Treuren, Julia Goodrich"]
+__credits__ = ["Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Will Van Treuren"
@@ -11,6 +11,7 @@ __status__ = "Development"
 
 from numpy import array
 from qiime.parse import parse_mapping_file_to_dict
+from collections import defaultdict
 
 """
 Library script for creating a bipartite network that connects OTUs to Samples 
@@ -46,48 +47,79 @@ def make_sample_node_table(bt, mf_dict):
             '\t'.join(mf_dict[sid].values()) for sid in sids]
     return lines
 
-def make_otu_node_table(bt, md_key, num_lvls=7):
+def make_otu_node_table(bt, md_key, md_fields=['kingdom', 'phylum', 'class', 
+        'order', 'family', 'genus', 'species']):
     '''Make otu node table where nodes and their data are recorded.
-    Otu node table will take the following form:
-    
-    NodeID  NodeType    Abundance  kingdom  phylum ...
-    otu1    otu    35  bacteria    bacteroides
-
+    Metadata can be coded in the biom file in 3 ways, as a string, as a list, 
+    or as a dictionary:
+    -- as a string -- {'taxonomy':'k__bacteria;p__xyz'}
+    -- as a list -- {'taxonomy':['k__bacteria', 'p__xyz']}
+    -- as a dictionary -- {'taxonomy':{'kingdom':'bacteria', 'phylum':'xyz'}}
+    This function will attempt to divine which type of metadata exists in the
+    file. If the metadata is a string, it will be assumed that it is delimited 
+    by semicolons. If it is not this function will fail not split it.
     Inputs:
      bt - biom table
-     md_key - str, key to retrieve taxonomy info from the biom table
-     lvls - int, default 7, number of levels in the taxonomy to record. useful
-     if the table only has taxonomy to x<7 levels.
-    ''' 
-    lvls = ['kingdom', 'phylum', 'class', 'order', 'family', 'genus', 
-        'species'][:num_lvls]
-    header = '#NodeID\tNodeType\tAbundance\t'+'\t'.join(lvls)
+     md_key - str, key to access the metadata str/list/dict
+     md_fields - list of strs, the fields to pull from if the
+     metadata is presented as a dictionary. The md_fields will be the header 
+     keys in the output otu_node_table. If left as default md_fields 
+     will be given as ['kingdom','phylum',...'species']. This can cause the 
+     resulting file to have jagged edges (the header is longer than the metadata
+     or vice versa). This does not appear to be a problem with Cytoscape. It may
+     cause an error in QIIME though so we error out. 
+    Outputs:
+     list of lines of following form:
+     #NodeID    NodeType    Abundance   md_field[0] md_field[1] ...
+     otu1   otu 23  x   y
+    '''
+    header = '#NodeID\tNodeType\tAbundance\t'+'\t'.join(md_fields)
     lines = [header]
-
-    # metadata can be of a variety of types: 
-    # it can be a single string - {'taxonomy':'k__bacteria;p__xyz'} 
-    # a list - {'taxonomy':['k__bacteria', 'p__xyz']}
-    # or a dict of values - {'taxonomy':{'kingdom':'bacteria', 'phylum':'xyz'}}
-    # we will only support a dict or list. with dict the keys must be specific
-    if type(bt.ObservationMetadata[0][md_key]) == dict:
-        # require that the keys for the dict be kingdom, phylum, class ...
-        # otherwise have to support insane number of different specifications
-        if all([i in lvls for i in bt.ObservationMetadata[0][md_key].keys()]):
-            for i,otu in enumerate(bt.ObservationIds):
-                l1 = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum()) 
-                l2 = '\t'.join([bt.ObservationMetadata[i][md_key][lvl] for lvl 
-                    in lvls])
-                lines.append(l1+l2)
-        else:
-            raise ValueError('The biom table has observation metadata that '+\
-                'keyed on something that is not kingdom, phylum, class... '+\
-                'This library only supports metadata keyed this way. For '+\
-                'example: taxonomy:{kingdom:bacteria,phylum:something,...}.')
-    elif type(bt.ObservationMetadata[0][md_key]) == list:
+    # assume that all metadata has same format so testing any entry sufficient
+    md_type = type(bt.ObservationMetadata[0][md_key])
+    if md_type is str or md_type is unicode:
+        # there are a huge number of possible ways in which the string could be 
+        # formatted. if its not splittable on a semicolon (preferred for qiime) 
+        # no splitting will occur.
         for i,otu in enumerate(bt.ObservationIds):
-            line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum()) + \
-                '\t'.join(bt.ObservationMetadata[i][md_key])
+            line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
+            line += bt.ObservationMetadata[i][md_key].replace(';','\t')
             lines.append(line)
+    if md_type is list:
+        for i,otu in enumerate(bt.ObservationIds):
+            line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
+            line += '\t'.join(bt.ObservationMetadata[i][md_key])
+            lines.append(line)
+    # check that we dont have jagged edges. they could occur because with list
+    # or str metadata so one check her better than two above. if lines is empty
+    # it will be vacuosly true. 
+    if not all([len(i.split('\t'))==len(lines[0].split('\t')) for i in lines]):
+        raise ValueError('The md_fields passed are not of the same length as '+\
+            'the metadata extracted from the biom file. Check md_fields.')
+    if md_type is defaultdict:
+        # if md_type is defaultdict keys in md_fields that fail will produce
+        # empty lists or strs. these will cause TypeErrors in join. 
+        try:
+            for i,otu in enumerate(bt.ObservationIds):
+                line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
+                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in 
+                    md_fields])
+                lines.append(line)
+        except TypeError:
+            raise ValueError('The md_fields provided were not all found in '+\
+                'the input biom table metada.')
+    if md_type is dict:
+        # md_fields not found will cause keyerrors
+        try:
+            for i,otu in enumerate(bt.ObservationIds):
+                line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
+                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in 
+                    md_fields])
+                lines.append(line)
+        except KeyError:
+            raise ValueError('The md_fields provided were not all found in '+\
+                'the input biom table metada.')
+
     return lines
 
 def make_node_attr_table(otu_node_lines, sample_node_lines, 
@@ -109,7 +141,7 @@ def make_node_attr_table(otu_node_lines, sample_node_lines,
     bacteriodales. This allows arbitrary numbers of color, size, shape 
     combos to be created so that everything is fully customizable. If more
     than one field is passed the values for those fields will be joined
-    with a _ character (as in the otu example above). 
+    with a '_'. 
     Inputs:
      otu_node_lines - list of strs, output of make_otu_node_table
      sample_node_lines - list of strs, output of make_sample_node_table
@@ -118,7 +150,6 @@ def make_node_attr_table(otu_node_lines, sample_node_lines,
     '''
     sample_nodes = parse_mapping_file_to_dict(sample_node_lines)[0] #no comments
     otu_nodes = parse_mapping_file_to_dict(otu_node_lines)[0] 
-    #print sample_nodes, otu_node
     header = '#NodeID\tNodeType\tAbundance\tColor\tSize\tShape'
     lines = [header]
     # make list of nodes that includes samples and otus
@@ -172,7 +203,7 @@ def make_edge_table(bt):
     return lines
 
 def _write_table(lstrs, fp):
-    '''Write a table. Input is list of strings and a filepath.'''
+    '''Write a table. Input is list of strings and a filepath. Untested.'''
     o = open(fp, 'w')
     o.writelines('\n'.join(lstrs))
     o.close()
