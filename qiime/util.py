@@ -372,22 +372,22 @@ def qiime_blast_seqs(seqs,
      refseqs=None,
      refseqs_fp=None,
      blast_mat_root=None,
-     params={},
+     params=None,
      WorkingDir=None,
      seqs_per_blast_run=1000,
      is_protein=False,
      HALT_EXEC=False):
     """Blast list of sequences.
 
-    seqs: a list (or object with list-like interace) of (seq_id, seq) 
+    seqs: a list (or object with list-like interace) of (seq_id, seq)
      tuples (e.g., the output of MinimalFastaParser)
-    
+
     """
-    
+
     assert blast_db or refseqs_fp or refseqs, \
      'Must provide either a blast_db or a fasta '+\
      'filepath containing sequences to build one.'
-     
+
     if refseqs_fp:
         blast_db, db_files_to_remove =\
          build_blast_db_from_fasta_path(refseqs_fp,
@@ -400,10 +400,11 @@ def qiime_blast_seqs(seqs,
                                         is_protein=is_protein)
     else:
         db_files_to_remove = []
-    
+
+    if params is None: params = {}
     params["-d"] = blast_db
     params["-p"] = blast_program
-           
+
     blast_app = blast_constructor(
                    params=params,
                    blast_mat_root=blast_mat_root,
@@ -801,14 +802,14 @@ def load_pcoa_files(pcoa_dir):
             support_pcoas.append(pcoa_res)
             f.close()
         except IOError, err:
-            sys.sterr.write('error loading support pcoa ' + fname + '\n')
+            sys.stderr.write('error loading support pcoa ' + fname + '\n')
             exit(1)
     return master_pcoa, support_pcoas
 
 def summarize_pcoas(master_pcoa, support_pcoas, method='IQR', apply_procrustes=True):
     """returns the average PCoA vector values for the support pcoas
 
-    Also returns the ranges as calculated with the specified method. 
+    Also returns the ranges as calculated with the specified method.
     The choices are:
         IQR: the Interquartile Range
         ideal fourths: Ideal fourths method as implemented in scipy
