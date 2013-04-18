@@ -155,27 +155,25 @@ def mean_alpha(alpha_dict, depth):
     sample_ids = []
     data = []
 
-    if depth == None:
-        use_highest = True
-    else:
-        use_highest = False
-
     for key, value in alpha_dict.iteritems():
         identifiers, _, _, rarefaction_data = parse_rarefaction(value)
 
-        # if depth is specified as None use the highest available
-        if use_highest:
-            depth = int(max([row[0] for row in rarefaction_data]))
-        metrics.append('{0}_even_{1}'.format(key, depth))
+        # if depth is specified as None use the highest available, retrieve it
+        # on a per file basis so you make sure the value exists for all files
+        if depth == None:
+            _depth = int(max([row[0] for row in rarefaction_data]))
+        else:
+            _depth = depth
+        metrics.append('{0}_even_{1}'.format(key, _depth))
 
         # check there are elements with the desired rarefaction depth
-        if sum([1 for row in rarefaction_data if row[0] == depth]) == 0:
+        if sum([1 for row in rarefaction_data if row[0] == _depth]) == 0:
             # get a sorted list of strings with the available rarefaction depths
             available_rarefaction_depths = map(str, sorted(list(set([row[0] for
                 row in rarefaction_data]))))
             raise ValueError, ("The depth %d does not exist in the collated "
                 "alpha diversity file for the metric: %s. The available depths "
-                "are: %s."%(depth, key,', '.join(available_rarefaction_depths)))
+                "are: %s."%(_depth,key,', '.join(available_rarefaction_depths)))
 
         # check all the files have the same sample ids in the same order
         if sample_ids:
@@ -189,7 +187,7 @@ def mean_alpha(alpha_dict, depth):
         # find all the data at the desired depth and get the mean values, remove
         # the first two elements ([depth, iteration]) as those are not needed
         data.append(array([row[2:] for row in rarefaction_data if\
-            row[0] == depth]).mean(axis=0))
+            row[0] == _depth]).mean(axis=0))
 
     # transpose the data to match the formatting of non-collated alpha div data
     data = array(data).T.tolist()
