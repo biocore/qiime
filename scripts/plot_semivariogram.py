@@ -10,13 +10,14 @@ __version__ = "1.6.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
- 
+
+from qiime.colors import data_colors, data_color_order
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.plot_semivariogram import fit_semivariogram, FitModel
-from qiime.parse import parse_distmat
-from qiime.filter import filter_samples_from_distance_matrix
-from pylab import plot, xlabel, ylabel, title, savefig, ylim, xlim
+from qiime.parse import parse_distmat, parse_mapping_file
+from qiime.filter import filter_samples_from_distance_matrix, sample_ids_from_metadata_description
+from pylab import plot, xlabel, ylabel, title, savefig, ylim, xlim, legend, show, figure
 from numpy import asarray
 import os
 from StringIO import StringIO
@@ -83,20 +84,41 @@ script_info['optional_options']=[\
  make_option('--line_alpha', type='float', help='alpha for dots, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default=1),
- make_option('-m', '--model', type='choice',\
+ make_option('--model', type='choice',\
      choices=FitModel.options, default='exponential', 
      help='model to be fitted to the data. Valid ' +\
      'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
  make_option('-p', '--print_model', action='store_true',
      help='Print in the title of the plot the function of the fit. ' +\
-     '[default: %default]',default=False)
+     '[default: %default]',default=False),
+ make_option('-c', '--category', type='string', help='category to color the '
+    'plots by [default: %default]', default=None),
+ make_option('-m', '--mapping_fp', type='existing_filepath', help='metadata '
+    'mapping file, only used when coloring by a category [default: %default]',
+    default=None)
 ]
 
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    
+
+    category = opts.category
+    mapping_fp = opts.mapping_fp
+
+    if (category and mapping_fp == None) or (category == None and mapping_fp):
+        option_parser.error('If coloring by a metadata category, both the '
+            'category and the mapping file must be supplied.')
+    elif mapping_fp and category:
+        mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,
+            'U'))
+        if category not in mapping_headers:
+            option_parser.error("The category supplied must exist in the "
+                "metadata mapping file, '%s' does not exist." % category)
+        index = mapping_headers.index(category)
+        categories = list(set([line[index] for line in mapping_data]))
+    list_of_plots = []
+
     if opts.binning is None:
         ranges = []
     else:
@@ -156,13 +178,39 @@ def main():
         if x_distmtx.shape!=y_distmtx.shape:
             raise ValueError, 'The distance matrices have different sizes. ' +\
                 'You can cancel this error by passing --ignore_missing_samples'
+
+    figure(figsize=(3,3))
+    if category == None:
+        x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
+            (x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
         
-    (x_val,y_val,x_fit,y_fit,func_text) =\
-          fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
-    
-    plot(x_val, y_val, color=opts.dot_color, marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
-    plot(x_fit, y_fit, linewidth=2.0, color=opts.line_color, alpha=opts.line_alpha)
-    
+        plot(x_val, y_val, color=opts.dot_color, marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
+        plot(x_fit, y_fit, linewidth=2.0, color=opts.line_color, alpha=opts.line_alpha)
+    else:
+        for single_category, color_key in zip(categories, data_color_order):
+            good_sample_ids = sample_ids_from_metadata_description(
+                open(mapping_fp), '%s:%s' % (category, single_category))
+
+            _y_samples, _y_distmtx = parse_distmat(StringIO(
+                filter_samples_from_distance_matrix((y_samples, y_distmtx),
+                good_sample_ids, negate=True)))
+            _x_samples, _x_distmtx = parse_distmat(StringIO(
+                filter_samples_from_distance_matrix((x_samples, x_distmtx),
+                good_sample_ids, negate=True)))
+
+            x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
+                (_x_samples, _x_distmtx), (_y_samples, _y_distmtx),
+                opts.model,ranges)
+            color_only = str(data_colors[color_key]).split(':')[1]
+            plot(x_val, y_val, color=color_only,
+                marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
+            plot(x_fit, y_fit, linewidth=2.0, color=color_only,
+            alpha=opts.line_alpha, label=single_category)
+
+    legend(loc=0, bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True)
+
+
     if opts.x_min!=None and opts.x_max!=None:
         xlim([opts.x_min,opts.x_max])
     if opts.y_min!=None and opts.y_max!=None:
