@@ -51,7 +51,7 @@ script_info['required_options'] = [\
     'path for biom table.'),
  make_option('-m','--map_fp',type="existing_filepath",help='the input file ' +\
     'path for mapping file.'),
- make_option('-o','--out_fp',type="new_filepath",help='directory that ' +\
+ make_option('-o','--out_fp',type="new_dirpath",help='directory that ' +\
     'will be created for storing the results.'),
  make_option('-t','--metadata_string',type="string",help='Key to retrieve ' +\
     'taxonomy from the biom file.')]
@@ -101,7 +101,7 @@ def main():
     # check that the otu fields asked for are available
     shared_options = ['NodeType','Abundance']
     if not all([i in md_fields+shared_options for i in ocolors+oshapes+osizes]):
-        raise option_parser.error('The fields specified for otu colors, sizes, or '+\
+        option_parser.error('The fields specified for otu colors, sizes, or '+\
             'shapes are not in either the shared options (NodeType,Abundance)'+\
             ' or the supplied md_fields. These fields must be a subset of '+\
             'the union of these sets. Have you passed ocolors, osizes or '+\
@@ -110,14 +110,17 @@ def main():
     # elements should all have same metadata keys
     sopts = parse_mapping_file_to_dict(map_fp)[0].items()[0][1].keys()
     if not all([i in sopts+shared_options for i in scolors+sshapes+ssizes]):
-        raise option_parser.error('The fields specified for sample colors, sizes, or '+\
+        option_parser.error('The fields specified for sample colors, sizes, or '+\
             'shapes are not in either the shared options (NodeType,Abundance)'+\
             ' or the supplied mapping file. These fields must be a subset of '+\
             'the union of these sets. Have you passed scolors, ssizes or '+\
             'sshapes that are not in the mapping file headers?')
 
     # actual compuation begins
-    create_dir(out_fp, fail_on_exist=True)
+    try:
+        create_dir(out_fp, fail_on_exist=True)
+    except OSError:
+        option_parser.error('Directory already exists. Will not overwrite.')
 
     bt = parse_biom_table(open(otu_table_fp))
     pmf = parse_mapping_file_to_dict(map_fp)[0] # [1] is comments, don't need
