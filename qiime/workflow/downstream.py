@@ -738,10 +738,10 @@ def run_summarize_taxa_through_plots(otu_table_fp,
         params_str = ''
     
     if mapping_cat:
-        output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat))
+        output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat.replace(' ','-')))
         # Build the summarize otu by category command
         summarize_otu_by_cat_cmd = \
-         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m %s %s" %\
+         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m '%s' %s" %\
          (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp,
           mapping_cat, params_str)
         
