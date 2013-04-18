@@ -28,8 +28,9 @@ script_info['required_options'] = [\
  make_option('-c','--category',type='string',help='the category to examine')
 ]
 script_info['optional_options'] = [
-    make_option('-o','--output_fp',type="new_filepath", help="filename to "
-    "where the output will be printed [default=print to screen]", default=None)
+    make_option('-o','--output_fp',type="new_filepath", 
+    help="path where output will be written [default: print to screen]", 
+    default=None)
 ]
 script_info['version'] = __version__
 

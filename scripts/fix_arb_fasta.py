@@ -27,8 +27,9 @@ script_info['script_usage'].append(("""Example saving to an output file:""","""F
 script_info['output_description']="""The reformatted sequences are written to stdout or to the file path provided with -o."""
 script_info['required_options']=[options_lookup['input_fasta']]
 script_info['optional_options']=[
-    make_option('-o','--output_fp',type="new_filepath", help="filename to where"
-    " the output will be printed [default=print to screen]", default=None)
+    make_option('-o','--output_fp',type="new_filepath", 
+    help="path where output will be written [default: print to screen]", 
+    default=None)
 ]
 script_info['version'] = __version__
 def main():
