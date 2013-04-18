@@ -138,7 +138,7 @@ def mean_alpha(alpha_dict, depth):
     no extension, this name is usually the metric used to compute the alpha
     diversity.
     depth: selected depth to mean the computed alpha diversity values for the
-    alpha_dict data.
+    alpha_dict data. If None is passed, the highest depth will be used.
 
     Output:
     metrics: list of metric names i. e. the name of each collated alpha div file
@@ -148,21 +148,37 @@ def mean_alpha(alpha_dict, depth):
     """
 
     assert type(alpha_dict) == dict, "Input data must be a dictionary"
-    assert depth >= 0 and type(depth) == int, "The spcified depth must be a "+\
-        "positive integer."
+    assert depth == None or (depth >= 0 and type(depth) == int), "The "+\
+        "specified depth must be a positive integer."
 
     metrics = []
     sample_ids = []
     data = []
 
     for key, value in alpha_dict.iteritems():
-        metrics.append('{0}_even_{1}'.format(key, depth))
         identifiers, _, _, rarefaction_data = parse_rarefaction(value)
+
+        # if depth is specified as None use the highest available, retrieve it
+        # on a per file basis so you make sure the value exists for all files
+        if depth == None:
+            _depth = int(max([row[0] for row in rarefaction_data]))
+        else:
+            _depth = depth
+        metrics.append('{0}_even_{1}'.format(key, _depth))
+
+        # check there are elements with the desired rarefaction depth
+        if sum([1 for row in rarefaction_data if row[0] == _depth]) == 0:
+            # get a sorted list of strings with the available rarefaction depths
+            available_rarefaction_depths = map(str, sorted(list(set([row[0] for
+                row in rarefaction_data]))))
+            raise ValueError, ("The depth %d does not exist in the collated "
+                "alpha diversity file for the metric: %s. The available depths "
+                "are: %s."%(_depth,key,', '.join(available_rarefaction_depths)))
 
         # check all the files have the same sample ids in the same order
         if sample_ids:
             if not sample_ids == identifiers[3:]:
-                raise (ValueError, "Non-matching sample ids were found in the "
+                raise ValueError, ("Non-matching sample ids were found in the "
                     "collated alpha diversity files. Make sure all the files "
                     "contain data for the same samples.")
         else:
@@ -171,7 +187,7 @@ def mean_alpha(alpha_dict, depth):
         # find all the data at the desired depth and get the mean values, remove
         # the first two elements ([depth, iteration]) as those are not needed
         data.append(array([row[2:] for row in rarefaction_data if\
-            row[0] == depth]).mean(axis=0))
+            row[0] == _depth]).mean(axis=0))
 
     # transpose the data to match the formatting of non-collated alpha div data
     data = array(data).T.tolist()
