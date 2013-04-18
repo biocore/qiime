@@ -138,7 +138,7 @@ def mean_alpha(alpha_dict, depth):
     no extension, this name is usually the metric used to compute the alpha
     diversity.
     depth: selected depth to mean the computed alpha diversity values for the
-    alpha_dict data. If None is passed the used depth will be the highest.
+    alpha_dict data. If None is passed, the highest depth will be used.
 
     Output:
     metrics: list of metric names i. e. the name of each collated alpha div file
@@ -149,7 +149,7 @@ def mean_alpha(alpha_dict, depth):
 
     assert type(alpha_dict) == dict, "Input data must be a dictionary"
     assert depth == None or (depth >= 0 and type(depth) == int), "The "+\
-        "spcified depth must be a positive integer."
+        "specified depth must be a positive integer."
 
     metrics = []
     sample_ids = []
