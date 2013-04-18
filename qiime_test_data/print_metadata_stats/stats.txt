@@ -1,0 +1,2 @@
+Control	5
+Fast	4
