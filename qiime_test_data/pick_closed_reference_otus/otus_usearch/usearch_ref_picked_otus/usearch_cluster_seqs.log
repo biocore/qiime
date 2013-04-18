@@ -1,0 +1,76 @@
+usearch --usersort --id 0.97 --slots 16769023 --sizeout --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/clustered_seqs_post_chimera.uc --query /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/abundance_sorted_minsize_4.fasta --w 12 --maxrejects 500 --sizein --db /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna --log /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/usearch_cluster_seqs.log
+Started Thu Apr  4 08:05:53 2013
+Version 5.2.236
+17Gb RAM
+
+Hash size 16769023 (16.8M)
+Hash size 16769023 (16.8M)
+Algorithm:
+  Database search
+  Fast search (U-sorting) enabled
+  Similarity computed from a local alignment
+
+Word-counting heuristics:
+  Word length for database index 12
+  Step words 8
+  Bump fraction 50%
+
+U-sorted search termination:
+  Max accepts 1
+  Max rejects 500
+  Word count rejection enabled
+
+Accept criteria:
+  Min id 97.0%
+
+Query set:
+  Filename /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/otus_usearch/usearch_ref_picked_otus/abundance_sorted_minsize_4.fasta
+  File size 16.9kb
+  Sequence type nucelotide
+
+Database:
+  Filename /Users/caporaso/code/Qiime/qiime_test_data/pick_reference_otus_through_otu_table/refseqs.fna
+  Size 10 seqs
+  Sequence type nucelotide
+
+Substitution scores:
+  Match score 1.0
+  Mismatch score -2.0
+
+Gap penalties:
+     10.00  Open penalty
+      1.00  Ext. penalty
+
+Fast alignment heuristics:
+  HSP seed word length 5
+  One-hit HSP seeding
+  Exact word seeds (neighborhoods disabled)
+  X-drop for initial ungapped phase 16.0
+  X-drop for gapped extension 32.0
+
+
+Database seqs       10
+Query seqs          66
+Queries with hits   49 (74.2%)
+Database load time  1.00s
+Search time         0s
+Throughput          0.0 seqs/sec
+Query sequences     66
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+           seqdb          23           0   92.0%          21Mb
+           ultra          25           0    5.2%         1.2Mb
+            mx_h         658           0    2.0%       448.6kb
+         myutils           4           0    0.6%       128.0kb
+       hspfinder         398         199    0.2%        45.3kb
+          windex         350           0    0.0%       8400.0b
+        comppath           1           0    0.0%       4137.0b
+          path_h        1082        1078    0.0%       3739.0b
+          alpha2           5           0    0.0%       1126.0b
+----------------  ----------  ----------  ------  ------------
+           Total        2546        1277  100.0%          23Mb
+
+Finished Thu Apr  4 08:05:54 2013
+Elapsed time 00:01
+Max memory 551Mb

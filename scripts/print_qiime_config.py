@@ -171,13 +171,7 @@ class Qiime_config(TestCase):
             
         test_qiime_config_variable("pynast_template_alignment_fp",
                                    self.config, self)
-                                   
-    def test_qiime_test_data_dir(self):
-        """qiime_test_data_dir, if set, is set to a valid path"""
-            
-        test_qiime_config_variable("qiime_test_data_dir",
-                                   self.config, self)
-            
+
     def test_pynast_template_alignment_blastdb_fp(self):
         """pynast_template_alignment_blastdb, if set, is set to a valid path"""
             

@@ -1,0 +1,3 @@
+CogentAligner parameters:
+Method:muscle
+Module:<module 'cogent.app.muscle_v38' from '/Users/mcdonald/ResearchWork/software/pycogent/trunk/cogent/app/muscle_v38.pyc'>

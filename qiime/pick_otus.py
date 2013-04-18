@@ -16,9 +16,10 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split, abspath
+from os.path import splitext, split, abspath, join
 from os import makedirs
 from itertools import imap
+
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
@@ -30,11 +31,13 @@ from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
+from cogent.app.uclust import get_clusters_from_fasta_filepath
+
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
-from cogent.app.uclust import get_clusters_from_fasta_filepath
-from qiime.pycogent_backports.usearch import usearch_qf
+from qiime.pycogent_backports.usearch import (usearch_qf,
+ usearch61_denovo_cluster, usearch61_ref_cluster)
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -1177,14 +1180,11 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         log_lines.append('Reference database for OTU picking: %s' % 
                          abspath(refseqs_fp))
         
-        
-        
-        if failure_path:
+        if failure_path != None:
             failure_file = open(failure_path,'w')
             failure_file.write('\n'.join(failures))
             failure_file.close()
-            
-        
+
         if log_path:
             self._write_log(log_path,log_lines)
             
@@ -1203,8 +1203,221 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
         
         return result
 
-        
+class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
+    """ Usearch based OTU picker, de novo clustering only
+   
+    """
 
+    Name = 'Usearch610DeNovoOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        usearch61 application controller) params.
+        
+        Some generic entries in params are:
+    
+        percent_id: similarity threshold, default 0.97, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
+         to the uclust application controllers)
+        Application: 3rd-party application used
+        """
+        
+        _params = {
+         'percent_id':0.97,
+         'Application':'usearch61',
+         'rev':False,
+         'save_intermediate_files':False,
+         'minlen':64,
+         'output_dir':'.',
+         'remove_usearch_logs':False,
+         'verbose':False,
+         'wordlength':8,
+         'usearch_fast_cluster':False,
+         'usearch61_sort_method':'abundance',
+         'usearch61_maxrejects':32,
+         'usearch61_maxaccepts':1,
+         'sizeorder':False
+         }
+         
+         
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__(self,
+                 seq_path,
+                 output_dir='.',
+                 log_path=None,
+                 HALT_EXEC=False,
+                 result_path=None,
+                 otu_prefix="denovo"):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu
+        
+        Parameters:
+        seq_path: path to file of sequences
+        output_dir: directory to output results, including log files and
+         intermediate files if flagged for.
+        log_path: path to log, which includes dump of params.
+        HALT_EXEC: Setting for halting execution of application controller,
+         should only be True when debugging.
+        result_path: If supplied will write out results (e.g. OTU mapping file),
+         otherwise a dict is returned with data.
+
+        """
+        # perform de novo clustering
+        clusters = usearch61_denovo_cluster(
+         seq_path,
+         percent_id = self.Params['percent_id'],
+         rev = self.Params['rev'],
+         save_intermediate_files = self.Params['save_intermediate_files'],
+         minlen = self.Params['minlen'],
+         output_dir = self.Params['output_dir'],
+         remove_usearch_logs = self.Params['remove_usearch_logs'],
+         verbose = self.Params['verbose'],
+         wordlength = self.Params['wordlength'],
+         usearch_fast_cluster = self.Params['usearch_fast_cluster'],
+         usearch61_sort_method = self.Params['usearch61_sort_method'],
+         otu_prefix = otu_prefix,
+         usearch61_maxrejects = self.Params['usearch61_maxrejects'],
+         usearch61_maxaccepts = self.Params['usearch61_maxaccepts'],
+         sizeorder = self.Params['sizeorder'],
+         HALT_EXEC=HALT_EXEC
+         )
+        
+        log_lines = []
+        log_lines.append('Num OTUs:%d' % len(clusters))
+        
+        if log_path:
+            self._write_log(log_path,log_lines)
+
+            
+        if result_path:
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+            result_out.close()
+            result = None
+        else:
+            result = clusters
+        
+        return result
+        
+class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
+    """ Usearch based OTU picker, supports closed or open reference OTU picking
+   
+    """
+
+    Name = 'Usearch61ReferenceOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        usearch61 application controller) params.
+        
+        Some generic entries in params are:
+    
+        percent_id: similarity threshold, default 0.97, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
+         to the uclust application controllers)
+        Application: 3rd-party application used
+        """
+        
+        _params = {
+         'percent_id':0.97,
+         'Application':'usearch61',
+         'rev':False,
+         'save_intermediate_files':False,
+         'minlen':64,
+         'output_dir':'.',
+         'remove_usearch_logs':False,
+         'verbose':False,
+         'wordlength':8,
+         'usearch_fast_cluster':False,
+         'usearch61_sort_method':'abundance',
+         'usearch61_maxrejects':32,
+         'usearch61_maxaccepts':1,
+         'sizeorder':False,
+         'suppress_new_clusters':False
+         }
+         
+         
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__(self,
+                 seq_path,
+                 refseqs_fp,
+                 output_dir='.',
+                 log_path=None,
+                 HALT_EXEC=False,
+                 result_path=None,
+                 failure_path=None,
+                 otu_prefix="denovo"):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu
+        
+        Parameters:
+        seq_path: path to file of sequences
+        refseqs_fp: Reference database to pick OTUs against
+        output_dir: directory to output results, including log files and
+         intermediate files if flagged for.
+        log_path: path to log, which includes dump of params.
+        HALT_EXEC: Setting for halting execution of application controller,
+         should only be True when debugging.
+        result_path: If supplied will write out results (e.g. OTU mapping file),
+         otherwise a dict is returned with data.
+
+        """
+        
+        # perform reference clustering
+        clusters, failures = usearch61_ref_cluster(
+         seq_path,
+         refseqs_fp,
+         percent_id = self.Params['percent_id'],
+         rev = self.Params['rev'],
+         save_intermediate_files = self.Params['save_intermediate_files'],
+         minlen = self.Params['minlen'],
+         output_dir = self.Params['output_dir'],
+         remove_usearch_logs = self.Params['remove_usearch_logs'],
+         verbose = self.Params['verbose'],
+         wordlength = self.Params['wordlength'],
+         usearch_fast_cluster = self.Params['usearch_fast_cluster'],
+         usearch61_sort_method = self.Params['usearch61_sort_method'],
+         otu_prefix = otu_prefix,
+         usearch61_maxrejects = self.Params['usearch61_maxrejects'],
+         usearch61_maxaccepts = self.Params['usearch61_maxaccepts'],
+         sizeorder = self.Params['sizeorder'],
+         suppress_new_clusters = self.Params['suppress_new_clusters'],
+         HALT_EXEC=HALT_EXEC
+         )
+        
+        log_lines = []
+        log_lines.append('Num OTUs:%d' % len(clusters))
+        
+        if log_path:
+            self._write_log(log_path,log_lines)
+            
+        if result_path:
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+            result_out.close()
+            result = None
+        else:
+            result = clusters
+        
+        if failure_path:
+            self._write_failures(failure_path,failures)
+        
+        return result, failures
+        
+    def _write_failures(self,failure_path,failures):
+        failure_file = open(failure_path,'w')
+        failure_file.write('\n'.join(failures))
+        failure_file.close()
 
 class UclustReferenceOtuPicker(UclustOtuPickerBase):
     """Uclust reference OTU picker: clusters seqs by match to ref collection
@@ -1500,7 +1713,9 @@ otu_picking_method_constructors = {
     'uclust': UclustOtuPicker,
     'uclust_ref':UclustReferenceOtuPicker,
     'usearch': UsearchOtuPicker,
-    'usearch_ref': UsearchReferenceOtuPicker
+    'usearch_ref': UsearchReferenceOtuPicker,
+    'usearch61': Usearch610DeNovoOtuPicker,
+    'usearch61_ref': Usearch61ReferenceOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()

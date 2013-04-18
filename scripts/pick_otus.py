@@ -12,7 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import splitext, split, exists
+from os.path import splitext, split, exists, abspath
 from os import makedirs
 from qiime.util import make_option
 from qiime.util import get_tmp_filename
@@ -139,7 +139,8 @@ script_info['optional_options'] = [
               
     make_option('-r', '--refseqs_fp',type='existing_filepath',
         help=('Path to reference sequences to search against when using -m '
-              'blast, -m uclust_ref, or -m usearch_ref [default: %default]')),
+              'blast, -m uclust_ref, -m usearch_ref, or -m '
+              'usearch61_ref [default: %default]')),
               
     make_option('-b', '--blast_db',type='string',
         help=('Pre-existing database to blast against when using -m blast '
@@ -152,7 +153,8 @@ script_info['optional_options'] = [
               
     make_option('-s', '--similarity', type='float', default=0.97,
         help=('Sequence similarity threshold (for blast, cdhit, uclust, '
-              'uclust_ref, or usearch) [default: %default]')),
+              'uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref'
+              ') [default: %default]')),
               
     make_option('-e', '--max_e_value', type='float', default=1e-10,
         help=('Max E-value when clustering with BLAST [default: %default]')),
@@ -187,7 +189,8 @@ script_info['optional_options'] = [
               
     make_option('-z', '--enable_rev_strand_match', action='store_true',
         default=False,
-        help=('Enable reverse strand matching for uclust otu picking, '
+        help=('Enable reverse strand matching for uclust, uclust_ref, '
+              'usearch, usearch_ref, usearch61, or usearch61_ref otu picking, '
               'will double the amount of memory used. [default: %default]')),
               
     make_option('-D','--suppress_presort_by_abundance_uclust',
@@ -214,24 +217,33 @@ script_info['optional_options'] = [
     make_option('-C','--suppress_new_clusters',action='store_true',
               default=False,
               help="Suppress creation of new clusters using seqs that don't"
-              " match reference when using -m uclust_ref or "
+              " match reference when using -m uclust_ref, -m usearch61_ref, or "
               "-m usearch_ref [default: %default]"),
               
-    make_option('--max_accepts',type='int',default=20,
-              help="max_accepts value to uclust and "
-                   "uclust_ref [default: %default]"),
+    make_option('--max_accepts', default='default',
+              help="max_accepts value to uclust, uclust_ref, usearch61, and "
+                   "usearch61_ref.  By default, will use value suggested by "
+                   "method (uclust: 20, usearch61: 1) [default: %default]"),
                    
-    make_option('--max_rejects',type='int',default=500,
-              help="max_rejects value to uclust and "
-                   "uclust_ref [default: %default]"),
+    make_option('--max_rejects', default='default',
+              help="max_rejects value for uclust, uclust_ref, usearch61, and "
+                   "usearch61_ref.  With default settings, will use value "
+                   "recommended by clustering method used "
+                   "(uclust: 500, usearch61: 8 for usearch_fast_cluster option,"
+                   " 32 for reference and smallmem options) "
+                   "[default: %default]"),
                    
    make_option('--stepwords',type='int',default=20,
              help="stepwords value to uclust and "
                   "uclust_ref [default: %default]"),
                   
-   make_option('--word_length',type='int',default=12,
-             help="w value to usearch, uclust, and "
-                  "uclust_ref.  Set to 64 for usearch. [default: %default]"),
+   make_option('--word_length',default='default',
+             help="word length value for uclust, uclust_ref, and "
+                  "usearch, usearch_ref, usearch61, and usearch61_ref. "
+                  "With default setting, will use the setting recommended by "
+                  "the method (uclust: 12, usearch: 64, usearch61: 8).  int "
+                  "value can be supplied to override this setting. "
+                  "[default: %default]"),
                   
     make_option('--uclust_otu_id_prefix',default=None,type='string',
               help=("OTU identifier prefix (string) for the de novo uclust" 
@@ -251,7 +263,7 @@ script_info['optional_options'] = [
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust.  Also enables "
               "preservation of all intermediate files created by usearch "
-              "(usearch_qf). [default: %default]")),
+              " and usearch61. [default: %default]")),
               
     make_option('-j', '--percent_id_err', default=0.97,
               help=("Percent identity threshold for cluster error detection "
@@ -293,7 +305,7 @@ script_info['optional_options'] = [
     
     make_option('--cluster_size_filtering', help=("Deprecated, "
               "cluster size filtering enabled by default, pass "
-              "--disable_cluster_size_filtering to disable."
+              "--suppress_cluster_size_filtering to disable."
               "  [default: %default]")),
               
     make_option('-l', '--suppress_cluster_size_filtering', default=False,
@@ -321,8 +333,29 @@ script_info['optional_options'] = [
               type='string'),
               
     make_option('--minlen', default=64, help=("Minimum length of sequence "
-                "allowed for usearch. [default: %default]"), type='int')
-    ]
+                "allowed for usearch, usearch_ref, usearch61, and "
+                "usearch61_ref. [default: %default]"), type='int'),
+                
+    make_option('--usearch_fast_cluster', default=False, help=("Use fast "
+                "clustering option for usearch or usearch61_ref with new "
+                "clusters.  --enable_rev_strand_match can not be enabled "
+                "with this option, and the only valid option for "
+                "usearch61_sort_method is 'length'.  This option uses more "
+                "memory than the default option for de novo clustering."
+                " [default: %default]"), action='store_true'),
+                
+    make_option('--usearch61_sort_method', default='abundance', help=(
+                "Sorting method for usearch61 and usearch61_ref.  Valid "
+                "options are abundance, length, or None.  If the "
+                "--usearch_fast_cluster option is enabled, the only sorting "
+                "method allowed in length. [default: %default]"), type='str'),
+                
+    make_option('--sizeorder', default=False, help=(
+                "Enable size based preference in clustering with usearch61. "
+                "Requires that --usearch61_sort_method be abundance. "
+                "[default: %default]"), action='store_true')
+
+               ]
 
 script_info['version'] = __version__
 
@@ -358,6 +391,7 @@ def main():
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     
+    
     # usearch_qf specific parameters
     percent_id_err = opts.percent_id_err
     minsize = opts.minsize
@@ -369,31 +403,111 @@ def main():
     cluster_size_filtering = not opts.suppress_cluster_size_filtering
     remove_usearch_logs = opts.remove_usearch_logs
     minlen = opts.minlen
-
     
+    # usearch61 specific parameters
+    # also uses: enable_rev_strand_match, refseqs_fp, suppress_new_clusters,
+    # save_uc_files, remove_usearch_logs, minlen, maxaccepts, maxrejects,
+    # word_len
+    usearch_fast_cluster = opts.usearch_fast_cluster
+    usearch61_sort_method = opts.usearch61_sort_method
+    sizeorder = opts.sizeorder
+    
+    # Set default values according to clustering method
+    if word_length != "default":
+        try:
+            word_length = int(word_length)
+        except ValueError:
+            raise ValueError,("--word_length must either be 'default' "
+             "or an int value")
+    if word_length == "default":
+        if otu_picking_method in ["uclust", "uclust_ref"]:
+            word_length = 12
+        elif otu_picking_method in ["usearch", "usearch_ref"]:
+            word_length = 64
+        else:
+            # default setting for usearch61
+            word_length = 8
+
+    if max_accepts != "default":
+        try:
+            max_accepts = int(max_accepts)
+        except ValueError:
+            option_parser.error("--max_accepts must either be 'default' "
+             "or an int value")
+    if max_accepts == "default":
+        if otu_picking_method in ["uclust", "uclust_ref"]:
+            max_accepts = 20
+        else:
+            # default setting for usearch61
+            max_accepts = 1
+            
+    if max_rejects != "default":
+        try:
+            max_rejects = int(max_rejects)
+        except ValueError:
+            option_parser.error("--max_rejects must be either 'default' "
+             "or an int value")
+    if max_rejects == "default":
+        if otu_picking_method in ["uclust", "uclust_ref"]:
+            max_rejects = 500
+        # usearch61 settings, depends upon fast clustering option
+        else:
+            if usearch_fast_cluster:
+                max_rejects = 8
+            else:
+                max_rejects = 32
+    
+    # Check for logical/compatible inputs
     if user_sort and not suppress_presort_by_abundance_uclust:
         option_parser.error("Cannot pass -B/--user_sort without -D/--suppress_presort_by_abundance_uclust, as your input would be resorted by abundance. To presort your own sequences before passing to uclust, pass -DB.")
     
     if abundance_skew <= 1:
-        raise ValueError,('abundance skew must be > 1')
+        option_parser.error('abundance skew must be > 1')
     
     # Check for logical inputs
     if otu_picking_method in ['usearch', 'usearch_ref'] and \
      reference_chimera_detection and not db_filepath:
-        raise ValueError,('No reference filepath specified with '
+        option_parser.error('No reference filepath specified with '
          '--db_filepath option. Disable reference based chimera detection '
          'with --suppress_reference_chimera_detection or specify a reference '
          'fasta file with --db_filepath.')
          
     if chimeras_retention not in ['intersection', 'union']:
-        raise ValueError,('--chimeras_retention must be either union or '
+        option_parser.error('--chimeras_retention must be either union or '
          'intersection.')
+         
+    if usearch61_sort_method not in ['length', 'abundance', 'None']:
+        option_parser.error("--usearch61_sort_method must be one of the "
+         "following: length, abundance, None")
+         
+    if otu_picking_method in ['usearch61', 'usearch61_ref']:
+        if usearch_fast_cluster:
+            if enable_rev_strand_match:
+                option_parser.error("--enable_rev_strand_match can not be "
+                "enabled when using --usearch_fast_cluster.")
+            if usearch61_sort_method != "length":
+                option_parser.error("--usearch61_sort_method must be 'length' "
+                "when --usearch_fast_cluster used.")
+                
+    if otu_picking_method in ['usearch61']:
+        if opts.suppress_new_clusters:
+            option_parser.error("--suppress_new_clusters cannot be enabled when "
+             "using usearch61 as the OTU picking method as this is strictly "
+             "de novo.  Use --otu_picking_method usearch61_ref and a reference "
+             "database for closed reference OTU picking.")
+             
+    if sizeorder:
+        if usearch61_sort_method != 'abundance':
+            option_parser.error("To use --sizeorder, usearch61_sort_method must "
+             "be abundance.")
+             
          
     # Test that db_filepath can be opened to avoid wasted time
     if db_filepath:
         try:
             tmp_db_filepath = open(db_filepath, "U")
             tmp_db_filepath.close()
+            db_filepath = abspath(db_filepath)
         except IOError:
             raise IOError,('Unable to open %s, please check path/permissions' %
              db_filepath)
@@ -408,12 +522,14 @@ def main():
         blast_db == None):
            option_parser.error('blast requires refseqs_fp or blast_db')
     
-    if (otu_picking_method == 'uclust_ref' or
-     otu_picking_method == 'usearch_ref'):
+    if otu_picking_method in ['uclust_ref', 'usearch_ref', 'usearch61_ref']:
         if (refseqs_fp == None):
-            option_parser.error('uclust_ref, usearch_ref requires refseqs_fp')
+            option_parser.error('uclust_ref, usearch_ref, usearch61_ref '+\
+            ' requires refseqs_fp')
         elif not exists(refseqs_fp):
             option_parser.error('refseqs_fp %s does not exist' %refseqs_fp)
+        else:
+            refseqs_fp = abspath(refseqs_fp)
     # End input validation
     
     
@@ -423,7 +539,7 @@ def main():
     
     # split the input filepath into components used for generating
     # the output file name
-    input_seqs_filepath = opts.input_seqs_filepath
+    input_seqs_filepath = abspath(opts.input_seqs_filepath)
     input_seqs_dir, input_seqs_filename = split(input_seqs_filepath)
     input_seqs_basename, ext = splitext(input_seqs_filename)
     
@@ -524,7 +640,57 @@ def main():
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
-         refseqs_fp=refseqs_fp, log_path=log_path, HALT_EXEC=False)
+         refseqs_fp=refseqs_fp, failure_path=failure_path,
+         log_path=log_path, HALT_EXEC=False)
+         
+    # usearch 6.1 (de novo OTU picking only)
+    elif otu_picking_method == 'usearch61':
+        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        params = {
+        'percent_id':opts.similarity,
+        'wordlength':word_length,
+        'save_intermediate_files':save_uc_files,
+        'output_dir':output_dir,
+        'remove_usearch_logs':remove_usearch_logs,
+        'verbose':verbose,
+        'minlen':minlen,
+        'rev':enable_rev_strand_match,
+        'usearch_fast_cluster':usearch_fast_cluster,
+        'usearch61_sort_method':usearch61_sort_method,
+        'usearch61_maxrejects':max_rejects,
+        'usearch61_maxaccepts':max_accepts,
+        'sizeorder':sizeorder
+        }
+        
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath, result_path=result_path,
+         log_path=log_path,otu_prefix=otu_prefix,
+         HALT_EXEC=False)
+         
+    # usearch 6.1 reference OTU picking
+    elif otu_picking_method == 'usearch61_ref':
+        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        params = {
+        'percent_id':opts.similarity,
+        'wordlength':word_length,
+        'save_intermediate_files':save_uc_files,
+        'output_dir':output_dir,
+        'remove_usearch_logs':remove_usearch_logs,
+        'verbose':verbose,
+        'minlen':minlen,
+        'rev':enable_rev_strand_match,
+        'usearch_fast_cluster':usearch_fast_cluster,
+        'usearch61_sort_method':usearch61_sort_method,
+        'usearch61_maxrejects':max_rejects,
+        'usearch61_maxaccepts':max_accepts,
+        'sizeorder':sizeorder,
+        'suppress_new_clusters':opts.suppress_new_clusters
+        }
+        
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath, refseqs_fp, result_path=result_path,
+         log_path=log_path, failure_path=failure_path, 
+         otu_prefix=otu_prefix, HALT_EXEC=False)
              
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':

@@ -1,0 +1,2 @@
+pick_otus:otu_picking_method usearch61_ref
+pick_otus:suppress_reference_chimera_detection True

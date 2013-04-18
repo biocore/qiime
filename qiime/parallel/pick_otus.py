@@ -16,7 +16,7 @@ from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
 from cogent.parse.fasta import MinimalFastaParser
 from math import ceil
-from os.path import basename
+from os.path import basename, join
 from re import compile
 
 class ParallelPickOtus(ParallelWrapper):
@@ -186,6 +186,70 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
               rename_command,
               command_suffix)
 
+            commands.append(command)
+
+        return commands, result_filepaths
+
+class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
+    
+    def _get_job_commands(self,
+                          fasta_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate pick_otus commands which should be run
+        """
+        # Create basenames for each of the output files. These will be filled
+        # in to create the full list of files created by all of the runs.
+        out_filenames = [job_prefix + '.%d_otus.log', 
+                         job_prefix + '.%d_otus.txt',
+                         job_prefix + '.%s_failures.txt']
+    
+        # Create lists to store the results
+        commands = []
+        result_filepaths = []
+        
+        # Generate the parameters to pass to pick_otus.py. This must exclude
+        # parameters that get passed only to the parallel version 
+        # (e.g jobs_to_start) and values that get overwritten (e.g., 
+        # input_fasta_fp)
+        param_fields = []
+        ignored_params = set(["input_fasta_fp","output_dir","jobs_to_start",
+             "retain_temp_files","suppress_submit_jobs","poll_directly",
+             "cluster_jobs_fp","suppress_polling","job_prefix",
+             "seconds_to_sleep"])
+        for name, value in params.items():
+            if name in ignored_params or value == False:
+                pass
+            elif value == True:
+                param_fields.append('--%s' % name)
+            else:
+                param_fields.append('--%s %s' % (name,value))
+        params_str = ' '.join(param_fields)
+        
+        # Iterate over the input files
+        for i,fasta_fp in enumerate(fasta_fps):
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            iteration_working_dir = join(working_dir,str(i))
+            rename_command, current_result_filepaths = self._get_rename_command(
+                [fn % i for fn in out_filenames],
+                iteration_working_dir,
+                output_dir)
+            result_filepaths += current_result_filepaths
+            
+            command = \
+             '%s %s -i %s -m usearch61_ref --suppress_new_clusters -o %s %s %s %s' %\
+             (command_prefix,
+              self._script_name,
+              fasta_fp,
+              iteration_working_dir,
+              params_str,
+              rename_command,
+              command_suffix)
             commands.append(command)
 
         return commands, result_filepaths

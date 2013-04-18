@@ -1,0 +1,96 @@
+
+    <html>
+    <head>
+    	<script type="text/javascript" src="js/overlib.js"></script>
+        <script type="text/javascript" src="js/otu_table.js"></script>
+    	<script type="text/javascript" src="js/otu_count_display.js"></script>
+    	<script type="text/javascript" src="./js/jquery.js"></script>
+    	<script type="text/javascript" src="./js/jquery.tablednd_0_5.js"></script>
+        <script type="text/javascript">
+
+    
+        $(document).ready(function() {
+    
+        	$('#otu_table_body').tableDnD({
+        		onDragStart: function(table, new_row) {
+        			if (row==new_row.parentNode.rowIndex && is_selected==1){
+        				change_sel_row=1;
+        			}else{
+        				old_row=new_row.parentNode.rowIndex;
+        				change_sel_row=0;
+        			}
+        		},
+        		onDrop: function(table, new_row) {
+        			if (change_sel_row==1){
+        				row=new_row.rowIndex;
+        			}else if(old_row<row && new_row.rowIndex>row){
+        				row=row-1;
+        			}else if(old_row>row && new_row.rowIndex<row){
+        				row=row+1;
+        			}
+        		},
+            	dragHandle: "dragHandle"
+        	});
+            var otu_cutoff=document.getElementById("otu_count_cutoff");
+            otu_cutoff.value=otu_num_cutoff;    
+        });
+        </script>
+    	<style type="text/css">
+    	    th.rotate{ 
+    			white-space : nowrap;
+    			-webkit-transform: rotate(-90deg) translate(20px, 0px); 
+    			-moz-transform: rotate(-90deg) translate(20px, 0px);	
+    			font-family:arial;
+    			font-size:9px;
+    		}
+    		th.lineage{ 
+        	    white-space : nowrap;
+        	    text-align:left;
+        	    font-family:arial;
+        	    font-size:10px;
+        	    font-weight: bolder;
+        	}
+        	td.dragHandle{ 
+            	white-space : nowrap;
+            	text-align:left;
+            	font-family:arial;
+            	font-size:10px;
+            	font-weight: bolder;
+        	}
+        	td{ 
+            	white-space : nowrap;
+            	font-family:arial;
+            	font-size:10px;
+            	text-align:center;
+            	font-weight: bolder;
+        	}       
+        	table{ 
+            	border-spacing: 0;
+            	text-align:center;
+        	}
+        	p{
+            		text-align:left;
+            		font-weight: normal;
+        	}    
+    	</style>
+    </head>
+    <body>
+    	<p>
+    		Filter by Counts per OTU: <input type="text" id="otu_count_cutoff" value="">
+    		<input type="button" onclick="javascript:create_OTU_intervals();" value="Sample ID">
+    		<input type="button" onclick="javascript:write_taxon_heatmap();" value="Taxonomy">
+    	</p>
+    	<br><br><br><br><br><br>
+    	<table id='otu_table_html'>
+    		<thead id='otu_table_head'>
+    		</thead>
+    		<tbody id='otu_table_body'>
+    		<tr><td class="dragHandle"></td>
+    		</tr>
+    		<tr><td class="dragHandle"></td>
+    		</tr>
+    		</tbody>
+    	</table>
+
+    </body>
+    </html>

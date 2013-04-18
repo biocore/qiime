@@ -11,7 +11,7 @@ rm -rf split_library_output ; split_libraries.py -m Fasting_Map.txt -f Fasting_E
 
 # otus
 echo "Pick OTUs through OTU table"
-rm -rf otus ; pick_otus_through_otu_table.py -i split_library_output/seqs.fna -o otus -a
+rm -rf otus ; pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus -a
 
 #per_library_stats.py -i otus/otu_table.biom
 

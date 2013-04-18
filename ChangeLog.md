@@ -11,7 +11,14 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * Major refactoring of workflow tests and organization of workflow code. The workflow library code and tests have now been split apart into separate files. This makes it a lot more manageable, which will support a more general refactoring of the workflow code in the future to make it easier to develop new workflows. The workflow tests have also been updated to use the new test data described in [#582](https://github.com/qiime/qiime/issues/582), which is now accessible through ``qiime.test. get_test_data()`` and ``qiime.test.get_test_data_fps()``. This provides improved testing of boundary cases in each workflow, as well as more consistent tests across the workflows.
 * otu_category_significance.py now supports an input directory of biom tables, and can write out either a single collated results file or an individual file for every input table in the directory. The -o output_fp is now a required parameter rather than an optional parameter.
 * simsam.py now has a -m/--mapping_fp option and writes output to a directory instead of a single file. -n/--num and -d/--dissim now accept a single number or comma-separated list of values.
-* supervised_learning.py can now handle input directorys of otu tables, can write a single collated results file if the input directory is of rarefied otu tables, and the -o output fp option is now a required parameter
+* supervised_learning.py can now handle input directorys of otu tables, can write a single collated results file if the input directory is of rarefied otu tables, and the -o output fp option is now a required parameter.
+* The qiime_test_data repository has been merged into the main qiime repository, which will facilitate development by not requiring users to time pull requests against two repositories. Users will no longer have to specify qiime_test_data_dir in their qiime_config files to include the script usage tests in runs of all_tests.py. all_tests.py will now know how to find qiime_test_data, and will run all of the script usage tests by default.
+* pick_reference_otus_through_otu_table.py now outputs otu_table.biom in top-level output directory rather than nested in the otu picking output directory.
+* pick_reference_otus_through_otu_table.py has been renamed pick_closed_reference_otus.py (issue #708).
+* pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
+* pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
+* make_distance_comparison_plots.py now supports auto-sizing of distribution plots via --distribution_width (which is the new default) and better handles numeric label types with very large or small ranges (e.g. elevation) by scaling x-axis units to [1, (number of data points)]. --group_spacing has been removed in favor of the new auto-sizing feature.
+
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================

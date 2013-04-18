@@ -3,13 +3,13 @@
 """
 from os import walk, environ
 from subprocess import Popen, PIPE, STDOUT
-from os.path import join, abspath, dirname, split
+from os.path import join, abspath, dirname, exists, split
 from glob import glob
 import re
 from sys import exit
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
-                       make_option, get_tmp_filename)
+                       make_option, get_tmp_filename, get_qiime_project_dir)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
@@ -41,7 +41,7 @@ script_info['optional_options'] = [
  make_option('--unittest_glob',
              help='wildcard pattern to match tests to run [default: run all]',
              default=None),
- make_option('--script_tests',
+ make_option('--script_usage_tests',
              help='comma-separated list of tests to run [default: run all]',
              default=None),
 ]
@@ -92,14 +92,15 @@ def main():
                     missing_application_tests.append(unittest_name)
                 else:
                     bad_tests.append(unittest_name)
-    
-    num_script_usage_example_failures = 0
-    qiime_test_data_dir = qiime_config['qiime_test_data_dir']
-    if not opts.suppress_script_usage_tests and qiime_test_data_dir != None:
-        if opts.script_tests != None:
-            script_tests = opts.script_tests.split(',')
+
+    qiime_test_data_dir = join(get_qiime_project_dir(),'qiime_test_data')
+    qiime_test_data_dir_exists = exists(qiime_test_data_dir)
+    if not opts.suppress_script_usage_tests and qiime_test_data_dir_exists:
+        if opts.script_usage_tests != None:
+            script_usage_tests = opts.script_usage_tests.split(',')
         else:
-            script_tests = None
+            script_usage_tests = None
+
         # Run the script usage testing functionality
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
@@ -107,9 +108,10 @@ def main():
                qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
                working_dir=qiime_config['temp_dir'],
                verbose=True,
-               tests=script_tests,
+               tests=script_usage_tests,
                failure_log_fp=None,
-               force_overwrite=True)
+               force_overwrite=True,
+               timeout=240)
 
     print "==============\nResult summary\n=============="
 
@@ -126,25 +128,27 @@ def main():
         
         if not (missing_application_tests or bad_tests):
             print "\nAll unit tests passed.\n\n"
-    
-    qiime_test_data_dir_exists = True
+
     if not opts.suppress_script_usage_tests:
-        if qiime_test_data_dir:
+        if qiime_test_data_dir_exists:
             print "\nScript usage test result summary\n------------------------------------\n"
             print script_usage_result_summary
         else:
-            print "\nCould not run script usage tests because qiime_test_data_dir is not defined in your qiime_config."
-            qiime_test_data_dir_exists = False
+            print "\nCould not run script usage tests because the directory %s does not exist." % qiime_test_data_dir
         print ""
 
-    # If any of the unit tests or script usage tests fail, or if
-    # we have any missing application errors or a missing QIIME test data dir
-    # if script usage tests weren't suppressed, use return code 1 (as python's
-    # unittest module does to indicate one or more failures).
+    # If script usage tests weren't suppressed, the qiime_test_data dir must
+    # exist and we can't have any failures.
+    script_usage_tests_success = (opts.suppress_script_usage_tests or
+                                  (qiime_test_data_dir_exists and
+                                   num_script_usage_example_failures == 0))
+
+    # If any of the unit tests or script usage tests fail, or if we have any
+    # missing application errors, use return code 1 (as python's unittest
+    # module does to indicate one or more failures).
     return_code = 1
     if (len(bad_tests) == 0 and len(missing_application_tests) == 0 and
-        num_script_usage_example_failures == 0 and
-        qiime_test_data_dir_exists):
+        script_usage_tests_success):
         return_code = 0
     return return_code
 

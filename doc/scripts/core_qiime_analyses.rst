@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the `pick_otus_through_otu_table.py <./pick_otus_through_otu_table.html>`_ workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build the OTU table), generating 2d and 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed to the script or QIIME will try to make a reasonable guess.
+This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the `pick_de_novo_otus.py <./pick_de_novo_otus.html>`_ workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build the OTU table), generating 2d and 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed to the script or QIIME will try to make a reasonable guess.
 
 
 **Usage:** :file:`core_qiime_analyses.py [options]`

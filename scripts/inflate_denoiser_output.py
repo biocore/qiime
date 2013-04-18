@@ -22,7 +22,7 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Inflate denoiser results so they can be passed directly to OTU pickers."
-script_info['script_description'] = """Inflate denoiser results so they can be passed directly to pick_otus.py, parallel_pick_otus_uclust_ref.py, or pick_otus_through_otu_table.py. Note that the results of this script have not be abundance sorted, so they must be before being passed to the OTU picker. The uclust OTU pickers incorporate this abundance presorting by default.
+script_info['script_description'] = """Inflate denoiser results so they can be passed directly to pick_otus.py, parallel_pick_otus_uclust_ref.py, or pick_de_novo_otus.py. Note that the results of this script have not be abundance sorted, so they must be before being passed to the OTU picker. The uclust OTU pickers incorporate this abundance presorting by default.
 
 The inflation process writes each centroid sequence n times, where n is the number of reads that cluster to that centroid, and writes each singleton once. Flowgram identifiers are mapped back to post-split_libraries identifiers in this process (i.e., identifiers in fasta fps).
 """

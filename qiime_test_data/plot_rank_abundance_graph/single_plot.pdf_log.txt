@@ -1,0 +1,2 @@
+OTU table file: otu_table.biom
+sample names: PC.354

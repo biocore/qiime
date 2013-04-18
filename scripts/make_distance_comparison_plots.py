@@ -178,13 +178,8 @@ script_info['optional_options'] = [
     make_option('--distribution_width',
         help='width (in plot units) of each individual distribution (e.g. each '
              'bar if the plot type is a bar chart, or the width of each box '
-             'if the plot type is a boxplot) [default: %default]',
-        default='0.4', type='float'),
-    make_option('--group_spacing',
-        help='width (in plot units) of the gap between each grouping point '
-             'along the x-axis (i.e. the width between each group of '
-             'distributions) [default: %default]',
-        default='0.5', type='float')]
+             'if the plot type is a boxplot) [default: auto]',
+        default=None, type='float')]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
@@ -206,9 +201,7 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                    'of IQR',
                                'error_bar_type':'type of error bars to use ',
                                'distribution_width':'width of each '
-                                   'distribution',
-                               'group_spacing':'width of gap between '
-                                   'distribution groupings'}
+                                   'distribution'}
 
 script_info['version'] = __version__
 
@@ -350,8 +343,7 @@ def main():
             y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
             error_bar_type=opts.error_bar_type,
             distribution_width=opts.distribution_width,
-            group_spacing=opts.group_spacing, figure_width=width,
-            figure_height=height)
+            figure_width=width, figure_height=height)
 
     # Save the plot in the specified format.
     output_plot_fp = join(opts.output_dir, "%s_Distance_Comparisons.%s" %

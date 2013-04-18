@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Justin Kuczynski"]
+__credits__ = ["Greg Caporaso", "Justin Kuczynski", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -26,19 +26,37 @@ from qiime.workflow.downstream import run_jackknifed_beta_diversity
 
 script_info={}
 
-script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
+script_info['brief_description']="""A workflow script for performing jackknifed\
+ UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
 
-script_info['script_description']="""To directly measure the robustness of individual UPGMA clusters and clusters in PCoA plots, one can perform jackknifing (repeatedly resampling a subset of the available data from each sample)."""
+script_info['script_description']="""To directly measure the robustness of\
+ individual UPGMA clusters and clusters in PCoA plots, one can\
+ perform jackknifing (repeatedly resampling a subset of the available data\
+ from each sample)."""
 
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Example:""","""These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
+script_info['script_usage'].append(("""Example:""","""These steps are performed\
+ by the following command: Compute beta diversity distance matrix from otu\
+ table (and tree, if applicable); build rarefied OTU tables by evenly sampling\
+ to the specified depth (-e); build UPGMA tree from full distance matrix;\
+ compute distance matrics for rarefied OTU tables; build UPGMA trees from\
+ rarefied OTU table distance matrices; build a consensus tree from the rarefied\
+ UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either\
+ (full or consensus) tree for jackknife support of tree nodes; perform\
+ principal coordinates analysis on distance matrices generated from rarefied\
+ OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
 
-""","""%prog -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre"""))
+""","""%prog -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt\
+ -t rep_set.tre"""))
 
 script_info['script_usage_output_to_remove'] = ['bdiv_jk100']
 
-script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py), a supporting file and newick tree with support values (from tree_compare.py), and 2D and 3D PCoA plots."""
+script_info['output_description']="""This scripts results in several distance\
+ matrices (from beta_diversity.py), several rarified otu tables\
+ (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py),\
+ a supporting file and newick tree with support values (from tree_compare.py),\
+ and 2D and 3D PCoA plots."""
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -60,11 +78,12 @@ script_info['optional_options']=[\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
  make_option('-p','--parameter_fp',type='existing_filepath',
-    help='path to the parameter file, which specifies changes'+\
-        ' to the default behavior. '+\
-        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
-        ' [if omitted, default values will be used]'),
+            help='path to the parameter file, which specifies changes'+\
+            ' to the default behavior. '+\
+            'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+            ' [if omitted, default values will be used]'),
  make_option('--master_tree', default="consensus",
+        type='choice', choices=['consensus', 'full'],
         help='method for computing master trees in jackknife analysis.'+\
         ' "consensus": consensus of trees from jackknifed otu tables. '+\
         ' "full": tree generated from input (unsubsambled) otu table. '+\

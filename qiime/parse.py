@@ -459,7 +459,7 @@ def process_otu_table_sample_ids(sample_id_fields):
     # field will be named either 'Consensus Lineage' or 'OTU Metadata',
     # but we don't care about case or spaces.
     last_column_header = sample_id_fields[-1].strip().replace(' ','').lower()
-    if last_column_header in ['consensuslineage', 'otumetadata']:
+    if last_column_header in ['consensuslineage', 'otumetadata', 'taxonomy']:
         has_metadata = True
         sample_ids = sample_id_fields[:-1]
     else:
