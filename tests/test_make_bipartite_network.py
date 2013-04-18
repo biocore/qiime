@@ -58,9 +58,32 @@ class TopLevelTests(TestCase):
         # agree when md type is list or string.
         bt1 = parse_biom_table(BIOM_STRING_1)
         md_key = 'taxonomy'
-        self.assertRaises(ValueError, make_otu_node_table, bt1, md_key)
-        bt2 = parse_biom_table(BIOM_STRING_3)
-        self.assertRaises(ValueError, make_otu_node_table, bt2, md_key)
+        md_fields = ['k']
+        obs = make_otu_node_table(bt1, md_key, md_fields)
+        exp = [\
+             '#NodeID\tNodeType\tAbundance\tk',
+             'o1\totu\t15.0\tk__Bacteria',
+             'o2\totu\t40.0\tk__Bacteria',
+             'o3\totu\t65.0\tk__Bacteria',
+             'o4\totu\t90.0\tk__Bacteria',
+             'o5\totu\t115.0\tk__Bacteria',
+             'o6\totu\t140.0\tk__Bacteria',
+             'o7\totu\t165.0\tk__Bacteria',
+             'o8\totu\t190.0\tk__Bacteria']
+        self.assertEqual(obs, exp)
+        md_fields = ['k','1','2','3','4','5','6']
+        obs = make_otu_node_table(bt1, md_key, md_fields)
+        exp = [\
+             '#NodeID\tNodeType\tAbundance\tk\t1\t2\t3\t4\t5\t6',
+             'o1\totu\t15.0\tk__Bacteria\tp__Firmicutes\tc__Clost5\to__Clostridiales\tf__Lachnospiraceae\tOther\tOther',
+             'o2\totu\t40.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostridiales\tf__Lachnos1\tOther\tOther',
+             'o3\totu\t65.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostridiales\tf__Lachnos1\tOther\tOther',
+             'o4\totu\t90.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostridiales\tf__Lachnos2\tOther\tOther',
+             'o5\totu\t115.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostridiales\tf__Lachnos2\tOther\tOther',
+             'o6\totu\t140.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostri3\tf__Lachnospiraceae\tOther\tOther',
+             'o7\totu\t165.0\tk__Bacteria\tp__Firmicutes\tc__Clostridia\to__Clostri3\tf__Lachnospiraceae\tOther\tOther',
+             'o8\totu\t190.0\tk__Bacteria\tp__Firmicutes\tc__Clost5\to__Clostridiales\tf__Lachnospiraceae\tOther\tOther']
+
         # test when the length of the md_fields is correct
         md_fields = ['k','p','c','o','f']
         obs_bt1 = make_otu_node_table(bt1, md_key, md_fields)
@@ -76,6 +99,7 @@ class TopLevelTests(TestCase):
              'o8\totu\t190.0\tk__Bacteria\tp__Firmicutes\tc__Clost5\to__Clostridiales\tf__Lachnospiraceae']
         self.assertEqual(obs_bt1, exp_bt1)
         md_fields = ['k','p','c','o','f']
+        bt2 = parse_biom_table(BIOM_STRING_3)
         obs_bt2 = make_otu_node_table(bt2, md_key, md_fields)
         exp_bt2 = \
             ['#NodeID\tNodeType\tAbundance\tk\tp\tc\to\tf',

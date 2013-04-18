@@ -47,8 +47,7 @@ def make_sample_node_table(bt, mf_dict):
             '\t'.join(mf_dict[sid].values()) for sid in sids]
     return lines
 
-def make_otu_node_table(bt, md_key, md_fields=['kingdom', 'phylum', 'class', 
-        'order', 'family', 'genus', 'species']):
+def make_otu_node_table(bt, md_key, md_fields):
     '''Make otu node table where nodes and their data are recorded.
     Metadata can be coded in the biom file in 3 ways, as a string, as a list, 
     or as a dictionary:
@@ -63,11 +62,15 @@ def make_otu_node_table(bt, md_key, md_fields=['kingdom', 'phylum', 'class',
      md_key - str, key to access the metadata str/list/dict
      md_fields - list of strs, the fields to pull from if the
      metadata is presented as a dictionary. The md_fields will be the header 
-     keys in the output otu_node_table. If left as default md_fields 
-     will be given as ['kingdom','phylum',...'species']. This can cause the 
+     keys in the output otu_node_table. If metadata is a string or a dict then
+     the number of md_fields can differ from the number of available metadata
+     entries. This can cause the 
      resulting file to have jagged edges (the header is longer than the metadata
      or vice versa). This does not appear to be a problem with Cytoscape. It may
-     cause an error in QIIME though so we error out. 
+     cause an error in QIIME though so we apply the same solution as used in 
+     summarize_taxa.py The function that takes care of it in that case is called
+     sum_counts_by_consensus and it appends 'Other' to the metadata until the
+     required length is reached. 
     Outputs:
      list of lines of following form:
      #NodeID    NodeType    Abundance   md_field[0] md_field[1] ...
@@ -90,12 +93,6 @@ def make_otu_node_table(bt, md_key, md_fields=['kingdom', 'phylum', 'class',
             line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
             line += '\t'.join(bt.ObservationMetadata[i][md_key])
             lines.append(line)
-    # check that we dont have jagged edges. they could occur because with list
-    # or str metadata so one check her better than two above. if lines is empty
-    # it will be vacuosly true. 
-    if not all([len(i.split('\t'))==len(lines[0].split('\t')) for i in lines]):
-        raise ValueError('The md_fields passed are not of the same length as '+\
-            'the metadata extracted from the biom file. Check md_fields.')
     if md_type is defaultdict:
         # if md_type is defaultdict keys in md_fields that fail will produce
         # empty lists or strs. these will cause TypeErrors in join. 
@@ -120,6 +117,25 @@ def make_otu_node_table(bt, md_key, md_fields=['kingdom', 'phylum', 'class',
             raise ValueError('The md_fields provided were not all found in '+\
                 'the input biom table metada.')
 
+    # given that the md was list or string we need to check if jagged edges 
+    # would be returned. instead of erroring if the output would have jagged 
+    # edges we apply the solution found in summarize_taxa.py. we append 'Other'
+    # to the string  until it is of desired length. if the length of the 
+    # metadata is longer than the header we will discard \t separated entries
+    # until we reach the dlen.
+    if md_type is list or md_type is str or md_type is unicode:
+        dlen = len(header.split('\t'))
+        checked_lines = [header]
+        for line in lines[1:]: #skip header, we know its the right length
+            sline = line.split('\t')
+            diff = dlen - len(sline)
+            if diff == 0:
+                checked_lines.append(line)
+            elif diff > 0: # header longer than line, must add 'Other'*diff
+                checked_lines.append(line+'\tOther'*diff)
+            elif diff < 0: # header shorter than line, remove extra entries
+                checked_lines.append('\t'.join(sline[:dlen]))
+        lines = checked_lines
     return lines
 
 def make_node_attr_table(otu_node_lines, sample_node_lines, 
