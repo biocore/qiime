@@ -97,10 +97,19 @@ class DistanceMatrixTests(TestCase):
 
     def test_new_from_template(self):
         """Correctly constructs DistanceMatrix instances new-from-template."""
-        # DistanceMatrix -> DistanceMatrix
-        #dm = self.dm1.view(DistanceMatrix)
-        #self.assertTrue(dm.equals(self.dm1))
-        pass
+        # We're not creating a deep copy, but rather a new instance that points
+        # to the old data (including sample IDs).
+        dm = self.dm2[:]
+        self.assertTrue(dm.equals(self.dm2))
+        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+        self.assertTrue(dm.SampleIds is self.dm2.SampleIds)
+
+    def test_copy(self):
+        """Correctly copies DistanceMatrix instances, including SampleIds."""
+        dm = self.dm2.copy()
+        self.assertTrue(dm.equals(self.dm2))
+        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+        self.assertFalse(dm.SampleIds is self.dm2.SampleIds)
 
     def test_equals(self):
         """Correctly identifies instances that are equal (or not)."""

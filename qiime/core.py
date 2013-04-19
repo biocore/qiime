@@ -12,7 +12,7 @@ __status__ = "Development"
 
 """Contains core data classes used in QIIME."""
 
-from numpy import array_equal, asarray, ndarray
+from numpy import array_equal, asarray, copy, ndarray
 
 class InvalidDistanceMatrixError(Exception):
     pass
@@ -72,6 +72,14 @@ class DistanceMatrix(ndarray):
 
             self.SampleIds = sids
             self.flags.writeable = False
+
+    def copy(self):
+        clone = copy(self).view(DistanceMatrix)
+
+        if self.SampleIds is not None:
+            clone.SampleIds = self.SampleIds[:]
+
+        return clone
 
     def equals(self, other):
         # Use array_equal instead of (a == b).all() because of this issue:
