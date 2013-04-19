@@ -102,13 +102,17 @@ class DistanceMatrixTests(TestCase):
         dm = self.dm2[:]
         self.assertTrue(dm.equals(self.dm2))
         self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+        # Not a deep copy.
         self.assertTrue(dm.SampleIds is self.dm2.SampleIds)
+
+        # TODO test invalid new-from-template operations
 
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""
         dm = self.dm2.copy()
         self.assertTrue(dm.equals(self.dm2))
         self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+        # Check for correct deep copy.
         self.assertFalse(dm.SampleIds is self.dm2.SampleIds)
 
     def test_equals(self):

@@ -66,9 +66,15 @@ class DistanceMatrix(ndarray):
             self.flags.writeable = False
 
     def copy(self):
+        # We use numpy.copy instead of calling the superclass copy because that
+        # one doesn't work with immutable arrays (and changing
+        # self.flags.writeable to True temporarily doesn't fix the issue
+        # either). numpy.copy returns an ndarray, so we have to view-cast back
+        # to DistanceMatrix.
         clone = copy(self).view(DistanceMatrix)
 
         if self.SampleIds is not None:
+            # Deep copy.
             clone.SampleIds = self.SampleIds[:]
 
         return clone
@@ -76,6 +82,7 @@ class DistanceMatrix(ndarray):
     def equals(self, other):
         # Use array_equal instead of (a == b).all() because of this issue:
         # http://stackoverflow.com/a/10582030
+        # Shape is also checked for us in array_equal.
         if (isinstance(other, self.__class__) and
             self.SampleIds == other.SampleIds and
             array_equal(self, other)):
