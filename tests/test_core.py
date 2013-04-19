@@ -13,7 +13,7 @@ __status__ = "Development"
 """Test suite for the core.py module."""
 
 from cogent.util.unit_test import TestCase, main
-from numpy import array
+from numpy import array, ndarray
 
 from qiime.core import DistanceMatrix, InvalidDistanceMatrixError
 
@@ -31,10 +31,12 @@ class DistanceMatrixTests(TestCase):
 
     def test_constructor(self):
         """Correctly constructs DistanceMatrix instances."""
+        # Without sample IDs.
         self.assertTrue(isinstance(self.dm1, DistanceMatrix))
         self.assertEqual(self.dm1.SampleIds, None)
         self.assertEqual(self.dm1.shape, (2, 2))
 
+        # With sample IDs.
         self.assertTrue(isinstance(self.dm2, DistanceMatrix))
         self.assertEqual(self.dm2.SampleIds, self.sids1)
         self.assertEqual(self.dm2.shape, (2, 2))
@@ -60,11 +62,45 @@ class DistanceMatrixTests(TestCase):
         """Correctly constructs DistanceMatrix instances using view casting."""
         # DistanceMatrix -> DistanceMatrix
         dm = self.dm1.view(DistanceMatrix)
-        self.assertEqual(dm, self.dm1)
-        dm.SampleIds = [1,2,3]
-        self.assertEqual(dm, self.dm1)
+        self.assertTrue(dm.equals(self.dm1))
 
-        # TODO finish me
+        # DistanceMatrix -> ndarray
+        arr = self.dm2.view(ndarray)
+        self.assertTrue(isinstance(arr, ndarray))
+        self.assertEqual(arr.shape, (2, 2))
+        # We shouldn't be able to access SampleIds or write to the array.
+        self.assertRaises(AttributeError, getattr, arr, 'SampleIds')
+        self.assertRaises(RuntimeError, arr.__setitem__, (0, 0), 42)
+
+        # ndarray -> DistanceMatrix
+        arr = array(self.data1)
+        dm = arr.view(DistanceMatrix)
+        self.assertTrue(isinstance(dm, DistanceMatrix))
+        self.assertEqual(dm.shape, (2, 2))
+        self.assertTrue(dm.SampleIds is None)
+        # We shouldn't be able to write to the dm.
+        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+
+    def test_view_casting_invalid_input(self):
+        """Raises error on invalid distance matrix data."""
+        # Empty data.
+        arr = array([])
+        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
+
+        # Invalid number of dimensions.
+        arr = array([1, 2, 3])
+        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
+
+        # Dimensions don't match.
+        arr = array([[1, 2, 3]])
+        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
+
+    def test_new_from_template(self):
+        """Correctly constructs DistanceMatrix instances new-from-template."""
+        # DistanceMatrix -> DistanceMatrix
+        #dm = self.dm1.view(DistanceMatrix)
+        #self.assertTrue(dm.equals(self.dm1))
+        pass
 
     def test_equals(self):
         """Correctly identifies instances that are equal (or not)."""

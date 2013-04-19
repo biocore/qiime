@@ -18,6 +18,12 @@ class InvalidDistanceMatrixError(Exception):
     pass
 
 class DistanceMatrix(ndarray):
+    """
+
+    Implementation is based on numpy subclassing guide:
+        http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
+    """
+
     def __new__(cls, input_array, SampleIds=None):
         dm = asarray(input_array)
 
@@ -46,9 +52,30 @@ class DistanceMatrix(ndarray):
         if obj is None:
             return
         else:
-            self.SampleIds = getattr(obj, 'SampleIds', None)
+            if 0 in obj.shape:
+                raise InvalidDistanceMatrixError("The input array must be at "
+                                                 "least 1x1 in size.")
+            elif len(obj.shape) != 2:
+                raise InvalidDistanceMatrixError("The input array must have "
+                                                 "exactly two dimensions.")
+            elif obj.shape[0] != obj.shape[1]:
+                raise InvalidDistanceMatrixError("The input array must be square "
+                                                 "(i.e. have the same number of "
+                                                 "rows and columns).")
+
+            sids = getattr(obj, 'SampleIds', None)
+            if sids is not None and len(sids) != obj.shape[0]:
+                raise InvalidDistanceMatrixError("The number of sample IDs must "
+                                                 "match the number of "
+                                                 "rows/columns in the distance "
+                                                 "matrix.")
+
+            self.SampleIds = sids
+            self.flags.writeable = False
 
     def equals(self, other):
+        # Use array_equal instead of (a == b).all() because of this issue:
+        # http://stackoverflow.com/a/10582030
         if (isinstance(other, self.__class__) and
             self.SampleIds == other.SampleIds and
             array_equal(self, other)):
