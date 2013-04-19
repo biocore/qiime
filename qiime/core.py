@@ -31,10 +31,11 @@ class DistanceMatrix(ndarray):
             raise InvalidDistanceMatrixError("The input array must be square "
                                              "(i.e. have the same number of "
                                              "rows and columns).")
-        if SampleIds is not None and len(SampleIds) != dm.shape[0]:
+        elif SampleIds is not None and len(SampleIds) != dm.shape[0]:
             raise InvalidDistanceMatrixError("The number of sample IDs must "
                                              "match the number of "
-                                             "rows/columns.")
+                                             "rows/columns in the distance "
+                                             "matrix.")
 
         dm = dm.view(cls)
         dm.SampleIds = SampleIds

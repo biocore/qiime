@@ -15,7 +15,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from numpy import array
 
-from qiime.core import DistanceMatrix
+from qiime.core import DistanceMatrix, InvalidDistanceMatrixError
 
 class DistanceMatrixTests(TestCase):
     """Tests for the DistanceMatrix class."""
@@ -34,6 +34,27 @@ class DistanceMatrixTests(TestCase):
         self.assertTrue(isinstance(self.dm1, DistanceMatrix))
         self.assertEqual(self.dm1.SampleIds, None)
         self.assertEqual(self.dm1.shape, (2, 2))
+
+        self.assertTrue(isinstance(self.dm2, DistanceMatrix))
+        self.assertEqual(self.dm2.SampleIds, self.sids1)
+        self.assertEqual(self.dm2.shape, (2, 2))
+
+    def test_constructor_invalid_input(self):
+        """Raises error on invalid distance matrix data."""
+        # Empty data.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix, [])
+
+        # Invalid number of dimensions.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
+                          [1, 2, 3])
+
+        # Dimensions don't match.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
+                          [[1, 2, 3]])
+
+        # Number of sample IDs don't match dimensions.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
+                          self.data1, ['a', 'b', 'c'])
 
     def test_view_casting(self):
         """Correctly constructs DistanceMatrix instances using view casting."""
