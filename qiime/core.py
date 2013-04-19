@@ -24,26 +24,33 @@ class DistanceMatrix(ndarray):
         http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
     """
 
-    def __new__(cls, input_array, SampleIds=None):
-        dm = asarray(input_array)
+    @staticmethod
+    def _validate_data(data, sids):
+        """
 
-        if 0 in dm.shape:
-            raise InvalidDistanceMatrixError("The input array must be at "
-                                             "least 1x1 in size.")
-        elif len(dm.shape) != 2:
-            raise InvalidDistanceMatrixError("The input array must have "
-                                             "exactly two dimensions.")
-        elif dm.shape[0] != dm.shape[1]:
-            raise InvalidDistanceMatrixError("The input array must be square "
-                                             "(i.e. have the same number of "
-                                             "rows and columns).")
-        elif SampleIds is not None and len(SampleIds) != dm.shape[0]:
+        This method is static because it is called from within __new__ (where
+        self doesn't exist yet) and also within normal methods.
+        """
+        if 0 in data.shape:
+            raise InvalidDistanceMatrixError("Data must be at least 1x1 in "
+                                             "size.")
+        elif len(data.shape) != 2:
+            raise InvalidDistanceMatrixError("Data must have exactly two "
+                                             "dimensions.")
+        elif data.shape[0] != data.shape[1]:
+            raise InvalidDistanceMatrixError("Data must be square (i.e. have "
+                                             "the same number of rows and "
+                                             "columns).")
+        elif sids is not None and len(sids) != data.shape[0]:
             raise InvalidDistanceMatrixError("The number of sample IDs must "
                                              "match the number of "
-                                             "rows/columns in the distance "
-                                             "matrix.")
+                                             "rows/columns in the data.")
 
+    def __new__(cls, input_array, SampleIds=None):
+        dm = asarray(input_array)
+        cls._validate_data(dm, SampleIds)
         dm = dm.view(cls)
+
         dm.SampleIds = SampleIds
         dm.flags.writeable = False
         return dm
@@ -52,23 +59,8 @@ class DistanceMatrix(ndarray):
         if obj is None:
             return
         else:
-            if 0 in obj.shape:
-                raise InvalidDistanceMatrixError("The input array must be at "
-                                                 "least 1x1 in size.")
-            elif len(obj.shape) != 2:
-                raise InvalidDistanceMatrixError("The input array must have "
-                                                 "exactly two dimensions.")
-            elif obj.shape[0] != obj.shape[1]:
-                raise InvalidDistanceMatrixError("The input array must be square "
-                                                 "(i.e. have the same number of "
-                                                 "rows and columns).")
-
             sids = getattr(obj, 'SampleIds', None)
-            if sids is not None and len(sids) != obj.shape[0]:
-                raise InvalidDistanceMatrixError("The number of sample IDs must "
-                                                 "match the number of "
-                                                 "rows/columns in the distance "
-                                                 "matrix.")
+            self._validate_data(obj, sids)
 
             self.SampleIds = sids
             self.flags.writeable = False
