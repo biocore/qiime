@@ -238,14 +238,14 @@ class Qiime_config(TestCase):
     # seconds_to_sleep        60
 
     def test_sourcetracker_installed(self):
-        """sourcetracker is installed and path is in qiime_config"""
+        """sourcetracker is installed"""
             
-        sourcetracker_path = self.config['sourcetracker_fp']
+        sourcetracker_path = getenv('SOURCETRACKER_PATH')
         self.assertNotEqual(sourcetracker_path,None,
-         ("sourcetracker_fp is not set in qiime_config. This is "
+         ("SOURCETRACKER_PATH is not set. This is "
           "only important if you plan to use SourceTracker."))
         self.assertTrue(exists(sourcetracker_path),
-         "sourcetracker_fp is not set to a valid path: %s" %\
+         "SOURCETRACKER_PATH is not set to a valid path: %s" %\
           sourcetracker_path)
 
     def test_for_obsolete_values(self):
