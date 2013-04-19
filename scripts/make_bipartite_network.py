@@ -41,7 +41,8 @@ script_info['script_usage'] = [\
 ("","""Create an EdgeTable and NodeAttrTable that allow you to color sample nodes with one of their metadata categories (Treatment for our example), OTU nodes by their taxonomic level (class for our example), control OTU node size by their abundance, and control node shape by whether its an OTU or sample.""",
 """%prog -i otu_table.biom -m mapping_file.txt -k taxonomy --md_fields 'k,p,c,o,f' -o bipartite_network/ --scolors 'Treatment' --ocolors 'c' --osize 'Abundance'"""),
 ("","""Create an EdgeTable and NodeAttrTable that allow you to color sample nodes by a combination of their time point and diet, color OTU nodes by their abundance and family, and node shape by whether the node is an OTU or sample. Note that the names in the --md_fields are irrelevant as long as the field passed for --ocolors is available. The length is important however, since there are 5 levels in our OTU table. If fewer fewer than 5 fields were passed for --md_fields we would get an error.""",
-"""%prog -i otu_table.biom -m mapping_file.txt -k taxonomy --md_fields 'a1,a2,a3,a4,f' -o bipartite_network/ --scolors 'TimePt,Diet' --ocolors 'f,Abundance'""")]
+"""%prog -i otu_table.biom -m mapping_file.txt -k taxonomy --md_fields 'a1,a2,a3,a4,f' -o bipartite_network_combo_colors/ --scolors 'TimePt,Diet' --ocolors 'f,Abundance'""")]
+script_info['script_usage_output_to_remove'] = ['$PWD/bipartite_network/','$PWD/bipartite_network_combo_colors/']
 script_info['output_description']= """The output of this script is four files:
     1. EdgeTable - table with connections between samples and otus. 
     2. OTUNodeTable - table with OTUs and their associated metadata. 
