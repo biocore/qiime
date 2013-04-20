@@ -56,14 +56,19 @@ class DistanceMatrix(ndarray):
         return dm
 
     def __array_finalize__(self, obj):
+        print 'Entered __array_finalize__'
         if obj is None:
+            print 'Left __array_finalize__ (obj is None)'
             return
         else:
             sids = getattr(obj, 'SampleIds', None)
+            print sids
+            print obj
             self._validate_data(obj, sids)
 
             self.SampleIds = sids
             self.flags.writeable = False
+        print 'Left __array_finalize__'
 
     def copy(self):
         # We use numpy.copy instead of calling the superclass copy because that
@@ -76,6 +81,8 @@ class DistanceMatrix(ndarray):
         if self.SampleIds is not None:
             # Deep copy.
             clone.SampleIds = self.SampleIds[:]
+        else:
+            clone.SampleIds = None
 
         return clone
 
