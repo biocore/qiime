@@ -111,13 +111,40 @@ class DistanceMatrixTests(TestCase):
 
     def test_new_from_template_invalid_input(self):
         """Raises error on invalid new-from-template distance matrices."""
-        # Slice to non-square matrix.
-        with self.assertRaises(InvalidDistanceMatrixError):
-            _ = self.dm2[1:]
+        # TODO
+        pass
 
-        # Slice to smaller square matrix.
-        with self.assertRaises(InvalidDistanceMatrixError):
-            _ = self.dm4[1:,1:]
+    def test_getslice(self):
+        """Test that __getslice__ defers to __getitem__."""
+        # Slice of first dimension only.
+        obs = self.dm2[1:]
+        self.assertEqual(obs, array([[1, 0]]))
+        with self.assertRaises(RuntimeError):
+            obs[0][1] = 42
+
+    def test_getitem(self):
+        """Test __getitem__ works correctly and performs validation checks."""
+        # Single element access.
+        obs = self.dm1[0,0]
+        self.assertEqual(obs, 0)
+
+        # Single element access (via two __getitem__ calls).
+        obs = self.dm2[0][0]
+        self.assertEqual(obs, 0)
+
+        # Row access. Should get an ndarray that isn't writeable.
+        obs = self.dm2[1]
+        self.assertEqual(obs, array([1, 0]))
+        with self.assertRaises(RuntimeError):
+            obs[0] = 42
+
+        # Get the entire distance matrix (should stay DistanceMatrix type).
+        obs = self.dm2[0:,0:]
+        self.assertTrue(self.dm2.equals(obs))
+        with self.assertRaises(RuntimeError):
+            obs[0,0] = 42
+
+        #obs = self.dm2[1:,1:]
 
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""
