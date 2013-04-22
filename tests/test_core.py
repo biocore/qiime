@@ -15,7 +15,9 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from numpy import array, ndarray
 
-from qiime.core import DistanceMatrix, InvalidDistanceMatrixError
+from qiime.core import (DistanceMatrix, InvalidDistanceMatrixError,
+                        InvalidDistanceMatrixFormatError,
+                        SampleIdMismatchError)
 
 class DistanceMatrixTests(TestCase):
     """Tests for the DistanceMatrix class."""
@@ -25,13 +27,51 @@ class DistanceMatrixTests(TestCase):
         self.data1 = [[0, 1], [1, 0]]
         self.data2 = [[0, 2], [2, 0]]
         self.data3 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        self.data4 = [[0, 1], [1.5, 0]]
+
         self.sids1 = ['a', 'b']
         self.sids2 = ['a', 'b', 'c']
+
+        self.data_f1 = '\ta\tb\na\t0\t1\nb\t1.5\t0'.split('\n')
+        self.bad_data_f1 = 'a\tb\na\t0\t1\nb\t1'.split('\n')
+        self.bad_data_f2 = '\ta\tb\nb\t0\t1\na\t1\t0'.split('\n')
+        self.bad_data_f3 = '\ta\tb\na\t0\t1\nb\t1\t0\nfoo'.split('\n')
 
         self.dm1 = DistanceMatrix(self.data1)
         self.dm2 = DistanceMatrix(self.data1, self.sids1)
         self.dm3 = DistanceMatrix(self.data2, self.sids1)
         self.dm4 = DistanceMatrix(self.data3, self.sids2)
+        self.dm5 = DistanceMatrix(self.data4, self.sids1)
+
+    def test_fromFile(self):
+        """Test parsing distance matrix file into a DistanceMatrix instance."""
+        # Header with leading tab.
+        obs = DistanceMatrix.fromFile(self.data_f1)
+        self.assertTrue(self.dm5.equals(obs))
+
+        # Header without leading tab.
+        data = self.data_f1[:]
+        data[0] = 'a\tb'
+        obs = DistanceMatrix.fromFile(data)
+        self.assertTrue(self.dm5.equals(obs))
+
+    def test_fromFile_invalid_input(self):
+        """Raises error on ill-formatted distance matrix file."""
+        # Empty dm.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix.fromFile,
+                          [])
+
+        # Number of values don't match number of sample IDs.
+        self.assertRaises(InvalidDistanceMatrixFormatError,
+                          DistanceMatrix.fromFile, self.bad_data_f1)
+
+        # Mismatched sample IDs.
+        self.assertRaises(SampleIdMismatchError, DistanceMatrix.fromFile,
+                          self.bad_data_f2)
+
+        # Extra data at end.
+        self.assertRaises(InvalidDistanceMatrixFormatError,
+                          DistanceMatrix.fromFile, self.bad_data_f3)
 
     def test_constructor(self):
         """Correctly constructs DistanceMatrix instances."""

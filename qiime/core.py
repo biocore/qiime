@@ -14,7 +14,15 @@ __status__ = "Development"
 
 from numpy import array_equal, asarray, copy, ndarray
 
+from qiime.parse import parse_distmat
+
 class InvalidDistanceMatrixError(Exception):
+    pass
+
+class InvalidDistanceMatrixFormatError(Exception):
+    pass
+
+class SampleIdMismatchError(Exception):
     pass
 
 class DistanceMatrix(ndarray):
@@ -23,6 +31,47 @@ class DistanceMatrix(ndarray):
     Implementation is based on numpy subclassing guide:
         http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
     """
+
+    @classmethod
+    def fromFile(cls, dm_f):
+        """Parses a QIIME distance matrix file into a DistanceMatrix object.
+
+        Arguments:
+            dm_f - a file(-like) object containing a QIIME-formatted distance
+                matrix
+        """
+        sids = None
+        matrix_data = []
+
+        for line_idx, line in enumerate(dm_f):
+            tokens = map(lambda e: e.strip(), line.strip().split('\t'))
+
+            if line_idx == 0:
+                # We're at the header (sample IDs).
+                sids = tokens
+            elif line_idx <= len(sids):
+                if tokens[0] == sids[line_idx - 1]:
+                    row_data = map(float, tokens[1:])
+
+                    if len(row_data) == len(sids):
+                        matrix_data.append(row_data)
+                    else:
+                        raise InvalidDistanceMatrixFormatError("The number of "
+                                "values in row number %d doesn't match the "
+                                "number of sample IDs in the header." %
+                                line_idx)
+                else:
+                    raise SampleIdMismatchError("Encountered mismatched "
+                            "sample IDs while parsing the distance matrix "
+                            "file. Please ensure the sample IDs match between "
+                            "the distance matrix header (first row) and the "
+                            "row labels (first column).")
+            else:
+                raise InvalidDistanceMatrixFormatError("Encountered extra "
+                        "rows without corresponding sample IDs in the "
+                        "header.")
+
+        return cls(matrix_data, SampleIds=sids)
 
     @staticmethod
     def _validate_data(data, sids):
