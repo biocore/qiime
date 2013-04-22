@@ -22,15 +22,15 @@ class DistanceMatrixTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        #self.data1 = [[0, 1], [1, 0]]
-        #self.data2 = [[0, 2], [2, 0]]
+        self.data1 = [[0, 1], [1, 0]]
+        self.data2 = [[0, 2], [2, 0]]
         self.data3 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        #self.sids1 = ['a', 'b']
+        self.sids1 = ['a', 'b']
         self.sids2 = ['a', 'b', 'c']
 
-        #self.dm1 = DistanceMatrix(self.data1)
-        #self.dm2 = DistanceMatrix(self.data1, self.sids1)
-        #self.dm3 = DistanceMatrix(self.data2, self.sids1)
+        self.dm1 = DistanceMatrix(self.data1)
+        self.dm2 = DistanceMatrix(self.data1, self.sids1)
+        self.dm3 = DistanceMatrix(self.data2, self.sids1)
         self.dm4 = DistanceMatrix(self.data3, self.sids2)
 
     def test_constructor(self):
@@ -111,18 +111,13 @@ class DistanceMatrixTests(TestCase):
 
     def test_new_from_template_invalid_input(self):
         """Raises error on invalid new-from-template distance matrices."""
-        #with self.assertRaises(InvalidDistanceMatrixError):
-        #    _ = self.dm2[1:]
-
-        #print self.dm4
-        #print self.dm4.shape
-        #dm = self.dm4[1:,1:]
-        #print dm
+        # Slice to non-square matrix.
         with self.assertRaises(InvalidDistanceMatrixError):
-            dm = self.dm4[1:,1:]
-            #print dm.shape
-            #print dm.SampleIds
-            print dm
+            _ = self.dm2[1:]
+
+        # Slice to smaller square matrix.
+        with self.assertRaises(InvalidDistanceMatrixError):
+            _ = self.dm4[1:,1:]
 
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""

@@ -56,19 +56,33 @@ class DistanceMatrix(ndarray):
         return dm
 
     def __array_finalize__(self, obj):
-        print 'Entered __array_finalize__'
         if obj is None:
-            print 'Left __array_finalize__ (obj is None)'
             return
         else:
             sids = getattr(obj, 'SampleIds', None)
-            print sids
-            print obj
             self._validate_data(obj, sids)
 
             self.SampleIds = sids
             self.flags.writeable = False
-        print 'Left __array_finalize__'
+
+#    def __getslice__(self, start, stop):
+#        """This solves a subtle bug, where __getitem__ is not called, and all
+#        the dimensional checking not done, when a slice of only the first
+#        dimension is taken, e.g. a[1:3]. From the Python docs:
+#           Deprecated since version 2.0: Support slice objects as parameters
+#           to the __getitem__() method. (However, built-in types in CPython
+#           currently still implement __getslice__(). Therefore, you have to
+#           override it in derived classes when implementing slicing.)
+#        """
+#        return self.__getitem__(slice(start, stop))
+
+    def __getitem__(self, index):
+        # We need to override __getitem__ because the __array_finalize__ call
+        # is delayed for certain slicing operations, e.g. dm[1:,1:]. Thus, we
+        # need to also have a validation check here.
+        out = super(DistanceMatrix, self).__getitem__(index)
+        self._validate_data(out, self.SampleIds)
+        return out
 
     def copy(self):
         # We use numpy.copy instead of calling the superclass copy because that
