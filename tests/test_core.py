@@ -12,6 +12,8 @@ __status__ = "Development"
 
 """Test suite for the core.py module."""
 
+from StringIO import StringIO
+
 from cogent.util.unit_test import TestCase, main
 from numpy import array, ndarray
 
@@ -52,6 +54,11 @@ class DistanceMatrixTests(TestCase):
         # Header without leading tab.
         data = self.data_f1[:]
         data[0] = 'a\tb'
+        obs = DistanceMatrix.fromFile(data)
+        self.assertTrue(self.dm5.equals(obs))
+
+        # Extra newlines at end.
+        data = ('\n'.join(self.data_f1) + '\n\n').split('\n')
         obs = DistanceMatrix.fromFile(data)
         self.assertTrue(self.dm5.equals(obs))
 
@@ -204,6 +211,29 @@ class DistanceMatrixTests(TestCase):
         self.assertFalse(self.dm1.equals(array(self.data1)))
         self.assertFalse(self.dm1.equals(self.dm2))
         self.assertFalse(self.dm2.equals(self.dm3))
+
+    def test_toFile(self):
+        """Correctly formats and writes distance matrix to file."""
+        f = StringIO()
+        self.dm2.toFile(f)
+        obs = f.getvalue()
+        f.close()
+        self.assertEqual(obs, '\ta\tb\na\t0\t1\nb\t1\t0\n')
+
+    def test_format(self):
+        """Correctly formats distance matrix for writing to file."""
+        # Without header.
+        obs = self.dm1._format()
+        self.assertEqual(obs, [[0, 1], [1, 0]])
+
+        # With header.
+        obs = self.dm2._format()
+        self.assertEqual(obs, [['', 'a', 'b'], ['a', 0, 1], ['b', 1, 0]])
+
+        # Without header, including ints and floats.
+        obs = self.dm5._format()
+        self.assertEqual(obs,
+                         [['', 'a', 'b'], ['a', 0.0, 1.0], ['b', 1.5, 0.0]])
 
 
 if __name__ == "__main__":

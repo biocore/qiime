@@ -12,6 +12,8 @@ __status__ = "Development"
 
 """Contains core data classes used in QIIME."""
 
+from csv import writer
+
 from numpy import array_equal, asarray, copy, ndarray
 
 from qiime.parse import parse_distmat
@@ -67,9 +69,12 @@ class DistanceMatrix(ndarray):
                             "the distance matrix header (first row) and the "
                             "row labels (first column).")
             else:
-                raise InvalidDistanceMatrixFormatError("Encountered extra "
-                        "rows without corresponding sample IDs in the "
-                        "header.")
+                if ''.join(tokens):
+                    # If it isn't a blank line, raise an error because we
+                    # shouldn't ignore extra data.
+                    raise InvalidDistanceMatrixFormatError("Encountered extra "
+                            "rows without corresponding sample IDs in the "
+                            "header.")
 
         return cls(matrix_data, SampleIds=sids)
 
@@ -167,3 +172,23 @@ class DistanceMatrix(ndarray):
             return True
         else:
             return False
+
+    def toFile(self, out_f, include_header=True, delimiter='\t'):
+        dm_rows = self._format(include_header=include_header)
+        dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
+        dm_writer.writerows(dm_rows)
+
+    def _format(self, include_header=True):
+        if include_header and self.SampleIds is not None:
+            rows = [[''] + self.SampleIds]
+
+            for sid, dm_row in zip(self.SampleIds, self):
+                row = [sid]
+                for dm_col in dm_row:
+                    row.append(dm_col)
+
+                rows.append(row)
+        else:
+            rows = [[dm_col for dm_col in dm_row] for dm_row in self]
+
+        return rows
