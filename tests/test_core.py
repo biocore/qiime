@@ -214,11 +214,19 @@ class DistanceMatrixTests(TestCase):
 
     def test_toFile(self):
         """Correctly formats and writes distance matrix to file."""
+        # Ints.
         f = StringIO()
         self.dm2.toFile(f)
         obs = f.getvalue()
         f.close()
         self.assertEqual(obs, '\ta\tb\na\t0\t1\nb\t1\t0\n')
+
+        # Floats.
+        f = StringIO()
+        self.dm5.toFile(f)
+        obs = f.getvalue()
+        f.close()
+        self.assertEqual(obs, '\ta\tb\na\t0.0\t1.0\nb\t1.5\t0.0\n')
 
     def test_format(self):
         """Correctly formats distance matrix for writing to file."""
