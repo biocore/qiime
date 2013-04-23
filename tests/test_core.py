@@ -159,10 +159,31 @@ class DistanceMatrixTests(TestCase):
         # Not a deep copy.
         self.assertTrue(dm.SampleIds is self.dm2.SampleIds)
 
-    def test_new_from_template_invalid_input(self):
-        """Raises error on invalid new-from-template distance matrices."""
-        # TODO
-        pass
+    def test_ufuncs(self):
+        """Test that ufuncs work correctly with DistanceMatrix instances."""
+        exp = DistanceMatrix([[2, 4], [5, 5]], ['a', 'b'])
+
+        # DistanceMatrix + ndarray
+        data = [[2, 3], [4, 5]]
+        arr = array(data)
+        obs = add(arr, self.dm2)
+        self.assertTrue(obs.equals(exp))
+
+        # DistanceMatrix (with sample IDs) + DistanceMatrix (w/out sample IDs).
+        dm = DistanceMatrix(data)
+        obs = add(self.dm2, dm)
+        self.assertTrue(obs.equals(exp))
+
+        # DistanceMatrix (w/out sample IDs) + DistanceMatrix (with sample IDs).
+        exp = DistanceMatrix([[2, 4], [5, 5]])
+        obs = add(dm, self.dm2)
+        self.assertTrue(obs.equals(exp))
+
+        # DistanceMatrix (with sample IDs) + DistanceMatrix (with sample IDs).
+        exp = DistanceMatrix([[2, 4], [5, 5]], ['c', 'd'])
+        dm = DistanceMatrix(data, ['c', 'd'])
+        obs = add(dm, self.dm2)
+        self.assertTrue(obs.equals(exp))
 
     def test_getslice(self):
         """Test that __getslice__ defers to __getitem__."""
@@ -194,8 +215,6 @@ class DistanceMatrixTests(TestCase):
         with self.assertRaises(RuntimeError):
             obs[0,0] = 42
 
-        #obs = self.dm2[1:,1:]
-
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""
         dm = self.dm2.copy()
@@ -203,6 +222,27 @@ class DistanceMatrixTests(TestCase):
         self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
         # Check for correct deep copy.
         self.assertFalse(dm.SampleIds is self.dm2.SampleIds)
+
+    def test_max(self):
+        """Test finding dm's maximum-valued element."""
+        self.assertEqual(self.dm2.max(), 1)
+        self.assertEqual(self.dm5.max(axis=0), array([1.5, 1]))
+        self.assertEqual(self.dm5.max(axis=1), array([1, 1.5]))
+
+    def test_min(self):
+        """Test finding dm's minimum-valued element."""
+        self.assertEqual(self.dm2.min(), 0)
+        self.assertEqual(self.dm5.min(axis=0), array([0, 0]))
+        self.assertEqual(self.dm5.min(axis=1), array([0, 0]))
+
+    def test_all(self):
+        """Test truth value of DistanceMatrix instances."""
+        self.assertFalse(self.dm2.all())
+
+        true_dm = DistanceMatrix([[1, 1], [1, 1]])
+        self.assertTrue(true_dm.all())
+        self.assertEqual(true_dm.all(axis=0), array([True, True]))
+        self.assertEqual(true_dm.all(axis=1), array([True, True]))
 
     def test_equals(self):
         """Correctly identifies instances that are equal (or not)."""
@@ -231,21 +271,6 @@ class DistanceMatrixTests(TestCase):
         f.close()
         self.assertEqual(obs, '\ta\tb\na\t0.0\t1.0\nb\t1.5\t0.0\n')
 
-    def test_format_for_writing(self):
-        """Correctly formats distance matrix for writing to file."""
-        # Without header.
-        obs = self.dm1._format_for_writing()
-        self.assertEqual(obs, [[0, 1], [1, 0]])
-
-        # With header.
-        obs = self.dm2._format_for_writing()
-        self.assertEqual(obs, [['', 'a', 'b'], ['a', 0, 1], ['b', 1, 0]])
-
-        # Without header, including ints and floats.
-        obs = self.dm5._format_for_writing()
-        self.assertEqual(obs,
-                         [['', 'a', 'b'], ['a', 0.0, 1.0], ['b', 1.5, 0.0]])
-
     def test_extractTriangle(self):
         """Test extracting upper and lower triangle."""
         # 1x1
@@ -260,13 +285,6 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(self.dm4.extractTriangle(), [4, 7, 8])
         self.assertEqual(self.dm4.extractTriangle(upper=True), [2, 3, 6])
 
-    def test_ufuncs(self):
-        """Test that ufuncs work correctly with DistanceMatrix instances."""
-        exp = DistanceMatrix([[2, 4], [5, 5]], ['a', 'b'])
-        a = array([[2, 3], [4, 5]])
-        obs = add(a, self.dm2)
-        self.assertTrue(obs.equals(exp))
-
     def test_isSymmetricAndHollow(self):
         """Test for symmetry and hollowness on various dms."""
         # 1x1
@@ -275,17 +293,20 @@ class DistanceMatrixTests(TestCase):
         # 2x2
         self.assertTrue(self.dm3.isSymmetricAndHollow())
 
-    def test_max(self):
-        """Test finding dm's maximum-valued element."""
-        self.assertEqual(self.dm2.max(), 1)
-        self.assertEqual(self.dm5.max(axis=0), array([1.5, 1]))
-        self.assertEqual(self.dm5.max(axis=1), array([1, 1.5]))
+    def test_format_for_writing(self):
+        """Correctly formats distance matrix for writing to file."""
+        # Without header.
+        obs = self.dm1._format_for_writing()
+        self.assertEqual(obs, [[0, 1], [1, 0]])
 
-    def test_min(self):
-        """Test finding dm's minimum-valued element."""
-        self.assertEqual(self.dm2.min(), 0)
-        self.assertEqual(self.dm5.min(axis=0), array([0, 0]))
-        self.assertEqual(self.dm5.min(axis=1), array([0, 0]))
+        # With header.
+        obs = self.dm2._format_for_writing()
+        self.assertEqual(obs, [['', 'a', 'b'], ['a', 0, 1], ['b', 1, 0]])
+
+        # Without header, including ints and floats.
+        obs = self.dm5._format_for_writing()
+        self.assertEqual(obs,
+                         [['', 'a', 'b'], ['a', 0.0, 1.0], ['b', 1.5, 0.0]])
 
 
 if __name__ == "__main__":

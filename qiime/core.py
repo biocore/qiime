@@ -168,6 +168,15 @@ class DistanceMatrix(ndarray):
 
         return clone
 
+    def max(self, axis=None, out=None):
+        return self.view(ndarray).max(axis=axis, out=out)
+
+    def min(self, axis=None, out=None):
+        return self.view(ndarray).min(axis=axis, out=out)
+
+    def all(self, axis=None, out=None):
+        return self.view(ndarray).all(axis=axis, out=out)
+
     def equals(self, other):
         # Use array_equal instead of (a == b).all() because of this issue:
         # http://stackoverflow.com/a/10582030
@@ -183,21 +192,6 @@ class DistanceMatrix(ndarray):
         dm_rows = self._format_for_writing(include_header=include_header)
         dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
         dm_writer.writerows(dm_rows)
-
-    def _format_for_writing(self, include_header=True):
-        if include_header and self.SampleIds is not None:
-            rows = [[''] + self.SampleIds]
-
-            for sid, dm_row in zip(self.SampleIds, self):
-                row = [sid]
-                for dm_col in dm_row:
-                    row.append(dm_col)
-
-                rows.append(row)
-        else:
-            rows = [[dm_col for dm_col in dm_row] for dm_row in self]
-
-        return rows
 
     def extractTriangle(self, upper=False):
         # Naive implementation...
@@ -216,18 +210,20 @@ class DistanceMatrix(ndarray):
 
     def isSymmetricAndHollow(self):
         """Returns True if the distance matrix is symmetric and hollow."""
-        #foo = self.T == self
-        #print foo
-        #print type(foo)
-        #print foo.SampleIds
-        return (self.T == self).all() and (trace(self) == 0)
-        #return is_symmetric_and_hollow(self)
+        #return (self.T == self).all() and (trace(self) == 0)
+        return is_symmetric_and_hollow(self)
 
-    def max(self, axis=None, out=None):
-        return self.view(ndarray).max(axis=axis, out=out)
+    def _format_for_writing(self, include_header=True):
+        if include_header and self.SampleIds is not None:
+            rows = [[''] + self.SampleIds]
 
-    def min(self, axis=None, out=None):
-        return self.view(ndarray).min(axis=axis, out=out)
+            for sid, dm_row in zip(self.SampleIds, self):
+                row = [sid]
+                for dm_col in dm_row:
+                    row.append(dm_col)
 
-    def all(self, axis=None, out=None):
-        return self.view(ndarray).all(axis=axis, out=out)
+                rows.append(row)
+        else:
+            rows = [[dm_col for dm_col in dm_row] for dm_row in self]
+
+        return rows
