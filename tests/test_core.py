@@ -244,6 +244,12 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(true_dm.all(axis=0), array([True, True]))
         self.assertEqual(true_dm.all(axis=1), array([True, True]))
 
+    def test_NumSamples(self):
+        """Test getting the number of samples."""
+        self.assertEqual(self.dm1.NumSamples, 2)
+        self.assertEqual(self.dm2.NumSamples, 2)
+        self.assertEqual(self.dm6.NumSamples, 1)
+
     def test_equals(self):
         """Correctly identifies instances that are equal (or not)."""
         eq_dm = DistanceMatrix(self.data1)

@@ -35,6 +35,12 @@ class DistanceMatrix(ndarray):
         http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
     """
 
+    # TODO:
+    #
+    # - make SampleIds a tuple
+    # - make getter/setter properties for SampleIds
+    # - check for unique SampleIds
+
     __array_priority__ = -1000.0
 
     @classmethod
@@ -176,6 +182,11 @@ class DistanceMatrix(ndarray):
 
     def all(self, axis=None, out=None):
         return self.view(ndarray).all(axis=axis, out=out)
+
+    @property
+    def NumSamples(self):
+        """Returns the number of samples (i.e. number of rows or columns)."""
+        return self.shape[0]
 
     def equals(self, other):
         # Use array_equal instead of (a == b).all() because of this issue:
