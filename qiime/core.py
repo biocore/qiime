@@ -40,6 +40,7 @@ class DistanceMatrix(ndarray):
     # - make SampleIds a tuple
     # - make getter/setter properties for SampleIds
     # - check for unique SampleIds
+    # - test round-trip read-write-read
 
     __array_priority__ = -1000.0
 
