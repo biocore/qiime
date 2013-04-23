@@ -217,7 +217,7 @@ class TopLevelTests(TestCase):
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
-            self.assertEqual(exp_tcomps[k],obs_tcomps[k])
+            self.assertFloatEqual(exp_tcomps[k],obs_tcomps[k])
         self.assertEqual(set(exp_tcomps.keys()),set(obs_tcomps.keys()))
 
         # test that returned alpha diversity averages are correct
@@ -228,7 +228,7 @@ class TopLevelTests(TestCase):
         '2xDose':(2.7539647172550001, 0.30099438035250015),
         'Control':(3.3663303519925001, 0.0)}
         for k in exp_ad_avgs:
-            self.assertEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
 
         # test 'Dose' at 480 inputs with nonparametric test
@@ -249,7 +249,7 @@ class TopLevelTests(TestCase):
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
-            self.assertEqual(exp_tcomps[k],obs_tcomps[k])
+            self.assertFloatEqual(exp_tcomps[k],obs_tcomps[k])
         self.assertEqual(set(exp_tcomps.keys()),set(obs_tcomps.keys()))
 
         # test that returned alpha diversity averages are correct
@@ -260,7 +260,7 @@ class TopLevelTests(TestCase):
         '2xDose':(2.7539647172550001, 0.30099438035250015),
         'Control':(3.3663303519925001, 0.0)}
         for k in exp_ad_avgs:
-            self.assertEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
 
         # test it works with NA values
@@ -275,7 +275,7 @@ class TopLevelTests(TestCase):
             {'Control,2xDose': (-0.63668873339963239, 0.63906168713487699), 
              '1xDose,2xDose': (None,None), 
              'Control,1xDose': (None,None)}
-        self.assertEqual(obs_tcomps, exp_tcomps)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
         # test that it works with nonparametric test - this was erroring.
         seed(0)
         test_type = 'nonparametric'
@@ -286,7 +286,7 @@ class TopLevelTests(TestCase):
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
-        self.assertEqual(obs_tcomps, exp_tcomps)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
 
         # test that returned alpha diversity averages are correct
         # dose
@@ -298,7 +298,7 @@ class TopLevelTests(TestCase):
         'Control':(2.2669008538500002, 0.0)}
         for k in exp_ad_avgs:
             if k!='1xDose':
-                self.assertEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+                self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
             if k=='1xDose':
                 self.assertTrue(all(map(isnan,obs_ad_avgs[k])))
 
@@ -316,7 +316,7 @@ class TopLevelTests(TestCase):
             {'Control,2xDose': (3.3159701868634883, 0.1864642327553255),
              '1xDose,2xDose': (-0.48227871733885291, 0.66260803238173183),
              'Control,1xDose': (0.83283756452373126, 0.49255115337550748)}
-        self.assertEqual(obs_tcomps, exp_tcomps)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
 
         # test that returned alpha diversity averages are correct
         # dose
@@ -326,7 +326,7 @@ class TopLevelTests(TestCase):
         '2xDose':(2.8358041871949999, 0.04611264137749993),
         'Control':(3.1006488615725001, 0.0)}
         for k in exp_ad_avgs:
-            self.assertEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
 
 
