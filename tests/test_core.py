@@ -15,7 +15,7 @@ __status__ = "Development"
 from StringIO import StringIO
 
 from cogent.util.unit_test import TestCase, main
-from numpy import array, ndarray
+from numpy import ceil, add, array, ndarray, power, ones_like
 
 from qiime.core import (DistanceMatrix, InvalidDistanceMatrixError,
                         InvalidDistanceMatrixFormatError,
@@ -260,11 +260,36 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(self.dm4.extractTriangle(), [4, 7, 8])
         self.assertEqual(self.dm4.extractTriangle(upper=True), [2, 3, 6])
 
-#    def test_max(self):
-#        """Test finding dm's maximum-valued element."""
-#        self.assertEqual(self.dm1.max(), 1)
-#        #self.assertEqual(self.dm1.max(), 6)
-#        #self.assertFloatEqual(self.overview_dm.max(), 0.8)
+    def test_ufunc_priority(self):
+        """TODO"""
+        #a = array([[2, 3], [4, 5]])
+        #obs = add(a, self.dm2)
+        #obs = ceil(self.dm2)
+        #obs = power(a, self.dm2)
+        #print obs
+        #print type(obs)
+        #print obs.SampleIds
+        pass
+
+    def test_isSymmetricAndHollow(self):
+        """Test for symmetry and hollowness on various dms."""
+        # 1x1
+        self.assertFalse(self.dm6.isSymmetricAndHollow())
+
+        # 2x2
+        self.assertTrue(self.dm3.isSymmetricAndHollow())
+
+    def test_max(self):
+        """Test finding dm's maximum-valued element."""
+        self.assertEqual(self.dm2.max(), 1)
+        self.assertEqual(self.dm5.max(axis=0), array([1.5, 1]))
+        self.assertEqual(self.dm5.max(axis=1), array([1, 1.5]))
+
+    def test_min(self):
+        """Test finding dm's minimum-valued element."""
+        self.assertEqual(self.dm2.min(), 0)
+        self.assertEqual(self.dm5.min(axis=0), array([0, 0]))
+        self.assertEqual(self.dm5.min(axis=1), array([0, 0]))
 
 
 if __name__ == "__main__":

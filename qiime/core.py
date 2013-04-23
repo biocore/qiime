@@ -14,9 +14,10 @@ __status__ = "Development"
 
 from csv import writer
 
-from numpy import array_equal, asarray, copy, ndarray
+from numpy import array_equal, asarray, copy, ndarray, trace
 
 from qiime.parse import parse_distmat
+from qiime.pycogent_backports.test import is_symmetric_and_hollow
 
 class InvalidDistanceMatrixError(Exception):
     pass
@@ -34,7 +35,7 @@ class DistanceMatrix(ndarray):
         http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
     """
 
-    __array_priority__ = -1.0
+    __array_priority__ = -1000.0
 
     @classmethod
     def fromFile(cls, dm_f):
@@ -121,8 +122,8 @@ class DistanceMatrix(ndarray):
             self.SampleIds = sids
             self.flags.writeable = False
 
-    def __array_wrap__(self, out_arr, context=None):
-        return super(DistanceMatrix, self).__array_wrap__(out_arr, context)
+#    def __array_wrap__(self, out_arr, context=None):
+#        return super(DistanceMatrix, self).__array_wrap__(out_arr, context)
 
     def __getslice__(self, start, stop):
         """
@@ -199,6 +200,7 @@ class DistanceMatrix(ndarray):
         return rows
 
     def extractTriangle(self, upper=False):
+        # Naive implementation...
         result = []
 
         for col_idx in range(self.shape[0]):
@@ -212,7 +214,20 @@ class DistanceMatrix(ndarray):
 
         return result
 
-    #def max(self, axis=None, out=None):
-    #    #foo = super(DistanceMatrix, self).max(axis=axis, out=out)
-    #    foo = ndarray.max(self, axis=axis, out=out)
-    #    print foo
+    def isSymmetricAndHollow(self):
+        """Returns True if the distance matrix is symmetric and hollow."""
+        #foo = self.T == self
+        #print foo
+        #print type(foo)
+        #print foo.SampleIds
+        return (self.T == self).all() and (trace(self) == 0)
+        #return is_symmetric_and_hollow(self)
+
+    def max(self, axis=None, out=None):
+        return self.view(ndarray).max(axis=axis, out=out)
+
+    def min(self, axis=None, out=None):
+        return self.view(ndarray).min(axis=axis, out=out)
+
+    def all(self, axis=None, out=None):
+        return self.view(ndarray).all(axis=axis, out=out)
