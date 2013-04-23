@@ -34,6 +34,8 @@ class DistanceMatrix(ndarray):
         http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
     """
 
+    __array_priority__ = -1.0
+
     @classmethod
     def fromFile(cls, dm_f):
         """Parses a QIIME distance matrix file into a DistanceMatrix object.
@@ -119,6 +121,9 @@ class DistanceMatrix(ndarray):
             self.SampleIds = sids
             self.flags.writeable = False
 
+    def __array_wrap__(self, out_arr, context=None):
+        return super(DistanceMatrix, self).__array_wrap__(out_arr, context)
+
     def __getslice__(self, start, stop):
         """
 
@@ -174,11 +179,11 @@ class DistanceMatrix(ndarray):
             return False
 
     def toFile(self, out_f, include_header=True, delimiter='\t'):
-        dm_rows = self._format(include_header=include_header)
+        dm_rows = self._format_for_writing(include_header=include_header)
         dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
         dm_writer.writerows(dm_rows)
 
-    def _format(self, include_header=True):
+    def _format_for_writing(self, include_header=True):
         if include_header and self.SampleIds is not None:
             rows = [[''] + self.SampleIds]
 
@@ -192,3 +197,22 @@ class DistanceMatrix(ndarray):
             rows = [[dm_col for dm_col in dm_row] for dm_row in self]
 
         return rows
+
+    def extractTriangle(self, upper=False):
+        result = []
+
+        for col_idx in range(self.shape[0]):
+            for row_idx in range(self.shape[0]):
+                if upper:
+                    if col_idx > row_idx:
+                        result.append(self[row_idx][col_idx])
+                else:
+                    if col_idx < row_idx:
+                        result.append(self[row_idx][col_idx])
+
+        return result
+
+    #def max(self, axis=None, out=None):
+    #    #foo = super(DistanceMatrix, self).max(axis=axis, out=out)
+    #    foo = ndarray.max(self, axis=axis, out=out)
+    #    print foo

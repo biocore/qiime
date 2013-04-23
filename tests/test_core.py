@@ -30,9 +30,11 @@ class DistanceMatrixTests(TestCase):
         self.data2 = [[0, 2], [2, 0]]
         self.data3 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.data4 = [[0, 1], [1.5, 0]]
+        self.data5 = [[42.42]]
 
         self.sids1 = ['a', 'b']
         self.sids2 = ['a', 'b', 'c']
+        self.sids3 = ['a']
 
         self.data_f1 = '\ta\tb\na\t0\t1\nb\t1.5\t0'.split('\n')
         self.bad_data_f1 = 'a\tb\na\t0\t1\nb\t1'.split('\n')
@@ -44,6 +46,7 @@ class DistanceMatrixTests(TestCase):
         self.dm3 = DistanceMatrix(self.data2, self.sids1)
         self.dm4 = DistanceMatrix(self.data3, self.sids2)
         self.dm5 = DistanceMatrix(self.data4, self.sids1)
+        self.dm6 = DistanceMatrix(self.data5, self.sids3)
 
     def test_fromFile(self):
         """Test parsing distance matrix file into a DistanceMatrix instance."""
@@ -228,20 +231,40 @@ class DistanceMatrixTests(TestCase):
         f.close()
         self.assertEqual(obs, '\ta\tb\na\t0.0\t1.0\nb\t1.5\t0.0\n')
 
-    def test_format(self):
+    def test_format_for_writing(self):
         """Correctly formats distance matrix for writing to file."""
         # Without header.
-        obs = self.dm1._format()
+        obs = self.dm1._format_for_writing()
         self.assertEqual(obs, [[0, 1], [1, 0]])
 
         # With header.
-        obs = self.dm2._format()
+        obs = self.dm2._format_for_writing()
         self.assertEqual(obs, [['', 'a', 'b'], ['a', 0, 1], ['b', 1, 0]])
 
         # Without header, including ints and floats.
-        obs = self.dm5._format()
+        obs = self.dm5._format_for_writing()
         self.assertEqual(obs,
                          [['', 'a', 'b'], ['a', 0.0, 1.0], ['b', 1.5, 0.0]])
+
+    def test_extractTriangle(self):
+        """Test extracting upper and lower triangle."""
+        # 1x1
+        self.assertEqual(self.dm6.extractTriangle(), [])
+        self.assertEqual(self.dm6.extractTriangle(upper=True), [])
+
+        # 2x2
+        self.assertEqual(self.dm1.extractTriangle(), [1])
+        self.assertEqual(self.dm1.extractTriangle(upper=True), [1])
+
+        # 3x3
+        self.assertEqual(self.dm4.extractTriangle(), [4, 7, 8])
+        self.assertEqual(self.dm4.extractTriangle(upper=True), [2, 3, 6])
+
+#    def test_max(self):
+#        """Test finding dm's maximum-valued element."""
+#        self.assertEqual(self.dm1.max(), 1)
+#        #self.assertEqual(self.dm1.max(), 6)
+#        #self.assertFloatEqual(self.overview_dm.max(), 0.8)
 
 
 if __name__ == "__main__":
