@@ -158,6 +158,16 @@ class DistanceMatrix(ndarray):
 
         return out
 
+    def __str__(self):
+        result = super(DistanceMatrix, self).__str__()
+
+        if self.SampleIds is None:
+            result += '\nNo sample IDs'
+        else:
+            result += '\nSample IDs: %s' % ', '.join(self.SampleIds)
+
+        return result
+
     def copy(self):
         # We use numpy.copy instead of calling the superclass copy because that
         # one doesn't work with immutable arrays (and changing

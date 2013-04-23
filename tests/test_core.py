@@ -215,6 +215,14 @@ class DistanceMatrixTests(TestCase):
         with self.assertRaises(RuntimeError):
             obs[0,0] = 42
 
+    def test_str(self):
+        """Test getting string representation."""
+        obs = str(self.dm1)
+        self.assertEqual(obs, '[[0 1]\n [1 0]]\nNo sample IDs')
+
+        obs = str(self.dm2)
+        self.assertEqual(obs, '[[0 1]\n [1 0]]\nSample IDs: a, b')
+
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""
         dm = self.dm2.copy()
