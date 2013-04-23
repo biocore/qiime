@@ -235,6 +235,12 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(self.dm5.min(axis=0), array([0, 0]))
         self.assertEqual(self.dm5.min(axis=1), array([0, 0]))
 
+    def test_sum(self):
+        """Test summing dm's elements."""
+        self.assertEqual(self.dm2.sum(), 2)
+        self.assertEqual(self.dm5.sum(axis=0), array([1.5, 1]))
+        self.assertEqual(self.dm5.sum(axis=1), array([1, 1.5]))
+
     def test_all(self):
         """Test truth value of DistanceMatrix instances."""
         self.assertFalse(self.dm2.all())

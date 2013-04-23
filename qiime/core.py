@@ -180,6 +180,9 @@ class DistanceMatrix(ndarray):
     def min(self, axis=None, out=None):
         return self.view(ndarray).min(axis=axis, out=out)
 
+    def sum(self, axis=None, dtype=None, out=None):
+        return self.view(ndarray).sum(axis=axis, dtype=dtype, out=out)
+
     def all(self, axis=None, out=None):
         return self.view(ndarray).all(axis=axis, out=out)
 
