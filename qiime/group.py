@@ -14,11 +14,10 @@ __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from numpy import array
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
-def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
-                          mapping, field, within=True,
+def get_grouped_distances(dist_matrix, mapping_header, mapping, field,
+                          within=True,
                           suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distance groupings for the specified field.
 
@@ -31,10 +30,7 @@ def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
     metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
-        - dist_matrix_header: The distance matrix header, obtained from
-                              parse.parse_distmat()
-        - dist_matrix: The distance matrix, obtained from
-                       parse.parse_distmat().
+        - dist_matrix: DistanceMatrix instance
         - mapping_header: The mapping file header, obtained from
                           parse.parse_mapping_file()
         - mapping: The mapping file's contents, obtained from
@@ -49,15 +45,14 @@ def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
           hollow distance matrix, you can disable this check for small
           performance gains on extremely large distance matrices
     """
-    _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
-                    field)
+    _validate_input(dist_matrix, mapping_header, mapping, field)
     mapping_data = [mapping_header]
     mapping_data.extend(mapping)
     groups = group_by_field(mapping_data, field)
-    return _get_groupings(dist_matrix_header, dist_matrix, groups, within,
+    return _get_groupings(dist_matrix, groups, within,
                           suppress_symmetry_and_hollowness_check)
 
-def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
+def get_all_grouped_distances(dist_matrix, mapping_header,
                               mapping, field, within=True,
                               suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distances for either samples within each of the
@@ -68,10 +63,7 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
     metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
-        - dist_matrix_header: The distance matrix header, obtained from
-                              parse.parse_distmat()
-        - dist_matrix: The distance matrix, obtained from
-                       parse.parse_distmat().
+        - dist_matrix: DistanceMatrix instance
         - mapping_header: The mapping file header, obtained from
                           parse.parse_mapping_file()
         - mapping: The mapping file's contents, obtained from
@@ -86,8 +78,8 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
           hollow distance matrix, you can disable this check for small
           performance gains on extremely large distance matrices
     """
-    distances = get_grouped_distances(dist_matrix_header, dist_matrix,
-                                      mapping_header, mapping, field, within,
+    distances = get_grouped_distances(dist_matrix, mapping_header, mapping,
+                                      field, within,
                                       suppress_symmetry_and_hollowness_check)
     results = []
     for group in distances:
@@ -95,8 +87,7 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
             results.append(distance)
     return results
 
-def get_field_state_comparisons(dist_matrix_header, dist_matrix,
-                                mapping_header, mapping, field,
+def get_field_state_comparisons(dist_matrix, mapping_header, mapping, field,
                                 comparison_field_states,
                                 suppress_symmetry_and_hollowness_check=False):
     """Returns a 2D dictionary relating distances between field states.
@@ -113,10 +104,7 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
     metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
-        - dist_matrix_header: The distance matrix header, obtained from
-                              parse.parse_distmat()
-        - dist_matrix: The distance matrix, obtained from
-                       parse.parse_distmat().
+        - dist_matrix: DistanceMatrix instance
         - mapping_header: The mapping file header, obtained from
                           parse.parse_mapping_file()
         - mapping: The mapping file's contents, obtained from
@@ -131,8 +119,7 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
           hollow distance matrix, you can disable this check for small
           performance gains on extremely large distance matrices
     """
-    _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
-                    field)
+    _validate_input(dist_matrix, mapping_header, mapping, field)
 
     # Make sure each comparison group field state is in the specified field.
     if not comparison_field_states:
@@ -154,8 +141,8 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
                     if group not in comparison_field_states]
 
     # Get between distance groupings for the field of interest.
-    between_groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
-            mapping_header, mapping, field, within=False,
+    between_groupings = get_grouped_distances(dist_matrix, mapping_header,
+            mapping, field, within=False,
             suppress_symmetry_and_hollowness_check=\
                     suppress_symmetry_and_hollowness_check)
 
@@ -220,16 +207,12 @@ def get_ordered_coordinates(coordinate_header,
             ordered_ids.append(o)
     return ordered_coordinates, ordered_ids
 
-def get_adjacent_distances(dist_matrix_header,
-                           dist_matrix,
+def get_adjacent_distances(dist_matrix,
                            sample_ids,
                            strict=False):
     """Return the distances between the adjacent sample_ids as a list
     
-    dist_matrix_header: distance matrix headers, e.g. the output
-        of qiime.parse.parse_distmat (element 0)
-    dist_matrix: distance matrix, e.g., the output of 
-        qiime.parse.parse_distmat (element 1)
+    dist_matrix: DistanceMatrix instance
     sample_ids: a list of sample ids
     strict: boolean indicating whether to raise ValueError if a 
         sample_id is not in dm (default: False; sample_ids not in 
@@ -251,7 +234,7 @@ def get_adjacent_distances(dist_matrix_header,
     filtered_sids = []
     for sid in sample_ids:
         try:
-            idx = dist_matrix_header.index(sid)
+            idx = dist_matrix.SampleIds.index(sid)
         except ValueError:
             if strict:
                 raise ValueError,\
@@ -277,20 +260,18 @@ def get_adjacent_distances(dist_matrix_header,
     return distance_results, header_results
 
 
-def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
-                    field):
+def _validate_input(dist_matrix, mapping_header, mapping, field):
     """Validates the input data to make sure it can be used and makes sense.
 
-    The headers, distance matrix, and mapping input should be iterable, and all
-    data should not be None. The field must exist in the mapping header.
+    The distance matrix and mapping input should be iterable, and all data
+    should not be None. The field must exist in the mapping header.
     """
-    if (dist_matrix_header is None or dist_matrix is None or mapping_header is
-        None or mapping is None or field is None):
+    if (dist_matrix is None or mapping_header is None or mapping is None or
+        field is None):
         raise ValueError("The input(s) cannot be 'None'.")
 
     # Make sure the appropriate input is iterable.
-    for input_arg in (dist_matrix_header, dist_matrix, mapping_header,
-                      mapping):
+    for input_arg in (dist_matrix, mapping_header, mapping):
         try:
             iter(input_arg)
         except:
@@ -331,7 +312,7 @@ def _get_indices(input_items, wanted_items):
     return [input_items.index(item)
             for item in wanted_items if item in input_items]
 
-def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
+def _get_groupings(dist_matrix, groups, within=True,
                    suppress_symmetry_and_hollowness_check=False):
     """Returns a list of distance groupings.
 
@@ -344,8 +325,7 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
     metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
 
     Arguments:
-        - dist_matrix_header: The distance matrix header.
-        - dist_matrix: The distance matrix.
+        - dist_matrix: DistanceMatrix instance
         - groups: A dictionary mapping field value to sample IDs, obtained by
                   calling group_by_field().
         - within: If True, distances are grouped within a field value. If
@@ -363,14 +343,14 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
     # Note: Much of this code is taken from Jeremy Widmann's
     # distances_by_groups() function, part of make_distance_histograms.py.
     if not suppress_symmetry_and_hollowness_check:
-        if not is_symmetric_and_hollow(dist_matrix):
+        if not dist_matrix.isSymmetricAndHollow():
             raise ValueError("The distance matrix must be symmetric and "
                              "hollow.")
     result = []
     group_items = groups.items()
 
     for i, (row_group, row_ids) in enumerate(group_items):
-        row_indices = _get_indices(dist_matrix_header, row_ids)
+        row_indices = _get_indices(dist_matrix.SampleIds, row_ids)
         if within:
             # Handle the case where indices are the same so we need to omit
             # the diagonal.
@@ -388,7 +368,7 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
             # Handle the case where indices are separate: just return blocks.
             for j in range(i+1, len(groups)):
                 col_group, col_ids = group_items[j]
-                col_indices = _get_indices(dist_matrix_header, col_ids)
+                col_indices = _get_indices(dist_matrix.SampleIds, col_ids)
                 vals = dist_matrix[row_indices][:,col_indices]
 
                 # Flatten the array into a single-level list.

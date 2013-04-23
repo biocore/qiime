@@ -4,6 +4,8 @@ import sys
 import os.path
 from optparse import OptionParser
 import cogent.cluster.metric_scaling as ms
+
+from qiime.core import DistanceMatrix
 from qiime.format import format_coords
 from qiime.parse import parse_distmat
 
@@ -19,9 +21,9 @@ __status__ = "Development"
 
 
 def pcoa(file):
-    samples, distmtx = parse_distmat(file)
+    dm = DistanceMatrix.fromFile(file)
     # coords, each row is an axis
-    coords, eigvals = ms.principal_coordinates_analysis(distmtx)
+    coords, eigvals = ms.principal_coordinates_analysis(dm)
     
     pcnts = (numpy.abs(eigvals)/sum(numpy.abs(eigvals)))*100
     idxs_descending = pcnts.argsort()[::-1]
@@ -29,7 +31,7 @@ def pcoa(file):
     eigvals = eigvals[idxs_descending]
     pcnts = pcnts[idxs_descending]
     
-    return format_coords(samples, coords.T, eigvals, pcnts)
+    return format_coords(dm.SampleIds, coords.T, eigvals, pcnts)
 
 def multiple_file_pcoa(input_dir, output_dir):
     """perform PCoAs on all distance matrices in the input_dir 

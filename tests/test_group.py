@@ -15,7 +15,9 @@ __status__ = "Development"
 
 from numpy import array, matrix
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import parse_mapping_file, parse_distmat, group_by_field, parse_coords
+
+from qiime.core import DistanceMatrix
+from qiime.parse import parse_mapping_file, group_by_field, parse_coords
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
     get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
     get_adjacent_distances, get_ordered_coordinates)
@@ -96,21 +98,19 @@ class GroupTests(TestCase):
                 self.small_field)
 
         # Parse distance matrix "files" (faked here).
-        self.dist_matrix_header, self.dist_matrix = parse_distmat(
-                self.dist_matrix_string)
+        self.dist_matrix = DistanceMatrix.fromFile(self.dist_matrix_string)
 
-        self.tiny_dist_matrix_header, self.tiny_dist_matrix = parse_distmat(
+        self.tiny_dist_matrix = DistanceMatrix.fromFile(
                 self.tiny_dist_matrix_string)
 
-        self.small_dist_matrix_header, self.small_dist_matrix = parse_distmat(
+        self.small_dist_matrix = DistanceMatrix.fromFile(
                 self.small_dist_matrix_string)
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
         groupings."""
-        groupings = get_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=True)
+        groupings = get_grouped_distances(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, within=True)
         expected = [
             ('Control', 'Control', [0.625, 0.623, 0.60999999999999999, \
                                     0.57699999999999996, 0.61499999999999999, \
@@ -125,9 +125,8 @@ class GroupTests(TestCase):
     def test_get_grouped_distances_between(self):
         """get_grouped_distances() should return a list of between distance
         groupings."""
-        groupings = get_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=False)
+        groupings = get_grouped_distances(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, within=False)
         expected = [
             ('Control', 'Fast', [0.72899999999999998, 0.80000000000000004, \
                                  0.72099999999999997, 0.76500000000000001, \
@@ -144,9 +143,8 @@ class GroupTests(TestCase):
     def test_get_all_grouped_distances_within(self):
         """get_all_grouped_distances() should return a list of distances for
         all samples with the same field value."""
-        groupings = get_all_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=True)
+        groupings = get_all_grouped_distances(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, within=True)
         expected =  [0.625, 0.623, 0.60999999999999999, 0.57699999999999996,
                      0.61499999999999999, 0.64200000000000002,
                      0.67300000000000004, 0.68200000000000005,
@@ -159,9 +157,8 @@ class GroupTests(TestCase):
     def test_get_all_grouped_distances_between(self):
         """get_all_grouped_distances() should return a list of distances
         between samples of all different field values."""
-        groupings = get_all_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=False)
+        groupings = get_all_grouped_distances(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, within=False)
         expected = [0.72899999999999998, 0.80000000000000004,
                     0.72099999999999997, 0.76500000000000001,
                     0.77600000000000002, 0.74399999999999999, 0.749,
@@ -177,9 +174,8 @@ class GroupTests(TestCase):
     def test_get_field_state_comparisons(self):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
-        comparison_groupings = get_field_state_comparisons(
-                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
-                self.mapping, self.field, ['Control'])
+        comparison_groupings = get_field_state_comparisons(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, ['Control'])
         expected = {'Fast': {'Control': [0.72899999999999998,
             0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
             0.77600000000000002, 0.74399999999999999, 0.749,
@@ -190,9 +186,8 @@ class GroupTests(TestCase):
             0.73699999999999999]}}
         self.assertFloatEqual(comparison_groupings, expected)
 
-        comparison_groupings = get_field_state_comparisons(
-                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
-                self.mapping, self.field, ['Fast'])
+        comparison_groupings = get_field_state_comparisons(self.dist_matrix,
+                self.mapping_header, self.mapping, self.field, ['Fast'])
         expected = {'Control': {'Fast': [0.72899999999999998,
             0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
             0.77600000000000002, 0.74399999999999999, 0.749,
@@ -207,46 +202,41 @@ class GroupTests(TestCase):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
         comparison_groupings = get_field_state_comparisons(
-                self.small_dist_matrix_header, self.small_dist_matrix,
-                self.small_mapping_header, self.small_mapping,
-                self.small_field, ['SampleFieldState1'])
+                self.small_dist_matrix, self.small_mapping_header,
+                self.small_mapping, self.small_field, ['SampleFieldState1'])
         expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
         self.assertFloatEqual(comparison_groupings, expected)
 
     def test_get_field_state_comparisons_tiny(self):
         """get_field_state_comparisons() should return an empty dictionary."""
         comparison_groupings = get_field_state_comparisons(
-                self.tiny_dist_matrix_header, self.tiny_dist_matrix,
-                self.tiny_mapping_header, self.tiny_mapping, self.tiny_field,
-                ['SampleFieldState1'])
+                self.tiny_dist_matrix, self.tiny_mapping_header,
+                self.tiny_mapping, self.tiny_field, ['SampleFieldState1'])
         self.assertEqual(comparison_groupings, {})
 
     def test_get_field_state_comparisons_no_comp_states(self):
         """get_field_state_comparisons() should raise a ValueError if no
         comparison field states are provided."""
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                [])
+                self.dist_matrix, self.mapping_header, self.mapping,
+                self.field, [])
 
     def test_get_field_state_comparisons_bad_comp_state(self):
         """get_field_state_comparisons() should raise a ValueError if a
         non-existent comparison field state is provided."""
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                ['T0', 'Fast'])
+                self.dist_matrix, self.mapping_header, self.mapping,
+                self.field, ['T0', 'Fast'])
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                ['Fast', 'T0'])
+                self.dist_matrix, self.mapping_header, self.mapping,
+                self.field, ['Fast', 'T0'])
 
     def test_get_field_state_comparisons_invalid_distance_matrix(self):
         """Handles invalid distance matrix."""
+        dm = DistanceMatrix([[10.0, 0.0003], [0.0003, 0.0]],
+                            ['Samp.1', 'Samp.2'])
         self.assertRaises(ValueError, get_field_state_comparisons,
-                ['Samp.1', 'Samp.2'],
-                array([[10.0, 0.0003], [0.0003, 0.0]]),
-                self.small_mapping_header, self.small_mapping,
+                dm, self.small_mapping_header, self.small_mapping,
                 self.small_field, ['SampleFieldState1'])
 
     def test_get_adjacent_distances(self):
@@ -254,49 +244,39 @@ class GroupTests(TestCase):
         """
         dm_str = ["\ts1\ts2\ts3", "s1\t0\t2\t4", "s2\t2\t0\t3.2",
                         "s3\t4\t3.2\t0"]
-        dm_header, dm = parse_distmat(dm_str)
+        dm = DistanceMatrix.fromFile(dm_str)
         # error cases: fewer than 2 valid sample ids
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          [])
+                          get_adjacent_distances,dm,[])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          ['s1'])
+                          get_adjacent_distances,dm,['s1'])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          ['s0','s1'])
+                          get_adjacent_distances,dm,['s0','s1'])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          ['s1','s4'])
+                          get_adjacent_distances,dm,['s1','s4'])
         
         # one pair of valid distances
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s2']),
+        self.assertEqual(get_adjacent_distances(dm, ['s1','s2']),
                          ([2],[('s1','s2')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s1']),
+        self.assertEqual(get_adjacent_distances(dm, ['s1','s1']),
                          ([0],[('s1','s1')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s3']),
+        self.assertEqual(get_adjacent_distances(dm, ['s1','s3']),
                          ([4],[('s1','s3')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s2','s3']),
+        self.assertEqual(get_adjacent_distances(dm, ['s2','s3']),
                          ([3.2],[('s2','s3')]))
         
         # multiple valid distances
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s2','s3']),
+        self.assertEqual(get_adjacent_distances(dm, ['s1','s2','s3']),
                          ([2,3.2],[('s1','s2'),('s2','s3')]))
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s3','s2','s1']),
+        self.assertEqual(get_adjacent_distances(dm, ['s1','s3','s2','s1']),
                          ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
         
         # mixed valid and invalid distances ignores invalid distances
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s3','s4','s5','s6','s2','s1']),
+        self.assertEqual(get_adjacent_distances(dm,
+                         ['s1','s3','s4','s5','s6','s2','s1']),
                          ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
         # strict=True results in missing sample ids raising an error
         self.assertRaises(ValueError,get_adjacent_distances,
-                                     dm_header, 
                                      dm,
                                      ['s1','s3','s4','s5','s6','s2','s1'],
                                      strict=True)
@@ -350,30 +330,23 @@ class GroupTests(TestCase):
         expected_sids = ['s1','s5']
         self.assertRaises(ValueError,get_ordered_coordinates,
                           pc[0],pc[1],['s1','s6','s5'],strict=True)
-        
-        
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""
-        self.assertRaises(ValueError, _validate_input,
-                          None, None, None, None, None)
-        self.assertRaises(ValueError, _validate_input,
-                          self.dist_matrix_header, self.dist_matrix,
+        self.assertRaises(ValueError, _validate_input, None, None, None, None)
+        self.assertRaises(ValueError, _validate_input, self.dist_matrix,
                           self.mapping_header, self.mapping, None)
-        self.assertRaises(ValueError, _validate_input,
-                          self.dist_matrix_header, 12,
-                          self.mapping_header, self.mapping, None)
-        self.assertRaises(ValueError, _validate_input,
-                          self.dist_matrix_header, self.dist_matrix,
+        self.assertRaises(ValueError, _validate_input, 12, self.mapping_header,
+                          self.mapping, None)
+        self.assertRaises(ValueError, _validate_input, self.dist_matrix,
                           self.mapping_header, self.mapping, 42)
-        self.assertRaises(ValueError, _validate_input,
-                          self.dist_matrix_header, self.dist_matrix,
+        self.assertRaises(ValueError, _validate_input, self.dist_matrix,
                           self.mapping_header, self.mapping, "aeiou")
 
     def test_validate_input_good_input(self):
         """_validate_input() should not raise any errors on good input."""
-        _validate_input(self.dist_matrix_header, self.dist_matrix,
-                          self.mapping_header, self.mapping, "Treatment")
+        _validate_input(self.dist_matrix, self.mapping_header, self.mapping,
+                        "Treatment")
 
     def test_get_indices_several_existing_items(self):
         """_get_indices() should return a list of valid indices for several
@@ -384,55 +357,54 @@ class GroupTests(TestCase):
         fast_ids = ['PC.607', 'PC.634', 'PC.635', 'PC.636']
         exp_fast_indices = [5,6,7,8]
         
-        obs_control = _get_indices(self.dist_matrix_header, control_ids)
+        obs_control = _get_indices(self.dist_matrix.SampleIds, control_ids)
         self.assertEqual(obs_control, exp_control_indices)
         
-        obs_fast = _get_indices(self.dist_matrix_header, fast_ids)
+        obs_fast = _get_indices(self.dist_matrix.SampleIds, fast_ids)
         self.assertEqual(obs_fast, exp_fast_indices)
 
     def test_get_indices_one_existing_item_list(self):
         """_get_indices() should return a list of size 1 for a single item in a
         list that exists in the search list."""
         item_to_find = ['PC.355']
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [1])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [1])
 
     def test_get_indices_one_existing_item_scalar(self):
         """_get_indices() should return a list of size 1 for a single item that
         exists in the search list."""
         item_to_find = 'PC.355'
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [1])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [1])
 
     def test_get_indices_no_existing_item(self):
         """_get_indices() should return an empty list if no items exist in the
         search list."""
         item_to_find = 'PC.4242'
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
         item_to_find = 42
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
         item_to_find = ['PC.4242', 'CP.2424']
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
-
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
         item_to_find = ['PC.4242', 'CP.2424', 56]
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
 
     def test_get_indices_no_items_to_search(self):
         """_get_indices() should return an empty list if no search items are
         given."""
         item_to_find = []
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
         item_to_find = ''
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
         item_to_find = None
-        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
-                         [])
+        self.assertEqual(_get_indices(self.dist_matrix.SampleIds,
+                                      item_to_find), [])
 
     def test_get_indices_null_or_empty_search_list(self):
         """_get_indices() should throw an error if the search list is None, and
@@ -449,33 +421,31 @@ class GroupTests(TestCase):
     def test_get_groupings_no_field_states(self):
         """_get_groupings() should return an empty list if there are no field
         states in the groupings dictionary."""
-        self.assertEqual(_get_groupings(self.dist_matrix_header,
-            self.dist_matrix, {}, within=True), [])
+        self.assertEqual(_get_groupings(self.dist_matrix, {}, within=True), [])
 
-        self.assertEqual(_get_groupings(self.dist_matrix_header,
-            self.dist_matrix, {}, within=False), [])
+        self.assertEqual(_get_groupings(self.dist_matrix, {}, within=False),
+                         [])
 
     def test_get_groupings_within_tiny_dataset(self):
         """_get_groupings() should return an empty list for a single-sample
         dataset as the diagonal is omitted for within distances."""
-        self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
-            self.tiny_dist_matrix, self.tiny_groups, within=True), [])
+        self.assertEqual(_get_groupings(self.tiny_dist_matrix,
+                                        self.tiny_groups, within=True), [])
 
     def test_get_groupings_between_tiny_dataset(self):
         """_get_groupings() should return an empty list for a single-sample
         dataset as there is only one field state, so no between distances can
         be computed."""
-        self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
-            self.tiny_dist_matrix, self.tiny_groups, within=False), [])
+        self.assertEqual(_get_groupings(self.tiny_dist_matrix,
+                                        self.tiny_groups, within=False), [])
 
     def test_get_groupings_invalid_distance_matrix(self):
         """Handles asymmetric and/or hollow distance matrices correctly."""
-        self.assertRaises(ValueError, _get_groupings, ['foo', 'bar'],
-                matrix([[0.0, 0.7], [0.7, 0.01]]), self.tiny_groups)
+        dm = DistanceMatrix([[0.0, 0.7], [0.7, 0.01]], ['foo', 'bar'])
+        self.assertRaises(ValueError, _get_groupings, dm, self.tiny_groups)
 
         # Should not raise error if we suppress the check.
-        _get_groupings(['foo', 'bar'], matrix([[0.0, 0.7], [0.7, 0.01]]),
-                       self.tiny_groups,
+        _get_groupings(dm, self.tiny_groups,
                        suppress_symmetry_and_hollowness_check=True)
 
 
