@@ -260,16 +260,12 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(self.dm4.extractTriangle(), [4, 7, 8])
         self.assertEqual(self.dm4.extractTriangle(upper=True), [2, 3, 6])
 
-    def test_ufunc_priority(self):
-        """TODO"""
-        #a = array([[2, 3], [4, 5]])
-        #obs = add(a, self.dm2)
-        #obs = ceil(self.dm2)
-        #obs = power(a, self.dm2)
-        #print obs
-        #print type(obs)
-        #print obs.SampleIds
-        pass
+    def test_ufuncs(self):
+        """Test that ufuncs work correctly with DistanceMatrix instances."""
+        exp = DistanceMatrix([[2, 4], [5, 5]], ['a', 'b'])
+        a = array([[2, 3], [4, 5]])
+        obs = add(a, self.dm2)
+        self.assertTrue(obs.equals(exp))
 
     def test_isSymmetricAndHollow(self):
         """Test for symmetry and hollowness on various dms."""
