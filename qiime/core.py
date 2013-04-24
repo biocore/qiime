@@ -28,11 +28,11 @@ class InvalidDistanceMatrixFormatError(Exception):
 class SampleIdMismatchError(Exception):
     pass
 
-class DistanceMatrix(ndarray):
+class DistanceMatrix(object):
     """
 
-    Implementation is based on numpy subclassing guide:
-        http://docs.scipy.org/doc/numpy/user/basics.subclassing.html
+    numpy ndarray delegation idea taken from:
+        http://stackoverflow.com/a/4759140
     """
 
     # TODO:
@@ -41,8 +41,6 @@ class DistanceMatrix(ndarray):
     # - make getter/setter properties for SampleIds
     # - check for unique SampleIds
     # - test round-trip read-write-read
-
-    __array_priority__ = -1000.0
 
     @classmethod
     def fromFile(cls, dm_f):
@@ -86,51 +84,17 @@ class DistanceMatrix(ndarray):
                             "rows without corresponding sample IDs in the "
                             "header.")
 
-        return cls(matrix_data, SampleIds=sids)
+        return cls(matrix_data, sids)
 
-    @staticmethod
-    def _validate_data(data, sids):
-        """
+    def __init__(self, data, SampleIds):
+        """"""
+        self._data = asarray(data)
+        self.SampleIds = SampleIds
+        self._validate()
 
-        This method is static because it is called from within __new__ (where
-        self doesn't exist yet) and also within normal methods.
-        """
-        if 0 in data.shape:
-            raise InvalidDistanceMatrixError("Data must be at least 1x1 in "
-                                             "size.")
-        elif len(data.shape) != 2:
-            raise InvalidDistanceMatrixError("Data must have exactly two "
-                                             "dimensions.")
-        elif data.shape[0] != data.shape[1]:
-            raise InvalidDistanceMatrixError("Data must be square (i.e. have "
-                                             "the same number of rows and "
-                                             "columns).")
-        elif sids is not None and len(sids) != data.shape[0]:
-            raise InvalidDistanceMatrixError("The number of sample IDs must "
-                                             "match the number of "
-                                             "rows/columns in the data.")
-
-    def __new__(cls, input_array, SampleIds=None):
-        dm = asarray(input_array)
-        cls._validate_data(dm, SampleIds)
-        dm = dm.view(cls)
-
-        dm.SampleIds = SampleIds
-        dm.flags.writeable = False
-        return dm
-
-    def __array_finalize__(self, obj):
-        if obj is None:
-            return
-        else:
-            sids = getattr(obj, 'SampleIds', None)
-            self._validate_data(obj, sids)
-
-            self.SampleIds = sids
-            self.flags.writeable = False
-
-#    def __array_wrap__(self, out_arr, context=None):
-#        return super(DistanceMatrix, self).__array_wrap__(out_arr, context)
+    def __getattr__(self, attr):
+        """"""
+        return getattr(self._data, attr)
 
     def __getslice__(self, start, stop):
         """
@@ -148,61 +112,23 @@ class DistanceMatrix(ndarray):
         return self.__getitem__(slice(start, stop))
 
     def __getitem__(self, index):
-        # We need to override __getitem__ because the __array_finalize__ call
-        # is delayed for certain slicing operations, e.g. dm[1:,1:]. Thus, we
-        # need to also have a validation check here. See numpy.matrix's
-        # __array_finalize__ and __getitem__ implementations for more details.
-        out = super(DistanceMatrix, self).__getitem__(index)
-
-        if isinstance(out, ndarray) and self.shape != out.shape:
-            out = out.view(ndarray)
-
-        return out
+        return self._data.__getitem__(index)
 
     def __str__(self):
-        result = super(DistanceMatrix, self).__str__()
-
-        if self.SampleIds is None:
-            result += '\nNo sample IDs'
-        else:
-            result += '\nSample IDs: %s' % ', '.join(self.SampleIds)
-
-        return result
+        """"""
+        return str(self._data) + '\nSample IDs: %s' % ', '.join(self.SampleIds)
 
     def copy(self):
-        # We use numpy.copy instead of calling the superclass copy because that
-        # one doesn't work with immutable arrays (and changing
-        # self.flags.writeable to True temporarily doesn't fix the issue
-        # either). numpy.copy returns an ndarray, so we have to view-cast back
-        # to DistanceMatrix.
-        clone = copy(self).view(DistanceMatrix)
-
-        if self.SampleIds is not None:
-            # Deep copy.
-            clone.SampleIds = self.SampleIds[:]
-        else:
-            clone.SampleIds = None
-
-        return clone
-
-    def max(self, axis=None, out=None):
-        return self.view(ndarray).max(axis=axis, out=out)
-
-    def min(self, axis=None, out=None):
-        return self.view(ndarray).min(axis=axis, out=out)
-
-    def sum(self, axis=None, dtype=None, out=None):
-        return self.view(ndarray).sum(axis=axis, dtype=dtype, out=out)
-
-    def all(self, axis=None, out=None):
-        return self.view(ndarray).all(axis=axis, out=out)
+        """"""
+        return DistanceMatrix(self._data.copy(), self.SampleIds[:])
 
     @property
     def NumSamples(self):
         """Returns the number of samples (i.e. number of rows or columns)."""
-        return self.shape[0]
+        return len(self.SampleIds)
 
     def equals(self, other):
+        """"""
         # Use array_equal instead of (a == b).all() because of this issue:
         # http://stackoverflow.com/a/10582030
         # Shape is also checked for us in array_equal.
@@ -213,13 +139,9 @@ class DistanceMatrix(ndarray):
         else:
             return False
 
-    def toFile(self, out_f, include_header=True, delimiter='\t'):
-        dm_rows = self._format_for_writing(include_header=include_header)
-        dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
-        dm_writer.writerows(dm_rows)
-
     def extractTriangle(self, upper=False):
-        # Naive implementation...
+        """"""
+        # Naive implementation... need to fix.
         result = []
 
         for col_idx in range(self.shape[0]):
@@ -235,18 +157,40 @@ class DistanceMatrix(ndarray):
 
     def isSymmetricAndHollow(self):
         """Returns True if the distance matrix is symmetric and hollow."""
-        #return (self.T == self).all() and (trace(self) == 0)
         return is_symmetric_and_hollow(self)
 
+    def toFile(self, out_f, include_header=True, delimiter='\t'):
+        """"""
+        dm_rows = self._format_for_writing(include_header=include_header)
+        dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
+        dm_writer.writerows(dm_rows)
+
+    def _validate(self):
+        """"""
+        if 0 in self.shape:
+            raise InvalidDistanceMatrixError("Data must be at least 1x1 in "
+                                             "size.")
+        elif len(self.shape) != 2:
+            raise InvalidDistanceMatrixError("Data must have exactly two "
+                                             "dimensions.")
+        elif self.shape[0] != self.shape[1]:
+            raise InvalidDistanceMatrixError("Data must be square (i.e. have "
+                                             "the same number of rows and "
+                                             "columns).")
+        elif len(self.SampleIds) != self.shape[0]:
+            raise InvalidDistanceMatrixError("The number of sample IDs must "
+                                             "match the number of "
+                                             "rows/columns in the data.")
+
     def _format_for_writing(self, include_header=True):
-        if include_header and self.SampleIds is not None:
+        """"""
+        if include_header:
             rows = [[''] + self.SampleIds]
 
             for sid, dm_row in zip(self.SampleIds, self):
                 row = [sid]
                 for dm_col in dm_row:
                     row.append(dm_col)
-
                 rows.append(row)
         else:
             rows = [[dm_col for dm_col in dm_row] for dm_row in self]

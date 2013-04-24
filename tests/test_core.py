@@ -15,7 +15,7 @@ __status__ = "Development"
 from StringIO import StringIO
 
 from cogent.util.unit_test import TestCase, main
-from numpy import ceil, add, array, ndarray, power, ones_like
+from numpy import ceil, add, array, matrix, ndarray, power, ones_like
 
 from qiime.core import (DistanceMatrix, InvalidDistanceMatrixError,
                         InvalidDistanceMatrixFormatError,
@@ -26,44 +26,43 @@ class DistanceMatrixTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        self.data1 = [[0, 1], [1, 0]]
-        self.data2 = [[0, 2], [2, 0]]
-        self.data3 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        self.data1 = [[42.42]]
+        self.data2 = [[0, 1], [1, 0]]
+        self.data3 = [[0, 2], [2, 0]]
         self.data4 = [[0, 1], [1.5, 0]]
-        self.data5 = [[42.42]]
+        self.data5 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
-        self.sids1 = ['a', 'b']
-        self.sids2 = ['a', 'b', 'c']
-        self.sids3 = ['a']
+        self.sids1 = ['a']
+        self.sids2 = ['a', 'b']
+        self.sids3 = ['a', 'b', 'c']
 
         self.data_f1 = '\ta\tb\na\t0\t1\nb\t1.5\t0'.split('\n')
         self.bad_data_f1 = 'a\tb\na\t0\t1\nb\t1'.split('\n')
         self.bad_data_f2 = '\ta\tb\nb\t0\t1\na\t1\t0'.split('\n')
         self.bad_data_f3 = '\ta\tb\na\t0\t1\nb\t1\t0\nfoo'.split('\n')
 
-        self.dm1 = DistanceMatrix(self.data1)
-        self.dm2 = DistanceMatrix(self.data1, self.sids1)
-        self.dm3 = DistanceMatrix(self.data2, self.sids1)
-        self.dm4 = DistanceMatrix(self.data3, self.sids2)
-        self.dm5 = DistanceMatrix(self.data4, self.sids1)
-        self.dm6 = DistanceMatrix(self.data5, self.sids3)
+        self.dm1 = DistanceMatrix(self.data1, self.sids1)
+        self.dm2 = DistanceMatrix(self.data2, self.sids2)
+        self.dm3 = DistanceMatrix(self.data3, self.sids2)
+        self.dm4 = DistanceMatrix(self.data4, self.sids2)
+        self.dm5 = DistanceMatrix(self.data5, self.sids3)
 
     def test_fromFile(self):
         """Test parsing distance matrix file into a DistanceMatrix instance."""
         # Header with leading tab.
         obs = DistanceMatrix.fromFile(self.data_f1)
-        self.assertTrue(self.dm5.equals(obs))
+        self.assertTrue(self.dm4.equals(obs))
 
         # Header without leading tab.
         data = self.data_f1[:]
         data[0] = 'a\tb'
         obs = DistanceMatrix.fromFile(data)
-        self.assertTrue(self.dm5.equals(obs))
+        self.assertTrue(self.dm4.equals(obs))
 
         # Extra newlines at end.
         data = ('\n'.join(self.data_f1) + '\n\n').split('\n')
         obs = DistanceMatrix.fromFile(data)
-        self.assertTrue(self.dm5.equals(obs))
+        self.assertTrue(self.dm4.equals(obs))
 
     def test_fromFile_invalid_input(self):
         """Raises error on ill-formatted distance matrix file."""
@@ -85,246 +84,234 @@ class DistanceMatrixTests(TestCase):
 
     def test_constructor(self):
         """Correctly constructs DistanceMatrix instances."""
-        # Without sample IDs.
         self.assertTrue(isinstance(self.dm1, DistanceMatrix))
-        self.assertEqual(self.dm1.SampleIds, None)
-        self.assertEqual(self.dm1.shape, (2, 2))
-
-        # With sample IDs.
-        self.assertTrue(isinstance(self.dm2, DistanceMatrix))
-        self.assertEqual(self.dm2.SampleIds, self.sids1)
-        self.assertEqual(self.dm2.shape, (2, 2))
+        self.assertEqual(self.dm1.SampleIds, self.sids1)
+        self.assertEqual(self.dm1.shape, (1, 1))
+        self.assertEqual(self.dm1[0][0], 42.42)
 
     def test_constructor_invalid_input(self):
         """Raises error on invalid distance matrix data."""
         # Empty data.
-        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix, [])
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix, [], [])
 
         # Invalid number of dimensions.
         self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
-                          [1, 2, 3])
+                          [1, 2, 3], ['a'])
 
         # Dimensions don't match.
         self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
-                          [[1, 2, 3]])
+                          [[1, 2, 3]], ['a'])
 
         # Number of sample IDs don't match dimensions.
         self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
-                          self.data1, ['a', 'b', 'c'])
+                          self.data2, ['a', 'b', 'c'])
 
     def test_view_casting(self):
-        """Correctly constructs DistanceMatrix instances using view casting."""
+        """Correctly supports view-casting."""
         # DistanceMatrix -> DistanceMatrix
-        dm = self.dm1.view(DistanceMatrix)
-        self.assertTrue(dm.equals(self.dm1))
-
-        # DistanceMatrix -> ndarray
-        arr = self.dm2.view(ndarray)
-        self.assertTrue(isinstance(arr, ndarray))
-        self.assertEqual(arr.shape, (2, 2))
-        # We shouldn't be able to access SampleIds or write to the array.
-        self.assertRaises(AttributeError, getattr, arr, 'SampleIds')
-        self.assertRaises(RuntimeError, arr.__setitem__, (0, 0), 42)
+        with self.assertRaises(TypeError):
+            _ = self.dm1.view(DistanceMatrix)
 
         # ndarray -> DistanceMatrix
-        arr = array(self.data1)
-        dm = arr.view(DistanceMatrix)
-        self.assertTrue(isinstance(dm, DistanceMatrix))
-        self.assertEqual(dm.shape, (2, 2))
-        self.assertTrue(dm.SampleIds is None)
-        # We shouldn't be able to write to the dm.
-        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
+        with self.assertRaises(TypeError):
+            _ = array(self.data1).view(DistanceMatrix)
 
-    def test_view_casting_invalid_input(self):
-        """Raises error on invalid distance matrix data."""
-        # Empty data.
-        arr = array([])
-        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
+        # DistanceMatrix -> ndarray
+        arr = self.dm1.view(ndarray)
+        self.assertTrue(isinstance(arr, ndarray))
+        self.assertEqual(arr, array(self.data1))
+        # We shouldn't be able to access SampleIds.
+        self.assertRaises(AttributeError, getattr, arr, 'SampleIds')
 
-        # Invalid number of dimensions.
-        arr = array([1, 2, 3])
-        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
-
-        # Dimensions don't match.
-        arr = array([[1, 2, 3]])
-        self.assertRaises(InvalidDistanceMatrixError, arr.view, DistanceMatrix)
-
-    def test_new_from_template(self):
-        """Correctly constructs DistanceMatrix instances new-from-template."""
-        # We're not creating a deep copy, but rather a new instance that points
-        # to the old data (including sample IDs).
-        dm = self.dm2[:]
-        self.assertTrue(dm.equals(self.dm2))
-        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
-        # Not a deep copy.
-        self.assertTrue(dm.SampleIds is self.dm2.SampleIds)
+        # DistanceMatrix -> matrix
+        mat = self.dm1.view(matrix)
+        self.assertTrue(isinstance(mat, matrix))
+        self.assertEqual(mat, matrix(self.data1))
+        # We shouldn't be able to access SampleIds.
+        self.assertRaises(AttributeError, getattr, mat, 'SampleIds')
 
     def test_ufuncs(self):
         """Test that ufuncs work correctly with DistanceMatrix instances."""
-        exp = DistanceMatrix([[2, 4], [5, 5]], ['a', 'b'])
+        # DistanceMatrix + ndarray = ndarray
+        data = array([[2, 3], [4, 5]])
+        exp = array([[2, 4], [5, 5]])
+        obs = add(self.dm2, data)
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), ndarray)
 
-        # DistanceMatrix + ndarray
-        data = [[2, 3], [4, 5]]
-        arr = array(data)
-        obs = add(arr, self.dm2)
-        self.assertTrue(obs.equals(exp))
-
-        # DistanceMatrix (with sample IDs) + DistanceMatrix (w/out sample IDs).
-        dm = DistanceMatrix(data)
-        obs = add(self.dm2, dm)
-        self.assertTrue(obs.equals(exp))
-
-        # DistanceMatrix (w/out sample IDs) + DistanceMatrix (with sample IDs).
-        exp = DistanceMatrix([[2, 4], [5, 5]])
-        obs = add(dm, self.dm2)
-        self.assertTrue(obs.equals(exp))
-
-        # DistanceMatrix (with sample IDs) + DistanceMatrix (with sample IDs).
-        exp = DistanceMatrix([[2, 4], [5, 5]], ['c', 'd'])
+        # DistanceMatrix + DistanceMatrix = ndarray
         dm = DistanceMatrix(data, ['c', 'd'])
         obs = add(dm, self.dm2)
-        self.assertTrue(obs.equals(exp))
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), ndarray)
 
-    def test_getslice(self):
-        """Test that __getslice__ defers to __getitem__."""
-        # Slice of first dimension only.
-        obs = self.dm2[1:]
-        self.assertEqual(obs, array([[1, 0]]))
-        with self.assertRaises(RuntimeError):
-            obs[0][1] = 42
+        # Shape mismatch (2x2 + 3x3).
+        with self.assertRaises(ValueError):
+            _ = add(self.dm2, self.dm5)
 
-    def test_getitem(self):
-        """Test __getitem__ works correctly and performs validation checks."""
-        # Single element access.
-        obs = self.dm1[0,0]
-        self.assertEqual(obs, 0)
+    def test_common_ndarray_methods(self):
+        """Test that common ndarray methods work as expected with dms."""
+        # ndarray.max
+        self.assertFloatEqual(self.dm1.max(), 42.42)
 
-        # Single element access (via two __getitem__ calls).
-        obs = self.dm2[0][0]
-        self.assertEqual(obs, 0)
+        obs = self.dm4.max(axis=0)
+        self.assertFloatEqual(obs, array([1.5, 1]))
+        self.assertEqual(type(obs), ndarray)
 
-        # Row access. Should get an ndarray that isn't writeable.
-        obs = self.dm2[1]
-        self.assertEqual(obs, array([1, 0]))
-        with self.assertRaises(RuntimeError):
-            obs[0] = 42
+        obs = self.dm4.max(axis=1)
+        self.assertFloatEqual(obs, array([1, 1.5]))
+        self.assertEqual(type(obs), ndarray)
 
-        # Get the entire distance matrix (should stay DistanceMatrix type).
-        obs = self.dm2[0:,0:]
-        self.assertTrue(self.dm2.equals(obs))
-        with self.assertRaises(RuntimeError):
-            obs[0,0] = 42
+        # ndarray.min
+        self.assertFloatEqual(self.dm1.min(), 42.42)
+        
+        obs = self.dm4.min(axis=0)
+        self.assertEqual(obs, array([0, 0]))
+        self.assertEqual(type(obs), ndarray)
 
-    def test_str(self):
-        """Test getting string representation."""
-        obs = str(self.dm1)
-        self.assertEqual(obs, '[[0 1]\n [1 0]]\nNo sample IDs')
+        obs = self.dm4.min(axis=1)
+        self.assertEqual(obs, array([0, 0]))
+        self.assertEqual(type(obs), ndarray)
 
-        obs = str(self.dm2)
-        self.assertEqual(obs, '[[0 1]\n [1 0]]\nSample IDs: a, b')
-
-    def test_copy(self):
-        """Correctly copies DistanceMatrix instances, including SampleIds."""
-        dm = self.dm2.copy()
-        self.assertTrue(dm.equals(self.dm2))
-        self.assertRaises(RuntimeError, dm.__setitem__, (0, 0), 42)
-        # Check for correct deep copy.
-        self.assertFalse(dm.SampleIds is self.dm2.SampleIds)
-
-    def test_max(self):
-        """Test finding dm's maximum-valued element."""
-        self.assertEqual(self.dm2.max(), 1)
-        self.assertEqual(self.dm5.max(axis=0), array([1.5, 1]))
-        self.assertEqual(self.dm5.max(axis=1), array([1, 1.5]))
-
-    def test_min(self):
-        """Test finding dm's minimum-valued element."""
-        self.assertEqual(self.dm2.min(), 0)
-        self.assertEqual(self.dm5.min(axis=0), array([0, 0]))
-        self.assertEqual(self.dm5.min(axis=1), array([0, 0]))
-
-    def test_sum(self):
-        """Test summing dm's elements."""
+        # ndarray.sum
         self.assertEqual(self.dm2.sum(), 2)
-        self.assertEqual(self.dm5.sum(axis=0), array([1.5, 1]))
-        self.assertEqual(self.dm5.sum(axis=1), array([1, 1.5]))
 
-    def test_all(self):
-        """Test truth value of DistanceMatrix instances."""
+        obs = self.dm4.sum(axis=0)
+        self.assertEqual(obs, array([1.5, 1]))
+        self.assertEqual(type(obs), ndarray)
+
+        obs = self.dm4.sum(axis=1)
+        self.assertEqual(obs, array([1, 1.5]))
+        self.assertEqual(type(obs), ndarray)
+
+        # ndarray.all
         self.assertFalse(self.dm2.all())
 
-        true_dm = DistanceMatrix([[1, 1], [1, 1]])
+        true_dm = DistanceMatrix([[1, 1], [1, 1]], self.sids2)
         self.assertTrue(true_dm.all())
         self.assertEqual(true_dm.all(axis=0), array([True, True]))
         self.assertEqual(true_dm.all(axis=1), array([True, True]))
 
+    def test_getslice(self):
+        """Test that __getslice__ defers to __getitem__."""
+        # Slice of first dimension only.
+        obs = self.dm3[1:]
+        self.assertEqual(obs, array([[2, 0]]))
+        self.assertEqual(type(obs), ndarray)
+
+    def test_getitem(self):
+        """Test __getitem__ delegates to underlying ndarray."""
+        # Single element access.
+        obs = self.dm2[0,1]
+        self.assertEqual(obs, 1)
+
+        # Single element access (via two __getitem__ calls).
+        obs = self.dm2[0][1]
+        self.assertEqual(obs, 1)
+
+        # Row access.
+        obs = self.dm2[1]
+        self.assertEqual(obs, array([1, 0]))
+        self.assertEqual(type(obs), ndarray)
+
+        # Grab all data.
+        obs = self.dm2[0:,0:]
+        self.assertEqual(obs, array(self.data2))
+        self.assertEqual(type(obs), ndarray)
+
+    def test_str(self):
+        """Test getting string representation of DistanceMatrix instances."""
+        obs = str(self.dm1)
+        self.assertEqual(obs, '[[ 42.42]]\nSample IDs: a')
+
+        obs = str(self.dm4)
+        self.assertEqual(obs, '[[ 0.   1. ]\n [ 1.5  0. ]]\nSample IDs: a, b')
+
+    def test_copy(self):
+        """Correctly copies DistanceMatrix instances, including SampleIds."""
+        dm = self.dm1.copy()
+        self.assertTrue(self.dm1.equals(dm))
+        # Check for correct deep copy.
+        self.assertFalse(self.dm1.SampleIds is dm.SampleIds)
+
     def test_NumSamples(self):
         """Test getting the number of samples."""
-        self.assertEqual(self.dm1.NumSamples, 2)
+        self.assertEqual(self.dm1.NumSamples, 1)
         self.assertEqual(self.dm2.NumSamples, 2)
-        self.assertEqual(self.dm6.NumSamples, 1)
+        self.assertEqual(self.dm5.NumSamples, 3)
 
     def test_equals(self):
-        """Correctly identifies instances that are equal (or not)."""
-        eq_dm = DistanceMatrix(self.data1)
-        self.assertTrue(self.dm1.equals(self.dm1))
-        self.assertTrue(self.dm1.equals(eq_dm))
+        """Correctly identifies dm instances that are equal (or not)."""
         self.assertTrue(self.dm2.equals(self.dm2))
 
-        self.assertFalse(self.dm1.equals(array(self.data1)))
-        self.assertFalse(self.dm1.equals(self.dm2))
+        eq_dm = DistanceMatrix(self.data2, self.sids2[:])
+        self.assertTrue(self.dm2.equals(eq_dm))
+        self.assertTrue(eq_dm.equals(self.dm2))
+
+        # Different class.
+        self.assertFalse(self.dm2.equals(array(self.data2)))
+
+        # Different sample IDs.
+        ne_dm = DistanceMatrix(self.data2, ['c', 'd'])
+        self.assertFalse(self.dm2.equals(ne_dm))
+
+        # Different data.
         self.assertFalse(self.dm2.equals(self.dm3))
+
+    def test_extractTriangle(self):
+        """Test extracting upper and lower triangle."""
+        # 1x1
+        self.assertEqual(self.dm1.extractTriangle(), [])
+        self.assertEqual(self.dm1.extractTriangle(upper=True), [])
+
+        # 2x2
+        self.assertEqual(self.dm2.extractTriangle(), [1])
+        self.assertEqual(self.dm2.extractTriangle(upper=True), [1])
+
+        # 3x3
+        self.assertEqual(self.dm5.extractTriangle(), [4, 7, 8])
+        self.assertEqual(self.dm5.extractTriangle(upper=True), [2, 3, 6])
+
+    def test_isSymmetricAndHollow(self):
+        """Test for symmetry and hollowness of various dms."""
+        # 1x1
+        self.assertFalse(self.dm1.isSymmetricAndHollow())
+
+        # 2x2
+        self.assertTrue(self.dm2.isSymmetricAndHollow())
 
     def test_toFile(self):
         """Correctly formats and writes distance matrix to file."""
         # Ints.
         f = StringIO()
-        self.dm2.toFile(f)
+        self.dm3.toFile(f)
         obs = f.getvalue()
         f.close()
-        self.assertEqual(obs, '\ta\tb\na\t0\t1\nb\t1\t0\n')
+        self.assertEqual(obs, '\ta\tb\na\t0\t2\nb\t2\t0\n')
 
         # Floats.
         f = StringIO()
-        self.dm5.toFile(f)
+        self.dm4.toFile(f)
         obs = f.getvalue()
         f.close()
         self.assertEqual(obs, '\ta\tb\na\t0.0\t1.0\nb\t1.5\t0.0\n')
 
-    def test_extractTriangle(self):
-        """Test extracting upper and lower triangle."""
-        # 1x1
-        self.assertEqual(self.dm6.extractTriangle(), [])
-        self.assertEqual(self.dm6.extractTriangle(upper=True), [])
-
-        # 2x2
-        self.assertEqual(self.dm1.extractTriangle(), [1])
-        self.assertEqual(self.dm1.extractTriangle(upper=True), [1])
-
-        # 3x3
-        self.assertEqual(self.dm4.extractTriangle(), [4, 7, 8])
-        self.assertEqual(self.dm4.extractTriangle(upper=True), [2, 3, 6])
-
-    def test_isSymmetricAndHollow(self):
-        """Test for symmetry and hollowness on various dms."""
-        # 1x1
-        self.assertFalse(self.dm6.isSymmetricAndHollow())
-
-        # 2x2
-        self.assertTrue(self.dm3.isSymmetricAndHollow())
+    def test_validate(self):
+        """Empty stub: DistanceMatrix._validate already tested elsewhere."""
+        pass
 
     def test_format_for_writing(self):
         """Correctly formats distance matrix for writing to file."""
         # Without header.
-        obs = self.dm1._format_for_writing()
+        obs = self.dm2._format_for_writing(include_header=False)
         self.assertEqual(obs, [[0, 1], [1, 0]])
 
         # With header.
         obs = self.dm2._format_for_writing()
         self.assertEqual(obs, [['', 'a', 'b'], ['a', 0, 1], ['b', 1, 0]])
 
-        # Without header, including ints and floats.
-        obs = self.dm5._format_for_writing()
+        # With header, including ints and floats.
+        obs = self.dm4._format_for_writing()
         self.assertEqual(obs,
                          [['', 'a', 'b'], ['a', 0.0, 1.0], ['b', 1.5, 0.0]])
 
