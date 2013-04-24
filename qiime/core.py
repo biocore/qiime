@@ -96,6 +96,10 @@ class DistanceMatrix(object):
         """"""
         return getattr(self._data, attr)
 
+    # Need to forward python "special" methods since we're a new-style class.
+    # Will define others as necessary. Details:
+    #     http://docs.python.org/2/reference/datamodel.html#new-style-special-lookup
+
     def __getslice__(self, start, stop):
         """
 
@@ -113,6 +117,11 @@ class DistanceMatrix(object):
 
     def __getitem__(self, index):
         return self._data.__getitem__(index)
+
+    def __mul__(self, other):
+        return self._data.__mul__(other)
+
+    # End "special" method forwarding.
 
     def __str__(self):
         """"""
