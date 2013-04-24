@@ -12,6 +12,7 @@ __status__ = "Development"
 
 """Contains core data classes used in QIIME."""
 
+from copy import deepcopy
 from csv import writer
 
 from numpy import array_equal, asarray, copy, ndarray, trace
@@ -35,13 +36,6 @@ class DistanceMatrix(object):
         http://stackoverflow.com/a/4759140
     """
 
-    # TODO:
-    #
-    # - make SampleIds a tuple
-    # - make getter/setter properties for SampleIds
-    # - check for unique SampleIds
-    # - test round-trip read-write-read
-
     @classmethod
     def fromFile(cls, dm_f):
         """Parses a QIIME distance matrix file into a DistanceMatrix object.
@@ -50,7 +44,7 @@ class DistanceMatrix(object):
             dm_f - a file(-like) object containing a QIIME-formatted distance
                 matrix
         """
-        sids = None
+        sids = []
         matrix_data = []
 
         for line_idx, line in enumerate(dm_f):
@@ -86,11 +80,13 @@ class DistanceMatrix(object):
 
         return cls(matrix_data, sids)
 
-    def __init__(self, data, SampleIds):
+    def __init__(self, data, sample_ids):
         """"""
-        self._data = asarray(data)
-        self.SampleIds = SampleIds
-        self._validate()
+        data = asarray(data)
+        sample_ids = tuple(sample_ids)
+        self._validate(data, sample_ids)
+        self._data = data
+        self._sids = sample_ids
 
     def __getattr__(self, attr):
         """"""
@@ -121,15 +117,27 @@ class DistanceMatrix(object):
     def __mul__(self, other):
         return self._data.__mul__(other)
 
-    # End "special" method forwarding.
-
     def __str__(self):
         """"""
         return str(self._data) + '\nSample IDs: %s' % ', '.join(self.SampleIds)
 
+    # End "special" method forwarding.
+
     def copy(self):
         """"""
-        return DistanceMatrix(self._data.copy(), self.SampleIds[:])
+        # We deepcopy SampleIds in case the tuple contains mutable objects at
+        # some point in the future.
+        return DistanceMatrix(self._data.copy(), deepcopy(self.SampleIds))
+
+    @property
+    def SampleIds(self):
+        return self._sids
+
+    @SampleIds.setter
+    def SampleIds(self, sids):
+        sids = tuple(sids)
+        self._validate(self._data, sids)
+        self._sids = sids
 
     @property
     def NumSamples(self):
@@ -174,19 +182,25 @@ class DistanceMatrix(object):
         dm_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
         dm_writer.writerows(dm_rows)
 
-    def _validate(self):
+    def _validate(self, data, sids):
         """"""
-        if 0 in self.shape:
+        # Accepts arguments instead of inspecting instance attributes because
+        # we don't want to create an invalid distance matrix before raising an
+        # error (because then it could be used after the exception is caught).
+        if 0 in data.shape:
             raise InvalidDistanceMatrixError("Data must be at least 1x1 in "
                                              "size.")
-        elif len(self.shape) != 2:
+        elif len(data.shape) != 2:
             raise InvalidDistanceMatrixError("Data must have exactly two "
                                              "dimensions.")
-        elif self.shape[0] != self.shape[1]:
+        elif data.shape[0] != data.shape[1]:
             raise InvalidDistanceMatrixError("Data must be square (i.e. have "
                                              "the same number of rows and "
                                              "columns).")
-        elif len(self.SampleIds) != self.shape[0]:
+        elif len(sids) != len(set(sids)):
+            raise InvalidDistanceMatrixError("Sample IDs cannot contain "
+                                             "duplicates.")
+        elif len(sids) != data.shape[0]:
             raise InvalidDistanceMatrixError("The number of sample IDs must "
                                              "match the number of "
                                              "rows/columns in the data.")
@@ -194,7 +208,7 @@ class DistanceMatrix(object):
     def _format_for_writing(self, include_header=True):
         """"""
         if include_header:
-            rows = [[''] + self.SampleIds]
+            rows = [[''] + list(self.SampleIds)]
 
             for sid, dm_row in zip(self.SampleIds, self):
                 row = [sid]

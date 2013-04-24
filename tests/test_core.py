@@ -47,6 +47,20 @@ class DistanceMatrixTests(TestCase):
         self.dm4 = DistanceMatrix(self.data4, self.sids2)
         self.dm5 = DistanceMatrix(self.data5, self.sids3)
 
+    def test_round_trip_read_write(self):
+        """Test reading, writing, and reading again works as expected."""
+        # Read.
+        dm1 = DistanceMatrix.fromFile(self.data_f1)
+
+        # Write.
+        f = StringIO()
+        dm1.toFile(f)
+        f.seek(0)
+
+        # Read.
+        dm2 = DistanceMatrix.fromFile(f)
+        self.assertTrue(dm1.equals(dm2))
+
     def test_fromFile(self):
         """Test parsing distance matrix file into a DistanceMatrix instance."""
         # Header with leading tab.
@@ -85,7 +99,7 @@ class DistanceMatrixTests(TestCase):
     def test_constructor(self):
         """Correctly constructs DistanceMatrix instances."""
         self.assertTrue(isinstance(self.dm1, DistanceMatrix))
-        self.assertEqual(self.dm1.SampleIds, self.sids1)
+        self.assertEqual(self.dm1.SampleIds, tuple(self.sids1))
         self.assertEqual(self.dm1.shape, (1, 1))
         self.assertEqual(self.dm1[0][0], 42.42)
 
@@ -101,6 +115,10 @@ class DistanceMatrixTests(TestCase):
         # Dimensions don't match.
         self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
                           [[1, 2, 3]], ['a'])
+
+        # Duplicate sample IDs.
+        self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
+                          self.data2, ['a', 'a'])
 
         # Number of sample IDs don't match dimensions.
         self.assertRaises(InvalidDistanceMatrixError, DistanceMatrix,
@@ -219,6 +237,12 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(obs, array(self.data2))
         self.assertEqual(type(obs), ndarray)
 
+    def test_mul(self):
+        """Test __mul__ delegates to underlying ndarray."""
+        obs = self.dm2 * self.dm3
+        self.assertEqual(obs, array([[0, 2], [2, 0]]))
+        self.assertEqual(type(obs), ndarray)
+
     def test_str(self):
         """Test getting string representation of DistanceMatrix instances."""
         obs = str(self.dm1)
@@ -229,10 +253,31 @@ class DistanceMatrixTests(TestCase):
 
     def test_copy(self):
         """Correctly copies DistanceMatrix instances, including SampleIds."""
+        # Copies should be equal.
         dm = self.dm1.copy()
         self.assertTrue(self.dm1.equals(dm))
-        # Check for correct deep copy.
-        self.assertFalse(self.dm1.SampleIds is dm.SampleIds)
+
+        # After modifying, shouldn't be equal.
+        dm[0][0] = 10
+        self.assertFalse(self.dm1.equals(dm))
+
+    def test_SampleIds(self):
+        """Test getting/setting the sample IDs."""
+        # Getter.
+        obs = self.dm1.SampleIds
+        self.assertEqual(obs, tuple(self.sids1))
+
+        # Setter.
+        self.dm1.SampleIds = ['foo']
+        obs = self.dm1.SampleIds
+        self.assertEqual(obs, tuple(['foo']))
+
+        # Invalid new sample IDs.
+        with self.assertRaises(InvalidDistanceMatrixError):
+            self.dm1.SampleIds = ['foo', 'bar']
+        # Make sure the original object's state hasn't been corrupted.
+        obs = self.dm1.SampleIds
+        self.assertEqual(obs, tuple(['foo']))
 
     def test_NumSamples(self):
         """Test getting the number of samples."""
