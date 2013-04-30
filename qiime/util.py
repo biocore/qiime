@@ -31,7 +31,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
 from itertools import repeat, izip
-
+from biom.util import compute_counts_per_sample_stats
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
@@ -83,6 +83,11 @@ from qiime.parse import (parse_distmat,
                          MinimalFastqParser)
 
 
+# for backward compatibility - compute_seqs_per_library_stats has
+# been removed in favor of biom.util.compute_counts_per_sample_stats,
+# which has the same interface as the former 
+# qiime.util.compute_seqs_per_library_stats
+compute_seqs_per_library_stats = compute_counts_per_sample_stats
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
