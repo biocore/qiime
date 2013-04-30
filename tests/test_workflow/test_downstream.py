@@ -54,6 +54,12 @@ class DownstreamWorkflowTests(TestCase):
         
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters(params_f1)
+        
+        # set the maximum p-value we'll allow for a t-test of 
+        # fecal alpha diversities to palm alpha diversities. this gets 
+        # used in several places, and is often less than 0.15, but 
+        # occasionally higher, so can cause stochastic failures.
+        self.feces_palm_alpha_max_p = 0.20
 
         # suppress stderr during tests (one of the systems calls in the 
         # workflow prints a warning, and we can't suppress that warning with 
@@ -249,7 +255,10 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_p = a['feces,L_palm'][1]
+        self.assertTrue(feces_palm_p <= self.feces_palm_alpha_max_p, 
+         "p-value too high: %1.3f, but prefer <= %1.3f" % \
+         (feces_palm_p, self.feces_palm_alpha_max_p))
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
@@ -297,7 +306,10 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_p = a['feces,L_palm'][1]
+        self.assertTrue(feces_palm_p <= self.feces_palm_alpha_max_p, 
+         "p-value too high: %1.3f, but prefer <= %1.3f" % \
+         (feces_palm_p, self.feces_palm_alpha_max_p))
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
@@ -342,7 +354,10 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_p = a['feces,L_palm'][1]
+        self.assertTrue(feces_palm_p <= self.feces_palm_alpha_max_p, 
+         "p-value too high: %1.3f, but prefer <= %1.3f" % \
+         (feces_palm_p, self.feces_palm_alpha_max_p))
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
