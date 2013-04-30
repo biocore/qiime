@@ -46,7 +46,7 @@ You'll notice that depending on your version of QIIME, the extension on your OTU
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucr97/otu_table_mc2.biom
+	print_biom_table_summary.py -i $PWD/ucr97/otu_table_mc2.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
@@ -113,7 +113,7 @@ This command should be run in parallel. Each job will need approximately 4GB of 
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
+	print_biom_table_summary.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 

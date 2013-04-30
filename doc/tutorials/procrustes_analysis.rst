@@ -50,7 +50,7 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 ::
 	
-	per_library_stats.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
@@ -59,7 +59,7 @@ Compute UniFrac distances between samples, run principal coordinates analysis, a
 Repeat the above steps on the 454 data::
 
 	pick_closed_reference_otus.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
-	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
 	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Perform Procrustes analysis::
