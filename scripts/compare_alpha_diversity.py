@@ -37,7 +37,7 @@ The output is two tables located in the directory to be created:
 Comparisons.txt which has a format of comparison X (tval,pval) table where each 
 row is a different group comparison, and the columns are a t-value or p-value 
 (indicated by the header). Any iterations of a rarefaction at a given depth will 
-br averaged. For instance, if your collated_alpha file had 10 iterations of the
+be averaged. For instance, if your collated_alpha file had 10 iterations of the
 rarefaction at depth 480, the scores for the alpha diversity metrics of those
 10 iterations would be averaged (within sample). The iterations are not 
 controlled by this script; when multiple_rarefactions.py is called, the -n option 
