@@ -2,7 +2,7 @@
 
 __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME Project" 
-__credits__ = ["Will Van Treuren"]
+__credits__ = ["Will Van Treuren, Julia Goodrich"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Will Van Treuren"
