@@ -19,6 +19,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
 * pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
 * make_distance_comparison_plots.py now supports auto-sizing of distribution plots via --distribution_width (which is the new default) and better handles numeric label types with very large or small ranges (e.g. elevation) by scaling x-axis units to [1, (number of data points)]. --group_spacing has been removed in favor of the new auto-sizing feature.
+* per_library_stats.py removed in favor of biom-format's print_biom_table_summary.py.
 
 
 QIIME 1.6.0 (18 Dec 2012)

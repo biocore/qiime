@@ -249,12 +249,10 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-
         feces_palm_t = ttest_res['feces,L_palm'][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
           % feces_palm_t)
-
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
@@ -302,12 +300,11 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-
         feces_palm_t = ttest_res['feces,L_palm'][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
           % feces_palm_t)
-
+        
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
         self.assertTrue(getsize(pd_averages_fp_stderr) > 0)
@@ -351,7 +348,6 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-
         feces_palm_t = ttest_res['feces,L_palm'][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
