@@ -1,5 +1,6 @@
 QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 ===================================================
+* ``compare_alpha_diversity.py`` is changed so that the output now includes average alpha diversity values as well as the comparison p and t vals. 
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
 * ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
 * Modified add_qiime_labels script to use normal metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
