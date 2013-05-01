@@ -1,0 +1,1 @@
+#SampleID	Treatment	TimePt	Diet	Studys1	pre	1	hf	as2	pre	2	lf	as3	pre	3	hf	as4	post	4	lf	as5	post	5	mf	a

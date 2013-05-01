@@ -1,0 +1,6 @@
+#NodeID	NodeType	Abundance	TimePt	Study	Treatment	Diet
+s1	sample	148.0	1	a	pre	hf
+s2	sample	156.0	2	a	pre	lf
+s3	sample	164.0	3	a	pre	hf
+s4	sample	172.0	4	a	post	lf
+s5	sample	180.0	5	a	post	mf
