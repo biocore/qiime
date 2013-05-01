@@ -83,19 +83,19 @@ script_info['script_usage'].append(("Comparing alpha diversities",
 "compare to each other), and output dir path (a path to the output directory to be created). A "
 "nonparametric two sample t-test is run to compare the alpha diversities "
 "using the default number of Monte Carlo permutations (999).",
-"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100"))
+"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100.txt"))
 
 script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
 "t-distribution instead of Monte Carlo permutations at rarefaction depth 100.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o "
-"PD_d100_parametric -t parametric"))
+"PD_d100_parametric.txt -t parametric"))
 
 script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
 "t-distribution instead of Monte Carlo permutations at the greatest depth available.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -o "
-"PD_dmax_parametric -t parametric"))
+"PD_dmax_parametric.txt -t parametric"))
 
 script_info['output_description']= """
 Script generates an output directory that is a table of TreatmentPair by (tval,pval). 
@@ -103,7 +103,7 @@ Each row corresponds to a comparison between two groups of treatment values.
 The columns are the tvals or pvals for that comparison.
 """
 
-script_info['script_usage_output_to_remove'] = ['$PWD/PD_dmax_parametric/','$PWD/PD_d100_parametric/', '$PWD/PD_d100/']
+script_info['script_usage_output_to_remove'] = ['$PWD/PD_dmax_parametric.txt','$PWD/PD_d100_parametric.txt', '$PWD/PD_d100.txt']
 
 script_info['required_options']=[
  make_option('-i',
@@ -126,11 +126,11 @@ script_info['required_options']=[
   dest='category',
   help='category for comparison [REQUIRED]'),
  make_option('-o',
-  '--output_dir',
+  '--output_fp',
   action='store',
-  type='new_dirpath',
+  type='new_filepath',
   dest='output_fp',
-  help='location of directory to be created [REQUIRED]')]
+  help='location of output file to be created [REQUIRED]')]
 
 script_info['optional_options'] = [
  make_option('-t', '--test_type', type='choice', choices=test_types,
@@ -164,12 +164,6 @@ def main():
     mapping_lines = open(opts.mapping_fp, 'U')
     category = opts.category
     depth = opts.depth
-    out_fp = opts.output_fp
-
-    try:
-        create_dir(out_fp, fail_on_exist=True)
-    except OSError:
-        option_parser.error('Directory already exists. Will not overwrite.')
 
     ttest_result, alphadiv_avgs = compare_alpha_diversities(rarefaction_lines,
         mapping_lines, category, depth, opts.test_type, opts.num_permutations)
@@ -180,24 +174,17 @@ def main():
     corrected_result = _correct_compare_alpha_results(ttest_result,
         opts.correction_method)
 
-    # write ttest results
-    outfile = open(os.path.join(out_fp, 'Comparisons.txt'), 'w')
-    header = 'Comparison\ttval\tpval'
+    # write  results
+    outfile = open(opts.output_fp, 'w')
+    header = 'Comparison\tcat1_avg\tcat1_std\tcat2_avg\tcat2_std\tval\tpval'
     lines = [header]
     for k,v in corrected_result.items():
-        lines.append('\t'.join(map(str,[k,v[0],v[1]])))
+        t0, t1 = k.split(',') #if treatment values have ,s this will cause error
+        lines.append('\t'.join(map(str,[k,alphadiv_avgs[t0][0],
+            alphadiv_avgs[t0][1], alphadiv_avgs[t1][0],
+            alphadiv_avgs[t1][1],v[0],v[1]])))
     outfile.write('\n'.join(lines))
     outfile.close()
-
-    # write avg alpha diversity values results
-    outfile = open(os.path.join(out_fp, 'Averages.txt'), 'w')
-    header = 'TreatmentGroup\tAverage\tStandardDeviation'
-    lines = [header]
-    for k,v in alphadiv_avgs.items():
-        lines.append('\t'.join(map(str,[k,v[0],v[1]])))
-    outfile.write('\n'.join(lines))
-    outfile.close()
-
 
 if __name__ == "__main__":
     main()

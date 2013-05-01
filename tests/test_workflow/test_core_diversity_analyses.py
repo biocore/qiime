@@ -131,8 +131,8 @@ class CoreDiversityAnalysesTests(TestCase):
          '%s/taxa_plots' % self.test_out,
          '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
          '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
-         '%s/arare_max20/days_since_epoch_chao1/Comparisons.txt' % self.test_out,
-         '%s/arare_max20/SampleType_PD_whole_tree/Comparisons.txt' % self.test_out,
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out,
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out,
          '%s/index.html' % self.test_out,
          '%s/table_mc%d.biom.gz' % (self.test_out,20)
         ]
@@ -161,8 +161,8 @@ class CoreDiversityAnalysesTests(TestCase):
          '%s/taxa_plots' % self.test_out,
          '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
          '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
-         '%s/arare_max20/days_since_epoch_chao1/Comparisons.txt' % self.test_out,
-         '%s/arare_max20/SampleType_PD_whole_tree/Comparisons.txt' % self.test_out,
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out,
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out,
          '%s/index.html' % self.test_out,
          '%s/table_mc%d.biom.gz' % (self.test_out,20)
         ]
@@ -200,9 +200,9 @@ class CoreDiversityAnalysesTests(TestCase):
             
         # categorical output files don't exist
         self.assertFalse(exists(
-         '%s/arare_max20/days_since_epoch_chao1/Comparisons.txt' % self.test_out))
+         '%s/arare_max20/days_since_epoch_chao1.txt' % self.test_out))
         self.assertFalse(exists(
-         '%s/arare_max20/SampleType_PD_whole_tree/Comparisons.txt' % self.test_out))
+         '%s/arare_max20/SampleType_PD_whole_tree.txt' % self.test_out))
 
     def test_run_core_diversity_analyses_no_tree(self):
         """run_core_diversity_analyses functions without tree
@@ -228,7 +228,7 @@ class CoreDiversityAnalysesTests(TestCase):
          '%s/arare_max20' % self.test_out,
          '%s/taxa_plots' % self.test_out,
          '%s/bdiv_even20/bray_curtis_dm.txt' % self.test_out,
-         '%s/arare_max20/SampleType_observed_species/Comparisons.txt' % self.test_out,
+         '%s/arare_max20/SampleType_observed_species.txt' % self.test_out,
          '%s/index.html' % self.test_out,
          '%s/table_mc%d.biom.gz' % (self.test_out,20)
         ]

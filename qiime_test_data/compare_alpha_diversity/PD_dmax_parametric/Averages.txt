@@ -1,3 +1,0 @@
-TreatmentGroup	Average	StandardDeviation
-Control	4.4455362	0.534006934468
-Fast	5.79022775	0.323085749714

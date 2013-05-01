@@ -244,12 +244,12 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        comps, avgs = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(comps['feces,L_palm'][1] < 0.15)
+        self.assertTrue(ttest_res['feces,L_palm'][1] < 0.15)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
@@ -292,12 +292,12 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        comps, avgs = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(comps['feces,L_palm'][1] < 0.15)
+        self.assertTrue(ttest_res['feces,L_palm'][1] < 0.15)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
@@ -337,12 +337,12 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        comps, avgs = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(comps['feces,L_palm'][1] < 0.15)
+        self.assertTrue(ttest_res['feces,L_palm'][1] < 0.15)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)

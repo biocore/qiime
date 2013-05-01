@@ -277,7 +277,7 @@ def run_core_diversity_analyses(
         for category in categories:
             for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
                 alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
-                alpha_comparison_output_fp = '%s/%s_%s/' % \
+                alpha_comparison_output_fp = '%s/%s_%s.txt' % \
                  (arare_full_output_dir,category,alpha_metric)
                 compare_alpha_cmd = \
                  'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
@@ -288,7 +288,7 @@ def run_core_diversity_analyses(
                                   compare_alpha_cmd)])
                 index_links.append(
                  ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
-                  alpha_comparison_output_fp+'Comparisons.txt',
+                  alpha_comparison_output_fp,
                   _index_headers['alpha_diversity']))
     
     if not suppress_taxa_summary:
