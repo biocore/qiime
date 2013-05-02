@@ -96,7 +96,7 @@ If you plan to use remote mapping files (stored as Google Spreadsheets) with QII
 
 If you plan to use SourceTracker with QIIME:
 
-* SourceTracer 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
+* SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
 
 License information for external dependencies
 ---------------------------------------------
