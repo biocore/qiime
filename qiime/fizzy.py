@@ -113,6 +113,6 @@ def run_feature_selection(file_biome, file_csv, out_file, method='mim', n_select
 	data_matrix, variable_names = parse_biome(file_biome)
 	label_vector = parse_csv(file_csv)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
-	write_output_file(selected_features, f_out)
+	write_output_file(reduced_set, out_file)
 	# thats all folks
 
