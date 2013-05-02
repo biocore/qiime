@@ -29,6 +29,7 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
 	# Example optional option
 	make_option('-o','--output_file',type="new_dirpath",help='the output directory [default: %default]'),\
+	make_option('-k','--n_select',type="feature2select",help='number of feature to select [default: 15]'),\
 	make_option('-f','--fs_method',type="alg_parameter",help='feature selection method [options: jmi, mrmr, mim, mifs]')
 ]
 script_info['version'] = __version__
@@ -53,11 +54,18 @@ def main():
 	else:
 		out_fmt = opts.output_file
 
+	if not opts.n_select:
+		n_select = 15
+	else:
+		n_select = opts.n_select
+
 	# run the fizzy feature selection routine
 	fizzy.run_feature_selection( \
 		open(opts.input_file,'U'), \
 		open(opts.label_file,'U'), \
-		fs_method, out_fmt)
+		out_fmt, \
+		fs_method, \
+		n_select)
 
 
 if __name__ == "__main__":
