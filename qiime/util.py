@@ -31,7 +31,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
 from itertools import repeat, izip
-
+from biom.util import compute_counts_per_sample_stats
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
@@ -83,6 +83,11 @@ from qiime.parse import (parse_distmat,
                          MinimalFastqParser)
 
 
+# for backward compatibility - compute_seqs_per_library_stats has
+# been removed in favor of biom.util.compute_counts_per_sample_stats,
+# which has the same interface as the former 
+# qiime.util.compute_seqs_per_library_stats
+compute_seqs_per_library_stats = compute_counts_per_sample_stats
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -554,30 +559,6 @@ def split_fasta_on_sample_ids_to_files(seqs,
     for current_fp,current_seqs in file_lookup.values():
         write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
     return None
-
-def compute_seqs_per_library_stats(otu_table, otu_counts=False):
-    """Return summary statistics on per-sample observation counts
-    
-        otu_table: an OTUTable object
-    
-    """
-    if otu_counts:
-        sample_counts = {}
-        for count_vector, sample_id, metadata in otu_table.iterSamples():
-            sample_counts[sample_id] = len([x for x in count_vector if x != 0])
-        counts = sample_counts.values()
-    else:
-        sample_counts = {}
-        for count_vector, sample_id, metadata in otu_table.iterSamples():
-            sample_counts[sample_id] = count_vector.sum()
-        counts = sample_counts.values()
-    
-    return (min(counts),
-            max(counts),
-            median(counts),
-            mean(counts),
-            sample_counts)
-     
 
 def median_absolute_deviation(x):
     """ compute the median of the absolute deviations from the median """
