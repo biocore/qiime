@@ -80,7 +80,7 @@ The primary output that we can about from this command is the *OTU table*, or th
 
 To see some summary statistics of the OTU table we can run the following command::
 
-	per_library_stats.py -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom
 
 We started with six lanes of data but have now summarized these in a single OTU table. However, we still need to merge the per-lane mapping files into a single *combined* mapping file that represents all six lanes, and therefore all of our data. Note that we will have duplicated barcodes in our mapping file, but that's OK as we've already demultiplexed our reads. We don't use the barcodes again. We can merge the six mapping files as follows::
 
@@ -143,7 +143,7 @@ Modified Procrustes Analysis Steps (temporary)
 We're in the process of modifying the `Procrustes analysis tutorial <procrustes_analysis.html>`_ to more directly follow from this one. In the meantime, these commands will allow you to continue::
 
 	pick_closed_reference_otus.py -i moving_pictures_tutorial/subsampled_454_seqs.fna -o 454_ucrC_fast/ -r $reference_seqs -t $reference_tax -p moving_pictures_tutorial/ucrC_fast_params.txt
-	per_library_stats.py -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom
 	beta_diversity_through_plots.py -o bdiv_even135/ -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom -e 135 -t $reference_tree -m moving_pictures_tutorial/454_map.txt
 	transform_coordinate_matrices.py -o 454_v_illumina/ -i bdiv_even258/unweighted_unifrac_pc.txt,bdiv_even135/unweighted_unifrac_pc.txt -s moving_pictures_tutorial/procrustes_sid_map.txt -r 100
 	compare_3d_plots.py -o 454_v_illumina/plots/ -i 454_v_illumina/pc1_transformed.txt,454_v_illumina/pc2_transformed.txt -m moving_pictures_tutorial/procrustes_metadata_map.txt --custom_axes days_since_epoch

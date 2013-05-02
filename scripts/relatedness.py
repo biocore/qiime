@@ -59,8 +59,9 @@ script_info['optional_options'] = [\
  make_option('-m','--methods',type='multiple_choice', 
     default='nri,nti', mchoices=['nri', 'nti'],
     help='comma-separated list of metrics to calculate. [default: %default]'),
- make_option('-o','--output_fp',type="new_filepath", help="filename to where "
- " the output will be printed [default=print to screen]", default=None)]
+ make_option('-o','--output_fp',type="new_filepath", 
+    help="path where output will be written [default: print to screen]", 
+    default=None)]
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = True
 

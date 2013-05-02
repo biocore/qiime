@@ -48,7 +48,7 @@ make_option('-c', '--category', type='string',
 ]
 script_info['optional_options']=[
 
-make_option('-o', '--output_path',default=None, type='new_path',
+make_option('-o', '--output_path',default=None, type='new_filepath',
             help='output path, prints to stdout if omitted'),
 make_option('-s', '--short',action="store_true",
             help='print only '+\
