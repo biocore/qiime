@@ -17,7 +17,8 @@ import numpy
 def parse_biome(fname): 
 	"""
 		parse_biome(fname)
-		@fname
+		@fname - this is the file handle. Ex. Use something like:
+			data, features = parse_biome(open('file.biom','U'))
 	"""
 	import json 
 
@@ -42,7 +43,8 @@ def parse_biome(fname):
 def parse_csv(fname):
 	"""
 		parse_csv(fname)
-		@fname
+		@fname - this is the file handle. Ex. Use something like:
+			labels = parse_csv(open('labels.tsv','U'))
 	"""
 	import csv 
 	tab_data = csv.reader(fname, delimiter='\t')
@@ -58,9 +60,9 @@ def parse_csv(fname):
 def run_pyfeast(data, labels, features, method='mim', n_select=15):
 	"""
 		run_pyfeast(data, labels, method)
-		@data
-		@labels
-		@method
+		@data - numpy data (dense)
+		@labels - vector of class labels (discrete)
+		@method - feature selection method
 	"""
 	
 	if method == "cife":
@@ -94,8 +96,8 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 def write_output_file(selected_features, f_out):
 	"""
 		write_output_file(selected_features, f_out)
-		@selected_features
-		@f_out
+		@selected_features - list of strings contaning feature names
+		@f_out - output file name. this is a string not a handle!
 	"""
 	f = open(f_out, 'w')
 	for sf in selected_features:
@@ -105,8 +107,8 @@ def write_output_file(selected_features, f_out):
 def run_feature_selection(file_biome, file_csv, out_file, method='mim', n_select=15):
 	"""
 		run_feature_selection(fname_biome, fname_csv, method)
-		@fname_biome
-		@fname_csv 
+		@fname_biome - handle of the biom file
+		@fname_csv - handle of the csv file
 		@method - feature selection method [see PyFeast docs]
 		@fmt - input file format (['biome', 'table'])
 	"""
