@@ -2,6 +2,24 @@
 # File created on 02 May 2013
 from __future__ import division
 
+
+"""
+	This is a test unit for the Fizzy feature selection algorithm, which uses
+	the PyFeast python module. If the unit test fails, then it is likely that 
+	you do not have PyFeast installed on the system. 
+
+	INSTALLING PyFeast
+	$ mkdir tmp
+	$ cd tmp
+	$ git clone git://github.com/mutantturkey/PyFeast.git
+	$ cd PyFeast
+	$ python setup.py build
+	$ sudo python setup.py install # requires root access
+
+	After PyFeast is installed you should be good to go. If you have any 
+	questions feel free to email gregory.ditzler@gmail.com 
+"""
+
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Gregory Ditzler", "Calvin Morrison"]
@@ -10,7 +28,6 @@ __version__ = "1.3.0"
 __maintainer__ = "Gregory Ditzler"
 __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Release"
- 
 
 import qiime.fizzy as fizzy 
 
