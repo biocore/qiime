@@ -82,3 +82,6 @@ Install the PyFeast module
 python setup.py build
 sudo python setup.py install # requires root access
 ```
+
+# Credits 
+The contributors to Fizzy are [Gregory Ditzler](http://sites.google.com/site/gregditzler/), [Calvin Morrison](http://github.com/mutantturkey) and [Gail Rosen](http://www.ece.drexel.edu/gailr/). They are a part of the [EESI](http://www.ece.drexel.edu/gailr/EESI/) lab at [Drexel University](http://www.drexel.edu/)
