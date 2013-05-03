@@ -23,7 +23,7 @@ Direct any questions to <gregory.ditzler@gmail.com>
 
 ## To do 
 * The current implementation of Fizzy processes biom files that are formatted in the sparse format. A future build of the file should include dense biom files and the traditional OTU tables. 
-* I have not include all of the FEAST feature selection methods; however, implementing this should be quite easy. All of the feature selection algorithms should be included in the unit test (i.e., `./tests/test_fizzy.py`).
+* I have not include all of the [FEAST](http://www.cs.man.ac.uk/~gbrown/fstoolbox/) feature selection methods; however, implementing this should be quite easy. All of the feature selection algorithms should be included in the unit test (i.e., `./tests/test_fizzy.py`).
 * Offer the ability to extract the class labels from the the map file used in the QIIME analysis. This bullet is not very urgent.
 * Allow for the label file to contain labels other than integers. 
 
