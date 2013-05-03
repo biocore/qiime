@@ -19,7 +19,7 @@ Direct any questions to <gregory.ditzler@gmail.com>
 ## A few notes 
 * [PyFeast](https://github.com/mutantturkey/PyFeast) must be installed
 * [Biom file](http://biom-format.org/) must be sparse format
-* The label file must be separated by tabs and be integers. The user is required to track a mapping between the integers and physical meaning. An example file could look something like: 1\t2\t2\t1\t2\t
+* The label file must be separated by tabs and be integers. The user is required to track a mapping between the integers and physical meaning. An example file could look something like: 1\t2\t2\t1\t2
 
 ## To do 
 * The current implementation of Fizzy processes biom files that are formatted in the sparse format. A future build of the file should include dense biom files and the traditional OTU tables. 
