@@ -47,9 +47,12 @@ distmat <- load.qiime.distance.matrix(opts$distmat)
 qiime.data <- remove.nonoverlapping.samples(map=map, distmat=distmat)
 
 # run s
-# use inverse distance as weight
+# use inverse distance as weight. Set all zeros to very small number, otherwise
+# Moran.I will error out.
+qiime.data$distmat[qiime.data$distmat == 0] <- .Machine$double.eps
 weights = 1/qiime.data$distmat
-# set diagonal to zero
+
+# set diagonal back to zero
 diag(weights) <- 0
 
 results <- Moran.I(x=qiime.data$map[[opts$category]],weight=weights)
