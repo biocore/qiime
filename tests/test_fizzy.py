@@ -31,11 +31,14 @@ def main():
 	try:
 		fizzy.run_feature_selection(data_file, label_file, outfile, method, n_select)
 		print 'Refer to the test_fizzy directory for output.txt '
+		f = open('./test_fizzy/output.txt','U')
+		print f.read()
+
 	except ValueError:
-		print 'Something is broken in Fizzy!'
+		print 'Something is broken in Fizzy! Do you have PyFeast installed?'
 
 	return None
 
 
- if __name__ == "__main__":
- 	main()
+if __name__ == "__main__":
+	main()
