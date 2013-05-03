@@ -8,14 +8,6 @@ from __future__ import division
 	the PyFeast python module. If the unit test fails, then it is likely that 
 	you do not have PyFeast installed on the system. 
 
-	INSTALLING PyFeast
-		$ mkdir tmp
-		$ cd tmp
-		$ git clone git://github.com/mutantturkey/PyFeast.git
-		$ cd PyFeast
-		$ python setup.py build
-		$ sudo python setup.py install # requires root access
-
 	After PyFeast is installed you should be good to go. If you have any 
 	questions feel free to email gregory.ditzler@gmail.com 
 """
