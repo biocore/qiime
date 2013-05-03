@@ -269,9 +269,13 @@ def simsam_range_to_files(table,
         
         output_table_fp = join(output_dir,'%s_n%d_d%r.biom' %
          (output_table_basename, simulated_sample_size, dissimilarity))
-        open(output_table_fp,'w').write(format_biom_table(output_table))
+        output_table_f = open(output_table_fp, 'w')
+        output_table_f.write(format_biom_table(output_table))
+        output_table_f.close()
         
         if output_mapping_lines != None:
-            output_map_fp   = join(output_dir,'%s_n%d_d%r.txt' % 
+            output_map_fp = join(output_dir,'%s_n%d_d%r.txt' %
              (output_map_basename, simulated_sample_size, dissimilarity))
-            open(output_map_fp,'w').write(''.join(output_mapping_lines))
+            output_map_f = open(output_map_fp, 'w')
+            output_map_f.write(''.join(output_mapping_lines))
+            output_map_f.close()
