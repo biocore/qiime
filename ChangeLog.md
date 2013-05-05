@@ -21,6 +21,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * per_library_stats.py removed in favor of biom-format's print_biom_table_summary.py.
 * Add SourceTracker tutorial, and changed QIIME to depend on SourceTracker 0.9.5 (which is modified to facilitate use with QIIME).
 * Moran's I (in compare_categories.py) now supports identical samples (i.e. zeros in the distance matrix that aren't on the diagonal).
+* make_distance_boxplots.py and make_distance_comparison_plots.py now explicitly state the alternative hypothesis used in the t-tests.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
