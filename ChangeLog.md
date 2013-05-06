@@ -18,7 +18,10 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
 * pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
 * make_distance_comparison_plots.py now supports auto-sizing of distribution plots via --distribution_width (which is the new default) and better handles numeric label types with very large or small ranges (e.g. elevation) by scaling x-axis units to [1, (number of data points)]. --group_spacing has been removed in favor of the new auto-sizing feature.
-
+* per_library_stats.py removed in favor of biom-format's print_biom_table_summary.py.
+* Add SourceTracker tutorial, and changed QIIME to depend on SourceTracker 0.9.5 (which is modified to facilitate use with QIIME).
+* Moran's I (in compare_categories.py) now supports identical samples (i.e. zeros in the distance matrix that aren't on the diagonal).
+* summarize_taxa.py now outputs taxa summary tables in both classic (TSV) and BIOM formats by default. This will allow taxa summary tables to be used with other QIIME scripts that expect BIOM files as input. This change is the first step towards adding full support for BIOM taxon tables in QIIME. summarize_taxa.py also has two new options: --suppress_classic_table_output and  --supress_biom_table_output.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
