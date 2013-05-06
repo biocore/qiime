@@ -19,6 +19,7 @@ The QIIME development team is very interested in incorporating community-contrib
    fungal_its_analysis
    processing_illumina_data
    processing_18S_data
+   otu_picking
 
 **Additional Quality Control**
 
@@ -53,6 +54,7 @@ The QIIME development team is very interested in incorporating community-contrib
    making_cytoscape_networks
    running_supervised_learning
    procrustes_analysis
+   source_tracking
    
 
 **Experimental QIIME features: these tutorials cover features that should be considered beta QIIME software**

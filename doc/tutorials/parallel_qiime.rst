@@ -21,9 +21,9 @@ The `cluster jobs` scripts that ship with QIIME are:
 Enabling parallel runs in QIIME
 -------------------------------
 
-By default, QIIME is configured to run parallel jobs on systems without a queueing system (e.g., your laptop, desktop, or single AWS instance), where you tell a parallel QIIME script how many jobs should be submitted. If you're working on one of these types of systems, you'll call one of  QIIME's parallel scripts or pass ``-a`` to one of QIIME's workflow scripts to run in parallel. You'll also pass ``-O`` with the number of jobs to run. For example, to run ``pick_reference_otus_through_otu_table.py`` via four parallel jobs, you can do the following::
+By default, QIIME is configured to run parallel jobs on systems without a queueing system (e.g., your laptop, desktop, or single AWS instance), where you tell a parallel QIIME script how many jobs should be submitted. If you're working on one of these types of systems, you'll call one of  QIIME's parallel scripts or pass ``-a`` to one of QIIME's workflow scripts to run in parallel. You'll also pass ``-O`` with the number of jobs to run. For example, to run ``pick_closed_reference_otus.py`` via four parallel jobs, you can do the following::
 
-	pick_reference_otus_through_otu_table.py -a -O 4 ...
+	pick_closed_reference_otus.py -a -O 4 ...
 
 where ``...`` is replaced with the remaining parameters to the script. 
 

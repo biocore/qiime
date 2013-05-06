@@ -1,3 +1,0 @@
-pick_otus:otu_picking_method uclust_ref
-pick_otus:enable_rev_strand_match True
-align_seqs:min_length 75

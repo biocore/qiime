@@ -13,20 +13,22 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import remove
-from os.path import abspath
+from os.path import abspath, join, exists
 from shutil import rmtree
 
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename, load_qiime_config, create_dir
 from cogent.util.misc import remove_files
 from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
+
+from qiime.util import get_tmp_filename, load_qiime_config, create_dir
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
-    UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker)
+    UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
+    Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -62,7 +64,6 @@ class OtuPickerTests(TestCase):
         p = OtuPicker({})
         actual = p._prefilter_exact_matches(seqs)
         self.assertEqual(actual,expected)
-
 
 class MothurOtuPickerTests(TestCase):
     def setUp(self):
@@ -692,6 +693,723 @@ class TrieOtuPickerTests(TestCase):
                     3:['s6','s5']}
         actual = self.otu_picker_rev(self.small_seq_path_rev)
         self.assertEqual(actual,expected)
+        
+class Usearch610DeNovoOtuPickerTests(TestCase):
+    """ Tests for usearch 6.1 de novo functionality """
+    
+    def setUp(self):
+        # create the temporary input files
+        
+        self.output_dir = load_qiime_config()['temp_dir']
+        
+        self.dna_seqs_usearch_97perc_id = dna_seqs_usearch_97perc_id
+        self.dna_seqs_usearch_97perc_id_rc = dna_seqs_usearch_97perc_id_rc
+        self.dna_seqs_usearch_97perc_id_len_diff =\
+         dna_seqs_usearch_97perc_id_len_diff
+        self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
+        
+        self.tmp_seq_filepath_97perc_id = get_tmp_filename(\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
+        seq_file.write(self.dna_seqs_usearch_97perc_id)
+        seq_file.close()
+        
+        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
+        seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
+        seq_file.close()
+        
+        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
+        seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
+        seq_file.close()
+        
+        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
+        seq_file.write(self.dna_seqs_usearch_97perc_dups)
+        seq_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath_97perc_id, self.tmp_seq_filepath_97perc_id_rc,
+          self.tmp_seqs_usearch97perc_id_len_diff,
+          self.tmp_seqs_usearch_97perc_dups]
+          
+        self._dirs_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+
+        
+    def test_call_default_params(self):
+        """ clusters seqs within 97% identity with default parameters """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
+        
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+    def test_call_default_params_and_lower_id(self):
+        """ clusters seqs within 95% identity with default parameters """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'percent_id':0.95
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
+        
+        self.assertEqualItems(obs_clusters, expected_clusters)
+        
+    def test_call_default_params_and_higher_id(self):
+        """ clusters seqs within 99% identity with default parameters """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'percent_id':0.99
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+                                       
+        # Seqs should fall into separate clusters
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq'],
+         'denovo1': ['usearch_ecoli_seq_2bp_change'],
+         'denovo2': ['usearch_ecoli_seq_1bp_change']}
+        
+        # should be exactly 3 clusters
+        self.assertEqual(len(obs_clusters), 3)
+        self.assertEqualItems(obs_clusters.keys(),expected_clusters.keys())
+        self.assertEqualItems(obs_clusters.values(),expected_clusters.values())
+        
+    def test_call_default_params_reversed_seq(self):
+        """ Does not cluster reverse complemented sequence without --rev """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # RC seq should fall into its own cluster
+        expected_clusters = [['usearch_ecoli_seq', 
+        'usearch_ecoli_seq_1bp_change'], ['usearch_ecoli_seq_2bp_change_rc']]
+                
+        self.assertEqual(len(obs_clusters), 2)
+        for result in obs_clusters:
+            self.assertTrue(obs_clusters[result] in expected_clusters)
+        
+        
+    def test_call_default_params_reversed_seq_w_rev(self):
+        """ Does not cluster reverse complemented sequence without --rev """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'rev':True
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq', 
+        'usearch_ecoli_seq_2bp_change_rc', 'usearch_ecoli_seq_1bp_change']}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+    def test_call_default_params_save_intermediate_files(self):
+        """ Preserves files if save_intermediate_files/logs is True """
+        
+        intermediate_files_dir = self.output_dir + "/test_usearch61/"
+        create_dir(intermediate_files_dir)
+        self._dirs_to_remove.append(intermediate_files_dir)
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':True,
+                                          'output_dir':intermediate_files_dir,
+                                          'remove_usearch_logs':False
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+        
+        expected_intermediate_fps =\
+         [intermediate_files_dir + "denovo_abundance_sorted.fna",
+          intermediate_files_dir + "denovo_abundance_sorted.uc",
+          intermediate_files_dir + "denovo_smallmem_clustered.uc",
+          intermediate_files_dir + "abundance_sorted.log",
+          intermediate_files_dir + "smallmem_clustered.log"]
+          
+        for curr_file in expected_intermediate_fps:
+            self.assertTrue(exists(curr_file))
+            
+    def test_call_default_params_save_intermediate_files_fast_cluster(self):
+        """ Preserves files if save_intermediate_files/logs is True """
+        
+        intermediate_files_dir = self.output_dir + "/test_usearch61_fast/"
+        create_dir(intermediate_files_dir)
+        self._dirs_to_remove.append(intermediate_files_dir)
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':True,
+                                          'output_dir':intermediate_files_dir,
+                                          'remove_usearch_logs':False,
+                                          'usearch61_sort_method':'length',
+                                          'usearch_fast_cluster':True
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+        
+        expected_intermediate_fps =\
+         [intermediate_files_dir + "denovo_fast_clustered.uc",
+          intermediate_files_dir + "fast_clustered.log"]
+          
+        for curr_file in expected_intermediate_fps:
+            self.assertTrue(exists(curr_file))
+            
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq_2bp_change']}
+        
+        self.assertEqualItems(obs_clusters, expected_clusters)
+        
+    def test_call_default_params_minlen(self):
+        """ Discards reads that fall below minlen setting """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'minlen':101
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id)
+                                       
+        # Should get no results
+        expected_clusters = {}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+    def test_usearch61_params(self):
+        """ usearch61 handles changes to other parameters """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'wordlength':25,
+                                          'usearch61_maxrejects':200,
+                                          'usearch61_maxaccepts':5
+                                         })
+        
+        obs_clusters = app(self.tmp_seq_filepath_97perc_id, otu_prefix="test")
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'test0': ['usearch_ecoli_seq',
+        'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
+        
+        self.assertEqualItems(obs_clusters, expected_clusters)
+          
+    def test_usearch61_length_sorting(self):
+        """ Sorting according to length, clusters seqs """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'usearch61_sort_method':'length'
+                                         })
+        
+        obs_clusters = app(self.tmp_seqs_usearch97perc_id_len_diff)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq_2bp_change',
+         'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq']}
+         
+        self.assertEqual(obs_clusters, expected_clusters)
+            
+        
+    def test_usearch61_sizeorder(self):
+        """ Handles sizeorder option, clusters seqs """
+        
+        app = Usearch610DeNovoOtuPicker(params={'save_intermediate_files':False,
+                                          'output_dir':self.output_dir,
+                                          'remove_usearch_logs':True,
+                                          'sizeorder':True
+                                         })
+        
+        obs_clusters = app(self.tmp_seqs_usearch_97perc_dups)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq',
+         'usearch_ecoli_seq_1bp_change_dup1',
+         'usearch_ecoli_seq_1bp_change_dup2']}
+         
+        self.assertEqual(obs_clusters, expected_clusters)
+
+        
+class Usearch61ReferenceOtuPickerTests(TestCase):
+    """ Tests for usearch 6.1 reference functionality """
+    
+    def setUp(self):
+        # create the temporary input files
+        
+        self.output_dir = load_qiime_config()['temp_dir']
+        
+        self.dna_seqs_usearch_97perc_id = dna_seqs_usearch_97perc_id
+        self.dna_seqs_usearch_97perc_id_rc = dna_seqs_usearch_97perc_id_rc
+        self.dna_seqs_usearch_97perc_id_len_diff =\
+         dna_seqs_usearch_97perc_id_len_diff
+        self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
+        self.dna_seqs_rc_single_seq = dna_seqs_rc_single_seq
+        
+        self.tmp_seq_filepath_97perc_id = get_tmp_filename(\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
+        seq_file.write(self.dna_seqs_usearch_97perc_id)
+        seq_file.close()
+        
+        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(\
+         prefix='Usearch610DeNovoOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
+        seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
+        seq_file.close()
+        
+        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
+        seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
+        seq_file.close()
+        
+        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
+        seq_file.write(self.dna_seqs_usearch_97perc_dups)
+        seq_file.close()
+        
+        self.tmp_seqs_rc_single_seq = get_tmp_filename(\
+         prefix="Usearch610DeNovoOtuPickerTest_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_seqs_rc_single_seq, "w")
+        seq_file.write(self.dna_seqs_rc_single_seq)
+        seq_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath_97perc_id, self.tmp_seq_filepath_97perc_id_rc,
+          self.tmp_seqs_usearch97perc_id_len_diff,
+          self.tmp_seqs_usearch_97perc_dups, self.tmp_seqs_rc_single_seq]
+          
+        self._dirs_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+
+        
+    def test_call_default_params(self):
+        """ clusters seqs within 97% identity with default parameters """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                    
+        # Randomly selected match is used for equivalent matches, so need to 
+        # test for results without order affecting output                   
+        expected_clusters =\
+         {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change']}
+         
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    def test_call_default_params_and_lower_id(self):
+        """ clusters seqs within 95% identity with default parameters """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'percent_id':0.95
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'], 
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change']}
+        
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    def test_call_default_params_and_higher_id(self):
+        """ clusters seqs within 99% identity with default parameters """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'percent_id':0.99
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # Seqs should fall into separate clusters
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq_2bp_change'],
+        'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+        'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change']}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    def test_call_default_params_reversed_seq(self):
+        """ Does not cluster reverse complemented sequence without --rev """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':True,
+                                            'rev':False
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
+                                       
+        # As seqs are not in same frame, should all fail.
+        expected_clusters =\
+         {}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change',
+         'usearch_ecoli_seq_1bp_change']
+        self.assertEqual(len(failures), 3)
+        for curr_failure in failures:
+            self.assertTrue(curr_failure in expected_failures)
+
+        
+    def test_call_default_params_reversed_seq_w_rev(self):
+        """ Does not cluster reverse complemented sequence without --rev """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'rev':True,
+                                            'suppress_new_clusters':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # All seqs should fall into a single cluster
+        expected_clusters =\
+         {'usearch_ecoli_seq_2bp_change_rc': ['usearch_ecoli_seq_2bp_change'],
+         'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change']}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    def test_call_default_params_save_intermediate_files(self):
+        """ Preserves files if save_intermediate_files/logs is True """
+        
+        intermediate_files_dir = self.output_dir + "/test_usearch61/"
+        create_dir(intermediate_files_dir)
+        self._dirs_to_remove.append(intermediate_files_dir)
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':True,
+                                            'output_dir':intermediate_files_dir,
+                                            'remove_usearch_logs':False
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+        
+        expected_intermediate_fps =\
+         [join(intermediate_files_dir, "abundance_sorted.fna"),
+          join(intermediate_files_dir, "abundance_sorted.log"),
+          join(intermediate_files_dir, "abundance_sorted.uc"),
+          join(intermediate_files_dir, "ref_clustered.log"),
+          join(intermediate_files_dir, "ref_clustered.uc")]
+          
+        for curr_file in expected_intermediate_fps:
+            self.assertTrue(exists(curr_file))
+            
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+            
+    def test_call_default_params_save_intermediate_files_fast_cluster(self):
+        """ Preserves files if save_intermediate_files/logs is True """
+        
+        intermediate_files_dir = self.output_dir + "/test_usearch61_fast_1160/"
+        create_dir(intermediate_files_dir)
+        self._dirs_to_remove.append(intermediate_files_dir)
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':True,
+                                            'output_dir':intermediate_files_dir,
+                                            'remove_usearch_logs':False,
+                                            'usearch61_sort_method':'length',
+                                            'usearch_fast_cluster':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+        
+        expected_intermediate_fps =\
+         [join(intermediate_files_dir, "abundance_sorted.fna"),
+          join(intermediate_files_dir, "abundance_sorted.log"),
+          join(intermediate_files_dir, "abundance_sorted.uc"),
+          join(intermediate_files_dir, "ref_clustered.log"),
+          join(intermediate_files_dir, "ref_clustered.uc")]
+          
+        for curr_file in expected_intermediate_fps:
+            self.assertTrue(exists(curr_file))
+
+        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_2bp_change',
+         'usearch_ecoli_seq_1bp_change']}
+        
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    # Don't have a good way to catch this error currently
+    '''def test_call_default_params_minlen(self):
+        """ Discards reads that fall below minlen setting """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'minlen':101
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # Should get no results
+        expected_clusters = {}
+        
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)'''
+        
+    def test_usearch61_params(self):
+        """ usearch61 handles changes to other parameters """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'wordlength':25,
+                                            'usearch61_maxrejects':200,
+                                            'usearch61_maxaccepts':5
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         otu_prefix="test", refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # won't get 2bp_change as reference, due to RC status
+        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change']}
+        
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+          
+    def test_usearch61_length_sorting(self):
+        """ Sorting according to length, clusters seqs """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'usearch61_sort_method':'length'
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seqs_usearch97perc_id_len_diff,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'], 
+        'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+        'usearch_ecoli_seq_2bp_change']}  
+        
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)           
+        
+    def test_usearch61_sizeorder(self):
+        """ Handles sizeorder option, clusters seqs """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'sizeorder':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seqs_usearch_97perc_dups,
+         refseqs_fp = self.tmp_seq_filepath_97perc_id_rc)
+                                       
+        # Should have ecoli match ecoli, and remaining seqs match 1bp change.
+        expected_clusters = {'usearch_ecoli_seq': ['usearch_ecoli_seq'],
+         'usearch_ecoli_seq_1bp_change': ['usearch_ecoli_seq_1bp_change',
+         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change_dup1',
+         'usearch_ecoli_seq_1bp_change_dup2']}
+         
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)  
+        
+    def test_closed_reference_usearch61(self):
+        """ usearch61 does closed reference OTU picking successfully """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
+                    
+        # Randomly selected match is used for equivalent matches, so need to 
+        # test for results without order affecting output                   
+        expected_clusters = {}
+         
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']
+        self.assertEqualItems(failures, expected_failures)
+        
+    def test_closed_reference_with_match_usearch61(self):
+        """ usearch61 does closed reference OTU picking successfully """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':True
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id_rc,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
+                    
+        # Randomly selected match is used for equivalent matches, so need to 
+        # test for results without order affecting output                   
+        expected_clusters = {'usearch_ecoli_seq_2bp_change_rc':
+         ['usearch_ecoli_seq_2bp_change_rc']}
+         
+        self.assertEqual(obs_clusters, expected_clusters)
+        
+        expected_failures = ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_1bp_change']
+        self.assertEqual(failures, expected_failures)
+        
+        
+    def test_call_open_reference_usearch61(self):
+        """ usearch61 does open reference OTU picking successfully """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':False
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
+                    
+        # Randomly selected match is used for equivalent matches, so need to 
+        # test for results without order affecting output                   
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_2bp_change',
+         'usearch_ecoli_seq_1bp_change']}
+         
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
+        
+    def test_call_open_reference_with_match_usearch61(self):
+        """ usearch61 does open reference OTU picking successfully """
+        
+        app = Usearch61ReferenceOtuPicker(params={'save_intermediate_files':False,
+                                            'output_dir':self.output_dir,
+                                            'remove_usearch_logs':True,
+                                            'suppress_new_clusters':False
+                                           })
+        
+        obs_clusters, failures = app(self.tmp_seq_filepath_97perc_id_rc,
+         refseqs_fp = self.tmp_seqs_rc_single_seq)
+                    
+        # Randomly selected match is used for equivalent matches, so need to 
+        # test for results without order affecting output                   
+        expected_clusters = {'denovo0': ['usearch_ecoli_seq',
+         'usearch_ecoli_seq_1bp_change'],
+         'usearch_ecoli_seq_2bp_change_rc':
+         ['usearch_ecoli_seq_2bp_change_rc']}
+
+        for result in obs_clusters:
+            for cluster in obs_clusters[result]:
+                self.assertTrue(cluster in expected_clusters[result])
+        
+        expected_failures = []
+        self.assertEqual(failures, expected_failures)
         
 class UsearchOtuPickerTests(TestCase):
     """ Tests of the usearch-based OTU picker """
@@ -2987,6 +3705,8 @@ class CdHitOtuPickerTests(TestCase):
         app = CdHitOtuPicker(params={'Similarity':0.99},)
         self.assertEqual(app(self.tmp_seq_filepath2,prefix_prefilter_length=5),\
                              dna_seqs_2_result_prefilter)
+                             
+
 
 
 class PickOtusStandaloneFunctions(TestCase):
@@ -3366,6 +4086,46 @@ CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTG
 GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
 >chimera
 CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
+"""
+
+dna_seqs_usearch_97perc_id = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_1bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_2bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGCGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+"""
+
+dna_seqs_usearch_97perc_id_len_diff = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_1bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGA
+>usearch_ecoli_seq_2bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGCGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGAAA
+"""
+
+dna_seqs_usearch_97perc_dups = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_1bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGA
+>usearch_ecoli_seq_2bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGCGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGAAA
+>usearch_ecoli_seq_1bp_change_dup1
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGA
+>usearch_ecoli_seq_1bp_change_dup2
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGA
+"""
+
+dna_seqs_usearch_97perc_id_rc = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_1bp_change
+CGCGTGTATGAAGAAGGCCTACGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAG
+>usearch_ecoli_seq_2bp_change_rc
+CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTAGGCCTTCTTCATACACGCG
+"""
+
+dna_seqs_rc_single_seq = """>usearch_ecoli_seq_2bp_change_rc
+CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTAGGCCTTCTTCATACACGCG
 """
 
 #run unit tests if run from command-line
