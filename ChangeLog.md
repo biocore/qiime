@@ -13,7 +13,14 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * simsam.py now has a -m/--mapping_fp option and writes output to a directory instead of a single file. -n/--num and -d/--dissim now accept a single number or comma-separated list of values.
 * supervised_learning.py can now handle input directorys of otu tables, can write a single collated results file if the input directory is of rarefied otu tables, and the -o output fp option is now a required parameter.
 * The qiime_test_data repository has been merged into the main qiime repository, which will facilitate development by not requiring users to time pull requests against two repositories. Users will no longer have to specify qiime_test_data_dir in their qiime_config files to include the script usage tests in runs of all_tests.py. all_tests.py will now know how to find qiime_test_data, and will run all of the script usage tests by default.
+* pick_reference_otus_through_otu_table.py now outputs otu_table.biom in top-level output directory rather than nested in the otu picking output directory.
+* pick_reference_otus_through_otu_table.py has been renamed pick_closed_reference_otus.py (issue #708).
+* pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
+* pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
 * make_distance_comparison_plots.py now supports auto-sizing of distribution plots via --distribution_width (which is the new default) and better handles numeric label types with very large or small ranges (e.g. elevation) by scaling x-axis units to [1, (number of data points)]. --group_spacing has been removed in favor of the new auto-sizing feature.
+* per_library_stats.py removed in favor of biom-format's print_biom_table_summary.py.
+* Add SourceTracker tutorial, and changed QIIME to depend on SourceTracker 0.9.5 (which is modified to facilitate use with QIIME).
+* Moran's I (in compare_categories.py) now supports identical samples (i.e. zeros in the distance matrix that aren't on the diagonal).
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================

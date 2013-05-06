@@ -69,8 +69,12 @@ def main():
     otu_table_fp = opts.otu_table
     otu_table_fh = open(otu_table_fp,'U')
     otu_table = parse_biom_table(otu_table_fh)
+    otu_table_fh.close()
+
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
+    tree_fh.close()
+
     mapping_fp = opts.mapping_fp
     if mapping_fp:
         mapping_f = open(mapping_fp,'U')

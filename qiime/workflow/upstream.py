@@ -20,7 +20,7 @@ from qiime.workflow.util import (print_to_stdout,
                                  log_input_md5s,
                                  get_params_str)
 
-def run_pick_otus_through_otu_table(input_fp, 
+def run_pick_de_novo_otus(input_fp, 
                                output_dir, 
                                command_handler,
                                params, 
@@ -188,13 +188,14 @@ def run_pick_otus_through_otu_table(input_fp,
         except KeyError:
             params_str = ''
         
-        # Grab the OTU picker parameters
+        # Grab the taxonomy assignment parameters
         try:
             # Want to find a cleaner strategy for this: the parallel script
             # is method-specific, so doesn't take a --assignment_method
             # option. This works for now though.
             d = params['assign_taxonomy'].copy()
-            del d['assignment_method']
+            if 'assignment_method' in d:
+                del d['assignment_method']
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
@@ -309,10 +310,10 @@ def run_pick_otus_through_otu_table(input_fp,
                     close_logger_on_success=close_logger_on_success)
     
     return abspath(tree_fp), abspath(otu_table_fp)
-run_qiime_data_preparation = run_pick_otus_through_otu_table
+run_qiime_data_preparation = run_pick_otus_through_otu_table = run_pick_de_novo_otus
 
 
-def run_pick_reference_otus_through_otu_table(
+def run_pick_closed_reference_otus(
                               input_fp, 
                               refseqs_fp,
                               output_dir,
@@ -334,7 +335,7 @@ def run_pick_reference_otus_through_otu_table(
     
     # confirm that a valid otu picking method was supplied before doing
     # any work
-    reference_otu_picking_methods = ['blast','uclust_ref']
+    reference_otu_picking_methods = ['blast','uclust_ref','usearch61_ref']
 
     try:
         otu_picking_method = params['pick_otus']['otu_picking_method']
@@ -366,7 +367,8 @@ def run_pick_reference_otus_through_otu_table(
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
     if parallel and (otu_picking_method == 'blast' or 
-                     otu_picking_method == 'uclust_ref'):
+                     otu_picking_method == 'uclust_ref' or
+                     otu_picking_method == 'usearch61_ref'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -402,7 +404,7 @@ def run_pick_reference_otus_through_otu_table(
         # Since this is reference-based OTU picking we always want to
         # suppress new clusters -- force it here.
         params_str+= ' --suppress_new_clusters'
-        logger.write("Forcing --suppress_new_clusters as this is reference-based OTU picking.\n\n")
+        logger.write("Forcing --suppress_new_clusters as this is closed-reference OTU picking.\n\n")
         # Build the OTU picking command
         pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -r %s -m %s %s' %\
          (python_exe_fp,
@@ -416,7 +418,7 @@ def run_pick_reference_otus_through_otu_table(
     commands.append([('Pick OTUs', pick_otus_cmd)])
 
     # Prep the OTU table building command
-    otu_table_fp = '%s/otu_table.biom' % pick_otu_dir
+    otu_table_fp = '%s/otu_table.biom' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
@@ -437,3 +439,5 @@ def run_pick_reference_otus_through_otu_table(
                     status_update_callback,
                     logger=logger,
                     close_logger_on_success=close_logger_on_success)
+
+run_pick_reference_otus_through_otu_table = run_pick_closed_reference_otus

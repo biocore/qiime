@@ -154,7 +154,7 @@ Data that are already demultiplexed can have reverse primers removed using the s
 Picking Operational Taxonomic Units (OTUs) through making OTU table
 --------------------------------------------------------------------
 
-Here we will be running the `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_ workflow, which performs a series of small steps by calling a series of other scripts automatically. This workflow consists of the following steps:
+Here we will be running the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ workflow, which performs a series of small steps by calling a series of other scripts automatically. This workflow consists of the following steps:
 
 1. Picking OTUs (for more information, refer to `pick_otus.py <../scripts/pick_otus.html>`_)
 2. Picking a representative sequence set, one sequence from each OTU (for more information, refer to `pick_rep_set.py <../scripts/pick_rep_set.html>`_)
@@ -167,12 +167,12 @@ Here we will be running the `pick_otus_through_otu_table.py <../scripts/pick_otu
 
 Using the output from split_libraries.py (the seqs.fna file), run the following command: ::
 
-    pick_otus_through_otu_table.py -i split_library_output/seqs.fna -o otus
+    pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus
 
-Optionally, we could denoise the sequences based on clustering the flowgram sequences. For a single library/sff file we can simply use the workflow script `pick_otus_through_otu_tables.py <../scripts/pick_otus_through_otu_table.html>`_, by providing the script with the sff file and the metadata mapping file. For multiple sff files refer to the special purpose tutorial `Denoising of 454 Data Sets <denoising_454_data.html>`_.
+Optionally, we could denoise the sequences based on clustering the flowgram sequences. For a single library/sff file we can simply use the workflow script `pick_de_novo_otuss.py <../scripts/pick_de_novo_otus.html>`_, by providing the script with the sff file and the metadata mapping file. For multiple sff files refer to the special purpose tutorial `Denoising of 454 Data Sets <denoising_454_data.html>`_.
 
 
-The results of `pick_otus_through_otu_table.py` are in :file:`otus/`, and a description of the steps performed and the results follow:
+The results of `pick_de_novo_otus.py` are in :file:`otus/`, and a description of the steps performed and the results follow:
 
 .. _pickotusseqsim:
 
@@ -181,7 +181,7 @@ Step 1. Pick OTUs based on Sequence Similarity within the Reads
 
 At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research. 
 
-`pick_otus_through_otu_table.py` assigns sequences to OTUs at 97% similarity by default. Further information on how to view and change default behavior will be discussed later.
+`pick_de_novo_otus.py` assigns sequences to OTUs at 97% similarity by default. Further information on how to view and change default behavior will be discussed later.
 
 
 .. _pickrepseqsforotu:
@@ -256,7 +256,7 @@ View statistics of the OTU table
 --------------------------------------------------------------------
 To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type::
 
-    per_library_stats.py -i otus/otu_table.biom
+    print_biom_table_summary.py -i otus/otu_table.biom
 
 The output shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
 
@@ -472,7 +472,7 @@ Beta diversity represents the explicit comparison of microbial (or other) commun
 6. Generate 2D PCoA plots (for more information, refer to `make_2d_plots.py <../scripts/make_2d_plots.html>`_)
 7. Make Distance Histograms (for more information, refer to `make_distance_histograms.py <../scripts/make_distance_histograms.html>`_)
 
-To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
+To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
 
     beta_diversity_through_plots.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146
 
@@ -600,7 +600,7 @@ Steps 3, 4 and 5. Perform Jackknifing Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To measure the robustness of this result to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire available data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.
 
-First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `per_library_stats.py`__:
+First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `print_biom_table_summary.py`__:
 
 __ perlibrarystats_
 
@@ -671,7 +671,7 @@ To run the workflow scripts in parallel, pass the "-a" option to each of the scr
 
 ::
 
-    pick_otus_through_otu_table.py -i split_library_output/seqs.fna -o otus -a -O 4
+    pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus -a -O 4
 
 
 Running the QIIME Tutorial Shell Scripts
