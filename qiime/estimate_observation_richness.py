@@ -24,7 +24,7 @@ class EmptySampleError(Exception):
     pass
 
 class ObservationRichnessEstimator(object):
-    def __init__(self, biom_table, FullRichnessEstimator, PointEstimator):
+    def __init__(self, PointEstimator, biom_table):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
         self._biom_table = biom_table
@@ -34,7 +34,6 @@ class ObservationRichnessEstimator(object):
                 raise EmptySampleError("Encountered a sample without any "
                                        "recorded observations.")
 
-        self.FullRichnessEstimator = FullRichnessEstimator
         self.PointEstimator = PointEstimator
 
     def getSampleCount(self):
@@ -76,17 +75,10 @@ class ObservationRichnessEstimator(object):
             sizes = self._get_points_to_estimate(start, stop, step_size, n)
 
             for size in sizes:
-                exp_obs_count = \
-                    self.PointEstimator.estimateExpectedObservationCount(size,
-                            n, abundance_freqs, num_obs,
-                            self.FullRichnessEstimator)
-                exp_obs_count_se = \
-                    self.PointEstimator.estimateExpectedObservationCountStdErr(
-                            size, n, abundance_freqs, num_obs, exp_obs_count,
-                            self.FullRichnessEstimator)
-
-                results.append((samp_id, size, exp_obs_count,
-                                exp_obs_count_se))
+                exp_obs_count, std_err = self.PointEstimator(size, n,
+                                                             abundance_freqs,
+                                                             num_obs)
+                results.append((samp_id, size, exp_obs_count, std_err))
 
         #return RichnessEstimatesResults(results, orig_indiv_counts)
         return results
@@ -104,56 +96,17 @@ class ObservationRichnessEstimator(object):
         points = range(start, stop + 1, step_size)
         if reference_individual_count not in points:
             insort(points, reference_individual_count)
+
         return points
 
 
-class AbstractFullRichnessEstimator(object):
-    def estimateFullRichness(self, abundance_frequency_counts,
-                             observation_count):
-        # S_est = S_obs + f_hat_0
-        return observation_count + self.estimateUnobservedObservationCount(
-                abundance_frequency_counts)
-
-    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
-        raise NotImplementedError("Subclasses must implement "
-                                  "estimateUnobservedObservationCount.")
-
-
-class Chao1FullRichnessEstimator(AbstractFullRichnessEstimator):
-    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
-        # Based on equation 15a and 15b of Colwell 2012.
-        f1 = abundance_frequency_counts[0]
-        f2 = abundance_frequency_counts[1]
-
-        if f1 < 0 or f2 < 0:
-            raise ValueError("Encountered a negative f1 or f2 value, which is "
-                             "invalid.")
-
-        if f2 > 0:
-            estimated_unobserved_count = f1**2 / (2 * f2)
-        else:
-            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
-
-        return estimated_unobserved_count
-
-    #def evaluatePartialDerivative(self, abundance_frequency_counts):
-
-
 class AbstractPointEstimator(object):
-    def estimateExpectedObservationCount(self, m, n, fk, s_obs,
-                                         full_richness_estimator):
-        raise NotImplementedError("Subclasses must implement "
-                                  "estimateExpectedObservationCount.")
-
-    def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
-                                               full_richness_estimator):
-        raise NotImplementedError("Subclasses must implement "
-                                  "estimateExpectedObservationCountStdErr.")
+    def __call__(self, m, n, fk, s_obs):
+        raise NotImplementedError("Subclasses must implement __call__.")
 
 
-class MultinomialPointEstimator(AbstractPointEstimator):
-    def estimateExpectedObservationCount(self, m, n, fk, s_obs,
-                                         full_richness_estimator):
+class Chao1MultinomialPointEstimator(AbstractPointEstimator):
+    def __call__(self, m, n, fk, s_obs):
         if m <= n:
             # Equation 4 in Colwell 2012.
             accumulation = 0
@@ -165,25 +118,12 @@ class MultinomialPointEstimator(AbstractPointEstimator):
                 accumulation += alpha_km * fk[k - 1]
 
             estimate = s_obs - accumulation
-        else:
-            # Equation 9 in Colwell 2012.
-            m_star = m - n
-            f_hat = \
-                full_richness_estimator.estimateUnobservedObservationCount(fk)
-            f1 = fk[0]
 
-            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
-
-        return estimate
-
-    def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
-                                               full_richness_estimator):
-        if m <= n:
             # Equation 5 in Colwell 2012 gives unconditional variance, but they
             # report the standard error (SE) (which is the same as the standard
             # deviation in this case) in their tables and use this to construct
             # confidence intervals. Thus, we compute SE as sqrt(variance).
-            s_est = full_richness_estimator.estimateFullRichness(fk, s_obs)
+            s_est = self.estimateFullRichness(fk, s_obs)
             accumulation = 0
 
             for k in range(1, n + 1):
@@ -193,12 +133,16 @@ class MultinomialPointEstimator(AbstractPointEstimator):
                 accumulation += (((1 - alpha_km)**2) * fk[k - 1])
 
             # Convert variance to standard error.
-            std_err_est = sqrt(accumulation - (s_m**2 / s_est))
+            std_err = sqrt(accumulation - (estimate**2 / s_est))
         else:
-            # Equation 10 in Colwell 2012.
+            # Equation 9 in Colwell 2012.
             m_star = m - n
-            f_hat = \
-                full_richness_estimator.estimateUnobservedObservationCount(fk)
+            f_hat = self.estimateUnobservedObservationCount(fk)
+            f1 = fk[0]
+
+            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
+
+            # Equation 10 in Colwell 2012.
             a0 = self._calculate_a0(fk[0], f_hat, n)
             a = self._calculate_a(m_star, a0, n)
             b = self._calculate_b(m_star, a0, n)
@@ -234,9 +178,31 @@ class MultinomialPointEstimator(AbstractPointEstimator):
                                                           f_hat, True)
 
             variance_est = term1 + term2 - term3 + term4 - term5 + term6
-            std_err_est = sqrt(variance_est)
+            std_err = sqrt(variance_est)
 
-        return std_err_est
+        return estimate, std_err
+
+    def estimateFullRichness(self, abundance_frequency_counts,
+                             observation_count):
+        # S_est = S_obs + f_hat_0
+        return observation_count + self.estimateUnobservedObservationCount(
+                abundance_frequency_counts)
+
+    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
+        # Based on equation 15a and 15b of Colwell 2012.
+        f1 = abundance_frequency_counts[0]
+        f2 = abundance_frequency_counts[1]
+
+        if f1 < 0 or f2 < 0:
+            raise ValueError("Encountered a negative f1 or f2 value, which is "
+                             "invalid.")
+
+        if f2 > 0:
+            estimated_unobserved_count = f1**2 / (2 * f2)
+        else:
+            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
+
+        return estimated_unobserved_count
 
     def _calculate_alpha_km(self, n, k, m):
         alpha_km = 0

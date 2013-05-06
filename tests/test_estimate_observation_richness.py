@@ -17,10 +17,10 @@ from biom.table import Table
 from cogent.util.unit_test import TestCase, main
 from numpy import array
 
-from qiime.estimate_observation_richness import (AbstractFullRichnessEstimator,
-        AbstractPointEstimator, Chao1FullRichnessEstimator, EmptySampleError,
-        EmptyTableError, MultinomialPointEstimator,
-        ObservationRichnessEstimator, RichnessEstimatesResults)
+from qiime.estimate_observation_richness import (AbstractPointEstimator,
+        Chao1MultinomialPointEstimator, EmptySampleError,
+        EmptyTableError, ObservationRichnessEstimator,
+        RichnessEstimatesResults)
 
 class ObservationRichnessEstimatorTests(TestCase):
     """Tests for the ObservationRichnessEstimator class."""
@@ -29,15 +29,13 @@ class ObservationRichnessEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         # Single sample, 6 observations, one of which isn't observed in sample.
         self.biom_table1 = parse_biom_table(biom_table_str1)
-        self.chao1_estimator = Chao1FullRichnessEstimator()
-        self.multi_estimator = MultinomialPointEstimator()
+        self.multi_estimator = Chao1MultinomialPointEstimator()
 
-        self.estimator1 = ObservationRichnessEstimator(self.biom_table1,
-                                                       self.chao1_estimator,
-                                                       self.multi_estimator)
+        self.estimator1 = ObservationRichnessEstimator(self.multi_estimator,
+                                                       self.biom_table1)
 
     def test_constructor(self):
-        """Test instantiating an AbstractObservationRichnessEstimator."""
+        """Test instantiating an ObservationRichnessEstimator."""
         self.assertTrue(isinstance(self.estimator1,
                                    ObservationRichnessEstimator))
 
@@ -45,15 +43,15 @@ class ObservationRichnessEstimatorTests(TestCase):
         """Test instantiating an estimator with an empty table."""
         empty_table = Table(array([]), [], [])
         self.assertRaises(EmptyTableError,
-                          ObservationRichnessEstimator, empty_table,
-                          self.chao1_estimator, self.multi_estimator)
+                          ObservationRichnessEstimator, self.multi_estimator,
+                          empty_table)
 
     def test_constructor_empty_sample(self):
         """Test instantiating an estimator with a sample that has no obs."""
         empty_sample_table = parse_biom_table(empty_sample_table_str)
         self.assertRaises(EmptySampleError,
-                          ObservationRichnessEstimator, empty_sample_table,
-                          self.chao1_estimator, self.multi_estimator)
+                          ObservationRichnessEstimator, self.multi_estimator,
+                          empty_sample_table)
 
     def test_getSampleCount(self):
         """Test estimator returns correct number of samples."""
@@ -153,67 +151,6 @@ class ObservationRichnessEstimatorTests(TestCase):
         self.assertEqual(obs, [4, 5, 7, 9])
 
 
-class AbstractFullRichnessEstimatorTests(TestCase):
-    """Tests for the AbstractFullRichnessEstimator class."""
-
-    def setUp(self):
-        """Define some sample data that will be used by the tests."""
-        self.abstract_estimator = AbstractFullRichnessEstimator()
-
-    def test_estimateFullRichness(self):
-        """Test should raise error."""
-        self.assertRaises(NotImplementedError,
-                          self.abstract_estimator.estimateFullRichness,
-                          [1, 2, 3], 6)
-
-    def test_estimateUnobservedObservationCount(self):
-        """Test should raise error."""
-        self.assertRaises(NotImplementedError,
-                self.abstract_estimator.estimateUnobservedObservationCount,
-                [1, 2, 3])
-
-
-class Chao1FullRichnessEstimatorTests(TestCase):
-    """Tests for the Chao1FullRichnessEstimator class."""
-
-    def setUp(self):
-        """Define some sample data that will be used by the tests."""
-        self.abundance_frequency_counts1 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-                                            0, 0, 0]
-        self.abundance_frequency_counts2 = [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-                                            0, 0, 0]
-        self.abundance_frequency_counts3 = self.abundance_frequency_counts2[:]
-        self.abundance_frequency_counts3[1] = -1
-
-        self.chao1_estimator = Chao1FullRichnessEstimator()
-
-    def test_estimateFullRichness(self):
-        """Test returns correct Chao1 full observation richness estimate."""
-        # Verified with iNEXT.
-
-        # f2 > 0
-        obs = self.chao1_estimator.estimateFullRichness(
-                self.abundance_frequency_counts1, 5)
-        self.assertFloatEqual(obs, 5.5)
-
-        # f2 == 0
-        obs = self.chao1_estimator.estimateFullRichness(
-                self.abundance_frequency_counts2, 4)
-        self.assertFloatEqual(obs, 4)
-
-        # f2 < 0
-        self.assertRaises(ValueError,
-                          self.chao1_estimator.estimateFullRichness,
-                          self.abundance_frequency_counts3, 4)
-
-    def test_estimateUnobservedObservationCount(self):
-        """Test returns correct Chao1 estimate of num unobserved obs."""
-        # Verified with iNEXT.
-        obs = self.chao1_estimator.estimateUnobservedObservationCount(
-                self.abundance_frequency_counts1)
-        self.assertFloatEqual(obs, 0.5)
-
-
 class AbstractPointEstimatorTests(TestCase):
     """Tests for the AbstractPointEstimator class."""
 
@@ -221,121 +158,89 @@ class AbstractPointEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.abstract_estimator = AbstractPointEstimator()
 
-    def test_estimateExpectedObservationCount(self):
+    def test_call(self):
         """Test should raise error."""
-        self.assertRaises(NotImplementedError,
-                self.abstract_estimator.estimateExpectedObservationCount,
-                1, 2, 3, [4], 5)
-
-    def test_estimateExpectedObservationCountStdErr(self):
-        """Test should raise error."""
-        self.assertRaises(NotImplementedError,
-                self.abstract_estimator.estimateExpectedObservationCountStdErr,
-                1, 2, 3, [4], 5, 6)
+        with self.assertRaises(NotImplementedError):
+            self.abstract_estimator(1, 2, 3, [4])
 
 
-class MultinomialPointEstimatorTests(TestCase):
-    """Tests for the MultinomialPointEstimator class."""
+class Chao1MultinomialPointEstimatorTests(TestCase):
+    """Tests for the Chao1MultinomialPointEstimator class."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        self.estimator1 = Chao1MultinomialPointEstimator()
         self.colwell_fk = colwell_abundance_freq_counts
-        self.chao1_estimator = Chao1FullRichnessEstimator()
-        self.estimator1 = MultinomialPointEstimator()
+        self.abundance_fk1 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.abundance_fk2 = [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.abundance_fk3 = self.abundance_fk2[:]
+        self.abundance_fk3[1] = -1
 
-    def test_estimateExpectedObservationCount_interpolate(self):
+    def test_call_interpolate(self):
         """Test computing S(m) using data from Colwell 2012 paper."""
         # Verified against results in Colwell 2012 paper.
 
         # m = 1 (min)
-        obs = self.estimator1.estimateExpectedObservationCount(1, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 1.0)
+        # Note: Colwell 2012 list the std err as 0.00 in their table, but after
+        # extensive searching I'm not sure why. All other values match theirs,
+        # so I'm guessing they're treating 1 as a special case (since you can't
+        # have an observation count of less than one if you have exactly one
+        # individual).
+        obs = self.estimator1(1, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (1.0, 0.20541870170521284))
 
         # m = 20
-        obs = self.estimator1.estimateExpectedObservationCount(20, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 15.891665207609165)
+        obs = self.estimator1(20, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
 
         # m = 200
-        obs = self.estimator1.estimateExpectedObservationCount(200, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 98.63181822376555)
+        obs = self.estimator1(200, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115))
 
         # m = 237 (max)
-        obs = self.estimator1.estimateExpectedObservationCount(237, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 112.00)
+        obs = self.estimator1(237, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (112.00, 9.22019783913399))
 
-    def test_estimateExpectedObservationCount_extrapolate(self):
+    def test_call_extrapolate(self):
         """Test computing S(n+m*) using data from Colwell 2012 paper."""
         # Verified against results in Colwell 2012 paper.
 
-        # m = 237 (min)
-        obs = self.estimator1.estimateExpectedObservationCount(237, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 112)
-
         # m = 337 (n+100)
-        obs = self.estimator1.estimateExpectedObservationCount(337, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 145.7369598336187)
-
-        # m = 1237 (n+1000)
-        obs = self.estimator1.estimateExpectedObservationCount(1237, 237,
-                self.colwell_fk, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 335.67575295919767)
-
-    def test_estimateExpectedObservationCountStdErr_interpolate(self):
-        """Test computing std err of S_m using data from Colwell 2012."""
-        # Verified against results in Colwell 2012 paper.
-
-        # m = 1 (min)
-        # Note: Colwell 2012 list 0.00 in their table, but after extensive
-        # searching I'm not sure why. All other values match theirs, so I'm
-        # guessing they're treating 1 as a special case.
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                1, 237, self.colwell_fk, 112, 1.0, self.chao1_estimator)
-        self.assertFloatEqual(obs, 0.20541870170521284)
-
-        # m = 20
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                20, 237, self.colwell_fk, 112, 15.891665207609165,
-                self.chao1_estimator)
-        self.assertFloatEqual(obs, 1.9486745986194465)
-
-        # m = 200
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                200, 237, self.colwell_fk, 112, 98.63181822376555,
-                self.chao1_estimator)
-        self.assertFloatEqual(obs, 8.147805938386115)
-
-        # m = 237 (max)
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                237, 237, self.colwell_fk, 112, 112, self.chao1_estimator)
-        self.assertFloatEqual(obs, 9.22019783913399)
-
-    def test_estimateExpectedObservationCountStdErr_extrapolate(self):
-        """Test computing std err of S(n+m*) using data from Colwell 2012."""
-        # Verified against results in Colwell 2012 paper.
-
-        # m = 337 (n+100)
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                337, 237, self.colwell_fk, 112, 145.7369598336187,
-                self.chao1_estimator)
-        self.assertFloatEqual(obs, 12.2033650407)
+        obs = self.estimator1(337, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (145.7369598336187, 12.2033650407))
 
         # m = 437 (n+200)
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                437, 237, self.colwell_fk, 112, 176.25, self.chao1_estimator)
-        self.assertFloatEqual(obs, 15.38155289184887)
+        obs = self.estimator1(437, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (176.24777891095846, 15.38155289184887))
 
         # m = 1237 (n+1000)
-        obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                1237, 237, self.colwell_fk, 112, 335.68, self.chao1_estimator)
-        # Paper shows 48.96, so we're off a little here. Not by a lot, likely
-        # just due to rounding differences.
-        self.assertFloatEqual(obs, 48.951306831638895)
+        # Paper shows the std err as 48.96, so we're off a little here. Not by
+        # a lot, likely just due to rounding differences.
+        obs = self.estimator1(1237, 237, self.colwell_fk, 112)
+        self.assertFloatEqual(obs, (335.67575295919767, 48.951306831638895))
+
+    def test_estimateFullRichness(self):
+        """Test returns correct Chao1 full observation richness estimate."""
+        # Verified with iNEXT.
+
+        # f2 > 0
+        obs = self.estimator1.estimateFullRichness(self.abundance_fk1, 5)
+        self.assertFloatEqual(obs, 5.5)
+
+        # f2 == 0
+        obs = self.estimator1.estimateFullRichness(self.abundance_fk2, 4)
+        self.assertFloatEqual(obs, 4)
+
+        # f2 < 0
+        self.assertRaises(ValueError, self.estimator1.estimateFullRichness,
+                          self.abundance_fk3, 4)
+
+    def test_estimateUnobservedObservationCount(self):
+        """Test returns correct Chao1 estimate of num unobserved obs."""
+        # Verified with iNEXT.
+        obs = self.estimator1.estimateUnobservedObservationCount(
+                self.abundance_fk1)
+        self.assertFloatEqual(obs, 0.5)
 
 
 class RichnessEstimatesResultsTests(TestCase):
