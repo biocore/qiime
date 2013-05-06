@@ -8,8 +8,8 @@ import sys
 from optparse import (OptionParser, OptionGroup, Option, 
                       OptionValueError, OptionError)
 from os import popen, remove, makedirs, getenv
-from os.path import join, abspath, exists, isdir, isfile
-
+from os.path import join, abspath, exists, isdir, isfile, split
+from glob import glob
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
@@ -79,6 +79,19 @@ def check_multiple_choice(option, opt, value):
                 % (opt, v, choices))
     return values
 
+def check_blast_db(option, opt, value):
+    db_dir, db_name = split(value)
+    if not exists(db_dir):
+        raise OptionValueError(
+            "option %s: path does not exists: %r" % (opt, db_dir))
+    elif not isdir(db_dir):
+        raise OptionValueError(
+            "option %s: not a directory: %r" % (opt, db_dir))
+    if len(glob('%s*nin' % value)) == 0:
+        raise OptionValueError(
+            "option %s: not a pre-formatted BLAST database: %r" % (opt, db_dir))
+    return value
+
 class CogentOption(Option):
     ATTRS = Option.ATTRS + ['mchoices','split_char']
 
@@ -89,7 +102,8 @@ class CogentOption(Option):
                             "new_filepath",
                             "existing_dirpath",
                             "new_dirpath",
-                            "multiple_choice")
+                            "multiple_choice",
+                            "blast_db")
     TYPE_CHECKER = copy(Option.TYPE_CHECKER)
     # for cases where the user specifies an existing file or directory
     # as input, but it can be either a dir or a file
@@ -115,6 +129,9 @@ class CogentOption(Option):
     # as comma- or semicolon-separated list
     # choices are returned as a list
     TYPE_CHECKER["multiple_choice"] = check_multiple_choice
+    # for cases where the user is passing a blast database option
+    # bast_db is returned as a string
+    TYPE_CHECKER["blast_db"] = check_blast_db
 
     def _check_multiple_choice(self):
         if self.type == "multiple_choice":
