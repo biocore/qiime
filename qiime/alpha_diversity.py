@@ -283,7 +283,13 @@ alph.lladser_pe,
 alph.lladser_ci]
 #starr, not yet needs tests]
 
-def single_file_alpha(infilepath, metrics_list, outfilepath, tree_path):
+def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     calcs = []
     for metric in metrics_list:
         try:
@@ -313,7 +319,7 @@ def single_file_alpha(infilepath, metrics_list, outfilepath, tree_path):
         stderr.write(str(e)+'\n')
         exit(1)
 
-def multiple_file_alpha(input_path, output_path, metrics_list, tree_path=None):
+def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     """ performs minimal error checking on input args, then calls os.system
     to execute single_file_alpha for each file in the input directory
 
@@ -326,6 +332,12 @@ def multiple_file_alpha(input_path, output_path, metrics_list, tree_path=None):
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(output_path):
         os.makedirs(output_path)
+
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
 
     for metric in metrics_list:
         try:
@@ -354,11 +366,11 @@ def multiple_file_alpha(input_path, output_path, metrics_list, tree_path=None):
             tree_path)
 
 
-def single_file_cup(otu_filepath, metrics_list, outfilepath, r, alpha, f, ci_type):
+def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
     """Compute variations of the conditional uncovered probability.
 
     otufilepath: path to otu_table file
-    metrics: comma separated list of required metrics
+    metrics: comma separated list of required metrics; or list
     outfilepath: path to output file
 
     r: Number of new colors that are required for the next prediction
@@ -378,6 +390,12 @@ def single_file_cup(otu_filepath, metrics_list, outfilepath, r, alpha, f, ci_typ
               'alpha': alpha,
               'f':f,
               'ci_type':ci_type}
+
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
                   
     for metric in metrics_list:
         try:
