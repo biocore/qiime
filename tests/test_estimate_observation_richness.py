@@ -175,7 +175,15 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         self.estimator1 = Chao1MultinomialPointEstimator()
-        self.colwell_fk = colwell_abundance_freq_counts
+
+        self.colwell_s_obs1 = 140
+        self.colwell_n1 = 976
+        self.colwell_fk1 = colwell_fk1
+
+        self.colwell_s_obs2 = 112
+        self.colwell_n2 = 237
+        self.colwell_fk2 = colwell_fk2
+
         self.abundance_fk1 = defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})
         self.abundance_fk2 = defaultdict(int, {1: 1, 3: 1, 4: 1, 5: 1})
         self.abundance_fk3 = self.abundance_fk2.copy()
@@ -185,43 +193,97 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         """Test computing S(m) using data from Colwell 2012 paper."""
         # Verified against results in Colwell 2012 paper.
 
+        # Second-growth data.
+
         # m = 1 (min)
         # Note: Colwell 2012 list the std err as 0.00 in their table, but after
         # extensive searching I'm not sure why. All other values match theirs,
         # so I'm guessing they're treating 1 as a special case (since you can't
         # have an observation count of less than one if you have exactly one
         # individual).
-        obs = self.estimator1(1, 237, self.colwell_fk, 112)
+        obs = self.estimator1(1, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (1.0, 0.17638208235509734))
+
+        # m = 100
+        obs = self.estimator1(100, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (44.295771605749465, 4.3560838094150975))
+
+        # m = 800
+        obs = self.estimator1(800, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (126.7974481741264, 7.7007346056227375))
+
+        # m = 976 (max)
+        obs = self.estimator1(976, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (140, 8.4270097160038446))
+
+        # Old-growth data.
+
+        # m = 1 (min)
+        obs = self.estimator1(1, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (1.0, 0.20541870170521284))
 
         # m = 20
-        obs = self.estimator1(20, 237, self.colwell_fk, 112)
+        obs = self.estimator1(20, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
+        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
+
+        obs = self.estimator1(20, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
 
         # m = 200
-        obs = self.estimator1(200, 237, self.colwell_fk, 112)
+        obs = self.estimator1(200, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115))
 
         # m = 237 (max)
-        obs = self.estimator1(237, 237, self.colwell_fk, 112)
+        obs = self.estimator1(237, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (112.00, 9.22019783913399))
 
     def test_call_extrapolate(self):
         """Test computing S(n+m*) using data from Colwell 2012 paper."""
         # Verified against results in Colwell 2012 paper.
 
+        # Second-growth data.
+
+        # m = 1076 (n+100)
+        obs = self.estimator1(1076, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (146.99829023479796, 8.8698690398536204))
+
+        # m = 1176 (n+200)
+        obs = self.estimator1(1176, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (153.6567465407886, 9.3361296163839071))
+
+        # m = 1976 (n+1000)
+        obs = self.estimator1(1976, self.colwell_n1, self.colwell_fk1,
+                              self.colwell_s_obs1)
+        self.assertFloatEqual(obs, (196.51177687081162, 13.988461215215887))
+
+        # Old-growth data.
+
         # m = 337 (n+100)
-        obs = self.estimator1(337, 237, self.colwell_fk, 112)
+        obs = self.estimator1(337, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (145.7369598336187, 12.2033650407))
 
         # m = 437 (n+200)
-        obs = self.estimator1(437, 237, self.colwell_fk, 112)
+        obs = self.estimator1(437, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (176.24777891095846, 15.38155289184887))
 
         # m = 1237 (n+1000)
         # Paper shows the std err as 48.96, so we're off a little here. Not by
         # a lot, likely just due to rounding differences.
-        obs = self.estimator1(1237, 237, self.colwell_fk, 112)
+        obs = self.estimator1(1237, self.colwell_n2, self.colwell_fk2,
+                              self.colwell_s_obs2)
         self.assertFloatEqual(obs, (335.67575295919767, 48.951306831638895))
 
     def test_estimateFullRichness(self):
@@ -272,8 +334,11 @@ biom_table_str1 = """{"id": "None","format": "Biological Observation Matrix 1.0.
 
 empty_sample_table_str = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-04-11T13:02:56.774981","matrix_type": "dense","matrix_element_type": "float","shape": [1, 1],"data": [[0]],"rows": [{"id": "OTU0", "metadata": null}],"columns": [{"id": "S1", "metadata": null}]}"""
 
+# Taken from Colwell 2012 Osa second growth sample (Table 1a).
+colwell_fk1 = defaultdict(int, {1: 70, 2: 17, 3: 4, 4: 5, 5: 5, 6: 5, 7: 5, 8: 3, 9: 1, 10: 2, 11: 3, 12: 2, 14: 2, 17: 1, 19: 2, 20: 3, 21: 1, 24: 1, 26: 1, 40: 1, 57: 2, 60: 1, 64: 1, 71: 1, 77: 1})
+
 # Taken from Colwell 2012 Osa old growth sample (Table 1b).
-colwell_abundance_freq_counts = defaultdict(int, {1: 84, 2: 10, 3: 4, 4: 3, 5: 5, 6: 1, 7: 2, 8: 1, 14: 1, 42: 1})
+colwell_fk2 = defaultdict(int, {1: 84, 2: 10, 3: 4, 4: 3, 5: 5, 6: 1, 7: 2, 8: 1, 14: 1, 42: 1})
 
 
 if __name__ == "__main__":
