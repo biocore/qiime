@@ -323,19 +323,19 @@ class MultinomialPointEstimatorTests(TestCase):
         obs = self.estimator1.estimateExpectedObservationCountStdErr(
                 337, 237, self.colwell_fk, 112, 145.7369598336187,
                 self.chao1_estimator)
-        self.assertFloatEqual(obs, 12.203359515126238)
+        self.assertFloatEqual(obs, 12.2033650407)
 
         # m = 437 (n+200)
         obs = self.estimator1.estimateExpectedObservationCountStdErr(
                 437, 237, self.colwell_fk, 112, 176.25, self.chao1_estimator)
-        self.assertFloatEqual(obs, 15.381473229829803)
+        self.assertFloatEqual(obs, 15.38155289184887)
 
         # m = 1237 (n+1000)
         obs = self.estimator1.estimateExpectedObservationCountStdErr(
                 1237, 237, self.colwell_fk, 112, 335.68, self.chao1_estimator)
         # Paper shows 48.96, so we're off a little here. Not by a lot, likely
         # just due to rounding differences.
-        self.assertFloatEqual(obs, 48.93581216632357)
+        self.assertFloatEqual(obs, 48.951306831638895)
 
 
 class RichnessEstimatesResultsTests(TestCase):

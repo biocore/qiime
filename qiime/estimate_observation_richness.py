@@ -256,7 +256,7 @@ class MultinomialPointEstimator(AbstractPointEstimator):
         return cov
 
     def _calculate_a0(self, f_1, f_hat, n):
-        return f_1 / (n * f_hat)
+        return f_1 / (n * f_hat + f_1)
 
     def _calculate_a(self, m_star, a0, n):
         term1 = (2 * (1 - a0)) / n
