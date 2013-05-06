@@ -58,7 +58,8 @@ class ObservationRichnessEstimator(object):
             yield samp_abundance_freq_count
 
     def __call__(self, start=1, stop=None, step_size=None):
-        results = RichnessEstimatesResults()
+        #results = RichnessEstimatesResults()
+        results = []
         orig_indiv_counts = {}
 
         for samp_id, samp_data, num_obs, n, abundance_freqs in zip(
@@ -88,7 +89,8 @@ class ObservationRichnessEstimator(object):
                 results.append((samp_id, size, exp_obs_count,
                                 exp_obs_count_se))
 
-        return RichnessEstimatesResults(results, orig_indiv_counts)
+        #return RichnessEstimatesResults(results, orig_indiv_counts)
+        return results
 
     def _get_points_to_estimate(self, start, stop, step_size,
                                 reference_individual_count):
