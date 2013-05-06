@@ -12,9 +12,13 @@ __status__ = "Development"
 
 """Test suite for the estimate_observation_richness.py module."""
 
+from collections import defaultdict
+
 from biom.parse import parse_biom_table
 from biom.table import Table
+
 from cogent.util.unit_test import TestCase, main
+
 from numpy import array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,
@@ -70,8 +74,9 @@ class ObservationRichnessEstimatorTests(TestCase):
     def test_getAbundanceFrequencyCounts(self):
         """Returns correct abundance frequency counts for each sample."""
         # Verified with iNEXT.
+        exp = [defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})]
         obs = list(self.estimator1.getAbundanceFrequencyCounts())
-        self.assertEqual(obs, [[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        self.assertEqual(obs, exp)
 
     def test_call_interpolate(self):
         """Test __call__ computes correct estimates (interpolation)."""
@@ -171,10 +176,10 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.estimator1 = Chao1MultinomialPointEstimator()
         self.colwell_fk = colwell_abundance_freq_counts
-        self.abundance_fk1 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.abundance_fk2 = [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.abundance_fk3 = self.abundance_fk2[:]
-        self.abundance_fk3[1] = -1
+        self.abundance_fk1 = defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})
+        self.abundance_fk2 = defaultdict(int, {1: 1, 3: 1, 4: 1, 5: 1})
+        self.abundance_fk3 = self.abundance_fk2.copy()
+        self.abundance_fk3[2] = -1
 
     def test_call_interpolate(self):
         """Test computing S(m) using data from Colwell 2012 paper."""
@@ -268,7 +273,7 @@ biom_table_str1 = """{"id": "None","format": "Biological Observation Matrix 1.0.
 empty_sample_table_str = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-04-11T13:02:56.774981","matrix_type": "dense","matrix_element_type": "float","shape": [1, 1],"data": [[0]],"rows": [{"id": "OTU0", "metadata": null}],"columns": [{"id": "S1", "metadata": null}]}"""
 
 # Taken from Colwell 2012 Osa old growth sample (Table 1b).
-colwell_abundance_freq_counts = [84.0, 10.0, 4.0, 3.0, 5.0, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+colwell_abundance_freq_counts = defaultdict(int, {1: 84, 2: 10, 3: 4, 4: 3, 5: 5, 6: 1, 7: 2, 8: 1, 14: 1, 42: 1})
 
 
 if __name__ == "__main__":

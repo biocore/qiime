@@ -13,6 +13,7 @@ __status__ = "Development"
 """Contains functionality to estimate the observation richness of samples."""
 
 from bisect import insort
+from collections import defaultdict
 from csv import writer
 from math import factorial
 from numpy import ceil, sqrt
@@ -49,10 +50,12 @@ class ObservationRichnessEstimator(object):
         for samp_data, num_individuals in zip(
                 self._biom_table.iterSampleData(),
                 self.getTotalIndividualCounts()):
-            samp_abundance_freq_count = []
+            samp_abundance_freq_count = defaultdict(int)
 
             for i in range(1, num_individuals + 1):
-                samp_abundance_freq_count.append((samp_data == i).sum(0))
+                fk_i = (samp_data == i).sum(0)
+                if fk_i > 0:
+                    samp_abundance_freq_count[i] = fk_i
             yield samp_abundance_freq_count
 
     def __call__(self, start=1, stop=None, step_size=None):
@@ -113,9 +116,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
             for k in range(1, n + 1):
                 alpha_km = self._calculate_alpha_km(n, k, m)
-
-                # k is 1..n while fk idxs are 0..n-1.
-                accumulation += alpha_km * fk[k - 1]
+                accumulation += alpha_km * fk[k]
 
             estimate = s_obs - accumulation
 
@@ -128,9 +129,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
             for k in range(1, n + 1):
                 alpha_km = self._calculate_alpha_km(n, k, m)
-
-                # k is 1..n while fk idxs are 0..n-1.
-                accumulation += (((1 - alpha_km)**2) * fk[k - 1])
+                accumulation += (((1 - alpha_km)**2) * fk[k])
 
             # Convert variance to standard error.
             std_err = sqrt(accumulation - (estimate**2 / s_est))
@@ -138,43 +137,43 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             # Equation 9 in Colwell 2012.
             m_star = m - n
             f_hat = self.estimateUnobservedObservationCount(fk)
-            f1 = fk[0]
+            f1 = fk[1]
 
             estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
 
             # Equation 10 in Colwell 2012.
-            a0 = self._calculate_a0(fk[0], f_hat, n)
+            a0 = self._calculate_a0(f1, f_hat, n)
             a = self._calculate_a(m_star, a0, n)
             b = self._calculate_b(m_star, a0, n)
 
             term1 = 0
             for i in range(1, n + 1):
                 for j in range(1, n + 1):
-                    term1 += self._calculate_covariance(fk[i - 1], fk[j - 1],
-                                                        s_obs, f_hat, i==j)
+                    term1 += self._calculate_covariance(fk[i], fk[j], s_obs,
+                                                        f_hat, i==j)
 
             term2 = 0
             j = 1
             for i in range(1, n + 1):
-                term2 += self._calculate_covariance(fk[i - 1], fk[j - 1],
-                                                    s_obs, f_hat, i==j)
+                term2 += self._calculate_covariance(fk[i], fk[j], s_obs, f_hat,
+                                                    i==j)
             term2 *= 2 * a
 
             term3 = 0
             j = 2
             for i in range(1, n + 1):
-                term3 += self._calculate_covariance(fk[i - 1], fk[j - 1],
-                                                    s_obs, f_hat, i==j)
+                term3 += self._calculate_covariance(fk[i], fk[j], s_obs, f_hat,
+                                                    i==j)
             term3 *= 2 * b
 
-            term4 = (a ** 2) * self._calculate_covariance(fk[0], fk[0], s_obs,
+            term4 = (a ** 2) * self._calculate_covariance(fk[1], fk[1], s_obs,
                                                           f_hat, True)
 
-            term5 = (2 * a * b) * self._calculate_covariance(fk[1], fk[0],
+            term5 = (2 * a * b) * self._calculate_covariance(fk[2], fk[1],
                                                              s_obs, f_hat,
                                                              False)
 
-            term6 = (b ** 2) * self._calculate_covariance(fk[1], fk[1], s_obs,
+            term6 = (b ** 2) * self._calculate_covariance(fk[2], fk[2], s_obs,
                                                           f_hat, True)
 
             variance_est = term1 + term2 - term3 + term4 - term5 + term6
@@ -190,8 +189,8 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
     def estimateUnobservedObservationCount(self, abundance_frequency_counts):
         # Based on equation 15a and 15b of Colwell 2012.
-        f1 = abundance_frequency_counts[0]
-        f2 = abundance_frequency_counts[1]
+        f1 = abundance_frequency_counts[1]
+        f2 = abundance_frequency_counts[2]
 
         if f1 < 0 or f2 < 0:
             raise ValueError("Encountered a negative f1 or f2 value, which is "
