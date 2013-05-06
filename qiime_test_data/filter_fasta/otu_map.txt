@@ -1,0 +1,2 @@
+0	Seq1	s2
+qiime_otu_1	S3

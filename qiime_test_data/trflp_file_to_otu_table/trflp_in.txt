@@ -1,0 +1,6 @@
+	Bin (10bp)	Bin (20bp)	Bin (30bp)	Bin (40 bp)
+Samp-le 1	1000	2000	3000	4000
+Sample 2		2000	3000	4000
+Sample 3			3000	4000
+Sample 4				4000
+Sample 5	25			

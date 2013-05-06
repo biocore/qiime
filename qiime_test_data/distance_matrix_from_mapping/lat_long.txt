@@ -1,0 +1,1 @@
+#SampleID	Latitute	Longitude	DescriptionSample.3	20	-100	Test example Sample.3Sample.4	30	-60	Test example Sample.4Sample.7	60	60	Test example Sample.7Sample.8	70	100	Test example Sample.8Sample.9	80	140	Test example Sample.9Sample.1	0	-180	Test example Sample.1Sample.2	10	-140	Test example Sample.2Sample.5	40	-20	Test example Sample.5Sample.6	50	20	Test example Sample.6

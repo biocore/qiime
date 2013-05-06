@@ -27,7 +27,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.pyplot import boxplot, figure
 from matplotlib.transforms import Bbox
-from numpy import array, mean, random, sqrt, std
+from numpy import arange, array, mean, random, sqrt, std
 
 def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
@@ -128,8 +128,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         data_point_labels=None, distribution_labels=None,
         distribution_markers=None, x_label=None, y_label=None, title=None,
         x_tick_labels_orientation='vertical', y_min=None, y_max=None,
-        whisker_length=1.5, error_bar_type='stdv', distribution_width=0.4,
-        group_spacing=0.5, figure_width=None, figure_height=None):
+        whisker_length=1.5, error_bar_type='stdv', distribution_width=None,
+        figure_width=None, figure_height=None):
     """Returns a Figure containing plots grouped at points along the x-axis.
 
     Arguments:
@@ -141,8 +141,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             distribution in the group at that point. This nesting allows for
             the grouping of distributions at each data point.
         - x_values: A list indicating the spacing along the x-axis. Must
-            be the same length as the number of data points if provided. If not
-            provided, plots will be spaced evenly.
+            be the same length as the number of data points and be in ascending
+            sorted order. If not provided, plots will be spaced evenly.
         - data_point_labels: A list of strings containing the label for each
             data point.
         - distribution_labels: A list of strings containing the label for each
@@ -172,9 +172,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             "bar", this parameter is ignored.
         - distribution_width: The width in plot units of each individual
             distribution (e.g. each bar if the plot type is a bar chart, or the
-            width of each box if the plot type is a boxplot).
-        - group_spacing: The gap width in plot units between each data point
-            (i.e. the width between each group of distributions).
+            width of each box if the plot type is a boxplot). If None, will
+            automatically be determined.
         - figure_width: the width of the plot figure in inches. If not
             provided, will default to matplotlib's default figure width.
         - figure_height: the height of the plot figure in inches. If not
@@ -211,10 +210,25 @@ def generate_comparative_plots(plot_type, data, x_values=None,
                                                      num_distributions)
 
     # Now calculate where each of the data points will start on the x-axis.
-    x_locations = _calc_data_point_locations(x_values, num_points,
-            num_distributions, distribution_width, group_spacing)
+    x_locations = _calc_data_point_locations(num_points, x_values)
     assert (len(x_locations) == num_points), "The number of x_locations " +\
             "does not match the number of data points."
+
+    if distribution_width is None:
+        # Find the smallest gap between consecutive data points and divide this
+        # by the number of distributions + 1 for some extra spacing between
+        # data points.
+        min_gap = max(x_locations)
+        for i in range(len(x_locations) - 1):
+            curr_gap = x_locations[i + 1] - x_locations[i]
+            if curr_gap < min_gap:
+                min_gap = curr_gap
+
+        distribution_width = min_gap / float(num_distributions + 1)
+    else:
+        if distribution_width <= 0:
+            raise ValueError("The width of a distribution cannot be less than "
+                             "or equal to zero.")
 
     result, plot_axes = _create_plot()
 
@@ -250,9 +264,14 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     # plot without adding padding, so we need to add our own to both sides of
     # the plot. For some reason this has to go after the call to draw(),
     # otherwise matplotlib throws an exception saying it doesn't have a
-    # renderer.
-    plot_axes.set_xlim(plot_axes.get_xlim()[0] - group_spacing,
-                       plot_axes.get_xlim()[1] + group_spacing)
+    # renderer. Boxplots need extra padding on the left.
+    if plot_type == 'box':
+        left_pad = 2 * distribution_width
+    else:
+        left_pad = distribution_width
+    plot_axes.set_xlim(plot_axes.get_xlim()[0] - left_pad,
+                       plot_axes.get_xlim()[1] + distribution_width)
+
     return result
 
 def _validate_input(data, x_values, data_point_labels, distribution_labels):
@@ -350,35 +369,34 @@ def _get_distribution_markers(marker_type, marker_choices, num_markers):
             marker_choices.append(marker_cycle.next())
     return marker_choices[:num_markers]
 
-def _calc_data_point_locations(x_values, num_points, num_distributions,
-                               dist_width, group_spacing):
-    """Returns a numpy array of x-axis locations for each of the data points to
-    start at.
+def _calc_data_point_locations(num_points, x_values=None):
+    """Returns the x-axis location for each of the data points to start at.
 
     Note: A numpy array is returned so that the overloaded "+" operator can be
     used on the array.
-    
-    The x locations are spaced according to the spacing between points, and the
-    width of each distribution grouping at each point. The x locations are also
-    scaled by the x_values that may have been supplied by the user. If none are
-    supplied, the x locations are evenly spaced.
+
+    The x-axis locations are scaled by x_values if it is provided, or else the
+    x-axis locations are evenly spaced. In either case, the x-axis locations
+    will always be in the range [1, num_points].
     """
-    if dist_width <= 0 or group_spacing < 0:
-        raise ValueError("The width of a distribution cannot be zero or "
-                         "negative. The width of the spacing between groups "
-                         "of distributions cannot be negative.")
     if x_values is None:
-        # Evenly space the x locations.
-        x_values = range(1, num_points + 1)
+        # Evenly space the x-axis locations.
+        x_locs = arange(1, num_points + 1)
+    else:
+        if len(x_values) != num_points:
+            raise ValueError("The number of x-axis values must match the "
+                             "number of data points.")
 
-    assert (len(x_values) == num_points), "The number of x_values does not " +\
-            "match the number of data points."
+        # Scale to the range [1, num_points]. Taken from
+        # http://www.heatonresearch.com/wiki/Range_Normalization
+        x_min = min(x_values)
+        x_max = max(x_values)
+        x_range = x_max - x_min
+        n_range = num_points - 1
+        x_locs = array([(((x_val - x_min) * n_range) / float(x_range)) + 1
+                        for x_val in x_values])
 
-    # Calculate the width of each grouping of distributions at a data point.
-    # This is multiplied by the current x value to give us our final
-    # absolute horizontal position for the current point.
-    return array([(dist_width * num_distributions + group_spacing) * x_val\
-                     for x_val in x_values])
+    return x_locs
 
 def _calc_data_point_ticks(x_locations, num_distributions, distribution_width,
                            distribution_centered):

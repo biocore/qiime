@@ -1,0 +1,31 @@
+usearch --usersort --chimeras /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/reference_chimeras.fasta --rev --uchimeout /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/refdb.uc --uchime /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/clustered_error_corrected.fasta --db /Users/jrideout/dev/qiime_test_data/pick_otus/refseqs.fasta --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/uchime_reference_chimera_filtering.log --nonchimeras /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/reference_non_chimeras.fasta
+Started Thu Oct 18 14:21:57 2012
+Version 5.2.32
+8.6Gb RAM
+
+Minus strand search enabled
+    0.28  minh
+    8.00  xn
+    1.40  dn
+    1.00  xa
+    0.80  mindiv
+    0.75  id
+       2  maxp
+
+/Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/clustered_error_corrected.fasta: 4/99 chimeras found (4.0%)
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+          windex      143018       17994   72.5%         6.9Mb
+            mx_h        7848        6198   23.0%         2.2Mb
+          alpha2         150           0    2.3%       215.8kb
+         myutils           5           0    1.7%       160.0kb
+           ultra          25          24    0.4%        40.1kb
+           dpmem           6           4    0.1%        11.6kb
+       hspfinder         399         397    0.0%        768.0b
+----------------  ----------  ----------  ------  ------------
+           Total      151451       24617  100.0%         9.6Mb
+
+Finished Thu Oct 18 14:21:58 2012
+Elapsed time 00:01
+Max memory 14Mb

@@ -1,0 +1,12 @@
+# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.
+Length	Raw	Before	After
+200	0	0	10
+210	0	0	49
+220	0	0	127
+230	2	2	313
+240	45	45	121
+250	112	112	18
+260	252	251	0
+270	169	169	0
+280	57	57	0
+290	2	2	0

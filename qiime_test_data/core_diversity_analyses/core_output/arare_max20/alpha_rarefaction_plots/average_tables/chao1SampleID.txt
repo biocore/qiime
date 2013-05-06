@@ -1,0 +1,40 @@
+# chao1.txt
+# SampleID
+xaxis: 10.0	11.0	12.0	13.0	14.0	15.0	16.0	17.0	18.0	19.0	20.0	
+xmax: 21.0
+>> p2
+color #7cecf4
+series 12.4333333333	9.55	10.1	11.4333333333	12.55	11.4166666667	14.85	16.8	17.55	16.8	19.75	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f1
+color #ff0000
+series 1.9	2.0	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f2
+color #0000ff
+series 1.9	2.5	2.2	2.4	2.6	2.6	2.9	3.8	3.0	4.0	3.6	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f3
+color #f27304
+series 2.0	1.9	1.8	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f4
+color #008000
+series 1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t2
+color #5da09e
+series 2.8	2.8	3.3	2.9	3.2	3.0	3.0	3.0	3.0	3.0	3.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> not16S.1
+color #91278d
+series 1.7	1.7	1.9	2.0	2.0	1.9	1.9	1.9	1.9	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t1
+color #f49ac2
+series 2.2	3.9	4.15	4.35	4.25	4.15	4.15	3.85	3.45	4.8	4.15	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> p1
+color #ffff00
+series 2.3	2.6	3.4	3.0	3.0	4.0	3.7	4.1	5.7	5.3	5.3	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	

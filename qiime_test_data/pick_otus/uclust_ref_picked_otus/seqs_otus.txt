@@ -1,0 +1,96 @@
+qiime_otu_30	PC.635_388	PC.635_305
+qiime_otu_31	PC.593_414
+qiime_otu_32	PC.356_363
+qiime_otu_33	PC.635_319	PC.635_404	PC.636_402
+qiime_otu_34	PC.355_327	PC.355_300
+qiime_otu_35	PC.635_316	PC.635_345
+qiime_otu_36	PC.354_458
+qiime_otu_37	PC.635_394
+qiime_otu_38	PC.635_390
+qiime_otu_39	PC.593_547
+qiime_otu_64	PC.354_303	PC.356_355	PC.356_542
+qiime_otu_23	PC.481_371
+qiime_otu_22	PC.356_449
+qiime_otu_21	PC.635_461
+qiime_otu_20	PC.355_544
+qiime_otu_27	PC.355_382	PC.481_317
+qiime_otu_26	PC.636_340
+qiime_otu_25	PC.355_385	PC.354_344	PC.355_372	PC.481_322	PC.635_383
+qiime_otu_24	PC.481_377
+qiime_otu_29	PC.356_295
+qiime_otu_28	PC.635_381
+qiime_otu_8	PC.356_341
+qiime_otu_9	PC.634_60
+qiime_otu_5	PC.356_456
+qiime_otu_6	PC.356_347
+qiime_otu_7	PC.607_297	PC.607_380	PC.607_457	PC.593_313	PC.607_332
+qiime_otu_2	PC.481_292	PC.354_359	PC.636_339	PC.607_348	PC.635_306	PC.636_331
+qiime_otu_4	PC.356_451
+qiime_otu_18	PC.355_546
+qiime_otu_19	PC.636_61
+qiime_otu_16	PC.607_356	PC.607_416
+qiime_otu_17	PC.607_541
+qiime_otu_14	PC.354_346	PC.354_412	PC.354_3
+qiime_otu_15	PC.355_413
+qiime_otu_12	PC.593_400
+qiime_otu_13	PC.636_351
+qiime_otu_10	PC.636_294	PC.636_337
+qiime_otu_1	PC.355_301
+qiime_otu_96	PC.355_403	PC.356_406
+qiime_otu_94	PC.481_455
+qiime_otu_95	PC.356_336
+qiime_otu_92	PC.481_357	PC.481_397
+qiime_otu_93	PC.635_367
+qiime_otu_90	PC.355_545
+qiime_otu_91	PC.635_364
+qiime_otu_3	PC.354_296
+qiime_otu_78	PC.607_302
+qiime_otu_79	PC.635_350
+qiime_otu_74	PC.593_454	PC.593_369
+qiime_otu_75	PC.593_450	PC.593_314
+qiime_otu_76	PC.356_410
+qiime_otu_77	PC.593_362
+qiime_otu_70	PC.634_1
+qiime_otu_71	PC.355_460
+qiime_otu_72	PC.355_375
+qiime_otu_73	PC.636_335
+qiime_otu_81	PC.607_330
+qiime_otu_48	PC.354_334	PC.354_358	PC.354_411	PC.354_378	PC.354_370	PC.354_308
+qiime_otu_67	PC.607_312	PC.481_418
+qiime_otu_80	PC.355_361
+qiime_otu_83	PC.635_315
+qiime_otu_82	PC.481_329
+qiime_otu_85	PC.593_393	PC.636_379
+qiime_otu_84	PC.634_2
+qiime_otu_87	PC.607_401
+qiime_otu_86	PC.355_324
+qiime_otu_89	PC.635_368
+qiime_otu_88	PC.607_405
+qiime_otu_69	PC.481_338
+qiime_otu_68	PC.355_459
+qiime_otu_57	PC.481_304
+qiime_otu_66	PC.636_417	PC.635_386
+qiime_otu_65	PC.355_293
+qiime_otu_11	PC.355_399
+qiime_otu_63	PC.607_391
+qiime_otu_62	PC.607_395
+qiime_otu_61	PC.636_298	PC.636_376	PC.636_415	PC.636_310	PC.636_407
+qiime_otu_60	PC.636_309	PC.636_373	PC.636_409	PC.636_318	PC.636_354	PC.481_326	PC.636_349
+qiime_otu_58	PC.481_307	PC.355_353	PC.354_387	PC.356_453	PC.355_291	PC.593_408	PC.355_374
+qiime_otu_59	PC.635_333
+qiime_otu_53	PC.593_343
+qiime_otu_52	PC.607_365
+qiime_otu_50	PC.481_321
+qiime_otu_51	PC.607_360
+qiime_otu_56	PC.356_325
+qiime_otu_54	PC.593_342
+qiime_otu_55	PC.636_389
+qiime_otu_45	PC.635_320
+qiime_otu_44	PC.636_396	PC.355_384
+qiime_otu_47	PC.636_366	PC.356_543
+qiime_otu_46	PC.636_311
+qiime_otu_41	PC.635_398
+qiime_otu_40	PC.354_299
+qiime_otu_43	PC.607_323	PC.607_352	PC.355_328
+qiime_otu_42	PC.636_392
+qiime_otu_49	PC.607_452

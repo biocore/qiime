@@ -1,0 +1,70 @@
+candidate sequence ID	candidate nucleotide count	errors	template ID	BLAST percent identity to template	candidate nucleotide count post-NAST
+r0 PC.634_176	246	No search results.
+r102 PC.634_91	238	No search results.
+r111 PC.634_173	250	No search results.
+r129 PC.354_202	222	No search results.
+r143 PC.356_295	255	No search results.
+r146 PC.607_50	236	No search results.
+r148 PC.355_122	243	No search results.
+r153 PC.634_58	230	No search results.
+r158 PC.355_372	235	No search results.
+r162 PC.355_13	211	No search results.
+r175 PC.634_133	237	No search results.
+r178 PC.634_139	209	No search results.
+r181 PC.593_362	241	No search results.
+r192 PC.593_342	218	No search results.
+r28 PC.634_44	220	No search results.
+r38 PC.355_384	235	No search results.
+r39 PC.607_272	243	No search results.
+r47 PC.354_334	235	No search results.
+r49 PC.634_39	229	No search results.
+r59 PC.634_51	244	No search results.
+r63 PC.636_148	245	No search results.
+r70 PC.593_22	239	No search results.
+r74 PC.635_72	221	No search results.
+r78 PC.636_273	240	No search results.
+r84 PC.636_6	239	No search results.
+r92 PC.607_323	236	No search results.
+r96 PC.355_66	235	No search results.
+New.0.ReferenceOTU13 PC.634_125	220	No search results.
+New.0.ReferenceOTU14 PC.634_62	244	No search results.
+New.0.ReferenceOTU15 PC.634_194	213	No search results.
+New.0.ReferenceOTU17 PC.634_101	240	No search results.
+New.0.ReferenceOTU22 PC.634_184	216	No search results.
+New.0.ReferenceOTU26 PC.481_357	240	No search results.
+New.0.ReferenceOTU28 PC.634_181	243	No search results.
+New.0.ReferenceOTU29 PC.355_164	228	No search results.
+New.0.ReferenceOTU30 PC.634_189	235	No search results.
+New.0.ReferenceOTU32 PC.607_244	228	No search results.
+New.0.ReferenceOTU33 PC.481_317	222	No search results.
+New.0.ReferenceOTU34 PC.356_191	237	No search results.
+New.0.ReferenceOTU36 PC.354_285	235	No search results.
+New.0.ReferenceOTU38 PC.634_143	218	No search results.
+New.0.ReferenceOTU39 PC.481_228	222	No search results.
+New.0.ReferenceOTU41 PC.634_149	221	No search results.
+New.0.ReferenceOTU42 PC.635_208	238	No search results.
+New.0.ReferenceOTU48 PC.634_79	243	No search results.
+New.0.ReferenceOTU49 PC.634_90	241	No search results.
+New.0.ReferenceOTU5 PC.607_120	236	No search results.
+New.0.ReferenceOTU51 PC.607_171	236	No search results.
+New.0.ReferenceOTU52 PC.636_379	251	No search results.
+New.0.ReferenceOTU54 PC.593_343	218	No search results.
+New.0.ReferenceOTU57 PC.634_31	231	No search results.
+New.0.ReferenceOTU6 PC.634_150	209	No search results.
+New.0.ReferenceOTU7 PC.356_363	224	No search results.
+New.0.ReferenceOTU9 PC.355_240	222	No search results.
+New.0.CleanUp.ReferenceOTU12 PC.607_297	238	No search results.
+New.0.CleanUp.ReferenceOTU17 PC.634_123	214	No search results.
+New.0.CleanUp.ReferenceOTU19 PC.607_312	249	No search results.
+New.0.CleanUp.ReferenceOTU29 PC.354_255	229	No search results.
+New.0.CleanUp.ReferenceOTU33 PC.607_365	243	No search results.
+New.0.CleanUp.ReferenceOTU7 PC.634_157	227	No search results.
+New.0.CleanUp.ReferenceOTU9 PC.355_327	244	No search results.
+PyNastAligner parameters:
+Algorithm:NAST
+Application:PyNAST
+blast_db:None
+min_len:500
+min_pct:95.0
+pairwise_alignment_method:uclust
+template_filepath:core_set_aligned.fasta.imputed

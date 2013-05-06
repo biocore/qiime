@@ -25,10 +25,9 @@ def get_mapping_values(mapping_f,mapping_field):
     try:
         field_index = mapping_headers.index(mapping_field)
     except ValueError:
-        option_parser.error("Field is not in mapping file (search is case "+\
+        raise KeyError("Field is not in mapping file (search is case "+\
         "and white-space sensitive). \n\tProvided field: "+\
         "%s. \n\tValid fields: %s" % (mapping_field,' '.join(mapping_headers)))
-    
     return set([e[field_index] for e in mapping_data])
 
 def split_mapping_file_on_field(mapping_f,
@@ -46,9 +45,9 @@ def split_mapping_file_on_field(mapping_f,
         try:
             column_rename_ids = mapping_headers.index(column_rename_ids)
         except ValueError:
-            option_parser.error("Field is not in mapping file (search is case "+\
-                 "and white-space sensitive). \n\tProvided field: "+\
-                 "%s. \n\tValid fields: %s" % (mapping_field,' '.join(mapping_headers)))
+            raise KeyError("Field is not in mapping file (search is case "+\
+                "and white-space sensitive). \n\tProvided field: "+\
+                "%s. \n\tValid fields: %s" % (mapping_field,' '.join(mapping_headers)))
     
     for v in mapping_values:
         v_fp_str = v.replace(' ','_')

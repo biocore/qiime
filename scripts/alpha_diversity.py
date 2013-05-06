@@ -4,16 +4,14 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
  
-
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
+from qiime.util import make_option, parse_command_line_parameters
 from qiime.alpha_diversity import (single_file_alpha, multiple_file_alpha,
 list_known_metrics)
 import os
@@ -61,7 +59,9 @@ script_info['optional_options']=[\
      help='Output distance matrix filepath or output directory to store' +\
      ' distance matrices when batch processing. [default: %default]',
      type='new_path'),
- make_option('-m', '--metrics', default='PD_whole_tree,chao1,observed_species',
+ make_option('-m', '--metrics', type='multiple_choice',
+     mchoices=list_known_metrics(),
+     default='PD_whole_tree,chao1,observed_species',
      help='Alpha-diversity metric(s) to use. A comma-separated list should' +\
      ' be provided when multiple metrics are specified. [default: %default]'), 
  make_option('-s', '--show_metrics', action='store_true', 

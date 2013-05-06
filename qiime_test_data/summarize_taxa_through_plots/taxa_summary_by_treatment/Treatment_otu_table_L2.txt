@@ -1,0 +1,2 @@
+Taxon	Control	Fast
+Root;k__Bacteria	1.0	1.0

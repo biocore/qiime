@@ -796,3 +796,13 @@ def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
         all_results = aggregate_multiple_results_G_test(all_results)
         output = output_results_G_test(all_results, taxonomy_all_OTUs)
     return output
+
+
+
+
+
+
+
+
+
+

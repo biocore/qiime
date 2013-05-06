@@ -1,0 +1,42 @@
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11472286
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+11472286	EU883771	92.73	55	4	0	1066	1120	627	681	3e-17	77.8
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11472384
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11468680
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11458037
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11469739
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11469752
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+11469752	EU883771	95.45	44	2	0	886	929	627	670	2e-15	71.9
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11460523
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11460543
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11480235
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+# BLASTN 2.2.22 [Sep-27-2009]
+# Query: 11480408
+# Database: /Users/caporaso/code/qiime_test_data/parallel_blast/refseqs.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score

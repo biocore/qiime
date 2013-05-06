@@ -1,0 +1,30 @@
+# BLAT 34x13 [2009/02/26]
+# Query: s1_1_frame_1
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s1_1_frame_1	eco:b0001-pr	100.00	21	0	0	1	21	1	21	2.5e-03	40.0
+# BLAT 34x13 [2009/02/26]
+# Query: s2_2_frame_1
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s2_2_frame_1	eco:b0015-pr	100.00	376	0	0	1	376	1	376	9.4e-226	779.0
+# BLAT 34x13 [2009/02/26]
+# Query: s1_3_frame_1
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s1_3_frame_1	eco:b0122-pr	100.00	115	0	0	1	115	1	115	2.0e-60	230.0
+# BLAT 34x13 [2009/02/26]
+# Query: s1_4_frame_1
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s1_4_frame_1	eco:b0122-pr	98.26	115	2	0	1	115	1	115	5.1e-59	225.0
+# BLAT 34x13 [2009/02/26]
+# Query: s1_5_frame_1
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s1_5_frame_1	eco:b0015-pr	100.00	376	0	0	1	376	1	376	9.4e-226	779.0
+# BLAT 34x13 [2009/02/26]
+# Query: s1_6_frame_2
+# Database: /Users/caporaso/code/qiime_test_data/parallel_assign_reads_to_database_usearch/refseqs_pr.fasta
+# Fields: Query id, Subject id, % identity, alignment length, mismatches, gap openings, q. start, q. end, s. start, s. end, e-value, bit score
+s1_6_frame_2	eco:b0015-pr	99.73	376	1	0	1	376	1	376	2.8e-225	777.0

@@ -1,0 +1,6 @@
+Model   Random Forests
+Error type    cv10
+Estimated Error (mean +/- s.d)	0.422219 +/- 0.519083029726
+Baseline Error (for random guessing	0.44444
+Ratio baseline error to observed error	1.05262908585
+Number of trees	500

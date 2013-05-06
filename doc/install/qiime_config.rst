@@ -63,7 +63,4 @@ Definition of values in qiime_config
 
 ``assign_taxonomy_id_to_taxonomy_fp`` : default id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions)
 
-``qiime_test_data_dir`` : path to your ``qiime_test_data`` directory, if installed. This is used by the QIIME testing suite.
-
 ``sc_queue`` : default queue to submit jobs to when running parallel QIIME on StarCluster
-

@@ -1,0 +1,3 @@
+ALIGN_BQ7_/a.txt
+ALIGN_BQ7_/b.txt
+ALIGN_BQ7_/c.txt

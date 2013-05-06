@@ -2,7 +2,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -81,7 +81,8 @@ class BetaDiversityCalcTests(TestCase):
             prefix='test_bdiv_otu_table',suffix='.blom')
         open(self.l19_str_w_underscore_fp,'w').write(l19_str_w_underscore)
 
-        self.l19_tree_str = '((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));'
+        self.l19_tree_str = '((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4,\
+ ((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));'
         self.l19_tree = parse_newick(self.l19_tree_str, PhyloNode)
         
         self.files_to_remove = [self.l19_fp,self.l19_str_w_underscore_fp]
@@ -114,7 +115,8 @@ class BetaDiversityCalcTests(TestCase):
         non_escaped_result = beta_calc(data_path=self.l19_fp, 
             tree_path=self.l19_tree, result_path=None, log_path=None)
             
-        l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4, (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
+        l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4,\
+ (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
         
         tree_fp = get_tmp_filename(prefix='Beta_div_tests',suffix='.tre')
         open(tree_fp,'w').write(l19_tree_str)
@@ -123,7 +125,8 @@ class BetaDiversityCalcTests(TestCase):
             tree_path=tree_fp, result_path=None, log_path=None)
         self.assertEqual(escaped_result,non_escaped_result)
         
-    def single_file_beta(self, otu_table_string, tree_string, missing_sams=None):
+    def single_file_beta(self, otu_table_string, tree_string, missing_sams=None,
+                         use_metric_list=False):
         """ running single_file_beta should give same result using --rows"""
         if missing_sams==None:
             missing_sams = []
@@ -144,11 +147,16 @@ class BetaDiversityCalcTests(TestCase):
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
-        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is not parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not parallelized, calculating the whole matrix...')  
-        warnings.filterwarnings('ignore','dissimilarity dist_gower is not parallelized, calculating the whole matrix...')     
-        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is not parallelized, calculating the whole matrix...')  
-        warnings.filterwarnings('ignore','unifrac had no information for sample M*')
+        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is\
+ not parallelized, calculating the whole matrix...')
+        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not\
+ parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','dissimilarity dist_gower is not\
+ parallelized, calculating the whole matrix...')     
+        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is\
+ not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','unifrac had no information for\
+ sample M*')
 
         self.files_to_remove.extend([input_path,tree_path])
         self.folders_to_remove.append(output_dir)
@@ -156,8 +164,12 @@ class BetaDiversityCalcTests(TestCase):
 
         for metric in metrics:
             # do it
-            single_file_beta(input_path, metric, tree_path, output_dir,
-                rowids=None)
+            if use_metric_list:
+                single_file_beta(input_path, [metric], tree_path, output_dir,
+                    rowids=None)
+            else:
+                single_file_beta(input_path, metric, tree_path, output_dir,
+                    rowids=None)
             sams, dmtx = parse_distmat(open(output_dir + '/' +\
                 metric + '_' + in_fname))
 
@@ -167,18 +179,24 @@ class BetaDiversityCalcTests(TestCase):
                 rows = sams[i]
                 row_outname = output_dir + '/' + metric + '_' +\
                     in_fname
-                single_file_beta(input_path, metric, tree_path, output_dir,
-                    rowids=rows)
+                if use_metric_list:
+                    single_file_beta(input_path, [metric], tree_path,
+                        output_dir, rowids=rows)
+                else:
+                    single_file_beta(input_path, metric, tree_path, output_dir,
+                        rowids=rows)
                 col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
 
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
+                    len(sams)))
 
                 # make sure rows same as full
                 for j in range(len(rows.split(','))):
                     for k in range(len(sams)):
                         row_v1 = row_dmtx[j,k]
                         full_v1 =\
-                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                            dmtx[sams.index(row_sams[j]),
+                                sams.index(col_sams[k])]
                         self.assertFloatEqual(row_v1, full_v1)
 
 
@@ -191,23 +209,33 @@ class BetaDiversityCalcTests(TestCase):
                 
                 row_outname = output_dir + '/ft/' + metric + '_' +\
                     in_fname
-                single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
-                    rowids=rows,full_tree=True)
+                if use_metric_list:
+                    single_file_beta(input_path, [metric], tree_path,
+                        output_dir+'/ft/', rowids=rows, full_tree=True)
+                else:
+                    single_file_beta(input_path, metric, tree_path,
+                        output_dir+'/ft/', rowids=rows, full_tree=True)
                 col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
 
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
+                    len(sams)))
 
                 # make sure rows same as full
                 for j in range(len(rows.split(','))):
                     for k in range(len(sams)):
                         row_v1 = row_dmtx[j,k]
                         full_v1 =\
-                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                            dmtx[sams.index(row_sams[j]),
+                                sams.index(col_sams[k])]
                         self.assertFloatEqual(row_v1, full_v1)
 
             # # do it with full tree
-            single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
-                rowids=None,full_tree=True)
+            if use_metric_list:
+                single_file_beta(input_path, [metric], tree_path,
+                    output_dir+'/ft/', rowids=None, full_tree=True)
+            else:
+                single_file_beta(input_path, metric, tree_path,
+                    output_dir+'/ft/', rowids=None, full_tree=True)
             sams_ft, dmtx_ft = parse_distmat(open(output_dir + '/ft/' +\
                 metric + '_' + in_fname))
             self.assertEqual(sams_ft, sams)
@@ -216,11 +244,20 @@ class BetaDiversityCalcTests(TestCase):
     def test_single_file_beta(self):
         self.single_file_beta(l19_otu_table, l19_tree)
 
+    def test_single_file_beta_metric_list(self):
+        self.single_file_beta(l19_otu_table, l19_tree, use_metric_list=True)
+
     def test_single_file_beta_missing(self):
-        self.single_file_beta(missing_otu_table, missing_tree, missing_sams=['M'])
+        self.single_file_beta(missing_otu_table, missing_tree,
+            missing_sams=['M'])
+
+    def test_single_file_beta_missin_metric_list(self):
+        self.single_file_beta(missing_otu_table, missing_tree,
+            missing_sams=['M'], use_metric_list=True)
 
     
-    def single_object_beta(self, otu_table, metric, tree_string, missing_sams=None):
+    def single_object_beta(self, otu_table, metric, tree_string,
+                            missing_sams=None):
         """ running single_file_beta should give same result using --rows"""
         if missing_sams==None:
             missing_sams = []
@@ -241,11 +278,16 @@ class BetaDiversityCalcTests(TestCase):
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
-        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is not parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not parallelized, calculating the whole matrix...')  
-        warnings.filterwarnings('ignore','dissimilarity dist_gower is not parallelized, calculating the whole matrix...')     
-        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is not parallelized, calculating the whole matrix...')  
-        warnings.filterwarnings('ignore','unifrac had no information for sample M*')
+        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is\
+ not parallelized, calculating the whole matrix...')
+        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not\
+ parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','dissimilarity dist_gower is not\
+ parallelized, calculating the whole matrix...')     
+        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is\
+ not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','unifrac had no information for\
+ sample M*')
 
         #self.files_to_remove.extend([input_path,tree_path])
         #self.folders_to_remove.append(output_dir)
@@ -270,14 +312,16 @@ class BetaDiversityCalcTests(TestCase):
                                           full_tree=False)
                 col_sams, row_sams, row_dmtx = parse_matrix(r_out)
 
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
+                    len(sams)))
 
                 # make sure rows same as full
                 for j in range(len(rows.split(','))):
                     for k in range(len(sams)):
                         row_v1 = row_dmtx[j,k]
                         full_v1 =\
-                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                            dmtx[sams.index(row_sams[j]),
+                                sams.index(col_sams[k])]
                         self.assertFloatEqual(row_v1, full_v1)
 
 
@@ -295,14 +339,16 @@ class BetaDiversityCalcTests(TestCase):
                                           full_tree=True)
                 col_sams, row_sams, row_dmtx = parse_matrix(r_out)
 
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
+                    len(sams)))
 
                 # make sure rows same as full
                 for j in range(len(rows.split(','))):
                     for k in range(len(sams)):
                         row_v1 = row_dmtx[j,k]
                         full_v1 =\
-                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                            dmtx[sams.index(row_sams[j]),
+                                sams.index(col_sams[k])]
                         self.assertFloatEqual(row_v1, full_v1)
 
             # # do it with full tree
@@ -318,14 +364,53 @@ class BetaDiversityCalcTests(TestCase):
         self.single_file_beta(l19_otu_table, l19_tree)
 
     def test_single_object_beta_missing(self):
-        self.single_file_beta(missing_otu_table, missing_tree, missing_sams=['M'])
+        self.single_file_beta(missing_otu_table, missing_tree,
+            missing_sams=['M'])
         
-l19_otu_table = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2", "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata": {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}}, {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9", "metadata": {}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0], [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0], [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0], [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0], [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0], [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0], [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0], [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null}, {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id": "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9", "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11", "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13", "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15", "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17", "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [9, 19], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+l19_otu_table = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2",\
+ "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata":\
+ {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}},\
+ {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9",\
+ "metadata": {}}], "format": "Biological Observation Matrix v0.9", "data":\
+ [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0],\
+ [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0],\
+ [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0],\
+ [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0],\
+ [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0],\
+ [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0],\
+ [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0],\
+ [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]],\
+ "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata":\
+ null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null},\
+ {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id":\
+ "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9",\
+ "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11",\
+ "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13",\
+ "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15",\
+ "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17",\
+ "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19",\
+ "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520",\
+ "matrix_type": "sparse", "shape": [9, 19], "format_url":\
+ "http://www.qiime.org/svn_documentation/documentation/biom_format.html",\
+ "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null,\
+ "matrix_element_type": "float"}"""
 
-l19_tree = """((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));"""
+l19_tree = """((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3,\
+ tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));"""
 
 missing_tree="""((a:1,b:2):4,((c:3, (j:1,k:2)mt:17),(d:1,e:1):2):3)"""
-missing_otu_table="""{"rows": [{"id": "a", "metadata": {}}, {"id": "c", "metadata": {}}, {"id": "b", "metadata": {}}, {"id": "e", "metadata": {}}, {"id": "m", "metadata": {}}, {"id": "d", "metadata": {}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0], [0, 2, 2.0], [1, 1, 1.0], [2, 0, 1.0], [2, 1, 1.0], [3, 2, 1.0], [4, 3, 88.0], [5, 1, 3.0]], "columns": [{"id": "A", "metadata": null}, {"id": "B", "metadata": null}, {"id": "C", "metadata": null}, {"id": "M", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [6, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-20T19:04:03.875636", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+missing_otu_table="""{"rows": [{"id": "a", "metadata": {}}, {"id": "c",\
+ "metadata": {}}, {"id": "b", "metadata": {}}, {"id": "e", "metadata": {}},\
+ {"id": "m", "metadata": {}}, {"id": "d", "metadata": {}}], "format":\
+ "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0], [0, 2, 2.0],\
+ [1, 1, 1.0], [2, 0, 1.0], [2, 1, 1.0], [3, 2, 1.0], [4, 3, 88.0],\
+ [5, 1, 3.0]], "columns": [{"id": "A", "metadata": null}, {"id": "B",\
+ "metadata": null}, {"id": "C", "metadata": null}, {"id": "M", "metadata":\
+ null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type":\
+ "sparse", "shape": [6, 4], "format_url":\
+ "http://www.qiime.org/svn_documentation/documentation/biom_format.html",\
+ "date": "2011-12-20T19:04:03.875636", "type": "OTU table", "id": null,\
+ "matrix_element_type": "float"}"""
 
 #run tests if called from command line
 if __name__ == '__main__':

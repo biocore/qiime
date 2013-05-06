@@ -3,7 +3,8 @@
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
-               "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
+               "Jose Carlos Clemente Litran", "Jai Ram Rideout",
+               "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -184,8 +185,8 @@ class BetaDiversityCalc(FunctionWithParams):
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
-def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
-    full_tree=False):
+def single_file_beta(input_path, metrics, tree_path, output_dir,
+    rowids=None, full_tree=False):
     """ does beta diversity calc on a single otu table
 
     uses name in metrics to name output beta diversity files
@@ -193,11 +194,17 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
     table, doesn't call getSubTree()
     inputs:
      input_path (str)
-     metrics (str, comma delimited if more than 1 metric)
+     metrics (str, comma delimited if more than 1 metric; or list)
      tree_path (str)
      output_dir (str)
      rowids (comma separated str)
     """
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     otu_table = parse_biom_table(open(input_path,'U'))
 
     if isinstance(otu_table, DenseTable):
@@ -211,11 +218,11 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
     else:
         tree = None
 
-    metrics_list = metrics.split(',')
     input_dir, input_filename = os.path.split(input_path)
     input_basename, input_ext = os.path.splitext(input_filename)
     for metric in metrics_list:
-        outfilepath = os.path.join(output_dir, metric + '_' + input_basename + '.txt')
+        outfilepath = os.path.join(output_dir, metric + '_' + \
+            input_basename + '.txt')
         try:
             metric_f = get_nonphylogenetic_metric(metric)
             is_phylogenetic = False
@@ -234,7 +241,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
         if rowids == None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds, make_subtree = (not full_tree))
+                dissims = metric_f(otumtx, otu_table.ObservationIds, \
+                    tree, otu_table.SampleIds, make_subtree = (not full_tree))
             else:
                 dissims = metric_f(otumtx)
             f = open(outfilepath,'w')
@@ -265,7 +273,9 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                         for i in range(len(otu_table.SampleIds)):
                             if is_phylogenetic:
                                 dissim = metric_f(otumtx[[rowidx,i],:],
-                                    otu_table.ObservationIds, tree, [otu_table.SampleIds[rowidx],otu_table.SampleIds[i]],
+                                    otu_table.ObservationIds, tree,
+                                    [otu_table.SampleIds[rowidx],
+                                    otu_table.SampleIds[i]],
                                     make_subtree = (not full_tree))[0,1]
                             else:
                                 dissim = metric_f(otumtx[[rowidx,i],:])[0,1]
@@ -274,7 +284,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                     else:
                         # do whole row at once
                         dissims = row_metric(otumtx,
-                                    otu_table.ObservationIds, tree, otu_table.SampleIds, rowid,
+                                    otu_table.ObservationIds, tree,
+                                    otu_table.SampleIds, rowid,
                                     make_subtree = (not full_tree))
                         row_dissims.append(dissims)
 
@@ -330,7 +341,8 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
         if rowids == None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds, make_subtree = (not full_tree))
+                dissims = metric_f(otumtx, otu_table.ObservationIds, tree,
+                    otu_table.SampleIds, make_subtree = (not full_tree))
             else:
                 dissims = metric_f(otumtx)
             
@@ -360,7 +372,9 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                         for i in range(len(otu_table.SampleIds)):
                             if is_phylogenetic:
                                 dissim = metric_f(otumtx[[rowidx,i],:],
-                                    otu_table.ObservationIds, tree, [otu_table.SampleIds[rowidx],otu_table.SampleIds[i]],
+                                    otu_table.ObservationIds, tree,
+                                    [otu_table.SampleIds[rowidx],
+                                    otu_table.SampleIds[i]],
                                     make_subtree = (not full_tree))[0,1]
                             else:
                                 dissim = metric_f(otumtx[[rowidx,i],:])[0,1]
@@ -369,14 +383,15 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                     else:
                         # do whole row at once
                         dissims = row_metric(otumtx,
-                                    otu_table.ObservationIds, tree, otu_table.SampleIds, rowid,
+                                    otu_table.ObservationIds, tree,
+                                    otu_table.SampleIds, rowid,
                                     make_subtree = (not full_tree))
                         row_dissims.append(dissims)
             
             return format_matrix(row_dissims,rowids_list,otu_table.SampleIds)
                         
-def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids=None,
-    full_tree=False):
+def multiple_file_beta(input_path, output_dir, metrics, tree_path,
+    rowids=None, full_tree=False):
     """ runs beta diversity for each input file in the input directory 
     
     performs minimal error checking on input args, then calls single_file_beta
@@ -384,12 +399,17 @@ def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids=None,
 
     inputs:
      input_path (str)
-     metrics (str, comma delimited if more than 1 metric)
+     metrics (str, comma delimited if more than 1 metric; or list)
      tree_path (str)
      output_dir (str)
 
     """
-    metrics_list = metrics.split(',')
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     try:

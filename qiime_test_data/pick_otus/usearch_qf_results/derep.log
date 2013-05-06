@@ -1,0 +1,73 @@
+usearch --cluster /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/len_sorted.fasta --slots 16769023 --sizeout --uc /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/derep.uc --w 64 --seedsout /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/dereplicated_seqs.fasta --maxrejects 500 --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/derep.log --minlen 64 --derep_subseq
+Started Thu Oct 18 14:21:57 2012
+Version 5.2.32
+8.6Gb RAM
+
+Hash size 16769023 (16.8M)
+Algorithm:
+  De novo clustering
+  Fast search (U-sorting) enabled
+  Similarity computed from a global alignment
+
+Word-counting heuristics:
+  Word length for database index 64
+  Step words 8
+  Bump fraction 50%
+
+U-sorted search termination:
+  Max accepts 1
+  Max rejects 500
+  Word count rejection enabled
+
+Accept criteria:
+  Min id 100.0%
+
+Query set:
+  Filename /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results/len_sorted.fasta
+  File size 47.9kb
+  Sequence type nucelotide
+
+Database:
+  Initially empty
+
+Substitution scores:
+  Match score 1.0
+  Mismatch score -2.0
+
+Gap penalties:
+     10.00  Open penalty (internal gaps)
+      0.50  Open penalty (end gaps)
+      1.00  Ext. penalty (internal gaps)
+      0.50  Ext. penalty (end gaps)
+
+Fast alignment heuristics:
+  HSP seed word length 5
+  One-hit HSP seeding
+  Exact word seeds (neighborhoods disabled)
+  Min HSP length 32
+  Band radius 16
+
+
+00:00 203Mb Result: 131 clusters, avg size 1.2, avg id. 100.0%
+Search time         0s
+Throughput          0.0 seqs/sec
+Query sequences     153
+Clusters            131
+Avg cluster size    1.2 seqs
+Avg cluster id      100.0%
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+           seqdb         265           0   88.3%          13Mb
+           ultra          25           0    8.3%         1.2Mb
+            mx_h         273           0    2.1%       297.0kb
+         myutils           4           0    0.9%       128.0kb
+       hspfinder         398         199    0.3%        43.4kb
+          windex         562           2    0.1%        13.6kb
+        comppath           1           0    0.0%       4344.0b
+----------------  ----------  ----------  ------  ------------
+           Total        1528         201  100.0%          14Mb
+
+Finished Thu Oct 18 14:21:57 2012
+Elapsed time 00:00
+Max memory 203Mb

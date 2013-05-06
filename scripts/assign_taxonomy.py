@@ -144,7 +144,7 @@ script_info['optional_options']=[\
  make_option('-e', '--e_value', type='float',
         help='Maximum e-value to record an assignment, only used for blast '
         'method [default: %default]',default=0.001),\
- make_option('--tree_fp', type='string',
+ make_option('--tree_fp', type='existing_filepath',
         help='The filepath to a prebuilt tree containing both the representative '
         'and reference sequences. Required for Tax2Tree assignment.'),\
  make_option('-o','--output_dir', type='new_dirpath',\
