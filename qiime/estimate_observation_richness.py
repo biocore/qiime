@@ -16,7 +16,6 @@ from bisect import insort
 from csv import writer
 from math import factorial
 from numpy import ceil, sqrt
-from scipy.misc import derivative
 
 class EmptyTableError(Exception):
     pass
@@ -177,22 +176,6 @@ class MultinomialPointEstimator(AbstractPointEstimator):
 
         return estimate
 
-    def estimateExpectedObservationCount2(self, new_val, idx, fk, m, n, s_obs,
-                                          full_richness_estimator):
-        # This is just temporary (for testing).
-        new_fk = fk[:]
-        new_fk[idx] = new_val
-
-        # Equation 9 in Colwell 2012.
-        m_star = m - n
-        f_hat = \
-            full_richness_estimator.estimateUnobservedObservationCount(new_fk)
-        f1 = new_fk[0]
-
-        estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
-
-        return estimate
-
     def estimateExpectedObservationCountStdErr(self, m, n, fk, s_obs, s_m,
                                                full_richness_estimator):
         if m <= n:
@@ -213,24 +196,45 @@ class MultinomialPointEstimator(AbstractPointEstimator):
             std_err_est = sqrt(accumulation - (s_m**2 / s_est))
         else:
             # Equation 10 in Colwell 2012.
+            m_star = m - n
             f_hat = \
                 full_richness_estimator.estimateUnobservedObservationCount(fk)
+            a0 = self._calculate_a0(fk[0], f_hat, n)
+            a = self._calculate_a(m_star, a0, n)
+            b = self._calculate_b(m_star, a0, n)
 
-            accumulation = 0
+            term1 = 0
             for i in range(1, n + 1):
-                pd_fi = derivative(self.estimateExpectedObservationCount2,
-                        fk[i - 1], args=(i - 1, fk, m, n, s_obs,
-                        full_richness_estimator), dx=1, order=5)
-
                 for j in range(1, n + 1):
-                    pd_fj = derivative(self.estimateExpectedObservationCount2,
-                            fk[j - 1], args=(j - 1, fk, m, n, s_obs,
-                            full_richness_estimator), dx=1, order=5)
-                    accumulation += (pd_fi * pd_fj * self._calculate_covariance(fk[i - 1],
-                                                               fk[j - 1],
-                                                               s_obs, f_hat,
-                                                               i==j))
-            std_err_est = sqrt(accumulation)
+                    term1 += self._calculate_covariance(fk[i - 1], fk[j - 1],
+                                                        s_obs, f_hat, i==j)
+
+            term2 = 0
+            j = 1
+            for i in range(1, n + 1):
+                term2 += self._calculate_covariance(fk[i - 1], fk[j - 1],
+                                                    s_obs, f_hat, i==j)
+            term2 *= 2 * a
+
+            term3 = 0
+            j = 2
+            for i in range(1, n + 1):
+                term3 += self._calculate_covariance(fk[i - 1], fk[j - 1],
+                                                    s_obs, f_hat, i==j)
+            term3 *= 2 * b
+
+            term4 = (a ** 2) * self._calculate_covariance(fk[0], fk[0], s_obs,
+                                                          f_hat, True)
+
+            term5 = (2 * a * b) * self._calculate_covariance(fk[1], fk[0],
+                                                             s_obs, f_hat,
+                                                             False)
+
+            term6 = (b ** 2) * self._calculate_covariance(fk[1], fk[1], s_obs,
+                                                          f_hat, True)
+
+            variance_est = term1 + term2 - term3 + term4 - term5 + term6
+            std_err_est = sqrt(variance_est)
 
         return std_err_est
 
@@ -250,6 +254,23 @@ class MultinomialPointEstimator(AbstractPointEstimator):
             cov = -(f_i * f_j) / (s_obs + f_hat)
 
         return cov
+
+    def _calculate_a0(self, f_1, f_hat, n):
+        return f_1 / (n * f_hat)
+
+    def _calculate_a(self, m_star, a0, n):
+        term1 = (2 * (1 - a0)) / n
+        term2 = 1 / a0
+        term3 = (1 - a0) ** m_star
+        term4 = term2 + (m_star / 2)
+        return term1 * (term2 - (term3 * term4))
+
+    def _calculate_b(self, m_star, a0, n):
+        term1 = (2 * ((1 - a0) ** 2)) / ((n ** 2) * a0)
+        term2 = 1 / a0
+        term3 = (1 - a0) ** m_star
+        term4 = term2 + m_star
+        return term1 * (term2 - (term3 * term4))
 
 
 class RichnessEstimatesResults(object):

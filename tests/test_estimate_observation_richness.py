@@ -281,6 +281,11 @@ class MultinomialPointEstimatorTests(TestCase):
                 self.colwell_fk, 112, self.chao1_estimator)
         self.assertFloatEqual(obs, 145.7369598336187)
 
+        # m = 1237 (n+1000)
+        obs = self.estimator1.estimateExpectedObservationCount(1237, 237,
+                self.colwell_fk, 112, self.chao1_estimator)
+        self.assertFloatEqual(obs, 335.67575295919767)
+
     def test_estimateExpectedObservationCountStdErr_interpolate(self):
         """Test computing std err of S_m using data from Colwell 2012."""
         # Verified against results in Colwell 2012 paper.
@@ -318,14 +323,19 @@ class MultinomialPointEstimatorTests(TestCase):
         obs = self.estimator1.estimateExpectedObservationCountStdErr(
                 337, 237, self.colwell_fk, 112, 145.7369598336187,
                 self.chao1_estimator)
-        #self.assertFloatEqual(obs, 12.20)
-        #print obs
+        self.assertFloatEqual(obs, 12.203359515126238)
 
+        # m = 437 (n+200)
         obs = self.estimator1.estimateExpectedObservationCountStdErr(
-                437, 237, self.colwell_fk, 112, 176.25,
-                self.chao1_estimator)
-        #print obs
-        #self.assertFloatEqual(obs, 12.20)
+                437, 237, self.colwell_fk, 112, 176.25, self.chao1_estimator)
+        self.assertFloatEqual(obs, 15.381473229829803)
+
+        # m = 1237 (n+1000)
+        obs = self.estimator1.estimateExpectedObservationCountStdErr(
+                1237, 237, self.colwell_fk, 112, 335.68, self.chao1_estimator)
+        # Paper shows 48.96, so we're off a little here. Not by a lot, likely
+        # just due to rounding differences.
+        self.assertFloatEqual(obs, 48.93581216632357)
 
 
 class RichnessEstimatesResultsTests(TestCase):
