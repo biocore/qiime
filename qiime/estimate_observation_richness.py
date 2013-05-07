@@ -239,29 +239,52 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
 
 class RichnessEstimatesResults(object):
-    _num_cols = 4
     _default_header = ['SampleID', 'Size', 'Estimate', 'Std Err']
+    _num_cols = len(_default_header)
 
     def __init__(self):
-        self.RawEstimatesData = []
-        self._samples = {}
+        # sample ID -> (ref individual count, {size -> (estimate, std err)})
+        self._data = {}
 
     def getSampleCount(self):
-        return len(self._reference_sample_counts)
+        return len(self._data)
 
-    def addSample(self, sample_id, individual_count):
-        if sample_id in self._samples:
-            raise ValueError("Sample '%s' has already been added to the list "
-                             "of results." % sample_id)
+    def getReferenceIndividualCount(self, sample_id):
+        if sample_id in self._data:
+            return self._data[sample_id][0]
         else:
-            self._samples[sample_id] = individual_count
+            raise ValueError("Unknown sample '%s'." % sample_id)
 
-    def addSampleEstimate(self, sample_id, size, estimate, estimate_std_err):
-        if sample_id in self._samples:
-            self.RawEstimatesData.append([sample_id, size, estimate,
-                                          estimate_std_err])
+    def getEstimates(self, sample_id):
+        if sample_id in self._data:
+            results = []
+            for size in sorted(self._data[sample_id][1]):
+                estimate, std_err = self._data[sample_id][1][size]
+                results.append((size, estimate, std_err))
+            return results
+        else:
+            raise ValueError("Unknown sample '%s'." % sample_id)
 
-    def saveRawData(self, out_fp, delimiter='\t', header=None):
+    def addSample(self, sample_id, reference_individual_count):
+        if sample_id in self._data:
+            raise ValueError("Sample '%s' has already been added." % sample_id)
+        else:
+            self._data[sample_id] = (reference_individual_count, {})
+
+    def addSampleEstimate(self, sample_id, size, estimate, std_err):
+        if sample_id in self._data:
+            estimates = self._data[sample_id][1]
+
+            if size in estimates:
+                raise ValueError("An estimate for sample '%s' already exists "
+                                 "at size %d." % (sample_id, size))
+            else:
+                estimates[size] = (estimate, std_err)
+        else:
+            raise ValueError("An estimate of size %d was provided for an "
+                             "unknown sample '%s'." % (size, sample_id))
+
+    def toTable(self, out_f, delimiter='\t', header=None):
         if header is None:
             header = self._default_header
         else:
@@ -269,8 +292,10 @@ class RichnessEstimatesResults(object):
                 raise ValueError("The supplied header must have exactly %d "
                                  "values." % self._num_cols)
 
-        with open(out_fp, 'wb') as out_f:
-            raw_data_writer = writer(out_f, delimiter=delimiter)
+        table_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
+        table_writer.writerow(header)
 
-            raw_data_writer.writerow(header)
-            raw_data_writer.writerows(self._estimates_data)
+        for sample_id in sorted(self._data):
+            estimates = self.getEstimates(sample_id)
+            table_writer.writerows([[sample_id] + list(row)
+                                     for row in estimates])

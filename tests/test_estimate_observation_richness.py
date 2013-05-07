@@ -13,6 +13,7 @@ __status__ = "Development"
 """Test suite for the estimate_observation_richness.py module."""
 
 from collections import defaultdict
+from StringIO import StringIO
 
 from biom.parse import parse_biom_table
 from biom.table import Table
@@ -315,12 +316,105 @@ class RichnessEstimatesResultsTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        #self.res1 = RichnessEstimatesResults()
-        pass
+        self.res1 = RichnessEstimatesResults()
 
-    def test_estimateExpectedObservationCount_interpolate(self):
-        """Test computing S(m) using data from Colwell 2012 paper."""
-        pass
+        self.res2 = RichnessEstimatesResults()
+        self.res2.addSample('S2', 52)
+        self.res2.addSampleEstimate('S2', 1, 3, 0.4)
+        self.res2.addSample('S1', 42)
+        self.res2.addSampleEstimate('S1', 10, 20, 2.5)
+        self.res2.addSampleEstimate('S1', 20, 30, 3.5)
+        self.res2.addSampleEstimate('S1', 5, 21, 1.5)
+
+    def test_constructor(self):
+        """Test instantiating a RichnessEstimatesResults instance."""
+        self.assertTrue(isinstance(self.res1, RichnessEstimatesResults))
+        self.assertEqual(self.res1.getSampleCount(), 0)
+
+    def test_getSampleCount(self):
+        """Test getting the number of samples in the results container."""
+        self.assertEqual(self.res1.getSampleCount(), 0)
+
+        self.res1.addSample('S1', 42)
+        self.assertEqual(self.res1.getSampleCount(), 1)
+
+        self.res1.addSample('S2', 43)
+        self.assertEqual(self.res1.getSampleCount(), 2)
+
+    def test_getReferenceIndividualCount(self):
+        """Test getting the original number of individuals in a sample."""
+        with self.assertRaises(ValueError):
+            self.res1.getReferenceIndividualCount('S1')
+
+        self.res1.addSample('S1', 42)
+        self.assertEqual(self.res1.getReferenceIndividualCount('S1'), 42)
+
+    def test_getEstimates(self):
+        """Test getting the estimates for a sample."""
+        with self.assertRaises(ValueError):
+            self.res1.getEstimates('S1')
+
+        self.res1.addSample('S1', 42)
+        self.res1.addSampleEstimate('S1', 15, 30, 4.75)
+        self.res1.addSampleEstimate('S1', 10, 20, 2.5)
+        self.assertFloatEqual(self.res1.getEstimates('S1'),
+                              [(10, 20, 2.5), (15, 30, 4.75)])
+
+    def test_addSample(self):
+        """Test adding a new sample to the results container."""
+        self.res1.addSample('S1', 42)
+        self.assertEqual(self.res1.getSampleCount(), 1)
+        self.assertEqual(self.res1.getReferenceIndividualCount('S1'), 42)
+
+        with self.assertRaises(ValueError):
+            self.res1.addSample('S1', 45)
+
+    def test_addSampleEstimate(self):
+        """Test adding a new estimate for a sample."""
+        with self.assertRaises(ValueError):
+            self.res1.addSampleEstimate('S1', 10, 20, 2.5)
+
+        self.res1.addSample('S1', 42)
+        self.res1.addSampleEstimate('S1', 10, 20, 2.5)
+        self.assertFloatEqual(self.res1.getEstimates('S1'), [(10, 20, 2.5)])
+
+        with self.assertRaises(ValueError):
+            self.res1.addSampleEstimate('S1', 10, 35, 0.002)
+
+    def test_toTable(self):
+        """Test writing results container to a table."""
+        # Empty results.
+        out_f = StringIO()
+        self.res1.toTable(out_f)
+        self.assertEqual(out_f.getvalue(),
+                         "SampleID\tSize\tEstimate\tStd Err\n")
+        out_f.close()
+
+        # Results with multiple samples.
+        exp = """SampleID\tSize\tEstimate\tStd Err
+S1\t5\t21\t1.5
+S1\t10\t20\t2.5
+S1\t20\t30\t3.5
+S2\t1\t3\t0.4
+"""
+        out_f = StringIO()
+        self.res2.toTable(out_f)
+        self.assertEqual(out_f.getvalue(), exp)
+        out_f.close()
+
+        # Custom header.
+        exp = """foo\tbar\tbaz\tbazaar\nS1\t5\t21\t1.5\n"""
+        out_f = StringIO()
+        self.res1.addSample('S1', 42)
+        self.res1.addSampleEstimate('S1', 5, 21, 1.5)
+        self.res1.toTable(out_f, header=['foo', 'bar', 'baz', 'bazaar'])
+        self.assertEqual(out_f.getvalue(), exp)
+        out_f.close()
+
+        # Invalid header.
+        with self.assertRaises(ValueError):
+            out_f = StringIO()
+            self.res1.toTable(out_f, header=['foo'])
 
 
 # OTU ID S1 taxonomy
