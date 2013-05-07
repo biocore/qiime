@@ -15,7 +15,9 @@ __status__ = "Development"
 from bisect import insort
 from collections import defaultdict
 from csv import writer
+from itertools import izip
 from math import factorial
+
 from numpy import ceil, sqrt
 
 class EmptyTableError(Exception):
@@ -28,6 +30,7 @@ class ObservationRichnessEstimator(object):
     def __init__(self, PointEstimator, biom_table):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
+
         self._biom_table = biom_table
 
         for c in self.getTotalIndividualCounts():
@@ -47,7 +50,7 @@ class ObservationRichnessEstimator(object):
         return [(e > 0).sum(0) for e in self._biom_table.iterSampleData()]
 
     def getAbundanceFrequencyCounts(self):
-        for samp_data, num_individuals in zip(
+        for samp_data, num_individuals in izip(
                 self._biom_table.iterSampleData(),
                 self.getTotalIndividualCounts()):
             samp_abundance_freq_count = defaultdict(int)
@@ -61,9 +64,8 @@ class ObservationRichnessEstimator(object):
     def __call__(self, start=1, stop=None, step_size=None):
         results = RichnessEstimatesResults()
 
-        for samp_id, _, num_obs, n, abundance_freqs in zip(
+        for samp_id, num_obs, n, abundance_freqs in izip(
                 self._biom_table.SampleIds,
-                self._biom_table.iterSampleData(),
                 self.getObservationCounts(),
                 self.getTotalIndividualCounts(),
                 self.getAbundanceFrequencyCounts()):
