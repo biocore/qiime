@@ -107,21 +107,23 @@ class ObservationRichnessEstimatorTests(TestCase):
         """Test __call__ computes correct estimates (extrapolation)."""
         # Verified with iNEXT. Differs slightly from their output because
         # they've slightly modified Colwell 2012 equation 9, and we're using
-        # the original one.
+        # the original one. SE estimates differ because they use a different
+        # technique. SE estimates have been verified against values in Colwell
+        # 2012 instead (in separate unit tests).
 
         obs = self.estimator1(start=15, stop=30, step_size=15)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463),
-                               (30, 5.4415544562981095, 1.0436386079745246)])
+                               (30, 5.4415544562981095, 1.073911829557642)])
 
         obs = self.estimator1(start=20, stop=30, step_size=5)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463),
-                               (20, 5.2555272427983537, 0.76645442959539622),
-                               (25, 5.38046614197245, 0.91087390209530017),
-                               (30, 5.4415544562981095, 1.0436386079745246)])
+                               (20, 5.2555272427983537, 0.77331345626875192),
+                               (25, 5.38046614197245, 0.93220670591157662),
+                               (30, 5.4415544562981095, 1.073911829557642)])
 
     def test_get_points_to_estimate_invalid_input(self):
         """Raises an error on invalid input."""
@@ -242,31 +244,29 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # m = 1076 (n+100)
         obs = self.estimator1(1076)
-        self.assertFloatEqual(obs, (146.99829023479796, 8.8698690398536204))
+        self.assertFloatEqual(obs, (146.99829023479796, 8.8700520745653257))
 
         # m = 1176 (n+200)
         obs = self.estimator1(1176)
-        self.assertFloatEqual(obs, (153.6567465407886, 9.3361296163839071))
+        self.assertFloatEqual(obs, (153.6567465407886, 9.3364370482687296))
 
         # m = 1976 (n+1000)
         obs = self.estimator1(1976)
-        self.assertFloatEqual(obs, (196.51177687081162, 13.988461215215887))
+        self.assertFloatEqual(obs, (196.51177687081162, 13.989113717395064))
 
         # Old-growth data.
 
         # m = 337 (n+100)
         obs = self.estimator2(337)
-        self.assertFloatEqual(obs, (145.7369598336187, 12.2033650407))
+        self.assertFloatEqual(obs, (145.7369598336187, 12.20489285355208))
 
         # m = 437 (n+200)
         obs = self.estimator2(437)
-        self.assertFloatEqual(obs, (176.24777891095846, 15.38155289184887))
+        self.assertFloatEqual(obs, (176.24777891095846, 15.382655350552035))
 
         # m = 1237 (n+1000)
-        # Paper shows the std err as 48.96, so we're off a little here. Not by
-        # a lot, likely just due to rounding differences.
         obs = self.estimator2(1237)
-        self.assertFloatEqual(obs, (335.67575295919767, 48.951306831638895))
+        self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834))
 
     def test_estimateFullRichness(self):
         """Test returns correct Chao1 full observation richness estimate."""
@@ -292,6 +292,38 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # Verified with iNEXT.
         obs = self.estimator3.estimateUnobservedObservationCount()
         self.assertFloatEqual(obs, 0.5)
+
+    def test_partial_derivative_f1(self):
+        """Test computes correct partial derivative wrt f1."""
+        # Verified with Wolfram Alpha.
+
+        # f2 > 0
+        obs = self.estimator1._partial_derivative_f1(2, 3, 10, 42)
+        self.assertFloatEqual(obs, 1.22672908818)
+
+        # f2 == 0
+        obs = self.estimator1._partial_derivative_f1(2, 0, 10, 42)
+        self.assertFloatEqual(obs, 1.272173492918482)
+
+        # f1 == 0, f2 == 0
+        obs = self.estimator1._partial_derivative_f1(0, 0, 10, 42)
+        self.assertFloatEqual(obs, 1.2961664362634027)
+
+    def test_partial_derivative_f2(self):
+        """Test computes correct partial derivative wrt f2."""
+        # Verified with Wolfram Alpha.
+
+        # f2 > 0
+        obs = self.estimator1._partial_derivative_f2(2, 3, 10, 42)
+        self.assertFloatEqual(obs, 0.9651585982441183)
+
+        # f2 == 0
+        obs = self.estimator1._partial_derivative_f2(2, 0, 10, 42)
+        self.assertFloatEqual(obs, 0.9208698803111386)
+
+        # f1 ==0, f2 == 0
+        obs = self.estimator1._partial_derivative_f2(0, 0, 10, 42)
+        self.assertFloatEqual(obs, 1.0)
 
 
 class RichnessEstimatesResultsTests(TestCase):

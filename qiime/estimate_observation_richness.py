@@ -112,7 +112,6 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
         self._s_obs = s_obs
 
         self._f_hat = self._calculate_f_hat(self._fk)
-        self._a_0 = self._calculate_a_0(self._fk[1], self._f_hat, self._n)
 
     def __call__(self, m):
         fk = self._fk
@@ -146,49 +145,73 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             # Equation 9 in Colwell 2012.
             m_star = m - n
             f1 = fk[1]
+            f2 = fk[2]
             f_hat = self.estimateUnobservedObservationCount()
 
             estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat))) ** m_star)
 
             # Equation 10 in Colwell 2012.
-            a_0 = self._a_0
-            a = self._calculate_a(m_star, a_0, n)
-            b = self._calculate_b(m_star, a_0, n)
-
-            term1 = 0
+            accumulator = 0
             for i in range(1, n + 1):
                 for j in range(1, n + 1):
-                    term1 += self._calculate_covariance(fk[i], fk[j], s_obs,
-                                                        f_hat, i==j)
+                    if i == 1:
+                        pd_i = self._partial_derivative_f1(f1, f2, m_star, n)
+                    elif i == 2:
+                        pd_i = self._partial_derivative_f2(f1, f2, m_star, n)
+                    else:
+                        pd_i = 1
 
-            term2 = 0
-            j = 1
-            for i in range(1, n + 1):
-                term2 += self._calculate_covariance(fk[i], fk[j], s_obs, f_hat,
-                                                    i==j)
-            term2 *= 2 * a
+                    if j == 1:
+                        pd_j = self._partial_derivative_f1(f1, f2, m_star, n)
+                    elif j == 2:
+                        pd_j = self._partial_derivative_f2(f1, f2, m_star, n)
+                    else:
+                        pd_j = 1
 
-            term3 = 0
-            j = 2
-            for i in range(1, n + 1):
-                term3 += self._calculate_covariance(fk[i], fk[j], s_obs, f_hat,
-                                                    i==j)
-            term3 *= 2 * b
+                    cov = self._calculate_covariance(fk[i], fk[j], s_obs, f_hat, i==j)
 
-            term4 = (a ** 2) * self._calculate_covariance(fk[1], fk[1], s_obs,
-                                                          f_hat, True)
+                    accumulator += (pd_i * pd_j * cov)
 
-            term5 = (2 * a * b) * self._calculate_covariance(fk[2], fk[1],
-                                                             s_obs, f_hat,
-                                                             False)
-
-            term6 = (b ** 2) * self._calculate_covariance(fk[2], fk[2], s_obs,
-                                                          f_hat, True)
-
-            variance_est = term1 + term2 - term3 + term4 - term5 + term6
-            std_err = sqrt(variance_est)
+            std_err = sqrt(accumulator)
 
         return estimate, std_err
+
+    def _partial_derivative_f1(self, f1, f2, m_star, n):
+        if f1 > 0 and f2 > 0:
+            a_0 = self._calculate_a_0(f1, f2, n)
+            term1 = (m_star * a_0 ** (m_star - 1)) / n
+            term2 = (f1 * (1 - a_0 ** m_star)) / f2
+            return 1 - term1 + term2
+        else:
+            a_1 = self._calculate_a_1(f1, f2, n)
+            term1 = (m_star * f1) * a_1 ** (m_star - 1)
+            term2 = n * (f1 - 1)
+            term3 = (f1 - 1) * (1 - a_1 ** m_star)
+            term4 = 2 * (f2 + 1)
+            term5 = f1 * (1 - a_1 ** m_star)
+            return 1 - (term1 / term2) + (term3 / term4) + (term5 / term4)
+
+    def _partial_derivative_f2(self, f1, f2, m_star, n):
+        if f1 > 0 and f2 > 0:
+            a_0 = self._calculate_a_0(f1, f2, n)
+            term1 = (f1 ** 2) * (1 - a_0 ** m_star)
+            term2 = 2 * (f2 ** 2)
+            term3 = (m_star * f1) * (a_0 ** (m_star - 1))
+            term4 = n * f2
+            return 1 - (term1 / term2) + (term3 / term4)
+        else:
+            a_1 = self._calculate_a_1(f1, f2, n)
+            term1 = (m_star * f1) * a_1 ** (m_star - 1)
+            term2 = n * (f2 + 1)
+            term3 = (f1 * (f1 - 1)) * (1 - a_1 ** m_star)
+            term4 = 2 * (f2 + 1) ** 2
+            return 1 + (term1 / term2) - (term3 / term4)
+
+    def _calculate_a_0(self, f1, f2, n):
+        return 1 - ((2 * f2) / (n * f1))
+
+    def _calculate_a_1(self, f1, f2, n):
+        return 1 - ((2 * (f2 + 1)) / (n * (f1 - 1)))
 
     def estimateFullRichness(self):
         # S_est = S_obs + f_hat_0
@@ -206,7 +229,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             raise ValueError("Encountered a negative f1 or f2 value, which is "
                              "invalid.")
 
-        if f2 > 0:
+        if f1 > 0 and f2 > 0:
             f_hat = f1 ** 2 / (2 * f2)
         else:
             f_hat = (f1 * (f1 - 1)) / (2 * (f2 + 1))
@@ -245,23 +268,6 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             cov = -(f_i * f_j) / (s_obs + f_hat)
 
         return cov
-
-    def _calculate_a_0(self, f_1, f_hat, n):
-        return f_1 / (n * f_hat + f_1)
-
-    def _calculate_a(self, m_star, a0, n):
-        term1 = (2 * (1 - a0)) / n
-        term2 = 1 / a0
-        term3 = (1 - a0) ** m_star
-        term4 = term2 + (m_star / 2)
-        return term1 * (term2 - (term3 * term4))
-
-    def _calculate_b(self, m_star, a0, n):
-        term1 = (2 * ((1 - a0) ** 2)) / ((n ** 2) * a0)
-        term2 = 1 / a0
-        term3 = (1 - a0) ** m_star
-        term4 = term2 + m_star
-        return term1 * (term2 - (term3 * term4))
 
 
 class RichnessEstimatesResults(object):
