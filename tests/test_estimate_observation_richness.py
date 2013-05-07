@@ -20,7 +20,7 @@ from biom.table import Table
 
 from cogent.util.unit_test import TestCase, main
 
-from numpy import array
+from numpy import asarray, array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,
         Chao1MultinomialPointEstimator, EmptySampleError,
@@ -48,32 +48,9 @@ class ObservationRichnessEstimatorTests(TestCase):
         self.assertRaises(EmptyTableError, ObservationRichnessEstimator,
                           empty_table, Chao1MultinomialPointEstimator)
 
-    def test_constructor_empty_sample(self):
-        """Test instantiating an estimator with a sample that has no obs."""
-        empty_sample_table = parse_biom_table(empty_sample_table_str)
-        self.assertRaises(EmptySampleError, ObservationRichnessEstimator,
-                          empty_sample_table, Chao1MultinomialPointEstimator)
-
     def test_getSampleCount(self):
         """Test estimator returns correct number of samples."""
         self.assertEqual(self.estimator1.getSampleCount(), 1)
-
-    def test_getTotalIndividualCounts(self):
-        """Returns correct total number of observed individuals per sample."""
-        # Verified with iNEXT.
-        self.assertEqual(self.estimator1.getTotalIndividualCounts(), [15])
-
-    def test_getObservationCounts(self):
-        """Returns correct number of (observed) observations per sample."""
-        # Verified with iNEXT.
-        self.assertEqual(self.estimator1.getObservationCounts(), [5])
-
-    def test_getAbundanceFrequencyCounts(self):
-        """Returns correct abundance frequency counts for each sample."""
-        # Verified with iNEXT.
-        exp = [defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})]
-        obs = list(self.estimator1.getAbundanceFrequencyCounts())
-        self.assertEqual(obs, exp)
 
     def test_call_interpolate(self):
         """Test __call__ computes correct estimates (interpolation)."""
@@ -155,12 +132,55 @@ class AbstractPointEstimatorTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        self.abstract_estimator = AbstractPointEstimator()
+        self.colwell_data1 = asarray(colwell_data1)
+        self.colwell_data2 = asarray(colwell_data2)
+
+        self.est1 = AbstractPointEstimator(asarray([0, 1, 2, 3, 4, 5]))
+        self.est2 = AbstractPointEstimator(self.colwell_data1)
+        self.est3 = AbstractPointEstimator(self.colwell_data2)
+
+    def test_constructor(self):
+        """Test instantiating an AbstractPointEstimator instance."""
+        self.assertTrue(isinstance(self.est1, AbstractPointEstimator))
+
+    def test_constructor_empty_sample(self):
+        """Test instantiating an estimator with a sample that has no obs."""
+        with self.assertRaises(EmptySampleError):
+            _ = AbstractPointEstimator(asarray([0, 0, 0, 0.0, 0, 0.0]))
+
+    def test_getTotalIndividualCount(self):
+        """Returns correct total number of observed individuals."""
+        # Verified with iNEXT.
+        self.assertEqual(self.est1.getTotalIndividualCount(), 15)
+
+        # Verified against results in Colwell 2012 paper.
+        self.assertEqual(self.est2.getTotalIndividualCount(), 976)
+        self.assertEqual(self.est3.getTotalIndividualCount(), 237)
+
+    def test_getObservationCount(self):
+        """Returns correct number of (observed) observations."""
+        # Verified with iNEXT.
+        self.assertEqual(self.est1.getObservationCount(), 5)
+
+        # Verified against results in Colwell 2012 paper.
+        self.assertEqual(self.est2.getObservationCount(), 140)
+        self.assertEqual(self.est3.getObservationCount(), 112)
+
+    def test_getAbundanceFrequencyCounts(self):
+        """Returns correct abundance frequency counts."""
+        # Verified with iNEXT.
+        exp = defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})
+        obs = self.est1.getAbundanceFrequencyCounts()
+        self.assertEqual(obs, exp)
+
+        # Verified against results in Colwell 2012 paper.
+        self.assertEqual(self.est2.getAbundanceFrequencyCounts(), colwell_fk1)
+        self.assertEqual(self.est3.getAbundanceFrequencyCounts(), colwell_fk2)
 
     def test_call(self):
         """Test should raise error."""
         with self.assertRaises(NotImplementedError):
-            self.abstract_estimator(1, 2, 3, [4])
+            self.est1(1)
 
 
 class Chao1MultinomialPointEstimatorTests(TestCase):
@@ -168,25 +188,34 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        self.colwell_s_obs1 = 140
-        self.colwell_n1 = 976
-        self.colwell_fk1 = colwell_fk1
+        self.colwell_data1 = asarray(colwell_data1)
+        self.colwell_data2 = asarray(colwell_data2)
 
-        self.colwell_s_obs2 = 112
-        self.colwell_n2 = 237
-        self.colwell_fk2 = colwell_fk2
+        self.samp_data1 = asarray([1, 2, 3, 4, 5])
+        self.samp_data2 = asarray([1, 3, 4, 5])
 
-        self.abundance_fk1 = defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})
-        self.abundance_fk2 = defaultdict(int, {1: 1, 3: 1, 4: 1, 5: 1})
+        self.estimator1 = Chao1MultinomialPointEstimator(self.colwell_data1)
+        self.estimator2 = Chao1MultinomialPointEstimator(self.colwell_data2)
+        self.estimator3 = Chao1MultinomialPointEstimator(self.samp_data1)
+        self.estimator4 = Chao1MultinomialPointEstimator(self.samp_data2)
 
-        self.estimator1 = Chao1MultinomialPointEstimator(self.colwell_fk1,
-                self.colwell_n1, self.colwell_s_obs1)
-        self.estimator2 = Chao1MultinomialPointEstimator(self.colwell_fk2,
-                self.colwell_n2, self.colwell_s_obs2)
-        self.estimator3 = Chao1MultinomialPointEstimator(self.abundance_fk1,
-                                                         15, 5)
-        self.estimator4 = Chao1MultinomialPointEstimator(self.abundance_fk2,
-                                                         13, 4)
+    def test_estimateUnobservedObservationCount(self):
+        """Test returns correct Chao1 estimate of num unobserved obs."""
+        # Verified with iNEXT.
+        obs = self.estimator3.estimateUnobservedObservationCount()
+        self.assertFloatEqual(obs, 0.5)
+
+    def test_estimateFullRichness(self):
+        """Test returns correct Chao1 full observation richness estimate."""
+        # Verified with iNEXT.
+
+        # f2 > 0
+        obs = self.estimator3.estimateFullRichness()
+        self.assertFloatEqual(obs, 5.5)
+
+        # f2 == 0
+        obs = self.estimator4.estimateFullRichness()
+        self.assertFloatEqual(obs, 4)
 
     def test_call_interpolate(self):
         """Test computing S(m) using data from Colwell 2012 paper."""
@@ -267,31 +296,6 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # m = 1237 (n+1000)
         obs = self.estimator2(1237)
         self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834))
-
-    def test_estimateFullRichness(self):
-        """Test returns correct Chao1 full observation richness estimate."""
-        # Verified with iNEXT.
-
-        # f2 > 0
-        obs = self.estimator3.estimateFullRichness()
-        self.assertFloatEqual(obs, 5.5)
-
-        # f2 == 0
-        obs = self.estimator4.estimateFullRichness()
-        self.assertFloatEqual(obs, 4)
-
-        # f2 < 0
-        bad_fk = self.abundance_fk2.copy()
-        bad_fk[2] = -1
-        with self.assertRaises(ValueError):
-            estimator = Chao1MultinomialPointEstimator(bad_fk, 13, 4)
-            estimator.estimateFullRichness()
-
-    def test_estimateUnobservedObservationCount(self):
-        """Test returns correct Chao1 estimate of num unobserved obs."""
-        # Verified with iNEXT.
-        obs = self.estimator3.estimateUnobservedObservationCount()
-        self.assertFloatEqual(obs, 0.5)
 
     def test_partial_derivative_f1(self):
         """Test computes correct partial derivative wrt f1."""
@@ -441,12 +445,14 @@ S2\t1\t3\t0.4
 # OTU5   5  foo;bar;bazzzzzz
 biom_table_str1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-04-11T11:39:44.032365","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 1],"data": [[1,0,1.0],[2,0,2.0],[3,0,3.0],[4,0,4.0],[5,0,5.0]],"rows": [{"id": "OTU0", "metadata": {"taxonomy": ["foo", "bar", "baz"]}},{"id": "OTU1", "metadata": {"taxonomy": ["foo", "bar", "bazz"]}},{"id": "OTU2", "metadata": {"taxonomy": ["foo", "bar", "bazzz"]}},{"id": "OTU3", "metadata": {"taxonomy": ["foo", "bar", "bazzzz"]}},{"id": "OTU4", "metadata": {"taxonomy": ["foo", "bar", "bazzzzz"]}},{"id": "OTU5", "metadata": {"taxonomy": ["foo", "bar", "bazzzzzz"]}}],"columns": [{"id": "S1", "metadata": null}]}"""
 
-empty_sample_table_str = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-04-11T13:02:56.774981","matrix_type": "dense","matrix_element_type": "float","shape": [1, 1],"data": [[0]],"rows": [{"id": "OTU0", "metadata": null}],"columns": [{"id": "S1", "metadata": null}]}"""
-
-# Taken from Colwell 2012 Osa second growth sample (Table 1a).
+# Taken from Colwell 2012 Osa second growth sample (Table 1a). Added some zeros
+# as these should be ignored.
+colwell_data1 = [64, 1, 1, 1, 1, 0.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8, 8, 9, 10, 10, 11, 11, 11, 12, 12, 77, 14, 14, 17, 19, 19, 20, 20, 20, 21, 24, 26, 40, 71, 57, 57, 60, 0]
 colwell_fk1 = defaultdict(int, {1: 70, 2: 17, 3: 4, 4: 5, 5: 5, 6: 5, 7: 5, 8: 3, 9: 1, 10: 2, 11: 3, 12: 2, 14: 2, 17: 1, 19: 2, 20: 3, 21: 1, 24: 1, 26: 1, 40: 1, 57: 2, 60: 1, 64: 1, 71: 1, 77: 1})
 
-# Taken from Colwell 2012 Osa old growth sample (Table 1b).
+# Taken from Colwell 2012 Osa old growth sample (Table 1b). Added some zeros as
+# these should be ignored.
+colwell_data2 = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 7, 7, 8, 42, 14]
 colwell_fk2 = defaultdict(int, {1: 84, 2: 10, 3: 4, 4: 3, 5: 5, 6: 1, 7: 2, 8: 1, 14: 1, 42: 1})
 
 

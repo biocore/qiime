@@ -28,54 +28,28 @@ class EmptySampleError(Exception):
 
 
 class ObservationRichnessEstimator(object):
-    def __init__(self, biom_table, point_estimator):
+    def __init__(self, biom_table, point_estimator_cls):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
 
         self._biom_table = biom_table
-
-        for c in self.getTotalIndividualCounts():
-            if c < 1:
-                raise EmptySampleError("Encountered a sample without any "
-                                       "recorded observations.")
-
-        self._point_estimator = point_estimator
+        self._point_estimator_cls = point_estimator_cls
 
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
 
-    def getTotalIndividualCounts(self):
-        return [int(e) for e in self._biom_table.sum(axis='sample')]
-
-    def getObservationCounts(self):
-        return [(e > 0).sum(0) for e in self._biom_table.iterSampleData()]
-
-    def getAbundanceFrequencyCounts(self):
-        for samp_data, num_individuals in izip(
-                self._biom_table.iterSampleData(),
-                self.getTotalIndividualCounts()):
-            samp_abundance_freq_count = defaultdict(int)
-
-            for i in range(1, num_individuals + 1):
-                fk_i = (samp_data == i).sum(0)
-                if fk_i > 0:
-                    samp_abundance_freq_count[i] = fk_i
-            yield samp_abundance_freq_count
-
     def __call__(self, start=1, stop=None, step_size=None):
         results = RichnessEstimatesResults()
 
-        for samp_id, num_obs, n, abundance_freqs in izip(
-                self._biom_table.SampleIds,
-                self.getObservationCounts(),
-                self.getTotalIndividualCounts(),
-                self.getAbundanceFrequencyCounts()):
+        for samp_data, samp_id, _ in self._biom_table.iterSamples():
+            point_estimator = self._point_estimator_cls(samp_data)
+            ref_indiv_count = point_estimator.getTotalIndividualCount()
+
             # stop is inclusive. If the original individual count isn't
             # included in this range, add it in the correct spot.
-            sizes = self._get_points_to_estimate(start, stop, step_size, n)
-            results.addSample(samp_id, n)
-            point_estimator = self._point_estimator(abundance_freqs, n,
-                                                    num_obs)
+            sizes = self._get_points_to_estimate(start, stop, step_size,
+                                                 ref_indiv_count)
+            results.addSample(samp_id, ref_indiv_count)
 
             for size in sizes:
                 exp_obs_count, std_err = point_estimator(size)
@@ -101,22 +75,65 @@ class ObservationRichnessEstimator(object):
 
 
 class AbstractPointEstimator(object):
-    def __call__(self, m, n, fk, s_obs):
+    def __init__(self, sample_data):
+        n = self._calculate_total_individual_count(sample_data)
+        if n < 1:
+            raise EmptySampleError("Encountered a sample without any recorded "
+                                   "observations.")
+        else:
+            self._n = n
+
+        self._s_obs = self._calculate_observation_count(sample_data)
+        self._fk = self._calculate_abundance_frequency_counts(sample_data, n)
+
+    def getTotalIndividualCount(self):
+        return self._n
+
+    def getObservationCount(self):
+        return self._s_obs
+
+    def getAbundanceFrequencyCounts(self):
+        return self._fk
+
+    def __call__(self, size):
         raise NotImplementedError("Subclasses must implement __call__.")
+
+    def _calculate_total_individual_count(self, sample_data):
+        return int(sample_data.sum(0))
+
+    def _calculate_observation_count(self, sample_data):
+        return int((sample_data > 0).sum(0))
+
+    def _calculate_abundance_frequency_counts(self, sample_data, n):
+        fk = defaultdict(int)
+
+        for i in range(1, n + 1):
+            fk_i = (sample_data == i).sum(0)
+
+            if fk_i > 0:
+                fk[i] = int(fk_i)
+
+        return fk
 
 
 class Chao1MultinomialPointEstimator(AbstractPointEstimator):
-    def __init__(self, fk, n, s_obs):
-        self._fk = fk
-        self._n = n
-        self._s_obs = s_obs
+    def __init__(self, sample_data):
+        super(Chao1MultinomialPointEstimator, self).__init__(sample_data)
+        self._f_hat = self._calculate_f_hat(self.getAbundanceFrequencyCounts())
 
-        self._f_hat = self._calculate_f_hat(self._fk)
+    def estimateUnobservedObservationCount(self):
+        return self._f_hat
 
-    def __call__(self, m):
-        fk = self._fk
-        n = self._n
-        s_obs = self._s_obs
+    def estimateFullRichness(self):
+        # S_est = S_obs + f_hat
+        return self.getObservationCount() + \
+                self.estimateUnobservedObservationCount()
+
+    def __call__(self, size):
+        m = size
+        fk = self.getAbundanceFrequencyCounts()
+        n = self.getTotalIndividualCount()
+        s_obs = self.getObservationCount()
 
         if m <= n:
             # Equation 4 in Colwell 2012.
@@ -169,12 +186,27 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
                         pd_j = 1
 
                     cov = self._calculate_covariance(fk[i], fk[j], s_obs, f_hat, i==j)
-
                     accumulator += (pd_i * pd_j * cov)
 
             std_err = sqrt(accumulator)
 
         return estimate, std_err
+
+    def _calculate_f_hat(self, fk):
+        # Based on equation 15a and 15b of Colwell 2012.
+        f1 = fk[1]
+        f2 = fk[2]
+
+        if f1 < 0 or f2 < 0:
+            raise ValueError("Encountered a negative f1 or f2 value, which is "
+                             "invalid.")
+
+        if f1 > 0 and f2 > 0:
+            f_hat = f1 ** 2 / (2 * f2)
+        else:
+            f_hat = (f1 * (f1 - 1)) / (2 * (f2 + 1))
+
+        return f_hat
 
     def _partial_derivative_f1(self, f1, f2, m_star, n):
         if f1 > 0 and f2 > 0:
@@ -212,29 +244,6 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
     def _calculate_a_1(self, f1, f2, n):
         return 1 - ((2 * (f2 + 1)) / (n * (f1 - 1)))
-
-    def estimateFullRichness(self):
-        # S_est = S_obs + f_hat_0
-        return self._s_obs + self.estimateUnobservedObservationCount()
-
-    def estimateUnobservedObservationCount(self):
-        return self._f_hat
-
-    def _calculate_f_hat(self, fk):
-        # Based on equation 15a and 15b of Colwell 2012.
-        f1 = fk[1]
-        f2 = fk[2]
-
-        if f1 < 0 or f2 < 0:
-            raise ValueError("Encountered a negative f1 or f2 value, which is "
-                             "invalid.")
-
-        if f1 > 0 and f2 > 0:
-            f_hat = f1 ** 2 / (2 * f2)
-        else:
-            f_hat = (f1 * (f1 - 1)) / (2 * (f2 + 1))
-
-        return f_hat
 
     def _calculate_alpha_km(self, n, k, m):
         alpha_km = 0
