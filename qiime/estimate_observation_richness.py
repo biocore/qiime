@@ -22,11 +22,13 @@ from numpy import ceil, sqrt
 class EmptyTableError(Exception):
     pass
 
+
 class EmptySampleError(Exception):
     pass
 
+
 class ObservationRichnessEstimator(object):
-    def __init__(self, PointEstimator, biom_table):
+    def __init__(self, biom_table, point_estimator):
         if biom_table.isEmpty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
 
@@ -37,7 +39,7 @@ class ObservationRichnessEstimator(object):
                 raise EmptySampleError("Encountered a sample without any "
                                        "recorded observations.")
 
-        self.PointEstimator = PointEstimator
+        self._point_estimator = point_estimator
 
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
@@ -72,11 +74,11 @@ class ObservationRichnessEstimator(object):
             # included in this range, add it in the correct spot.
             sizes = self._get_points_to_estimate(start, stop, step_size, n)
             results.addSample(samp_id, n)
+            point_estimator = self._point_estimator(abundance_freqs, n,
+                                                    num_obs)
 
             for size in sizes:
-                exp_obs_count, std_err = self.PointEstimator(size, n,
-                                                             abundance_freqs,
-                                                             num_obs)
+                exp_obs_count, std_err = point_estimator(size)
                 results.addSampleEstimate(samp_id, size, exp_obs_count,
                                           std_err)
         return results
@@ -104,7 +106,19 @@ class AbstractPointEstimator(object):
 
 
 class Chao1MultinomialPointEstimator(AbstractPointEstimator):
-    def __call__(self, m, n, fk, s_obs):
+    def __init__(self, fk, n, s_obs):
+        self._fk = fk
+        self._n = n
+        self._s_obs = s_obs
+
+        self._f_hat = self._calculate_f_hat(self._fk)
+        self._a_0 = self._calculate_a_0(self._fk[1], self._f_hat, self._n)
+
+    def __call__(self, m):
+        fk = self._fk
+        n = self._n
+        s_obs = self._s_obs
+
         if m <= n:
             # Equation 4 in Colwell 2012.
             accumulation = 0
@@ -119,7 +133,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             # report the standard error (SE) (which is the same as the standard
             # deviation in this case) in their tables and use this to construct
             # confidence intervals. Thus, we compute SE as sqrt(variance).
-            s_est = self.estimateFullRichness(fk, s_obs)
+            s_est = self.estimateFullRichness()
             accumulation = 0
 
             for k in range(1, n + 1):
@@ -131,15 +145,15 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
         else:
             # Equation 9 in Colwell 2012.
             m_star = m - n
-            f_hat = self.estimateUnobservedObservationCount(fk)
             f1 = fk[1]
+            f_hat = self.estimateUnobservedObservationCount()
 
-            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat)))**m_star)
+            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat))) ** m_star)
 
             # Equation 10 in Colwell 2012.
-            a0 = self._calculate_a0(f1, f_hat, n)
-            a = self._calculate_a(m_star, a0, n)
-            b = self._calculate_b(m_star, a0, n)
+            a_0 = self._a_0
+            a = self._calculate_a(m_star, a_0, n)
+            b = self._calculate_b(m_star, a_0, n)
 
             term1 = 0
             for i in range(1, n + 1):
@@ -176,27 +190,28 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
         return estimate, std_err
 
-    def estimateFullRichness(self, abundance_frequency_counts,
-                             observation_count):
+    def estimateFullRichness(self):
         # S_est = S_obs + f_hat_0
-        return observation_count + self.estimateUnobservedObservationCount(
-                abundance_frequency_counts)
+        return self._s_obs + self.estimateUnobservedObservationCount()
 
-    def estimateUnobservedObservationCount(self, abundance_frequency_counts):
+    def estimateUnobservedObservationCount(self):
+        return self._f_hat
+
+    def _calculate_f_hat(self, fk):
         # Based on equation 15a and 15b of Colwell 2012.
-        f1 = abundance_frequency_counts[1]
-        f2 = abundance_frequency_counts[2]
+        f1 = fk[1]
+        f2 = fk[2]
 
         if f1 < 0 or f2 < 0:
             raise ValueError("Encountered a negative f1 or f2 value, which is "
                              "invalid.")
 
         if f2 > 0:
-            estimated_unobserved_count = f1**2 / (2 * f2)
+            f_hat = f1 ** 2 / (2 * f2)
         else:
-            estimated_unobserved_count = (f1 * (f1 - 1)) / (2 * (f2 + 1))
+            f_hat = (f1 * (f1 - 1)) / (2 * (f2 + 1))
 
-        return estimated_unobserved_count
+        return f_hat
 
     def _calculate_alpha_km(self, n, k, m):
         alpha_km = 0
@@ -231,7 +246,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
         return cov
 
-    def _calculate_a0(self, f_1, f_hat, n):
+    def _calculate_a_0(self, f_1, f_hat, n):
         return f_1 / (n * f_hat + f_1)
 
     def _calculate_a(self, m_star, a0, n):

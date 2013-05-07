@@ -34,10 +34,8 @@ class ObservationRichnessEstimatorTests(TestCase):
         """Define some sample data that will be used by the tests."""
         # Single sample, 6 observations, one of which isn't observed in sample.
         self.biom_table1 = parse_biom_table(biom_table_str1)
-        self.multi_estimator = Chao1MultinomialPointEstimator()
-
-        self.estimator1 = ObservationRichnessEstimator(self.multi_estimator,
-                                                       self.biom_table1)
+        self.estimator1 = ObservationRichnessEstimator(self.biom_table1,
+                Chao1MultinomialPointEstimator)
 
     def test_constructor(self):
         """Test instantiating an ObservationRichnessEstimator."""
@@ -47,16 +45,14 @@ class ObservationRichnessEstimatorTests(TestCase):
     def test_constructor_empty_table(self):
         """Test instantiating an estimator with an empty table."""
         empty_table = Table(array([]), [], [])
-        self.assertRaises(EmptyTableError,
-                          ObservationRichnessEstimator, self.multi_estimator,
-                          empty_table)
+        self.assertRaises(EmptyTableError, ObservationRichnessEstimator,
+                          empty_table, Chao1MultinomialPointEstimator)
 
     def test_constructor_empty_sample(self):
         """Test instantiating an estimator with a sample that has no obs."""
         empty_sample_table = parse_biom_table(empty_sample_table_str)
-        self.assertRaises(EmptySampleError,
-                          ObservationRichnessEstimator, self.multi_estimator,
-                          empty_sample_table)
+        self.assertRaises(EmptySampleError, ObservationRichnessEstimator,
+                          empty_sample_table, Chao1MultinomialPointEstimator)
 
     def test_getSampleCount(self):
         """Test estimator returns correct number of samples."""
@@ -170,8 +166,6 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        self.estimator1 = Chao1MultinomialPointEstimator()
-
         self.colwell_s_obs1 = 140
         self.colwell_n1 = 976
         self.colwell_fk1 = colwell_fk1
@@ -182,8 +176,15 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         self.abundance_fk1 = defaultdict(int, {1: 1, 2: 1, 3: 1, 4: 1, 5: 1})
         self.abundance_fk2 = defaultdict(int, {1: 1, 3: 1, 4: 1, 5: 1})
-        self.abundance_fk3 = self.abundance_fk2.copy()
-        self.abundance_fk3[2] = -1
+
+        self.estimator1 = Chao1MultinomialPointEstimator(self.colwell_fk1,
+                self.colwell_n1, self.colwell_s_obs1)
+        self.estimator2 = Chao1MultinomialPointEstimator(self.colwell_fk2,
+                self.colwell_n2, self.colwell_s_obs2)
+        self.estimator3 = Chao1MultinomialPointEstimator(self.abundance_fk1,
+                                                         15, 5)
+        self.estimator4 = Chao1MultinomialPointEstimator(self.abundance_fk2,
+                                                         13, 4)
 
     def test_call_interpolate(self):
         """Test computing S(m) using data from Colwell 2012 paper."""
@@ -197,49 +198,40 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # so I'm guessing they're treating 1 as a special case (since you can't
         # have an observation count of less than one if you have exactly one
         # individual).
-        obs = self.estimator1(1, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(1)
         self.assertFloatEqual(obs, (1.0, 0.17638208235509734))
 
         # m = 100
-        obs = self.estimator1(100, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(100)
         self.assertFloatEqual(obs, (44.295771605749465, 4.3560838094150975))
 
         # m = 800
-        obs = self.estimator1(800, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(800)
         self.assertFloatEqual(obs, (126.7974481741264, 7.7007346056227375))
 
         # m = 976 (max)
-        obs = self.estimator1(976, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(976)
         self.assertFloatEqual(obs, (140, 8.4270097160038446))
 
         # Old-growth data.
 
         # m = 1 (min)
-        obs = self.estimator1(1, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(1)
         self.assertFloatEqual(obs, (1.0, 0.20541870170521284))
 
         # m = 20
-        obs = self.estimator1(20, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(20)
         self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
 
-        obs = self.estimator1(20, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(20)
         self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
 
         # m = 200
-        obs = self.estimator1(200, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(200)
         self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115))
 
         # m = 237 (max)
-        obs = self.estimator1(237, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(237)
         self.assertFloatEqual(obs, (112.00, 9.22019783913399))
 
     def test_call_extrapolate(self):
@@ -249,37 +241,31 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # Second-growth data.
 
         # m = 1076 (n+100)
-        obs = self.estimator1(1076, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(1076)
         self.assertFloatEqual(obs, (146.99829023479796, 8.8698690398536204))
 
         # m = 1176 (n+200)
-        obs = self.estimator1(1176, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(1176)
         self.assertFloatEqual(obs, (153.6567465407886, 9.3361296163839071))
 
         # m = 1976 (n+1000)
-        obs = self.estimator1(1976, self.colwell_n1, self.colwell_fk1,
-                              self.colwell_s_obs1)
+        obs = self.estimator1(1976)
         self.assertFloatEqual(obs, (196.51177687081162, 13.988461215215887))
 
         # Old-growth data.
 
         # m = 337 (n+100)
-        obs = self.estimator1(337, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(337)
         self.assertFloatEqual(obs, (145.7369598336187, 12.2033650407))
 
         # m = 437 (n+200)
-        obs = self.estimator1(437, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(437)
         self.assertFloatEqual(obs, (176.24777891095846, 15.38155289184887))
 
         # m = 1237 (n+1000)
         # Paper shows the std err as 48.96, so we're off a little here. Not by
         # a lot, likely just due to rounding differences.
-        obs = self.estimator1(1237, self.colwell_n2, self.colwell_fk2,
-                              self.colwell_s_obs2)
+        obs = self.estimator2(1237)
         self.assertFloatEqual(obs, (335.67575295919767, 48.951306831638895))
 
     def test_estimateFullRichness(self):
@@ -287,22 +273,24 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # Verified with iNEXT.
 
         # f2 > 0
-        obs = self.estimator1.estimateFullRichness(self.abundance_fk1, 5)
+        obs = self.estimator3.estimateFullRichness()
         self.assertFloatEqual(obs, 5.5)
 
         # f2 == 0
-        obs = self.estimator1.estimateFullRichness(self.abundance_fk2, 4)
+        obs = self.estimator4.estimateFullRichness()
         self.assertFloatEqual(obs, 4)
 
         # f2 < 0
-        self.assertRaises(ValueError, self.estimator1.estimateFullRichness,
-                          self.abundance_fk3, 4)
+        bad_fk = self.abundance_fk2.copy()
+        bad_fk[2] = -1
+        with self.assertRaises(ValueError):
+            estimator = Chao1MultinomialPointEstimator(bad_fk, 13, 4)
+            estimator.estimateFullRichness()
 
     def test_estimateUnobservedObservationCount(self):
         """Test returns correct Chao1 estimate of num unobserved obs."""
         # Verified with iNEXT.
-        obs = self.estimator1.estimateUnobservedObservationCount(
-                self.abundance_fk1)
+        obs = self.estimator3.estimateUnobservedObservationCount()
         self.assertFloatEqual(obs, 0.5)
 
 
