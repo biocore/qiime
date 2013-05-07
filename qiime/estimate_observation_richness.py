@@ -16,7 +16,6 @@ from bisect import insort
 from collections import defaultdict
 from csv import writer
 from itertools import izip
-from math import factorial
 
 from numpy import ceil, sqrt
 
@@ -201,12 +200,28 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
     def _calculate_alpha_km(self, n, k, m):
         alpha_km = 0
+        diff = n - m
 
-        if k <= (n - m):
-            alpha_km = ((factorial(n - k) * factorial(n - m)) /
-                        (factorial(n) * factorial(n - k - m)))
+        if k <= diff:
+            alpha_km = ((self._factorial(n - k) * self._factorial(diff)) /
+                        (self._factorial(n) * self._factorial(diff - k)))
 
         return alpha_km
+
+    def _factorial(self, n, cache=[1, 1]):
+        # Taken and modified from
+        # http://code.activestate.com/recipes/577241-faster-factorial
+        if n < len(cache):
+            return cache[n]
+        else:
+            last = len(cache) - 1
+            total = cache[last]
+
+            for i in range(last + 1, n + 1):
+                total *= i
+                cache.append(total)
+
+            return total
 
     def _calculate_covariance(self, f_i, f_j, s_obs, f_hat, same_var):
         if same_var:
