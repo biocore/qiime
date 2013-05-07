@@ -59,31 +59,25 @@ class ObservationRichnessEstimator(object):
             yield samp_abundance_freq_count
 
     def __call__(self, start=1, stop=None, step_size=None):
-        #results = RichnessEstimatesResults()
-        results = []
-        orig_indiv_counts = {}
+        results = RichnessEstimatesResults()
 
-        for samp_id, samp_data, num_obs, n, abundance_freqs in zip(
+        for samp_id, _, num_obs, n, abundance_freqs in zip(
                 self._biom_table.SampleIds,
                 self._biom_table.iterSampleData(),
                 self.getObservationCounts(),
                 self.getTotalIndividualCounts(),
                 self.getAbundanceFrequencyCounts()):
-            # TODO samp_data not necessary?
-            samp_data = samp_data[samp_data > 0]
-            orig_indiv_counts[samp_id] = n
-
             # stop is inclusive. If the original individual count isn't
             # included in this range, add it in the correct spot.
             sizes = self._get_points_to_estimate(start, stop, step_size, n)
+            results.addSample(samp_id, n)
 
             for size in sizes:
                 exp_obs_count, std_err = self.PointEstimator(size, n,
                                                              abundance_freqs,
                                                              num_obs)
-                results.append((samp_id, size, exp_obs_count, std_err))
-
-        #return RichnessEstimatesResults(results, orig_indiv_counts)
+                results.addSampleEstimate(samp_id, size, exp_obs_count,
+                                          std_err)
         return results
 
     def _get_points_to_estimate(self, start, stop, step_size,

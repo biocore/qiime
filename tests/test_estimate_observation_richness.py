@@ -84,28 +84,28 @@ class ObservationRichnessEstimatorTests(TestCase):
         # Verified with iNEXT (http://glimmer.rstudio.com/tchsieh/inext/).
         # SE estimates differ because they use a different technique. SE
         # estimates have been verified against values in Colwell 2012 instead
-        # (in a separate unit test).
+        # (in separate unit tests).
 
         # Just reference.
         obs = self.estimator1(start=15, stop=15, step_size=1)
-        #self.assertFloatEqual(obs.RawEstimatesData,
-        #                      [[('S1', 15, 5, 0.674199862463)]])
-        self.assertFloatEqual(obs,
-                              [[('S1', 15, 5, 0.674199862463)]])
+        self.assertEqual(obs.getSampleCount(), 1)
+        self.assertFloatEqual(obs.getEstimates('S1'),
+                              [(15, 5, 0.674199862463)])
 
         # start=1 and reference.
         obs = self.estimator1(start=1, stop=1, step_size=1)
-        self.assertFloatEqual(obs,
-                              [[('S1', 1, 1.0, 0.250252397843),
-                                ('S1', 15, 5, 0.674199862463)]])
+        self.assertEqual(obs.getSampleCount(), 1)
+        self.assertFloatEqual(obs.getEstimates('S1'),
+                [(1, 1.0, 0.250252397843), (15, 5, 0.674199862463)])
 
         # Points in between start=1 and reference.
         obs = self.estimator1(start=1, stop=15, step_size=5)
-        self.assertFloatEqual(obs,
-                              [[('S1', 1, 1.0, 0.250252397843),
-                                ('S1', 6, 3.7382617382617385, 0.676462867498),
-                                ('S1', 11, 4.666666666666667, 0.669471144282),
-                                ('S1', 15, 5, 0.674199862463)]])
+        self.assertEqual(obs.getSampleCount(), 1)
+        self.assertFloatEqual(obs.getEstimates('S1'),
+                              [(1, 1.0, 0.250252397843),
+                               (6, 3.7382617382617385, 0.676462867498),
+                               (11, 4.666666666666667, 0.669471144282),
+                               (15, 5, 0.674199862463)])
 
     def test_call_extrapolate(self):
         """Test __call__ computes correct estimates (extrapolation)."""
@@ -113,24 +113,19 @@ class ObservationRichnessEstimatorTests(TestCase):
         # they've slightly modified Colwell 2012 equation 9, and we're using
         # the original one.
 
-        #obs = self.estimator1(start=15, stop=30, step_size=15)
-        # TODO fix expected variance
-        #self.assertFloatEqual(obs.RawEstimatesData,
-        #                      [[('S1', 15, 5, 0.674199862463),
-        #                        ('S1', 30, 5.4415544562981095, float('inf'))]])
+        obs = self.estimator1(start=15, stop=30, step_size=15)
+        self.assertEqual(obs.getSampleCount(), 1)
+        self.assertFloatEqual(obs.getEstimates('S1'),
+                              [(15, 5, 0.674199862463),
+                               (30, 5.4415544562981095, 1.0436386079745246)])
 
-        #obs = self.estimator1(start=20, stop=30, step_size=5)
-        # TODO fix expected variance
-        #self.assertFloatEqual(obs.RawEstimatesData,
-        #                      [[('S1', 15, 5, 0.674199862463),
-        #                        ('S1', 20, 5.2555272427983537, float('inf')),
-        #                        ('S1', 25, 5.38046614197245, float('inf')),
-        #                        ('S1', 30, 5.4415544562981095, float('inf'))]])
-
-    def test_call_full_range(self):
-        """Test __call__ computes correct estimates (inter/extrapolation)."""
-        # TODO test me!
-        pass
+        obs = self.estimator1(start=20, stop=30, step_size=5)
+        self.assertEqual(obs.getSampleCount(), 1)
+        self.assertFloatEqual(obs.getEstimates('S1'),
+                              [(15, 5, 0.674199862463),
+                               (20, 5.2555272427983537, 0.76645442959539622),
+                               (25, 5.38046614197245, 0.91087390209530017),
+                               (30, 5.4415544562981095, 1.0436386079745246)])
 
     def test_get_points_to_estimate_invalid_input(self):
         """Raises an error on invalid input."""
