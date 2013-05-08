@@ -107,7 +107,7 @@
     sink(filepath)
     cat(sprintf('Model\tRandom Forest\n'))
     cat(sprintf('Error type\t%s\n',result$error.type))
-    if(opts$errortype == 'oob' || opts$errortype == 'cvloo'){
+    if(opts$errortype == 'oob' || opts$errortype == 'loo'){
         cat(sprintf('Estimated error\t%.5f\n',err))
     } else {
         cat(sprintf('Estimated error (mean +/- s.d.)\t%.5f +/- %.5f\n',err,err.sd))
