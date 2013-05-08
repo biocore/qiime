@@ -187,39 +187,50 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             f1 = fk[1]
             f2 = fk[2]
             f_hat = self.estimateUnobservedObservationCount()
-            pd_f1 = self._partial_derivative_f1(f1, f2, m_star, n)
-            pd_f2 = self._partial_derivative_f2(f1, f2, m_star, n)
 
-            estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat))) ** m_star)
+            try:
+                estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat))) ** m_star)
+            except ZeroDivisionError:
+                # This can happen if we have exactly one singleton and no
+                # doubletons, or no singletons and no doubletons.
+                estimate = None
+                std_err = None
+            else:
+                # Equation 10 in Colwell 2012.
+                pd_f1 = self._partial_derivative_f1(f1, f2, m_star, n)
+                pd_f2 = self._partial_derivative_f2(f1, f2, m_star, n)
 
-            # Equation 10 in Colwell 2012.
-            accumulator = 0
-            for i in range(1, n + 1):
-                if i > 2:
-                    pd_i = 1
-                elif i == 1:
-                    pd_i = pd_f1
-                elif i == 2:
-                    pd_i = pd_f2
+                accumulator = 0
+                for i in range(1, n + 1):
+                    if i > 2:
+                        pd_i = 1
+                    elif i == 1:
+                        pd_i = pd_f1
+                    elif i == 2:
+                        pd_i = pd_f2
 
-                for j in range(1, n + 1):
-                    if j > 2:
-                        pd_j = 1
-                    elif j == 1:
-                        pd_j = pd_f1
-                    elif j == 2:
-                        pd_j = pd_f2
+                    for j in range(1, n + 1):
+                        if j > 2:
+                            pd_j = 1
+                        elif j == 1:
+                            pd_j = pd_f1
+                        elif j == 2:
+                            pd_j = pd_f2
 
-                    cov = self._calculate_covariance(fk[i], fk[j], s_est, i==j)
-                    accumulator += (pd_i * pd_j * cov)
+                        cov = self._calculate_covariance(fk[i], fk[j], s_est, i==j)
+                        accumulator += (pd_i * pd_j * cov)
 
-            std_err = sqrt(accumulator)
+                std_err = sqrt(accumulator)
 
-        
-        z_crit = abs(ndtri((1 - confidence_level) / 2))
-        ci_bound = z_crit * std_err
+        ci_low = None
+        ci_high = None
+        if std_err is not None:
+            z_crit = abs(ndtri((1 - confidence_level) / 2))
+            ci_bound = z_crit * std_err
+            ci_low = estimate - ci_bound
+            ci_high = estimate + ci_bound
 
-        return estimate, std_err, estimate - ci_bound, estimate + ci_bound
+        return estimate, std_err, ci_low, ci_high
 
     def _calculate_f_hat(self, fk):
         # Based on equation 15a and 15b of Colwell 2012.
@@ -375,7 +386,7 @@ class RichnessEstimatesResults(object):
             raise ValueError("An estimate of size %d was provided for an "
                              "unknown sample '%s'." % (size, sample_id))
 
-    def toTable(self, out_f, delimiter='\t', header=None):
+    def toTable(self, out_f, header=None, delimiter='\t', missing='N/A'):
         if header is None:
             header = self._default_header
         else:
@@ -386,7 +397,9 @@ class RichnessEstimatesResults(object):
         table_writer = writer(out_f, delimiter=delimiter, lineterminator='\n')
         table_writer.writerow(header)
 
+        missing_f = lambda e: missing if e is None else e
+
         for sample_id in sorted(self._data):
             estimates = self.getEstimates(sample_id)
-            table_writer.writerows([[sample_id] + list(row)
+            table_writer.writerows([[sample_id] + map(missing_f, row)
                                      for row in estimates])

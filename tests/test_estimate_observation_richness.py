@@ -467,6 +467,18 @@ S1\t5\t21\t1.5\t2.5\t3.5
             out_f = StringIO()
             self.res1.toTable(out_f, header=['foo'])
 
+        # Cells with None as their value.
+        exp = """SampleID\tSize\tEstimate\tStd Err\tCI (lower)\tCI (upper)
+S1\t43\tN/A\tN/A\tN/A\tN/A
+"""
+        out_f = StringIO()
+        res = RichnessEstimatesResults()
+        res.addSample('S1', 42)
+        res.addSampleEstimate('S1', 43, None, None, None, None)
+        res.toTable(out_f)
+        self.assertEqual(out_f.getvalue(), exp)
+        out_f.close()
+
 
 # OTU ID S1 taxonomy
 # OTU0   0  foo;bar;baz
