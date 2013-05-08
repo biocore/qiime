@@ -28,6 +28,7 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "Estimates the observation richness of samples in a BIOM table"
 script_info['script_description'] = """
+This script provides estimates of the observation richness (i.e. observation count)
 
 References:
 

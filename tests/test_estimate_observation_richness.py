@@ -325,6 +325,12 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         with self.assertRaises(ValueError):
             self.estimator1(42, confidence_level=0)
 
+    def test_call_na_samples(self):
+        """Test on sample without any singletons or doubletons."""
+        est = Chao1MultinomialPointEstimator(asarray([4, 3, 4, 5]))
+        obs = est(42)
+        self.assertEqual(obs, (None, None, None, None))
+
     def test_partial_derivative_f1(self):
         """Test computes correct partial derivative wrt f1."""
         # Verified with Wolfram Alpha.
