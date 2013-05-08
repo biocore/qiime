@@ -17,7 +17,9 @@ from collections import defaultdict
 from csv import writer
 from itertools import izip
 
-from numpy import ceil, sqrt
+from biom.util import compute_counts_per_sample_stats
+
+from numpy import ceil, empty, sqrt
 
 class EmptyTableError(Exception):
     pass
@@ -38,7 +40,7 @@ class ObservationRichnessEstimator(object):
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
 
-    def __call__(self, start=1, stop=None, step_size=None):
+    def __call__(self, start=1, stop=None, num_steps=10):
         results = RichnessEstimatesResults()
 
         for samp_data, samp_id, _ in self._biom_table.iterSamples():
@@ -47,8 +49,8 @@ class ObservationRichnessEstimator(object):
 
             # stop is inclusive. If the original individual count isn't
             # included in this range, add it in the correct spot.
-            sizes = self._get_points_to_estimate(start, stop, step_size,
-                                                 ref_indiv_count)
+            sizes = self._get_points_to_estimate(ref_indiv_count, start, stop,
+                                                 num_steps)
             results.addSample(samp_id, ref_indiv_count)
 
             for size in sizes:
@@ -57,15 +59,23 @@ class ObservationRichnessEstimator(object):
                                           std_err)
         return results
 
-    def _get_points_to_estimate(self, start, stop, step_size,
-                                reference_individual_count):
-        if start < 1 or step_size < 1:
-            raise ValueError("The minimum observation count and step size "
-                             "must both be greater than or equal to 1.")
+    def _get_points_to_estimate(self, reference_individual_count, start=1,
+                                stop=None, num_steps=10):
+        if stop is None:
+            # Compute base sample size as stopping point.
+            min_size, max_size, _, _, _ = compute_counts_per_sample_stats(
+                    self._biom_table)
+            stop = int(max(2 * min_size, max_size))
+
+        if start < 1 or num_steps < 1:
+            raise ValueError("The minimum individual count and number of "
+                             "steps must both be greater than or equal to 1.")
 
         if start > stop:
-            raise ValueError("The minimum observation count must be less than "
-                             "or equal to the maximum observation count.")
+            raise ValueError("The minimum individual count must be less than "
+                             "or equal to the maximum individual count.")
+
+        step_size = max((stop - start) // num_steps, 1)
 
         points = range(start, stop + 1, step_size)
         if reference_individual_count not in points:
@@ -120,6 +130,10 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
     def __init__(self, sample_data):
         super(Chao1MultinomialPointEstimator, self).__init__(sample_data)
         self._f_hat = self._calculate_f_hat(self.getAbundanceFrequencyCounts())
+        #self._cov_matrix = self._calculate_covariance_matrix(
+        #        self.getAbundanceFrequencyCounts(),
+        #        self.getTotalIndividualCount(),
+        #        self.estimateFullRichness())
 
     def estimateUnobservedObservationCount(self):
         return self._f_hat
@@ -134,6 +148,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
         fk = self.getAbundanceFrequencyCounts()
         n = self.getTotalIndividualCount()
         s_obs = self.getObservationCount()
+        s_est = self.estimateFullRichness()
 
         if m <= n:
             # Equation 4 in Colwell 2012.
@@ -164,28 +179,30 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             f1 = fk[1]
             f2 = fk[2]
             f_hat = self.estimateUnobservedObservationCount()
+            pd_f1 = self._partial_derivative_f1(f1, f2, m_star, n)
+            pd_f2 = self._partial_derivative_f2(f1, f2, m_star, n)
 
             estimate = s_obs + f_hat * (1 - (1 - (f1 / (n * f_hat))) ** m_star)
 
             # Equation 10 in Colwell 2012.
             accumulator = 0
             for i in range(1, n + 1):
+                if i > 2:
+                    pd_i = 1
+                elif i == 1:
+                    pd_i = pd_f1
+                elif i == 2:
+                    pd_i = pd_f2
+
                 for j in range(1, n + 1):
-                    if i == 1:
-                        pd_i = self._partial_derivative_f1(f1, f2, m_star, n)
-                    elif i == 2:
-                        pd_i = self._partial_derivative_f2(f1, f2, m_star, n)
-                    else:
-                        pd_i = 1
-
-                    if j == 1:
-                        pd_j = self._partial_derivative_f1(f1, f2, m_star, n)
-                    elif j == 2:
-                        pd_j = self._partial_derivative_f2(f1, f2, m_star, n)
-                    else:
+                    if j > 2:
                         pd_j = 1
+                    elif j == 1:
+                        pd_j = pd_f1
+                    elif j == 2:
+                        pd_j = pd_f2
 
-                    cov = self._calculate_covariance(fk[i], fk[j], s_obs, f_hat, i==j)
+                    cov = self._calculate_covariance(fk[i], fk[j], s_est, i==j)
                     accumulator += (pd_i * pd_j * cov)
 
             std_err = sqrt(accumulator)
@@ -270,13 +287,30 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
             return total
 
-    def _calculate_covariance(self, f_i, f_j, s_obs, f_hat, same_var):
+    def _calculate_covariance(self, f_i, f_j, s_est, same_var):
         if same_var:
-            cov = f_i * (1 - f_i / (s_obs + f_hat))
+            cov = f_i * (1 - f_i / s_est)
         else:
-            cov = -(f_i * f_j) / (s_obs + f_hat)
+            cov = -(f_i * f_j) / s_est
 
         return cov
+
+    def _calculate_covariance_matrix(self, fk, n, s_est):
+        result = empty((n, n))
+
+        for i in range(0, n):
+            f_i = fk[i + 1]
+
+            for j in range(0, i + 1):
+                if i != j:
+                    f_j = fk[j + 1]
+                    cov = -(f_i * f_j) / s_est
+                    result[i, j] = cov
+                    result[j, i] = cov
+                else:
+                    result[i, j] = f_i * (1 - f_i / s_est)
+
+        return result
 
 
 class RichnessEstimatesResults(object):

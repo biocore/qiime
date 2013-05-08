@@ -60,24 +60,25 @@ class ObservationRichnessEstimatorTests(TestCase):
         # (in separate unit tests).
 
         # Just reference.
-        obs = self.estimator1(start=15, stop=15, step_size=1)
+        obs = self.estimator1(start=15, stop=15, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463)])
 
         # start=1 and reference.
-        obs = self.estimator1(start=1, stop=1, step_size=1)
+        obs = self.estimator1(start=1, stop=1, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                 [(1, 1.0, 0.250252397843), (15, 5, 0.674199862463)])
 
         # Points in between start=1 and reference.
-        obs = self.estimator1(start=1, stop=15, step_size=5)
+        obs = self.estimator1(start=1, stop=15, num_steps=3)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(1, 1.0, 0.250252397843),
-                               (6, 3.7382617382617385, 0.676462867498),
-                               (11, 4.666666666666667, 0.669471144282),
+                               (5, 3.40326340326, 0.655024590447),
+                               (9, 4.4001998002, 0.680106580075),
+                               (13, 4.85714285714, 0.665379090563),
                                (15, 5, 0.674199862463)])
 
     def test_call_extrapolate(self):
@@ -88,13 +89,13 @@ class ObservationRichnessEstimatorTests(TestCase):
         # technique. SE estimates have been verified against values in Colwell
         # 2012 instead (in separate unit tests).
 
-        obs = self.estimator1(start=15, stop=30, step_size=15)
+        obs = self.estimator1(start=15, stop=30, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463),
                                (30, 5.4415544562981095, 1.073911829557642)])
 
-        obs = self.estimator1(start=20, stop=30, step_size=5)
+        obs = self.estimator1(start=20, stop=30, num_steps=2)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463),
@@ -106,25 +107,29 @@ class ObservationRichnessEstimatorTests(TestCase):
         """Raises an error on invalid input."""
         # Invalid min.
         self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
-                          0, 10, 1, 5)
+                          5, 0, 10, 1)
 
-        # Invalid step_size.
+        # Invalid num_steps.
         self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
-                          1, 10, 0, 5)
+                          5, 1, 10, 0)
 
         # max < min.
         self.assertRaises(ValueError, self.estimator1._get_points_to_estimate,
-                          1, -1, 1, 5)
+                          5, 1, -1, 1)
 
     def test_get_points_to_estimate(self):
         """Correctly calculates estimation points given range parameters."""
         # Ref in range.
-        obs = self.estimator1._get_points_to_estimate(1, 5, 1, 4)
+        obs = self.estimator1._get_points_to_estimate(4, 1, 5, 4)
         self.assertEqual(obs, [1, 2, 3, 4, 5])
 
         # Ref not in range.
-        obs = self.estimator1._get_points_to_estimate(5, 10, 2, 4)
+        obs = self.estimator1._get_points_to_estimate(4, 5, 10, 2)
         self.assertEqual(obs, [4, 5, 7, 9])
+
+        # stop not supplied.
+        obs = self.estimator1._get_points_to_estimate(5, 5, num_steps=2)
+        self.assertEqual(obs, [5, 17, 29])
 
 
 class AbstractPointEstimatorTests(TestCase):
