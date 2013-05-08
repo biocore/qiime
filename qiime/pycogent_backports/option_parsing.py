@@ -130,7 +130,7 @@ class CogentOption(Option):
     # choices are returned as a list
     TYPE_CHECKER["multiple_choice"] = check_multiple_choice
     # for cases where the user is passing a blast database option
-    # bast_db is returned as a string
+    # blast_db is returned as a string
     TYPE_CHECKER["blast_db"] = check_blast_db
 
     def _check_multiple_choice(self):
