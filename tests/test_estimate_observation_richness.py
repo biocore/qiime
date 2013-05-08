@@ -320,6 +320,11 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834,
                                     239.71146009, 431.640045829))
 
+    def test_call_invalid_input(self):
+        """Test error is raised on invalid input."""
+        with self.assertRaises(ValueError):
+            self.estimator1(42, confidence_level=0)
+
     def test_partial_derivative_f1(self):
         """Test computes correct partial derivative wrt f1."""
         # Verified with Wolfram Alpha.
