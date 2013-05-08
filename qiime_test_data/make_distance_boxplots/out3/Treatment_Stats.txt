@@ -1,7 +1,8 @@
 # The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean != Group 2 mean
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
-# the test could not be performed (e.g. no variance in the groups).
+# the test could not be performed (e.g. no variance in groups with the same mean).
 Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
 All within Treatment	All between Treatment	-5.8262425036	1.44801388028e-06	1.44801388028e-05	N/A	N/A
 All within Treatment	Control vs. Control	0.0112396745597	0.991125136573	1	N/A	N/A
