@@ -19,6 +19,8 @@ from itertools import izip
 
 from biom.util import compute_counts_per_sample_stats
 
+from cogent.maths.stats.distribution import ndtri
+
 from numpy import ceil, empty, sqrt
 
 class EmptyTableError(Exception):
@@ -40,7 +42,8 @@ class ObservationRichnessEstimator(object):
     def getSampleCount(self):
         return len(self._biom_table.SampleIds)
 
-    def __call__(self, start=1, stop=None, num_steps=10):
+    def __call__(self, start=1, stop=None, num_steps=10,
+                 confidence_level=0.95):
         results = RichnessEstimatesResults()
 
         for samp_data, samp_id, _ in self._biom_table.iterSamples():
@@ -54,9 +57,10 @@ class ObservationRichnessEstimator(object):
             results.addSample(samp_id, ref_indiv_count)
 
             for size in sizes:
-                exp_obs_count, std_err = point_estimator(size)
+                exp_obs_count, std_err, ci_low, ci_high = point_estimator(size,
+                        confidence_level=confidence_level)
                 results.addSampleEstimate(samp_id, size, exp_obs_count,
-                                          std_err)
+                                          std_err, ci_low, ci_high)
         return results
 
     def _get_points_to_estimate(self, reference_individual_count, start=1,
@@ -143,7 +147,11 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
         return self.getObservationCount() + \
                 self.estimateUnobservedObservationCount()
 
-    def __call__(self, size):
+    def __call__(self, size, confidence_level=0.95):
+        if confidence_level <= 0 or confidence_level >= 1:
+            raise ValueError("Invalid confidence level: %.4f. Must be between "
+                             "zero and one (exclusive)." % confidence_level)
+
         m = size
         fk = self.getAbundanceFrequencyCounts()
         n = self.getTotalIndividualCount()
@@ -207,7 +215,11 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
             std_err = sqrt(accumulator)
 
-        return estimate, std_err
+        
+        z_crit = abs(ndtri((1 - confidence_level) / 2))
+        ci_bound = z_crit * std_err
+
+        return estimate, std_err, estimate - ci_bound, estimate + ci_bound
 
     def _calculate_f_hat(self, fk):
         # Based on equation 15a and 15b of Colwell 2012.
@@ -314,11 +326,13 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
 
 class RichnessEstimatesResults(object):
-    _default_header = ['SampleID', 'Size', 'Estimate', 'Std Err']
+    _default_header = ['SampleID', 'Size', 'Estimate', 'Std Err', 'CI (lower)',
+                       'CI (upper)']
     _num_cols = len(_default_header)
 
     def __init__(self):
-        # sample ID -> (ref individual count, {size -> (estimate, std err)})
+        # sample ID -> (ref individual count,
+        #               {size -> (estimate, std err, ci_low, ci_high)})
         self._data = {}
 
     def getSampleCount(self):
@@ -334,8 +348,9 @@ class RichnessEstimatesResults(object):
         if sample_id in self._data:
             results = []
             for size in sorted(self._data[sample_id][1]):
-                estimate, std_err = self._data[sample_id][1][size]
-                results.append((size, estimate, std_err))
+                estimate, std_err, ci_low, ci_high = \
+                        self._data[sample_id][1][size]
+                results.append((size, estimate, std_err, ci_low, ci_high))
             return results
         else:
             raise ValueError("Unknown sample '%s'." % sample_id)
@@ -346,7 +361,8 @@ class RichnessEstimatesResults(object):
         else:
             self._data[sample_id] = (reference_individual_count, {})
 
-    def addSampleEstimate(self, sample_id, size, estimate, std_err):
+    def addSampleEstimate(self, sample_id, size, estimate, std_err, ci_low,
+                          ci_high):
         if sample_id in self._data:
             estimates = self._data[sample_id][1]
 
@@ -354,7 +370,7 @@ class RichnessEstimatesResults(object):
                 raise ValueError("An estimate for sample '%s' already exists "
                                  "at size %d." % (sample_id, size))
             else:
-                estimates[size] = (estimate, std_err)
+                estimates[size] = (estimate, std_err, ci_low, ci_high)
         else:
             raise ValueError("An estimate of size %d was provided for an "
                              "unknown sample '%s'." % (size, sample_id))

@@ -54,8 +54,9 @@ script_info['optional_options'] = [
         help='the number of individuals (e.g. sequences) per sample to start performing estimations at [default: %default]', default=1),
     make_option('-x', '--max', type='int',
         help='the number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as "double the smallest reference sample size or the maximum reference sample size, whichever is larger" [default: base sample size]', default=None),
-    make_option('-n', '--num_steps', type='int',
-        help='the number of steps to make between -m/--min and -x/--max.  Increasing this number will result in smoother curves, but will also increase the amount of time needed to run the script. Note that reference sample size for each sample will be included if it does not fall within the min/max/num_steps range [default: %default]', default=10)
+    make_option('-n', '--num_steps', type='int', help='the number of steps to make between -m/--min and -x/--max.  Increasing this number will result in smoother curves, but will also increase the amount of time needed to run the script. Note that reference sample size for each sample will be included if it does not fall within the min/max/num_steps range [default: %default]', default=10),
+    make_option('-c', '--confidence_level', type='float',
+        help='the confidence level of the unconditional confidence interval for each estimate. Must be a value between 0 and 1 (exclusive). For example, a 95% unconditional confidence interval would be 0.95 [default: %default]', default=0.95)
 ]
 script_info['version'] = __version__
 
@@ -76,7 +77,8 @@ def main():
 
     estimator = ObservationRichnessEstimator(table,
                                              Chao1MultinomialPointEstimator)
-    results = estimator(opts.min, opts.max, opts.num_steps)
+    results = estimator(opts.min, opts.max, opts.num_steps,
+                        opts.confidence_level)
 
     out_fp = join(out_dir, 'estimates_table.txt')
     with open(out_fp, 'w') as out_f:

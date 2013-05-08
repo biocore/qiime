@@ -63,23 +63,26 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = self.estimator1(start=15, stop=15, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                              [(15, 5, 0.674199862463)])
+                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # start=1 and reference.
         obs = self.estimator1(start=1, stop=1, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(1, 1.0, 0.250252397843), (15, 5, 0.674199862463)])
+                [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
+                 (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # Points in between start=1 and reference.
         obs = self.estimator1(start=1, stop=15, num_steps=3)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                              [(1, 1.0, 0.250252397843),
-                               (5, 3.40326340326, 0.655024590447),
-                               (9, 4.4001998002, 0.680106580075),
-                               (13, 4.85714285714, 0.665379090563),
-                               (15, 5, 0.674199862463)])
+                [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
+                 (5, 3.40326340326, 0.655024590447, 2.119438797,
+                  4.68708800953),
+                 (9, 4.4001998002, 0.680106580075, 3.0672153976, 5.7331842028),
+                 (13, 4.85714285714, 0.665379090563, 3.55302380357,
+                  6.16126191071),
+                 (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
     def test_call_extrapolate(self):
         """Test __call__ computes correct estimates (extrapolation)."""
@@ -92,16 +95,20 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = self.estimator1(start=15, stop=30, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                              [(15, 5, 0.674199862463),
-                               (30, 5.4415544562981095, 1.073911829557642)])
+                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
+                 (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
+                  7.5463829648)])
 
         obs = self.estimator1(start=20, stop=30, num_steps=2)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                              [(15, 5, 0.674199862463),
-                               (20, 5.2555272427983537, 0.77331345626875192),
-                               (25, 5.38046614197245, 0.93220670591157662),
-                               (30, 5.4415544562981095, 1.073911829557642)])
+                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
+                 (20, 5.2555272427983537, 0.77331345626875192, 3.73986071975,
+                  6.77119376585),
+                 (25, 5.38046614197245, 0.93220670591157662, 3.55337457224,
+                  7.20755771171),
+                 (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
+                  7.5463829648)])
 
     def test_get_points_to_estimate_invalid_input(self):
         """Raises an error on invalid input."""
@@ -235,40 +242,45 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # have an observation count of less than one if you have exactly one
         # individual).
         obs = self.estimator1(1)
-        self.assertFloatEqual(obs, (1.0, 0.17638208235509734))
+        self.assertFloatEqual(obs, (1.0, 0.17638208235509734, 0.654297471066,
+                                    1.34570252893))
 
         # m = 100
         obs = self.estimator1(100)
-        self.assertFloatEqual(obs, (44.295771605749465, 4.3560838094150975))
+        self.assertFloatEqual(obs, (44.295771605749465, 4.3560838094150975,
+                                    35.7580042257, 52.8335389858))
 
         # m = 800
         obs = self.estimator1(800)
-        self.assertFloatEqual(obs, (126.7974481741264, 7.7007346056227375))
+        self.assertFloatEqual(obs, (126.7974481741264, 7.7007346056227375,
+                                    111.704285693, 141.890610656))
 
         # m = 976 (max)
         obs = self.estimator1(976)
-        self.assertFloatEqual(obs, (140, 8.4270097160038446))
+        self.assertFloatEqual(obs, (140, 8.4270097160038446, 123.483364459,
+                                    156.516635541))
 
         # Old-growth data.
 
         # m = 1 (min)
         obs = self.estimator2(1)
-        self.assertFloatEqual(obs, (1.0, 0.20541870170521284))
+        self.assertFloatEqual(obs, (1.0, 0.20541870170521284, 0.597386742907,
+                                    1.40261325709))
 
         # m = 20
         obs = self.estimator2(20)
-        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
-
-        obs = self.estimator2(20)
-        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465))
+        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465,
+                                    12.0723331767, 19.7109972385))
 
         # m = 200
         obs = self.estimator2(200)
-        self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115))
+        self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115,
+                                    82.6624120315, 114.601224416))
 
         # m = 237 (max)
         obs = self.estimator2(237)
-        self.assertFloatEqual(obs, (112.00, 9.22019783913399))
+        self.assertFloatEqual(obs, (112.00, 9.22019783913399, 93.928744305,
+                                    130.071255695))
 
     def test_call_extrapolate(self):
         """Test computing S(n+m*) using data from Colwell 2012 paper."""
@@ -278,29 +290,35 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # m = 1076 (n+100)
         obs = self.estimator1(1076)
-        self.assertFloatEqual(obs, (146.99829023479796, 8.8700520745653257))
+        self.assertFloatEqual(obs, (146.99829023479796, 8.8700520745653257,
+                                    129.613307628, 164.383272842))
 
         # m = 1176 (n+200)
         obs = self.estimator1(1176)
-        self.assertFloatEqual(obs, (153.6567465407886, 9.3364370482687296))
+        self.assertFloatEqual(obs, (153.6567465407886, 9.3364370482687296,
+                                    135.357666182, 171.955826899))
 
         # m = 1976 (n+1000)
         obs = self.estimator1(1976)
-        self.assertFloatEqual(obs, (196.51177687081162, 13.989113717395064))
+        self.assertFloatEqual(obs, (196.51177687081162, 13.989113717395064,
+                                    169.093617809, 223.929935933))
 
         # Old-growth data.
 
         # m = 337 (n+100)
         obs = self.estimator2(337)
-        self.assertFloatEqual(obs, (145.7369598336187, 12.20489285355208))
+        self.assertFloatEqual(obs, (145.7369598336187, 12.20489285355208,
+                                    121.815809405, 169.658110262))
 
         # m = 437 (n+200)
         obs = self.estimator2(437)
-        self.assertFloatEqual(obs, (176.24777891095846, 15.382655350552035))
+        self.assertFloatEqual(obs, (176.24777891095846, 15.382655350552035,
+                                    146.098328437, 206.397229385))
 
         # m = 1237 (n+1000)
         obs = self.estimator2(1237)
-        self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834))
+        self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834,
+                                    239.71146009, 431.640045829))
 
     def test_partial_derivative_f1(self):
         """Test computes correct partial derivative wrt f1."""
@@ -344,11 +362,11 @@ class RichnessEstimatesResultsTests(TestCase):
 
         self.res2 = RichnessEstimatesResults()
         self.res2.addSample('S2', 52)
-        self.res2.addSampleEstimate('S2', 1, 3, 0.4)
+        self.res2.addSampleEstimate('S2', 1, 3, 0.4, 2.5, 3.5)
         self.res2.addSample('S1', 42)
-        self.res2.addSampleEstimate('S1', 10, 20, 2.5)
-        self.res2.addSampleEstimate('S1', 20, 30, 3.5)
-        self.res2.addSampleEstimate('S1', 5, 21, 1.5)
+        self.res2.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
+        self.res2.addSampleEstimate('S1', 20, 30, 3.5, 2.5, 3.5)
+        self.res2.addSampleEstimate('S1', 5, 21, 1.5, 2.5, 3.5)
 
     def test_constructor(self):
         """Test instantiating a RichnessEstimatesResults instance."""
@@ -379,10 +397,10 @@ class RichnessEstimatesResultsTests(TestCase):
             self.res1.getEstimates('S1')
 
         self.res1.addSample('S1', 42)
-        self.res1.addSampleEstimate('S1', 15, 30, 4.75)
-        self.res1.addSampleEstimate('S1', 10, 20, 2.5)
+        self.res1.addSampleEstimate('S1', 15, 30, 4.75, 2.5, 3.5)
+        self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
         self.assertFloatEqual(self.res1.getEstimates('S1'),
-                              [(10, 20, 2.5), (15, 30, 4.75)])
+                [(10, 20, 2.5, 2.5, 3.5), (15, 30, 4.75, 2.5, 3.5)])
 
     def test_addSample(self):
         """Test adding a new sample to the results container."""
@@ -396,14 +414,15 @@ class RichnessEstimatesResultsTests(TestCase):
     def test_addSampleEstimate(self):
         """Test adding a new estimate for a sample."""
         with self.assertRaises(ValueError):
-            self.res1.addSampleEstimate('S1', 10, 20, 2.5)
+            self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
 
         self.res1.addSample('S1', 42)
-        self.res1.addSampleEstimate('S1', 10, 20, 2.5)
-        self.assertFloatEqual(self.res1.getEstimates('S1'), [(10, 20, 2.5)])
+        self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
+        self.assertFloatEqual(self.res1.getEstimates('S1'),
+                              [(10, 20, 2.5, 2.5, 3.5)])
 
         with self.assertRaises(ValueError):
-            self.res1.addSampleEstimate('S1', 10, 35, 0.002)
+            self.res1.addSampleEstimate('S1', 10, 35, 0.002, 2.5, 3.5)
 
     def test_toTable(self):
         """Test writing results container to a table."""
@@ -411,15 +430,15 @@ class RichnessEstimatesResultsTests(TestCase):
         out_f = StringIO()
         self.res1.toTable(out_f)
         self.assertEqual(out_f.getvalue(),
-                         "SampleID\tSize\tEstimate\tStd Err\n")
+                "SampleID\tSize\tEstimate\tStd Err\tCI (lower)\tCI (upper)\n")
         out_f.close()
 
         # Results with multiple samples.
-        exp = """SampleID\tSize\tEstimate\tStd Err
-S1\t5\t21\t1.5
-S1\t10\t20\t2.5
-S1\t20\t30\t3.5
-S2\t1\t3\t0.4
+        exp = """SampleID\tSize\tEstimate\tStd Err\tCI (lower)\tCI (upper)
+S1\t5\t21\t1.5\t2.5\t3.5
+S1\t10\t20\t2.5\t2.5\t3.5
+S1\t20\t30\t3.5\t2.5\t3.5
+S2\t1\t3\t0.4\t2.5\t3.5
 """
         out_f = StringIO()
         self.res2.toTable(out_f)
@@ -427,11 +446,14 @@ S2\t1\t3\t0.4
         out_f.close()
 
         # Custom header.
-        exp = """foo\tbar\tbaz\tbazaar\nS1\t5\t21\t1.5\n"""
+        exp = """foo\tbar\tbaz\tbazaar\tbazaaar\tbazaaaar
+S1\t5\t21\t1.5\t2.5\t3.5
+"""
         out_f = StringIO()
         self.res1.addSample('S1', 42)
-        self.res1.addSampleEstimate('S1', 5, 21, 1.5)
-        self.res1.toTable(out_f, header=['foo', 'bar', 'baz', 'bazaar'])
+        self.res1.addSampleEstimate('S1', 5, 21, 1.5, 2.5, 3.5)
+        self.res1.toTable(out_f,
+                header=['foo', 'bar', 'baz', 'bazaar', 'bazaaar', 'bazaaaar'])
         self.assertEqual(out_f.getvalue(), exp)
         out_f.close()
 
