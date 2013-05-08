@@ -20,7 +20,7 @@ from biom.util import compute_counts_per_sample_stats
 
 from cogent.maths.stats.distribution import ndtri
 
-from numpy import empty, sqrt
+from numpy import empty, ones, sqrt, tensordot
 
 class EmptyTableError(Exception):
     pass
@@ -222,10 +222,13 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
     def __init__(self, sample_data):
         super(Chao1MultinomialPointEstimator, self).__init__(sample_data)
         self._f_hat = self._calculate_f_hat(self.getAbundanceFrequencyCounts())
-        #self._cov_matrix = self._calculate_covariance_matrix(
-        #        self.getAbundanceFrequencyCounts(),
-        #        self.getTotalIndividualCount(),
-        #        self.estimateFullRichness())
+
+        n = self.getTotalIndividualCount()
+        self._cov_matrix = self._calculate_covariance_matrix(
+                self.getAbundanceFrequencyCounts(), n,
+                self.estimateFullRichness())
+
+        self._pd_matrix = ones((n, n))
 
     def estimateUnobservedObservationCount(self):
         """Return estimated number of observations not found in this sample.
@@ -302,32 +305,30 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
                 # of 1.
                 pd_f1 = self._partial_derivative_f1(f1, f2, m_star, n)
                 pd_f2 = self._partial_derivative_f2(f1, f2, m_star, n)
+                pd_f1f2 = pd_f1 * pd_f2
 
-                accumulator = 0
-                for i in range(1, n + 1):
-                    if i > 2:
-                        pd_i = 1
-                    elif i == 1:
-                        pd_i = pd_f1
-                    elif i == 2:
-                        pd_i = pd_f2
+                # To do this efficiently, here's the algorithm:
+                #
+                # 1) Create nxn array filled with ones. Each element represents
+                #    the multiplication of two partial derivatives.
+                # 2) Fill in only what we need: the multiplication of partial
+                #    derivatives wrt f1 and f2.
+                # 3) Do an element-wise multiply between our partial derivative
+                #    matrix and the covariance matrix. tensordot does this and
+                #    also sums the result, which is exactly what we need. In
+                #    the end, we've summed all n^2 elements, each of which are
+                #    (pd_fi * pd_fj * cov_ij).
+                self._pd_matrix[0, :] = pd_f1
+                self._pd_matrix[1, :] = pd_f2
+                self._pd_matrix[:, 0] = pd_f1
+                self._pd_matrix[:, 1] = pd_f2
 
-                    for j in range(1, i + 1):
-                        if j > 2:
-                            pd_j = 1
-                        elif j == 1:
-                            pd_j = pd_f1
-                        elif j == 2:
-                            pd_j = pd_f2
+                self._pd_matrix[0, 0] = pd_f1 ** 2
+                self._pd_matrix[0, 1] = pd_f1f2
+                self._pd_matrix[1, 0] = pd_f1f2
+                self._pd_matrix[1, 1] = pd_f2 ** 2
 
-                        cov = self._calculate_covariance(fk[i], fk[j], s_est,
-                                                         i==j)
-                        if i != j:
-                            accumulator += 2 * (pd_i * pd_j * cov)
-                        else:
-                            accumulator += (pd_i * pd_j * cov)
-
-                std_err = sqrt(accumulator)
+                std_err = sqrt(tensordot(self._pd_matrix, self._cov_matrix))
 
         # Compute CI based on std_err.
         ci_low = None
@@ -432,15 +433,9 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
             return total
 
-    def _calculate_covariance(self, f_i, f_j, s_est, same_var):
-        if same_var:
-            cov = f_i * (1 - f_i / s_est)
-        else:
-            cov = -(f_i * f_j) / s_est
-
-        return cov
-
     def _calculate_covariance_matrix(self, fk, n, s_est):
+        # This is pretty expensive... need to find a way to speed this method
+        # up.
         result = empty((n, n))
 
         for i in range(0, n):
