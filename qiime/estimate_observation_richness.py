@@ -279,7 +279,6 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             std_err = sqrt(std_err_acc - (estimate ** 2 / s_est))
         else:
             # Extrapolation.
-
             m_star = m - n
             f1 = fk[1]
             f2 = fk[2]
@@ -313,7 +312,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
                     elif i == 2:
                         pd_i = pd_f2
 
-                    for j in range(1, n + 1):
+                    for j in range(1, i + 1):
                         if j > 2:
                             pd_j = 1
                         elif j == 1:
@@ -323,7 +322,10 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
                         cov = self._calculate_covariance(fk[i], fk[j], s_est,
                                                          i==j)
-                        accumulator += (pd_i * pd_j * cov)
+                        if i != j:
+                            accumulator += 2 * (pd_i * pd_j * cov)
+                        else:
+                            accumulator += (pd_i * pd_j * cov)
 
                 std_err = sqrt(accumulator)
 
