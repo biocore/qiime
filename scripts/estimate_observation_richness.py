@@ -44,8 +44,8 @@ individuals than the reference sample size.
 This script currently only provides a single unified estimation model for
 interpolation and extrapolation. This model is the individual-based multinomial
 model, which uses Chao1 to estimate the full richness of the sample. Please
-refer to Colwell et al. (2012) for more details; equations 4, 5, 9, and 10 are
-used in this script.
+refer to Colwell et al. (2012) for more details; equations 4, 5, 9, 10, 15a,
+and 15b are used in this script.
 
 For each interpolation/extrapolation point, the estimate, its unconditional
 standard error, and confidence interval are reported. The script currently only
