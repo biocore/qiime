@@ -1265,7 +1265,7 @@ def usearch_qf(
          join(output_dir, 'len_sorted.fasta'),
          save_intermediate_files=save_intermediate_files,
          remove_usearch_logs=remove_usearch_logs,
-         working_dir=output_dir)
+         working_dir=output_dir, HALT_EXEC=HALT_EXEC)
          
         intermediate_files.append(output_filepath_len_sorted)
         
@@ -1278,7 +1278,7 @@ def usearch_qf(
          minlen=minlen, w=w, slots=slots, sizeout=sizeout, 
          maxrejects=maxrejects, save_intermediate_files=save_intermediate_files,
          remove_usearch_logs=remove_usearch_logs,
-         working_dir=output_dir)
+         working_dir=output_dir, HALT_EXEC=HALT_EXEC)
         
         intermediate_files.append(output_filepath_dereplicated)
         
@@ -1289,7 +1289,8 @@ def usearch_qf(
          usearch_sort_by_abundance(output_filepath_dereplicated,
          output_filepath = join(output_dir, 'abundance_sorted.fasta'),
          usersort = True, sizein=sizein, sizeout=sizeout, minsize=0,
-         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+         HALT_EXEC=HALT_EXEC)
          
         intermediate_files.append(output_fp)
         
@@ -1308,7 +1309,7 @@ def usearch_qf(
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
              remove_usearch_logs=remove_usearch_logs,
              save_intermediate_files=save_intermediate_files,
-             working_dir=output_dir)
+             working_dir=output_dir, HALT_EXEC=HALT_EXEC)
 
         intermediate_files.append(error_clustered_output_fp)
         intermediate_files.append(output_uc_filepath)
@@ -1330,7 +1331,8 @@ def usearch_qf(
              output_non_chimera_filepath = join(output_dir,
              'de_novo_non_chimeras.fasta'), usersort=True,
              save_intermediate_files=save_intermediate_files,
-             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+             HALT_EXEC=HALT_EXEC)
         
             intermediate_files.append(output_fp_de_novo_nonchimeras)
             
@@ -1347,7 +1349,8 @@ def usearch_qf(
              output_non_chimera_filepath =\
              join(output_dir, 'reference_non_chimeras.fasta'), usersort=True, 
              save_intermediate_files=save_intermediate_files, rev=rev,
-             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+             HALT_EXEC=HALT_EXEC)
         
             intermediate_files.append(output_fp_ref_nonchimeras)
             
@@ -1375,7 +1378,8 @@ def usearch_qf(
              join(output_dir, 'abundance_sorted_minsize_' + str(minsize) + 
              '.fasta'), 
              minsize=minsize, sizein=sizein, sizeout=sizeout,
-             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+             HALT_EXEC=HALT_EXEC)
              
             intermediate_files.append(output_fp)
 
@@ -1394,7 +1398,8 @@ def usearch_qf(
              save_intermediate_files=save_intermediate_files,
              remove_usearch_logs=remove_usearch_logs,
              suppress_new_clusters=suppress_new_clusters, refseqs_fp=refseqs_fp,
-             output_dir=output_dir, working_dir=output_dir, rev=rev
+             output_dir=output_dir, working_dir=output_dir, rev=rev,
+             HALT_EXEC=HALT_EXEC
              )
 
         else:
@@ -1406,7 +1411,8 @@ def usearch_qf(
              percent_id=percent_id, sizein=sizein,
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
              save_intermediate_files=save_intermediate_files,
-             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+             HALT_EXEC=HALT_EXEC)
         
         intermediate_files.append(output_filepath)
         
@@ -1431,14 +1437,15 @@ def usearch_qf(
          filtered_fasta= output_filepath, output_filepath = join(output_dir,
          'assign_reads_to_otus.uc'), perc_id_blast=percent_id,
          global_alignment=global_alignment,
-         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
+         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir,
+         HALT_EXEC=HALT_EXEC)
          
         intermediate_files.append(clusters_file)
         
     except ApplicationError:
         raise ApplicationError, ('Error running usearch. Possible causes are '
          'unsupported version (current supported version is usearch '+\
-         'v5.2.32) is installed or improperly formatted input file was '+\
+         'v5.2.236) is installed or improperly formatted input file was '+\
          'provided')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
@@ -1523,6 +1530,10 @@ class Usearch61(CommandLineApplication):
          
         # Fast de novo clustering input fasta filepath
         '--cluster_fast':ValuedParameter('--', Name='cluster_fast',
+         Delimiter=' ', IsPath=True),
+         
+        # Specifies consensus fasta file output for a cluster
+        '--consout':ValuedParameter('--', Name='consout',
          Delimiter=' ', IsPath=True),
         
         #### Parameters for sorting raw fasta files
@@ -1707,6 +1718,7 @@ def usearch61_ref_cluster(seq_path,
     Dereplication should save processing time for large datasets.
 
     """
+    
     files_to_remove = []
     
     # Need absolute paths to avoid potential problems with app controller
@@ -1915,6 +1927,8 @@ def usearch61_denovo_cluster(seq_path,
     
     return clusters
     
+
+
 #   Start fasta sorting functions
 
 def sort_by_abundance_usearch61(seq_path,
@@ -2132,7 +2146,9 @@ def usearch61_smallmem_cluster(intermediate_fasta,
                                sizeorder=False,
                                HALT_EXEC=False,
                                output_uc_filepath=None,
-                               log_name="smallmem_clustered.log"):
+                               log_name="smallmem_clustered.log",
+                               sizeout=False,
+                               consout_filepath=None):
     """ Performs usearch61 de novo clustering via cluster_smallmem option
     
     Only supposed to be used with length sorted data (and performs length
@@ -2150,6 +2166,9 @@ def usearch61_smallmem_cluster(intermediate_fasta,
     HALT_EXEC: application controller option to halt execution
     output_uc_filepath: Path to write clusters (.uc) file.
     log_name: filepath to write usearch61 generated log file
+    sizeout: If True, will save abundance data in output fasta labels.
+    consout_filepath: Needs to be set to save clustered consensus fasta
+     filepath used for chimera checking.
     """
     
     log_filepath = join(output_dir, log_name)
@@ -2172,6 +2191,10 @@ def usearch61_smallmem_cluster(intermediate_fasta,
         params['--strand'] = 'both'
     else:
         params['--strand'] = 'plus'
+    if sizeout:
+        params['--sizeout'] = True
+    if consout_filepath:
+        params['--consout'] = consout_filepath
     
     clusters_fp = output_uc_filepath
     
@@ -2199,6 +2222,8 @@ def parse_dereplicated_uc(dereplicated_uc_lines):
     seed_id_ix = 9
     
     for line in dereplicated_uc_lines:
+        if line.startswith("#") or len(line.strip()) == 0:
+            continue
         curr_line = line.strip().split('\t')
         if curr_line[seed_hit_ix] == "S":
             dereplicated_clusters[curr_line[seq_id_ix]] = []
@@ -2228,6 +2253,8 @@ def parse_usearch61_clusters(clustered_uc_lines,
     ref_id_ix = 9
     
     for line in clustered_uc_lines:
+        if line.startswith("#") or len(line.strip()) == 0:
+            continue
         curr_line = line.strip().split('\t')
         if curr_line[seed_hit_ix] == "S":
             # Need to split on semicolons for sequence IDs to handle case of 
