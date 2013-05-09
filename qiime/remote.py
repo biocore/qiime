@@ -14,6 +14,7 @@ __status__ = "Development"
 
 from collections import defaultdict
 from csv import writer
+from re import sub
 from socket import gaierror
 from StringIO import StringIO
 from cogent.app.util import ApplicationNotFoundError
@@ -257,14 +258,15 @@ def _get_cleaned_headers(headers):
     only special characters.
 
     Taken from gdata.spreadsheet.text_db.ConvertStringsToColumnHeaders and
-    modified to handle headers with pound signs, as well as correctly handle
-    duplicate cleaned headers.
+    modified to handle headers with pound signs or that start with numbers, as
+    well as correctly handle duplicate cleaned headers.
     """
     cleaned_headers = []
     for header in headers:
-        # Probably a more efficient way to do this. Perhaps regex.
-        sanitized = header.lower().replace('_', '').replace(':', '').replace(
-                ' ', '').replace('#', '')
+        # Google strips special characters, whitespace, and underscores first,
+        # and then strips any *leading* digits. This order is extremely
+        # important!
+        sanitized = sub(r'^\d+', '', sub(r'[\W_]', '', header.lower()))
         if len(sanitized) > 0:
             cleaned_headers.append(sanitized)
         else:

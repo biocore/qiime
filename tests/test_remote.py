@@ -142,9 +142,11 @@ class RemoteTests(TestCase):
     def test_get_cleaned_headers(self):
         """Test correctly converts headers to Google's representation."""
         # Some duplicates.
-        exp = ['foo', 'foo_2', 'foo_3', 'foo_4', 'fooo', 'foo_5', 'foo_6']
+        exp = ['foo', 'foo_2', 'foo_3', 'foo_4', 'fooo', 'foo_5', 'foo_6',
+               'foo_7', 'foo_8', 'foo_9', 'f2oo456', 'foo_10']
         obs = _get_cleaned_headers(
-                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '#Foo', 'f O O#'])
+                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '123foo', '#Foo',
+                 '123foo', ' 123Foo', 'f O\tO#', ' f2\too456', '456 foo'])
         self.assertEqual(obs, exp)
 
         # All unique.
