@@ -209,13 +209,15 @@ def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
                 try:
                     cell_data = row.custom[cleaned_header].text
                 except KeyError:
-                    print row.custom.keys()
                     raise GoogleSpreadsheetError("Could not map header '%s' "
                             "to Google Spreadsheet's internal representation "
                             "of the header. We suggest changing the name of "
                             "the header in your Google Spreadsheet to be "
                             "alphanumeric if possible, as this will likely "
-                            "solve the issue." % header)
+                            "solve the issue. Note that the name isn't "
+                            "*required* to be alphanumeric, but it may fix "
+                            "issues with converting to Google Spreadsheet's "
+                            "internal format in some cases." % header)
 
                 # Special handling of comments (if it's a comment, only keep
                 # that cell to avoid several blank cells following it).
