@@ -63,7 +63,6 @@ The QIIME development team is very interested in incorporating community-contrib
    :maxdepth: 1
 
    shotgun_analysis
-   remote_mapping_files
 
 **Other**
 
@@ -73,6 +72,7 @@ The QIIME development team is very interested in incorporating community-contrib
    unix_commands
    working_with_aws
    parallel_qiime
+   remote_mapping_files
    
 
 

@@ -129,8 +129,9 @@ script_info['optional_options']=[\
         '(used for RTAX only). '
         '[default: %default]',default="\\S+\\s+(\\S+?)\/"),\
  make_option('-m', '--assignment_method', type='choice',
-        help='Taxon assignment method, either blast, mothur, rdp, or rtax '
-        '[default:%default]',
+        help='Taxon assignment method, must be one of ' +
+              ', '.join(assignment_method_choices) +
+              ' [default: %default]',
         choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db', type='string',
         help='Database to blast against.  Must provide either --blast_db or '

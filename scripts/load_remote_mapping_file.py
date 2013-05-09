@@ -53,7 +53,8 @@ script_info['required_options'] = [
         help='the spreadsheet key that will be used to identify the Google '
         'Spreadsheet to load. This is the part of the Google Spreadsheet URL '
         'that comes after \'key=\'. You may instead provide the entire URL '
-        'and the key will be extracted from it.'),
+        'and the key will be extracted from it. If you provide the entire '
+        'URL, you may need to enclose it in single quotes'),
     options_lookup['output_fp']
 ]
 script_info['optional_options'] = [
