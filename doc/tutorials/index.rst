@@ -13,13 +13,13 @@ The QIIME development team is very interested in incorporating community-contrib
 .. toctree::
    :maxdepth: 1
 
-   tutorial
    illumina_overview_tutorial
+   tutorial
+   otu_picking
    open_reference_illumina_processing
    fungal_its_analysis
    processing_illumina_data
    processing_18S_data
-   otu_picking
 
 **Additional Quality Control**
 
