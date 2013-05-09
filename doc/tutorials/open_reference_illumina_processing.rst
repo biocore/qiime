@@ -1,7 +1,7 @@
 .. _open_reference_illumina:
 
 =========================================================
- Open-reference OTU picking applied to Illumina data
+Discussion of open reference OTU picking in QIIME
 =========================================================
 
 This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs. It is available in QIIME 1.5.0 and later.
