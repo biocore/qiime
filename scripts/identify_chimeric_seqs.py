@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso, Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder",
+                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -72,7 +73,7 @@ script_info['optional_options']=[\
         help='Path to (Py)Nast aligned reference sequences. '
         'REQUIRED when method ChimeraSlayer [default: %default]'),       
 
-    make_option('-b', '--blast_db',type='string',
+    make_option('-b', '--blast_db',type='blast_db',
         help='Database to blast against. Must provide either --blast_db or '
         '--reference_seqs_fp when method is blast_fragments [default: %default]'),
         

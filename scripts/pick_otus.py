@@ -5,7 +5,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -142,7 +142,7 @@ script_info['optional_options'] = [
               'blast, -m uclust_ref, -m usearch_ref, or -m '
               'usearch61_ref [default: %default]')),
               
-    make_option('-b', '--blast_db',type='string',
+    make_option('-b', '--blast_db',type='blast_db',
         help=('Pre-existing database to blast against when using -m blast '
               '[default: %default]')),
               
