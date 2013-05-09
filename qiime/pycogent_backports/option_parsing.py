@@ -80,7 +80,7 @@ def check_multiple_choice(option, opt, value):
     return values
 
 def check_blast_db(option, opt, value):
-    db_dir, db_name = split(value)
+    db_dir, db_name = split(abspath(value))
     if not exists(db_dir):
         raise OptionValueError(
             "option %s: path does not exists: %r" % (opt, db_dir))
