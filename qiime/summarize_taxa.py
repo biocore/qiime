@@ -68,6 +68,11 @@ def sum_counts_by_consensus(otu_table,
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
     """
+    if otu_table.ObservationMetadata is None:
+        raise ValueError, ("BIOM table does not contain any "
+                           "observation metadata (e.g., taxonomy)."
+                           " You can add metadata to it using add_metadata.py.")
+    
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
     
@@ -82,10 +87,6 @@ def sum_counts_by_consensus(otu_table,
             return v
 
     for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
-        if otu_metadata == None:
-            raise ValueError, ("BIOM table does not contain any "
-                               "observation metadata (e.g., taxonomy)."
-                               " You can add metadata to it using add_metadata.py.")
         if md_identifier not in otu_metadata:
             raise KeyError, \
              "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" % (md_identifier,otu_id)
