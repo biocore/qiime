@@ -622,6 +622,13 @@ def parse_qiime_parameters(lines):
     for line in lines:
         line = line.strip()
         if line and not line.startswith('#'):
+            pound_pos = line.find('#')
+
+            # A pound sign only starts an inline comment if it is preceded by
+            # whitespace.
+            if pound_pos > 0 and line[pound_pos - 1].isspace():
+                line = line[:pound_pos].rstrip()
+
             fields = line.split(None,1)
             script_id, parameter_id = fields[0].split(':')
             try:

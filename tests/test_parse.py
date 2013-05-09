@@ -631,19 +631,20 @@ eigvals\t4.94\t1.79\t1.50
         
     def test_parse_qiime_parameters(self):
         """parse_qiime_parameters: functions with valid input """
-        lines = ["#Don't edit this file!",\
-                 "pick_otus:similarity 0.94",\
-                 "pick_otus:otu_picking_method\tcdhit",\
-                 "align_seqs:verbose",\
-                 "assign_taxonomy:use_rdp\ttRuE",\
-                 "assign_taxonomy:something\tNone",\
-                 "",\
+        lines = ["#Don't edit this file!",
+                 "pick_otus:similarity 0.94#this is not a comment...",
+                 "pick_otus:otu_picking_method\tcdhit  # useful comment  ",
+                 "align_seqs:verbose",
+                 "assign_taxonomy:use_rdp\ttRuE # another great ## comment!",
+                 "assign_taxonomy:something\tNone",
+                 "",
                  "#some_script:fake_parameter\t99.0",
                  'summarize_taxa:md_identifier "Consensus Lineage"']
         actual = parse_qiime_parameters(lines)
-        expected = {'pick_otus':\
-                     {'similarity':'0.94', 'otu_picking_method':'cdhit'},\
-                    'assign_taxonomy':\
+        expected = {'pick_otus':
+                     {'similarity':'0.94#this is not a comment...',
+                      'otu_picking_method':'cdhit'},
+                    'assign_taxonomy':
                      {'use_rdp':None},
                     'summarize_taxa':
                      {'md_identifier':'"Consensus Lineage"'}}
