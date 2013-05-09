@@ -66,7 +66,8 @@ def check_mapping_file(mapping_fp,
                        verbose=True,
                        variable_len_barcodes=False,
                        disable_primer_check=False,
-                       added_demultiplex_field=None):
+                       added_demultiplex_field=None,
+                       suppress_html=False):
     """ Main program function for checking mapping file
     
     Checks mapping file for errors, warnings, writes log file, html file, 
@@ -94,22 +95,23 @@ def check_mapping_file(mapping_fp,
      has_barcodes, char_replace, variable_len_barcodes,
      added_demultiplex_field)
 
-    formatted_html = format_mapping_html_data(header, mapping_data,
-     errors, warnings)
+    if not suppress_html:
+        formatted_html = format_mapping_html_data(header, mapping_data,
+         errors, warnings)
      
-    output_html = join(output_dir +\
-     basename(mapping_fp).replace('.txt', '') + ".html")
+        output_html = join(output_dir +\
+         basename(mapping_fp).replace('.txt', '') + ".html")
 
-    html_f = open(output_html, "w")
-    html_f.write(formatted_html)
+        html_f = open(output_html, "w")
+        html_f.write(formatted_html)
     
-    #get QIIME directory
-    qiime_dir=get_qiime_project_dir()
+        #get QIIME directory
+        qiime_dir=get_qiime_project_dir()
     
-    # Write javascript file necessary for mouseover tooltips.
-    # move javascript file to javascript output directory
-    copyfile(join(qiime_dir,'qiime','support_files',\
-     'js/overlib.js'), join(output_dir,'overlib.js'))
+        # Write javascript file necessary for mouseover tooltips.
+        # move javascript file to javascript output directory
+        copyfile(join(qiime_dir,'qiime','support_files',\
+         'js/overlib.js'), join(output_dir,'overlib.js'))
     
     corrected_mapping_data = correct_mapping_data(mapping_data,
      header, char_replace)
@@ -160,7 +162,7 @@ def process_id_map(mapping_f,
     warnings = []
     
     mapping_data, header, comments = parse_mapping_file(mapping_f,
-     suppress_stripping=True)
+     suppress_stripping=False)
     
     sample_id_ix = 0
     # Get index of last field of header
@@ -242,7 +244,42 @@ def check_data_fields(header,
     # Check for data fields after Description column
     warnings = check_fields_past_bounds(header, mapping_data, warnings)
     
+    # Check for empty data fields before Description column
+    warnings = check_empty_fields_before_bounds(header, mapping_data, warnings)
+    
     return errors, warnings
+    
+def check_empty_fields_before_bounds(header,
+                                     mapping_data,
+                                     warnings):
+    """ Checks for empty fields before Description header, adds to warnings
+    
+    header:  list of header strings
+    mapping_data:  list of lists of raw metadata mapping file data
+    warnings:  list of warnings
+    """
+    
+    desc_field = "Description"
+    correction = 1
+    primer_field = "LinkerPrimerSequence"
+    
+    try:
+        desc_field_ix = header.index(desc_field) + correction
+        primer_field_ix = header.index(primer_field) + correction
+    except ValueError:
+        # Skip if Description field not present, already get header error
+        return warnings
+        
+    for curr_row in range(len(mapping_data)):
+        for curr_col in range(primer_field_ix, desc_field_ix):
+            curr_field = mapping_data[curr_row][curr_col].replace('\n','')
+            if not curr_field:
+                warnings.append('Empty data field '+\
+                 '%s found\t%d,%d' %\
+                 (mapping_data[curr_row][curr_col].replace('\n',''),
+                 curr_row + correction, curr_col))
+                 
+    return warnings
     
 def check_fields_past_bounds(header,
                              mapping_data,
@@ -353,7 +390,7 @@ def check_dna_chars_primers(header,
     # Check for non-DNA characters     
     for curr_data in range(len(mapping_data)):
         for curr_ix in check_indices:
-            for curr_nt in mapping_data[curr_data][curr_ix]:
+            for curr_nt in mapping_data[curr_data][curr_ix].strip():
                 if curr_nt not in valid_dna_chars:
                     errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
                      (mapping_data[curr_data][curr_ix],
@@ -401,7 +438,7 @@ def check_dna_chars_bcs(header,
                 errors.append("Missing expected DNA sequence\t%d,%d" %\
                  (curr_data + correction_ix, curr_ix))
                 continue
-            for curr_nt in mapping_data[curr_data][curr_ix]:
+            for curr_nt in mapping_data[curr_data][curr_ix].strip():
                 if curr_nt not in valid_dna_chars:
                     errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
                      (mapping_data[curr_data][curr_ix],
