@@ -325,7 +325,7 @@ script_info['optional_options'] = [
     make_option('-F', '--non_chimeras_retention', default='union',
               help=("Selects "
               "subsets of sequences detected as non-chimeras to retain after "
-              "de novo and refernece based chimera detection.  Options are "
+              "de novo and reference based chimera detection.  Options are "
               "intersection or union.  union will retain sequences that are "
               "flagged as non-chimeric from either filter, while intersection "
               "will retain only those sequences that are flagged as non-"

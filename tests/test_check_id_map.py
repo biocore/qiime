@@ -37,6 +37,7 @@ class CheckIdMapTests(TestCase):
         self.sample_warnings_mapping_data = sample_warnings_mapping_data
         self.sample_errors_warnings_mapping_data =\
          sample_errors_warnings_mapping_data
+        self.empty_fields_mapping_data = empty_fields_mapping_data
         
         self.correct_mapping_fp = get_tmp_filename(\
          prefix = 'correct_mapping_',
@@ -50,6 +51,13 @@ class CheckIdMapTests(TestCase):
          suffix = '.txt')
         map_file = open(self.errors_mapping_fp, 'w')
         map_file.write(self.sample_errors_mapping_data)
+        map_file.close()
+        
+        self.empty_fields_fp = get_tmp_filename(\
+         prefix = 'empty_fields_',
+         suffix = '.txt')
+        map_file = open(self.empty_fields_fp, 'w')
+        map_file.write(self.empty_fields_mapping_data)
         map_file.close()
         
         self.warnings_mapping_fp = get_tmp_filename(\
@@ -101,7 +109,8 @@ class CheckIdMapTests(TestCase):
         
         self._files_to_remove =\
          [self.correct_mapping_fp, self.errors_mapping_fp,
-         self.warnings_mapping_fp, self.errors_warnings_mapping_fp]
+         self.warnings_mapping_fp, self.errors_warnings_mapping_fp,
+         self.empty_fields_fp]
         
     def tearDown(self):
         if self._files_to_remove:
@@ -342,8 +351,8 @@ class CheckIdMapTests(TestCase):
          process_id_map(self.correct_mapping_fp)
          
         expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'ReversePrimer', 'Description']
-        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
-        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).']
         expected_errors = []
         expected_warnings = []
          
@@ -360,10 +369,28 @@ class CheckIdMapTests(TestCase):
          process_id_map(self.errors_mapping_fp)
          
         expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'ReversePrimer', 'NotDescription']
-        expected_mapping_data = [['PC.355', 'AGCACGAGCCxTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
-        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_mapping_data = [['PC.355', 'AGCACGAGCCxTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).']
         expected_errors = ['Found header field NotDescription, last field should be Description\t0,5', 'Invalid DNA sequence detected: AGCACGAGCCxTA\t1,1', 'Duplicate SampleID PC.355 found.\t1,0', 'Duplicate SampleID PC.355 found.\t2,0']
         expected_warnings = ['Barcode AGCACGAGCCxTA differs than length 12\t1,1']
+         
+        self.assertEqual(header, expected_header)
+        self.assertEqual(mapping_data, expected_mapping_data)
+        self.assertEqual(comments, expected_comments)
+        self.assertEqual(errors, expected_errors)
+        self.assertEqual(warnings, expected_warnings)
+        
+    def test_process_id_map_empty_data_fields(self):
+        """ Returns expected results for mapping data with missing fields """
+        
+        header, mapping_data, comments, errors, warnings =\
+         process_id_map(self.empty_fields_fp)
+         
+        expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'ReversePrimer', 'Description']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354'], ['PC.355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Control', '', ''], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).']
+        expected_errors = ['Missing expected DNA sequence\t2,4']
+        expected_warnings = ['Empty data field  found\t2,4', 'Empty data field  found\t2,5']
          
         self.assertEqual(header, expected_header)
         self.assertEqual(mapping_data, expected_mapping_data)
@@ -378,8 +405,8 @@ class CheckIdMapTests(TestCase):
          process_id_map(self.warnings_mapping_fp)
          
         expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatm-ent', 'ReversePrimer', 'Description']
-        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC_355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Co&ntrol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'OutOfBounds\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
-        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354'], ['PC_355', 'AACTCGTCGATG', 'YATGCTGCCTCCCGTAGGAGT', 'Co&ntrol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'OutOfBounds'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).']
         expected_errors = []
         expected_warnings = ['Found invalid character in Treatm-ent header field.\t0,3', 'Invalid characters found in PC_355\t2,0', 'Invalid characters found in Co&ntrol\t2,3', 'Data field OutOfBounds found after Description column\t2,6']
          
@@ -396,8 +423,8 @@ class CheckIdMapTests(TestCase):
          process_id_map(self.errors_warnings_mapping_fp)
          
         expected_header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Treatment', 'Treatment', 'Description']
-        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Cont^^rol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354\n'], ['PC-355', 'AACTCGTCGATGN', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'outofbounds\n'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCxCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
-        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).\n']
+        expected_mapping_data = [['PC.354', 'AGCACGAGCCTA', 'YATGCTGCCTCCCGTAGGAGT', 'Cont^^rol', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._354'], ['PC-355', 'AACTCGTCGATGN', 'YATGCTGCCTCCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._355', 'outofbounds'], ['PC.356', 'ACAGACCACTCA', 'YATGCTGCCTCxCCGTAGGAGT', 'Control', 'ATGACCGATTRGACCAG', 'Control_mouse_I.D._356']]
+        expected_comments = ['Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).']
         expected_errors = ['Treatment found in header 2 times.  Header fields must be unique.\t0,3', 'Treatment found in header 2 times.  Header fields must be unique.\t0,4', 'Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT\t3,2', 'Invalid DNA sequence detected: AACTCGTCGATGN\t2,1']
         expected_warnings = ['Barcode AACTCGTCGATGN differs than length 12\t2,1', 'Invalid characters found in PC-355\t2,0', 'Invalid characters found in Cont^^rol\t1,3', 'Data field outofbounds found after Description column\t2,6']
          
@@ -1262,6 +1289,12 @@ PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Cont^^rol	ATGACCGATTRGACCAG	Control_mo
 PC-355	AACTCGTCGATGN	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355	outofbounds
 PC.356	ACAGACCACTCA	YATGCTGCCTCxCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
 
+empty_fields_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+
 # Expected output data
 expected_html_data_correct_input = """<html>
 <head>
@@ -1292,9 +1325,7 @@ General issues with your mapping file (i.e., those that do not pertain to a part
 </tr>
 
 <tr>
-<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
-</tt></th></tr><tr><th><tt>PC.355</tt></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
-</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354</tt></th></tr><tr><th><tt>PC.355</tt></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
 </tr>
 </table>
 
@@ -1339,9 +1370,7 @@ General issues with your mapping file (i.e., those that do not pertain to a part
 </tr>
 
 <tr>
-<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AGCACGAGCCxTA differs than length 12<br>Invalid DNA sequence detected: AGCACGAGCCxTA<br>Location (SampleID,Header Field)<br>PC.355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AGCACGAGCCxTA</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
-</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355
-</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AGCACGAGCCxTA differs than length 12<br>Invalid DNA sequence detected: AGCACGAGCCxTA<br>Location (SampleID,Header Field)<br>PC.355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AGCACGAGCCxTA</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
 </tr>
 </table>
 
@@ -1365,7 +1394,7 @@ Warnings ---------------------------
 Barcode AGCACGAGCCxTA differs than length 12	1,1
 """
 
-expected_html_errors_suppressed_bcs = """<html>\n<head>\n\n<script type="text/javascript" src="./overlib.js"></script>\n</head>\n<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>\nNotes for interpreting this report:\n<ul>\n    <li>Errors will be listed in red, warnings in yellow.  \n    <li>Mouse over an error or warning in a cell for more details.\n    <li>Errors in the header row may mask other errors, so these should be corrected first.\n    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.\n</ul>\n<p>\nSome general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):\n<ul> \n    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.\n    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>\n    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.\n</ul>\nGeneral issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr><td bgcolor="red"><font color="white">If no barcodes are present, and the added_demultiplex_field option isn\'t used, only a single SampleID can be present.<font color="black"></td></tr></table><br>\n<table border="2" cellspacing="0" cellpadding="5">\n\n<tr></tr>\n<tr>\n<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Found header field NotDescription, last field should be Description<br>\');" onmouseout="return nd();"><font color=white>NotDescription</a></th>\n</tr>\n\n<tr>\n<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AGCACGAGCCxTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354\n</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355\n</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>\n</tr>\n</table>\n\n</body>\n</html>"""
+expected_html_errors_suppressed_bcs = """<html>\n<head>\n\n<script type="text/javascript" src="./overlib.js"></script>\n</head>\n<body bgcolor="white"> <h1>Mapping file error and warning details.</h1>\nNotes for interpreting this report:\n<ul>\n    <li>Errors will be listed in red, warnings in yellow.  \n    <li>Mouse over an error or warning in a cell for more details.\n    <li>Errors in the header row may mask other errors, so these should be corrected first.\n    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.\n</ul>\n<p>\nSome general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):\n<ul> \n    <li>Header characters should only contain alphanumeric and <tt>_</tt> characters only.\n    <li>Valid characters for SampleID fields are alphanumeric and <tt>.</tt> only.<br>\n    <li>Other fields allow alphanumeric and <tt>+-%./ :,;_</tt> characters.\n</ul>\nGeneral issues with your mapping file (i.e., those that do not pertain to a particular cell) will be listed here, if any:<table border="1" cellspacing="0" cellpadding="7"><tr><td bgcolor="red"><font color="white">If no barcodes are present, and the added_demultiplex_field option isn\'t used, only a single SampleID can be present.<font color="black"></td></tr></table><br>\n<table border="2" cellspacing="0" cellpadding="5">\n\n<tr></tr>\n<tr>\n<th>SampleID</th><th>BarcodeSequence</th><th>LinkerPrimerSequence</th><th>Treatment</th><th>ReversePrimer</th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Found header field NotDescription, last field should be Description<br>\');" onmouseout="return nd();"><font color=white>NotDescription</a></th>\n</tr>\n\n<tr>\n<tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AGCACGAGCCxTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354</tt></th></tr><tr><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib(\'Duplicate SampleID PC.355 found.<br>Location (SampleID,Header Field)<br>PC.355,SampleID\');" onmouseout="return nd();"><font color=white><tt>PC.355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>\n</tr>\n</table>\n\n</body>\n</html>"""
 expected_output_log_errors_bcs_suppressed = """# Errors and warnings are written as a tab separated columns, with the first column showing the error or warning, and the second column contains the location of the error or warning, written as row,column, where 0,0 is the top left header item (SampleID).  Problems not specific to a particular data cell will be listed as having 'no location'.\nErrors -----------------------------\nFound header field NotDescription, last field should be Description\t0,5\nIf no barcodes are present, and the added_demultiplex_field option isn't used, only a single SampleID can be present.\tno location\nDuplicate SampleID PC.355 found.\t1,0\nDuplicate SampleID PC.355 found.\t2,0\nWarnings ---------------------------\n"""
 
 expected_html_output_warnings = """<html>
@@ -1397,9 +1426,7 @@ General issues with your mapping file (i.e., those that do not pertain to a part
 </tr>
 
 <tr>
-<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
-</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC_355<br>Location (SampleID,Header Field)<br>PC_355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC_355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Co&ntrol<br>Location (SampleID,Header Field)<br>PC_355,Treatm-ent');" onmouseout="return nd();"><font color=black><tt>Co&ntrol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field OutOfBounds found after Description column<br>Location (SampleID,Header Field)<br>PC_355,no header');" onmouseout="return nd();"><font color=black><tt>OutOfBounds
-</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC_355<br>Location (SampleID,Header Field)<br>PC_355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC_355</tt></a></th><th><tt>AACTCGTCGATG</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Co&ntrol<br>Location (SampleID,Header Field)<br>PC_355,Treatm-ent');" onmouseout="return nd();"><font color=black><tt>Co&ntrol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field OutOfBounds found after Description column<br>Location (SampleID,Header Field)<br>PC_355,no header');" onmouseout="return nd();"><font color=black><tt>OutOfBounds</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
 </tr>
 </table>
 
@@ -1451,9 +1478,7 @@ General issues with your mapping file (i.e., those that do not pertain to a part
 </tr>
 
 <tr>
-<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Cont^^rol<br>Location (SampleID,Header Field)<br>PC.354,Treatment');" onmouseout="return nd();"><font color=black><tt>Cont^^rol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354
-</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC-355<br>Location (SampleID,Header Field)<br>PC-355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC-355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AACTCGTCGATGN differs than length 12<br>Invalid DNA sequence detected: AACTCGTCGATGN<br>Location (SampleID,Header Field)<br>PC-355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AACTCGTCGATGN</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field outofbounds found after Description column<br>Location (SampleID,Header Field)<br>PC-355,no header');" onmouseout="return nd();"><font color=black><tt>outofbounds
-</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT<br>Location (SampleID,Header Field)<br>PC.356,LinkerPrimerSequence');" onmouseout="return nd();"><font color=white><tt>YATGCTGCCTCxCCGTAGGAGT</tt></a></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
+<tr><th><tt>PC.354</tt></th><th><tt>AGCACGAGCCTA</tt></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in Cont^^rol<br>Location (SampleID,Header Field)<br>PC.354,Treatment');" onmouseout="return nd();"><font color=black><tt>Cont^^rol</tt></a></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._354</tt></th></tr><tr><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Invalid characters found in PC-355<br>Location (SampleID,Header Field)<br>PC-355,SampleID');" onmouseout="return nd();"><font color=black><tt>PC-355</tt></a></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Barcode AACTCGTCGATGN differs than length 12<br>Invalid DNA sequence detected: AACTCGTCGATGN<br>Location (SampleID,Header Field)<br>PC-355,BarcodeSequence');" onmouseout="return nd();"><font color=white><tt>AACTCGTCGATGN</tt></a></th><th><tt>YATGCTGCCTCCCGTAGGAGT</tt></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._355</tt></th><th bgcolor=yellow><a href="javascript:void(0);" onmouseover="return overlib('Data field outofbounds found after Description column<br>Location (SampleID,Header Field)<br>PC-355,no header');" onmouseout="return nd();"><font color=black><tt>outofbounds</tt></a></th></tr><tr><th><tt>PC.356</tt></th><th><tt>ACAGACCACTCA</tt></th><th bgcolor=red><a href="javascript:void(0);" onmouseover="return overlib('Invalid DNA sequence detected: YATGCTGCCTCxCCGTAGGAGT<br>Location (SampleID,Header Field)<br>PC.356,LinkerPrimerSequence');" onmouseout="return nd();"><font color=white><tt>YATGCTGCCTCxCCGTAGGAGT</tt></a></th><th><tt>Control</tt></th><th><tt>ATGACCGATTRGACCAG</tt></th><th><tt>Control_mouse_I.D._356</tt></th></tr>
 </tr>
 </table>
 
