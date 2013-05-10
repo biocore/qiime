@@ -11,7 +11,6 @@ from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
                        make_option, get_tmp_filename, get_qiime_project_dir)
 from qiime.test import run_script_usage_tests
-from cogent.util.misc import app_path
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
@@ -61,12 +60,6 @@ def main():
 
     test_dir = abspath(dirname(__file__))
 
-    # if the scripts dir is not set in the .qiime_config file, retrieve it from
-    # the location where print_qiime_config is in the current user environment
-    if qiime_config['qiime_scripts_dir'] == None:
-        qiime_config['qiime_scripts_dir'] = dirname(app_path(
-            'print_qiime_config.py'))
-
     unittest_good_pattern = re.compile('OK\s*$')
     application_not_found_pattern = re.compile('ApplicationNotFoundError')
     python_name = 'python'
@@ -113,7 +106,7 @@ def main():
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
                qiime_test_data_dir=qiime_test_data_dir,
-               qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
+               qiime_scripts_dir=get_qiime_scripts_dir(),
                working_dir=qiime_config['temp_dir'],
                verbose=True,
                tests=script_usage_tests,
