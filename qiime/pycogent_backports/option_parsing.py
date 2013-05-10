@@ -41,15 +41,15 @@ def check_existing_filepaths(option, opt, value):
     paths = []
     for v in value.split(','):
         paths.extend(glob(v))
-    paths = set(paths)
+    values = []
+    for v in paths:
+        check_existing_filepath(option,opt,v)
+        if v not in values:
+            values.append(v)
     if len(paths) == 0:
         raise OptionValueError(
             "No filepaths match pattern(s) passed via -i: %s" % 
             ','.join(opts.input_fps))
-    values = []
-    for v in paths:
-        check_existing_filepath(option,opt,v)
-        values.append(v)
     return values
 
 def check_existing_dirpath(option, opt, value):
