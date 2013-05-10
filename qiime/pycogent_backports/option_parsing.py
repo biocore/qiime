@@ -87,9 +87,6 @@ def check_blast_db(option, opt, value):
     elif not isdir(db_dir):
         raise OptionValueError(
             "option %s: not a directory: %r" % (opt, db_dir))
-    if len(glob('%s*pin' % value)) == 0:
-        raise OptionValueError(
-            "option %s: not a pre-formatted BLAST database: %r" % (opt, db_dir))
     return value
 
 class CogentOption(Option):
