@@ -44,7 +44,7 @@ script_info['output_description']="""This script results in a OTU like mapping f
 
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
-                type='existing_filepaths', dest='sff_fp',
+                type='existing_filepaths', dest='sff_fps',
                 help='path to flowgram files (.sff.txt), '+
                 'comma separated'),
 
@@ -96,16 +96,7 @@ def main():
     """run denoiser on input flowgrams"""
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
-    # bug: this is a list already
-    # sff_files = opts.sff_fp.split(',')
-
-    sff_files = opts.sff_fp
-    
-    # bug: don't overwrite the original variable    
-    #for sff_fp in sff_files:
-    #    if (not exists(sff_fp)):
-    #        option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
-    #                             'Pass a valid one via -i.')% sff_fp)
+    sff_files = opts.sff_fps
 
     for f in sff_files:
         if (not exists(f)):
@@ -153,7 +144,7 @@ def main():
     else:
         primer=opts.primer
 
-    centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
+    centroids, cluster_mapping = fast_denoiser(opts.sff_fps,opts.fasta_fp,
                                                outdir, opts.num_cpus, primer,
                                                titanium=opts.titanium)
 
