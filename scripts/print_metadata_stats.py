@@ -20,11 +20,11 @@ from sys import stdout
 script_info = {}
 script_info['brief_description'] = "Count the number of samples associated to a category value"
 script_info['script_description'] = """Sum up the number of samples with each category value and print this information."""
-script_info['script_usage'] = [("Example:","Count the number of samples associated with Treatment","""%prog -i $PWD/mapping.txt -c Treatment"""),
-("Example writting the output to a file", "Count the number of samples associated with Treatment and save them to a file called stats.txt", """%prog -i mapping.txt -c Treatment -o stats.txt""")]
+script_info['script_usage'] = [("Example:","Count the number of samples associated with Treatment","""%prog -m $PWD/mapping.txt -c Treatment"""),
+("Example writting the output to a file", "Count the number of samples associated with Treatment and save them to a file called stats.txt", """%prog -m mapping.txt -c Treatment -o stats.txt""")]
 script_info['output_description']= """Two columns, the first being the category value and the second being the count. Output is to standard out. If there are unspecified values, the output category is identified as ***UNSPECIFIED***"""
 script_info['required_options'] = [\
- make_option('-i','--input_fp',type="existing_filepath",help='the input filepath'),\
+ make_option('-m', '--mapping_file',type="existing_filepath",help='the input metadata file'),\
  make_option('-c','--category',type='string',help='the category to examine')
 ]
 script_info['optional_options'] = [
@@ -40,7 +40,7 @@ def main():
 
     output_fp = opts.output_fp
 
-    map_data, header, comments = parse_mapping_file(opts.input_fp)
+    map_data, header, comments = parse_mapping_file(opts.mapping_file)
 
     if opts.category not in header:
         option_parser.error("%s doesn't appear to exist in the mapping file!" % opts.category)
