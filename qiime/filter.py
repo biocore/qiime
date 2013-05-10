@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Will Van Treuren", "Daniel McDonald",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -98,6 +98,11 @@ def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     map_data, map_header, map_comments = parse_mapping_file(mapping_f)
     valid_states = parse_metadata_state_descriptions(valid_states_str)
     sample_ids = get_sample_ids(map_data, map_header, valid_states)
+
+    if len(sample_ids)<1:
+        raise ValueError,"All samples have been filtered out for the criteria"+\
+            " described in the valid states"
+
     return sample_ids
 
 def get_sample_ids(map_data, map_header, states):
