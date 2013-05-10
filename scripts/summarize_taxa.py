@@ -34,9 +34,9 @@ By default, taxa summary tables will be output in both classic (tab-separated) a
 """
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Examples:""","""Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting taxa tables to the directory "./tax" ""","""%prog -i otu_table.biom -o ./tax"""))
+script_info['script_usage'].append(("""Examples:""","""Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting taxa tables to the directory "./tax" ""","""%prog -i otu_table.biom -o ./tax"""))
 
-script_info['script_usage'].append(("""Examples:""","""Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting mapping files to the directory "./tax" ""","""%prog -i otu_table.biom -o tax_mapping/ -m Fasting_Map.txt"""))
+script_info['script_usage'].append(("""Examples:""","""Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting mapping files to the directory "./tax" ""","""%prog -i otu_table.biom -o tax_mapping/ -m Fasting_Map.txt"""))
 
 script_info['output_description']="""There are two possible output formats depending on whether or not a mapping file is provided with the -m option. If a mapping file is not provided, a table is returned where the taxonomic groups are each in a row and there is a column for each sample. If a mapping file is provided, the summary information will be appended to this file. Specifically, a new column will be made for each taxonomic group to which the relative abundances or raw counts will be added to the existing rows for each sample. The addition of the taxonomic information to the mapping file allows for taxonomic coloration of Principal coordinates plots in the 3d viewer. As described in the make_3d_plots.py section, principal coordinates plots can be dynamically colored based on any of the metadata columns in the mapping file. Dynamic coloration of the plots by the relative abundances of each taxonomic group can help to distinguish which taxonomic groups are driving the clustering patterns.
 """
