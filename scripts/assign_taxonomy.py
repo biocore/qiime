@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
+    "Antonio Gonzalez Pena", "David Soergel", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
@@ -133,7 +134,7 @@ script_info['optional_options']=[\
               ', '.join(assignment_method_choices) +
               ' [default: %default]',
         choices=assignment_method_choices, default="rdp"),\
- make_option('-b', '--blast_db', type='string',
+ make_option('-b', '--blast_db', type='blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
  make_option('-c', '--confidence', type='float',
