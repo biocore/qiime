@@ -1,0 +1,6 @@
+seq1
+seq2
+seq5
+seq6
+seq7
+seq8

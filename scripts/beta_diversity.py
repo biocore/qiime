@@ -4,16 +4,14 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
  
-
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
+from qiime.util import make_option, parse_command_line_parameters
 from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os
@@ -21,19 +19,55 @@ from sys import stderr
 from qiime.util import get_tmp_filename
 
 script_info={}
-script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
-script_info['script_description']="""The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see make_phylogeny.py). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
+script_info['brief_description']="""Calculate beta diversity (pairwise sample\
+ dissimilarity) on one or many otu tables"""
+script_info['script_description']="""The input for this script is the OTU table\
+ containing the number of sequences observed in each OTU (rows) for each sample\
+ (columns). For more information pertaining to the OTU table refer to the\
+ documentation for make_otu_table. If the user would like phylogenetic beta\
+ diversity metrics using UniFrac, a phylogenetic tree must also be passed as\
+ input (see make_phylogeny.py). The output of this script is a distance matrix\
+ containing a dissimilarity value for each pairwise comparison.
 
-A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Most qualitative measures are referred to here e.g. "binary_jaccard". Typically both weighted and unweighted unifrac are used."""
+A number of metrics are currently supported, including unweighted and weighted\
+ UniFrac (pass the -s option to see available metrics). In general, because\
+ unifrac uses phylogenetic information, one of the unifrac metrics is\
+ recommended, as results can be vastly more useful (Hamady & Knight, 2009).\
+ Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing\
+ community differences that are due to changes in relative taxon abundance\
+ (e.g., when a particular set of taxa flourish because a limiting nutrient\
+ source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are\
+ most informative when communities differ primarily by what can live in them\
+ (e.g., at high temperatures), in part because abundance information can\
+ obscure significant patterns of variation in which taxa are present (Lozupone\
+ et al., 2007). Most qualitative measures are referred to here e.g.\
+ "binary_jaccard". Typically both weighted and unweighted unifrac are used."""
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Single File Beta Diversity (non-phylogenetic):""","""To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div/, use the following command:""","""%prog -i otu_table.biom -m euclidean -o beta_div"""))
+script_info['script_usage'].append(
+("""Single File Beta Diversity (non-phylogenetic):""",
+"""To perform beta diversity (using e.g. euclidean distance) on a single OTU\
+ table, where the results are output to beta_div/, use the following command:""",
+"""%prog -i otu_table.biom -m euclidean -o beta_div"""))
 
-script_info['script_usage'].append(("""Single File Beta Diversity (phylogenetic):""","""In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:""","""%prog -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
+script_info['script_usage'].append(
+("""Single File Beta Diversity (phylogenetic):""",
+"""In the case that you would like to perform beta diversity using a\
+ phylogenetic metric (e.g. weighted_unifrac), you can use the following\
+ command:""",
+"""%prog -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
 
-script_info['script_usage'].append(("""Multiple File (batch) Beta Diversity (phylogenetic):""","""To perform beta diversity on multiple OTU tables (e.g., resulting files from multiple_rarefactions.py), specify an input directory (e.g. otu_tables/) as shown by the following command:""","""%prog -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
+script_info['script_usage'].append(
+("""Multiple File (batch) Beta Diversity (phylogenetic):""",
+"""To perform beta diversity on multiple OTU tables (e.g., resulting files from\
+ multiple_rarefactions.py), specify an input directory (e.g. otu_tables/) as\
+ shown by the following command:""",
+"""%prog -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
 
-script_info['output_description']="""Each file in the input directory should be an otu table, and the output of beta_diversity.py is a folder containing text files, each a distance matrix between samples corresponding to an input otu table."""
+script_info['output_description']="""Each file in the input directory should be\
+ an otu table, and the output of beta_diversity.py is a folder containing text\
+ files, each a distance matrix between samples corresponding to an input otu\
+ table."""
 script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
@@ -48,6 +82,7 @@ script_info['optional_options']=[
      help="Output directory. One will be created if it doesn't exist.",
      type='new_dirpath'),
  make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
+     type='multiple_choice', mchoices=list_known_metrics(),
      help='Beta-diversity metric(s) to use. A comma-separated list should' +\
      ' be provided when multiple metrics are specified. [default: %default]'),
  make_option('-s', '--show_metrics', action='store_true', default=False,

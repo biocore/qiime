@@ -3,7 +3,7 @@
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
-    "William Van Treuren"]
+    "William Van Treuren", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -284,7 +284,12 @@ alph.lladser_ci]
 #starr, not yet needs tests]
 
 def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
-    metrics_list = metrics.split(',')
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     calcs = []
     for metric in metrics_list:
         try:
@@ -328,7 +333,12 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    metrics_list = metrics.split(',')
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
+
     for metric in metrics_list:
         try:
             metric_f = get_nonphylogenetic_metric(metric)
@@ -352,7 +362,7 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
         # future: try to make sure fname is a valid otu file
 
         single_file_alpha(os.path.join(input_path, fname), 
-            metrics, os.path.join(output_path,'alpha_'+fname),
+            metrics_list, os.path.join(output_path,'alpha_'+fname),
             tree_path)
 
 
@@ -360,7 +370,7 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
     """Compute variations of the conditional uncovered probability.
 
     otufilepath: path to otu_table file
-    metrics: comma separated list of required metrics
+    metrics: comma separated list of required metrics; or list
     outfilepath: path to output file
 
     r: Number of new colors that are required for the next prediction
@@ -374,13 +384,18 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
 
     The opposite of uncovered probability is sometimes called coverage.
     """
-    metrics_list = metrics.split(',')
     calcs = []
 
     params = {'r': r,
               'alpha': alpha,
               'f':f,
               'ci_type':ci_type}
+
+    metrics_list = metrics
+    try:
+        metrics_list = metrics_list.split(',')
+    except AttributeError:
+        pass
                   
     for metric in metrics_list:
         try:

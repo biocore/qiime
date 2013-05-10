@@ -46,6 +46,4 @@ def write_pdf_bootstrap_tree(tree, output_f, hits_dict):
         width=700
     if height<700:
         height=700
-    if not output_f[-4:] == ".pdf":
-        output_f = output_f + ".pdf"
     t.drawToPDF(output_f, width, height, edge_color_callback=f) 

@@ -9,7 +9,8 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Dan Knights", "Antonio Gonzalez Pena"] #remember to add yourself
+__credits__ = ["Dan Knights", "Antonio Gonzalez Pena",
+                "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Dan Knights"
@@ -20,7 +21,7 @@ from qiime.util import parse_command_line_parameters, get_options_lookup, create
 from qiime.util import make_option
 from qiime.make_3d_plots import generate_3d_plots,\
 get_coord,remove_unmapped_samples,\
-process_coord_filenames,get_multiple_coords,\
+get_multiple_coords,\
 process_colorby, process_custom_axes, get_custom_coords, remove_nans, scale_custom_coords,\
 validate_coord_files
 from qiime.parse import parse_coords,group_by_field,group_by_fields
@@ -47,7 +48,7 @@ script_info['script_usage'].append(("Example 4","""Pass in a list of desired edg
 script_info['script_usage'].append(("Example 5","""Pass in a list of desired edges and only one pca/pcoa file: ""","""%prog -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -e $PWD/edges.txt -m $PWD/Fasting_Map.txt -b 'Treatment&&DOB' -o $PWD/test3/"""))
 script_info['output_description']="""This script results in a folder containing an html file which displays the 3D Plots generated."""
 script_info['required_options']= [\
-    make_option('-i', '--coord_fnames',type='string',\
+    make_option('-i', '--coord_fnames',type='existing_filepaths',\
         help='This is comma-separated list of the paths to the principal \
 coordinates files (i.e., resulting file \
 from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
@@ -72,8 +73,9 @@ this option.  It is also useful for plotting time-series data \
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis. See make_prefs_file.py. [default: %default]',type='existing_filepath'),
- make_option('-k', '--background_color', type='string', help='This is the background color to \
-use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
+ make_option('-k', '--background_color', type='choice', choices=['black', 'white'],
+    help='This is the background color to use in the plots (Options are \
+\'black\' or \'white\'. [default: %default]'),
  make_option('-e', '--edges_file',help='A file where each line contains two \
 sample IDs separated by a whitespace character; for each pair of sample IDs, \
 an edge will be drawn from the first sample to the second sample. \
@@ -92,12 +94,12 @@ def main():
     prefs, data, background_color, label_color, ball_scale, arrow_colors = \
                             sample_color_prefs_and_map_data_from_options(opts)
     
-    if len(opts.coord_fnames.split(',')) < 2 and opts.edges_file is None:
+    if len(opts.coord_fnames) < 2 and opts.edges_file is None:
         option_parser.error('Please provide at least two ' +\
                      'coordinate files or a custom edges file')
 
     #Open and get coord data (for multiple coords files)
-    coord_files = process_coord_filenames(opts.coord_fnames)
+    coord_files = opts.coord_fnames
     coord_files_valid = validate_coord_files(coord_files)
     if not coord_files_valid:
         option_parser.error('Every line of every coord file must ' +\

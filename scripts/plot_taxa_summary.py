@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski", "John Chase"]
+__credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski",
+                 "John Chase", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -28,20 +29,47 @@ import shutil
 plot_filetype_choices = ['pdf','svg','png']
 
 script_info={}
-script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
-script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown \
-of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy \
-or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in \
-(-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user \
- can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the \
- 'other category' using the (-n) option, default is 20.
+script_info['brief_description']="""Make taxaonomy summary charts based on\
+ taxonomy assignment"""
+script_info['script_description']="""This script automates the construction\
+ of pie, bar and area charts showing the breakdown of taxonomy by given levels.\
+ The script creates an html file for each chart type for easy visualization. It\
+ uses the taxonomy or category counts from summarize_taxa.py for combined\
+ samples by level (-i) and user specified labels for each file passed in (-l).\
+ Output will be written to the user specified folder (-o) the, where the\
+ default is the current working directory. The user can also specify the number\
+ of categories displayed for within a single pie chart, where the rest are\
+ grouped together as the 'other category' using the (-n) option, default is 20.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:""","""%prog -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/"""))
-script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""%prog -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/"""))
-script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""%prog -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/"""))
-script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for specific samples, i.e. sample 'PC.636' and sample 'PC.635' that are in the counts file header, you can use the following command:""","""%prog -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/"""))
-script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
+script_info['script_usage'].append(("""Examples:""",
+"""If you wish to run the code using default parameters, you must supply a\
+ counts file (phylum.txt) along with the taxon level label (Phylum), the\
+ type(s) of charts to produce, and an output directory, by using the following\
+ command:""",
+"""%prog -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/"""))
+
+script_info['script_usage'].append(("""""",
+"""If you want to make charts for multiple levels at a time\
+ (phylum.txt,class.txt,genus.txt) use the following command:""",
+"""%prog -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus\
+ -c pie,bar,area -o phylum_class_genus_charts/"""))
+
+script_info['script_usage'].append(("""""",
+"""Additionally, if you would like to display on a set number of taxa ("-n 10")\
+ in the pie charts, you can use the following command:""",
+ """%prog -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/"""))
+
+script_info['script_usage'].append(("""""",
+"""If you would like to display generate pie charts for specific samples, i.e.\
+ sample 'PC.636' and sample 'PC.635' that are in the counts file header, you\
+ can use the following command:""",
+"""%prog -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/"""))
+
+script_info['output_description']="""The script generates an output folder,\
+ which contains several files. For each pie chart there is a png and a pdf\
+ file. The best way to view all of the pie charts is by opening up the file\
+ taxonomy_summary_pie_chart.html."""
 
 script_info['required_options']=[\
     ### dest should equal long-form parameter names! Can you clean this up?
@@ -97,7 +125,8 @@ script_info['optional_options']=[\
         help='This is the type of image to produce (i.e. ' +\
         ','.join(plot_filetype_choices) + '). [default: %default]',
         choices=plot_filetype_choices,default='pdf'),
-    make_option('-c', '--chart_type',
+    make_option('-c', '--chart_type', type='multiple_choice',
+         mchoices=['pie', 'bar', 'area'],
          help='This is the type of chart to plot (i.e. pie, bar or area).' +\
          ' The user has the ability to plot multiple types, by using a' +\
          ' comma-separated list (e.g. area,pie) [default: %default]',
@@ -252,18 +281,15 @@ def main():
     
     resize_nth_label=int(opts.resize_nth_label)
     if resize_nth_label<0:
-        raise ValueError, 'The resize_nth_label of the plot has to be greater than 0!'
+        raise ValueError, 'The resize_nth_label of the plot has to be greater\
+ than 0!'
     
     generate_image_type=opts.type_of_file
     label_type=opts.label_type
     include_html_legend=opts.include_html_legend
     include_html_counts=opts.include_html_counts  
-    plots_to_make=opts.chart_type.split(',')
-    chart_types=['area','pie','bar']
-    for i in plots_to_make:
-        chart_type=i.lower().strip()
-        if chart_type not in chart_types:
-            raise ValueError, 'Please type in one of the appropriate chart types (i.e. %s)!' % ','.join(chart_types) 
+    plots_to_make=opts.chart_type
+    for chart_type in plots_to_make:
             
         #make pie chart output path
         charts_path = os.path.join(dir_path,'charts')

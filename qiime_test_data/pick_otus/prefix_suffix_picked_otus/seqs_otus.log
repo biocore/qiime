@@ -1,0 +1,7 @@
+PrefixSuffixOtuPicker parameters:
+Algorithm:Prefix/suffix exact matching
+Similarity:0.97
+Prefix length: 50
+Suffix length: 25
+Num OTUs: 120
+Result path: prefix_suffix_picked_otus//seqs_otus.txt

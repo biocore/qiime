@@ -5,7 +5,7 @@
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Dan Knights"] 
+__credits__ = ["Dan Knights", "Luke Ursell"] 
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Dan Knights"
@@ -22,7 +22,8 @@ from cogent.app.util import ApplicationError
 from qiime.util import get_tmp_filename
 
 from cogent.util.misc import remove_files
-from qiime.supervised_learning import run_supervised_learning
+from qiime.supervised_learning import (run_supervised_learning, pooled_standard_deviation, 
+calc_baseline_error_to_observed_error)
 from numpy import array
 
 def is_float(input_string):
@@ -32,6 +33,30 @@ def is_float(input_string):
         return True
     except ValueError:
         return False
+
+class ErrorEstimateTests(TestCase):
+    """Tests of the pooled standard deviation and error ratio class"""
+
+    def setUp(self):
+        # set up list #1 of values to calc pooled standard deviation
+        self.pooled_sd_input_1=[0.4997, 0.1224, 0.3556, 0.2523]
+        self.pooled_sd_result=0.33719004285417448
+
+        # set up inputs to calculate baseline to est error ratio
+        self.baseline_error_input='0.44444'
+        self.obs_error_input='0.22222'
+        self.ratio_result=2.0
+
+    def test_pooled_sd(self):
+        """test pooled standard deviation"""
+        exp = pooled_standard_deviation(self.pooled_sd_input_1)
+        self.assertEqual(self.pooled_sd_result,exp)
+
+    def test_calc_baseline_error_to_observed_error(self):
+        """test calc ratio of baseline to obs error"""
+        exp_ratio = calc_baseline_error_to_observed_error(self.baseline_error_input,
+                            self.obs_error_input)
+        self.assertEqual(self.ratio_result, exp_ratio)
 
 class RSupervisedLearnerTests(TestCase):
     """Tests of the RSupervisedLearner class"""

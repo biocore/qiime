@@ -1,0 +1,72 @@
+usearch --cluster /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/abundance_sorted_minsize_2.fasta --usersort --id 0.97 --slots 16769023 --sizeout --uc /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/clustered_seqs_post_chimera.uc --w 64 --seedsout /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/clustered_seqs.fasta --maxrejects 500 --sizein --log /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/usearch_cluster_seqs.log
+Started Thu Oct 18 14:23:30 2012
+Version 5.2.32
+8.6Gb RAM
+
+Hash size 16769023 (16.8M)
+Algorithm:
+  De novo clustering
+  Fast search (U-sorting) enabled
+  Similarity computed from a global alignment
+
+Word-counting heuristics:
+  Word length for database index 64
+  Step words 8
+  Bump fraction 50%
+
+U-sorted search termination:
+  Max accepts 1
+  Max rejects 500
+  Word count rejection enabled
+
+Accept criteria:
+  Min id 97.0%
+
+Query set:
+  Filename /Users/jrideout/dev/qiime_test_data/pick_otus/usearch_qf_results_no_ref_chim_detection/abundance_sorted_minsize_2.fasta
+  File size 6385.0b
+  Sequence type nucelotide
+
+Database:
+  Initially empty
+
+Substitution scores:
+  Match score 1.0
+  Mismatch score -2.0
+
+Gap penalties:
+     10.00  Open penalty (internal gaps)
+      0.50  Open penalty (end gaps)
+      1.00  Ext. penalty (internal gaps)
+      0.50  Ext. penalty (end gaps)
+
+Fast alignment heuristics:
+  HSP seed word length 5
+  One-hit HSP seeding
+  Exact word seeds (neighborhoods disabled)
+  Min HSP length 32
+  Band radius 16
+
+
+00:00 203Mb Result: 25 clusters, avg size 1.0, avg id. 0.0%
+Search time         0s
+Throughput          0.0 seqs/sec
+Query sequences     25
+Clusters            25
+Avg cluster size    1.0 seqs
+Avg cluster id      0.0%
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+           seqdb          53           0   88.3%          13Mb
+           ultra          25           0    8.4%         1.2Mb
+            mx_h         273           0    2.1%       297.0kb
+         myutils           4           0    0.9%       128.0kb
+       hspfinder         398         199    0.3%        43.4kb
+          windex         136           0    0.0%       3264.0b
+----------------  ----------  ----------  ------  ------------
+           Total         889         199  100.0%          14Mb
+
+Finished Thu Oct 18 14:23:30 2012
+Elapsed time 00:00
+Max memory 203Mb

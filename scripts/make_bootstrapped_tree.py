@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski","Jesse Stombaugh"]
+__credits__ = ["Justin Kuczynski","Jesse Stombaugh","Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -22,17 +22,21 @@ from qiime.parse import parse_bootstrap_support
 
 script_info={}
 script_info['brief_description']="""Make bootstrapped tree"""
-script_info['script_description']="""This script takes a tree and bootstrap support file and creates a pdf, colored by bootstrap support."""
+script_info['script_description']="""This script takes a tree and bootstrap\
+ support file and creates a pdf, colored by bootstrap support."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""In this example, the user supplies a tree file and a text file containing the jackknife support information, which results in a pdf file:""","""make_bootstrapped_tree.py -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf"""))
+script_info['script_usage'].append(("""Example:""",
+"""In this example, the user supplies a tree file and a text file\
+ containing the jackknife support information, which results in a pdf file:""",
+"""%prog -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf"""))
 script_info['output_description']="""The result of this script is a pdf file."""
 script_info['required_options']=[\
- make_option('-m', '--master_tree', help='This is the path to the master tree'),
- make_option('-s', '--support', help='This is the path to the bootstrap \
-support file'),
- make_option('-o', '--output_file', help="This is the filename where the output \
-should be written.  If the suffix does not contain .pdf, then it will be \
-attached")
+ make_option('-m', '--master_tree', type='existing_filepath',
+ 	help='This is the path to the master tree'),
+ make_option('-s', '--support', type='existing_filepath',
+ 	help='This is the path to the bootstrap support file'),
+ make_option('-o', '--output_file', type='new_filepath',
+ 	help="This is the filename where the output should be written.")
 ]
 script_info['optional_options']=[]
 script_info['version'] = __version__

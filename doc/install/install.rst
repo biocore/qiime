@@ -94,6 +94,10 @@ If you plan to use remote mapping files (stored as Google Spreadsheets) with QII
 
 * gdata 2.0.17 (`src <http://gdata-python-client.googlecode.com/files/gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
 
+If you plan to use SourceTracker with QIIME:
+
+* SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
+
 License information for external dependencies
 ---------------------------------------------
 We have attempted to provide accurate licensing information for the above dependencies for the convenience of our users. This information is by no means definitive and may contain errors. Any questions about licenses or the legality of specific uses of these software packages should be directed to the authors of the software. Do not rely solely on the license information presented above!

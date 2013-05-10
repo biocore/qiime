@@ -1,0 +1,7 @@
+#SampleID	BrcodeSequence	LinkerPrimerSequence	Treatment	Description
+S1			Fast	Something good
+S2			Control	Something good
+S3			Control	Something good
+S4			Fast	Something boring
+S5			Control	Something boring
+S6			Control	Something boring

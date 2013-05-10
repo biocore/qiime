@@ -1,0 +1,10 @@
+# Just OTU degree counts
+Degree	OTU Count
+1	306
+2	64
+3	21
+4	17
+5	3
+6	4
+7	3
+9	1

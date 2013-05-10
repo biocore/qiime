@@ -1,0 +1,21 @@
+# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean != Group 2 mean
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in groups with the same mean).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+2 vs Native	2 vs Input	51.4128121259	4.63712327143e-229	6.95568490715e-228	N/A	N/A
+2 vs Native	4 vs Native	2.12974286774	0.0334389854747	0.50158478212	N/A	N/A
+2 vs Native	4 vs Input	49.179892899	7.08014865125e-218	1.06202229769e-216	N/A	N/A
+2 vs Native	8 vs Native	4.34405120767	1.53823684899e-05	0.000230735527348	N/A	N/A
+2 vs Native	8 vs Input	47.8205853578	4.03017695036e-213	6.04526542553e-212	N/A	N/A
+2 vs Input	4 vs Native	-48.2483964644	1.03159239258e-209	1.54738858888e-208	N/A	N/A
+2 vs Input	4 vs Input	-1.09278887836	0.27555550127	1	N/A	N/A
+2 vs Input	8 vs Native	-45.6107421485	5.65117412426e-203	8.47676118639e-202	N/A	N/A
+2 vs Input	8 vs Input	-4.08114751615	6.00563338856e-05	0.000900845008283	N/A	N/A
+4 vs Native	4 vs Input	46.1125999066	4.5292087735e-199	6.79381316025e-198	N/A	N/A
+4 vs Native	8 vs Native	2.15015011247	0.0317849894001	0.476774841002	N/A	N/A
+4 vs Native	8 vs Input	44.7397857494	3.41574777701e-194	5.12362166552e-193	N/A	N/A
+4 vs Input	8 vs Native	-43.4828098293	7.48949161087e-192	1.12342374163e-190	N/A	N/A
+4 vs Input	8 vs Input	-2.95420505504	0.00343870715174	0.0515806072761	N/A	N/A
+8 vs Native	8 vs Input	42.0371328548	5.26250525319e-186	7.89375787978e-185	N/A	N/A

@@ -1,3 +1,5 @@
+.. _open_reference_illumina:
+
 =========================================================
  Open-reference OTU picking applied to Illumina data
 =========================================================
@@ -14,7 +16,7 @@ This document very briefly covers option 1. Most of the text covers option 2, in
  Option 1: Standard open-reference OTU picking
 ---------------------------------------------------------------
 
-Standard open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_otus_through_otu_table.py`` workflow script in QIIME with a custom parameters file.
+Standard open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_de_novo_otus.py`` workflow script in QIIME with a custom parameters file.
 
 Your parameters file should look like the following::
 
@@ -30,7 +32,7 @@ You can then use the following commands. You should *always use full paths* whic
 
 First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open-reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially)::
 	
-	pick_otus_through_otu_table.py -i $PWD/seqs.fna -o $PWD/ucr/ -p $PWD/ucr_params.txt -aO 8
+	pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/ucr/ -p $PWD/ucr_params.txt -aO 8
 
 When working with Illumina data you typically want to filter singleton OTUs (i.e., OTUs with only one sequence) as these are likely to represent sequencing or PCR errors. In QIIME 1.4.0 (and most earlier versions) you can do that with this command::
 	
@@ -44,7 +46,7 @@ You'll notice that depending on your version of QIIME, the extension on your OTU
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucr97/otu_table_mc2.biom
+	print_biom_table_summary.py -i $PWD/ucr97/otu_table_mc2.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
@@ -69,7 +71,7 @@ Step 0: Prefilter (parallel)
 ----------------------------
 Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>`. All reads which fail to hit the reference set are discarded as likely sequencing error.
 
- .. warning:: If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as ``-p`` to ``pick_subsampled_reference_otus_through_otu_table.py``: ``pick_otus:enable_rev_strand_match True``. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow. 
+ .. warning:: If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as ``-p`` to ``pick_open_reference_otus.py``: ``pick_otus:enable_rev_strand_match True``. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow. 
 
 Step 1: Closed reference (parallel)
 -----------------------------------
@@ -103,7 +105,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
+	pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.
 
@@ -111,7 +113,7 @@ This command should be run in parallel. Each job will need approximately 4GB of 
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
+	print_biom_table_summary.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
@@ -246,7 +248,7 @@ Additional sanity check: is the new reference dataset sane?
 -----------------------------------------------------------
 To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
 	
-	pick_otus_through_otu_table.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
+	pick_de_novo_otus.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
 
 The parameters file (``-p``) for this analysis contained the following lines::
 
@@ -400,7 +402,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
+	pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. 
 

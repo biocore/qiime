@@ -1,0 +1,15 @@
+# Correlation coefficient: pearson.
+# The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.
+# The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
+# The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
+# Number of samples that matched between the taxa summary files: 9
+Sample ID	Sample ID	Correlation coefficient	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)	CI (lower)	CI (upper)
+PC.354	PC.354	0.9997	0.0000	0.0000	0.007	0.063	0.9985	1.0000
+PC.355	PC.355	0.9998	0.0000	0.0000	0.005	0.045	0.9988	1.0000
+PC.356	PC.356	0.9999	0.0000	0.0000	0.002	0.018	0.9995	1.0000
+PC.481	PC.481	0.9998	0.0000	0.0000	0.002	0.018	0.9989	1.0000
+PC.593	PC.593	0.9999	0.0000	0.0000	0.002	0.018	0.9993	1.0000
+PC.607	PC.607	0.9990	0.0000	0.0000	0.002	0.018	0.9942	0.9998
+PC.634	PC.634	1.0000	0.0000	0.0000	0.001	0.009	1.0000	1.0000
+PC.635	PC.635	0.9963	0.0000	0.0000	0.002	0.018	0.9788	0.9994
+PC.636	PC.636	0.9999	0.0000	0.0000	0.001	0.009	0.9994	1.0000

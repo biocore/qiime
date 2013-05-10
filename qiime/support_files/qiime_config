@@ -22,5 +22,4 @@ topiaryexplorer_project_dir
 torque_queue	friendlyq
 assign_taxonomy_reference_seqs_fp
 assign_taxonomy_id_to_taxonomy_fp
-qiime_test_data_dir
 sc_queue	all.q

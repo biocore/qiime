@@ -75,12 +75,12 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
         res_otu_metadata = None
     else:
         for otu_id in res_otus:
-            # if otu was in original table, just copy it's metadata
+            # if otu was in original table, just copy its metadata
             try:
                 res_otu_metadata.append(otu_metadata[otu_ids.index(otu_id)])
             except ValueError:
-            # else just append the empty string
-                res_otu_metadata.append('')
+                # else just append None since we don't have its metadata
+                res_otu_metadata.append(None)
     
     return res_sam_names, res_otus, res_otu_mtx, res_otu_metadata
 
@@ -269,9 +269,13 @@ def simsam_range_to_files(table,
         
         output_table_fp = join(output_dir,'%s_n%d_d%r.biom' %
          (output_table_basename, simulated_sample_size, dissimilarity))
-        open(output_table_fp,'w').write(format_biom_table(output_table))
+        output_table_f = open(output_table_fp, 'w')
+        output_table_f.write(format_biom_table(output_table))
+        output_table_f.close()
         
         if output_mapping_lines != None:
-            output_map_fp   = join(output_dir,'%s_n%d_d%r.txt' % 
+            output_map_fp = join(output_dir,'%s_n%d_d%r.txt' %
              (output_map_basename, simulated_sample_size, dissimilarity))
-            open(output_map_fp,'w').write(''.join(output_mapping_lines))
+            output_map_f = open(output_map_fp, 'w')
+            output_map_f.write(''.join(output_mapping_lines))
+            output_map_f.close()
