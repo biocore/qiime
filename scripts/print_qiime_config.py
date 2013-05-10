@@ -137,7 +137,7 @@ class Qiime_config(TestCase):
 
     def test_ampliconnoise_install(self):
         """ AmpliconNoise install looks sane."""
-        url = "http://www.qiime.org/install/install.html#ampliconnoise-install"
+        url="http://qiime.org/install/install.html#ampliconnoise-install-notes"
         
         pyro_lookup_file = getenv('PYRO_LOOKUP_FILE')
         self.assertTrue(pyro_lookup_file != None,

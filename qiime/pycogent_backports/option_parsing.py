@@ -89,16 +89,13 @@ def check_multiple_choice(option, opt, value):
     return values
 
 def check_blast_db(option, opt, value):
-    db_dir, db_name = split(value)
+    db_dir, db_name = split(abspath(value))
     if not exists(db_dir):
         raise OptionValueError(
             "option %s: path does not exists: %r" % (opt, db_dir))
     elif not isdir(db_dir):
         raise OptionValueError(
             "option %s: not a directory: %r" % (opt, db_dir))
-    if len(glob('%s*nin' % value)) == 0:
-        raise OptionValueError(
-            "option %s: not a pre-formatted BLAST database: %r" % (opt, db_dir))
     return value
 
 class CogentOption(Option):
