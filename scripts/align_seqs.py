@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso, Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -111,7 +111,7 @@ if pynast_installed:
           'sequence identity to closest blast hit to include sequence in'+\
           ' alignment [default: %default]', default=0.75))
     script_info['optional_options'].append(
-     make_option('-d','--blast_db', type='string',\
+     make_option('-d','--blast_db', type='blast_db',\
           dest='blast_db',help='Database to blast against when -m pynast '+\
           '[default: %s]' % blast_db_default_help,\
           default=qiime_config['pynast_template_alignment_blastdb']))
