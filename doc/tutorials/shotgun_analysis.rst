@@ -36,8 +36,9 @@ Defining environment variables for use in this tutorial
 
 Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this::
 
-	export reference_seqs=/home/ubuntu/qiime_software/img-qiime-***/gene_aa_seqs.faa
-	export reference_md=/home/ubuntu/qiime_software/img-qiime-***/gene_ko_pathway.txt
+	export QIIME_DIR=$HOME/qiime_software
+	export reference_seqs=$QIIME_DIR/img-qiime-***/gene_aa_seqs.faa
+	export reference_md=$QIIME_DIR/img-qiime-***/gene_ko_pathway.txt
 
 where ``img-qiime-***`` will be specific to the version of the reference dataset you downloaded from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.
 
@@ -95,7 +96,7 @@ Finally, you may want to generate summaries of the samples based on their KO com
 .. image:: ../images/shotgun_analysis_gn_ec_summary_legend.png
 	:height: 400 px
 
-Above is an summary of EC by layer (which could be achieved by running ``export reference_md /home/ubuntu/qiime_software/img-ref-arp14sept2012/gene_ko_pathway.txt`` prior to the ``map_reads_to_reference.py`` step of this tutorial), collapsed at EC Level 2. 
+Above is an summary of EC by layer (which could be achieved by running ``export reference_md $QIIME_DIR/img-ref-arp14sept2012/gene_ko_pathway.txt`` prior to the ``map_reads_to_reference.py`` step of this tutorial), collapsed at EC Level 2. 
 
 A note on input data
 --------------------
