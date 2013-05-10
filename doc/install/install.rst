@@ -110,7 +110,7 @@ Getting QIIME
 -------------
 First, change to the directory where you would like to download QIIME::
 
-	cd $HOME_user
+	cd $HOME
 
 Stable Release
 ^^^^^^^^^^^^^^
