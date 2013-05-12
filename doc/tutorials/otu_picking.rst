@@ -12,16 +12,16 @@ Description of QIIME's OTU picking protocols
 De novo OTU picking
 -------------------
 
-In a de novo OTU picking process, reads are clustered against one another without any external reference. ``pick_de_novo_otus.py`` is the primary interface for de novo OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps. A benefit of de novo OTU picking is that all reads are clustered. A drawback is that there is no existing support for running this in parallel in QIIME, so it can be too slow to apply to large datasets (e.g., more than 10 million reads). 
+In a de novo OTU picking process, reads are clustered against one another without any external reference sequence collection. ``pick_de_novo_otus.py`` is the primary interface for de novo OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps. A benefit of de novo OTU picking is that all reads are clustered. A drawback is that there is no existing support for running this in parallel in QIIME, so it can be too slow to apply to large datasets (e.g., more than 10 million reads). 
 
 You **must** use de novo OTU picking if:
 
-*  You do not have a reference database to cluster against, for example because you're working with an infrequently used marker gene.
+*  You do not have a reference sequence collection to cluster against, for example because you're working with an infrequently used marker gene.
 
 You **cannot** use de novo OTU picking if:
 
 *  You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA.
-*  You working with very large data sets, like a full HiSeq 2000 run. Technically, you can use de novo OTU picking here, but you literally might wait a month for pick_de_novo_otus.py to run. 
+*  You working with very large data sets, like a full HiSeq 2000 run. (Technically, you can use de novo OTU picking here, but you literally might wait a month for ``pick_de_novo_otus.py`` to run.)
 
 Pros:
 
@@ -29,12 +29,12 @@ Pros:
 
 Cons:
 
-*  Does not run in parallel.
+*  Speed. Does not run in parallel.
 
 Closed-reference OTU picking
 ----------------------------
 
-In a closed-reference OTU picking process, reads are clustered against a reference database and any reads which do not hit the reference collection are excluded from downstream analyses. ``pick_closed_reference_otus.py`` is the primary interface for closed-reference OTU picking in QIIME. If the user provides taxonomic assignments for sequences in the reference database, those are assigned to OTUs.
+In a closed-reference OTU picking process, reads are clustered against a reference sequence collection and any reads which do not hit a sequence in the reference sequence collection are excluded from downstream analyses. ``pick_closed_reference_otus.py`` is the primary interface for closed-reference OTU picking in QIIME. If the user provides taxonomic assignments for sequences in the reference database, those are assigned to OTUs.
 
 You **must** use closed-reference OTU picking if:
 
@@ -42,28 +42,28 @@ You **must** use closed-reference OTU picking if:
 
 You **cannot** use de novo OTU picking if:
 
-*  You do not have a reference database to cluster against, for example because you're working with an infrequently used marker gene.
+*  You do not have a reference sequence collection to cluster against, for example because you're working with an infrequently used marker gene.
 
 Pros:
 
 *  Speed. Closed-reference OTU picking is fully parallelizable, so is useful for extremely large data sets.
-*  Better trees and taxonomy. Because all OTUs in your dataset are already defined in your reference data set, you may already have a tree and a taxonomy that you trust for those OTUs. You have the option of using these, or building a tree and taxonomy from your sequence data.
+*  Better trees and taxonomy. Because all OTUs are already defined in your reference sequence collection, you may already have a tree and a taxonomy that you trust for those OTUs. You have the option of using those, or building a tree and taxonomy from your sequence data.
 
 Cons:
 
-*  Inability to detect novel diversity with respect to your reference sequences. Because reads that don't hit the reference database are discarded, your analyses only focus on the diversity that you "already know about". Also, depending on how well-characterized the environment that you're working in is, you may end up throwing away a small fraction of your reads (e.g., discarding 1-10% of the reads is common for 16S-based human microbiome studies, where databases like Greengenes cover most of the organisms that are typically present) or a large fraction of your reads (e.g, discarding 50-80% of the reads has been observed for extreme environments like the Guerrero Negro microbial mats). 
+*  Inability to detect novel diversity with respect to your reference sequence collection. Because reads that don't hit the reference sequence collection are discarded, your analyses only focus on the diversity that you "already know about". Also, depending on how well-characterized the environment that you're working in is, you may end up throwing away a small fraction of your reads (e.g., discarding 1-10% of the reads is common for 16S-based human microbiome studies, where databases like Greengenes cover most of the organisms that are typically present) or a large fraction of your reads (e.g, discarding 50-80% of the reads has been observed for "unusual" environments like the Guerrero Negro microbial mats). 
 
 Open-reference OTU picking
 --------------------------
 
-In an open-reference OTU picking process, reads are clustered against a reference database and any reads which do not hit the reference collection are subsequently clustered de novo. ``pick_open_reference_otus.py`` is the primary interface for open-reference OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps.
+In an open-reference OTU picking process, reads are clustered against a reference sequence collection and any reads which do not hit the reference sequence collection are subsequently clustered de novo. ``pick_open_reference_otus.py`` is the primary interface for open-reference OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps.
 
-**This is the preferred strategy for OTU picking among the QIIME developers.**
+**Open-reference OTU picking with** ``pick_open_reference_otus.py`` **is the preferred strategy for OTU picking among the QIIME developers.**
 
 You **cannot** use de novo OTU picking if:
 
 *  You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA.
-*  You do not have a reference database to cluster against, for example because you're working with an infrequently used marker gene.
+*  You do not have a reference sequence collection to cluster against, for example because you're working with an infrequently used marker gene.
 
 Pros:
 
@@ -72,7 +72,7 @@ Pros:
 
 Cons:
 
-*  Speed. Some steps of this workflow do still run serially. For data sets with a lot of novel diversity with respect to the reference collection, this can still take a long time to run.
+*  Speed. Some steps of this workflow do still run serially. For data sets with a lot of novel diversity with respect to the reference sequence collection, this can still take days to run.
 
 Running the OTU picking workflows
 =================================
@@ -86,7 +86,7 @@ Conventions used in these examples
 
 It's a good idea, particularly for when running these workflows in parallel, to specify absolute paths for your input and output files. That is indicated here with ``$PWD``, but in practice it will often looks something like ``$HOME/my-analysis/seqs.fna``.
 
-The reference-based OTU picking workflows require that the user provide reference files. Here we define some environment variables to point to those locations. These paths will likely be different on your system. You can download QIIME-compatible reference files from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_. In this example we're working with the Greengenes 12_10 reference OTU collection. You can set environment variables to point to these as follows::
+The reference-based OTU picking workflows require that the user provide reference files (the reference sequence collection). Here we define some environment variables to point to those locations. These paths will likely be different on your system. You can download QIIME-compatible reference files from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_. In this example we're working with the Greengenes 12_10 reference OTU collection. You can set environment variables to point to these as follows::
 
 	export QIIME_DIR=$HOME/qiime_software
 	export reference_seqs=$QIIME_DIR/gg_otus-12_10-release/rep_set/97_otus.fasta
@@ -129,8 +129,6 @@ where the following information is in ``usearch_ref_params.txt``::
 
 The key output file is ``otu_table.biom``, the OTU table. Note that there is no phylogenetic tree generated in this protocol - as all OTUs are defined by reference sequences, it is assumed that a tree already exists (which would likely be better than the one generated here).
 
-You can find an additional example using closed-reference OTU picking in :ref:`illumina_overview_tutorial`.
-
 Open-reference OTU picking
 --------------------------
 
@@ -144,7 +142,7 @@ With usearch61::
 
 The key output files are ``otu_table.biom``, the OTU table, and ``rep_set.tre``, the phylogenetic tree relating the OTUs in the OTU table.
 
-You can find an additional example using open-reference OTU picking in :ref:`open_reference_illumina`.
+You can find an additional example using open-reference OTU picking in :ref:`illumina_overview_tutorial`.
 
 Alternative processing parameters
 =================================
