@@ -1,22 +1,22 @@
 .. _open_reference_illumina:
 
-=========================================================
-Discussion of open reference OTU picking in QIIME
-=========================================================
+============================================================
+Discussion of subsampled open reference OTU picking in QIIME
+============================================================
 
-This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs. It is available in QIIME 1.5.0 and later.
+This document describes how to use QIIME to pick OTUs on very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. The *subsampled open-reference OTU picking protocol* is optimized for large datasets, and yields identical results as *legacy open-reference OTU picking*, so there there is no reason to ever use the *legacy* method anymore. (Note: In QIIME 1.6.0 and earlier, we referred to *legacy* open-reference OTU picking as *standard* open-reference OTU picking).
 
-This document very briefly covers option 1. Most of the text covers option 2, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data. 
+This document very briefly covers *legacy* open-reference OTU picking. Most of the text covers subsampled open-reference OTU picking, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data. 
 
  .. note:: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances `here <http://qiime.org/home_static/dataFiles.html>`_.
 
  .. toctree::
 
 ---------------------------------------------------------------
- Option 1: Standard open-reference OTU picking
+ Option 1: Legacy open-reference OTU picking
 ---------------------------------------------------------------
 
-Standard open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_de_novo_otus.py`` workflow script in QIIME with a custom parameters file.
+Legacy open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_de_novo_otus.py`` workflow script in QIIME with a custom parameters file.
 
 Your parameters file should look like the following::
 
@@ -61,11 +61,11 @@ Again the ``-aO8`` specifies that the job should be run in parallel on 8 process
  Option 2: Subsampled open-reference OTU picking
 ---------------------------------------------------------------
 
-Subsampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
+Subsampled reference OTU picking is suitable for any analysis that legacy open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
 
  .. warning:: If processing multiple HiSeq lanes, don't combine the sequence data into a single file. Instead, see :ref:`iterative-mode`.
 
-This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads which fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
+This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads which fail to hit the reference are subsequently clustered de novo. This differs from legacy open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
 
 Step 0: Prefilter (parallel)
 ----------------------------
@@ -139,7 +139,7 @@ What this does is filter exclude all OTUs with identifiers that are not present 
  Subsampled OTU picking workflow evaluation
 --------------------------------------------
 
-Several analyses were performed to confirm that results are comparable between the subsampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
+Several analyses were performed to confirm that results are comparable between the subsampled open-reference OTU picking workflow and the legacy open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
 
 Several tests were performed:
  * beta diversity (procrustes analysis to compare subsampled OTU results to de novo, open-reference, and closed-reference OTU picking)
@@ -156,26 +156,26 @@ This analysis is based on the data presented in the `Lauber 88 soils <http://www
 
 Alpha diversity
 ---------------
-Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
+Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, legacy open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
 
 Results
 ```````
  * subsampled open-reference OTU picking versus de novo OTU picking: r=0.995 p=4.836e-88
- * subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.000 p=0.000
+ * subsampled open-reference OTU picking versus legacy open-reference OTU picking: r=1.000 p=0.000
  * subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.8634 p=1.405e-27
 
 Conclusions
 ```````````
-Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
+Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, legacy open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
 
 Beta diversity
 --------------
-Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using ``transform_coordinate_matrices.py`` which is described in the `Procrustes tutorial <./procrustes_analysis.html>`_. p-values are based on 1000 Monte Carlo iterations.
+Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, legacy open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using ``transform_coordinate_matrices.py`` which is described in the `Procrustes tutorial <./procrustes_analysis.html>`_. p-values are based on 1000 Monte Carlo iterations.
 
 Results
 ```````
  * subsampled open-reference OTU picking versus de novo OTU picking: M2=0.009 p<0.001
- * subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.007 p<0.001
+ * subsampled open-reference OTU picking versus legacy open-reference OTU picking: M2=0.007 p<0.001
  * subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.039 p<0.001
 
 Conclusions
@@ -216,7 +216,7 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 ============================= ============================= ==============================================================================================
 
 
-Top 5 OTUs that differ across bins for standard open-reference OTU picking:
+Top 5 OTUs that differ across bins for legacy open-reference OTU picking:
 
 ============================= ============================= ==============================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
@@ -242,11 +242,11 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 
 Conclusions
 ```````````
-In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The standard open-reference and subsampled open-reference are remarkably consistent. 
+In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The legacy open-reference and subsampled open-reference are remarkably consistent. 
 
 Additional sanity check: is the new reference dataset sane?
 -----------------------------------------------------------
-To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
+To confirm that the new reference data set works as expected, I applied legacy open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
 	
 	pick_de_novo_otus.py -i $HOME/data/lauber_88soils/seqs.fna -o $HOME/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p $HOME/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
 
@@ -264,26 +264,26 @@ This analysis is based on the data presented in the `Costello Whole Body <http:/
 
 Alpha diversity
 ---------------
-Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
+Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, legacy open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
 
 Results
 ```````
  * subsampled open-reference OTU picking versus de novo OTU picking: r=0.99  p=0.0
- * subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.0 p=0.0
+ * subsampled open-reference OTU picking versus legacy open-reference OTU picking: r=1.0 p=0.0
  * subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.95 p=0.0
 
 Conclusions
 ```````````
-Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
+Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, legacy open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
 
 Beta diversity
 --------------
-Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using ``transform_coordinate_matrices.py`` which is described in the `Procrustes tutorial <./procrustes_analysis.html>`_. p-values are based on 1000 Monte Carlo iterations.
+Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, legacy open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using ``transform_coordinate_matrices.py`` which is described in the `Procrustes tutorial <./procrustes_analysis.html>`_. p-values are based on 1000 Monte Carlo iterations.
 
 Results
 ```````
  * subsampled open-reference OTU picking versus de novo OTU picking: M2=0.056 p<0.001
- * subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.053 p<0.001
+ * subsampled open-reference OTU picking versus legacy open-reference OTU picking: M2=0.053 p<0.001
  * subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.072 p<0.001
 
 Conclusions
@@ -323,7 +323,7 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 18575                         2.74e-122                     k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae
 ============================= ============================= ==============================================================================================
 
-Top 5 OTUs that differ across bins for standard open-reference OTU picking:
+Top 5 OTUs that differ across bins for legacy open-reference OTU picking:
 
 ============================= ============================= ==============================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
