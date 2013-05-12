@@ -16,7 +16,7 @@ This document very briefly covers *legacy* open-reference OTU picking. Most of t
  Option 1: Legacy open-reference OTU picking
 ---------------------------------------------------------------
 
-Legacy open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_de_novo_otus.py`` workflow script in QIIME with a custom parameters file.
+Legacy open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_de_novo_otus.py`` workflow script in QIIME with a custom parameters file. Note that the name of the script is misleading here. While this is called ``pick_de_novo_otus.py``, we'll be overriding parameters to have it run open-reference OTU picking. Because we no longer recommend legacy open-reference OTU picking (you should instead use subsampled open reference OTU picking via ``pick_open_reference_otus.py``), we won't modify the name of this script. 
 
 Your parameters file should look like the following::
 
@@ -24,7 +24,7 @@ Your parameters file should look like the following::
 	pick_otus:refseqs_fp <PATH TO REFERENCE COLLECTION>
 	pick_otus:enable_rev_strand_match True
 
-Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the reference data set you'd like to pick OTUs against. The QIIME development group frequently used the Greengenes reference OTUs. On the QIIME EC2 instance, this path would be ``/software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta``. 
+Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the reference data set you'd like to pick OTUs against. The QIIME development group frequently uses the Greengenes reference OTUs. This might be something like ``$HOME/qiime_software/gg_12_10_otus-release/rep_set/97_otus.fasta``. 
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``.
 
