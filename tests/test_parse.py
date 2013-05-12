@@ -782,6 +782,13 @@ eigvals\t4.94\t1.79\t1.50
         
         # empty dict on empty input
         self.assertEqual(parse_qiime_config_files([]),{})
+        
+        # test with an env variable - if it gets expanded
+        # there won't be a $ in the output
+        fake_file3 = ['key2\t$HOME', 'key3\thello $HOME']
+        actual = parse_qiime_config_files([fake_file3])
+        self.assertTrue('$' not in actual['key2'])
+        self.assertTrue('$' not in actual['key3'])
 
 
     def test_parse_metadata_state_descriptions(self):
