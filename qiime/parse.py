@@ -16,6 +16,7 @@ from string import strip
 from collections import defaultdict
 from copy import deepcopy
 import os
+from os.path import expandvars
 import re
 from cogent.util.dict2d import Dict2D
 from cogent.util.misc import unzip
@@ -459,7 +460,7 @@ def process_otu_table_sample_ids(sample_id_fields):
     # field will be named either 'Consensus Lineage' or 'OTU Metadata',
     # but we don't care about case or spaces.
     last_column_header = sample_id_fields[-1].strip().replace(' ','').lower()
-    if last_column_header in ['consensuslineage', 'otumetadata']:
+    if last_column_header in ['consensuslineage', 'otumetadata', 'taxonomy']:
         has_metadata = True
         sample_ids = sample_id_fields[:-1]
     else:
@@ -615,13 +616,20 @@ def fields_to_dict(lines, delim='\t', strip_f=strip):
 def parse_qiime_parameters(lines):
     """ Return 2D dict of params (and values, if applicable) which should be on
     """
-    # The qiime_config object is a default dict: if keys are not
+    # The result object is a default dict: if keys are not
     # present, {} is returned
     result = defaultdict(dict)
     
     for line in lines:
         line = line.strip()
         if line and not line.startswith('#'):
+            pound_pos = line.find('#')
+
+            # A pound sign only starts an inline comment if it is preceded by
+            # whitespace.
+            if pound_pos > 0 and line[pound_pos - 1].isspace():
+                line = line[:pound_pos].rstrip()
+
             fields = line.split(None,1)
             script_id, parameter_id = fields[0].split(':')
             try:
@@ -731,7 +739,7 @@ def parse_qiime_config_file(qiime_config_file):
         if not line or line.startswith('#'): continue
         fields = line.split()
         param_id = fields[0]
-        param_value = ' '.join(fields[1:]) or None
+        param_value = expandvars(' '.join(fields[1:])) or None
         result[param_id] = param_value
     return result
     

@@ -40,8 +40,11 @@ from qiime.util import DistanceMatrix, MetadataMap
 # Top-level stats functions.
 
 tail_types = ['low', 'high', 'two-sided']
-tail_type_desc = {'low':'one-sided (low)', 'high':'one-sided (high)',
-                  'two-sided':'two-sided'}
+tail_type_desc = {
+        'low': ('one-sided (low)', '<'),
+        'high': ('one-sided (high)', '>'),
+        'two-sided': ('two-sided', '!=')
+}
 
 def all_pairs_t_test(labels, dists, tail_type='two-sided',
                      num_permutations=999):
@@ -80,7 +83,10 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
                          "than or equal to zero." % num_permutations)
 
     result += '# The tests of significance were performed using a ' + \
-              tail_type_desc[tail_type] + ' Student\'s two-sample t-test.\n'
+              tail_type_desc[tail_type][0] + ' Student\'s two-sample t-test.\n'
+
+    result += ('# Alternative hypothesis: Group 1 mean %s Group 2 mean\n' %
+               tail_type_desc[tail_type][1])
 
     if num_permutations > 0:
         result += '# The nonparametric p-values were calculated using ' + \

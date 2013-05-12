@@ -4,9 +4,10 @@ from __future__ import division
 
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ =  ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger",
-        "Jesse Stombaugh","William Walters", "Jens Reeder",
-        "Jose Antonio Navas Molina"] #remember to add yourself
+__credits__ =  ["Rob Knight", "Micah Hamady", "Greg Caporaso",
+                "Kyle Bittinger", "Jesse Stombaugh","William Walters",
+                "Jens Reeder", "Jose Antonio Navas Molina",
+                "Jai Ram Rideout"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "William Walters"
@@ -20,6 +21,10 @@ from sys import stderr
 from qiime.split_libraries import preprocess
 
 options_lookup = get_options_lookup()
+
+# Define the minimum quality score default here so that we can check whether
+# the user supplied -s on the command line without also providing -q.
+min_qual_score_default = 25
 
 script_info={}
 script_info['brief_description']="""Split libraries according to barcodes\
@@ -73,7 +78,7 @@ script_info['script_usage'].append(("""Duplicate Barcode Example:""",
  sequences will be assigned the same unique identifier by %prog when it is run\
  separately on the four different runs, each with their own barcode file. This\
  will cause a problem in file concatenation of the four different runs into a\
- single large file. To avoid this, you can use the '-s' parameter which defines\
+ single large file. To avoid this, you can use the '-n' parameter which defines\
  a start index for %prog. From experience, most FLX runs (when combining both\
  files for a single plate) will have 350,000 to 650,000 sequences. Thus, if Run\
  1 for %prog uses '-n 1000000', Run 2 uses '-n 2000000', etc., then you are\
@@ -200,8 +205,9 @@ script_info['optional_options']=[\
         help='calculate sequence lengths after trimming primers and barcodes'+\
          ' [default: %default]', default=False),
 
-    make_option('-s', '--min-qual-score', type='int', default=25,
-        help='min average qual score allowed in read [default: %default]'),
+    make_option('-s', '--min-qual-score', type='int', default=None,
+        help='min average qual score allowed in read [default: %d]' %
+        min_qual_score_default),
 
     make_option('-k', '--keep-primer', action='store_true',
         help='do not remove primer from sequences', default=False),
@@ -336,7 +342,15 @@ def main():
     if opts.record_qual_scores and not opts.qual_fnames:
         option_parser.error('To enable recording of truncated quality '+\
          'scores, one must supply quality score files.')
-  
+
+    min_qual_score = opts.min_qual_score
+    if min_qual_score is None:
+        min_qual_score = min_qual_score_default
+    else:
+        if not opts.qual_fnames:
+            option_parser.error('To specify a minimum quality score for '
+                                'reads, one must supply quality score files.')
+
     mapping_file = opts.map_fname
     
     try:
@@ -379,7 +393,7 @@ def main():
                starting_ix = opts.start_index,
                min_seq_len = opts.min_seq_len,
                max_seq_len = opts.max_seq_len, 
-               min_qual_score=opts.min_qual_score,
+               min_qual_score=min_qual_score,
                keep_barcode=opts.keep_barcode,
                keep_primer=opts.keep_primer,
                max_ambig=opts.max_ambig,

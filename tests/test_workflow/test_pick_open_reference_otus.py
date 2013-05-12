@@ -589,12 +589,14 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         for row in otu_table.iterObservationData():
             self.assertTrue(sum(row) >= 2,"Singleton OTU detected in OTU table.")
-        # number of OTUs in final OTU table equals the number of seequences in
+        # number of OTUs in final OTU table equals the number of sequences in
         # the alignment...
         self.assertEqual(len(otu_table.ObservationIds),count_seqs(aln_fp)[0])
-        # ... and that number is either 5 or 6 (it can vary due to the random 
+        # ... and that number is either 4, 5 or 6 (it can vary due to the random 
         # subsampling)
-        self.assertTrue(5 <= len(otu_table.ObservationIds) <= 6)
+        num_obs_ids = len(otu_table.ObservationIds)
+        self.assertTrue(4 <= num_obs_ids <= 6,
+        "Obtained %d observations, but expected 4, 5 or 6." % num_obs_ids)
         
         # the correct sequences failed the prefilter
         prefilter_failure_ids = [s.strip() for s in open(prefilter_failures_fp,'U')]
@@ -625,12 +627,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
          "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # confirm that number of tips in the tree is the same as the number of sequences
-        # in the alignment, and that number is either 5 or 6 (it can vary due to the random 
-        # subsampling)
+        # in the alignment (and we already checked that we're happy with that number
+        # above when it was compared to the number of OTUs)
         num_tree_tips = len(LoadTree(tree_fp).tips())
         num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
         self.assertEqual(num_tree_tips,num_align_seqs)
-        self.assertTrue(5 <= num_tree_tips <= 6)
         
         # OTU table without singletons or pynast failures has same number of 
         # otus as there are aligned sequences

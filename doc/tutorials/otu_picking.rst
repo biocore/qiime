@@ -21,13 +21,14 @@ To run the methods with usearch, you will need to either pass in a parameters fi
 Conventions used in these examples
 ----------------------------------
 
-It's a good idea, particularly for when running these workflows in parallel, to specify absolute paths for your input and output files. That is indicated here with ``$PWD``, but in practice it will often looks something like ``/home/ubuntu/my-analysis/seqs.fna``.
+It's a good idea, particularly for when running these workflows in parallel, to specify absolute paths for your input and output files. That is indicated here with ``$PWD``, but in practice it will often looks something like ``$HOME/my-analysis/seqs.fna``.
 
 The reference-based OTU picking workflows require that the user provide reference files. Here we define some environment variables to point to those locations. These paths will likely be different on your system. You can download QIIME-compatible reference files from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_. In this example we're working with the Greengenes 12_10 reference OTU collection. You can set environment variables to point to these as follows::
 
-	export reference_seqs=/home/ubuntu/qiime_software/gg_otus-12_10-release/rep_set/97_otus.fasta
-	export reference_tree=/home/ubuntu/qiime_software/gg_otus-12_10-release/trees/97_otus.tree
-	export reference_tax=/home/ubuntu/qiime_software/gg_otus-12_10-release/taxonomy/97_otu_taxonomy.txt
+	export QIIME_DIR=$HOME/qiime_software
+	export reference_seqs=$QIIME_DIR/gg_otus-12_10-release/rep_set/97_otus.fasta
+	export reference_tree=$QIIME_DIR/gg_otus-12_10-release/trees/97_otus.tree
+	export reference_tax=$QIIME_DIR/gg_otus-12_10-release/taxonomy/97_otu_taxonomy.txt
 
 De novo OTU picking
 -------------------
@@ -115,7 +116,6 @@ If you're interested in running the usearch OTU pickers in size-order mode (mean
 	pick_otus:sizeorder True 
 	pick_otus:maxaccepts 16
 	pick_otus:maxrejects 64
-	pick_otus:maxhits 1
 
 For example, in de novo mode::
 

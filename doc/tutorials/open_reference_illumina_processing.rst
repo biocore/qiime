@@ -1,7 +1,7 @@
 .. _open_reference_illumina:
 
 =========================================================
- Open-reference OTU picking applied to Illumina data
+Discussion of open reference OTU picking in QIIME
 =========================================================
 
 This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs. It is available in QIIME 1.5.0 and later.
@@ -28,7 +28,7 @@ Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the refere
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``.
 
-You can then use the following commands. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.
+You can then use the following commands. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``$HOME/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.
 
 First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open-reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially)::
 	
@@ -46,7 +46,7 @@ You'll notice that depending on your version of QIIME, the extension on your OTU
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucr97/otu_table_mc2.biom
+	print_biom_table_summary.py -i $PWD/ucr97/otu_table_mc2.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
@@ -103,7 +103,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 	pick_otus:otu_picking_method uclust_ref
 	pick_otus:enable_rev_strand_match True
 
-You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``$HOME/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
 	pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
 
@@ -113,7 +113,7 @@ This command should be run in parallel. Each job will need approximately 4GB of 
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	per_library_stats.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
+	print_biom_table_summary.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
 
 This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
@@ -248,12 +248,12 @@ Additional sanity check: is the new reference dataset sane?
 -----------------------------------------------------------
 To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
 	
-	pick_de_novo_otus.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
+	pick_de_novo_otus.py -i $HOME/data/lauber_88soils/seqs.fna -o $HOME/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p $HOME/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
 
 The parameters file (``-p``) for this analysis contained the following lines::
 
 	pick_otus:otu_picking_method uclust_ref
-	pick_otus:refseqs_fp /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/prefilter60/new_refseqs.fna
+	pick_otus:refseqs_fp $HOME/data/lauber_88soils/subsample_ref_otus_eval/prefilter60/new_refseqs.fna
 	pick_otus:enable_rev_strand_match True
 
 
@@ -400,7 +400,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 	pick_otus:otu_picking_method uclust_ref
 	pick_otus:enable_rev_strand_match True
 
-You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``$HOME/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
 	pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
 

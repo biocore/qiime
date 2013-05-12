@@ -4,6 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso, Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder",
+                "Jose Antonio Navas Molina"]
 __credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder", "William Walters"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
@@ -50,10 +52,10 @@ fragment3:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
 
 The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).
 
-blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""%prog -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt"""))
+blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""%prog -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -m blast_fragments -o chimeric_seqs_blast.txt"""))
 
 script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!""",
-                                    """%prog -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs.txt"""))
+                                    """%prog -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt"""))
 
 script_info['script_usage'].append(("""usearch61 Example:""","""Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from split_libraries.py. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.  In this example, the query sequences are divided according to SampleID.""",
                                     """%prog -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/ --split_by_sampleid"""))
@@ -81,7 +83,7 @@ script_info['optional_options']=[\
         help='Path to (Py)Nast aligned reference sequences. '
         'REQUIRED when method ChimeraSlayer [default: %default]'),       
 
-    make_option('-b', '--blast_db',type='string',
+    make_option('-b', '--blast_db',type='blast_db',
         help='Database to blast against. Must provide either --blast_db or '
         '--reference_seqs_fp when method is blast_fragments [default: %default]'),
         

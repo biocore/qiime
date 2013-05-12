@@ -606,8 +606,8 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None,
                     open(ref_db_aligned_fp)))
             files_to_remove.append(ref_db_fasta_fp)
         #use user db
-        params.update({'--db_NAST': ref_db_aligned_fp,
-                       '--db_FASTA': ref_db_fasta_fp})
+        params.update({'--db_NAST': abspath(ref_db_aligned_fp),
+                       '--db_FASTA': abspath(ref_db_fasta_fp)})
 
     if min_div_ratio !=None:
         params.update({'-R':min_div_ratio})
