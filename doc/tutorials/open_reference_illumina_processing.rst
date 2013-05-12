@@ -4,11 +4,11 @@
 Discussion of subsampled open reference OTU picking in QIIME
 ============================================================
 
-This document describes how to use QIIME to pick OTUs on very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. The *subsampled open-reference OTU picking protocol* is optimized for large datasets, and yields identical results as *legacy open-reference OTU picking*, so there there is no reason to ever use the *legacy* method anymore. (Note: In QIIME 1.6.0 and earlier, we referred to *legacy* open-reference OTU picking as *standard* open-reference OTU picking).
+This document describes QIIME's subsampled open-reference OTU picking protocol. As of May, 2013 a paper on this workflow is in preparation. The *subsampled open-reference OTU picking protocol* is optimized for large datasets, and yields identical results to *legacy open-reference OTU picking*, so there there is no reason to ever use the *legacy* method anymore. (Note: In QIIME 1.6.0-dev and earlier, we referred to *legacy* open-reference OTU picking as *standard* open-reference OTU picking).
 
-This document very briefly covers *legacy* open-reference OTU picking. Most of the text covers subsampled open-reference OTU picking, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data. 
+This document very briefly covers legacy open-reference OTU picking. Most of the text covers subsampled open-reference OTU picking, including a description of how to use it, what exactly is happening, and test results from applying it to some well-understood data sets. 
 
- .. note:: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances `here <http://qiime.org/home_static/dataFiles.html>`_.
+ .. note:: In this document we make use of the Greengenes reference OTUs. You can always find a link to the latest version of the Greengenes reference OTUs on the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.
 
  .. toctree::
 
