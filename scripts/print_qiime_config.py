@@ -137,7 +137,7 @@ class Qiime_config(TestCase):
 
     def test_ampliconnoise_install(self):
         """ AmpliconNoise install looks sane."""
-        url = "http://www.qiime.org/install/install.html#ampliconnoise-install"
+        url="http://qiime.org/install/install.html#ampliconnoise-install-notes"
         
         pyro_lookup_file = getenv('PYRO_LOOKUP_FILE')
         self.assertTrue(pyro_lookup_file != None,
@@ -237,6 +237,16 @@ class Qiime_config(TestCase):
     # jobs_to_start   1
     # seconds_to_sleep        60
 
+    def test_sourcetracker_installed(self):
+        """sourcetracker is installed"""
+            
+        sourcetracker_path = getenv('SOURCETRACKER_PATH')
+        self.assertNotEqual(sourcetracker_path,None,
+         ("SOURCETRACKER_PATH is not set. This is "
+          "only important if you plan to use SourceTracker."))
+        self.assertTrue(exists(sourcetracker_path),
+         "SOURCETRACKER_PATH is not set to a valid path: %s" %\
+          sourcetracker_path)
 
     def test_for_obsolete_values(self):
         """local qiime_config has no extra params"""
@@ -683,7 +693,7 @@ class Qiime_config(TestCase):
          
     def test_R_supported_version(self):
         """R is in path and version is supported """
-        acceptable_version = [(2,12,0),(2,12,0)]
+        minimum_version = (2,12,0)
         self.assertTrue(app_path('R'),
          "R not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -694,13 +704,21 @@ class Qiime_config(TestCase):
         version_string = stdout.strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version in acceptable_version
+            pass_test = False
+            if version[0] == minimum_version[0]:
+                if version[1] == minimum_version[1]:
+                    if version[2] >= minimum_version[2]:
+                        pass_test = True
+                elif version[1] > minimum_version[1]:
+                    pass_test = True
+            elif version[0] > minimum_version[0]:
+                pass_test = True 
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported R version. %s is required, but running %s." \
-         % ('.'.join(map(str,acceptable_version)), version_string))
+         "Unsupported R version. %s or greater is required, but running %s." \
+         % ('.'.join(map(str,minimum_version)), version_string))
 
     def test_gdata_install(self):
         """gdata is installed"""

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -48,7 +48,7 @@ script_info['optional_options'] = [\
         '--reference_seqs_db for assignment with blast [default: %s]' \
         % default_reference_seqs_fp,
         default=default_reference_seqs_fp),\
- make_option('-b', '--blast_db',
+ make_option('-b', '--blast_db', type='blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
  make_option('-e', '--e_value', type='float',

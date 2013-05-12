@@ -36,9 +36,10 @@ Defining reference filepaths with environment variables
 
 Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
 
-	export reference_seqs /home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
-	export reference_tree /home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
-	export reference_tax /home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+	export QIIME_DIR=$HOME/qiime_software
+	export reference_seqs $QIIME_DIR/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+	export reference_tree $QIIME_DIR/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
+	export reference_tax $QIIME_DIR/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
 
 
 
@@ -50,7 +51,7 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 ::
 	
-	per_library_stats.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
@@ -59,7 +60,7 @@ Compute UniFrac distances between samples, run principal coordinates analysis, a
 Repeat the above steps on the 454 data::
 
 	pick_closed_reference_otus.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
-	per_library_stats.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
+	print_biom_table_summary.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
 	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Perform Procrustes analysis::

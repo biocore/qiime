@@ -1,8 +1,8 @@
 .. _tutorial:
 
-===================================================================
-QIIME Overview Tutorial: de novo OTU picking and diversity analyses
-===================================================================
+================================================================================
+454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data
+================================================================================
 
 Introduction
 -------------
@@ -256,7 +256,7 @@ View statistics of the OTU table
 --------------------------------------------------------------------
 To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type::
 
-    per_library_stats.py -i otus/otu_table.biom
+    print_biom_table_summary.py -i otus/otu_table.biom
 
 The output shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
 
@@ -566,7 +566,7 @@ This workflow uses jackknife replicates to estimate the uncertainty in PCoA plot
 
   1) Compute the beta diversity distance matrix from the full OTU table (and tree, if applicable) (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
   2) Build UPGMA tree from full distance matrix; (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
-  3) Build rarefied OTU tables (for more information, refer to `multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_)
+  3) Build rarefied OTU tables (for more information, refer to `multiple_rarefactions_even_depth.py.py <../scripts/multiple_rarefactions_even_depth.py.html>`_)
   4) Compute distance matrices for rarefied OTU tables (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_) <../scripts/beta_diversity.html>`_)
   5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
   6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
@@ -600,7 +600,7 @@ Steps 3, 4 and 5. Perform Jackknifing Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To measure the robustness of this result to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire available data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.
 
-First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `per_library_stats.py`__:
+First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `print_biom_table_summary.py`__:
 
 __ perlibrarystats_
 

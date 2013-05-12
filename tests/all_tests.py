@@ -14,7 +14,8 @@ from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Greg Caporaso", "Jai Ram Rideout"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso", "Jai Ram Rideout",
+    "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -105,7 +106,7 @@ def main():
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
                qiime_test_data_dir=qiime_test_data_dir,
-               qiime_scripts_dir=qiime_config['qiime_scripts_dir'],
+               qiime_scripts_dir=get_qiime_scripts_dir(),
                working_dir=qiime_config['temp_dir'],
                verbose=True,
                tests=script_usage_tests,

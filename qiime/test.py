@@ -764,6 +764,20 @@ not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	14174	randomly gene
     result['refseqs_aligned_lanemask'] = refseqs_aligned_lanemask.split('\n')
     
     return result
+
+def write_test_data(output_dir):
+    """ write small test data set files to output_dir 
+    
+        This function is convenient for interactive testing. If you need 
+        some test files to work with, you can just run:
+        
+        python -c "from qiime.test import write_test_data; write_test_data('.')"
+    """
+    test_data = get_test_data()
+    for k, v in test_data.items():
+        f = open(join(output_dir,k),'w')
+        f.write('\n'.join(v))
+        f.close()
     
 def get_test_data_fps():
     """ Returns test data as dict of filepaths. 

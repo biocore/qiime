@@ -2,7 +2,7 @@
 
 .. index:: pick_de_novo_otus.py
 
-*pick_de_novo_otus.py* -- A workflow script for picking OTUs through building OTU tables
+*pick_de_novo_otus.py* -- A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**

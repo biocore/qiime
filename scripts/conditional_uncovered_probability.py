@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder"]
+__credits__ = ["Jens Reeder", "Jose Antonio Navas Molina"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.6.0-dev"
@@ -12,8 +12,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development" 
 
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
+from qiime.util import make_option, parse_command_line_parameters
 from qiime.alpha_diversity import (single_file_cup, 
     list_known_cup_metrics)
 import os
@@ -22,15 +21,25 @@ import os
 script_info={}
 
 script_info['version'] = __version__
-script_info['script_description'] = "Calculate the conditional uncovered probability."
+script_info['script_description'] = "Calculate the conditional uncovered\
+ probability."
 
-script_info['brief_description']="""Calculate the conditional uncovered probability on each sample in an otu table."""
-script_info['script_description']="""This script calculates the conditional uncovered probability for each sample in an OTU table. It uses the methods introduced in Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via Poissonization: Accurate Measurements of the Microbial Unknown" PLoS 2011. 
+script_info['brief_description']="""Calculate the conditional uncovered\
+ probability on each sample in an otu table."""
+script_info['script_description']="""This script calculates the conditional\
+ uncovered probability for each sample in an OTU table. It uses the methods\
+ introduced in Lladser, Gouet, and Reeder, "Extrapolation of Urn Models via\
+ Poissonization: Accurate Measurements of the Microbial Unknown" PLoS 2011. 
 
-Specifically, it computes a point estimate and a confidence interval using two different methods. Thus it can happen that the PE is actually outside of the CI. 
+Specifically, it computes a point estimate and a confidence interval using two \
+different methods. Thus it can happen that the PE is actually outside of the CI. 
 
-The CI method requires precomputed constants that depend on the lookahead, the upper-to-lower bound ratio and the desired confidence.
-We only provide these constants for some frequently used combinations. These are (alpha:0.95, r=1..25)) for the the L and U interval types, and (alpha:0.9, 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked special cases:
+The CI method requires precomputed constants that depend on the lookahead, the\
+ upper-to-lower bound ratio and the desired confidence.
+We only provide these constants for some frequently used combinations. These\
+ are (alpha:0.95, r=1..25)) for the the L and U interval types, and (alpha:0.9,\
+ 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked\
+ special cases:
 
 f=2 and r=50 and alpha=0.95
 f=2 and r=33 and alpha=0.95
@@ -42,13 +51,27 @@ f=2.5 and r=19 and alpha=0.95
 
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Default case:""","""To calculate the cond. uncovered probability with the default values, you can use the following command: ""","""%prog -i otu_table.biom -o cup.txt"""))
+script_info['script_usage'].append(("""Default case:""",
+"""To calculate the cond. uncovered probability with the default values,\
+ you can use the following command: """,
+"""%prog -i otu_table.biom -o cup.txt"""))
 
-script_info['script_usage'].append(("""Change lookahead:""","""To change the accuracy of the prediction change the lookahead value. Larger values of r lead to more precise predictions, but might be unfeasable for small samples. For deeply sequenced samples, try increasing r to 50: ""","""%prog -i otu_table.biom -o cup_r50.txt -r 50"""))
+script_info['script_usage'].append(("""Change lookahead:""",
+"""To change the accuracy of the prediction change the lookahead value. Larger\
+ values of r lead to more precise predictions, but might be unfeasable for\
+ small samples. For deeply sequenced samples, try increasing r to 50: """,
+"""%prog -i otu_table.biom -o cup_r50.txt -r 50"""))
 
-script_info['script_usage'].append(("""Change the interval type:""","""To change the confidence interval type to a lower bound prediction, while the upper bound is set to 1 use: ""","""%prog -i otu_table.biom -o cup_lower_bound.txt -c L"""))
+script_info['script_usage'].append(("""Change the interval type:""",
+"""To change the confidence interval type to a lower bound prediction, while\
+ the upper bound is set to 1 use: """,
+"""%prog -i otu_table.biom -o cup_lower_bound.txt -c L"""))
 
-script_info['output_description']="""The resulting file(s) is a tab-delimited text file, where the columns correspond to estimates of the cond. uncovered probability and the rows correspond to samples. The output file is compatible with the alpha_diversity output files and thus could be tied into the rarefaction workflow.
+script_info['output_description']="""The resulting file(s) is a tab-delimited\
+ text file, where the columns correspond to estimates of the cond. uncovered\
+ probability and the rows correspond to samples. The output file is compatible\
+ with the alpha_diversity output files and thus could be tied into the\
+s rarefaction workflow.
 
 Example Output:
 
@@ -78,7 +101,7 @@ script_info['optional_options']=[\
     make_option('-c', '--ci_type',
                 help='Type of confidence interval.  Choice of '+\
                     ", ".join(CI_TYPES) +' [default: %default]', default='ULCL',
-                type='string'),
+                type='choice', choices=CI_TYPES),
     make_option('-a', '--alpha',
                 help='Desired confidence level for CI prediction.'+
                 ' [default: %default]', default=0.95,
@@ -88,8 +111,9 @@ script_info['optional_options']=[\
                 ' [default: %default]', default=10.0,
                 type='float'),
     make_option('-m', '--metrics', default='lladser_pe,lladser_ci',
+                type='multiple_choice', mchoices=list_known_cup_metrics(),
                 help='CUP metric(s) to use. A comma-separated list should' +\
-                    ' be provided when multiple metrics are specified. [default: %default]'), 
+                   ' be provided when multiple metrics are specified. [default: %default]'), 
     make_option('-s', '--show_metrics', action='store_true', 
                 dest="show_metrics",
                 help='Show the available CUP metrics and exit.'),
