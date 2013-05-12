@@ -16,6 +16,7 @@ from string import strip
 from collections import defaultdict
 from copy import deepcopy
 import os
+from os.path import expandvars
 import re
 from cogent.util.dict2d import Dict2D
 from cogent.util.misc import unzip
@@ -615,7 +616,7 @@ def fields_to_dict(lines, delim='\t', strip_f=strip):
 def parse_qiime_parameters(lines):
     """ Return 2D dict of params (and values, if applicable) which should be on
     """
-    # The qiime_config object is a default dict: if keys are not
+    # The result object is a default dict: if keys are not
     # present, {} is returned
     result = defaultdict(dict)
     
@@ -738,7 +739,7 @@ def parse_qiime_config_file(qiime_config_file):
         if not line or line.startswith('#'): continue
         fields = line.split()
         param_id = fields[0]
-        param_value = ' '.join(fields[1:]) or None
+        param_value = expandvars(' '.join(fields[1:])) or None
         result[param_id] = param_value
     return result
     
