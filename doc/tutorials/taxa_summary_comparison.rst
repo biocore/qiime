@@ -128,3 +128,7 @@ Also note that we specified a 90% confidence interval instead of the default 95%
 Expected Comparison
 -------------------
 By specifying `-m expected` to the script, all samples in the first input taxa summary file will be compared to a single "expected" sample in the second input taxa summary file. This comparison mode is especially useful if you need to compare the taxonomic composition of various samples to a sample that has a known taxonomic composition. The second input taxa summary file must contain only a single sample or you must tell the script which one to use (if there are multiple samples) using the --expected_sample_id option. The output files will be in the same format as those seen previously when using paired comparison mode.
+
+Comparing data sets with different sample ids
+---------------------------------------------
+In the cases described here, we always have the same samples in the taxa summary files being compared. If that is not the case for your study, you'll need to pass a sample id mapping file (this is different from a QIIME metadata mapping file). For a description of this file format, see :ref:`sample_id_map`.
