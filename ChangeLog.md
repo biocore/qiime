@@ -1,5 +1,6 @@
 QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 ===================================================
+* Added section for using USEARCH 6.1 chimera checking with ``identify_chimeric_seqs.py`` to "Chimera checking sequences with QIIME" tutorial.
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
 * ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
 * Modified add_qiime_labels script to use normal metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
