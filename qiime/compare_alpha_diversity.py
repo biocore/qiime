@@ -156,18 +156,16 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
         # if there is only 1 sample for each treatment in a comparison, and mc
         # using mc method, will error (e.g. mc_t_two_sample([1],[1]).
         if len(sid_pair[0])==1 and len(sid_pair[1])==1:
-            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
-            ttest_results[t_key]= (None,None)
+            ttest_results[treatment_pair]= (None,None)
         else:
             pair0_indices = [sids.index(i) for i in sid_pair[0]]
             pair1_indices = [sids.index(i) for i in sid_pair[1]]
-            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
             i = rare_mat.take(pair0_indices)
             j = rare_mat.take(pair1_indices)
             # found discussion of how to quickly check an array for nan here:
             # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
             if isnan(np_min(i)) or isnan(np_min(j)):
-                ttest_results[t_key]= (None,None)
+                ttest_results[treatment_pair]= (None,None)
                 continue
             if test_type == 'parametric':
                 obs_t, p_val = t_two_sample(i,j)
@@ -181,7 +179,7 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
                     obs_t, p_val = None, None
             else:
                 raise ValueError("Invalid test type '%s'." % test_type)
-            ttest_results[t_key]= (obs_t,p_val)
+            ttest_results[treatment_pair]= (obs_t,p_val)
     # create dict of average alpha diversity values
     alphadiv_avgs = {}
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):

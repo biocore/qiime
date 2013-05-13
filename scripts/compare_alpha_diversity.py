@@ -176,11 +176,11 @@ def main():
 
     # write  results
     outfile = open(opts.output_fp, 'w')
-    header = 'Comparison\tcat1_avg\tcat1_std\tcat2_avg\tcat2_std\tval\tpval'
+    header = ('Group1\tGroup2\tGroup1 mean\tGroup1 std\tGroup2 mean\t'
+              'Group2 std\tt stat\tp-value')
     lines = [header]
-    for k,v in corrected_result.items():
-        t0, t1 = k.split(',') #if treatment values have ,s this will cause error
-        lines.append('\t'.join(map(str,[k,alphadiv_avgs[t0][0],
+    for (t0, t1), v in corrected_result.items():
+        lines.append('\t'.join(map(str,[t0,t1,alphadiv_avgs[t0][0],
             alphadiv_avgs[t0][1], alphadiv_avgs[t1][0],
             alphadiv_avgs[t1][1],v[0],v[1]])))
     outfile.write('\n'.join(lines) + '\n')

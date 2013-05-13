@@ -77,7 +77,7 @@ class TopLevelTests(TestCase):
             self.rarefaction_data, 'Dose')
         obs_ttd_sids, obs_ttd_vps = sampleId_pairs(self.mapping_data,
             self.rarefaction_data, 'TTD')
-        
+
         # sort -- order is unimportant and depends on way presented in mf
         self.assertEqual(dose_vps.sort(),obs_dose_vps.sort())
         self.assertEqual(dose_sids.sort(),obs_dose_sids.sort())
@@ -210,9 +210,9 @@ class TopLevelTests(TestCase):
         
         # hardcoded order of the terms in the keys otherwise would comps fail
         exp_tcomps = \
-            {'Control,2xDose': (1.1746048668554037, 0.44899351189030801),
-             '1xDose,2xDose': (1.7650193854830403, 0.17574514418562981),
-             'Control,1xDose': (0.43618805086434992, 0.7052689260099092)}
+            {('Control','2xDose'): (1.1746048668554037, 0.44899351189030801),
+             ('1xDose','2xDose'): (1.7650193854830403, 0.17574514418562981),
+             ('Control','1xDose'): (0.43618805086434992, 0.7052689260099092)}
              
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
@@ -242,9 +242,9 @@ class TopLevelTests(TestCase):
             test_type=test_type, num_permutations=num_permutations)
 
         exp_tcomps = \
-            {'Control,2xDose': (1.1746048668554037, 0.63),
-             '1xDose,2xDose': (1.7650193854830403, 0.09),
-             'Control,1xDose': (0.43618805086434992, 0.76)}
+            {('Control','2xDose'): (1.1746048668554037, 0.63),
+             ('1xDose','2xDose'): (1.7650193854830403, 0.09),
+             ('Control','1xDose'): (0.43618805086434992, 0.76)}
  
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
@@ -272,17 +272,17 @@ class TopLevelTests(TestCase):
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
         exp_tcomps = \
-            {'Control,2xDose': (-0.63668873339963239, 0.63906168713487699), 
-             '1xDose,2xDose': (None,None), 
-             'Control,1xDose': (None,None)}
+            {('Control','2xDose'): (-0.63668873339963239, 0.63906168713487699), 
+             ('1xDose','2xDose'): (None,None), 
+             ('Control','1xDose'): (None,None)}
         self.assertFloatEqual(obs_tcomps, exp_tcomps)
         # test that it works with nonparametric test - this was erroring.
         seed(0)
         test_type = 'nonparametric'
         exp_tcomps = \
-            {'Control,2xDose': (-0.63668873339963239, 0.675), 
-             '1xDose,2xDose': (None,None), 
-             'Control,1xDose': (None,None)}
+            {('Control','2xDose'): (-0.63668873339963239, 0.675), 
+             ('1xDose','2xDose'): (None,None), 
+             ('Control','1xDose'): (None,None)}
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
@@ -313,9 +313,9 @@ class TopLevelTests(TestCase):
 
         # hardcoded order of the terms in the keys otherwise would comps fail
         exp_tcomps = \
-            {'Control,2xDose': (3.3159701868634883, 0.1864642327553255),
-             '1xDose,2xDose': (-0.48227871733885291, 0.66260803238173183),
-             'Control,1xDose': (0.83283756452373126, 0.49255115337550748)}
+            {('Control','2xDose'): (3.3159701868634883, 0.1864642327553255),
+             ('1xDose','2xDose'): (-0.48227871733885291, 0.66260803238173183),
+             ('Control','1xDose'): (0.83283756452373126, 0.49255115337550748)}
         self.assertFloatEqual(obs_tcomps, exp_tcomps)
 
         # test that returned alpha diversity averages are correct
