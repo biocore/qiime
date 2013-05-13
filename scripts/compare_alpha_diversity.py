@@ -148,8 +148,8 @@ script_info['optional_options'] = [
   choices=correction_types, help='method to use for correcting multiple '
   'comparisons. Available methods are bonferroni, fdr, or none. '
   '[default: %default]', default='bonferroni'),
-   make_option('-d', '--depth', type='int', default=None, dest='depth',
-  help='depth of rarefaction file to use [default: %default]')]
+  make_option('-d', '--depth', type='int', default=None, dest='depth',
+  help='depth of rarefaction file to use [default: greatest depth]')]
 
 
 script_info['version'] = __version__
@@ -183,7 +183,7 @@ def main():
         lines.append('\t'.join(map(str,[k,alphadiv_avgs[t0][0],
             alphadiv_avgs[t0][1], alphadiv_avgs[t1][0],
             alphadiv_avgs[t1][1],v[0],v[1]])))
-    outfile.write('\n'.join(lines))
+    outfile.write('\n'.join(lines) + '\n')
     outfile.close()
 
 if __name__ == "__main__":
