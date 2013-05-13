@@ -55,9 +55,7 @@ The comment at the top of the file tells us that Pearson's correlation coefficie
 
 Note the fifth line of the file, which tells us that 9 samples matched between the two taxa summary files. All 9 samples matched between the two files because both files have the same sample IDs. The script determines which samples to compute the correlation between based on matching sample IDs between the two files (the order of sample IDs does not matter between the two files, but the names must match exactly). Any sample IDs that do not match will not be considered when calculating the results.
 
-If you need to compare taxa summaries that do not have matching sample IDs, you
-can use a sample ID map to provide a mapping between sample IDs. To illustrate
-this, run the following command: ::
+If you need to compare taxa summaries that do not have matching sample IDs, you can use a sample ID map to provide a mapping between sample IDs. For a description of this file format, see :ref:`sample_id_map`. To illustrate this, run the following command: ::
 
     compare_taxa_summaries.py -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman
 

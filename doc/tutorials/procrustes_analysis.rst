@@ -73,4 +73,8 @@ Generate Procrustes plot, including an explicit time axis::
 
 There will now be several results of interest. For the Procrustes analysis you can find the statistical results in ``./454_v_illumina/unweighted_unifrac_pc_unweighted_unifrac_pc_procrustes_results.txt`` and you can view the Procrustes plot by opening ``./454_v_illumina/plots/pc1_transformed_3D_PCoA_plots.html`` in a web browser.
 
-    
+
+Comparing data sets with different sample ids
+---------------------------------------------
+
+In the cases described here, we always have the same samples in our two principal coordinate matrices. If that is not the case for your study, you'll need to pass a sample id mapping file (**which is different from a QIIME metadata mapping file**). For a description of this file format, see :ref:`sample_id_map`.
