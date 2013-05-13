@@ -20,6 +20,7 @@ The QIIME development team is very interested in incorporating community-contrib
    fungal_its_analysis
    processing_illumina_data
    processing_18S_data
+   working_with_biom_tables
 
 **Additional Quality Control**
 
