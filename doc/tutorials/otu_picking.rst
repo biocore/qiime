@@ -40,7 +40,7 @@ You **must** use closed-reference OTU picking if:
 
 *  You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA. Your reference sequences must span both of the regions being sequenced.
 
-You **cannot** use de novo OTU picking if:
+You **cannot** use closed-reference OTU picking if:
 
 *  You do not have a reference sequence collection to cluster against, for example because you're working with an infrequently used marker gene.
 
@@ -60,7 +60,7 @@ In an open-reference OTU picking process, reads are clustered against a referenc
 
 **Open-reference OTU picking with** ``pick_open_reference_otus.py`` **is the preferred strategy for OTU picking among the QIIME developers.**
 
-You **cannot** use de novo OTU picking if:
+You **cannot** use open-reference OTU picking if:
 
 *  You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA.
 *  You do not have a reference sequence collection to cluster against, for example because you're working with an infrequently used marker gene.
@@ -77,9 +77,7 @@ Cons:
 Running the OTU picking workflows
 =================================
 
-The same workflow commands are used for running OTU picking with usearch61 and uclust. To run the methods with usearch, you will need to either pass in a parameters file or specify ``-m usearch61`` on the command line, depending on what workflow you are using. See :ref:`qiime_parameter_files` for information on parameter files.
-
-To run the methods with usearch, you will need to either pass in a parameters file or specify -m usearch61 on the command line, depending on what workflow you are using.
+The same workflow commands are used for running OTU picking with usearch61 and uclust. To run the methods with usearch61, you will need to either pass in a parameters file or specify ``-m usearch61`` on the command line, depending on what workflow you are using. See :ref:`qiime_parameter_files` for information on parameter files.
 
 Conventions used in these examples
 ----------------------------------
