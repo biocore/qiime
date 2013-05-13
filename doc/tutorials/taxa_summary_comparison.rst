@@ -131,4 +131,4 @@ By specifying `-m expected` to the script, all samples in the first input taxa s
 
 Comparing data sets with different sample ids
 ---------------------------------------------
-In the cases described here, we always have the same samples in the taxa summary files being compared. If that is not the case for your study, you'll need to pass a sample id mapping file (this is different from a QIIME metadata mapping file). For a description of this file format, see :ref:`sample_id_map`.
+In the cases described here, we always have the same samples in the taxa summary files being compared. If that is not the case for your study, you'll need to pass a sample id mapping file (**which is different from a QIIME metadata mapping file**). For a description of this file format, see :ref:`sample_id_map`.
