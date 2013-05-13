@@ -37,11 +37,17 @@ Splitting and merging
 splitting by sample metadata
 ----------------------------
 
+To split a single BIOM table into multiple BIOM tables based on their value for some sample metadata field (i.e., in the mapping file) you can use `split_otu_table.py <../scripts/split_otu_table.html>`_. For example, if you have a field in your mapping file called ``BodySite`` with values ``Gut``, ``Skin``, and ``Tongue``, calling ``split_otu_table.py -f BodySite`` will result in three BIOM tables, one each containing the samples at each body site. 
+
 splitting by taxonomy
 ---------------------
 
+To split a single BIOM table into multiple BIOM tables based on taxonomy of the OTUs you can use `split_otu_table_by_taxonomy.py <../scripts/split_otu_table_by_taxonomy.html>`_. Here you will specify some taxonomic level, and generate an OTU table for each different taxa at that level. This is useful, for example, to create per-phylum OTU tables.
+
 merging
 -------
+
+To combine multiple BIOM tables into a single BIOM table, you can use `merge_otu_tables.py <../scripts/merge_otu_tables.html>`_. The main thing that you need to watch out for here is that the OTU ids and sample ids are compatible. If they are overlapping (e.g., you have ``OTU1`` in more than one table), their counts will be merged. 
 
 Miscellaneous 
 =============
