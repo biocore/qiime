@@ -1535,6 +1535,18 @@ class Usearch61(CommandLineApplication):
         # Specifies consensus fasta file output for a cluster
         '--consout':ValuedParameter('--', Name='consout',
          Delimiter=' ', IsPath=True),
+         
+        # Specifies input consensus/abundance file for de novo chimeras
+        '--uchime_denovo':ValuedParameter('--', Name='uchime_denovo',
+         Delimiter=' ', IsPath=True),
+         
+        # Specifies input consensus/abundance file for ref chimera detection
+        '--uchime_ref':ValuedParameter('--', Name='uchime_ref',
+         Delimiter=' ', IsPath=True),
+         
+        # Specifies output uchime file for chimera results
+        '--uchimeout':ValuedParameter('--', Name='uchimeout',
+         Delimiter=' ', IsPath=True),
         
         #### Parameters for sorting raw fasta files
         # specifies fasta filepath to sort by length
@@ -1577,7 +1589,32 @@ class Usearch61(CommandLineApplication):
          Delimiter=' ', IsPath=False),
          
         # Option to cluster to most abundant seed
-        '--sizeorder':FlagParameter('--', Name='sizeorder')
+        '--sizeorder':FlagParameter('--', Name='sizeorder'),
+        
+        #### Chimera-specific parameters
+        # abundance skew for comparing parent/child putative clusters
+        '--abskew':ValuedParameter('--', Name='abskew', Delimiter=' ',
+         IsPath=False),
+        
+        # min score to be classified as chimeric
+        '--minh':ValuedParameter('--', Name='minh', Delimiter=' ',
+         IsPath=False),
+         
+        # weight of no vote
+        '--xn':ValuedParameter('--', Name='xn', Delimiter=' ',
+         IsPath=False),
+         
+        # pseudo count prior for no votes
+        '--dn':ValuedParameter('--', Name='dn', Delimiter=' ',
+         IsPath=False),
+        
+        # Minimum number of diffs in a segment
+        '--mindiffs':ValuedParameter('--', Name='mindiffs', Delimiter=' ',
+         IsPath=False),
+         
+        # Minimum divergence between query and ref sequence
+        '--mindiv':ValuedParameter('--', Name='mindiv', Delimiter=' ',
+         IsPath=False)
     }
     
      
@@ -1593,7 +1630,10 @@ class Usearch61(CommandLineApplication):
                            '--minseqlength', '--strand', '--wordlength',
                            '--maxrejects', '--usearch_global', '--db',
                            '--cluster_smallmem', '--cluster_fast', '--id',
-                           '--maxaccepts', '--sizeorder', '--usersort'
+                           '--maxaccepts', '--sizeorder', '--usersort',
+                           '--abskew', '--minh', '--xn', '--dn', '--mindiffs',
+                           '--mindiv', '--uchime_denovo', '--uchimeout',
+                           '--uchime_ref'
                            ]
                            
         unsupported_parameters = set(data.keys()) - set(allowed_values)
@@ -2106,6 +2146,7 @@ def usearch61_fast_cluster(intermediate_fasta,
     wordlength: word length to use for initial high probability sequence matches
     usearch61_maxrejects: Set to 'default' or an int value specifying max
      rejects
+    usearch61_maxaccepts: Number of accepts allowed by usearch61
     HALT_EXEC: application controller option to halt execution
     output_uc_filepath: Path to write clusters (.uc) file.
     log_name: filepath to write usearch61 generated log file
@@ -2163,6 +2204,7 @@ def usearch61_smallmem_cluster(intermediate_fasta,
     wordlength: word length to use for initial high probability sequence matches
     usearch61_maxrejects: Set to 'default' or an int value specifying max
      rejects
+    usearch61_maxaccepts: Number of accepts allowed by usearch61
     HALT_EXEC: application controller option to halt execution
     output_uc_filepath: Path to write clusters (.uc) file.
     log_name: filepath to write usearch61 generated log file
@@ -2205,6 +2247,133 @@ def usearch61_smallmem_cluster(intermediate_fasta,
     return clusters_fp, app_result
     
 #   End de novo clustering functions
+
+#   Start Chimera checking functions
+
+def usearch61_chimera_check_denovo(abundance_fp,
+                                   uchime_denovo_fp,
+                                   minlen=64,
+                                   output_dir=".",
+                                   remove_usearch_logs=False,
+                                   uchime_denovo_log_fp="uchime_denovo.log",
+                                   usearch61_minh = 0.28,
+                                   usearch61_xn = 8.0,
+                                   usearch61_dn = 1.4,
+                                   usearch61_mindiffs = 3,
+                                   usearch61_mindiv = 0.8,
+                                   usearch61_abundance_skew = 2.0,
+                                   HALT_EXEC = False):
+    """ Does de novo, abundance based chimera checking with usearch61
+    
+    abundance_fp: input consensus fasta file with abundance information for
+     each cluster.
+    uchime_denovo_fp: output uchime file for chimera results.
+    minlen: minimum sequence length for usearch input fasta seqs.
+    output_dir: output directory
+    removed_usearch_logs: suppresses creation of log file.
+    uchime_denovo_log_fp: output filepath for log file.
+    usearch61_minh: Minimum score (h) to be classified as chimera. 
+     Increasing this value tends to the number of false positives (and also
+     sensitivity).
+    usearch61_xn:  Weight of "no" vote.  Increasing this value tends to the
+     number of false positives (and also sensitivity).
+    usearch61_dn:  Pseudo-count prior for "no" votes. (n). Increasing this 
+     value tends to the number of false positives (and also sensitivity).
+    usearch61_mindiffs:  Minimum number of diffs in a segment. Increasing this
+     value tends to reduce the number of false positives while reducing 
+     sensitivity to very low-divergence chimeras.
+    usearch61_mindiv:  Minimum divergence, i.e. 100% - identity between the 
+     query and closest reference database sequence. Expressed as a percentage,
+     so the default is 0.8%, which allows chimeras that are up to 99.2% similar
+     to a reference sequence.
+    usearch61_abundance_skew: abundance skew for de novo chimera comparisons.
+    HALTEXEC: halt execution and returns command used for app controller.
+    """
+    
+    
+    params = {'--minseqlength':minlen,
+              '--uchime_denovo':abundance_fp,
+              '--uchimeout':uchime_denovo_fp,
+              '--minh':usearch61_minh,
+              '--xn':usearch61_xn,
+              '--dn':usearch61_dn,
+              '--mindiffs':usearch61_mindiffs,
+              '--mindiv':usearch61_mindiv,
+              '--abskew':usearch61_abundance_skew
+              }
+
+    if not remove_usearch_logs:
+        params['--log'] = uchime_denovo_log_fp
+
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+    
+    return uchime_denovo_fp, app_result
+    
+def usearch61_chimera_check_ref(abundance_fp,
+                                uchime_ref_fp,
+                                reference_seqs_fp,
+                                minlen=64,
+                                output_dir=".",
+                                remove_usearch_logs=False,
+                                uchime_ref_log_fp="uchime_ref.log",
+                                usearch61_minh = 0.28,
+                                usearch61_xn = 8.0,
+                                usearch61_dn = 1.4,
+                                usearch61_mindiffs = 3,
+                                usearch61_mindiv = 0.8,
+                                HALT_EXEC = False):
+    """ Does reference based chimera checking with usearch61
+    
+    abundance_fp: input consensus fasta file with abundance information for
+     each cluster.
+    uchime_ref_fp: output uchime filepath for reference results
+    reference_seqs_fp: reference fasta database for chimera checking.
+    minlen: minimum sequence length for usearch input fasta seqs.
+    output_dir: output directory
+    removed_usearch_logs: suppresses creation of log file.
+    uchime_denovo_log_fp: output filepath for log file.
+    usearch61_minh: Minimum score (h) to be classified as chimera. 
+     Increasing this value tends to the number of false positives (and also
+     sensitivity).
+    usearch61_xn:  Weight of "no" vote.  Increasing this value tends to the
+     number of false positives (and also sensitivity).
+    usearch61_dn:  Pseudo-count prior for "no" votes. (n). Increasing this 
+     value tends to the number of false positives (and also sensitivity).
+    usearch61_mindiffs:  Minimum number of diffs in a segment. Increasing this
+     value tends to reduce the number of false positives while reducing 
+     sensitivity to very low-divergence chimeras.
+    usearch61_mindiv:  Minimum divergence, i.e. 100% - identity between the 
+     query and closest reference database sequence. Expressed as a percentage,
+     so the default is 0.8%, which allows chimeras that are up to 99.2% similar
+     to a reference sequence.
+    HALTEXEC: halt execution and returns command used for app controller.
+    """
+    
+    
+    params = {'--minseqlength':minlen,
+              '--uchime_ref':abundance_fp,
+              '--uchimeout':uchime_ref_fp,
+              '--db':reference_seqs_fp,
+              '--minh':usearch61_minh,
+              '--xn':usearch61_xn,
+              '--dn':usearch61_dn,
+              '--mindiffs':usearch61_mindiffs,
+              '--mindiv':usearch61_mindiv,
+              '--strand':'plus'  # Only works in plus according to usearch doc
+              }
+
+    if not remove_usearch_logs:
+        params['--log'] = uchime_ref_log_fp
+
+    app = Usearch61(params, WorkingDir=output_dir, HALT_EXEC=HALT_EXEC)
+    
+    app_result = app()
+    
+    return uchime_ref_fp, app_result
+    
+#   End chimera checking functions
 
 #   Start parsing functions
 
