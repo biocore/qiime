@@ -57,8 +57,8 @@ blast_fragments begins with the assumption that a sequence is non-chimeric, and 
 script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!""",
                                     """%prog -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt"""))
 
-script_info['script_usage'].append(("""usearch61 Example:""","""Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from split_libraries.py. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.  In this example, the query sequences are divided according to SampleID.""",
-                                    """%prog -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/ --split_by_sampleid"""))
+script_info['script_usage'].append(("""usearch61 Example:""","""Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from split_libraries.py. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.""",
+                                    """%prog -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/"""))
 
 script_info['output_description']="""The result of identify_chimeric_seqs.py is a text file that identifies which sequences are chimeric."""
 script_info['required_options']=[options_lookup['fasta_as_primary_input']]
