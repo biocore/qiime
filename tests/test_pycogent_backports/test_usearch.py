@@ -513,8 +513,18 @@ class Usearch61Tests(TestCase):
         
         actual_lines = [line.strip() for line in uchime_f]
         
-        self.assertEqual(actual_lines,
-         self.expected_usearch61_denovo_uchime_file)
+        # There is some system dependent stochastic effect on calculations
+        # for chimeras, need to pull out only the flags Y or N for chimeras
+          
+        expected_chimera_ixs = [11, 16]
+        
+        for line in range(len(actual_lines)):
+            curr_chimera_flag = actual_lines[line].split('\t')[-1]
+            if line in expected_chimera_ixs:
+                self.assertEqual(curr_chimera_flag, "Y")
+            else:
+                self.assertEqual(curr_chimera_flag, "N")
+                        
 
         self._files_to_remove.append(uchime_fp)
         
