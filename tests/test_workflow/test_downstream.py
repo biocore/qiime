@@ -249,7 +249,7 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        feces_palm_t = ttest_res['feces,L_palm'][0]
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
           % feces_palm_t)
@@ -300,7 +300,7 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        feces_palm_t = ttest_res['feces,L_palm'][0]
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
           % feces_palm_t)
@@ -348,7 +348,7 @@ class DownstreamWorkflowTests(TestCase):
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        feces_palm_t = ttest_res['feces,L_palm'][0]
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
         self.assertTrue(feces_palm_t < 0, 
          "t-statistic too high: %1.3f, but should be less than 0"\
           % feces_palm_t)

@@ -18,58 +18,59 @@ from qiime.compare_alpha_diversity import (compare_alpha_diversities,
 import os
 
 script_info = {}
-script_info['brief_description'] = """This script compares alpha diversities based on a two sample t-test using either parametric or non-parametric (Monte Carlo) methods."""
+script_info['brief_description'] = """This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods."""
  
 script_info['script_description'] = """
 This script compares the alpha diversity of samples found in a collated alpha 
-diversity file.  The comparison is done not between samples, but between groups
-of samples. The groupings are created via the input 'category' passed with this 
-script. Any samples which have the same value under the catgory will be grouped. 
-For examples if your mapping file had a category called 'Treatment' that
+diversity file. The comparison is done not between samples, but between groups
+of samples. The groupings are created via the input category passed via
+-c/--category. Any samples which have the same value under the catgory will be
+grouped.
+
+For example, if your mapping file had a category called 'Treatment' that
 separated your samples into three groups (Treatment='Control', Treatment='Drug',
-Treatment='2xDose') passing 'Treatment' to this script would cause it to compare 
-(Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity values. 
-By default the two sample t-test will be nonparametric (i.e. using Monte Carlo 
-permutations to calculate the p-value), though the user has the option to make 
-the test a parametric t-test.
+Treatment='2xDose'), passing 'Treatment' to this script would cause it to
+compare (Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity
+values. By default the two-sample t-test will be nonparametric (i.e. using
+Monte Carlo permutations to calculate the p-value), though the user has the
+option to make the test a parametric t-test.
 
-The output is two tables located in the directory to be created: 
-Comparisons.txt which has a format of comparison X (tval,pval) table where each 
-row is a different group comparison, and the columns are a t-value or p-value 
-(indicated by the header). Any iterations of a rarefaction at a given depth will 
-be averaged. For instance, if your collated_alpha file had 10 iterations of the
-rarefaction at depth 480, the scores for the alpha diversity metrics of those
-10 iterations would be averaged (within sample). The iterations are not 
-controlled by this script; when multiple_rarefactions.py is called, the -n option 
-specifies the number of iterations that have occurred. The multiple comparison
-correction takes into account the number of between group comparisons. If you do
-not know the the rarefaction depth available or you want to use the deepest 
-rarefaction level available then do not pass the -d or --depth option and it 
-will default to using the deepest available. 
-Averages.txt which has as format Treatmentgroup X average where the each row is
-the average value of the alpha diversity of that sample group along with the
-standard deviation in the averages. 
+The script creates an output file in tab-separated format where each row is a
+different group comparison. The columns in each row denote which two groups of
+samples are being compared, as well as the mean and standard deviation of each
+group's alpha diversity. Finally, the t-statistic and p-value are reported for
+the comparison. This file can be most easily viewed in a spreadsheet program
+such as Excel.
 
-If t-scores and/or p-values are None for any of your comparisons there are three
-possible reasons. The first is that there were undefined values in your collated
-alpha diversity input file. This occurs if there were too few sequences in one 
-or more of the samples in the groups involved in those comparisons to compute 
-alpha diversity at that depth. You can either rerun %prog passing a lower 
-value for --depth, or you can re-run alpha diversity after filtering samples
-with too few sequences.
-The second is that you had some comparison where each treatment was represented 
-by only a single sample. It is not possible to perform a t_two_sample test on 
-two samples each of length 1, so it will give you None,None for tval,pval 
-instead.
-The third possibility occurs when using the nonparamteric t test with small 
-datasets where the monte carlo simulations return no p-value because the
-distribution of the data has almost no variance.
+Note: Any iterations of a rarefaction at a given depth will be averaged. For
+instance, if your collated_alpha file had 10 iterations of the rarefaction at
+depth 480, the scores for the alpha diversity metrics of those 10 iterations
+would be averaged (within sample). The iterations are not controlled by this
+script; when multiple_rarefactions.py is called, the -n option specifies the
+number of iterations that have occurred. The multiple comparison correction
+takes into account the number of between group comparisons. If you do not know
+the rarefaction depth available or you want to use the deepest rarefaction
+level available then do not pass -d/--depth and it will default to using the
+deepest available.
+
+If t-statistics and/or p-values are None for any of your comparisons, there are
+three possible reasons. The first is that there were undefined values in your
+collated alpha diversity input file. This occurs if there were too few
+sequences in one or more of the samples in the groups involved in those
+comparisons to compute alpha diversity at that depth. You can either rerun
+%prog passing a lower value for --depth, or you can re-run alpha diversity
+after filtering samples with too few sequences. The second is that you had some
+comparison where each treatment was represented by only a single sample. It is
+not possible to perform a two-sample t-test on two samples each of length 1, so
+None will be reported instead. The third possibility occurs when using the
+nonparamteric t-test with small datasets where the Monte Carlo permutations
+don't return a p-value because the distribution of the data has no variance.
 The multiple comparisons correction will not penalize you for comparisons that
-return as None regardless of origin. 
+return as None regardless of origin.
 
-If the averages/standard deviations are None for any treatment group in the 
-Averages.txt file the likely cause is that there is an \'n\\a\' value in the 
-collated_alpha file that was passed. 
+If the means/standard deviations are None for any treatment group, the likely
+cause is that there is an \'n\\a\' value in the collated_alpha file that was
+passed.
 """
  
 script_info['script_usage'] = []
@@ -98,9 +99,10 @@ script_info['script_usage'].append(("Parametric t-test",
 "PD_dmax_parametric.txt -t parametric"))
 
 script_info['output_description']= """
-Script generates an output directory that is a table of TreatmentPair by (tval,pval). 
-Each row corresponds to a comparison between two groups of treatment values. 
-The columns are the tvals or pvals for that comparison.
+The script generates an output file that is a TSV table. Each row corresponds
+to a comparison between two groups of treatment values, and includes the means
+and standard deviations of the two groups' alpha diversities, along with the
+results of the two-sample t-test.
 """
 
 script_info['script_usage_output_to_remove'] = ['$PWD/PD_dmax_parametric.txt','$PWD/PD_d100_parametric.txt', '$PWD/PD_d100.txt']
