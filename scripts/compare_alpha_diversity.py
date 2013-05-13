@@ -81,7 +81,7 @@ script_info['script_usage'].append(("Comparing alpha diversities",
 "metric (the results of collate_alpha for an alpha diverity metric, like "
 "PD_whole_tree), depth (the rarefaction depth to use for comparison), "
 "category (the category in the mapping file to determine which samples to "
-"compare to each other), and output dir path (a path to the output directory to be created). A "
+"compare to each other), and output filepath (a path to the output file to be created). A "
 "nonparametric two sample t-test is run to compare the alpha diversities "
 "using the default number of Monte Carlo permutations (999).",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100.txt"))
