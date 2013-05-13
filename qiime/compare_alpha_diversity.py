@@ -183,14 +183,14 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
     # create dict of average alpha diversity values
     alphadiv_avgs = {}
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
-        # calculate the alpha diversity average, std vals. choosing only first 
+        # calculate the alpha diversity average, std vals. choosing only first
         # treatment pair doesn't guarantees full covering, must look at both
-            for sid_list, treatment_str in zip(sid_pair, treatment_pair):
-                # check if already computed and added
-                if not treatment_str in alphadiv_avgs.keys():
-                    alphadiv_vals = \
-                        rare_mat.take([sids.index(i) for i in sid_list])
-                    ad_mean = alphadiv_vals.mean()
-                    ad_std = alphadiv_vals.std()
-                    alphadiv_avgs[treatment_str] = (ad_mean, ad_std) 
+        for sid_list, treatment_str in zip(sid_pair, treatment_pair):
+            # check if already computed and added
+            if not treatment_str in alphadiv_avgs.keys():
+                alphadiv_vals = \
+                    rare_mat.take([sids.index(i) for i in sid_list])
+                ad_mean = alphadiv_vals.mean()
+                ad_std = alphadiv_vals.std()
+                alphadiv_avgs[treatment_str] = (ad_mean, ad_std) 
     return ttest_results, alphadiv_avgs
