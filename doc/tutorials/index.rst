@@ -13,13 +13,14 @@ The QIIME development team is very interested in incorporating community-contrib
 .. toctree::
    :maxdepth: 1
 
+   otu_picking
    illumina_overview_tutorial
    tutorial
-   otu_picking
    open_reference_illumina_processing
    fungal_its_analysis
    processing_illumina_data
    processing_18S_data
+   working_with_biom_tables
 
 **Additional Quality Control**
 
@@ -73,6 +74,7 @@ The QIIME development team is very interested in incorporating community-contrib
    working_with_aws
    parallel_qiime
    remote_mapping_files
+   metadata_description
    
 
 
