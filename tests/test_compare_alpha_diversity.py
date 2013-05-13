@@ -17,7 +17,7 @@ from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
     compare_alpha_diversities, _correct_compare_alpha_results)
 from numpy.random import seed
-from numpy import nan
+from numpy import nan, isnan
 
 class TopLevelTests(TestCase):
     """Tests of top level functions"""
@@ -204,21 +204,32 @@ class TopLevelTests(TestCase):
         category = 'Dose'
         depth = 480
         test_type = 'parametric'
-        observed_results = compare_alpha_diversities(self.rarefaction_file,
+        obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
         
         # hardcoded order of the terms in the keys otherwise would comps fail
-        expected_results = \
+        exp_tcomps = \
             {'Control,2xDose': (1.1746048668554037, 0.44899351189030801),
              '1xDose,2xDose': (1.7650193854830403, 0.17574514418562981),
              'Control,1xDose': (0.43618805086434992, 0.7052689260099092)}
              
         # test each key in expected results -- this won't catch if 
-        # observed_results has extra entries, but test that via the next call
-        for k in expected_results:
-            self.assertEqual(expected_results[k],observed_results[k])
-        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
+        # obs_tcomps has extra entries, but test that via the next call
+        for k in exp_tcomps:
+            self.assertFloatEqual(exp_tcomps[k],obs_tcomps[k])
+        self.assertEqual(set(exp_tcomps.keys()),set(obs_tcomps.keys()))
+
+        # test that returned alpha diversity averages are correct
+        # dose
+        # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
+        # Control = ['Sam5']
+        exp_ad_avgs = {'1xDose':(3.2511951575216664, 0.18664627928763661),
+        '2xDose':(2.7539647172550001, 0.30099438035250015),
+        'Control':(3.3663303519925001, 0.0)}
+        for k in exp_ad_avgs:
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+
 
         # test 'Dose' at 480 inputs with nonparametric test
         seed(0) # set the seed to reproduce random MC pvals
@@ -226,60 +237,96 @@ class TopLevelTests(TestCase):
         depth = 480
         test_type = 'nonparametric'
         num_permutations = 100
-        observed_results = compare_alpha_diversities(self.rarefaction_file,
+        obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type, num_permutations=num_permutations)
 
-        expected_results = \
+        exp_tcomps = \
             {'Control,2xDose': (1.1746048668554037, 0.63),
              '1xDose,2xDose': (1.7650193854830403, 0.09),
              'Control,1xDose': (0.43618805086434992, 0.76)}
  
         # test each key in expected results -- this won't catch if 
-        # observed_results has extra entries, but test that via the next call
-        for k in expected_results:
-            self.assertEqual(expected_results[k],observed_results[k])
-        self.assertEqual(set(expected_results.keys()),set(observed_results.keys()))
+        # obs_tcomps has extra entries, but test that via the next call
+        for k in exp_tcomps:
+            self.assertFloatEqual(exp_tcomps[k],obs_tcomps[k])
+        self.assertEqual(set(exp_tcomps.keys()),set(obs_tcomps.keys()))
+
+        # test that returned alpha diversity averages are correct
+        # dose
+        # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
+        # Control = ['Sam5']
+        exp_ad_avgs = {'1xDose':(3.2511951575216664, 0.18664627928763661),
+        '2xDose':(2.7539647172550001, 0.30099438035250015),
+        'Control':(3.3663303519925001, 0.0)}
+        for k in exp_ad_avgs:
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+
 
         # test it works with NA values
         # test 'Dose' at 500 inputs with paramteric test
         category = 'Dose'
         depth = 500
         test_type = 'parametric'
-        observed_results = compare_alpha_diversities(self.rarefaction_file,
+        obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
-        expected_results = \
+        exp_tcomps = \
             {'Control,2xDose': (-0.63668873339963239, 0.63906168713487699), 
              '1xDose,2xDose': (None,None), 
              'Control,1xDose': (None,None)}
-        self.assertEqual(observed_results, expected_results)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
         # test that it works with nonparametric test - this was erroring.
         seed(0)
         test_type = 'nonparametric'
-        expected_results = \
+        exp_tcomps = \
             {'Control,2xDose': (-0.63668873339963239, 0.675), 
              '1xDose,2xDose': (None,None), 
              'Control,1xDose': (None,None)}
-        observed_results = compare_alpha_diversities(self.rarefaction_file,
+        obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
-        self.assertEqual(observed_results, expected_results)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
+
+        # test that returned alpha diversity averages are correct
+        # dose
+        # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
+        # Control = ['Sam5']
+        # will fail on nan comparison so avoid this
+        exp_ad_avgs = {'1xDose':(nan, nan),
+        '2xDose':(3.1955144893699998, 0.84206819489000018),
+        'Control':(2.2669008538500002, 0.0)}
+        for k in exp_ad_avgs:
+            if k!='1xDose':
+                self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
+            if k=='1xDose':
+                self.assertTrue(all(map(isnan,obs_ad_avgs[k])))
+
 
         # test that it works when no depth is passed
         category = 'Dose'
-        depth = None #should return depth = 850
+        depth = None #should return depth = 910
         test_type = 'parametric'
-        observed_results = compare_alpha_diversities(self.rarefaction_file,
+        obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type)
 
         # hardcoded order of the terms in the keys otherwise would comps fail
-        expected_results = \
+        exp_tcomps = \
             {'Control,2xDose': (3.3159701868634883, 0.1864642327553255),
              '1xDose,2xDose': (-0.48227871733885291, 0.66260803238173183),
              'Control,1xDose': (0.83283756452373126, 0.49255115337550748)}
-        self.assertEqual(observed_results, expected_results)
+        self.assertFloatEqual(obs_tcomps, exp_tcomps)
+
+        # test that returned alpha diversity averages are correct
+        # dose
+        # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
+        # Control = ['Sam5']
+        exp_ad_avgs = {'1xDose':(2.6763340901916668, 0.36025734786901326),
+        '2xDose':(2.8358041871949999, 0.04611264137749993),
+        'Control':(3.1006488615725001, 0.0)}
+        for k in exp_ad_avgs:
+            self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
 
 
