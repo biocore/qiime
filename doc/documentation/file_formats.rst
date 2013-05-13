@@ -251,3 +251,21 @@ QIIME parameters
 ^^^^^^^^^^^^^^^^
 
 The QIIME parameters files is used to pass per-script parameters to the QIIME 'workflow' scripts. You can find details on these files in :doc:`qiime_parameters_files`.
+
+.. _procrustes_sample_id_map:
+
+Procrustes sample id map
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `transform_coordinate_matrices.py <../scripts/transform_coordinate_matrices.html>`_ script takes a parameter, ``--sample_id_map_fp``, which is necessary when performing a Procrustes analysis on two data sets with different sample IDs. This file describes how to map from the sample ID associated with the inputs to a new sample id that will be consistent across the two data sets. For example, if your first input principal coordinates matrix contains samples ``S1``, ``S2``, and ``S3``, and these should correspond to samples ``T1``, ``T2``, and ``T3`` in your second input principal coordinates matrix, the data in your ``sample_id_map_fp`` might look like::
+
+	S1	1
+	S2	2
+	S3	3
+	T1	1
+	T2	2
+	T3	3
+
+The reason for this format is that it is usually metadata from one or more columns in the mapping files associated with each different data set that would allow you to match samples to one another. With this format you can select one or more columns from each mapping file (concatenating some fields, if necessary) to build this file.
+
+To clarify, this format maps from *input* sample id to *new* sample id, **not** from *sample id in matrix 1* to *sample id in matrix 2*.
