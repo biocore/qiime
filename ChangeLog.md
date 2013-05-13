@@ -23,6 +23,7 @@ QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
 * Moran's I (in compare_categories.py) now supports identical samples (i.e. zeros in the distance matrix that aren't on the diagonal).
 * summarize_taxa.py now outputs taxa summary tables in both classic (TSV) and BIOM formats by default. This will allow taxa summary tables to be used with other QIIME scripts that expect BIOM files as input. This change is the first step towards adding full support for BIOM taxon tables in QIIME. summarize_taxa.py also has two new options: --suppress_classic_table_output and  --supress_biom_table_output.
 * make_distance_boxplots.py and make_distance_comparison_plots.py now explicitly state the alternative hypothesis used in the t-tests.
+* parallel_blast.py now has a different option for providing a blast db (--blast_db). This implies that the current --refseqs_path should be used only for providing a fasta file of reference sequences. The --suppress_format_blastdb option has been removed since it is no longer needed.
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 
 QIIME 1.6.0 (18 Dec 2012)

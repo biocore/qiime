@@ -24,7 +24,7 @@ from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes
 from qiime.denoise_wrapper import fast_denoiser
 from qiime.parse import parse_mapping_file
-from qiime.format import  write_Fasta_from_name_seq_pairs
+from qiime.format import write_Fasta_from_name_seq_pairs
 
 script_info={}
 script_info['brief_description']="""Denoise a flowgram file"""
@@ -44,7 +44,7 @@ script_info['output_description']="""This script results in a OTU like mapping f
 
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
-                type='existing_filepath', dest='sff_fp',
+                type='existing_filepaths', dest='sff_fps',
                 help='path to flowgram files (.sff.txt), '+
                 'comma separated'),
 
@@ -95,17 +95,17 @@ script_info['version'] = __version__
 def main():
     """run denoiser on input flowgrams"""
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-
-    sff_files = opts.sff_fp.split(',')
     
-    for sff_fp in sff_files:
-        if (not exists(sff_fp)):
+    sff_files = opts.sff_fps
+
+    for f in sff_files:
+        if (not exists(f)):
             option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
-                                 'Pass a valid one via -i.')% sff_fp)
+                                 'Pass a valid one via -i.')% f)
     outdir = opts.output_dir
 
-    ret_val = create_dir(outdir, handle_errors_externally=True)  
-    if ret_val==1:  #dir exists
+    ret_val = create_dir(outdir, handle_errors_externally=True)
+    if ret_val==1: #dir exists
         if opts.force:
             #do nothing, just overwrite content
             pass
@@ -144,7 +144,7 @@ def main():
     else:
         primer=opts.primer
 
-    centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
+    centroids, cluster_mapping = fast_denoiser(opts.sff_fps,opts.fasta_fp,
                                                outdir, opts.num_cpus, primer,
                                                titanium=opts.titanium)
 
