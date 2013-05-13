@@ -106,6 +106,7 @@ def main():
         except TableException:
             output_f.write("# No OTUs present in %s %% of samples." % fraction_for_core_str)
             output_f.close()
+            otu_counts.append(0)
             continue
     
         # write some header information to file
@@ -130,7 +131,6 @@ def main():
         
         # append the otu count to the list of counts
         otu_counts.append(otu_count)
-    
     
     plot(fractions_for_core, otu_counts)
     xlim(min(fractions_for_core),max(fractions_for_core))
