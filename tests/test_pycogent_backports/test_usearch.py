@@ -37,7 +37,8 @@ from qiime.pycogent_backports.usearch import (Usearch,
  usearch61_fast_cluster, usearch61_smallmem_cluster,
  parse_dereplicated_uc, parse_usearch61_clusters,
  merge_clusters_dereplicated_seqs, merge_failures_dereplicated_seqs,
- parse_usearch61_failures)
+ parse_usearch61_failures, usearch61_chimera_check_denovo,
+ usearch61_chimera_check_ref)
 
 
 class Usearch61Tests(TestCase):
@@ -57,6 +58,12 @@ class Usearch61Tests(TestCase):
         self.usearch61_clustered_uc_lines_ref =\
          usearch61_clustered_uc_lines_ref
         self.usearch61_clustered_ref_lines = usearch61_clustered_ref_lines
+        self.de_novo_chimera_seqs = de_novo_chimera_seqs
+        self.expected_usearch61_denovo_uchime_file =\
+         expected_usearch61_denovo_uchime_file
+        self.reference_seqs_fp = reference_seqs_fp
+        self.expected_usearch61_ref_uchime_file =\
+         expected_usearch61_ref_uchime_file 
         
         self.tmp_dna_seqs_1 = get_tmp_filename(\
          prefix='UsearchOtuPickerTest_',\
@@ -85,10 +92,25 @@ class Usearch61Tests(TestCase):
         seq_file = open(self.tmp_dna_seqs_with_dups, "w")
         seq_file.write(self.dna_seqs_with_dups)
         seq_file.close()
+        
+        self.tmp_de_novo_chimera_seqs = get_tmp_filename(\
+         prefix='Usearch61denovoChimera_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_de_novo_chimera_seqs, 'w')
+        seq_file.write(self.de_novo_chimera_seqs)
+        seq_file.close()
+        
+        self.tmp_ref_chimera_seqs = get_tmp_filename(\
+         prefix="Usearch61refChimera_",\
+         suffix='.fasta')
+        seq_file = open(self.tmp_ref_chimera_seqs, "w")
+        seq_file.write(self.reference_seqs_fp)
+        seq_file.close()
                  
         self._files_to_remove =\
          [self.tmp_dna_seqs_1, self.tmp_usearch_ref_seqs1,
-          self.tmp_dna_seqs_1_subset, self.tmp_dna_seqs_with_dups]
+          self.tmp_dna_seqs_1_subset, self.tmp_dna_seqs_with_dups,
+          self.tmp_de_novo_chimera_seqs, self.tmp_ref_chimera_seqs]
           
         self._dirs_to_remove = []
         
@@ -472,6 +494,66 @@ class Usearch61Tests(TestCase):
 
         expected_fna = [('seq2', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC'), ('seq3', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC'), ('seq4', 'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC')]
         self.assertEqual(output_fna, expected_fna)
+        
+    # Chimera tests
+    
+    def test_usearch61_denovo_chimera_detection(self):
+        """ usearch61 denovo chimera detection correctly flags chimeras """
+        
+        uchime_fp = join(self.output_dir, "uchime_denovo.uchime")
+        
+        
+        uchime_fp, app_result =\
+         usearch61_chimera_check_denovo(self.tmp_de_novo_chimera_seqs,
+                                        uchime_denovo_fp = uchime_fp,
+                                        output_dir = self.output_dir,
+                                        remove_usearch_logs = True)
+                                        
+        uchime_f = open(uchime_fp, "U")
+        
+        actual_lines = [line.strip() for line in uchime_f]
+        
+        # There is some system dependent stochastic effect on calculations
+        # for chimeras, need to pull out only the flags Y or N for chimeras
+          
+        expected_chimera_ixs = [11, 16]
+        
+        for line in range(len(actual_lines)):
+            curr_chimera_flag = actual_lines[line].split('\t')[-1]
+            if line in expected_chimera_ixs:
+                self.assertEqual(curr_chimera_flag, "Y")
+            else:
+                self.assertEqual(curr_chimera_flag, "N")
+                        
+
+        self._files_to_remove.append(uchime_fp)
+        
+
+        
+    def test_usearch61_ref_chimera_detection(self):
+        """ usearch61 ref chimera detection correctly flags chimeras """
+        
+        uchime_fp = join(self.output_dir, "uchime_ref.uchime")
+        
+        
+        uchime_fp, app_result =\
+         usearch61_chimera_check_ref(self.tmp_de_novo_chimera_seqs,
+                                     uchime_ref_fp = uchime_fp,
+                                     reference_seqs_fp =\
+                                      self.tmp_ref_chimera_seqs,
+                                     output_dir = self.output_dir,
+                                     remove_usearch_logs = True)
+                                        
+        uchime_f = open(uchime_fp, "U")
+        
+        actual_lines = [line.strip() for line in uchime_f]
+        
+        self.assertEqual(actual_lines,
+         self.expected_usearch61_ref_uchime_file)
+
+        self._files_to_remove.append(uchime_fp)
+        
+        
         
         
 class UsearchTests(TestCase):
@@ -1435,6 +1517,24 @@ TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
 GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAT
 GCGGTATTAGCACCTATTTCTAAGTGTTATCCCCCAGTATACGGCAGGTTCTCCACGCGTTACT"""
 
+reference_seqs_fp = """>seq1
+CTGGTCCGTGTCTCAGTACCAGTGTGGGGGACCTTCCTCTCAGAACCCCTACGCATCGTCGGCTTGGTGGTCCGTTACAC
+CGCCAACTACCTAATGCGACGCATGCCCATCCGCTACCGGATCGCTCCTTTGGAATCCCGGGGATGTCCCCGGAACTCGT
+TATGCGGTATTAGACGGAATTTCTTCCGCTTATCCCCCTGTAGCGGGCAGGTTGCATACGTGTTACTCACCCGTGCGCCG
+GTCGCCGG
+>seq2
+TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGACTAGGTGGGCCGTTACCC
+CGCCTACTATCTAATGGAACGCATCCCCATCGTCTACCGGAATACCTTTAATCATGTGAACATGCGGACTCATGATGCCA
+TCTTGTATTAATCTTCCTTTCAGAAGGCTGTCCAAGAGTAGACGGCAGGTTGGATACGTGTTACTCACCCGG
+>seq3
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCTGTTACCC
+CGCCAACCAGCTAATCAGACGCGGATCCATCGTATACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTA
+TGCGGTATTAGCACCTATTTCTAAGTGTTATCCCCCAGTATACGGCAGGTTCTCCACGCGTT
+>mixed_seq
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCC
+CGCCAACCAGCTAATCAGACGCGGGTCCATCTTGCAACATATTTCGGGACAGATTAACACACAAAGGATTTACACAAAAT
+ACATTAGACCAAACCCCAAGATTTAGACAGGATTACAGGATTTACAGATTTTTACCAACATTAGACAGGGG"""
+
 dna_seqs_with_dups=""">seq1
 GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA
 >seq2
@@ -1851,6 +1951,42 @@ TTATCCATT""".split('\n')
 
 expected_retained_chimeras_intersection = """>seq3
 TTATCCATT""".split('\n')
+
+expected_usearch61_denovo_uchime_file = """0.0000\tCluster1;size=52\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster0;size=50\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster2;size=45\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster10;size=43\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster4;size=40\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster6;size=40\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster3;size=30\t*\t*\t*\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0263\tCluster12;size=19\tCluster2;size=45\tCluster1;size=52\tCluster1;size=52\t75.6\t73.3\t76.5\t67.3\t75.6\t20\t21\t26\t6\t1\t3\t*\tN
+0.0000\tCluster30;size=18\t*\t*\tCluster6;size=40\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0924\tCluster29;size=18\tCluster6;size=40\tCluster1;size=52\tCluster1;size=52\t92.0\t88.6\t89.0\t86.5\t88.7\t7\t0\t0\t12\t7\t14\t3.3\tN
+0.0187\tCluster16;size=16\tCluster2;size=45\tCluster4;size=40\tCluster4;size=40\t94.5\t92.3\t94.1\t90.9\t94.0\t2\t1\t0\t9\t4\t7\t0.5\tN
+0.4232\tCluster222;size=1\tCluster4;size=40\tCluster2;size=45\tCluster2;size=45\t100.0\t94.1\t97.3\t91.3\t96.8\t7\t1\t0\t13\t0\t0\t3.2\tY
+0.0759\tCluster221;size=1\tCluster16;size=16\tCluster1;size=52\tCluster16;size=16\t74.5\t75.9\t67.3\t66.8\t75.4\t15\t0\t5\t16\t19\t32\t*\tN
+0.0107\tCluster218;size=1\tCluster2;size=45\tCluster4;size=40\tCluster4;size=40\t81.7\t80.7\t80.7\t90.6\t78.7\t6\t5\t28\t2\t0\t3\t3.0\tN
+0.0086\tCluster217;size=1\tCluster4;size=40\tCluster2;size=45\tCluster4;size=40\t83.1\t83.1\t80.7\t90.8\t82.1\t4\t0\t1\t2\t4\t33\t1.0\tN
+0.0000\tCluster216;size=1\t*\t*\tCluster16;size=16\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.4232\tCluster522;size=10\tCluster4;size=40\tCluster2;size=45\tCluster2;size=45\t100.0\t94.1\t97.3\t91.3\t96.8\t7\t1\t0\t13\t0\t0\t3.2\tY""".split('\n')
+
+expected_usearch61_ref_uchime_file = """0.0000\tCluster1;size=52\t*\t*\tseq1\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster0;size=50\t*\t*\tseq2\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.0000\tCluster2;size=45\t*\t*\tseq3\t*\t*\t*\t*\t*\t0\t0\t0\t0\t0\t0\t*\tN
+0.1074\tCluster10;size=43\tmixed_seq\tseq1\tseq1\t70.3\t67.0\t65.1\t54.1\t65.7\t11\t0\t1\t31\t27\t33\t4.6\tN
+0.6322\tCluster4;size=40\tmixed_seq\tseq3\tseq3\t96.0\t77.6\t92.5\t73.6\t91.0\t6\t0\t0\t38\t2\t5\t5.0\tY
+0.1101\tCluster6;size=40\tseq2\tseq1\tseq1\t82.6\t71.3\t85.2\t69.6\t85.1\t12\t19\t16\t25\t0\t4\t*\tN
+0.0258\tCluster3;size=30\tmixed_seq\tseq3\tseq3\t71.6\t66.0\t68.0\t71.1\t66.4\t12\t7\t36\t16\t7\t5\t5.3\tN
+0.0263\tCluster12;size=19\tseq3\tseq1\tseq1\t75.6\t73.3\t76.5\t67.3\t75.6\t20\t21\t26\t6\t1\t3\t*\tN
+0.0530\tCluster30;size=18\tseq2\tseq1\tseq1\t79.6\t68.3\t85.7\t70.4\t85.9\t8\t24\t16\t25\t0\t6\t*\tN
+0.0534\tCluster29;size=18\tseq2\tseq1\tseq1\t80.9\t70.4\t88.3\t70.0\t88.7\t7\t25\t17\t23\t0\t2\t*\tN
+0.0699\tCluster16;size=16\tmixed_seq\tseq3\tseq3\t94.0\t74.6\t93.5\t73.6\t91.9\t2\t2\t2\t41\t3\t5\t2.1\tN
+1.2277\tCluster222;size=1\tmixed_seq\tseq3\tseq3\t100.0\t78.4\t97.1\t75.5\t96.8\t6\t1\t0\t44\t0\t0\t3.2\tY
+0.0855\tCluster221;size=1\tseq3\tseq1\tseq3\t75.8\t77.2\t68.8\t65.1\t72.9\t14\t0\t4\t17\t18\t28\t2.9\tN
+0.0174\tCluster218;size=1\tmixed_seq\tseq3\tseq3\t81.7\t70.3\t80.7\t70.3\t78.0\t1\t0\t4\t34\t12\t21\t3.6\tN
+0.0713\tCluster217;size=1\tmixed_seq\tseq3\tseq3\t83.3\t77.5\t79.9\t68.6\t79.7\t4\t0\t1\t27\t12\t17\t3.6\tN
+0.0505\tCluster216;size=1\tmixed_seq\tseq3\tseq3\t77.5\t72.5\t71.6\t70.1\t72.0\t14\t4\t27\t15\t5\t8\t5.4\tN
+1.2277\tCluster522;size=10\tmixed_seq\tseq3\tseq3\t100.0\t78.4\t97.1\t75.5\t96.8\t6\t1\t0\t44\t0\t0\t3.2\tY""".split('\n')
 
 usearch61_dereplicated_uc_lines = """S	0	80	*	*	*	*	*	seq2	*
 H	0	80	100.0	*	0	0	*	seq3	seq2
