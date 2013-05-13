@@ -74,6 +74,7 @@ The QIIME development team is very interested in incorporating community-contrib
    working_with_aws
    parallel_qiime
    remote_mapping_files
+   metadata_description
    
 
 

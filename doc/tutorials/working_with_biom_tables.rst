@@ -24,7 +24,7 @@ To filter observations (usually OTUs in QIIME) from a BIOM table based on their 
 Filtering samples
 -----------------
 
-To filter samples from a BIOM table based on their total observation count, metadata associated with the samples, or by providing a list of samples you want to retain you can use `filter_samples_from_otu_table.py <../scripts/filter_samples_from_otu_table.html>`_. See :ref:`metadata-description` for information on how to specify which samples to retain or remove based on metadata.
+To filter samples from a BIOM table based on their total observation count, metadata associated with the samples, or by providing a list of samples you want to retain you can use `filter_samples_from_otu_table.py <../scripts/filter_samples_from_otu_table.html>`_. See :ref:`metadata_description` for information on how to specify which samples to retain or remove based on metadata.
 
 Filtering taxa
 --------------

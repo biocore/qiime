@@ -1,4 +1,4 @@
-.. _metadata-description:
+.. _metadata_description:
 
 ===================================================
 Describing samples based on their metadata
