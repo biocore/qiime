@@ -6,10 +6,10 @@ __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from collections import defaultdict
 from numpy import zeros

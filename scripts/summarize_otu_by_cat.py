@@ -7,10 +7,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Julia Goodrich","Greg Caporaso","Justin Kuczynski", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 from os import getcwd, makedirs
 from qiime.parse import parse_mapping_file_to_dict,parse_mapping_file,mapping_file_to_dict

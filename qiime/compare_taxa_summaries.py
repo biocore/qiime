@@ -5,10 +5,10 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains functions used in the compare_taxa_summaries.py script."""
 

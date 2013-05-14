@@ -114,7 +114,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Release
 ^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our |release| release, which you can download from `here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.6.0.tar.gz>`_.
+Currently the most stable version of QIIME is our |release| release, which you can download from `here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.7.0.tar.gz>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -133,8 +133,8 @@ After downloading the QIIME release tar file you'll need to unpack the code. For
 Unpack the release .tar.gz file with the commands::
 
 	cd $HOME
-	tar -xvzf qiime-1.6.0.tar.gz
-	ln -s $HOME/qiime-1.6.0 $HOME/Qiime
+	tar -xvzf qiime-1.7.0.tar.gz
+	ln -s $HOME/qiime-1.7.0 $HOME/Qiime
 
 If you have downloaded the development version from GitHub, QIIME is already unpacked.
 

@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split

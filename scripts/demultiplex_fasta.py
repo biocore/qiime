@@ -5,10 +5,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ =  ["William Walters", "Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","Jens Reeder","Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option, create_dir

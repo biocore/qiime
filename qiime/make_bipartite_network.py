@@ -4,10 +4,10 @@ __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME Project" 
 __credits__ = ["Will Van Treuren, Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from numpy import array
 from qiime.parse import parse_mapping_file_to_dict

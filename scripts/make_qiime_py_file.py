@@ -10,10 +10,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
@@ -72,10 +72,10 @@ __author__ = "AUTHOR_NAME"
 __copyright__ = "COPYRIGHT"
 __credits__ = ["AUTHOR_NAME"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
-__status__ = "Development"
+__status__ = "Release"
 """ % strftime('%d %b %Y')
 
     script_block = """

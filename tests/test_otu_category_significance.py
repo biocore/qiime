@@ -7,10 +7,10 @@ __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Catherine Lozupone", "Dan Knights", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.otu_category_significance import filter_OTUs, \

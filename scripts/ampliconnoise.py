@@ -6,10 +6,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski","Jose A. Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option

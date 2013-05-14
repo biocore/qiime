@@ -5,10 +5,10 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav",
                 "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 # Reviewed by William Walters
 
