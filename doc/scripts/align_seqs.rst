@@ -32,22 +32,22 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	
 	**[OPTIONAL]**
 		
-	-t, `-`-template_fp
-		Filepath for template against [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
 		Method for performing pairwise alignment in PyNAST. Valid choices are muscle, pair_hmm, clustal, blast, uclust, mafft [default: uclust]
+	-t, `-`-template_fp
+		Filepath for template against [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
+	-e, `-`-min_length
+		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
+	-p, `-`-min_percent_id
+		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 0.75]
 	-d, `-`-blast_db
 		Database to blast against when -m pynast [default: created on-the-fly from template_alignment]
 	`-`-muscle_max_memory
 		Maximum memory allocation for the muscle alignment method (MB) [default: 80% of available memory, as detected by MUSCLE]
 	-o, `-`-output_dir
 		Path to store result file [default: <ALIGNMENT_METHOD>_aligned]
-	-e, `-`-min_length
-		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
-	-p, `-`-min_percent_id
-		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 0.75]
 
 
 **Output:**
@@ -60,14 +60,6 @@ All aligners will output a fasta file containing the alignment and log file in t
 
 3. "..._log.txt" - This is a log file containing information pertaining to the results obtained from a particular method (e.g. BLAST percent identity, etc.).
 
-
-**Alignment with MUSCLE:**
-
-One could also use the MUSCLE algorithm. The following command can be used to align sequences (i.e. the resulting FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), where the output is written to the directory "muscle_alignment/":
-
-::
-
-	align_seqs.py -i $PWD/unaligned.fna -m muscle -o $PWD/muscle_alignment/
 
 **Alignment with PyNAST:**
 
@@ -84,6 +76,14 @@ Alternatively, one could change the minimum sequence length ("-e") requirement a
 ::
 
 	align_seqs.py -i $PWD/unaligned.fna -t core_set_aligned.fasta.imputed -o $PWD/pynast_aligned/ -e 500 -p 95.0
+
+**Alignment with MUSCLE:**
+
+One could also use the MUSCLE algorithm. The following command can be used to align sequences (i.e. the resulting FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), where the output is written to the directory "muscle_alignment/":
+
+::
+
+	align_seqs.py -i $PWD/unaligned.fna -m muscle -o $PWD/muscle_alignment/
 
 **Alignment with Infernal:**
 

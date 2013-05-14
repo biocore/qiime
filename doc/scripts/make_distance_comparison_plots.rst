@@ -95,9 +95,7 @@ http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 	`-`-error_bar_type
 		If --plot_type is "bar", determines the type of error bars to use. "stdv" is standard deviation and "sem" is the standard error of the mean. If --plot_type is not "bar", this option is ignored [default: stdv]
 	`-`-distribution_width
-		Width (in plot units) of each individual distribution (e.g. each bar if the plot type is a bar chart, or the width of each box if the plot type is a boxplot) [default: 0.4]
-	`-`-group_spacing
-		Width (in plot units) of the gap between each grouping point along the x-axis (i.e. the width between each group of distributions) [default: 0.5]
+		Width (in plot units) of each individual distribution (e.g. each bar if the plot type is a bar chart, or the width of each box if the plot type is a boxplot) [default: auto]
 
 
 **Output:**

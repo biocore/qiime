@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from `summarize_taxa.py <./summarize_taxa.html>`_ for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user  can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the  'other category' using the (-n) option, default is 20.
+This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from `summarize_taxa.py <./summarize_taxa.html>`_ for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the 'other category' using the (-n) option, default is 20.
 
 
 

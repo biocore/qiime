@@ -29,7 +29,7 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-p, `-`-prefix_length
 		Prefix length used to split the input. Must be smaller than the shortest seq in input! [default: 5]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

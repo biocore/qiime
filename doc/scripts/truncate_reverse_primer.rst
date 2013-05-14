@@ -7,7 +7,7 @@
 
 **Description:**
 
-Takes input mapping file and fasta sequences which have already have been demultiplexed (via `split_libraries.py <./split_libraries.html>`_, `denoise_wrapper.py <./denoise_wrapper.html>`_, `ampliconnoise.py <./ampliconnoise.html>`_, etc.) with fasta labels that are in QIIME format, i.e., SampleID_#.  This script will use the SampleID and a mapping file with a ReversePrimer column to find the reverse primer by local alignment and remove this and any subsequent sequence in a filtered output fasta file.
+Takes input mapping file and fasta sequences which have already have been demultiplexed (via `split_libraries.py <./split_libraries.html>`_, `denoise_wrapper.py <./denoise_wrapper.html>`_, `ampliconnoise.py <./ampliconnoise.html>`_, etc.) with fasta labels that are in QIIME format, i.e., SampleID_#. This script will use the SampleID and a mapping file with a ReversePrimer column to find the reverse primer by local alignment and remove this and any subsequent sequence in a filtered output fasta file.
 
 
 **Usage:** :file:`truncate_reverse_primer.py [options]`

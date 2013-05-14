@@ -50,7 +50,7 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 	`-`-suppress_3d_plots
 		Do not generate 3D plots [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 4]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**
