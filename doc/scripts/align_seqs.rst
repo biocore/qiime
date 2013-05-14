@@ -52,7 +52,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 
 **Output:**
 
-All aligners will output a fasta file containing the alignment and log file in the directory specified by `-`-output_dir (default <alignment_method>_aligned). PyNAST additionally outputs a failures file, containing the sequences which failed to align. So the result of %prog will be up to three files, where the prefix of each file depends on the user supplied FASTA file:
+All aligners will output a fasta file containing the alignment and log file in the directory specified by `-`-output_dir (default <alignment_method>_aligned). PyNAST additionally outputs a failures file, containing the sequences which failed to align. So the result of align_seqs.py will be up to three files, where the prefix of each file depends on the user supplied FASTA file:
 
 1. "..._aligned.fasta" - This is a FASTA file containing all aligned sequences.
 
