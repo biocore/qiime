@@ -16,7 +16,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()

@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Justin Kucyznski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os.path import exists
 

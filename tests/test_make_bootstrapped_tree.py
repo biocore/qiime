@@ -7,7 +7,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from cogent.util.unit_test import TestCase, main

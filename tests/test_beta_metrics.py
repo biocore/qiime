@@ -7,7 +7,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "justin kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 
 """Contains tests for beta_metrics  functions."""

@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters

@@ -11,7 +11,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from t2t import nlevel
 from cogent.parse.fasta import MinimalFastaParser

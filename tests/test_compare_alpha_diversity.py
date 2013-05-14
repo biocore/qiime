@@ -10,7 +10,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.util.unit_test import TestCase,main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction

@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import make_option
 from qiime.pick_otus import map_otu_map_files

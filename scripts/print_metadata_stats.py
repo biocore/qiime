@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from collections import defaultdict
 from qiime.parse import parse_mapping_file

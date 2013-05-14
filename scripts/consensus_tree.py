@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 import os
 from qiime.util import make_option

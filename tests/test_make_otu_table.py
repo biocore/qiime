@@ -8,7 +8,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 import json
 from cogent.util.unit_test import TestCase, main

@@ -10,6 +10,6 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 print "\nThis script has been renamed print_biom_table_summary.py and ported to the biom-format software package (www.biom-format.org). For help, call print_biom_table_summary.py -h\n"

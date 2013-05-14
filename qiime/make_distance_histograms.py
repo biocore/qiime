@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from matplotlib import use
 use('Agg',warn=False)

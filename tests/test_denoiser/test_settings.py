@@ -10,7 +10,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os import access, X_OK, R_OK
 from os.path import exists

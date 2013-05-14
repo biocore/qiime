@@ -31,7 +31,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 
 from qiime.util import parse_command_line_parameters

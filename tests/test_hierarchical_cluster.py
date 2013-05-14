@@ -7,7 +7,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.hierarchical_cluster import single_file_upgma, single_file_nj
 from qiime.format import format_distance_matrix

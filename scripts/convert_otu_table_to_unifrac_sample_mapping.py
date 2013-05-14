@@ -7,7 +7,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from biom.parse import parse_biom_table
 from qiime.util import make_option

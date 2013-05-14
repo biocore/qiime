@@ -7,7 +7,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from numpy import array
 

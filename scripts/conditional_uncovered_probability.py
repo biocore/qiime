@@ -10,7 +10,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development" 
+__status__ = "Release" 
 
 from qiime.util import make_option, parse_command_line_parameters
 from qiime.alpha_diversity import (single_file_cup, 

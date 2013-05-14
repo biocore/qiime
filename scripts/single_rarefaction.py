@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.maths.stats.rarefaction import subsample, subsample_multinomial
 from qiime.util import parse_command_line_parameters

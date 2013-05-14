@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains functions used in the compare_distance_matrices.py script."""
 

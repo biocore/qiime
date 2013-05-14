@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meganap@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os.path import split,splitext
 from qiime.util import parse_command_line_parameters, make_option

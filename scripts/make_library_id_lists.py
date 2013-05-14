@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 
 from qiime.make_library_id_lists import get_first_id, get_ids

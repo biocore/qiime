@@ -10,7 +10,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "William Anton Walters"
 __email__ = "william.a.walters@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from collections import defaultdict
 from os.path import split, join

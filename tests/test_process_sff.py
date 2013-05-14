@@ -22,7 +22,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in process_sff"""

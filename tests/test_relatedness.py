@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 
 from cogent.util.unit_test import TestCase, main

@@ -9,6 +9,6 @@ __license__ = "GPL"
 __version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 print "\nThis script has been deprecated in favor of core_diversity_analyses.py, which is more generally applicable. For more details, call:\n\ncore_diversity_analyses.py -h\n"
