@@ -63,7 +63,7 @@ Filter samples with greater than 149 observations from the otu table.
 
 **Metadata-based filtering (positive):**
 
-Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'
+Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is 'Control'
 
 ::
 
@@ -71,7 +71,7 @@ Filter samples with where the value for 'Treatment' in the mapping file is not '
 
 **Metadata-based filtering (negative):**
 
-Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'
+Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is not 'Control'
 
 ::
 

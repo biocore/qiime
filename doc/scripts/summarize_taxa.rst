@@ -9,6 +9,9 @@
 
 The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.
 
+By default, taxa summary tables will be output in both classic (tab-separated) and BIOM formats. The BIOM-formatted taxa summary tables can be used as input to other QIIME scripts that accept BIOM files.
+
+
 
 **Usage:** :file:`summarize_taxa.py [options]`
 
@@ -29,11 +32,11 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 	-m, `-`-mapping
 		Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is  useful for coloring PCoA plots by taxon abundance or to  perform statistical tests of taxon/mapping associations.
 	`-`-md_identifier
-		The relevant observation metadat key [default: taxonomy]
+		The relevant observation metadata key [default: taxonomy]
 	`-`-md_as_string
 		Metadata is included as string [default: metadata is included as list]
 	-d, `-`-delimiter
-		Delimitor separating taxonomy levels. [default: ;]
+		Delimiter separating taxonomy levels. [default: ;]
 	-r, `-`-relative_abundance
 		DEPRECATED: please use -a/--absolute_abundance to disable relative abundance [default: ]
 	-a, `-`-absolute_abundance
@@ -46,6 +49,10 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 		If present, the output will be written transposed from the regular output. This is helpful in cases when you want to use Site Painter to visualize your data [default: False]
 	-o, `-`-output_dir
 		Path to the output directory
+	`-`-suppress_classic_table_output
+		If present, the classic (TSV) format taxon table will not be created in the output directory. This option is ignored if -m/--mapping is present [default: False]
+	`-`-suppress_biom_table_output
+		If present, the BIOM-formatted taxon table will not be created in the output directory. This option is ignored if -m/--mapping is present [default: False]
 
 
 **Output:**
@@ -56,7 +63,7 @@ There are two possible output formats depending on whether or not a mapping file
 
 **Examples:**
 
-Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting taxa tables to the directory "./tax" 
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting taxa tables to the directory "./tax" 
 
 ::
 
@@ -64,7 +71,7 @@ Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write 
 
 **Examples:**
 
-Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, where the and write resulting mapping files to the directory "./tax" 
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting mapping files to the directory "./tax" 
 
 ::
 

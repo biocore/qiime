@@ -48,6 +48,8 @@ For more information and examples pertaining to this script, please refer to the
 		The value of alpha to use when denoting significance in the correlogram plot. Only applies when method is mantel_corr
 	-g, `-`-image_type
 		The type of image to produce. Valid options: [png, svg, pdf]. Only applies when method is mantel_corr [default: pdf]
+	`-`-variable_size_distance_classes
+		If this option is supplied, each distance class will have an equal number of distances (i.e. pairwise comparisons), which may result in variable sizes of distance classes (i.e. each distance class may span a different range of distances). If this option is not supplied, each distance class will have the same width, but may contain varying numbers of pairwise distances in each class. This option can help maintain statistical power if there are large differences in the number of distances in each class. See Darcy et al. 2011 (PLoS ONE) for an example of this type of correlogram. Only applies when method is mantel_corr [default: False]
 	-c, `-`-control_dm
 		The control matrix. Only applies (and is *required*) when method is partial_mantel. [default: None]
 

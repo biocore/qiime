@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script `alpha_diversity.py <./alpha_diversity.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.
+This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script `alpha_diversity.py <./alpha_diversity.html>`_, and documentation of those metrics can be found at http://qiime.org/scripts/alpha_diversity_metrics.html. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.
 
 
 **Usage:** :file:`alpha_diversity.py [options]`
@@ -79,7 +79,7 @@ You can use the following idiom to run multiple metrics at once (comma-separated
 
 **Multiple File (batch) Alpha Diversity:**
 
-To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:
+To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory instead of a single otu table, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:
 
 ::
 

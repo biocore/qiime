@@ -2,18 +2,62 @@
 
 .. index:: compare_alpha_diversity.py
 
-*compare_alpha_diversity.py* -- This script compares alpha diversities based on a two sample t-test
+*compare_alpha_diversity.py* -- This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
 
-This script compares the alpha diversity of entries in a rarefaction file after
-they have been grouped based on some category found in the mapping file based
-on a two sample t-test. The output file contains the
-(Category: (Subcategories): t, prob). By default the two sample t-test will be
-nonparametric (i.e. using Monte Carlo permutations to calculate the p-value),
-though the user has the option to make the test a parametric t-test.
+This script compares the alpha diversity of samples found in a collated alpha 
+diversity file. The comparison is done not between samples, but between groups
+of samples. The groupings are created via the input category passed via
+-c/--category. Any samples which have the same value under the catgory will be
+grouped.
+
+For example, if your mapping file had a category called 'Treatment' that
+separated your samples into three groups (Treatment='Control', Treatment='Drug',
+Treatment='2xDose'), passing 'Treatment' to this script would cause it to
+compare (Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity
+values. By default the two-sample t-test will be nonparametric (i.e. using
+Monte Carlo permutations to calculate the p-value), though the user has the
+option to make the test a parametric t-test.
+
+The script creates an output file in tab-separated format where each row is a
+different group comparison. The columns in each row denote which two groups of
+samples are being compared, as well as the mean and standard deviation of each
+group's alpha diversity. Finally, the t-statistic and p-value are reported for
+the comparison. This file can be most easily viewed in a spreadsheet program
+such as Excel.
+
+Note: Any iterations of a rarefaction at a given depth will be averaged. For
+instance, if your collated_alpha file had 10 iterations of the rarefaction at
+depth 480, the scores for the alpha diversity metrics of those 10 iterations
+would be averaged (within sample). The iterations are not controlled by this
+script; when `multiple_rarefactions.py <./multiple_rarefactions.html>`_ is called, the -n option specifies the
+number of iterations that have occurred. The multiple comparison correction
+takes into account the number of between group comparisons. If you do not know
+the rarefaction depth available or you want to use the deepest rarefaction
+level available then do not pass -d/--depth and it will default to using the
+deepest available.
+
+If t-statistics and/or p-values are None for any of your comparisons, there are
+three possible reasons. The first is that there were undefined values in your
+collated alpha diversity input file. This occurs if there were too few
+sequences in one or more of the samples in the groups involved in those
+comparisons to compute alpha diversity at that depth. You can either rerun
+%prog passing a lower value for --depth, or you can re-run alpha diversity
+after filtering samples with too few sequences. The second is that you had some
+comparison where each treatment was represented by only a single sample. It is
+not possible to perform a two-sample t-test on two samples each of length 1, so
+None will be reported instead. The third possibility occurs when using the
+nonparamteric t-test with small datasets where the Monte Carlo permutations
+don't return a p-value because the distribution of the data has no variance.
+The multiple comparisons correction will not penalize you for comparisons that
+return as None regardless of origin.
+
+If the means/standard deviations are None for any treatment group, the likely
+cause is that there is an 'n\a' value in the collated_alpha file that was
+passed.
 
 
 
@@ -32,33 +76,34 @@ though the user has the option to make the test a parametric t-test.
 		Path to the mapping file [REQUIRED]
 	-c, `-`-category
 		Category for comparison [REQUIRED]
-	-d, `-`-depth
-		Depth of rarefaction file to use [REQUIRED]
-	-o, `-`-output_filepath
-		Output file path [REQUIRED]
+	-o, `-`-output_fp
+		Location of output file to be created [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-t, `-`-test_type
 		The type of test to perform when calculating the p-values. Valid choices: parametric, nonparametric. If test_type is nonparametric, Monte Carlo permutations will be used to determine the p-value. If test_type is parametric, the num_permutations option will be ignored and the t-distribution will be used instead [default: nonparametric]
 	-n, `-`-num_permutations
-		The number of permutations to perform when calculating the p-value. Must be greater than zero. Only applies if test_type is nonparametric [default: 999]
+		The number of permutations to perform when calculating the p-value. Must be greater than 10. Only applies if test_type is nonparametric [default: 999]
+	-p, `-`-correction_method
+		Method to use for correcting multiple comparisons. Available methods are bonferroni, fdr, or none. [default: bonferroni]
+	-d, `-`-depth
+		Depth of rarefaction file to use [default: greatest depth]
 
 
 **Output:**
 
 
-Script generates an output nested dictionary which has as a first key:value
-pair the category passed, and a dictionary which gives the t_two_sample score
-for every possible combination of the values under that category in the
-mapping file, saved as a text file into the directory specified by the output
-path.
+The script generates an output file that is a TSV table. Each row corresponds
+to a comparison between two groups of treatment values, and includes the means
+and standard deviations of the two groups' alpha diversities, along with the
+results of the two-sample t-test.
 
 
 
 **Comparing alpha diversities:**
 
-The following command takes the following input: a mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), and output file path (a path to the output file). A nonparametric two sample t-test is run to compare the alpha diversities using the default number of Monte Carlo permutations (999).
+The following command takes the following input: a mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), and output filepath (a path to the output file to be created). A nonparametric two sample t-test is run to compare the alpha diversities using the default number of Monte Carlo permutations (999).
 
 ::
 
@@ -66,10 +111,18 @@ The following command takes the following input: a mapping file (which associati
 
 **Parametric t-test:**
 
-The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations.
+The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at rarefaction depth 100.
 
 ::
 
 	compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100_parametric.txt -t parametric
+
+**Parametric t-test:**
+
+The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at the greatest depth available.
+
+::
+
+	compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -o PD_dmax_parametric.txt -t parametric
 
 

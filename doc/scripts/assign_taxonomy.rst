@@ -54,7 +54,7 @@ Example reference data sets and id_to_taxonomy maps can be found in the Greengen
 	`-`-header_id_regex
 		Used to choose the part of the header in the OTU clustering file that Rtax reports back as the ID.  The default uses the amplicon ID, not including /1 or /3, as the primary key for the query sequences. (used for RTAX only). [default: \S+\s+(\S+?)\/]
 	-m, `-`-assignment_method
-		Taxon assignment method, either blast, mothur, rdp, or rtax [default:rdp]
+		Taxon assignment method, must be one of rdp, blast, rtax, mothur, tax2tree [default: rdp]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence

@@ -24,17 +24,17 @@ As this is a univariate procedure only one metric is supported: d = c-b.
 	-i, `-`-input_path
 		Mapping filepath.
 	-c, `-`-column
-		String containing the name of the column in the mapping file, e.g. 'DOB'
+		String containing the name of the column in the mapping file, e.g. 'DOB'. If you pass two colums separated by a comma (e.g. 'Latitude,Longitud') the script will calculate the Vincenty formula (WGS-84) for distance between two Latitude/Longitude points.
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_dir
-		Output directory. One will be created if it doesn't exist. [default=map_distance_matrix]
+	-o, `-`-output_fp
+		Output directory. One will be created if it doesn't exist. [default=map_distance_matrix.txt]
 
 
 **Output:**
 
-The output of `distance_matrix_from_mapping.py <./distance_matrix_from_mapping.html>`_ is a file containing a distance matrix between rows corresponding to a column in a mapping file.
+The output of `distance_matrix_from_mapping.py <./distance_matrix_from_mapping.html>`_ is a file containing a distance matrix between rows corresponding to a pair of columns in a mapping file.
 
 
 **Pairwise dissimilarity:**
@@ -44,5 +44,13 @@ To calculate the distance matrix (using euclidean distance) on a column of the m
 ::
 
 	distance_matrix_from_mapping.py -i Fasting_Map.txt -c DOB
+
+**Pairwise dissimilarity using the Vincenty formula for distance between two Latitude/Longitude points:**
+
+To calculate the distance matrix (using Vincenty formula) on a column of the mapping file, where the results are output to lat_long.txt, use the following command:
+
+::
+
+	distance_matrix_from_mapping.py -i lat_long.txt -c Latitute,Longitude -o lat_long_dtx_matrix.txt
 
 

@@ -27,13 +27,6 @@
 		Mapping column to split otu table on
 	-o, `-`-output_dir
 		The output directory
-	
-	**[OPTIONAL]**
-		
-	-c, `-`-column_rename_ids
-		Mapping column used as sample id in the output files. Has to be unique in the splited samples. This option can be helpful to create otu tables and mapping files for Procustes analysis.
-	`-`-include_repeat_cols
-		By default the new mapping files will not have the columns that have the same information, to include them use this option. This can be helpful to create mapping files for Procrustes analysis.
 
 
 **Output:**
