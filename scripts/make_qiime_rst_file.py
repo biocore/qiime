@@ -237,7 +237,7 @@ def main():
 
             ###Write rst file
             f = open(outf, 'w')
-            f.write((output_text))
+            f.write((output_text.replace('%prog',file+'.py')))
             f.close()
             
             #script.close()
