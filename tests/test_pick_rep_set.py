@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Kyle Bittinger", "Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from os import remove
 from cogent import LoadSeqs

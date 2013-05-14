@@ -8,10 +8,10 @@ __author__ = "Kyle Patnode"
 __copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Kyle Patnode", "Daniel McDonald", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from t2t import nlevel
 from cogent.parse.fasta import MinimalFastaParser

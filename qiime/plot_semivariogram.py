@@ -10,10 +10,10 @@ __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 class FitModel(object):
     """This class defines the available models and their functions for a 

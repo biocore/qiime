@@ -6,10 +6,10 @@ __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 from shutil import rmtree

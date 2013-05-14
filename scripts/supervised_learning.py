@@ -6,10 +6,10 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Dan Knights", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from qiime.util import make_option
