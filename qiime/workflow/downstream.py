@@ -9,7 +9,7 @@ __credits__ = ["Greg Caporaso",
                "Justin Kuczynski",
                "Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"

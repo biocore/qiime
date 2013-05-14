@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald",
                "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
