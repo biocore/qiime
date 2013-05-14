@@ -18,6 +18,10 @@ The reference sequences (-r) and id-to-taxonomy map (-t) provided are the same f
 ChimeraSlayer uses BLAST to identify potential chimera parents and computes the optimal branching alignment of the query against two parents.
 We suggest to use the pynast aligned representative sequences as input.
 
+3. usearch61:
+
+usearch61 performs both de novo (abundance based) chimera and reference based detection.  Unlike the other two chimera checking software, unclustered sequences should be used as input rather than a representative sequence set, as these sequences need to be clustered to get abundance data.  The results can be taken as the union or intersection of all input sequences not flagged as chimeras.  For details, see: http://drive5.com/usearch/usearch_docs.html
+
 
 
 **Usage:** :file:`identify_chimeric_seqs.py [options]`
@@ -37,13 +41,13 @@ We suggest to use the pynast aligned representative sequences as input.
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
-		Path to reference sequences (used to build a blast db when method blast_fragments). [default: None; REQUIRED when method blast_fragments if no blast_db is provided;]
+		Path to reference sequences (used to build a blast db when method blast_fragments or reference database for usearch61). [default: None; REQUIRED when method blast_fragments if no blast_db is provided, suppress requirement for usearch61 with --suppress_usearch61_ref;]
 	-a, `-`-aligned_reference_seqs_fp
 		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: None]
 	-b, `-`-blast_db
 		Database to blast against. Must provide either --blast_db or --reference_seqs_fp when method is blast_fragments [default: None]
 	-m, `-`-chimera_detection_method
-		Chimera detection method. Choices: blast_fragments or ChimeraSlayer. [default:ChimeraSlayer]
+		Chimera detection method. Choices: blast_fragments or ChimeraSlayer or usearch61. [default:ChimeraSlayer]
 	-n, `-`-num_fragments
 		Number of fragments to split sequences into (i.e., number of expected breakpoints + 1) [default: 3]
 	-d, `-`-taxonomy_depth
@@ -54,8 +58,40 @@ We suggest to use the pynast aligned representative sequences as input.
 		Min divergence ratio (passed to ChimeraSlayer). If set to None uses ChimeraSlayer default value.  [default: None]
 	-k, `-`-keep_intermediates
 		Keep intermediate files, useful for debugging  [default: False]
+	`-`-suppress_usearch61_intermediates
+		Use to suppress retention of usearch intermediate files/logs.[default: False]
+	`-`-suppress_usearch61_ref
+		Use to suppress reference based chimera detection with usearch61 [default: False]
+	`-`-suppress_usearch61_denovo
+		Use to suppress de novo based chimera detection with usearch61 [default: False]
+	`-`-split_by_sampleid
+		Enable to split sequences by initial SampleID, requires that fasta be in demultiplexed format, e.g., >Sample.1_0, >Sample.2_1, >Sample.1_2, with the initial string before first underscore matching SampleIDs. If not in this format, could cause unexpected errors. [default: False]
+	`-`-non_chimeras_retention
+		Usearch61 only - selects subsets of sequences detected as non-chimeras to retain after de novo and reference based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
+	`-`-usearch61_minh
+		Minimum score (h) to be classified as chimera. Increasing this value tends to the number of false positives (and also sensitivity).[default: 0.28]
+	`-`-usearch61_xn
+		Weight of 'no' vote. Increasing this value tends to the number of false positives (and also sensitivity). Must be > 1.[default: 8.0]
+	`-`-usearch61_dn
+		Pseudo-count prior for 'no' votes. (n). Increasing this value tends to the number of false positives (and also sensitivity). Must be > 0.[default: 1.4]
+	`-`-usearch61_mindiffs
+		Minimum number of diffs in a segment. Increasing this value tends to reduce the number of false positives while reducing sensitivity to very low-divergence chimeras. Must be > 0.[default: 3]
+	`-`-usearch61_mindiv
+		Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8%, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be > 0.[default: 0.8]
+	`-`-usearch61_abundance_skew
+		Abundance skew setting for de novo chimera detection with usearch61. Must be > 0. [default: 2.0]
+	`-`-percent_id_usearch61
+		Percent identity threshold for clustering with usearch61. [default: 0.97]
+	`-`-minlen
+		Minimum length of sequence allowed for usearch61 [default: 64]
+	`-`-word_length
+		Word length value for usearch61. [default: 8]
+	`-`-max_accepts
+		Max_accepts value to usearch61. [default: 1]
+	`-`-max_rejects
+		Max_rejects value for usearch61.  [default: 8]
 	-o, `-`-output_fp
-		Path to store output [default: derived from input_seqs_fp]
+		Path to store output, output filepath in the case of blast_fragments and ChimeraSlayer, or directory in case of usearch61  [default: derived from input_seqs_fp]
 
 
 **Output:**
@@ -79,7 +115,7 @@ blast_fragments begins with the assumption that a sequence is non-chimeric, and 
 
 ::
 
-	identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt
+	identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -m blast_fragments -o chimeric_seqs_blast.txt
 
 **ChimeraSlayer Example:**
 
@@ -87,6 +123,14 @@ Identify chimeric sequences using the ChimeraSlayer algorithm against a user pro
 
 ::
 
-	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs.txt
+	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt
+
+**usearch61 Example:**
+
+Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from `split_libraries.py <./split_libraries.html>`_. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.
+
+::
+
+	identify_chimeric_seqs.py -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/
 
 

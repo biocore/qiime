@@ -33,7 +33,7 @@
 	-b, `-`-bases
 		The number of bases to include (useful for slicing a barcode) [defaut: all]
 	`-`-ignore_pass_filter
-		Ignore the illumina pass filter [default:False; reads with 0 in pass  filter field are discarded]
+		Ignore the illumina pass filter [default:False; reads with 0 in  pass filter field are discarded]
 
 
 **Output:**

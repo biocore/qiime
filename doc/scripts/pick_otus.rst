@@ -23,7 +23,19 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 6. uclust (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity.
 
-7. usearch (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+7. uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+8. usearch (Edgar, RC 2010, version v5.2.236), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+
+9. usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch quality filter", described here: http://qiime.org/tutorials/usearch_quality_filter.html
+
+8. usearch61 (Edgar, RC 2010, version v6.1.544), creates "seeds" of sequences which generate clusters based on percent identity.
+
+9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+Chimera checking with usearch 6.X is implemented in `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
 
 The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 
@@ -53,7 +65,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_picking_method
-		Method for picking OTUs.  Valid choices are: usearch, usearch_ref, prefix_suffix, mothur, trie, blast, uclust_ref, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]
+		Method for picking OTUs.  Valid choices are: mothur, trie, uclust_ref, usearch, usearch_ref, blast, usearch61, usearch61_ref, prefix_suffix, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]
 	-c, `-`-clustering_algorithm
 		Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]
 	-M, `-`-max_cdhit_memory
@@ -61,13 +73,13 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-o, `-`-output_dir
 		Path to store result file [default: ./<OTU_METHOD>_picked_otus/]
 	-r, `-`-refseqs_fp
-		Path to reference sequences to search against when using -m blast, -m uclust_ref, or -m usearch_ref [default: None]
+		Path to reference sequences to search against when using -m blast, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: None]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
 	`-`-min_aligned_percent
 		Minimum percent of query sequence that can be aligned to consider a hit (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
-		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, or usearch) [default: 0.97]
+		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref) [default: 0.97]
 	-e, `-`-max_e_value
 		Max E-value when clustering with BLAST [default: 1e-10]
 	-q, `-`-trie_reverse_seqs
@@ -81,7 +93,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-u, `-`-suffix_length
 		Suffix length when using the prefix_suffix otu picker [default: 50]
 	-z, `-`-enable_rev_strand_match
-		Enable reverse strand matching for uclust otu picking, will double the amount of memory used. [default: False]
+		Enable reverse strand matching for uclust, uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref otu picking, will double the amount of memory used. [default: False]
 	-D, `-`-suppress_presort_by_abundance_uclust
 		Suppress presorting of sequences by abundance when picking OTUs with uclust or uclust_ref [default: False]
 	-A, `-`-optimal_uclust
@@ -91,53 +103,59 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-B, `-`-user_sort
 		Pass the --user_sort flag to uclust for uclust otu picking. [default: False]
 	-C, `-`-suppress_new_clusters
-		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref or -m usearch_ref [default: False]
+		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref, -m usearch61_ref, or -m usearch_ref [default: False]
 	`-`-max_accepts
-		Max_accepts value to uclust and uclust_ref [default: 20]
+		Max_accepts value to uclust, uclust_ref, usearch61, and usearch61_ref.  By default, will use value suggested by method (uclust: 20, usearch61: 1) [default: default]
 	`-`-max_rejects
-		Max_rejects value to uclust and uclust_ref [default: 500]
+		Max_rejects value for uclust, uclust_ref, usearch61, and usearch61_ref.  With default settings, will use value recommended by clustering method used (uclust: 500, usearch61: 8 for usearch_fast_cluster option, 32 for reference and smallmem options) [default: default]
 	`-`-stepwords
 		Stepwords value to uclust and uclust_ref [default: 20]
 	`-`-word_length
-		W value to usearch, uclust, and uclust_ref.  Set to 64 for usearch. [default: 12]
+		Word length value for uclust, uclust_ref, and usearch, usearch_ref, usearch61, and usearch61_ref. With default setting, will use the setting recommended by the method (uclust: 12, usearch: 64, usearch61: 8).  int value can be supplied to override this setting. [default: default]
 	`-`-uclust_otu_id_prefix
-		OTU identifier prefix (string) for the de novo uclust OTU picker and for new clusters when uclust_ref is used without -C [default: None, OTU ids are ascending integers]
+		OTU identifier prefix (string) for the de novo uclust OTU picker and for new clusters when uclust_ref is used without -C [default: denovo, OTU ids are ascending integers]
 	`-`-suppress_uclust_stable_sort
 		Don't pass --stable-sort to uclust [default: False]
 	`-`-suppress_uclust_prefilter_exact_match
 		Don't collapse exact matches before calling uclust [default: False]
 	-d, `-`-save_uc_files
-		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch (usearch_qf). [default: True]
+		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch  and usearch61. [default: True]
 	-j, `-`-percent_id_err
-		Percent identity threshold for cluster error detection with usearch_qf. [default: 0.97]
+		Percent identity threshold for cluster error detection with usearch. [default: 0.97]
 	-g, `-`-minsize
-		Minimum cluster size for size filtering with usearch_qf. [default: 4]
+		Minimum cluster size for size filtering with usearch. [default: 4]
 	-a, `-`-abundance_skew
-		Abundance skew setting for de novo chimera detection with usearch_qf. [default: 2.0]
+		Abundance skew setting for de novo chimera detection with usearch. [default: 2.0]
 	-f, `-`-db_filepath
-		Reference database of fasta sequences for reference based chimera detection with usearch_qf. [default: None]
+		Reference database of fasta sequences for reference based chimera detection with usearch. [default: None]
 	`-`-perc_id_blast
-		Percent ID for mapping OTUs created by usearch_qf back to original sequence IDs [default: 0.97]
+		Percent ID for mapping OTUs created by usearch back to original sequence IDs [default: 0.97]
 	`-`-de_novo_chimera_detection
 		Deprecated:  de novo chimera detection performed by default, pass --suppress_de_novo_chimera_detection to disable. [default: None]
 	-k, `-`-suppress_de_novo_chimera_detection
-		Suppress de novo chimera detection in usearch_qf. [default: False]
+		Suppress de novo chimera detection in usearch. [default: False]
 	`-`-reference_chimera_detection
 		Deprecated:  Reference based chimera detection performed by default, pass --supress_reference_chimera_detection to disable [default: None]
 	-x, `-`-suppress_reference_chimera_detection
-		Suppress reference based chimera detection in usearch_qf. [default: False]
+		Suppress reference based chimera detection in usearch. [default: False]
 	`-`-cluster_size_filtering
-		Deprecated, cluster size filtering enabled by default, pass --disable_cluster_size_filtering to disable.  [default: None]
+		Deprecated, cluster size filtering enabled by default, pass --suppress_cluster_size_filtering to disable.  [default: None]
 	-l, `-`-suppress_cluster_size_filtering
-		Suppress cluster size filtering in usearch_qf.  [default: False]
+		Suppress cluster size filtering in usearch.  [default: False]
 	`-`-remove_usearch_logs
 		Disable creation of logs when usearch is called.  Up to nine logs are created, depending on filtering steps enabled.  [default: False]
 	`-`-derep_fullseq
 		Dereplication of full sequences, instead of subsequences. Faster than the default --derep_subseqs in usearch. [default: False]
 	-F, `-`-non_chimeras_retention
-		Selects subsets of sequences detected as non-chimeras to retain after de novo and refernece based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
+		Selects subsets of sequences detected as non-chimeras to retain after de novo and reference based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
 	`-`-minlen
-		Minimum length of sequence allowed for usearch. [default: 64]
+		Minimum length of sequence allowed for usearch, usearch_ref, usearch61, and usearch61_ref. [default: 64]
+	`-`-usearch_fast_cluster
+		Use fast clustering option for usearch or usearch61_ref with new clusters.  --enable_rev_strand_match can not be enabled with this option, and the only valid option for usearch61_sort_method is 'length'.  This option uses more memory than the default option for de novo clustering. [default: False]
+	`-`-usearch61_sort_method
+		Sorting method for usearch61 and usearch61_ref.  Valid options are abundance, length, or None.  If the --usearch_fast_cluster option is enabled, the only sorting method allowed in length. [default: abundance]
+	`-`-sizeorder
+		Enable size based preference in clustering with usearch61. Requires that --usearch61_sort_method be abundance. [default: False]
 
 
 **Output:**
@@ -254,7 +272,7 @@ The sequence similarity parameter may also be specified. For example, the follow
 
 	pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90
 
-**Usearch_qf ('usearch quality filter'):**
+**usearch :**
 
 Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:
 
@@ -262,7 +280,7 @@ Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, 
 
 	pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2
 
-**Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:**
+**usearch example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:**
 
 ::
 
