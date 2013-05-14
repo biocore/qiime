@@ -5,10 +5,10 @@ __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Zaneveld", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 """
 Test code for exclude_seqs_by_blast.py.  

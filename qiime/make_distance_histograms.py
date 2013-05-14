@@ -6,10 +6,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from matplotlib import use
 use('Agg',warn=False)

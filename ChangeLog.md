@@ -1,3 +1,6 @@
+QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
+===================================================
+
 QIIME 1.7.0 (14 May 2013)
 =========================
 * Required biom-format version is now 1.1.2.

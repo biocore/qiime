@@ -13,10 +13,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 def load_tree_files(master_tree_file, support_dir):
     """Load trees from filepaths

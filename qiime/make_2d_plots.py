@@ -6,10 +6,10 @@ __author__ = "Jesse Stombaugh and Micah Hamady"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 import re
 from matplotlib import use

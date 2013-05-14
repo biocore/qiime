@@ -9,10 +9,10 @@ __credits__ = ["Greg Caporaso",
                "Justin Kuczynski",
                "Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from os.path import split, splitext, join
 from biom.parse import parse_biom_table
