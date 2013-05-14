@@ -52,7 +52,7 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 
 **Output:**
 
-The output of %prog is a folder containing text files, each a distance matrix between samples.
+The output of parallel_beta_diversity.py is a folder containing text files, each a distance matrix between samples.
 
 
 **Apply beta_diversity.py in parallel to multiple otu tables:**

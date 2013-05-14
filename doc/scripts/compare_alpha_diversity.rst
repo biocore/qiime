@@ -45,7 +45,7 @@ three possible reasons. The first is that there were undefined values in your
 collated alpha diversity input file. This occurs if there were too few
 sequences in one or more of the samples in the groups involved in those
 comparisons to compute alpha diversity at that depth. You can either rerun
-%prog passing a lower value for --depth, or you can re-run alpha diversity
+compare_alpha_diversity.py passing a lower value for --depth, or you can re-run alpha diversity
 after filtering samples with too few sequences. The second is that you had some
 comparison where each treatment was represented by only a single sample. It is
 not possible to perform a two-sample t-test on two samples each of length 1, so
