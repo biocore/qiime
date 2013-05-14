@@ -1,5 +1,5 @@
-QIIME 1.7.0
-===========
+QIIME 1.7.0 (14 May 2013)
+=========================
 * Required biom-format version is now 1.1.2.
 * core_qiime_analyses.py has been replaced with core_diversity_analyses.py. This follows a re-factoring to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
 * Added support for usearch v6.1 OTU picking and chimera checking. This is in addition to existing support for usearch v5.2.236. 

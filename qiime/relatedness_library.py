@@ -6,10 +6,10 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 from numpy.random import shuffle
 from numpy import std, mean, arange, eye

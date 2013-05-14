@@ -5,10 +5,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os.path import splitext, split, exists, abspath, join
 from qiime.util import (make_option, 

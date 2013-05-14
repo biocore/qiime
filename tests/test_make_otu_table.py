@@ -5,10 +5,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 import json
 from cogent.util.unit_test import TestCase, main

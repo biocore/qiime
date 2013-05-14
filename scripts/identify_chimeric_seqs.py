@@ -8,10 +8,10 @@ __credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder",
                 "Jose Antonio Navas Molina"]
 __credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 from os.path import split, splitext, join, abspath
 

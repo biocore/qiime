@@ -8,10 +8,10 @@ __credits__ = ["Jai Ram Rideout",
                "Greg Caporaso",
                "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from numpy import array
 from qiime.pycogent_backports.test import is_symmetric_and_hollow

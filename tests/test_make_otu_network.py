@@ -5,10 +5,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Julia Goodrich", "Jose Carlos Clemente Litran"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os import remove
 from os.path import exists

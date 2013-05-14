@@ -5,10 +5,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["justin kuczynski", "Rob Knight",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains tests for producing rarefied OTU tables."""
 

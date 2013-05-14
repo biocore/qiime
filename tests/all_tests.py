@@ -17,10 +17,10 @@ __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Greg Caporaso", "Jai Ram Rideout",
     "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 options_lookup = get_options_lookup()
 
