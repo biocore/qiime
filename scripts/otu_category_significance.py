@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", \
                 "Dan Knights", "Greg Caporaso", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from os.path import isdir, isfile, join, basename, exists

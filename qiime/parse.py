@@ -7,10 +7,10 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder",
                "Antonio Gonzalez Pena", "Jai Ram Rideout","Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from string import strip
 from collections import defaultdict

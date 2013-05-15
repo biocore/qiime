@@ -7,10 +7,10 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 """Contains general utility code in support of the Qiime project.

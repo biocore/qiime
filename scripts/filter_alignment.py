@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights", \
     "Doug Wendel", "William Walters", "John Chase"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from os.path import split, exists, splitext, getsize

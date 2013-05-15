@@ -5,10 +5,10 @@ __author__ = "Rob Knight and Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from numpy import array
 from StringIO import StringIO

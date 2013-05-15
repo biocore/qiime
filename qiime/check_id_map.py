@@ -43,10 +43,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","William Walters"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from collections import defaultdict
 from string import letters, digits, upper

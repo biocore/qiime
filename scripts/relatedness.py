@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["William Van Treuren", "Jose Carlos Clemente Litran",
                 "Jose Antonio Navas Molina", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, make_option
 from biom.parse import parse_biom_table
