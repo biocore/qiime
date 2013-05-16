@@ -40,10 +40,14 @@ script_info['required_options'] = [
 		'--input_path',\
 		type="existing_path",
 		help='input sparse biome file'),\
-	make_option('-c',\
-		'--label_path',\
+	make_option('-m',\
+		'--map_path',\
 		type="existing_path",\
-		help='csv file with labeling scheme')
+		help='map file with labeling scheme'),
+	make_option('-c',\
+		'--column_label',\
+		type="string",\
+		help='map file with labeling scheme')
 ]
 script_info['optional_options'] = [
 	# Example optional option
@@ -65,6 +69,9 @@ script_info['version'] = __version__
 
 
 def main():
+	"""
+		main()
+	"""
 	option_parser, opts, args = parse_command_line_parameters(**script_info)
 
 	# check to see if the user has set the feature selection. if not set
@@ -91,6 +98,7 @@ def main():
 	fizzy.run_feature_selection( \
 		open(opts.input_path,'U'), \
 		open(opts.label_path,'U'), \
+		opts.column_label \
 		out_fmt, \
 		fs_method, \
 		n_select)

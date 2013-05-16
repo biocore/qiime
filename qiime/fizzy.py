@@ -12,7 +12,7 @@ __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Release"
 
 
-import numpy
+import numpy, sys
 
 def parse_biome(fname): 
 	"""
@@ -44,22 +44,73 @@ def parse_biome(fname):
 	for var in variables:
 		variable_names.append( var['id'] )	
 
-	return data_matrix.transpose(), variable_names
+	observation_names = []
+	for var in obj['columns']:
+		observation_names.append( var['id'] )
 
-def parse_csv(fname):
+	return data_matrix.transpose(), variable_names, observation_names
+
+
+# def parse_csv(fname):
+# 	"""
+# 		parse_csv(fname)
+# 		@fname - this is the file handle. Ex. Use something like:
+# 			labels = parse_csv(open('labels.tsv','U'))
+# 		@labels (return) - numpy array with 
+# 	"""
+# 	import csv 
+# 	tab_data = csv.reader(fname, delimiter='\t')
+# 	for line in tab_data:
+# 		labels = line
+# 
+# 	for n in range(len(labels)):
+# 		labels[n] = float(labels[n])
+# 
+# 	return numpy.array(labels)
+
+def parse_map_file(fname, column_name, observation_names):
 	"""
-		parse_csv(fname)
-		@fname - this is the file handle. Ex. Use something like:
-			labels = parse_csv(open('labels.tsv','U'))
+		parse_map_file(fname)
+		@fname - file handle
+		@column_name - name of the column that contains the class 
+			labels
+		@observation_names - names of the obervatiosn in the order
+			of which the samples appear in the data set. 
+		@labels - numpy array of class labels
 	"""
-	import csv 
-	tab_data = csv.reader(fname, delimiter='\t')
-	for line in tab_data:
-		labels = line
+	from qiime.parse import parse_mapping_file_to_dict
+	obj, comm = parse_mapping_file_to_dict(fname)
+	label_full = []
+	labels = []
 
-	for n in range(len(labels)):
-		labels[n] = float(labels[n])
+	# grab the class labels which are likely to be in string 
+	# format. 
+	for id_set in observation_names:
+		try:
+			label_full.append(obj[id_set][column_name])
+		except ValueError:
+			print 'Error: fizzy.parse_map_file :: Unknown column name in map file.'
+			sys.exit(1)
 
+	# now that we have the full class labels we need to determine
+	# the number of unique classes in the the data. if the number of
+	# classes is equal to the number of obervations, throw an error. 
+	# its likely the user does not know what they are doing. 
+	unique_classes = numpy.unique(label_full)
+	if len(unique_classes) == len(observation_names):
+		print 'Error: fizzy.parse_map_file :: number of classes is the number of observations.'
+		sys.exit(1)
+
+	# print the number of unique classes to the output. 
+	print 'The unique classes detected are:'
+	for cls in unique_classes:
+		print '   -> ' + cls
+
+	for str_lab in label_full:
+		for uclass,n in map(None, unique_classes, range(len(unique_classes))):
+			if str_lab == uclass:
+				labels.append(float(n))
+				break
 	return numpy.array(labels)
 
 
@@ -110,16 +161,19 @@ def write_output_file(selected_features, f_out):
 		f.write(sf + '\n')
 	f.close()
 
-def run_feature_selection(file_biome, file_csv, out_file, method='mim', n_select=15):
+def run_feature_selection(file_biome, file_map, column_name, out_file, method='mim', n_select=15):
 	"""
 		run_feature_selection(fname_biome, fname_csv, method)
 		@fname_biome - handle of the biom file
-		@fname_csv - handle of the csv file
+		@file_map - handle of the csv file
+		@column_name - column name containing the class labels found 
+			in the map file. 
 		@method - feature selection method [see PyFeast docs]
 		@fmt - input file format (['biome', 'table'])
 	"""
-	data_matrix, variable_names = parse_biome(file_biome)
-	label_vector = parse_csv(file_csv)
+	data_matrix, variable_names, observation_names = parse_biome(file_biome)
+	label_vector = parse_map_file(file_map, column_name, observation_names)
+	#label_vector = parse_csv(file_csv)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
 	write_output_file(reduced_set, out_file)
 	# thats all folks
