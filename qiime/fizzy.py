@@ -133,7 +133,7 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 	elif method == "disr":
 		from feast import DISR as fs_method
 	elif method == "icap":
-		from feast import ICAP as fs_method
+			from feast import ICAP as fs_method
 	elif method == "jmi":
 		from feast import JMI as fs_method
 	elif method == "mim":
