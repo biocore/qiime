@@ -97,7 +97,7 @@ def main():
 	# run the fizzy feature selection routine
 	fizzy.run_feature_selection( \
 		open(opts.input_path,'U'), \
-		open(opts.label_path,'U'), \
+		open(opts.map_path,'U'), \
 		opts.column_label, \
 		out_fmt, \
 		fs_method, \
