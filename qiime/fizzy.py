@@ -19,6 +19,8 @@ def parse_biome(fname):
 		parse_biome(fname)
 		@fname - this is the file handle. Ex. Use something like:
 			data, features = parse_biome(open('file.biom','U'))
+		@data_matrix (return) - dense matrix for feature selection
+		@variable_names (return) - feature names in a list
 	"""
 	import json 
 
