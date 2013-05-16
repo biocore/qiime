@@ -33,12 +33,13 @@ def main():
 		there then there was likely an error. 
 	"""
 	data_file = open('./test_fizzy/data.biom','U')
-	label_file = open('./test_fizzy/labels.tsv','U')
+	label_file = open('./test_fizzy/labels.map','U')
 	n_select = 25
 	method = 'mim'
+	col_name = 'Class'
 	outfile = './test_fizzy/output.txt'
 	try:
-		fizzy.run_feature_selection(data_file, label_file, outfile, method, n_select)
+		fizzy.run_feature_selection(data_file, label_file, col_name, outfile, method, n_select)
 		print 'Refer to the test_fizzy directory for output.txt '
 		f = open('./test_fizzy/output.txt','U')
 		print f.read()
