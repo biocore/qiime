@@ -25,18 +25,22 @@ def parse_biome(fname):
 	json_string = fname.read()
 	obj = json.loads(json_string)
 
+	data_matrix = numpy.zeros(obj['shape'])
+
+	if obj['matrix_type'] == 'dense':
+		data_matrix = numpy.array(obj['data'])
+	elif obj['matrix_type'] == 'sparse':
+		# the matrix is in sparse format and the data are saved in 
+		# tuples: (row index, column index, value)
+		for index_set in obj['data']:
+			data_matrix[index_set[0], index_set[1]] = index_set[2]
+
 	# the biom file will have the names of the features and the 
 	# otu counts that we need to use with our algorithm. 
 	variable_names = []
 	variables = obj['rows']
 	for var in variables:
-		variable_names.append( var['id'] )
-
-	# extract the data from the json structure. we are assuming that
-	# the file in a sparse format. 
-	data_matrix = numpy.zeros(obj['shape'])
-	for index_set in obj['data']:
-		data_matrix[index_set[0], index_set[1]] = index_set[2]
+		variable_names.append( var['id'] )	
 
 	return data_matrix.transpose(), variable_names
 
