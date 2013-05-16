@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
@@ -69,8 +69,12 @@ def main():
     otu_table_fp = opts.otu_table
     otu_table_fh = open(otu_table_fp,'U')
     otu_table = parse_biom_table(otu_table_fh)
+    otu_table_fh.close()
+
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
+    tree_fh.close()
+
     mapping_fp = opts.mapping_fp
     if mapping_fp:
         mapping_f = open(mapping_fp,'U')

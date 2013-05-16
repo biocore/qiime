@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski","Julia Goodrich", \
                "Antonio Gonzalez Pena", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 __status__ = "Development"
@@ -68,6 +68,11 @@ def sum_counts_by_consensus(otu_table,
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
     """
+    if otu_table.ObservationMetadata is None:
+        raise ValueError, ("BIOM table does not contain any "
+                           "observation metadata (e.g., taxonomy)."
+                           " You can add metadata to it using add_metadata.py.")
+    
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
     

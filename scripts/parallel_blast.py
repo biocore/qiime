@@ -4,9 +4,9 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -27,9 +27,18 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Parallel BLAST"""
-script_info['script_description']="""This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['script_description']="""This script for performing blast while\
+ making use of multicore/multiprocessor environments to perform analyses in\
+ parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""BLAST $PWD/inseqs.fasta (-i) against a blast database created from $PWD/refseqs.fasta (-r). Store the results in $PWD/blast_out/ (-o). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta -o $PWD/blast_out/ -e 0.001"""))
+script_info['script_usage'].append(
+("""Example""",
+"""BLAST $PWD/inseqs.fasta (-i) against a blast database created from\
+ $PWD/refseqs.fasta (-r). Store the results in $PWD/blast_out/ (-o). ALWAYS\
+ SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will\
+ generally look something like /home/ubuntu/my_analysis/).""",
+"""%prog -i $PWD/inseqs.fasta -r $PWD/refseqs.fasta -o $PWD/blast_out/\
+ -e 0.001"""))
 
 
 script_info['output_description']=""" """
@@ -37,10 +46,6 @@ script_info['required_options'] = [
  make_option('-i','--infile_path',action='store',
           type='existing_filepath',dest='infile_path',
           help='Path of sequences to use as queries [REQUIRED]'),
- make_option('-r','--refseqs_path',action='store',
-          type='existing_filepath',
-            help='Path to fasta sequences to search against or name of pre-formatted BLAST database' +\
-            ' [REQUIRED]'),\
  make_option('-o', '--output_dir',type='new_dirpath',
         help='name of output directory for blast jobs [REQUIRED]')
 ]
@@ -58,12 +63,16 @@ script_info['optional_options'] = [\
  make_option('-w','--word_size',action='store',\
         type='int', default=30, dest='word_size',
         help='word size for blast searches [default: %default]'),\
- make_option('-D', '--suppress_format_blastdb', action='store_true',\
-        default=False,help='supress format of blastdb [default: %default]'),\
  make_option('-a','--blastmat_dir',action='store',\
            type='string',help='full path to directory containing '+\
            'blastmat file [default: %default]',\
            default=qiime_config['blastmat_dir']),\
+ make_option('-r','--refseqs_path',action='store', type='existing_filepath',
+            help='Path to fasta sequences to search against. Required if ' + 
+                '-b is not provided.'),\
+ make_option('-b', '--blast_db', type='blast_db',
+            help='Name of pre-formatted BLAST database. Required if ' +
+                '-r is not provided.'),
  options_lookup['jobs_to_start'],
  options_lookup['retain_temp_files'],
  options_lookup['suppress_submit_jobs'],
@@ -78,15 +87,14 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(**script_info)    
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    if not ((exists(opts.refseqs_path) and isfile(opts.refseqs_path)) or \
-            (opts.suppress_format_blastdb and
-             len(glob('%s*nin' % opts.refseqs_path)) > 0)):
-       option_parser.error('%s (-r) doesn\'t exist as a fasta file or '
-                           'pre-formatted BLAST database. If passing a '
-                           'reference database you must also pass -D.' %
-                           opts.refseqs_path)
+    if not (opts.refseqs_path or opts.blast_db):
+        option_parser.error('Either a blast db (via -b) or a collection of '
+                'reference sequences (via -r) must be passed')
+    if opts.refseqs_path and opts.blast_db:
+        option_parser.error('You should provide only a blast db (via -b) '
+                'or a collection of reference sequences (via -r), but not both')
 
     # create dict of command-line options
     params = eval(str(opts))

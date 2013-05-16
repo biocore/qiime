@@ -1,0 +1,25 @@
+input_seqs_fp	/Users/Tony/code/qiime/qiime_test_data/identify_chimeric_seqs/seqs.fna
+output_dir	/Users/Tony/code/qiime/qiime_test_data/identify_chimeric_seqs/usearch61_chimera_checking
+reference_seqs_fp	/Users/Tony/code/qiime/qiime_test_data/identify_chimeric_seqs/ref_sequences.fasta
+suppress_usearch61_intermediates	False
+suppress_usearch61_ref	False
+suppress_usearch61_denovo	False
+split_by_sampleid	False
+non_chimeras_retention	union
+usearch61_minh	0.28
+usearch61_xn	8.0
+usearch61_dn	1.4
+usearch61_mindiffs	3
+usearch61_mindiv	0.8
+usearch61_abundance_skew	2.0
+percent_id_usearch61	0.97
+minlen	64
+word_length	8
+max_accepts	1
+max_rejects	8
+HALT_EXEC	False
+
+ref_non_chimeras	153
+ref_chimeras	0
+denovo_chimeras	5
+denovo_non_chimeras	148

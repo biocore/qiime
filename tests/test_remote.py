@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -142,9 +142,11 @@ class RemoteTests(TestCase):
     def test_get_cleaned_headers(self):
         """Test correctly converts headers to Google's representation."""
         # Some duplicates.
-        exp = ['foo', 'foo_2', 'foo_3', 'foo_4', 'fooo', 'foo_5', 'foo_6']
+        exp = ['foo', 'foo_2', 'foo_3', 'foo_4', 'fooo', 'foo_5', 'foo_6',
+               'foo_7', 'foo_8', 'foo_9', 'f2oo456', 'foo_10']
         obs = _get_cleaned_headers(
-                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '#Foo', 'f O O#'])
+                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '123foo', '#Foo',
+                 '123foo', ' 123Foo', 'f O\tO#', ' f2\too456', '456 foo'])
         self.assertEqual(obs, exp)
 
         # All unique.

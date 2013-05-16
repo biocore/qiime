@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Andrew Cochran"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -202,6 +202,7 @@ class StatsTests(TestCase):
         # tested in the functions that compute them. We are interested in the
         # format of the returned string.
         exp = """# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean != Group 2 mean
 # The nonparametric p-values were calculated using 999 Monte Carlo permutations.
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
@@ -218,6 +219,7 @@ bar	baz	-3.0	0.0576688856224	0.173006656867	0.217	0.651
     def test_all_pairs_t_test_no_perms(self):
         """Test performing Monte Carlo tests on valid dataset with no perms."""
         exp = """# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean != Group 2 mean
 # Entries marked with "N/A" could not be calculated because at least one of the groups
 # of distances was empty, both groups each contained only a single distance, or
 # the test could not be performed (e.g. no variance in groups with the same mean).
@@ -233,6 +235,7 @@ bar	baz	-3.0	0.0576688856224	0.173006656867	N/A	N/A
     def test_all_pairs_t_test_few_perms(self):
         """Test performing Monte Carlo tests on dataset with a few perms."""
         exp = """# The tests of significance were performed using a one-sided (low) Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean < Group 2 mean
 # The nonparametric p-values were calculated using 5 Monte Carlo permutations.
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups
@@ -250,6 +253,7 @@ bar	baz	-3.0	0.0288344428112	0.0865033284337	Too few iters to compute p-value (n
     def test_all_pairs_t_test_invalid_tests(self):
         """Test performing Monte Carlo tests with some invalid tests."""
         exp = """# The tests of significance were performed using a one-sided (high) Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean > Group 2 mean
 # The nonparametric p-values were calculated using 20 Monte Carlo permutations.
 # The nonparametric p-values contain the correct number of significant digits.
 # Entries marked with "N/A" could not be calculated because at least one of the groups

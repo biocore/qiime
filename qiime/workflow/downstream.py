@@ -9,7 +9,7 @@ __credits__ = ["Greg Caporaso",
                "Justin Kuczynski",
                "Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -599,7 +599,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         # Build the consensus tree command
         consensus_tree_cmd =\
          '%s %s/consensus_tree.py -i %s -o %s %s' %\
-         (python_exe_fp, script_dir, upgma_dir, upgma_dir + "/consensus.tre",
+         (python_exe_fp, script_dir, upgma_dir, metric_output_dir + "/rare_upgma_consensus.tre",
             params_str)
         commands.append(\
          [('consensus on rarefied distance matrices (%s)' % beta_diversity_metric,
@@ -618,7 +618,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         if master_tree == "full":
             master_tree_fp = full_tree_fp
         elif master_tree == "consensus":
-            master_tree_fp = upgma_dir + "/consensus.tre"
+            master_tree_fp = metric_output_dir + "/rare_upgma_consensus.tre"
         else:
             raise RuntimeError('master tree method "%s" not found' % (master_tree,))
         tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\

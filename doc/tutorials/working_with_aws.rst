@@ -17,9 +17,9 @@ To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS acc
 Connecting to your EC2 instance using ssh
 =========================================
 
-To connect to your EC2 instance with ssh you'll need your key file, the Public DNS entry for your running EC2 instance, and an ssh client. You should have created and downloaded a key file when creating your first EC2 instance. On OS X and Linux, be sure that the permissions are set to ``400`` on this file, or you won't be able to use it. If your key file is called ``/home/qiime/my_key.pem`` you can set the permissions with the command::
+To connect to your EC2 instance with ssh you'll need your key file, the Public DNS entry for your running EC2 instance, and an ssh client. You should have created and downloaded a key file when creating your first EC2 instance. On OS X and Linux, be sure that the permissions are set to ``400`` on this file, or you won't be able to use it. If your key file is called ``$HOME/my_key.pem`` you can set the permissions with the command::
 
-	chmod 400 /home/qiime/my_key.pem
+	chmod 400 $HOME/my_key.pem
 
 You obtain the Public DNS entry from EC2 on a per instantiation basis - every time you Launch or Start and instance, you'll need to get this value again. See Figure 1 for where to find this information.
 
@@ -169,13 +169,13 @@ The first time you use your volume you'll need to run this command. Do not run t
 
 One your first time attaching a volume to a new instance, you'll need to run this command:: 
 
-	mkdir /home/ubuntu/data
+	mkdir $HOME/data
 
 Anytime you attach or re-attach your volume to an instance (so after starting a new or stopped instance) you'll need to run these commands::
 
-	sudo mount /dev/sdf /home/ubuntu/data
-	sudo chown ubuntu /home/ubuntu/data
-	sudo chgrp ubuntu /home/ubuntu/data
+	sudo mount /dev/sdf $HOME/data
+	sudo chown ubuntu $HOME/data
+	sudo chgrp ubuntu $HOME/data
 
 Once you've created your device, you only need to go through the attachment step to attach to future instances. This is the step illustrated in Figure 11. Note that you'll need to create future instances in the same availability zone as this volume if you'd like to attach this volume.
 
@@ -203,10 +203,10 @@ After launching your cluster, we recommend that you connect as the ``ubuntu`` us
 
 where ``CLUSTER_TAG`` refers to the cluster_tag that was specified when you launched your cluster with ``starcluster start``.
 
-To run jobs in parallel on this system, you'll next need to edit the ``qiime_config`` file on the cluster. This file is ``/home/ubuntu/.qiime_config_default``. Edit the values ``cluster_jobs_fp`` and ``temp_dir`` so they looks like the following::
+To run jobs in parallel on this system, you'll next need to edit the ``qiime_config`` file on the cluster. This file is ``$HOME/.qiime_config_default``. Edit the values ``cluster_jobs_fp`` and ``temp_dir`` so they looks like the following::
 
 	cluster_jobs_fp	start_parallel_jobs_sc.py
-	temp_dir	/home/ubuntu/temp/
+	temp_dir	$HOME/temp/
 
 
 .. _AWS: http://aws.amazon.com/

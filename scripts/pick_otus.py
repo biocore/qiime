@@ -5,9 +5,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -40,7 +40,19 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 6. uclust (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
-7. usearch (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+7. uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+8. usearch (Edgar, RC 2010, version v5.2.236), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+
+9. usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch quality filter", described here: http://qiime.org/tutorials/usearch_quality_filter.html
+
+8. usearch61 (Edgar, RC 2010, version v6.1.544), creates \"seeds\" of sequences which generate clusters based on percent identity.
+
+9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+Chimera checking with usearch 6.X is implemented in identify_chimeric_seqs.py.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
 
 The primary inputs for pick_otus.py are:
 
@@ -88,9 +100,9 @@ script_info['script_usage'].append(("""""","""If you prefer to use a nearest-nei
 
 script_info['script_usage'].append(("""""","""The sequence similarity parameter may also be specified. For example, the following command may be used to create OTUs at the level of 90% similarity:""","""%prog -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90"""))
 
-script_info['script_usage'].append(("""Usearch_qf ('usearch quality filter')""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:""","""%prog -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2"""))
+script_info['script_usage'].append(("""usearch ""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:""","""%prog -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2"""))
 
-script_info['script_usage'].append(("""Usearch (usearch_qf) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
+script_info['script_usage'].append(("""usearch example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
@@ -142,7 +154,7 @@ script_info['optional_options'] = [
               'blast, -m uclust_ref, -m usearch_ref, or -m '
               'usearch61_ref [default: %default]')),
               
-    make_option('-b', '--blast_db',type='string',
+    make_option('-b', '--blast_db',type='blast_db',
         help=('Pre-existing database to blast against when using -m blast '
               '[default: %default]')),
               
@@ -245,7 +257,7 @@ script_info['optional_options'] = [
                   "value can be supplied to override this setting. "
                   "[default: %default]"),
                   
-    make_option('--uclust_otu_id_prefix',default=None,type='string',
+    make_option('--uclust_otu_id_prefix',default="denovo",type='string',
               help=("OTU identifier prefix (string) for the de novo uclust" 
                     " OTU picker and for new clusters when uclust_ref is used "
                     "without -C [default: %default, OTU ids are ascending"
@@ -267,22 +279,22 @@ script_info['optional_options'] = [
               
     make_option('-j', '--percent_id_err', default=0.97,
               help=("Percent identity threshold for cluster error detection "
-              "with usearch_qf. [default: %default]"), type='float'),
+              "with usearch. [default: %default]"), type='float'),
               
     make_option('-g', '--minsize', default=4, help=("Minimum cluster size "
-              "for size filtering with usearch_qf. [default: %default]"),
+              "for size filtering with usearch. [default: %default]"),
               type='int'),
               
     make_option('-a','--abundance_skew', default=2.0, help=("Abundance skew "
-              "setting for de novo chimera detection with usearch_qf. "
+              "setting for de novo chimera detection with usearch. "
               "[default: %default]"), type='float'),
               
     make_option('-f', '--db_filepath',type='existing_filepath', default=None,
               help=("Reference database of fasta sequences for reference "
-              "based chimera detection with usearch_qf. [default: %default]")),
+              "based chimera detection with usearch. [default: %default]")),
               
     make_option('--perc_id_blast', default=0.97, help=("Percent ID for "
-              "mapping OTUs created by usearch_qf back to original sequence"
+              "mapping OTUs created by usearch back to original sequence"
               " IDs [default: %default]"), type='float'),
               
     make_option('--de_novo_chimera_detection', help=(
@@ -291,7 +303,7 @@ script_info['optional_options'] = [
               " [default: %default]")),
     
     make_option('-k', '--suppress_de_novo_chimera_detection', default=False,
-              help=("Suppress de novo chimera detection in usearch_qf. "
+              help=("Suppress de novo chimera detection in usearch. "
               "[default: %default]"), action='store_true'),          
 
     make_option('--reference_chimera_detection', 
@@ -300,7 +312,7 @@ script_info['optional_options'] = [
               "disable [default: %default]")),
               
     make_option('-x', '--suppress_reference_chimera_detection', default=False,
-              help=("Suppress reference based chimera detection in usearch_qf. "
+              help=("Suppress reference based chimera detection in usearch. "
               "[default: %default]"), action='store_true'),
     
     make_option('--cluster_size_filtering', help=("Deprecated, "
@@ -309,7 +321,7 @@ script_info['optional_options'] = [
               "  [default: %default]")),
               
     make_option('-l', '--suppress_cluster_size_filtering', default=False,
-              help=("Suppress cluster size filtering in usearch_qf.  "
+              help=("Suppress cluster size filtering in usearch.  "
               "[default: %default]"), action='store_true'),
               
     make_option('--remove_usearch_logs', default=False, help=("Disable "
@@ -325,7 +337,7 @@ script_info['optional_options'] = [
     make_option('-F', '--non_chimeras_retention', default='union',
               help=("Selects "
               "subsets of sequences detected as non-chimeras to retain after "
-              "de novo and refernece based chimera detection.  Options are "
+              "de novo and reference based chimera detection.  Options are "
               "intersection or union.  union will retain sequences that are "
               "flagged as non-chimeric from either filter, while intersection "
               "will retain only those sequences that are flagged as non-"
@@ -392,7 +404,7 @@ def main():
     verbose = opts.verbose
     
     
-    # usearch_qf specific parameters
+    # usearch specific parameters
     percent_id_err = opts.percent_id_err
     minsize = opts.minsize
     abundance_skew = opts.abundance_skew

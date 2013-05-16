@@ -4,9 +4,9 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -30,7 +30,8 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_otu_table_to_n_samples,
                           filter_mapping_file_from_mapping_f,
                           filter_mapping_file_by_metadata_states,
-                          get_otu_ids_from_taxonomy_f)
+                          get_otu_ids_from_taxonomy_f,
+                          sample_ids_from_metadata_description)
 from qiime.test import FakeFile
 from qiime.util import load_qiime_config, get_tmp_filename
 
@@ -537,6 +538,14 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         expected_sample_ids = set(['PC.354','PC.635','PC.593'])
         filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
         self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+
+    def test_sample_ids_from_metadata_description(self):
+        """Testing sample_ids_from_metadata_description fails on an empty set"""
+        self.assertRaises(ValueError, sample_ids_from_metadata_description,
+            self.tutorial_mapping_f, "Treatment:Foo")
+        self.assertRaises(ValueError, sample_ids_from_metadata_description,
+            self.tutorial_mapping_f, "DOB:!20061218,!20070314,!20071112,"
+            "!20080116")
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""

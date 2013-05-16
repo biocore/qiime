@@ -53,7 +53,7 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	`-`-uclust_otu_id_prefix
 		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

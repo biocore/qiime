@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -19,7 +19,8 @@ from types import ListType
 from qiime.format import (format_anosim_results, format_best_results,
                           format_permanova_results)
 from qiime.stats import Anosim, Best, Permanova
-from qiime.util import DistanceMatrix, MetadataMap, RExecutor
+from qiime.util import (get_qiime_temp_dir, DistanceMatrix, MetadataMap,
+                        RExecutor)
 
 # Map method name to result-formatting function. The R methods will not have
 # one.
@@ -125,7 +126,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
 
             command_args[0] += ' -n %d' % num_perms
 
-        rex = RExecutor()
+        rex = RExecutor(TmpDir=get_qiime_temp_dir())
         rex(command_args, '%s.r' % method, output_dir=out_dir)
     elif method == 'anosim':
         anosim = Anosim(md_map, dm, categories[0])

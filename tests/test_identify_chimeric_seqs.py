@@ -4,22 +4,27 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Jens Reeder"]
+__credits__ = ["Greg Caporaso","Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import exists, split, splitext
+from os.path import exists, split, splitext, join
+from shutil import rmtree
+
 from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_file
-from qiime.identify_chimeric_seqs import BlastFragmentsChimeraChecker,\
-    chimeraSlayer_identify_chimeras, parse_CPS_file,\
-    get_chimeras_from_Nast_aligned
+
+from qiime.util import get_tmp_filename, create_dir
+from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
+    chimeraSlayer_identify_chimeras, parse_CPS_file,
+    get_chimeras_from_Nast_aligned, usearch61_chimera_check,
+    identify_chimeras_usearch61, fix_abundance_labels, get_chimera_clusters,
+    merge_clusters_chimeras)
 
 class BlastFragmentsChimeraCheckerTests(TestCase):
     """ """
@@ -402,7 +407,272 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         observed = get_chimeras_from_Nast_aligned(test_seqs_fp3, ref_db_nast_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
 
+class Usearch61Tests(TestCase):
+    """ Tests for usearch 6.1 functionality """
+    
+    def setUp(self):
+        # create the temporary input files
+        
+        self.output_dir =  get_tmp_filename(\
+         prefix='Usearch61ChimeraTests_',\
+         suffix='/')
+         
+        create_dir(self.output_dir)
+        
+        self.dna_seqs = usearch61_dna_seqs
+        self.ref_seqs = usearch61_ref_seqs
+        self.abundance_seqs = abundance_seqs
+        self.uchime_data = uchime_data
+        
+        self.raw_dna_seqs_fp = get_tmp_filename(\
+         prefix='Usearch61QuerySeqs_',\
+         suffix='.fasta')
+        seq_file = open(self.raw_dna_seqs_fp,'w')
+        seq_file.write(self.dna_seqs)
+        seq_file.close()
+        
+        self.ref_seqs_fp = get_tmp_filename(\
+         prefix="Usearch61RefSeqs_",\
+         suffix=".fasta")
+        seq_file = open(self.ref_seqs_fp, "w")
+        seq_file.write(self.ref_seqs)
+        seq_file.close()
+        
+        self.abundance_seqs_fp = get_tmp_filename(\
+         prefix="Usearch61AbundanceSeqs_",\
+         suffix=".fasta")
+        seq_file = open(self.abundance_seqs_fp, "w")
+        seq_file.write(self.abundance_seqs)
+        seq_file.close()
+        
+        self.uchime_fp = get_tmp_filename(\
+         prefix="UsearchUchimeData_",\
+         suffix=".uchime")
+        seq_file = open(self.uchime_fp, "w")
+        seq_file.write(self.uchime_data)
+        seq_file.close()
+        
+        self._files_to_remove =\
+         [self.raw_dna_seqs_fp, self.ref_seqs_fp, self.abundance_seqs_fp,
+          self.uchime_fp]
+          
+        self._dirs_to_remove = [self.output_dir]
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+                
+    def test_usearch61_chimera_check(self):
+        """ Overall usearch61 functionality test with default params """
+        
+        
+        usearch61_chimera_check(self.raw_dna_seqs_fp,
+                                self.output_dir,
+                                self.ref_seqs_fp)
+        
+        # All should be non-chimeric, due to union of tests     
+        expected_non_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2',
+         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+        expected_chimeras = []
+        
+        output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
+        output_non_chimeras = open(join(self.output_dir,
+         "non_chimeras.txt"), "U")
+        
+        actual_chimeras = [line.strip() for line in output_chimeras]
+        actual_non_chimeras = [line.strip() for line in output_non_chimeras]
+        
+        for curr_chimera in actual_chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in actual_non_chimeras:
+
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
+                                
+                                        
+    def test_usearch61_chimera_check_no_denovo(self):
+        """ Overall usearch61 functionality test, no denovo detection """
+        
+        usearch61_chimera_check(self.raw_dna_seqs_fp,
+                                self.output_dir,
+                                self.ref_seqs_fp,
+                                suppress_usearch61_denovo=True)
+        
+        # Should get seq1 cluster as chimeric     
+        expected_non_chimeras = [
+         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+        expected_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2']
+        
+        output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
+        output_non_chimeras = open(join(self.output_dir,
+         "non_chimeras.txt"), "U")
+        
+        actual_chimeras = [line.strip() for line in output_chimeras]
+        actual_non_chimeras = [line.strip() for line in output_non_chimeras]
+        
+        for curr_chimera in actual_chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in actual_non_chimeras:
+
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
+        
+    def test_usearch61_chimera_check_no_ref(self):
+        """ Overall usearch61 functionality test, no ref detection """
+        
+        usearch61_chimera_check(self.raw_dna_seqs_fp,
+                                self.output_dir,
+                                self.ref_seqs_fp,
+                                suppress_usearch61_ref=True)
+        
+        # Should get seq3 cluster as chimeric     
+        expected_non_chimeras = ['seq1dup_3', 'seq2dup_4', 'seq2dup_5',
+         'seq2dup_6', 'seq1dup_1',  'seq1dup_2']
+        expected_chimeras = ['seq3_7']
+        
+        output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
+        output_non_chimeras = open(join(self.output_dir,
+         "non_chimeras.txt"), "U")
+        
+        actual_chimeras = [line.strip() for line in output_chimeras]
+        actual_non_chimeras = [line.strip() for line in output_non_chimeras]
+        
+        for curr_chimera in actual_chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in actual_non_chimeras:
+
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
+        
+    def test_usearch61_chimera_check_split_on_id(self):
+        """ Overall usearch61 functionality test, splits on SampleID """
+        
+        usearch61_chimera_check(self.raw_dna_seqs_fp,
+                                self.output_dir,
+                                self.ref_seqs_fp,
+                                suppress_usearch61_ref = True,
+                                split_by_sampleid = True)
+        
+        # This case, should not flag seq3 as chimeric, as it will be
+        # clustered de novo separately from its parent seqs   
+        expected_non_chimeras = ['seq1dup_3', 'seq2dup_4', 'seq2dup_5',
+         'seq2dup_6', 'seq1dup_1',  'seq1dup_2', 'seq3_7']
+        expected_chimeras = []
+        
+        output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
+        output_non_chimeras = open(join(self.output_dir,
+         "non_chimeras.txt"), "U")
+        
+        actual_chimeras = [line.strip() for line in output_chimeras]
+        actual_non_chimeras = [line.strip() for line in output_non_chimeras]
+        
+        for curr_chimera in actual_chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in actual_non_chimeras:
+
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
             
+    def test_identify_chimeras_usearch61_union(self):
+        """ Properly returns union results """
+        
+        log_lines = {'denovo_chimeras':0,
+                 'denovo_non_chimeras':0,
+                 'ref_chimeras':0,
+                 'ref_non_chimeras':0}
+        
+        chimeras, non_chimeras, files_to_remove, log_lines =\
+         identify_chimeras_usearch61(self.raw_dna_seqs_fp,
+                                     self.output_dir,
+                                     self.ref_seqs_fp,
+                                     non_chimeras_retention = "union",
+                                     log_lines = log_lines)
+                                    
+        # All should be non-chimeric, due to union of tests     
+        expected_non_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2',
+         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+        expected_chimeras = []
+        expected_log_lines = {'ref_non_chimeras': 4, 'ref_chimeras': 3,
+         'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
+        
+        for curr_chimera in chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in non_chimeras:
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
+        self.assertEqual(log_lines, expected_log_lines)
+        
+    def test_identify_chimeras_usearch61_intersection(self):
+        """ Properly returns intersection results """
+        
+        log_lines = {'denovo_chimeras':0,
+                 'denovo_non_chimeras':0,
+                 'ref_chimeras':0,
+                 'ref_non_chimeras':0}
+        
+        chimeras, non_chimeras, files_to_remove, log_lines =\
+         identify_chimeras_usearch61(self.raw_dna_seqs_fp,
+                                     self.output_dir,
+                                     self.ref_seqs_fp,
+                                     non_chimeras_retention = "intersection",
+                                     log_lines = log_lines)
+                                    
+        # All of seq1, sea3 should be chimeric with intersection     
+        expected_non_chimeras = ['seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+        expected_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2', 'seq3_7']
+        expected_log_lines = {'ref_non_chimeras': 4, 'ref_chimeras': 3,
+         'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
+        
+        for curr_chimera in chimeras:
+            self.assertTrue(curr_chimera in expected_chimeras)
+        for curr_non_chimera in non_chimeras:
+            self.assertTrue(curr_non_chimera in expected_non_chimeras)
+        self.assertEqual(log_lines, expected_log_lines)
+        
+        
+    def test_fix_abundance_labels(self):
+        """ Properly writes corrected abundance labeled fasta """
+        
+        output_fp = join(self.output_dir, "abundance_fixed.fasta")
+        
+        fix_abundance_labels(self.abundance_seqs_fp, output_fp)
+        
+        self._files_to_remove.append(output_fp)
+        
+        expected_results = ['>centroid=PC.354_3;size=14',
+         'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTCAACTCGGCTATGC',
+         '>centroid=PC.354_63;size=33',
+         'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCACCCTCTC',
+         '>centroid=PC.354_171;size=1',
+         'TTGGTCCGTGTCTCAGTACCAATGTGGGGGGTTAACCTCTCAGTCC']
+        
+        actual_result_f = open(output_fp, "U")
+        
+        actual_results = [line.strip() for line in actual_result_f]
+        
+        self.assertEqual(actual_results, expected_results)
+        
+        
+    def test_get_chimera_clusters(self):
+        """ Properly parses out SampleIDs in clusters flagged as chimeric """
+        
+        chimeras = get_chimera_clusters(self.uchime_fp)
+        
+        expected_chimeras = ['PC.481_4']
+        
+        self.assertEqual(chimeras, expected_chimeras)
+        
+    def test_merge_clusters_chimeras(self):
+        """ Properly expands clustered seqs into chimeras and non chimeras """
+        
+        de_novo_clusters = {'cluster1':['seq1', 'seq2'], 'cluster2':['seq3']}
+        chimeras = ['seq2']
+        
+        expanded_chimeras, expanded_non_chimeras =\
+         merge_clusters_chimeras(de_novo_clusters, chimeras)
+         
+        expected_chimeras = ['seq1', 'seq2']
+        expected_non_chimeras = ['seq3']
+        
+        self.assertEqual(expanded_chimeras, expected_chimeras)
+        self.assertEqual(expanded_non_chimeras, expected_non_chimeras)
 
 id_to_taxonomy_string = \
 """AY800210\tArchaea;Euryarchaeota;Halobacteriales;uncultured
@@ -745,7 +1015,37 @@ AG-G----T-GGG-AT-CGG------------------------CG--ATT-GGGA-CG-AAG-TCGTAACAA-GGTAG-
 ......................................................................................................................................
 """
 
+usearch61_dna_seqs = """>seq1dup_1
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTCGGTTTGGTGGGCCGTTACCC
+>seq1dup_2
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTCGGTTTGGTGGGCCGTTACCC
+>seq1dup_3
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTCGGTTTGGTGGGCCGTTACCC
+>seq2dup_4
+GAATGATTTAATTATTAAAAGATGCCTTCAAATAATATTATGGGGTGTTAATCCACGTTTCCATGGGCTATCCCCCACAA
+>seq2dup_5
+GAATGATTTAATTATTAAAAGATGCCTTCAAATAATATTATGGGGTGTTAATCCACGTTTCCATGGGCTATCCCCCACAA
+>seq2dup_6
+GAATGATTTAATTATTAAAAGATGCCTTCAAATAATATTATGGGGTGTTAATCCACGTTTCCATGGGCTATCCCCCACAA
+>seq3_7  mixture of seq1 and seq2
+GAATGATTTAATTATTAAAAGATGCCTTCAAATAATATCTCAGAACCCCTATCCATCGTCGGTTTGGTGGGCCGTTACCC"""
 
+usearch61_ref_seqs = """>ref1
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCATACCAGAGTAAACGAGATTAGAGGGA
+AGAGAGCAGAGATTTTACCCCAGGAGAGATTTATAGGAGCCCAGAGATTTTTACAGGGATTACCCAACA
+>ref3
+AGATTTATAGGAGCCCAGAGATTTTTACAGGGATTACCTCCTCTCAGAACCCCTATCCATCGTCGGTTTGGTGGGCCGTTACCC"""
+
+abundance_seqs = """>centroid=PC.354_3 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0;seqs=14;size=14;
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTCAACTCGGCTATGC
+>centroid=PC.354_63 FLP3FBN01EEU42 orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0;seqs=33;size=33;
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCACCCTCTC
+>centroid=PC.354_171 FLP3FBN01EJ91Q orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0;seqs=1;size=1;
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGGTTAACCTCTCAGTCC"""
+
+uchime_data = """0.0210	centroid=PC.634_2;size=15	centroid=PC.634_9;size=50	centroid=PC.634_27;size=49	centroid=PC.634_9;size=50	75.7	85.0	72.6	69.0	84.4	6	0	2	15	37	17	*	N
+0.0000	centroid=PC.354_3;size=30	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+0.5026	centroid=PC.481_4;size=1	centroid=PC.635_666;size=3	centroid=PC.607_403;size=4	centroid=PC.634_70;size=2	93.2	85.9	88.3	84.4	85.8	10	0	0	17	1	11	7.4	Y"""
 
 if __name__ == "__main__":
     main()

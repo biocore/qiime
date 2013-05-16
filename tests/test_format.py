@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald",
                "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -36,7 +36,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
     format_best_results, format_permanova_results)
 from qiime.stats import Anosim, Best, Permanova
-from biom.parse import parse_biom_table
+from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
+from biom.table import SparseTaxonTable
 from StringIO import StringIO
 
 class TopLevelTests(TestCase):
@@ -47,6 +48,7 @@ class TopLevelTests(TestCase):
                          ('1',['seq3','seq4']),
                          ('2',['seq6','seq7','seq8'])]
         self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_',suffix='.txt')
+        self.tmp_fp2 = get_tmp_filename(prefix='FormatTests_',suffix='.txt')
         self.files_to_remove = []
 
         self.taxa_summary = [[('a','b','c'),0,1,2],
@@ -155,15 +157,32 @@ class TopLevelTests(TestCase):
 
     def test_format_summarize_taxa(self):
         """format_summarize_taxa functions as expected"""
+        # Classic format.
         exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
                          'a;b;c\t0\t1\t2',
                          'd;e;f\t3\t4\t5\n'])
-        obs = ''.join(list(format_summarize_taxa(self.taxa_summary, \
+        obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
                                                  self.taxa_header)))
         self.assertEqual(obs, exp)
-        
+
+        # BIOM format. Test by converting our expected output to a biom table
+        # and comparing that to our observed table.
+        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
+                                                None, SparseTaxonTable)
+        obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
+                                                 self.taxa_header,
+                                                 file_format='biom')))
+        obs = parse_biom_table(obs)
+        self.assertEqual(obs, exp)
+
+        # Bad file_format argument.
+        with self.assertRaises(ValueError):
+            list(format_summarize_taxa(self.taxa_summary, self.taxa_header,
+                 file_format='foo'))
+
     def test_write_summarize_taxa(self):
         """write_summarize_taxa functions as expected"""
+        # Classic format.
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1)
         obs = open(self.tmp_fp1).read()
         exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
@@ -171,10 +190,20 @@ class TopLevelTests(TestCase):
                          'd;e;f\t3\t4\t5\n'])
         self.assertEqual(obs,exp)
         self.files_to_remove.append(self.tmp_fp1)
-        
-        
+
+        # BIOM format.
+        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
+                             file_format='biom')
+        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
+                                                None, SparseTaxonTable)
+        obs = open(self.tmp_fp2).read()
+        obs = parse_biom_table(obs)
+        self.assertEqual(obs, exp)
+        self.files_to_remove.append(self.tmp_fp2)
+
     def test_write_summarize_taxa_transposed_output(self):
         """write_summarize_taxa_transposed_output functions as expected"""
+        # Classic format.
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1, transposed_output=True)
         obs = open(self.tmp_fp1).read()
         exp = '\n'.join(['SampleID\ta;b;c\td;e;f',
@@ -182,6 +211,16 @@ class TopLevelTests(TestCase):
                          'foobar\t2\t5\n'])
         self.assertEqual(obs,exp)
         self.files_to_remove.append(self.tmp_fp1)
+
+        # BIOM format.
+        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
+                             transposed_output=True, file_format='biom')
+        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
+                                                None, SparseTaxonTable)
+        obs = open(self.tmp_fp2).read()
+        obs = parse_biom_table(obs)
+        self.assertEqual(obs, exp)
+        self.files_to_remove.append(self.tmp_fp2)
 
     def test_format_add_taxa_summary_mapping(self):
         """format_add_taxa_summary_mapping functions as expected"""

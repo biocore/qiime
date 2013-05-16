@@ -6,19 +6,19 @@ __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann",
                "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import numpy
-from numpy import isnan, log10, median
+from numpy import asarray, isnan, log10, median
 from StringIO import StringIO
 from cogent import Sequence
 from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
-from biom.table import DenseOTUTable
+from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
 
@@ -84,20 +84,40 @@ def format_qiime_parameters(params, header="#QIIME parameters"):
             qiime_params.append(full_line)
     return qiime_params
 
-def format_summarize_taxa(summary, header, delimiter=';'):
+def format_summarize_taxa(summary, header, delimiter=';',
+                          file_format='classic'):
     """Formats a summarized taxonomy table for output"""
-    yield "%s\n" % '\t'.join(header)
-    for row in summary:
-        # taxon is tuple, join together for foo;bar;foobar
-        taxon = row[0]
-        line = [delimiter.join(taxon)]
+    if file_format == 'classic':
+        yield "%s\n" % '\t'.join(header)
+        for row in summary:
+            # taxon is tuple, join together for foo;bar;foobar
+            taxon = row[0]
+            line = [delimiter.join(taxon)]
 
-        # add on otu counts
-        line.extend(map(str, row[1:]))
+            # add on otu counts
+            line.extend(map(str, row[1:]))
 
-        yield "%s\n" % '\t'.join(line)
+            yield "%s\n" % '\t'.join(line)
+    elif file_format == 'biom':
+        # Skip 'Taxon' or 'SampleId' label in first column.
+        sample_ids = header[1:]
+
+        observation_ids = []
+        data = []
+        for row in summary:
+            # Join taxonomic levels to create an observation ID.
+            observation_ids.append(delimiter.join(row[0]))
+            data.append(row[1:])
+
+        table = table_factory(asarray(data), sample_ids, observation_ids,
+                              constructor=SparseTaxonTable)
+        yield format_biom_table(table)
+    else:
+        raise ValueError("Invalid file format '%s'. Must be either 'classic' "
+                         "or 'biom'." % file_format)
  
-def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_output=False):
+def write_summarize_taxa(summary, header, output_fp, delimiter=';',
+                         transposed_output=False, file_format='classic'):
     """ """
     # Fixing headers
     pattern = compile('\W')
@@ -113,10 +133,10 @@ def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_o
          header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
          summary = summary[1:]
     
-    of = open(output_fp,'w')
-    for line in format_summarize_taxa(summary, header, delimiter):
-        of.write(line)
-    of.close()
+    with open(output_fp,'w') as of:
+        for line in format_summarize_taxa(summary, header, delimiter,
+                                          file_format=file_format):
+            of.write(line)
 
 def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
         delimiter=';'):

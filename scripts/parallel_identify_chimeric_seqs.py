@@ -3,9 +3,10 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout",
+                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -68,7 +69,7 @@ script_info['optional_options']=[\
         '[default: %default; REQUIRED when method blast_fragments'+\
          ' if no blast_db is provided;]'),
 
-    make_option('-b', '--blast_db',
+    make_option('-b', '--blast_db', type='blast_db',
         help='Database to blast against. Must provide either --blast_db or '
         '--reference_seqs_fp when method is blast_fragments [default: %default]'),
         

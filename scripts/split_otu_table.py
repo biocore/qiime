@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -30,13 +30,15 @@ script_info['required_options'] = [
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory'),
 ]
 script_info['optional_options'] = [
- make_option('-c','--column_rename_ids',type='string',help='Mapping column used as sample id in the output files.' +\
-                ' Has to be unique in the splited samples. This option can be helpful to create otu tables' +
-                ' and mapping files for Procustes analysis.', default=None),
- make_option('--include_repeat_cols',action='store_true', help='By default the new mapping files' +\
-                ' will not have the columns that have the same information, to include them use this' +\
-                ' option. This can be helpful to create mapping files for Procrustes analysis.', 
-                default=False),
+ # this is known issue, see https://github.com/qiime/qiime/issues/417
+ # and https://github.com/qiime/qiime/issues/941
+ # make_option('-c','--column_rename_ids',type='string',help='Mapping column used as sample id in the output files.' +\
+ #                ' Has to be unique in the splited samples. This option can be helpful to create otu tables' +
+ #                ' and mapping files for Procustes analysis.', default=None),
+ # make_option('--include_repeat_cols',action='store_true', help='By default the new mapping files' +\
+ #                ' will not have the columns that have the same information, to include them use this' +\
+ #                ' option. This can be helpful to create mapping files for Procrustes analysis.', 
+ #                default=False)
 ]
 script_info['version'] = __version__
 
@@ -48,8 +50,8 @@ def main():
     mapping_fp = opts.mapping_fp
     mapping_field = opts.mapping_field
     output_dir = opts.output_dir
-    column_rename_ids = opts.column_rename_ids
-    include_repeat_cols = opts.include_repeat_cols
+    # column_rename_ids = opts.column_rename_ids
+    # include_repeat_cols = opts.include_repeat_cols
     
     create_dir(output_dir)
     

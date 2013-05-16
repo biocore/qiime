@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
@@ -29,7 +29,7 @@ script_info['script_usage'].append(("""Single File Alpha Diversity Example (phyl
 
 script_info['script_usage'].append(("""Single File Alpha Diversity Example with multiple metrics:""","""You can use the following idiom to run multiple metrics at once (comma-separated):""","""%prog -i otu_table.biom -m chao1,PD_whole_tree -o adiv_chao1_pd.txt -t rep_set.tre"""))
 
-script_info['script_usage'].append(("""Multiple File (batch) Alpha Diversity:""","""To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from multiple_rarefactions.py), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:""","""%prog -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre"""))
+script_info['script_usage'].append(("""Multiple File (batch) Alpha Diversity:""","""To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from multiple_rarefactions.py), specify an input directory instead of a single otu table, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:""","""%prog -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre"""))
 
 script_info['output_description']="""The resulting file(s) is a tab-delimited text file, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. When a folder is given as input (-i), the script processes every otu table file in the given folder, and creates a corresponding file in the output directory.
 

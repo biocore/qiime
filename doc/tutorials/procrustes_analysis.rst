@@ -36,9 +36,10 @@ Defining reference filepaths with environment variables
 
 Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
 
-	export reference_seqs /home/ubuntu/qiime_software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
-	export reference_tree /home/ubuntu/qiime_software/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
-	export reference_tax /home/ubuntu/qiime_software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
+	export QIIME_DIR=$HOME/qiime_software
+	export reference_seqs $QIIME_DIR/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+	export reference_tree $QIIME_DIR/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
+	export reference_tax $QIIME_DIR/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
 
 
 
@@ -72,4 +73,8 @@ Generate Procrustes plot, including an explicit time axis::
 
 There will now be several results of interest. For the Procrustes analysis you can find the statistical results in ``./454_v_illumina/unweighted_unifrac_pc_unweighted_unifrac_pc_procrustes_results.txt`` and you can view the Procrustes plot by opening ``./454_v_illumina/plots/pc1_transformed_3D_PCoA_plots.html`` in a web browser.
 
-    
+
+Comparing data sets with different sample ids
+---------------------------------------------
+
+In the cases described here, we always have the same samples in our two principal coordinate matrices. If that is not the case for your study, you'll need to pass a sample id mapping file (**which is different from a QIIME metadata mapping file**). For a description of this file format, see :ref:`sample_id_map`.

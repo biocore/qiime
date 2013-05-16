@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", 
                "Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
@@ -269,9 +269,13 @@ def simsam_range_to_files(table,
         
         output_table_fp = join(output_dir,'%s_n%d_d%r.biom' %
          (output_table_basename, simulated_sample_size, dissimilarity))
-        open(output_table_fp,'w').write(format_biom_table(output_table))
+        output_table_f = open(output_table_fp, 'w')
+        output_table_f.write(format_biom_table(output_table))
+        output_table_f.close()
         
         if output_mapping_lines != None:
-            output_map_fp   = join(output_dir,'%s_n%d_d%r.txt' % 
+            output_map_fp = join(output_dir,'%s_n%d_d%r.txt' %
              (output_map_basename, simulated_sample_size, dissimilarity))
-            open(output_map_fp,'w').write(''.join(output_mapping_lines))
+            output_map_f = open(output_map_fp, 'w')
+            output_map_f.write(''.join(output_mapping_lines))
+            output_map_f.close()
