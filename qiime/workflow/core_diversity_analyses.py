@@ -161,6 +161,9 @@ def run_core_diversity_analyses(
          (biom_fp, biom_table_stats_output_fp,params_str)
         commands.append([('Generate BIOM table summary',
                           print_biom_table_summary_cmd)])
+    else:
+        logger.write("Skipping print_biom_table_summary.py as %s exists.\n\n" \
+                     % biom_table_stats_output_fp)
     index_links.append(('BIOM table statistics',
                         biom_table_stats_output_fp,
                         _index_headers['run_summary']))
@@ -175,20 +178,25 @@ def run_core_diversity_analyses(
          (biom_fp,filtered_biom_fp,sampling_depth)
         commands.append([('Filter low sequence count samples from table (minimum sequence count: %d)' % sampling_depth,
                           filter_samples_cmd)])
+    else:
+        logger.write("Skipping filter_samples_from_otu_table.py as %s exists.\n\n" \
+                     % filtered_biom_fp)
     biom_fp = filtered_biom_fp
     
     # run initial commands and reset the command list
-    command_handler(commands, 
-                    status_update_callback, 
-                    logger,
-                    close_logger_on_success=False)
-    commands = []
+    if len(commands) > 0:
+        command_handler(commands, 
+                        status_update_callback, 
+                        logger,
+                        close_logger_on_success=False)
+        commands = []
     
     if not suppress_beta_diversity:
         bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
-        # Need to check for the existence of any pc matrices, since the user 
+        # Need to check for the existence of any distance matrices, since the user 
         # can select which will be generated.
-        if len(glob('%s/*_dm.txt' % bdiv_even_output_dir)) == 0:
+        existing_dm_fps = glob('%s/*_dm.txt' % bdiv_even_output_dir)
+        if len(existing_dm_fps) == 0:
             even_dm_fps = run_beta_diversity_through_plots(
              otu_table_fp=biom_fp, 
              mapping_fp=mapping_fp,
@@ -205,6 +213,10 @@ def run_core_diversity_analyses(
              logger=logger,
              suppress_md5=True,
              status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping beta_diversity_through_plots.py as %s exist(s).\n\n" \
+                         % ', '.join(existing_dm_fps))
+            even_dm_fps = [(split(fp)[1].strip('_dm.txt'),fp) for fp in existing_dm_fps]
         
         # Get make_distance_boxplots parameters
         try:
@@ -223,6 +235,9 @@ def run_core_diversity_analyses(
                      (dm_fp, category, boxplots_output_dir, mapping_fp, params_str)
                     commands.append([('Boxplots (%s)' % category,
                                       boxplots_cmd)])
+                else:
+                    logger.write("Skipping make_distance_boxplots.py for %s as %s exists.\n\n" \
+                                 % (category, plot_output_fp))
                 index_links.append(('Distance boxplots (%s)' % bdiv_metric,
                                     plot_output_fp,
                                     _index_headers['beta_diversity_even'] % sampling_depth))
@@ -276,6 +291,9 @@ def run_core_diversity_analyses(
              max_rare_depth=sampling_depth,
              suppress_md5=True,
              status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping alpha_rarefaction.py as %s exists.\n\n" \
+                         % rarefaction_plots_output_fp)
     
         index_links.append(('Alpha rarefaction plots',
                             rarefaction_plots_output_fp,
@@ -301,6 +319,9 @@ def run_core_diversity_analyses(
                     commands.append([('Compare alpha diversity (%s, %s)' %\
                                        (category,alpha_metric),
                                       compare_alpha_cmd)])
+                else:
+                    logger.write("Skipping compare_alpha_diversity.py for %s as %s exists.\n\n" \
+                                 % (category, alpha_comparison_output_fp))
                 index_links.append(
                  ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
                   alpha_comparison_output_fp,
@@ -310,7 +331,8 @@ def run_core_diversity_analyses(
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
         # need to check for existence of any html files, since the user can 
         # select only certain ones to be generated
-        if len(glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)) == 0:
+        existing_taxa_plot_html_fps = glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)
+        if len(existing_taxa_plot_html_fps) == 0:
             run_summarize_taxa_through_plots(
              otu_table_fp=biom_fp,
              mapping_fp=mapping_fp,
@@ -323,6 +345,9 @@ def run_core_diversity_analyses(
              logger=logger,
              suppress_md5=True,
              status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping summarize_taxa_through_plots.py for as %s exist(s).\n\n" \
+                         % ', '.join(existing_taxa_plot_html_fps))
 
         index_links.append(('Taxa summary bar plots',
                             '%s/taxa_summary_plots/bar_charts.html'\
@@ -336,7 +361,8 @@ def run_core_diversity_analyses(
             taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,category)
             # need to check for existence of any html files, since the user can 
             # select only certain ones to be generated
-            if len(glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)) == 0:
+            existing_taxa_plot_html_fps = glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)
+            if len(existing_taxa_plot_html_fps) == 0:
                 run_summarize_taxa_through_plots(
                  otu_table_fp=biom_fp,
                  mapping_fp=mapping_fp,
@@ -349,6 +375,9 @@ def run_core_diversity_analyses(
                  logger=logger,
                  suppress_md5=True,
                  status_update_callback=status_update_callback)
+            else:
+                logger.write("Skipping summarize_taxa_through_plots.py for %s as %s exist(s).\n\n" \
+                             % (category, ', '.join(existing_taxa_plot_html_fps)))
 
             index_links.append(('Taxa summary bar plots',
                                 '%s/taxa_summary_plots/bar_charts.html'\
@@ -376,6 +405,9 @@ def run_core_diversity_analyses(
                   category_signifance_fp, params_str)
                 commands.append([('OTU category significance (%s)' % category, 
                                   category_significance_cmd)])
+            else:
+                logger.write("Skipping otu_category_significance.py for %s as %s exists.\n\n" \
+                             % (category, category_signifance_fp))
             
             index_links.append(('Category significance (%s)' % category,
                         category_signifance_fp,
@@ -386,6 +418,12 @@ def run_core_diversity_analyses(
         index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
                             filtered_biom_gzip_fp,
                             _index_headers['run_summary']))
+    else:
+        logger.write("Skipping compressing of filtered BIOM table as %s exists.\n\n" \
+                     % filtered_biom_gzip_fp)
+    if len(commands) > 0:
+        command_handler(commands, status_update_callback, logger)
+    else:
+        logger.close()
     
-    command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
