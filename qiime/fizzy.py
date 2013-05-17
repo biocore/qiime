@@ -2,9 +2,27 @@
 # File created on 02 May 2013
 from __future__ import division
 
+"""
+fizzy.py
+Copyright (C) 2013 Gregory Ditzler
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Gregory Ditzler", "Calvin Morrison"]
+__credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
 __license__ = "GPL"
 __version__ = "1.3.0"
 __maintainer__ = "Gregory Ditzler"
@@ -21,6 +39,8 @@ def parse_biome(fname):
 			data, features = parse_biome(open('file.biom','U'))
 		@data_matrix (return) - dense matrix for feature selection
 		@variable_names (return) - feature names in a list
+		@observation_names (return) - names of the samples in the 
+			database found in fname. 
 	"""
 	import json 
 
@@ -50,7 +70,8 @@ def parse_biome(fname):
 
 	return data_matrix.transpose(), variable_names, observation_names
 
-
+# depreciated function since we now use the map file to extract the 
+# class labels for the oberservations. 
 # def parse_csv(fname):
 # 	"""
 # 		parse_csv(fname)

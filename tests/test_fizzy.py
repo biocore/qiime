@@ -12,9 +12,28 @@ from __future__ import division
 	questions feel free to email gregory.ditzler@gmail.com 
 """
 
+"""
+test_fizzy.py
+Copyright (C) 2013 Gregory Ditzler
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Gregory Ditzler", "Calvin Morrison"]
+__credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
 __license__ = "GPL"
 __version__ = "1.3.0"
 __maintainer__ = "Gregory Ditzler"
@@ -39,11 +58,13 @@ def main():
 	col_name = 'Class'
 	outfile = './test_fizzy/output.txt'
 	try:
+		# if this throws an error then it is likely that PyFeast has not
+		# been installed. 
 		fizzy.run_feature_selection(data_file, label_file, col_name, outfile, method, n_select)
 		print 'Refer to the test_fizzy directory for output.txt '
 		f = open('./test_fizzy/output.txt','U')
 		print f.read()
-
+		f.close()
 	except ValueError:
 		print 'Something is broken in Fizzy! Do you have PyFeast installed?'
 

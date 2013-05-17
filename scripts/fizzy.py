@@ -2,9 +2,29 @@
 # File created on 02 May 2013
 from __future__ import division
 
+
+"""
+fizzy.py
+Copyright (C) 2013 Gregory Ditzler
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Gregory Ditzler", "Calvin Morrison"]
+__credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
 __license__ = "GPL"
 __version__ = "1.3.0"
 __maintainer__ = "Gregory Ditzler"
@@ -30,7 +50,7 @@ script_info['script_usage'] = [(\
 	"""Run JMI feature selection on a Biom file:""",\
 	"""To perform feature selection the biom file and TSV file must be specified \
 	in advance. Here we use JMI and select 15 features. """,\
-	"""%prog -i data.biom -c label.tsv -f jmi -k 15""")]
+	"""%prog -i data.biom -m label.map -c Class_Column -f jmi -k 15""")]
 script_info['output_description']= """Text file containing the top features \
 	selected by the algorithm. """
 
@@ -47,7 +67,7 @@ script_info['required_options'] = [
 	make_option('-c',\
 		'--column_label',\
 		type="string",\
-		help='map file with labeling scheme')
+		help='column indicating the labels in the map file.')
 ]
 script_info['optional_options'] = [
 	# Example optional option
@@ -106,3 +126,5 @@ def main():
 
 if __name__ == "__main__":
 	main()
+
+	
