@@ -141,6 +141,16 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 		@data - numpy data (dense)
 		@labels - vector of class labels (discrete)
 		@method - feature selection method
+
+		The feature selection method is based off of the FEAST 
+		C variable selection toolbox. 
+
+		Reference:
+		Gavin Brown, Adam Pocock, Ming-Jie Zhao, and Mikel Lujan, 
+			"Conditional Likelihood Maximisation: A Unifying Framework 
+			for Information Theoretic Feature Selection," Journal of 
+			Machine Learning Research, vol. 13, pp. 27--66, 2012.
+			(http://jmlr.csail.mit.edu/papers/v13/brown12a.html)
 	"""
 	
 	if method == "cife":
