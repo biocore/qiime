@@ -78,26 +78,6 @@ def main():
 	"""
 	option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-	# check to see if the user has set the feature selection. if not set
-	# then use the mutual information maximization algorithm. 
-	#if not opts.fs_method:
-	#	fs_method = 'mim'
-	#else:
-	#	fs_method = opts.fs_method
-
-	# check to see if the user has see the output file. if the output file
-	# has not been set then we will make a generic file with a "meaningless"
-	# file name
-	#if not opts.output_path:
-	#	out_fmt = 'output.txt'
-	#else:
-	#	out_fmt = opts.output_path
-
-	#if not opts.n_select:
-	#	n_select = 15
-	#else:
-	#	n_select = int(opts.n_select)
-
 	# run the fizzy feature selection routine
 	fizzy.run_feature_selection( \
 		open(opts.input_path,'U'), \
