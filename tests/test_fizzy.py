@@ -37,14 +37,11 @@ def main():
 		f = open('./test_fizzy/output.txt','U')
 		print f.read()
 		f.close()
-	except:
-		try:
-			import feast
-		except:
-			print 'PyFeast is not installed'
-			sys.exit(1)
-
-		print 'Unexpected error:', sys.exc_info()[0]
+	except ValueError:
+		raise ValueError("""Error :: tests/test_fizzy.py : There was an
+		error running the fizzy test script. It is likely that the PyFeast
+		Python module is not installed on the system. """)
+		
 
 	return None
 

@@ -63,8 +63,10 @@ def parse_map_file(fname, column_name, observation_names):
 		try:
 			label_full.append(obj[id_set][column_name])
 		except ValueError:
-			print 'Error: fizzy.parse_map_file :: Unknown column name in map file.'
-			sys.exit(1)
+			raise ValueError("""Error: fizzy.parse_map_file :: 
+				Unknown column name in map file. Make sure the column 
+				you specified is in the map file you specified.""")
+			
 
 	# now that we have the full class labels we need to determine
 	# the number of unique classes in the the data. if the number of
@@ -72,8 +74,10 @@ def parse_map_file(fname, column_name, observation_names):
 	# its likely the user does not know what they are doing. 
 	unique_classes = numpy.unique(label_full)
 	if len(unique_classes) == len(observation_names):
-		print 'Error: fizzy.parse_map_file :: number of classes is the number of observations.'
-		sys.exit(1)
+		raise ValueError("""Error: fizzy.parse_map_file :: number of 
+			classes is the number of observations.  The number of 
+			classes must be less than the number of observations in 
+			map file that was specified.""")
 
 	# print the number of unique classes to the output. 
 	print 'The unique classes detected are:'
@@ -105,8 +109,15 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 			Machine Learning Research, vol. 13, pp. 27--66, 2012.
 			(http://jmlr.csail.mit.edu/papers/v13/brown12a.html)
 	"""
-	import feast
-	fs_method = getattr(feast, method)
+	
+	try:
+		import feast
+		fs_method = getattr(feast, method)
+	except ValueError:
+		raise ValueError("""Error: fizzy.run_pyfeast :: error loading 
+			the PyFeast module. It is likely that either: a) you   
+			attempted to load a module that is not in PyFeast, or b) 
+			you do not have PyFeast installed locally.""")
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
