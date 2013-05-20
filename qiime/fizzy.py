@@ -178,7 +178,7 @@ def run_feature_selection(file_biom, file_map, column_name, out_file, method='mi
 		@method - feature selection method [see PyFeast docs]
 		@n_select - number of features to selectio (integer)
 	"""
-	data_matrix, variable_names, observation_names = parse_biome(file_biome)
+	data_matrix, variable_names, observation_names = parse_biom(file_biom)
 	label_vector = parse_map_file(file_map, column_name, observation_names)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
 	write_output_file(reduced_set, out_file)
