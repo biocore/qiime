@@ -53,11 +53,13 @@ script_info['optional_options'] = [
 	make_option('-o',\
 		'--output_path',\
 		type="new_dirpath",\
-		help='the output directory [default: %default]'),\
+		help='the output directory [default: %default]',\
+		default='output.txt'),\
 	make_option('-k',\
 		'--n_select',\
 		type="int",\
-		help='number of feature to select [default: 15]'),\
+		help='number of feature to select [default: 15]',\
+		default=15),\
 	make_option('-f',\
 		'--fs_method', \
 		type='choice', \
@@ -78,32 +80,32 @@ def main():
 
 	# check to see if the user has set the feature selection. if not set
 	# then use the mutual information maximization algorithm. 
-	if not opts.fs_method:
-		fs_method = 'mim'
-	else:
-		fs_method = opts.fs_method
+	#if not opts.fs_method:
+	#	fs_method = 'mim'
+	#else:
+	#	fs_method = opts.fs_method
 
 	# check to see if the user has see the output file. if the output file
 	# has not been set then we will make a generic file with a "meaningless"
 	# file name
-	if not opts.output_path:
-		out_fmt = 'output.txt'
-	else:
-		out_fmt = opts.output_path
+	#if not opts.output_path:
+	#	out_fmt = 'output.txt'
+	#else:
+	#	out_fmt = opts.output_path
 
-	if not opts.n_select:
-		n_select = 15
-	else:
-		n_select = int(opts.n_select)
+	#if not opts.n_select:
+	#	n_select = 15
+	#else:
+	#	n_select = int(opts.n_select)
 
 	# run the fizzy feature selection routine
 	fizzy.run_feature_selection( \
 		open(opts.input_path,'U'), \
 		open(opts.map_path,'U'), \
 		opts.column_label, \
-		out_fmt, \
-		fs_method, \
-		n_select)
+		opts.output_path, \
+		opts.fs_method, \
+		int(opts.n_select))
 
 
 if __name__ == "__main__":
