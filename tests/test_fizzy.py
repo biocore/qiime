@@ -12,6 +12,7 @@ __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Development"
 
 import qiime.fizzy as fizzy 
+import sys 
 
 def main():
 	"""
@@ -36,9 +37,9 @@ def main():
 		f = open('./test_fizzy/output.txt','U')
 		print f.read()
 		f.close()
-	except ValueError:
-		print 'Something is broken in Fizzy! Do you have PyFeast installed?'
-
+	except:
+		print 'Unexpected error:', sys.exc_info()[0]
+		#print 'Something is broken in Fizzy! Do you have PyFeast installed?'
 	return None
 
 
