@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # File created on 02 May 2013
 from __future__ import division
+from qiime.util import parse_command_line_parameters, make_option
+import qiime.fizzy as fizzy 
 
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -12,23 +14,24 @@ __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Development"
  
 
-
-from qiime.util import parse_command_line_parameters, make_option
-import qiime.fizzy as fizzy 
-
-
-feature_selection_choices = ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
-
 script_info = {}
-script_info['brief_description'] = """Run feature selection on aubundance data \
-	contained in a Biom file."""
-script_info['script_description'] ="""This script will run a feature selection algorithm on abundance data contained in a Biom file given a label file, which is stored in tab-delimited format. The current feature selection methods uses a forward search algorithm to select the features. The objective functions are based on information theory. At the moment, users are limited to the objective functions implemented in the PyFeast feature selection module. """
-script_info['script_usage'] = [(\
-	"""Run JMI feature selection on a Biom file:""",\
-	"""To perform feature selection the biom file, map file must be specified \
-	in advance, and the label column in the map file. Here we use JMI and select 15 features. """,\
+script_info['brief_description'] = """Run feature selection on 
+  aubundance data contained in a Biom file."""
+script_info['script_description'] ="""This script will run a 
+	feature selection algorithm on abundance data contained in a 
+	Biom file given a label file, which is stored in tab-delimited 
+	format. The current feature selection methods uses a forward 
+	search algorithm to select the features. The objective functions 
+	are based on information theory. At the moment, users are limited 
+	to the objective functions implemented in the PyFeast feature 
+	selection module. """
+script_info['script_usage'] = [(
+	"""Run JMI feature selection on a Biom file:""",
+	"""To perform feature selection the biom file, map file must 
+	be specified in advance, and the label column in the map file. 
+	Here we use JMI and select 15 features. """,
 	"""%prog -i data.biom -m map.txt -c Class_Column -f jmi -k 15""")]
-script_info['output_description']= """Text file containing the top features \
+script_info['output_description']= """Text file containing the top features 
 	selected by the algorithm. """
 
 # set the required options. for fizzy we need to have an exisiting input 
@@ -64,8 +67,8 @@ script_info['optional_options'] = [
 		'--fs_method', \
 		type='choice', \
 		help='feature selection method. valid options are ' \
-		+ ', '.join(feature_selection_choices) + '. [default: %default]',
-		choices=feature_selection_choices,
+		+ ', '.join(fizzy.get_fs_methods()) + '. [default: %default]',
+		choices=fizzy.get_fs_methods(),
 		default='MIM')
 ]
 script_info['version'] = __version__
