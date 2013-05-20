@@ -15,6 +15,11 @@ __status__ = "Development"
 
 import numpy, sys
 
+
+
+def get_fs_methods():
+	return ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
+
 def parse_biom(fname): 
 	"""
 		parse_biom(fname)
