@@ -38,8 +38,14 @@ def main():
 		print f.read()
 		f.close()
 	except:
+		try:
+			import feast
+		except:
+			print 'PyFeast is not installed'
+			sys.exit(1)
+
 		print 'Unexpected error:', sys.exc_info()[0]
-		#print 'Something is broken in Fizzy! Do you have PyFeast installed?'
+
 	return None
 
 
