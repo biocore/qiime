@@ -85,7 +85,7 @@ def main():
 		opts.column_label, \
 		opts.output_path, \
 		opts.fs_method, \
-		int(opts.n_select))
+		opts.n_select)
 
 
 if __name__ == "__main__":
