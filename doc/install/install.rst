@@ -46,7 +46,6 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
 * tax2tree 1.0.0 (`src_tax2tree <https://downloads.sourceforge.net/project/tax2tree/tax2tree-v1.0.tar.gz>`_)
-* PyFeast ([GitHub](http://github.com/mutantturkey/PyFeast))
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
 
@@ -98,6 +97,9 @@ If you plan to use remote mapping files (stored as Google Spreadsheets) with QII
 If you plan to use SourceTracker with QIIME:
 
 * SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
+
+If you plan to use PyFeast (fizzy) with QIIME:
+* PyFeast (`src <http://github.com/mutantturkey/PyFeast>`_) (license: GPL)
 
 License information for external dependencies
 ---------------------------------------------
