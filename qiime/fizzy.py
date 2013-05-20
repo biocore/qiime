@@ -14,6 +14,8 @@ __status__ = "Development"
 
 
 import numpy, sys
+feature_selection_choices = ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
+
 
 def parse_biom(fname): 
 	"""
@@ -125,29 +127,31 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 			Machine Learning Research, vol. 13, pp. 27--66, 2012.
 			(http://jmlr.csail.mit.edu/papers/v13/brown12a.html)
 	"""
+	import feast
+	fs_method = getattr(feast, method)
 	
-	if method == "cife":
-		from feast import CIFE as fs_method
-	elif method == "cmim":
-		from feast import CMIM as fs_method
-	elif method == "condmi":
-		from feast import CondMI as fs_method
-	elif method == "condred":
-		from feast import Condred as fs_method
-	elif method == "icap":
-		from feast import ICAP as fs_method
-	elif method == "jmi":
-		from feast import JMI as fs_method
-	elif method == "mim":
-		from feast import MIM as fs_method
-	elif method == "mifs":
-		from feast import MIFS as fs_method
-	elif method == "mrmr":
-		from feast import mRMR  as fs_method
-	else:
-		import sys
-		print 'Error:: fizzy.py: Unknown feature selection method'
-		sys.exit(1)
+	# if method == "cife":
+	# 	from feast import CIFE as fs_method
+	# elif method == "cmim":
+	# 	from feast import CMIM as fs_method
+	# elif method == "condmi":
+	# 	from feast import CondMI as fs_method
+	# elif method == "condred":
+	# 	from feast import Condred as fs_method
+	# elif method == "icap":
+	# 	from feast import ICAP as fs_method
+	# elif method == "jmi":
+	# 	from feast import JMI as fs_method
+	# elif method == "mim":
+	# 	from feast import MIM as fs_method
+	# elif method == "mifs":
+	# 	from feast import MIFS as fs_method
+	# elif method == "mrmr":
+	# 	from feast import mRMR  as fs_method
+	# else:
+	# 	import sys
+	# 	print 'Error:: fizzy.py: Unknown feature selection method'
+	# 	sys.exit(1)
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
@@ -182,5 +186,4 @@ def run_feature_selection(file_biom, file_map, column_name, out_file, method='mi
 	label_vector = parse_map_file(file_map, column_name, observation_names)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
 	write_output_file(reduced_set, out_file)
-	# thats all folks
 
