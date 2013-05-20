@@ -14,8 +14,6 @@ __status__ = "Development"
 
 
 import numpy, sys
-feature_selection_choices = ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
-
 
 def parse_biom(fname): 
 	"""
@@ -35,31 +33,6 @@ def parse_biom(fname):
 	for data in biom_table.iterObservationData():
 		data_matrix.append(data)
 	data_matrix = numpy.array(data_matrix)
-
-	# import json 
-	# json_string = fname.read()
-	# obj = json.loads(json_string)
-
-	# data_matrix = numpy.zeros(obj['shape'])
-
-	# if obj['matrix_type'] == 'dense':
-	# 	data_matrix = numpy.array(obj['data'])
-	# elif obj['matrix_type'] == 'sparse':
-	# 	# the matrix is in sparse format and the data are saved in 
-	# 	# tuples: (row index, column index, value)
-	# 	for index_set in obj['data']:
-	# 		data_matrix[index_set[0], index_set[1]] = index_set[2]
-
-	# # the biom file will have the names of the features and the 
-	# # otu counts that we need to use with our algorithm. 
-	# variable_names = []
-	# variables = obj['rows']
-	# for var in variables:
-	# 	variable_names.append( var['id'] )	
-
-	# observation_names = []
-	# for var in obj['columns']:
-	# 	observation_names.append( var['id'] )
 
 	return data_matrix.transpose(), variable_names, observation_names
 
@@ -129,29 +102,6 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 	"""
 	import feast
 	fs_method = getattr(feast, method)
-	
-	# if method == "cife":
-	# 	from feast import CIFE as fs_method
-	# elif method == "cmim":
-	# 	from feast import CMIM as fs_method
-	# elif method == "condmi":
-	# 	from feast import CondMI as fs_method
-	# elif method == "condred":
-	# 	from feast import Condred as fs_method
-	# elif method == "icap":
-	# 	from feast import ICAP as fs_method
-	# elif method == "jmi":
-	# 	from feast import JMI as fs_method
-	# elif method == "mim":
-	# 	from feast import MIM as fs_method
-	# elif method == "mifs":
-	# 	from feast import MIFS as fs_method
-	# elif method == "mrmr":
-	# 	from feast import mRMR  as fs_method
-	# else:
-	# 	import sys
-	# 	print 'Error:: fizzy.py: Unknown feature selection method'
-	# 	sys.exit(1)
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
