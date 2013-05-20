@@ -47,14 +47,9 @@ script_info['required_options'] = [
 		type="existing_filepath",\
 		help='map file with labeling scheme'),
 	make_option('-c',\
-		'--column_label', \
-		type='choice', \
-		help='feature selection method. valid options are ' \
-		+ ', '.join(feature_selection_choices) + '. default-> mim')
-	#make_option('-c',\
-	#	'--column_label',\
-	#	type="string",\
-	#	help='column indicating the labels in the map file.')
+		'--column_label',\
+		type="string",\
+		help='column indicating the labels in the map file.')
 ]
 script_info['optional_options'] = [
 	# Example optional option
@@ -66,10 +61,16 @@ script_info['optional_options'] = [
 		'--n_select',\
 		type="int",\
 		help='number of feature to select [default: 15]'),\
+	#make_option('-f',\
+	#	'--fs_method',\
+	#	type="string",\
+	#	help='feature selection method [options: jmi, mrmr, mim, mifs]')
 	make_option('-f',\
-		'--fs_method',\
-		type="string",\
-		help='feature selection method [options: jmi, mrmr, mim, mifs]')
+		'--fs_method', \
+		type='choice', \
+		help='feature selection method. valid options are ' \
+		+ ', '.join(feature_selection_choices) + '. [default: %default]',
+		default='mim')
 ]
 script_info['version'] = __version__
 
