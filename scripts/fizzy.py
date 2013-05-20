@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
+__credits__ = ["Gregory D
 __license__ = "GPL"
 __version__ = "1.3.0"
 __maintainer__ = "Gregory Ditzler"
@@ -36,6 +36,8 @@ __status__ = "Release"
 from qiime.util import parse_command_line_parameters, make_option
 import qiime.fizzy as fizzy 
 
+
+feature_selection_choices = ['cife', 'condmi','cmim','condred','icap','jmi','mim','mifs','mrmr']
 
 script_info = {}
 script_info['brief_description'] = """Run feature selection on aubundance data \
@@ -58,16 +60,21 @@ script_info['required_options'] = [
 	# Example required option
 	make_option('-i', \
 		'--input_path',\
-		type="existing_path",
+		type="existing_filepath",
 		help='input sparse biome file'),\
 	make_option('-m',\
 		'--map_path',\
-		type="existing_path",\
+		type="existing_filepath",\
 		help='map file with labeling scheme'),
 	make_option('-c',\
-		'--column_label',\
-		type="string",\
-		help='column indicating the labels in the map file.')
+		'--column_label', \
+		type='choice', \
+		help='feature selection method. valid options are ' \
+		+ ', '.join(feature_selection_choices) + '. default-> mim')
+	#make_option('-c',\
+	#	'--column_label',\
+	#	type="string",\
+	#	help='column indicating the labels in the map file.')
 ]
 script_info['optional_options'] = [
 	# Example optional option
@@ -127,4 +134,3 @@ def main():
 if __name__ == "__main__":
 	main()
 
-	
