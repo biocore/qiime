@@ -17,7 +17,7 @@ from qiime.util import parse_command_line_parameters, make_option
 import qiime.fizzy as fizzy 
 
 
-feature_selection_choices = ['cife', 'condmi','cmim','condred','icap','jmi','mim','mifs','mrmr']
+feature_selection_choices = ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
 
 script_info = {}
 script_info['brief_description'] = """Run feature selection on aubundance data \
@@ -66,7 +66,7 @@ script_info['optional_options'] = [
 		help='feature selection method. valid options are ' \
 		+ ', '.join(feature_selection_choices) + '. [default: %default]',
 		choices=feature_selection_choices,
-		default='mim')
+		default='MIM')
 ]
 script_info['version'] = __version__
 
