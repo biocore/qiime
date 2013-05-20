@@ -53,24 +53,6 @@ def parse_biome(fname):
 
 	return data_matrix.transpose(), variable_names, observation_names
 
-# depreciated function since we now use the map file to extract the 
-# class labels for the oberservations. 
-# def parse_csv(fname):
-# 	"""
-# 		parse_csv(fname)
-# 		@fname - this is the file handle. Ex. Use something like:
-# 			labels = parse_csv(open('labels.tsv','U'))
-# 		@labels (return) - numpy array with 
-# 	"""
-# 	import csv 
-# 	tab_data = csv.reader(fname, delimiter='\t')
-# 	for line in tab_data:
-# 		labels = line
-# 
-# 	for n in range(len(labels)):
-# 		labels[n] = float(labels[n])
-# 
-# 	return numpy.array(labels)
 
 def parse_map_file(fname, column_name, observation_names):
 	"""
@@ -187,7 +169,6 @@ def run_feature_selection(file_biome, file_map, column_name, out_file, method='m
 	"""
 	data_matrix, variable_names, observation_names = parse_biome(file_biome)
 	label_vector = parse_map_file(file_map, column_name, observation_names)
-	#label_vector = parse_csv(file_csv)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
 	write_output_file(reduced_set, out_file)
 	# thats all folks
