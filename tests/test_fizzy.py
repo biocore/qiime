@@ -2,17 +2,6 @@
 # File created on 02 May 2013
 from __future__ import division
 
-
-"""
-	This is a test unit for the Fizzy feature selection algorithm, which uses
-	the PyFeast python module. If the unit test fails, then it is likely that 
-	you do not have PyFeast installed on the system. 
-
-	After PyFeast is installed you should be good to go. If you have any 
-	questions feel free to email gregory.ditzler@gmail.com 
-"""
-
-
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
