@@ -26,7 +26,7 @@ def main():
 	data_file = open('./test_fizzy/data.biom','U')
 	label_file = open('./test_fizzy/labels.map','U')
 	n_select = 25
-	method = 'mim'
+	method = 'MIM'
 	col_name = 'Class'
 	outfile = './test_fizzy/output.txt'
 	try:
