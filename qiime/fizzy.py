@@ -7,7 +7,7 @@ __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Gregory Ditzler", "Calvin Morrison", "Gail Rosen"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Gregory Ditzler"
 __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Development"
@@ -134,10 +134,8 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 		from feast import CondMI as fs_method
 	elif method == "condred":
 		from feast import Condred as fs_method
-	#elif method == "disr":
-	#	from feast import DISR as fs_method
 	elif method == "icap":
-			from feast import ICAP as fs_method
+		from feast import ICAP as fs_method
 	elif method == "jmi":
 		from feast import JMI as fs_method
 	elif method == "mim":
@@ -146,6 +144,10 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 		from feast import MIFS as fs_method
 	elif method == "mrmr":
 		from feast import mRMR  as fs_method
+	else:
+		import sys
+		print 'Error:: fizzy.py: Unknown feature selection method'
+		sys.exit(1)
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
