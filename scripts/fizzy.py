@@ -22,22 +22,20 @@ feature_selection_choices = ['cife', 'condmi','cmim','condred','icap','jmi','mim
 script_info = {}
 script_info['brief_description'] = """Run feature selection on aubundance data \
 	contained in a Biom file."""
-script_info['script_description'] ="""This script will run a feature selection 
-	algorithm on abundance data contained in a Biom file given a label file, which \
-	is stored in tab-delimited format. The current feature selection methods uses \
-	a forward search algorithm to select the features. The objective functions are \
-	based on information theory. At the moment, users are limited to the objective \
-	functions implemented in the PyFeast feature selection module. """
+script_info['script_description'] ="""This script will run a feature selection algorithm on abundance data contained in a Biom file given a label file, which is stored in tab-delimited format. The current feature selection methods uses a forward search algorithm to select the features. The objective functions are based on information theory. At the moment, users are limited to the objective functions implemented in the PyFeast feature selection module. """
 script_info['script_usage'] = [(\
 	"""Run JMI feature selection on a Biom file:""",\
-	"""To perform feature selection the biom file and TSV file must be specified \
-	in advance. Here we use JMI and select 15 features. """,\
-	"""%prog -i data.biom -m label.map -c Class_Column -f jmi -k 15""")]
+	"""To perform feature selection the biom file, map file must be specified \
+	in advance, and the label column in the map file. Here we use JMI and select 15 features. """,\
+	"""%prog -i data.biom -m map.txt -c Class_Column -f jmi -k 15""")]
 script_info['output_description']= """Text file containing the top features \
 	selected by the algorithm. """
 
+# set the required options. for fizzy we need to have an exisiting input 
+# file, map file, and label column in the map file specified. other than
+# that we can set some default parameters to run a feature selection 
+# algorithm.
 script_info['required_options'] = [
-	# Example required option
 	make_option('-i', \
 		'--input_path',\
 		type="existing_filepath",
@@ -52,7 +50,6 @@ script_info['required_options'] = [
 		help='column indicating the labels in the map file.')
 ]
 script_info['optional_options'] = [
-	# Example optional option
 	make_option('-o',\
 		'--output_path',\
 		type="new_dirpath",\
@@ -61,10 +58,6 @@ script_info['optional_options'] = [
 		'--n_select',\
 		type="int",\
 		help='number of feature to select [default: 15]'),\
-	#make_option('-f',\
-	#	'--fs_method',\
-	#	type="string",\
-	#	help='feature selection method [options: jmi, mrmr, mim, mifs]')
 	make_option('-f',\
 		'--fs_method', \
 		type='choice', \
