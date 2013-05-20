@@ -1,7 +1,7 @@
 QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
 * Added a feature selection component into qiime. The added files are qiime/fizzy.py, scripts/fizzy.py, tests/test_fizzy.py, and the directory /tests/test_fizzy/, which contains some scripts for a unit test. 
-* PyFeast have now been added as a dependency for the tool to function correctly. 
+* PyFeast is now an (optional) QIIME dependency. 
 
 QIIME 1.7.0 (14 May 2013)
 =========================
