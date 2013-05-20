@@ -70,6 +70,7 @@ script_info['optional_options'] = [
 		type='choice', \
 		help='feature selection method. valid options are ' \
 		+ ', '.join(feature_selection_choices) + '. [default: %default]',
+		choices=feature_selection_choices,
 		default='mim')
 ]
 script_info['version'] = __version__
