@@ -15,11 +15,11 @@ __status__ = "Development"
 
 import numpy, sys
 
-def parse_biome(fname): 
+def parse_biom(fname): 
 	"""
-		parse_biome(fname)
+		parse_biom(fname)
 		@fname - this is the file handle. Ex. Use something like:
-			data, features = parse_biome(open('file.biom','U'))
+			data, features = parse_biom(open('file.biom','U'))
 		@data_matrix (return) - dense matrix for feature selection
 		@variable_names (return) - feature names in a list
 		@observation_names (return) - names of the samples in the 
@@ -165,15 +165,16 @@ def write_output_file(selected_features, f_out):
 		f.write(sf + '\n')
 	f.close()
 
-def run_feature_selection(file_biome, file_map, column_name, out_file, method='mim', n_select=15):
+def run_feature_selection(file_biom, file_map, column_name, out_file, method='mim', n_select=15):
 	"""
-		run_feature_selection(fname_biome, fname_csv, method)
-		@fname_biome - handle of the biom file
+		run_feature_selection(fname_biom, fname_csv, method)
+		@file_biom - handle of the biom file
 		@file_map - handle of the csv file
+		@out_file - result destination (string)
 		@column_name - column name containing the class labels found 
 			in the map file. 
 		@method - feature selection method [see PyFeast docs]
-		@fmt - input file format (['biome', 'table'])
+		@n_select - number of features to selectio (integer)
 	"""
 	data_matrix, variable_names, observation_names = parse_biome(file_biome)
 	label_vector = parse_map_file(file_map, column_name, observation_names)
