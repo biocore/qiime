@@ -3,7 +3,7 @@
 from __future__ import division
 import re
 from glob import glob
-from os.path import split, splitext, exists
+from os.path import split, splitext, exists, join
 from qiime.parse import (parse_qiime_parameters,
                          parse_mapping_file_to_dict)
 from qiime.util import (create_dir,
@@ -136,7 +136,7 @@ def run_core_diversity_analyses(
     commands = []
     
     # begin logging
-    old_log_fps = glob('%s/log_20*txt' % output_dir)
+    old_log_fps = glob(join(output_dir,'log_20*txt'))
     log_fp = generate_log_fp(output_dir)
     index_links.append(('Master run log',log_fp,_index_headers['run_summary']))
     for old_log_fp in old_log_fps:
@@ -331,7 +331,7 @@ def run_core_diversity_analyses(
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
         # need to check for existence of any html files, since the user can 
         # select only certain ones to be generated
-        existing_taxa_plot_html_fps = glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)
+        existing_taxa_plot_html_fps = glob(join(output_dir,'taxa_summary_plots','*.html'))
         if len(existing_taxa_plot_html_fps) == 0:
             run_summarize_taxa_through_plots(
              otu_table_fp=biom_fp,
