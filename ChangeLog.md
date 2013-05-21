@@ -1,5 +1,6 @@
 QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
+* core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
