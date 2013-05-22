@@ -81,7 +81,9 @@ http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 	`-`-box_width
 		Width of each box in plot units [default: 0.5]
 	`-`-box_color
-		The color of the boxes. Can be any valid matplotlib color string, such as "black", "magenta", "blue", etc. See http://matplotlib.sourceforge.net/api/colors_api.html for more examples of valid color strings that may be used [default: same as plot background, which is white unless --transparent is enabled]
+		The color of the boxes. Can be any valid matplotlib color string, such as "black", "magenta", "blue", etc. See http://matplotlib.sourceforge.net/api/colors_api.html for more examples of valid color strings that may be used. Will be ignored if --color_individual_within_by_field is supplied [default: same as plot background, which is white unless --transparent is enabled]
+	`-`-color_individual_within_by_field
+		Field in the the mapping file to color the individual "within" boxes by. A legend will be provided to match boxplot colors to field states. A one-to-one mapping must exist between the field to be colored and the field to color by, otherwise the coloring will be ambiguous. If this option is supplied, --box_color will be ignored. If --suppress_individual_within is supplied, this option will be ignored [default: None]
 	`-`-sort
 		Sort boxplots by increasing median. If no sorting is applied, boxplots will be grouped logically as follows: all within, all between, individual within, and individual between [default: False]
 

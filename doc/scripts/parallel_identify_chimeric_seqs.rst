@@ -45,7 +45,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-o, `-`-output_fp
 		Path to store output [default: derived from input_seqs_fp]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

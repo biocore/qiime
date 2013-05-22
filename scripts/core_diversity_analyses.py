@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -93,6 +93,10 @@ script_info['optional_options'] = [\
  make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging or recovering from failed runs. [default: %default]',
+        default=False),
+ make_option('--recover_from_failure',action='store_true',\
+        help='Don\'t fail if output directory exists, but attempt to recover '+\
+        'from the failed run. [default: %default]',
         default=False),\
  options_lookup['jobs_to_start_workflow']
 ]
@@ -141,7 +145,9 @@ def main():
                                    parallel,
                                    option_parser)
     
-    create_dir(output_dir,fail_on_exist=True)
+    # Create the output directory. If it already exists and the user 
+    # isn't trying to recover from a failed run, raise an error.
+    create_dir(output_dir,fail_on_exist=not opts.recover_from_failure)
     
     if print_only:
         command_handler = print_commands

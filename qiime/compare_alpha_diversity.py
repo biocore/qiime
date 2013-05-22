@@ -6,7 +6,7 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
@@ -151,23 +151,21 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
     # all iterations. Avoids more comps which kills signifigance. 
     rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
     sids = rarefaction_data[0][3:] # 0-2 are header strings
-    results = {}
+    ttest_results = {}
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
         # if there is only 1 sample for each treatment in a comparison, and mc
         # using mc method, will error (e.g. mc_t_two_sample([1],[1]).
         if len(sid_pair[0])==1 and len(sid_pair[1])==1:
-            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
-            results[t_key]= (None,None)
+            ttest_results[treatment_pair]= (None,None)
         else:
             pair0_indices = [sids.index(i) for i in sid_pair[0]]
             pair1_indices = [sids.index(i) for i in sid_pair[1]]
-            t_key = '%s,%s' % (treatment_pair[0], treatment_pair[1])
             i = rare_mat.take(pair0_indices)
             j = rare_mat.take(pair1_indices)
             # found discussion of how to quickly check an array for nan here:
             # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
             if isnan(np_min(i)) or isnan(np_min(j)):
-                results[t_key]= (None,None)
+                ttest_results[treatment_pair]= (None,None)
                 continue
             if test_type == 'parametric':
                 obs_t, p_val = t_two_sample(i,j)
@@ -181,5 +179,18 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
                     obs_t, p_val = None, None
             else:
                 raise ValueError("Invalid test type '%s'." % test_type)
-            results[t_key]= (obs_t,p_val)
-    return results
+            ttest_results[treatment_pair]= (obs_t,p_val)
+    # create dict of average alpha diversity values
+    alphadiv_avgs = {}
+    for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
+        # calculate the alpha diversity average, std vals. choosing only first
+        # treatment pair doesn't guarantees full covering, must look at both
+        for sid_list, treatment_str in zip(sid_pair, treatment_pair):
+            # check if already computed and added
+            if not treatment_str in alphadiv_avgs.keys():
+                alphadiv_vals = \
+                    rare_mat.take([sids.index(i) for i in sid_list])
+                ad_mean = alphadiv_vals.mean()
+                ad_std = alphadiv_vals.std()
+                alphadiv_avgs[treatment_str] = (ad_mean, ad_std) 
+    return ttest_results, alphadiv_avgs

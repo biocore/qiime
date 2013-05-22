@@ -35,7 +35,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-B, `-`-blastmat_dir
 		Full path to directory containing blastmat file [default: /Applications/blast-2.2.22/data/]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

@@ -7,7 +7,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -533,12 +533,14 @@ def split_fasta_on_sample_ids_to_files(seqs,
     """
     create_dir(output_dir)
     file_lookup = {}
+    all_fps = []
     for sample_id,seq_id,seq in split_fasta_on_sample_ids(seqs):
         # grab or create the list corresponding to the current sample id
         try:
             current_seqs = file_lookup[sample_id][1]
         except KeyError:
             current_fp = '%s/%s.fasta' % (output_dir,sample_id)
+            all_fps.append(current_fp)
             if exists(current_fp):
                 raise IOError,\
                  (" %s already exists. Will not perform split -- remove this"
@@ -558,7 +560,7 @@ def split_fasta_on_sample_ids_to_files(seqs,
     
     for current_fp,current_seqs in file_lookup.values():
         write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
-    return None
+    return all_fps
 
 def median_absolute_deviation(x):
     """ compute the median of the absolute deviations from the median """

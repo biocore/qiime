@@ -2,9 +2,9 @@
 
 __author__ = "Adam Robbins-Pianka, Abhisaar Yadav"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Adam Robbins-Pianka, Abhisaar Yadav"]
+__credits__ = ["Adam Robbins-Pianka", "Abhisaar Yadav", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
 __status__ = "Development"
@@ -58,7 +58,7 @@ class MakeFastqTests(TestCase):
         create_dir(self.read_only_output_dir)
         # Need read only directory to test errors for files written during
         # fastq/fasta iteration.
-        chmod(self.read_only_output_dir, 0577)
+        chmod(self.read_only_output_dir, 0555)
 
         self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
                                            suffix = '/')
@@ -196,7 +196,7 @@ class MakeFastaqualTests(TestCase):
         self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_', \
         suffix = '/')
         create_dir(self.read_only_output_dir)
-        chmod(self.read_only_output_dir, 0577)
+        chmod(self.read_only_output_dir, 0555)
 
         self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
          suffix = '/')
@@ -328,7 +328,7 @@ class ConvertFastaqualTests(TestCase):
         self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_', \
         suffix = '/')
         create_dir(self.read_only_output_dir)
-        chmod(self.read_only_output_dir, 0577)
+        chmod(self.read_only_output_dir, 0555)
 
         self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
          suffix = '/')

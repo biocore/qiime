@@ -4,8 +4,10 @@
 from __future__ import division
 
 from os import remove, makedirs, system
-from os.path import split, splitext, basename, isdir, abspath, isfile, exists
+from os.path import (split, splitext, basename, isdir, abspath, isfile, exists,
+ join)
 from subprocess import PIPE, Popen
+from datetime import datetime
 
 from cogent.util.misc import remove_files, app_path
 from cogent.parse.fasta import MinimalFastaParser
@@ -15,15 +17,19 @@ from cogent.app.util import CommandLineApplication, ResultPath,\
     ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
 
-from qiime.util import FunctionWithParams, degap_fasta_aln, \
-    write_degapped_fasta_to_file, get_tmp_filename
+from qiime.util import (FunctionWithParams, degap_fasta_aln,
+    write_degapped_fasta_to_file, get_tmp_filename, create_dir,
+    split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
+from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
+ usearch61_chimera_check_denovo, parse_usearch61_clusters,
+ usearch61_chimera_check_ref)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Jens Reeder"]
+__credits__ = ["Greg Caporaso","Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -535,8 +541,26 @@ ChimeraSlayer   chimera_AJ007403        7000004131495956        S000469847      
             chimeras.append((id, [parent1,parent2]))
     return chimeras
 
-
 ## End functions for processing output files
+
+def make_cidx_file(fp):
+    """make a CS index file.
+        
+    fp: reference DB to make an index of
+    
+    ChimeraSlayer implicetely performs this task when the file is not
+    already created and deletes it when done. Especially in a parallel
+    environment it mkaes sense to manually make and delete the file.
+    """
+
+    if app_path("cdbfasta"):
+        #cdbfasta comes with the microbiometools/CS
+        #should always be installed when using CS
+        args = ["cdbfasta", fp]
+        #cdbfasta write one line to stderr
+        stdout, stderr = Popen(args, stderr=PIPE, stdout=PIPE).communicate()
+    else:
+        raise ApplicationNotFoundError
 
 ## Start convenience functions
 
@@ -603,22 +627,476 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None,
 
     return chimeras
 
-
-def make_cidx_file(fp):
-    """make a CS index file.
-        
-    fp: reference DB to make an index of
+def usearch61_chimera_check(input_seqs_fp,
+                            output_dir,
+                            reference_seqs_fp = None,
+                            suppress_usearch61_intermediates = False,
+                            suppress_usearch61_ref = False,
+                            suppress_usearch61_denovo = False,
+                            split_by_sampleid = False,
+                            non_chimeras_retention = "union",
+                            usearch61_minh = 0.28,
+                            usearch61_xn = 8.0,
+                            usearch61_dn = 1.4,
+                            usearch61_mindiffs = 3,
+                            usearch61_mindiv = 0.8,
+                            usearch61_abundance_skew = 2.0,
+                            percent_id_usearch61 = 0.97,
+                            minlen = 64,
+                            word_length = 8,
+                            max_accepts = 1,
+                            max_rejects = 8,
+                            verbose=False,
+                            HALT_EXEC=False):
+    """ Main convenience function for usearch61 chimera checking
     
-    ChimeraSlayer implicetely performs this task when the file is not
-    already created and deletes it when done. Especially in a parallel
-    environment it mkaes sense to manually make and delete the file.
+    input_seqs_fp:  filepath of input fasta file.
+    output_dir:  output directory
+    reference_seqs_fp: fasta filepath for reference chimera detection.
+    suppress_usearch61_intermediates:  Suppress retention of .uc and log files.
+    suppress_usearch61_ref:  Suppress usearch61 reference chimera detection.
+    suppress_usearch61_denovo:  Suppress usearch61 de novo chimera detection.
+    split_by_sampleid:  Split by sample ID for de novo chimera detection.
+    non_chimeras_retention: Set to "union" or "intersection" to retain 
+     non-chimeras between de novo and reference based results.
+    usearch61_minh: Minimum score (h) to be classified as chimera. 
+     Increasing this value tends to the number of false positives (and also
+     sensitivity).
+    usearch61_xn:  Weight of "no" vote.  Increasing this value tends to the
+     number of false positives (and also sensitivity).
+    usearch61_dn:  Pseudo-count prior for "no" votes. (n). Increasing this 
+     value tends to the number of false positives (and also sensitivity).
+    usearch61_mindiffs:  Minimum number of diffs in a segment. Increasing this
+     value tends to reduce the number of false positives while reducing 
+     sensitivity to very low-divergence chimeras.
+    usearch61_mindiv:  Minimum divergence, i.e. 100% - identity between the 
+     query and closest reference database sequence. Expressed as a percentage,
+     so the default is 0.8%, which allows chimeras that are up to 99.2% similar
+     to a reference sequence.
+    usearch61_abundance_skew: abundance skew for de novo chimera comparisons.
+    percent_id_usearch61: identity to cluster sequences at
+    minlen: minimum sequence length for use with usearch61
+    word_length: length of nucleotide 'words' for usearch61
+    max_accepts: max number of accepts for hits with usearch61
+    max_rejects: max number of rejects for usearch61, increasing allows more
+     sensitivity at a cost of speed
+    HALT_EXEC=application controller option to halt execution and print command
     """
-
-    if app_path("cdbfasta"):
-        #cdbfasta comes with the microbiometools/CS
-        #should always be installed when using CS
-        args = ["cdbfasta", fp]
-        #cdbfasta write one line to stderr
-        stdout, stderr = Popen(args, stderr=PIPE, stdout=PIPE).communicate()
+    
+    """ 
+    Need to cluster sequences de novo first to get 1. abundance information
+    and 2 consensus sequence for each cluster.  Using dereplication followed
+    by clustering does not appear to automatically update complete cluster 
+    size, will directly cluster raw seqs with the small_mem clustering option.
+    
+    This means without additional parsing steps to recalculate 
+    actual cluster sizes, the sizeorder option can't be used for de novo
+    clustering and downstream chimera detection."""
+    
+    files_to_remove = []
+    
+    # Get absolute paths to avoid issues with calling usearch
+    input_seqs_fp = abspath(input_seqs_fp)
+    output_dir = abspath(output_dir)
+    if reference_seqs_fp:
+        reference_seqs_fp = abspath(reference_seqs_fp)
+    log_fp = join(output_dir, "identify_chimeric_seqs.log")
+    chimeras_fp = join(output_dir, "chimeras.txt")
+    non_chimeras_fp = join(output_dir, "non_chimeras.txt")
+        
+    non_chimeras = []
+    chimeras = []
+    log_lines = {'denovo_chimeras':0,
+                 'denovo_non_chimeras':0,
+                 'ref_chimeras':0,
+                 'ref_non_chimeras':0}
+    
+    if split_by_sampleid:
+        if verbose:
+            print "Splitting fasta according to SampleID..."
+        full_seqs = open(input_seqs_fp, "U")
+        sep_fastas =\
+         split_fasta_on_sample_ids_to_files(MinimalFastaParser(full_seqs),
+         output_dir)
+        full_seqs.close()
+        
+        if suppress_usearch61_intermediates:
+            files_to_remove += sep_fastas
+        
+        for curr_fasta in sep_fastas:
+            curr_chimeras, curr_non_chimeras, files_to_remove, log_lines =\
+             identify_chimeras_usearch61(curr_fasta, output_dir,
+             reference_seqs_fp, suppress_usearch61_intermediates,
+             suppress_usearch61_ref, suppress_usearch61_denovo,
+             non_chimeras_retention, usearch61_minh, usearch61_xn,
+             usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
+             usearch61_abundance_skew, percent_id_usearch61, minlen,
+             word_length, max_accepts, max_rejects, files_to_remove, HALT_EXEC,
+             log_lines, verbose)
+             
+            chimeras += curr_chimeras
+            non_chimeras += curr_non_chimeras
+             
+            
     else:
-        raise ApplicationNotFoundError
+        chimeras, non_chimeras, files_to_remove, log_lines =\
+         identify_chimeras_usearch61(input_seqs_fp, output_dir,
+         reference_seqs_fp, suppress_usearch61_intermediates,
+         suppress_usearch61_ref, suppress_usearch61_denovo,
+         non_chimeras_retention, usearch61_minh, usearch61_xn,
+         usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
+         usearch61_abundance_skew, percent_id_usearch61, minlen,
+         word_length, max_accepts, max_rejects, files_to_remove, HALT_EXEC,
+         log_lines, verbose)
+         
+    # write log, non chimeras, chimeras.
+    write_usearch61_log(log_fp, input_seqs_fp, output_dir,
+     reference_seqs_fp, suppress_usearch61_intermediates,
+     suppress_usearch61_ref, suppress_usearch61_denovo,
+     split_by_sampleid, non_chimeras_retention, usearch61_minh,
+     usearch61_xn, usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
+     usearch61_abundance_skew, percent_id_usearch61, minlen,
+     word_length, max_accepts, max_rejects, HALT_EXEC, log_lines)
+     
+    chimeras_f = open(chimeras_fp, "w")
+    non_chimeras_f = open(non_chimeras_fp, "w")
+    for curr_chimera in chimeras:
+        chimeras_f.write("%s\n" % curr_chimera)
+    for curr_non_chimera in non_chimeras:
+        non_chimeras_f.write("%s\n" % curr_non_chimera)
+    chimeras_f.close()
+    non_chimeras_f.close()
+    
+    remove_files(files_to_remove)
+    
+    
+def identify_chimeras_usearch61(input_seqs_fp,
+                                output_dir,
+                                reference_seqs_fp = None,
+                                suppress_usearch61_intermediates = False,
+                                suppress_usearch61_ref = False,
+                                suppress_usearch61_denovo = False,
+                                non_chimeras_retention = "union",
+                                usearch61_minh = 0.28,
+                                usearch61_xn = 8.0,
+                                usearch61_dn = 1.4,
+                                usearch61_mindiffs = 3,
+                                usearch61_mindiv = 0.8,
+                                usearch61_abundance_skew = 2.0,
+                                percent_id_usearch61 = 0.97,
+                                minlen = 64,
+                                word_length = 8,
+                                max_accepts = 1,
+                                max_rejects = 8,
+                                files_to_remove = [],
+                                HALT_EXEC=False,
+                                log_lines ={},
+                                verbose=False):
+    """ Calls de novo, ref useach61 chimera checking, returns flagged seqs
+    
+    input_seqs_fp:  filepath of input fasta file.
+    output_dir:  output directory
+    reference_seqs_fp: fasta filepath for reference chimera detection.
+    suppress_usearch61_intermediates:  Suppress retention of .uc and log files.
+    suppress_usearch61_ref:  Suppress usearch61 reference chimera detection.
+    suppress_usearch61_denovo:  Suppress usearch61 de novo chimera detection.
+    non_chimeras_retention: Set to "union" or "intersection" to retain 
+     non-chimeras between de novo and reference based results.
+    usearch61_minh: Minimum score (h) to be classified as chimera. 
+     Increasing this value tends to the number of false positives (and also
+     sensitivity).
+    usearch61_xn:  Weight of "no" vote.  Increasing this value tends to the
+     number of false positives (and also sensitivity).
+    usearch61_dn:  Pseudo-count prior for "no" votes. (n). Increasing this 
+     value tends to the number of false positives (and also sensitivity).
+    usearch61_mindiffs:  Minimum number of diffs in a segment. Increasing this
+     value tends to reduce the number of false positives while reducing 
+     sensitivity to very low-divergence chimeras.
+    usearch61_mindiv:  Minimum divergence, i.e. 100% - identity between the 
+     query and closest reference database sequence. Expressed as a percentage,
+     so the default is 0.8%, which allows chimeras that are up to 99.2% similar
+     to a reference sequence.
+    usearch61_abundance_skew: abundance skew for de novo chimera comparisons.
+    percent_id_usearch61: identity to cluster sequences at
+    minlen: minimum sequence length for use with usearch61
+    word_length: length of nucleotide 'words' for usearch61
+    max_accepts: max number of accepts for hits with usearch61
+    max_rejects: max number of rejects for usearch61, increasing allows more
+     sensitivity at a cost of speed
+    files_to_remove: list of filepaths to remove if intermediate files are to
+     be removed.
+    HALT_EXEC=application controller option to halt execution and print command
+    """
+    
+    output_consensus_fp = join(output_dir,
+     "%s_consensus_with_abundance.fasta" % basename(input_seqs_fp))
+    filtered_consensus_fp = join(output_dir,
+     "%s_consensus_fixed.fasta" % basename(input_seqs_fp))
+    output_consensus_uc = join(output_dir,
+     "%s_consensus_with_abundance.uc" % basename(input_seqs_fp))
+    smallmem_log_fp = join(output_dir,
+     "%s_smallmem_clustered.log" % basename(input_seqs_fp))
+    uchime_denovo_fp = join(output_dir,
+     "%s_chimeras_denovo.uchime" % basename(input_seqs_fp))
+    uchime_denovo_log_fp = join(output_dir,
+     "%s_chimeras_denovo.log" % basename(input_seqs_fp))
+    uchime_ref_fp = join(output_dir,
+     "%s_chimeras_ref.uchime" % basename(input_seqs_fp))
+    uchime_ref_log_fp = join(output_dir,
+     "%s_chimeras_ref.log" % basename(input_seqs_fp))
+     
+    if verbose:
+        print "Clustering sequence %s..." % basename(input_seqs_fp)
+    
+    abundance_fp, app_result = usearch61_smallmem_cluster(input_seqs_fp,
+                               percent_id=percent_id_usearch61,
+                               minlen=minlen,
+                               rev = False,
+                               output_dir=output_dir,
+                               remove_usearch_logs=\
+                                suppress_usearch61_intermediates,
+                               wordlength=word_length,
+                               usearch61_maxrejects=max_rejects,
+                               usearch61_maxaccepts=max_accepts,
+                               HALT_EXEC=HALT_EXEC,
+                               output_uc_filepath=output_consensus_uc,
+                               log_name=smallmem_log_fp,
+                               sizeout=True,
+                               consout_filepath=output_consensus_fp)
+                               
+    de_novo_clusters, failures =\
+     parse_usearch61_clusters(open(output_consensus_uc, "U"))
+    
+    # RE's parsing of size=X part of label is position dependent, and only
+    # creates this in correct format with derep and fast cluster options,
+    # so must do manual fix of fasta for later steps.                         
+    fix_abundance_labels(output_consensus_fp, filtered_consensus_fp)
+                               
+    if suppress_usearch61_intermediates:
+        files_to_remove.append(output_consensus_fp)
+        files_to_remove.append(output_consensus_uc)
+        files_to_remove.append(filtered_consensus_fp)
+
+        
+    chimeras = []
+    non_chimeras = []
+        
+    if not suppress_usearch61_denovo:
+         if verbose:
+             print "De novo chimera checking %s..." % basename(input_seqs_fp)         
+         denovo_uchime_fp, app_result =\
+          usearch61_chimera_check_denovo(filtered_consensus_fp,
+                                         uchime_denovo_fp,
+                                         minlen=minlen,
+                                         output_dir=output_dir,
+                                         remove_usearch_logs =\
+                                          suppress_usearch61_intermediates,
+                                         uchime_denovo_log_fp=\
+                                          uchime_denovo_log_fp,
+                                         usearch61_minh=usearch61_minh,
+                                         usearch61_xn=usearch61_xn,
+                                         usearch61_dn=usearch61_dn,
+                                         usearch61_mindiffs=usearch61_mindiffs,
+                                         usearch61_mindiv=usearch61_mindiv,
+                                         usearch61_abundance_skew=\
+                                          usearch61_abundance_skew,
+                                         HALT_EXEC=HALT_EXEC)
+        
+         if suppress_usearch61_intermediates:
+             files_to_remove.append(uchime_denovo_fp)
+          
+         de_novo_chimeras = get_chimera_clusters(denovo_uchime_fp)
+         
+         expanded_denovo_chimeras, expanded_non_denovo_chimeras =\
+          merge_clusters_chimeras(de_novo_clusters, set(de_novo_chimeras))
+          
+         log_lines['denovo_chimeras'] += len(expanded_denovo_chimeras)
+         log_lines['denovo_non_chimeras'] += len(expanded_non_denovo_chimeras)
+         
+    if not suppress_usearch61_ref:
+         if verbose:
+             print "Reference chimera checking %s..." % basename(input_seqs_fp)
+         
+         ref_uchime_fp, app_result =\
+          usearch61_chimera_check_ref(filtered_consensus_fp,
+                                      uchime_ref_fp,
+                                      reference_seqs_fp,
+                                      minlen=minlen,
+                                      output_dir=output_dir,
+                                      remove_usearch_logs =\
+                                       suppress_usearch61_intermediates,
+                                      uchime_ref_log_fp=\
+                                       uchime_ref_log_fp,
+                                      usearch61_minh=usearch61_minh,
+                                      usearch61_xn=usearch61_xn,
+                                      usearch61_dn=usearch61_dn,
+                                      usearch61_mindiffs=usearch61_mindiffs,
+                                      usearch61_mindiv=usearch61_mindiv,
+                                      HALT_EXEC=HALT_EXEC)
+        
+         if suppress_usearch61_intermediates:
+             files_to_remove.append(uchime_ref_fp)
+          
+         ref_chimeras = get_chimera_clusters(uchime_ref_fp)
+         
+         expanded_ref_chimeras, expanded_non_ref_chimeras =\
+          merge_clusters_chimeras(de_novo_clusters, set(ref_chimeras))
+          
+         log_lines['ref_chimeras'] += len(expanded_ref_chimeras)
+         log_lines['ref_non_chimeras'] += len(expanded_non_ref_chimeras)
+    
+    if suppress_usearch61_ref:
+        chimeras = expanded_denovo_chimeras
+        non_chimeras = expanded_non_denovo_chimeras
+    elif suppress_usearch61_denovo:
+        chimeras = expanded_ref_chimeras
+        non_chimeras = expanded_non_ref_chimeras
+    else:
+        expanded_non_denovo_chimeras = set(expanded_non_denovo_chimeras)
+        expanded_non_ref_chimeras = set(expanded_non_ref_chimeras)
+        expanded_denovo_chimeras = set(expanded_denovo_chimeras)
+        expanded_ref_chimeras = set(expanded_ref_chimeras)
+        if non_chimeras_retention == "union":
+            non_chimeras = expanded_non_denovo_chimeras.union(\
+             expanded_non_ref_chimeras)
+            chimeras = expanded_denovo_chimeras.intersection(\
+             expanded_ref_chimeras)
+        else:
+            non_chimeras = expanded_non_denovo_chimeras.intersection(\
+             expanded_non_ref_chimeras)
+            chimeras = expanded_denovo_chimeras.union(\
+             expanded_ref_chimeras)
+    
+    return chimeras, non_chimeras, files_to_remove, log_lines
+    
+    
+    
+def write_usearch61_log(log_fp,
+                        input_seqs_fp,
+                        output_dir,
+                        reference_seqs_fp,
+                        suppress_usearch61_intermediates,
+                        suppress_usearch61_ref,
+                        suppress_usearch61_denovo,
+                        split_by_sampleid,
+                        non_chimeras_retention,
+                        usearch61_minh,
+                        usearch61_xn,
+                        usearch61_dn,
+                        usearch61_mindiffs,
+                        usearch61_mindiv,
+                        usearch61_abundance_skew,
+                        percent_id_usearch61,
+                        minlen,
+                        word_length,
+                        max_accepts,
+                        max_rejects,
+                        HALT_EXEC,
+                        log_lines):
+    """ Writes overall log data for identify_chimeric_seqs.py call
+    
+    log_fp: filepath to write log data.
+    """
+    
+    out_f = open(log_fp, "w")
+    
+    param_names = ["input_seqs_fp", "output_dir",
+     "reference_seqs_fp", "suppress_usearch61_intermediates",
+     "suppress_usearch61_ref", "suppress_usearch61_denovo",
+     "split_by_sampleid", "non_chimeras_retention", "usearch61_minh",
+     "usearch61_xn", "usearch61_dn", "usearch61_mindiffs", "usearch61_mindiv",
+     "usearch61_abundance_skew", "percent_id_usearch61", "minlen",
+     "word_length", "max_accepts", "max_rejects", "HALT_EXEC"]
+     
+    param_values = [input_seqs_fp, output_dir,
+     reference_seqs_fp, suppress_usearch61_intermediates,
+     suppress_usearch61_ref, suppress_usearch61_denovo,
+     split_by_sampleid, non_chimeras_retention, usearch61_minh,
+     usearch61_xn, usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
+     usearch61_abundance_skew, percent_id_usearch61, minlen,
+     word_length, max_accepts, max_rejects, HALT_EXEC]
+    
+    for curr_param in range(len(param_names)):
+        out_f.write("%s\t%s\n" % (param_names[curr_param],
+         param_values[curr_param]))
+         
+    out_f.write("\n")
+    
+    for curr_line in log_lines.keys():
+        out_f.write("%s\t%s\n" % (curr_line, log_lines[curr_line]))
+    
+    out_f.close()
+    
+    return
+
+def fix_abundance_labels(output_consensus_fp, filtered_consensus_fp):
+    """ puts size= part of label as second component after white space
+     
+    output_consensus_fp: consensus filepath with abundance data
+    filtered_consensus_fp: output filepath name
+    """
+     
+    consensus_f = open(output_consensus_fp, "U")
+     
+    filtered_f = open(filtered_consensus_fp, "w")
+     
+    for label, seq in MinimalFastaParser(consensus_f):
+        fasta_label = label.split()[0]
+        size = "size=" + label.split('size=')[1].replace(';', '')
+        final_label = "%s;%s" % (fasta_label, size)
+        filtered_f.write(">%s\n%s\n" % (final_label, seq))
+         
+    consensus_f.close()
+    filtered_f.close()
+     
+def get_chimera_clusters(uchime_fp):
+    """ Parses .uchime file, returns list of seq IDs flagged as chimeras
+    
+    uchime_fp: filepath of uchime file
+    """
+    
+    uchime_f = open(uchime_fp, "U")
+    
+    chimeras = []
+    
+    seq_id_ix = 1
+    flag_ix = 17
+    
+    for line in uchime_f:
+        if line.startswith("#"):
+            continue
+        if len(line.strip()) == 0:
+            continue
+        curr_line = line.split()
+        if curr_line[flag_ix] == "Y":
+            chimeras.append(curr_line[seq_id_ix].split('centroid=')[1].split(';')[0])
+            
+    return chimeras
+    
+def merge_clusters_chimeras(de_novo_clusters,
+                            chimeras):
+    """ Merges results of chimeras/clusters into list of chimeras, nonchimeras
+    
+    de_novo_clusters: dict of clusterID: seq IDs
+    chimeras: list of chimeric seq IDs
+    """
+    
+    expanded_chimeras = []
+    expanded_non_chimeras = []
+    
+    for curr_cluster in de_novo_clusters:
+        curr_seq_ids = []
+        matches_chimera = False
+        for curr_seq in de_novo_clusters[curr_cluster]:
+            if curr_seq in chimeras:
+                matches_chimera = True
+            curr_seq_ids.append(curr_seq)
+        if matches_chimera:
+            expanded_chimeras += curr_seq_ids
+        else:
+            expanded_non_chimeras += curr_seq_ids      
+    
+    return expanded_chimeras, expanded_non_chimeras
+        
+        
+

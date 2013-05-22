@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Dan Knights",
                "Jai Ram Rideout", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
 __status__ = "Development"
@@ -118,7 +118,7 @@ def sync_mapping_to_otu_table(otu_table, mapping):
     return [new_mapping_data, header, comments], removed_samples
 
 def run_single_G_test(OTU_name, category_info, otu_table, category_values,
-                      suppress_warnings=False):
+                      suppress_warnings=True):
     """run the G test on a single OTU
        If suppress_warnings=True, doesn't warn when sample in map but not otu table
     """
@@ -129,7 +129,7 @@ def run_single_G_test(OTU_name, category_info, otu_table, category_values,
     return g_val, prob, contingency_matrix
 
 def make_contingency_matrix(OTU_name, category_info, otu_table,
-                            category_values, suppress_warnings=False):
+                            category_values, suppress_warnings=True):
     """make the contingency table for running the G test of independence
     
     counts OTU as present (count > 1) or absent
@@ -159,7 +159,7 @@ def make_contingency_matrix(OTU_name, category_info, otu_table,
     return Dict2D(result, Default=0, Pad=True)
 
 def run_G_test_OTUs(OTU_list, category_info, otu_table, category_values,
-                    suppress_warnings=False):
+                    suppress_warnings=True):
     """run the G test on all OTUs in the OTU list
        If suppress_warnings=True, doesn't warn when sample in map but not otu table
     """

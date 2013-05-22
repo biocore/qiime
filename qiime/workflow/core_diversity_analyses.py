@@ -3,7 +3,7 @@
 from __future__ import division
 import re
 from glob import glob
-from os.path import split, splitext
+from os.path import split, splitext, exists, join
 from qiime.parse import (parse_qiime_parameters,
                          parse_mapping_file_to_dict)
 from qiime.util import (create_dir,
@@ -23,7 +23,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -136,8 +136,11 @@ def run_core_diversity_analyses(
     commands = []
     
     # begin logging
+    old_log_fps = glob(join(output_dir,'log_20*txt'))
     log_fp = generate_log_fp(output_dir)
     index_links.append(('Master run log',log_fp,_index_headers['run_summary']))
+    for old_log_fp in old_log_fps:
+        index_links.append(('Previous run log',old_log_fp,_index_headers['run_summary']))
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
@@ -152,71 +155,94 @@ def run_core_diversity_analyses(
     except KeyError:
         params_str = ''
     biom_table_stats_output_fp = '%s/biom_table_summary.txt' % output_dir
-    print_biom_table_summary_cmd = \
-     "print_biom_table_summary.py -i %s -o %s --suppress_md5 %s" % \
-     (biom_fp, biom_table_stats_output_fp,params_str)
+    if not exists(biom_table_stats_output_fp):
+        print_biom_table_summary_cmd = \
+         "print_biom_table_summary.py -i %s -o %s --suppress_md5 %s" % \
+         (biom_fp, biom_table_stats_output_fp,params_str)
+        commands.append([('Generate BIOM table summary',
+                          print_biom_table_summary_cmd)])
+    else:
+        logger.write("Skipping print_biom_table_summary.py as %s exists.\n\n" \
+                     % biom_table_stats_output_fp)
     index_links.append(('BIOM table statistics',
                         biom_table_stats_output_fp,
                         _index_headers['run_summary']))
-    commands.append([('Generate BIOM table summary',
-                      print_biom_table_summary_cmd)])
     
     # filter samples with fewer observations than the requested sampling_depth. 
     # since these get filtered for some analyses (eg beta diversity after
     # even sampling) it's useful to filter them here so they're filtered 
     # from all analyses.
     filtered_biom_fp = "%s/table_mc%d.biom" % (output_dir, sampling_depth)
-    filter_samples_cmd = "filter_samples_from_otu_table.py -i %s -o %s -n %d" %\
-     (biom_fp,filtered_biom_fp,sampling_depth)
-    commands.append([('Filter low sequence count samples from table (minimum sequence count: %d)' % sampling_depth,
-                      filter_samples_cmd)])
+    if not exists(filtered_biom_fp):
+        filter_samples_cmd = "filter_samples_from_otu_table.py -i %s -o %s -n %d" %\
+         (biom_fp,filtered_biom_fp,sampling_depth)
+        commands.append([('Filter low sequence count samples from table (minimum sequence count: %d)' % sampling_depth,
+                          filter_samples_cmd)])
+    else:
+        logger.write("Skipping filter_samples_from_otu_table.py as %s exists.\n\n" \
+                     % filtered_biom_fp)
     biom_fp = filtered_biom_fp
     
     # run initial commands and reset the command list
-    command_handler(commands, 
-                    status_update_callback, 
-                    logger,
-                    close_logger_on_success=False)
-    commands = []
+    if len(commands) > 0:
+        command_handler(commands, 
+                        status_update_callback, 
+                        logger,
+                        close_logger_on_success=False)
+        commands = []
     
     if not suppress_beta_diversity:
         bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
-        even_dm_fps = run_beta_diversity_through_plots(
-         otu_table_fp=biom_fp, 
-         mapping_fp=mapping_fp,
-         output_dir=bdiv_even_output_dir,
-         command_handler=command_handler,
-         params=params,
-         qiime_config=qiime_config,
-         sampling_depth=sampling_depth,
-         # force suppression of distance histograms - boxplots work better
-         # in this context, and are created below.
-         histogram_categories=[],
-         tree_fp=tree_fp,
-         parallel=parallel,
-         logger=logger,
-         suppress_md5=True,
-         status_update_callback=status_update_callback)
-    
+        # Need to check for the existence of any distance matrices, since the user 
+        # can select which will be generated.
+        existing_dm_fps = glob('%s/*_dm.txt' % bdiv_even_output_dir)
+        if len(existing_dm_fps) == 0:
+            even_dm_fps = run_beta_diversity_through_plots(
+             otu_table_fp=biom_fp, 
+             mapping_fp=mapping_fp,
+             output_dir=bdiv_even_output_dir,
+             command_handler=command_handler,
+             params=params,
+             qiime_config=qiime_config,
+             sampling_depth=sampling_depth,
+             # force suppression of distance histograms - boxplots work better
+             # in this context, and are created below.
+             histogram_categories=[],
+             tree_fp=tree_fp,
+             parallel=parallel,
+             logger=logger,
+             suppress_md5=True,
+             status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping beta_diversity_through_plots.py as %s exist(s).\n\n" \
+                         % ', '.join(existing_dm_fps))
+            even_dm_fps = [(split(fp)[1].strip('_dm.txt'),fp) for fp in existing_dm_fps]
+        
+        # Get make_distance_boxplots parameters
+        try:
+            params_str = get_params_str(params['make_distance_boxplots'])
+        except KeyError:
+            params_str = ''
+        
         for bdiv_metric, dm_fp in even_dm_fps:
             for category in categories:
                 boxplots_output_dir = '%s/%s_boxplots/' % (bdiv_even_output_dir,bdiv_metric)
-                try:
-                    params_str = get_params_str(params['make_distance_boxplots'])
-                except KeyError:
-                    params_str = ''
-                boxplots_cmd = \
-                 'make_distance_boxplots.py -d %s -f %s -o %s -m %s -n 999 %s' %\
-                 (dm_fp, category, boxplots_output_dir, mapping_fp, params_str)
-                commands.append([('Boxplots (%s)' % category,
-                                  boxplots_cmd)])
+                plot_output_fp = '%s/%s_Distances.pdf' % (boxplots_output_dir,category)
+                stats_output_fp = '%s/%s_Stats.txt' % (boxplots_output_dir,category)
+                if not exists(plot_output_fp):
+                    boxplots_cmd = \
+                     'make_distance_boxplots.py -d %s -f %s -o %s -m %s -n 999 %s' %\
+                     (dm_fp, category, boxplots_output_dir, mapping_fp, params_str)
+                    commands.append([('Boxplots (%s)' % category,
+                                      boxplots_cmd)])
+                else:
+                    logger.write("Skipping make_distance_boxplots.py for %s as %s exists.\n\n" \
+                                 % (category, plot_output_fp))
                 index_links.append(('Distance boxplots (%s)' % bdiv_metric,
-                                    '%s/%s_Distances.pdf' % \
-                                     (boxplots_output_dir,category),
+                                    plot_output_fp,
                                     _index_headers['beta_diversity_even'] % sampling_depth))
                 index_links.append(('Distance boxplots statistics (%s)' % bdiv_metric,
-                                    '%s/%s_Stats.txt' % \
-                                     (boxplots_output_dir,category),
+                                    stats_output_fp,
                                     _index_headers['beta_diversity_even'] % sampling_depth))
             
             index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
@@ -247,25 +273,30 @@ def run_core_diversity_analyses(
     if not suppress_alpha_diversity:
         ## Alpha rarefaction workflow
         arare_full_output_dir = '%s/arare_max%d/' % (output_dir,sampling_depth)
-        run_alpha_rarefaction(
-         otu_table_fp=biom_fp,
-         mapping_fp=mapping_fp,
-         output_dir=arare_full_output_dir,
-         command_handler=command_handler,
-         params=params,
-         qiime_config=qiime_config,
-         tree_fp=tree_fp,
-         num_steps=arare_num_steps,
-         parallel=parallel,
-         logger=logger,
-         min_rare_depth=arare_min_rare_depth,
-         max_rare_depth=sampling_depth,
-         suppress_md5=True,
-         status_update_callback=status_update_callback)
+        rarefaction_plots_output_fp = \
+         '%s/alpha_rarefaction_plots/rarefaction_plots.html' % arare_full_output_dir
+        if not exists(rarefaction_plots_output_fp):
+            run_alpha_rarefaction(
+             otu_table_fp=biom_fp,
+             mapping_fp=mapping_fp,
+             output_dir=arare_full_output_dir,
+             command_handler=command_handler,
+             params=params,
+             qiime_config=qiime_config,
+             tree_fp=tree_fp,
+             num_steps=arare_num_steps,
+             parallel=parallel,
+             logger=logger,
+             min_rare_depth=arare_min_rare_depth,
+             max_rare_depth=sampling_depth,
+             suppress_md5=True,
+             status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping alpha_rarefaction.py as %s exists.\n\n" \
+                         % rarefaction_plots_output_fp)
     
         index_links.append(('Alpha rarefaction plots',
-                            '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
-                              % arare_full_output_dir,
+                            rarefaction_plots_output_fp,
                             _index_headers['alpha_diversity']))
                         
         collated_alpha_diversity_fps = \
@@ -274,18 +305,23 @@ def run_core_diversity_analyses(
             params_str = get_params_str(params['compare_alpha_diversity'])
         except KeyError:
             params_str = ''
+            
         for category in categories:
             for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
                 alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
                 alpha_comparison_output_fp = '%s/%s_%s.txt' % \
                  (arare_full_output_dir,category,alpha_metric)
-                compare_alpha_cmd = \
-                 'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
-                 (collated_alpha_diversity_fp, mapping_fp, category, 
-                  alpha_comparison_output_fp, params_str)
-                commands.append([('Compare alpha diversity (%s, %s)' %\
-                                   (category,alpha_metric),
-                                  compare_alpha_cmd)])
+                if not exists(alpha_comparison_output_fp):
+                    compare_alpha_cmd = \
+                     'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
+                     (collated_alpha_diversity_fp, mapping_fp, category, 
+                      alpha_comparison_output_fp, params_str)
+                    commands.append([('Compare alpha diversity (%s, %s)' %\
+                                       (category,alpha_metric),
+                                      compare_alpha_cmd)])
+                else:
+                    logger.write("Skipping compare_alpha_diversity.py for %s as %s exists.\n\n" \
+                                 % (category, alpha_comparison_output_fp))
                 index_links.append(
                  ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
                   alpha_comparison_output_fp,
@@ -293,19 +329,25 @@ def run_core_diversity_analyses(
     
     if not suppress_taxa_summary:
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
-        run_summarize_taxa_through_plots(
-         otu_table_fp=biom_fp,
-         mapping_fp=mapping_fp,
-         output_dir=taxa_plots_output_dir,
-         mapping_cat=None, 
-         sort=True,
-         command_handler=command_handler,
-         params=params,
-         qiime_config=qiime_config,
-         logger=logger,
-         suppress_md5=True,
-         status_update_callback=status_update_callback)
-    
+        # need to check for existence of any html files, since the user can 
+        # select only certain ones to be generated
+        existing_taxa_plot_html_fps = glob(join(output_dir,'taxa_summary_plots','*.html'))
+        if len(existing_taxa_plot_html_fps) == 0:
+            run_summarize_taxa_through_plots(
+             otu_table_fp=biom_fp,
+             mapping_fp=mapping_fp,
+             output_dir=taxa_plots_output_dir,
+             mapping_cat=None, 
+             sort=True,
+             command_handler=command_handler,
+             params=params,
+             qiime_config=qiime_config,
+             logger=logger,
+             suppress_md5=True,
+             status_update_callback=status_update_callback)
+        else:
+            logger.write("Skipping summarize_taxa_through_plots.py for as %s exist(s).\n\n" \
+                         % ', '.join(existing_taxa_plot_html_fps))
 
         index_links.append(('Taxa summary bar plots',
                             '%s/taxa_summary_plots/bar_charts.html'\
@@ -317,18 +359,25 @@ def run_core_diversity_analyses(
                             _index_headers['taxa_summary']))
         for category in categories:
             taxa_plots_output_dir = '%s/taxa_plots_%s/' % (output_dir,category)
-            run_summarize_taxa_through_plots(
-             otu_table_fp=biom_fp,
-             mapping_fp=mapping_fp,
-             output_dir=taxa_plots_output_dir,
-             mapping_cat=category, 
-             sort=True,
-             command_handler=command_handler,
-             params=params,
-             qiime_config=qiime_config,
-             logger=logger,
-             suppress_md5=True,
-             status_update_callback=status_update_callback)
+            # need to check for existence of any html files, since the user can 
+            # select only certain ones to be generated
+            existing_taxa_plot_html_fps = glob('%s/taxa_summary_plots/*.html' % taxa_plots_output_dir)
+            if len(existing_taxa_plot_html_fps) == 0:
+                run_summarize_taxa_through_plots(
+                 otu_table_fp=biom_fp,
+                 mapping_fp=mapping_fp,
+                 output_dir=taxa_plots_output_dir,
+                 mapping_cat=category, 
+                 sort=True,
+                 command_handler=command_handler,
+                 params=params,
+                 qiime_config=qiime_config,
+                 logger=logger,
+                 suppress_md5=True,
+                 status_update_callback=status_update_callback)
+            else:
+                logger.write("Skipping summarize_taxa_through_plots.py for %s as %s exist(s).\n\n" \
+                             % (category, ', '.join(existing_taxa_plot_html_fps)))
 
             index_links.append(('Taxa summary bar plots',
                                 '%s/taxa_summary_plots/bar_charts.html'\
@@ -340,30 +389,41 @@ def run_core_diversity_analyses(
                                 _index_headers['taxa_summary_categorical'] % category))
     
     if not suppress_otu_category_significance:
+        try:
+            params_str = get_params_str(params['otu_category_significance'])
+        except KeyError:
+            params_str = ''
         # OTU category significance
         for category in categories:
             category_signifance_fp = \
              '%s/category_significance_%s.txt' % (output_dir, category)
-            try:
-                params_str = get_params_str(params['otu_category_significance'])
-            except KeyError:
-                params_str = ''
-            # Build the OTU cateogry significance command
-            category_significance_cmd = \
-             'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
-             (biom_fp, mapping_fp, category, 
-              category_signifance_fp, params_str)
-            commands.append([('OTU category significance (%s)' % category, 
-                              category_significance_cmd)])
-                          
+            if not exists(category_signifance_fp):
+                # Build the OTU cateogry significance command
+                category_significance_cmd = \
+                 'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
+                 (biom_fp, mapping_fp, category, 
+                  category_signifance_fp, params_str)
+                commands.append([('OTU category significance (%s)' % category, 
+                                  category_significance_cmd)])
+            else:
+                logger.write("Skipping otu_category_significance.py for %s as %s exists.\n\n" \
+                             % (category, category_signifance_fp))
+            
             index_links.append(('Category significance (%s)' % category,
                         category_signifance_fp,
                         _index_headers['otu_category_sig']))
+    filtered_biom_gzip_fp = '%s.gz' % filtered_biom_fp
+    if not exists(filtered_biom_gzip_fp):
+        commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
+        index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
+                            filtered_biom_gzip_fp,
+                            _index_headers['run_summary']))
+    else:
+        logger.write("Skipping compressing of filtered BIOM table as %s exists.\n\n" \
+                     % filtered_biom_gzip_fp)
+    if len(commands) > 0:
+        command_handler(commands, status_update_callback, logger)
+    else:
+        logger.close()
     
-    commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
-    index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
-                        '%s.gz' % filtered_biom_fp,
-                        _index_headers['run_summary']))
-    
-    command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
