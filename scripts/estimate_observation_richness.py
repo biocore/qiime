@@ -5,17 +5,14 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from os.path import join
-
 from biom.parse import parse_biom_table
-
 from cogent.util.misc import create_dir
-
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
 
@@ -26,12 +23,12 @@ from qiime.estimate_observation_richness import (
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = "Estimates the observation richness of samples in a BIOM table"
+script_info['brief_description'] = "Estimates the observation (e.g., OTU) richness of samples in a BIOM table"
 script_info['script_description'] = """
-This script provides estimates of the observation richness (i.e. number of
-observations) given a sampling depth (i.e. number of individuals/sequences
-per sample). Estimators are provided for both interpolation/rarefaction and
-extrapolation.
+This script provides estimates of the observation (e.g., OTU) richness (i.e.
+number of observations) given a sampling depth (i.e. number of
+individuals/sequences per sample). Estimators are provided for both
+interpolation/rarefaction and extrapolation.
 
 Interpolation/rarefaction applies when the richness is estimated for a
 *smaller* number of individuals than the original number of individuals in that
@@ -132,15 +129,15 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # Create the output dir if it doesn't already exist.
-    out_dir = opts.output_dir
+    output_dir = opts.output_dir
     try:
-        create_dir(out_dir)
+        create_dir(output_dir)
     except:
         option_parser.error("Could not create or access output directory "
                             "specified with the -o/--output_dir option.")
 
-    table_fp = opts.otu_table_fp
-    with open(table_fp, 'U') as table_f:
+    otu_table_fp = opts.otu_table_fp
+    with open(otu_table_fp, 'U') as table_f:
         table = parse_biom_table(table_f)
 
     estimator = ObservationRichnessEstimator(table,
@@ -148,7 +145,7 @@ def main():
     results = estimator(opts.min, opts.max, opts.num_steps,
                         opts.confidence_level)
 
-    out_fp = join(out_dir, 'estimates_table.txt')
+    out_fp = join(output_dir, 'estimates_table.txt')
     with open(out_fp, 'w') as out_f:
         results.toTable(out_f)
 

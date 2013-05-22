@@ -1,6 +1,7 @@
 QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
 * core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
+* Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
@@ -31,7 +32,6 @@ QIIME 1.7.0 (14 May 2013)
 * summarize_taxa.py now outputs taxa summary tables in both classic (TSV) and BIOM formats by default. This will allow taxa summary tables to be used with other QIIME scripts that expect BIOM files as input. This change is the first step towards adding full support for BIOM taxon tables in QIIME. summarize_taxa.py also has two new options: --suppress_classic_table_output and  --supress_biom_table_output.
 * make_distance_boxplots.py and make_distance_comparison_plots.py now explicitly state the alternative hypothesis used in the t-tests.
 * parallel_blast.py now has a different option for providing a blast db (--blast_db). This implies that the current --refseqs_path should be used only for providing a fasta file of reference sequences. The --suppress_format_blastdb option has been removed since it is no longer needed.
-* Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================

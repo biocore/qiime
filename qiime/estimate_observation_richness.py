@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -17,9 +17,7 @@ from collections import defaultdict
 from csv import writer
 
 from biom.util import compute_counts_per_sample_stats
-
 from cogent.maths.stats.distribution import ndtri
-
 from numpy import empty, ones, sqrt, tensordot
 
 class EmptyTableError(Exception):

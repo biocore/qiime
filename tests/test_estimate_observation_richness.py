@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -17,9 +17,7 @@ from StringIO import StringIO
 
 from biom.parse import parse_biom_table
 from biom.table import Table
-
 from cogent.util.unit_test import TestCase, main
-
 from numpy import asarray, array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,
