@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # File created on 02 May 2013
 from __future__ import division
+from cogent.app.util import ApplicationNotFoundError
+import numpy
 
 
 __author__ = "Gregory Ditzler"
@@ -13,11 +15,15 @@ __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Development"
 
 
-import numpy, sys
-
 
 
 def get_fs_methods():
+	"""
+		get_fs_methods()
+		return the feature selection methods that are 
+		available for use in a list. note that the options
+		are case sensitive. 
+	"""
 	return ['CIFE','CMIM','CondMI','Condred','ICAP','JMI','MIM','MIFS','mRMR']
 
 def parse_biom(fname): 
@@ -63,7 +69,7 @@ def parse_map_file(fname, column_name, observation_names):
 		try:
 			label_full.append(obj[id_set][column_name])
 		except ValueError:
-			raise ValueError("""Error: fizzy.parse_map_file :: 
+			raise ValueError(""" 
 				Unknown column name in map file. Make sure the column 
 				you specified is in the map file you specified.""")
 			
@@ -74,15 +80,10 @@ def parse_map_file(fname, column_name, observation_names):
 	# its likely the user does not know what they are doing. 
 	unique_classes = numpy.unique(label_full)
 	if len(unique_classes) == len(observation_names):
-		raise ValueError("""Error: fizzy.parse_map_file :: number of 
+		raise ValueError("""Number of 
 			classes is the number of observations.  The number of 
 			classes must be less than the number of observations in 
 			map file that was specified.""")
-
-	# print the number of unique classes to the output. 
-	print 'The unique classes detected are:'
-	for cls in unique_classes:
-		print '   -> ' + cls
 
 	for str_lab in label_full:
 		for uclass,n in map(None, unique_classes, range(len(unique_classes))):
@@ -112,12 +113,18 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 	
 	try:
 		import feast
-		fs_method = getattr(feast, method)
-	except ValueError:
-		raise ValueError("""Error: fizzy.run_pyfeast :: error loading 
+	except ApplicationNotFoundError:
+		raise ApplicationNotFoundError("""Error loading 
 			the PyFeast module. It is likely that either: a) you   
 			attempted to load a module that is not in PyFeast, or b) 
 			you do not have PyFeast installed locally.""")
+
+	try:
+		fs_method = getattr(feast, method)
+	except AttributeError:
+		raise AttributeError("""Unknown feature selection method
+			is being specified for PyFeast. Make sure the feature 
+			selection method being selected is a valid one. """)
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
