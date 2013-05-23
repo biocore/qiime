@@ -4,9 +4,9 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -45,7 +45,7 @@ script_info['optional_options'] = [\
           type='choice',help='Method to use for pairwise alignments'+\
           ' [default: %default]',\
           default='uclust',choices=pairwise_alignment_method_choices),\
- make_option('-d','--blast_db',\
+ make_option('-d','--blast_db',type='blast_db',\
           dest='blast_db',help='Database to blast against'+\
           ' [default: %s]' % blast_db_default_help,
           default=qiime_config['pynast_template_alignment_blastdb']),\

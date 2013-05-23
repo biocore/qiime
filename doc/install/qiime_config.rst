@@ -31,7 +31,7 @@ Definition of values in qiime_config
 
 ``python_exe_fp`` : path to ``python`` executable
 
-``working_dir`` : a directory where work should be performed when running in parallel. You must be able to write to this directory. May be deprecated in favor of ``temp_dir`` in QIIME 1.6.0.
+``working_dir`` : a directory where work should be performed when running in parallel. You must be able to write to this directory. May be deprecated in favor of ``temp_dir`` in QIIME 1.8.0.
 
 ``blastmat_dir`` : directory where BLAST substitution matrices are stored
 

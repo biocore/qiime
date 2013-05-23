@@ -29,7 +29,7 @@ at http://qiime.org/tutorials/remote_mapping_files.html.
 	**[REQUIRED]**
 		
 	-k, `-`-spreadsheet_key
-		The spreadsheet key that will be used to identify the Google Spreadsheet to load. This is the part of the Google Spreadsheet URL that comes after 'key='. You may instead provide the entire URL and the key will be extracted from it.
+		The spreadsheet key that will be used to identify the Google Spreadsheet to load. This is the part of the Google Spreadsheet URL that comes after 'key='. You may instead provide the entire URL and the key will be extracted from it. If you provide the entire URL, you may need to enclose it in single quotes
 	-o, `-`-output_fp
 		The output filepath
 	

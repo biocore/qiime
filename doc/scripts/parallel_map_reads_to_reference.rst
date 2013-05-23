@@ -47,7 +47,7 @@
 	`-`-max_rejects
 		Max_rejects value to (usearch only) [default: 32]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

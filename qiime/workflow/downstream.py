@@ -9,18 +9,18 @@ __credits__ = ["Greg Caporaso",
                "Justin Kuczynski",
                "Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os.path import split, splitext, join
 from biom.parse import parse_biom_table
+from biom.util import compute_counts_per_sample_stats
 from qiime.parse import parse_mapping_file
 from qiime.util import (get_qiime_scripts_dir,
                         create_dir,
-                        get_interesting_mapping_fields,
-                        compute_seqs_per_library_stats)
+                        get_interesting_mapping_fields)
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
@@ -333,7 +333,7 @@ def run_alpha_rarefaction(otu_table_fp,
     
     if max_rare_depth == None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
-         compute_seqs_per_library_stats(parse_biom_table(open(otu_table_fp,'U')))
+         compute_counts_per_sample_stats(parse_biom_table(open(otu_table_fp,'U')))
         max_rare_depth = median_count
     step = int((max_rare_depth - min_rare_depth) / num_steps) or 1
     max_rare_depth = int(max_rare_depth)
@@ -599,7 +599,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         # Build the consensus tree command
         consensus_tree_cmd =\
          '%s %s/consensus_tree.py -i %s -o %s %s' %\
-         (python_exe_fp, script_dir, upgma_dir, upgma_dir + "/consensus.tre",
+         (python_exe_fp, script_dir, upgma_dir, metric_output_dir + "/rare_upgma_consensus.tre",
             params_str)
         commands.append(\
          [('consensus on rarefied distance matrices (%s)' % beta_diversity_metric,
@@ -618,7 +618,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         if master_tree == "full":
             master_tree_fp = full_tree_fp
         elif master_tree == "consensus":
-            master_tree_fp = upgma_dir + "/consensus.tre"
+            master_tree_fp = metric_output_dir + "/rare_upgma_consensus.tre"
         else:
             raise RuntimeError('master tree method "%s" not found' % (master_tree,))
         tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\
@@ -738,10 +738,10 @@ def run_summarize_taxa_through_plots(otu_table_fp,
         params_str = ''
     
     if mapping_cat:
-        output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat))
+        output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat.replace(' ','-')))
         # Build the summarize otu by category command
         summarize_otu_by_cat_cmd = \
-         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m %s %s" %\
+         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m '%s' %s" %\
          (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp,
           mapping_cat, params_str)
         

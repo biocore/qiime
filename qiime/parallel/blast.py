@@ -3,9 +3,9 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -22,15 +22,13 @@ class ParallelBlaster(ParallelWrapper):
     _job_prefix = 'BLAST'
 
     def _precommand_initiation(self, input_fp, output_dir, working_dir, params):
-        if not params['suppress_format_blastdb']:
+        if params['refseqs_path']:
             # Build the blast database from the refseqs_path -- all procs
             # will then access one db rather than create one per proc.
             blast_db, db_files_to_remove = \
                  build_blast_db_from_fasta_path(params['refseqs_path'])
             self.files_to_remove += db_files_to_remove
             params['blast_db'] = blast_db
-        else:
-            params['blast_db'] = params['refseqs_path']
 
     def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
                           working_dir, command_prefix=None,

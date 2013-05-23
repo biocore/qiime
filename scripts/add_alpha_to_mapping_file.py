@@ -6,7 +6,7 @@ __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
 __status__ = "Development"
@@ -43,7 +43,7 @@ script_info['script_usage'].append(("Adding collated alpha diversity data",
     " depth, this case is for use with the output of collated_alpha.py. It is "
     "recommended that the filenames are the name of the metric used in each "
     "file.", "%prog -i 'shannon.txt,chao1.txt' -m mapping.txt -b 4 -o collated_"
-    "alpha_mapping.txt --depth=49"))
+    "alpha_mapping.txt --depth=49 --collated_input"))
 script_info['output_description']= "The result of running this script is a "+\
     "metadata mapping file that will include 3 new columns per alpha "+\
     "diversity metric included in the alpha diversity file. For example, with"+\
@@ -80,8 +80,11 @@ make_option('--binning_method', type='choice', choices=['equal', 'quantile'],
 make_option('--depth', type='int', default=None, help='Select the rarefaction '
     'depth to use when the alpha_fps refers to collated alpha diversity file(s)'
     ' i. e. the output of collate_alpha.py. All the iterations contained at '
-    'this depth will be averaged to form a single mean value [default: %defaul'
-    't].')
+    'this depth will be averaged to form a single mean value [default: highest '
+    'depth available].'),
+make_option('--collated_input', action='store_true', help='Use to specify that '
+    'the -i option is composed of collated alpha diversity data.',
+    default=False)
 ]
 script_info['version'] = __version__
 
@@ -96,16 +99,11 @@ def main():
     binning_method = opts.binning_method
     missing_value_name = opts.missing_value_name
     depth = opts.depth
-
-    # make sure the number of bins is an integer
-    try:
-        number_of_bins = int(opts.number_of_bins)
-    except ValueError:
-        raise ValueError, 'The number of bins must be an integer, not %s'\
-            % opts.number_of_bins
+    number_of_bins = opts.number_of_bins
+    collated_input = opts.collated_input
 
     # if using collated data, make sure they specify a depth
-    if depth is not None:
+    if collated_input:
         alpha_dict = {}
 
         # build up a dictionary with the filenames as keys and lines as values
@@ -114,8 +112,11 @@ def main():
                 single_alpha_fp, 'U').readlines()
 
         # format the collated data
-        metrics, alpha_sample_ids, alpha_data = mean_alpha(alpha_dict,
-            depth)
+        try:
+            metrics, alpha_sample_ids, alpha_data = mean_alpha(alpha_dict,
+                depth)
+        except ValueError, e: # see mean_alpha for the possible exceptions
+            option_parser.error(e.message)
 
     # when not using collated data, the user can only specify one input file
     else:

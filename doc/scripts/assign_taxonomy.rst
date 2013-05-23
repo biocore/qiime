@@ -9,9 +9,9 @@
 
 Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, %prog attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column).
+Given a set of sequences, assign_taxonomy.py attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column).
 
-Example reference data sets and id_to_taxonomy maps can be found in the Greengenes OTUs. To get the latest build of those click the "Most recent Greengenes OTUs" link on the top right of http://blog.qiime.org. After downloading and unzipping you can use the following following files as -r and -t. As of this writing the latest build was gg_otus_4feb2011, but that portion of path to these files will change with future builds. Modify these paths accordining when calling %prog.
+Example reference data sets and id_to_taxonomy maps can be found in the Greengenes OTUs. To get the latest build of those click the "Most recent Greengenes OTUs" link on the top right of http://blog.qiime.org. After downloading and unzipping you can use the following following files as -r and -t. As of this writing the latest build was gg_otus_4feb2011, but that portion of path to these files will change with future builds. Modify these paths accordining when calling assign_taxonomy.py.
 
 -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
 -t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt (best for retraining the RDP classifier)
@@ -54,7 +54,7 @@ Example reference data sets and id_to_taxonomy maps can be found in the Greengen
 	`-`-header_id_regex
 		Used to choose the part of the header in the OTU clustering file that Rtax reports back as the ID.  The default uses the amplicon ID, not including /1 or /3, as the primary key for the query sequences. (used for RTAX only). [default: \S+\s+(\S+?)\/]
 	-m, `-`-assignment_method
-		Taxon assignment method, either blast, mothur, rdp, or rtax [default:rdp]
+		Taxon assignment method, must be one of rdp, blast, rtax, mothur, tax2tree [default: rdp]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence

@@ -45,14 +45,14 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-f, `-`-full_tree
 		By default, each job removes calls _fast_unifrac_setup to remove unused parts of the tree. pass -f if you already have a minimal tree, and this script will run faster
 
 
 **Output:**
 
-The output of %prog is a folder containing text files, each a distance matrix between samples.
+The output of parallel_beta_diversity.py is a folder containing text files, each a distance matrix between samples.
 
 
 **Apply beta_diversity.py in parallel to multiple otu tables:**

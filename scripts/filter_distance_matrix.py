@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -70,7 +70,11 @@ def main():
         samples_to_keep = \
          get_seqs_to_keep_lookup_from_seq_id_file(open(opts.sample_id_fp,'U'))
     elif opts.mapping_fp and opts.valid_states:
-        samples_to_keep = sample_ids_from_metadata_description(open(opts.mapping_fp,'U'),opts.valid_states)
+        try:
+            samples_to_keep = sample_ids_from_metadata_description(
+                open(opts.mapping_fp,'U'),opts.valid_states)
+        except ValueError, e:
+            option_parser.error(e.message)
     else:
         option_parser.error('must pass either --sample_id_fp, -t, or -m and -s')
     # note that negate gets a little weird here. The function we're calling removes the specified 

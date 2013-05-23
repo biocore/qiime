@@ -44,7 +44,7 @@ Due to licensing restrictions, we cannot package Roche's ``sff tools`` with the 
 	
 	Failed the following unit tests, in part or whole due to missing external applications.
 	Depending on the QIIME features you plan to use, this may not be critical.
-	/home/qiime/Qiime/tests/test_process_sff.py
+	$HOME/Qiime/tests/test_process_sff.py
 
 
 You can safely ignore these as QIIME contains built-in tools for parsing sff files. The QIIME sff tools are about 10x slower than Roche's version however, so if you have a copy of Roche's sff tools you may want to install those in the VB.
@@ -90,5 +90,5 @@ If this doesn't work, you might need to instead hit F9 to enter the BIOS. See th
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
 .. _CloVR: http://clovr.org
-.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/QIIME-v1.6.0-dependencies/QIIME-1.6.0-amd64.vdi.gz
+.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/QIIME-v1.7.0-dependencies/QIIME-1.7.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads

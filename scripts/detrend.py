@@ -5,7 +5,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 __status__ = "Development"
@@ -58,8 +58,13 @@ def main():
     # parse command line
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
+    # can't pass map without column header
+    if opts.map_fp is not None and opts.gradient_variable is None:
+        option_parser.error("Cannot pass -m/--map_fp without -c/--gradient_variable.")
+
     # ensure metadata is present and real-valued
-    validate_metadata(opts.map_fp, opts.gradient_variable)
+    if opts.map_fp is not None:
+        validate_metadata(opts.map_fp, opts.gradient_variable)
 
     # run detrending    
     detrend_pcoa(opts.input_fp,

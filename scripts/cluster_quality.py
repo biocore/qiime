@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
@@ -48,7 +48,7 @@ make_option('-c', '--category', type='string',
 ]
 script_info['optional_options']=[
 
-make_option('-o', '--output_path',default=None, type='new_path',
+make_option('-o', '--output_path',default=None, type='new_filepath',
             help='output path, prints to stdout if omitted'),
 make_option('-s', '--short',action="store_true",
             help='print only '+\

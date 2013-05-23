@@ -1,7 +1,7 @@
 .. _processing_illumina_data:
 
 ========================================================================
-Processing Illumina Data: Preparing raw Illumina data for use with QIIME
+Preparing raw Illumina data in different formats for use with QIIME
 ========================================================================
 
 This document describes how to process Illumina sequencing data with QIIME. It covers a standard workflow beginning with fastq files, and take users through one pipeline for generation of an OTU table. Due to the huge amount of data in Illumina files, it's best to run the OTU picking through OTU table steps on a cluster. For a full HiSeq2000 run, this process can take up to 500 CPU hours.

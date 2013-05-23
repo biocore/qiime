@@ -5,7 +5,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
@@ -115,7 +115,11 @@ script_info['optional_options']= [\
         'label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated '+\
         'from the run ID, use "-j run_prefix" and set the run prefix to '+\
         'be used as the data under the column header "run_prefix". '+\
-        ' [default: %default]')]
+        ' [default: %default]'),
+    make_option('-s', '--suppress_html',
+        action='store_true', default=False,
+        help='Use -s to disable html file generation, can be useful for '+\
+        'extremely large mapping files. [default: %default]'),]
         
 script_info['version'] = __version__
 
@@ -131,6 +135,7 @@ def main():
     verbose = opts.verbose
     disable_primer_check = opts.disable_primer_check
     added_demultiplex_field = opts.added_demultiplex_field
+    suppress_html = opts.suppress_html
         
     # Create output directory, check path/access to mapping file
     create_dir(output_dir)
@@ -145,7 +150,7 @@ def main():
     
     check_mapping_file(mapping_fp, output_dir, has_barcodes, char_replace,\
      verbose, variable_len_barcodes,
-     disable_primer_check, added_demultiplex_field)
+     disable_primer_check, added_demultiplex_field, suppress_html)
 
 
 if __name__ == "__main__":

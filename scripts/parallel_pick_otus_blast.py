@@ -4,9 +4,9 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Dan Knights"]
+__credits__ = ["Greg Caporaso","Dan Knights", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -48,7 +48,7 @@ script_info['optional_options'] = [\
            'template alignment [default: %default]'),\
     
     make_option('-b','--blast_db',action='store',\
-           type='string',help='database to blast against '+\
+           type='blast_db',help='database to blast against '+\
            '[default: %default]'),\
            
     make_option('--min_aligned_percent',

@@ -6,7 +6,7 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
@@ -237,7 +237,7 @@ def main():
 
             ###Write rst file
             f = open(outf, 'w')
-            f.write((output_text))
+            f.write((output_text.replace('%prog',file+'.py')))
             f.close()
             
             #script.close()

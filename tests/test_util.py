@@ -2,10 +2,11 @@
 from __future__ import division
 #unit tests for util.py
 
-from os import mkdir, rmdir, remove
+from os import chdir, getcwd, mkdir, rmdir, remove
 from os.path import split, abspath, dirname, exists, join
 from glob import glob
 from random import seed
+from shutil import rmtree
 from StringIO import StringIO
 from tempfile import mkdtemp
 from collections import defaultdict
@@ -60,7 +61,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -2144,10 +2145,6 @@ class RExecutorTests(TestCase):
 
     def setUp(self):
         """Define some useful test objects."""
-        
-        # define temp directory
-        self.TmpDir='/tmp/'
-        
         # The unweighted unifrac distance matrix from the overview tutorial.
         self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                 \tPC.607\tPC.634\tPC.635\tPC.636",
@@ -2187,9 +2184,7 @@ class RExecutorTests(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
-            self.overview_dm_str)
-        
+
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
                                  "PC.354\tAGCACGAGCCTA\tControl\t20061218",
@@ -2201,50 +2196,78 @@ class RExecutorTests(TestCase):
                                  "PC.634\tACAGAGTCGGCT\tFast\t20080116",
                                  "PC.635\tACCGCAGAGTCA\tFast\t20080116",
                                  "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
-        self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
-        
-        # A 1x1 dm.
-        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
-    
-    def tearDown(self):    
-        remove_files(self.files_to_remove)
-                
-    def test_output(self):
-        """Test executing an arbitrary command."""
-        # Temporary input file
-        self.tmp_dm_filepath = get_tmp_filename(
-            prefix='R_test_distance_matrix_',
-            suffix='.txt'
-            )
-        seq_file = open(self.tmp_dm_filepath, 'w')
 
+        # The prefix to use for temporary files/dirs. This prefix may be added
+        # to, but all temp dirs and files created by the tests will have this
+        # prefix at a minimum.
+        self.prefix = 'qiime_RExecutor_tests'
+
+        self.start_dir = getcwd()
+        self.dirs_to_remove = []
+        self.files_to_remove = []
+
+        self.tmp_dir = get_qiime_temp_dir()
+
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
+
+            # If test creates the temp dir, also remove it.
+            self.dirs_to_remove.append(self.tmp_dir)
+
+        # Create temporary input dir/files.
+        self.input_dir = mkdtemp(dir=self.tmp_dir,
+                                 prefix='%s_input_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.input_dir)
+
+        self.dm_fp = join(self.input_dir, 'dm.txt')
+        dm_f = open(self.dm_fp, 'w')
         for line in self.overview_dm_str:
-            seq_file.write(line + "\n")
-        seq_file.close()
+            dm_f.write(line + "\n")
+        dm_f.close()
+        self.files_to_remove.append(self.dm_fp)
 
-        self.tmp_map_filepath = get_tmp_filename(prefix='R_test_map_',
-                suffix='.txt')
-        
-        seq_file = open(self.tmp_map_filepath, 'w')
+        self.map_fp = join(self.input_dir, 'map.txt')
+        map_f = open(self.map_fp, 'w')
         for line in self.overview_map_str:
-            seq_file.write(line + "\n")
-        seq_file.close()
-        seq_file.close()
+            map_f.write(line + "\n")
+        map_f.close()
+        self.files_to_remove.append(self.map_fp)
 
-        self.files_to_remove = \
-         [self.tmp_dm_filepath, self.tmp_map_filepath]
-   
-        # Prep input files in R format
-        output_dir = mkdtemp()
-        args = ["-d " + self.tmp_dm_filepath + " -m " +
-                self.tmp_map_filepath + " -c DOB -o " + output_dir]
+        # Create temporary output directory.
+        self.output_dir = mkdtemp(dir=self.tmp_dir,
+                                  prefix='%s_output_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.output_dir)
 
-        mkdir(join(output_dir, 'rex_test'))
-        rex = RExecutor()
-        results = rex(args, "permdisp.r", output_dir)
+    def tearDown(self):
+        """Remove temporary files/dirs created by tests."""
+        # Change back to the start dir.
+        chdir(self.start_dir)
+        remove_files(self.files_to_remove)
 
-        self.files_to_remove.append(join(self.TmpDir,'R.stdout'))
-        self.files_to_remove.append(join(self.TmpDir,'R.stderr'))
+        # Remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories.
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+
+    def test_call(self):
+        """Test executing an arbitrary command."""
+        args = ["-d " + self.dm_fp + " -m " + self.map_fp +
+                " -c DOB -o " + self.output_dir]
+
+        rex = RExecutor(TmpDir=self.tmp_dir)
+        results = rex(args, "permdisp.r", self.output_dir)
+
+        self.files_to_remove.append(join(self.tmp_dir, 'R.stdout'))
+        self.files_to_remove.append(join(self.tmp_dir, 'R.stderr'))
+
+        # Make sure an output file was created with something in it.
+        results_fp = join(self.output_dir, 'permdisp_results.txt')
+        results_f = open(results_fp, 'U')
+        results = results_f.read()
+        results_f.close()
+        self.files_to_remove.append(results_fp)
+        self.assertTrue(len(results) > 0)
 
 
 # Long strings of test data go here

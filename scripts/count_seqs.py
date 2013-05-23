@@ -4,15 +4,13 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
-
-from glob import glob
 from qiime.util import (parse_command_line_parameters, 
                         make_option, 
                         count_seqs_in_filepaths)
@@ -32,9 +30,7 @@ script_info['script_usage'] = [\
    "%prog -i \"*.fasta\"")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
- # input_fps needs to be a string, not a existing_filepath, so wildcards can
- # be passed in
- make_option('-i','--input_fps', type='string',
+ make_option('-i','--input_fps', type='existing_filepaths',
         help='the input filepaths (comma-separated)'),
 ]
 script_info['optional_options'] = [
@@ -69,13 +65,7 @@ def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
     suppress_errors = opts.suppress_errors
-    input_fps = []
-    for e in opts.input_fps.split(','):
-        input_fps.extend(glob(e))
-    input_fps = set(input_fps)
-    if len(input_fps) == 0:
-        option_parser.error(\
-         "No filepaths match pattern(s) passed via -i: %s" % ''.join(opts.input_fps))
+    input_fps = opts.input_fps
         
     output_fp = opts.output_fp
 

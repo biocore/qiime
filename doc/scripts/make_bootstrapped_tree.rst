@@ -24,7 +24,7 @@ This script takes a tree and bootstrap support file and creates a pdf, colored b
 	-s, `-`-support
 		This is the path to the bootstrap support file
 	-o, `-`-output_file
-		This is the filename where the output should be written.  If the suffix does not contain .pdf, then it will be attached
+		This is the filename where the output should be written.
 
 
 **Output:**

@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
@@ -244,12 +244,15 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        a = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
+        self.assertTrue(feces_palm_t < 0, 
+         "t-statistic too high: %1.3f, but should be less than 0"\
+          % feces_palm_t)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
@@ -292,12 +295,15 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        a = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
+        self.assertTrue(feces_palm_t < 0, 
+         "t-statistic too high: %1.3f, but should be less than 0"\
+          % feces_palm_t)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
@@ -337,12 +343,15 @@ class DownstreamWorkflowTests(TestCase):
         # Confirm that palm and gut alpha diversities are different,
         # and suggestive of statistical significance (we only have a 
         # few sequences, so we don't get significant results)
-        a = compare_alpha_diversities(open(pd_collated_fp), 
+        ttest_res, alpha_avg = compare_alpha_diversities(open(pd_collated_fp), 
                                       open(self.test_data['map'][0]),
                                       'SampleType', 
                                       18,
                                       test_type='parametric')
-        self.assertTrue(a['feces,L_palm'][1] < 0.15)
+        feces_palm_t = ttest_res[('feces','L_palm')][0]
+        self.assertTrue(feces_palm_t < 0, 
+         "t-statistic too high: %1.3f, but should be less than 0"\
+          % feces_palm_t)
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)

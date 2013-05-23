@@ -37,7 +37,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	`-`-rdp_max_memory
 		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1500]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 4]
+		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

@@ -52,7 +52,7 @@ f=2.5 and r=19 and alpha=0.95
 
 **Output:**
 
-The resulting file(s) is a tab-delimited text file, where the columns correspond to estimates of the cond. uncovered probability and the rows correspond to samples. The output file is compatible with the alpha_diversity output files and thus could be tied into the rarefaction workflow.
+The resulting file(s) is a tab-delimited text file, where the columns correspond to estimates of the cond. uncovered probability and the rows correspond to samples. The output file is compatible with the alpha_diversity output files and thus could be tied into thes rarefaction workflow.
 
 Example Output:
 

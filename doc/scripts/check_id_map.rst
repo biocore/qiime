@@ -89,6 +89,8 @@ Specifically, we check that:
 		Use -p to disable checks for primers.  LinkerPrimerSequence header still required.  [default: False]
 	-j, `-`-added_demultiplex_field
 		Use -j to add a field to use in the mapping file as additional demultiplexing (can be used with or without barcodes).  All combinations of barcodes/primers and the these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column header "run_prefix".  [default: None]
+	-s, `-`-suppress_html
+		Use -s to disable html file generation, can be useful for extremely large mapping files. [default: False]
 
 
 **Output:**

@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
@@ -14,6 +14,7 @@ __status__ = "Development"
 
 from collections import defaultdict
 from csv import writer
+from re import sub
 from socket import gaierror
 from StringIO import StringIO
 from cogent.app.util import ApplicationNotFoundError
@@ -209,13 +210,15 @@ def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
                 try:
                     cell_data = row.custom[cleaned_header].text
                 except KeyError:
-                    print row.custom.keys()
                     raise GoogleSpreadsheetError("Could not map header '%s' "
                             "to Google Spreadsheet's internal representation "
                             "of the header. We suggest changing the name of "
                             "the header in your Google Spreadsheet to be "
                             "alphanumeric if possible, as this will likely "
-                            "solve the issue." % header)
+                            "solve the issue. Note that the name isn't "
+                            "*required* to be alphanumeric, but it may fix "
+                            "issues with converting to Google Spreadsheet's "
+                            "internal format in some cases." % header)
 
                 # Special handling of comments (if it's a comment, only keep
                 # that cell to avoid several blank cells following it).
@@ -255,14 +258,15 @@ def _get_cleaned_headers(headers):
     only special characters.
 
     Taken from gdata.spreadsheet.text_db.ConvertStringsToColumnHeaders and
-    modified to handle headers with pound signs, as well as correctly handle
-    duplicate cleaned headers.
+    modified to handle headers with pound signs or that start with numbers, as
+    well as correctly handle duplicate cleaned headers.
     """
     cleaned_headers = []
     for header in headers:
-        # Probably a more efficient way to do this. Perhaps regex.
-        sanitized = header.lower().replace('_', '').replace(':', '').replace(
-                ' ', '').replace('#', '')
+        # Google strips special characters, whitespace, and underscores first,
+        # and then strips any *leading* digits. This order is extremely
+        # important!
+        sanitized = sub(r'^\d+', '', sub(r'[\W_]', '', header.lower()))
         if len(sanitized) > 0:
             cleaned_headers.append(sanitized)
         else:

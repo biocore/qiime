@@ -6,7 +6,7 @@ __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "1.6.0-dev"
+__version__ = "1.7.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
 __status__ = "Development"
@@ -127,6 +127,18 @@ class TopLevelTests(TestCase):
         self.assertEquals(o_metrics, expected_metrics)
         self.assertEquals(o_sample_ids, expected_sample_ids)
         self.assertEquals(o_data, expected_data)
+
+        # should default to the highest depth
+        o_metrics, o_sample_ids, o_data = mean_alpha(self.collated_alpha_dict_a,
+            None)
+        self.assertEquals(o_metrics, expected_metrics)
+        self.assertEquals(o_sample_ids, expected_sample_ids)
+        self.assertEquals(o_data, expected_data)
+
+        # non-existant depth
+        with self.assertRaises(ValueError):
+            o_metrics, o_sample_ids, o_data = mean_alpha(
+                self.collated_alpha_dict_b, 111111)
 
         # files with non-matching sample ids should raise an exception
         with self.assertRaises(ValueError):

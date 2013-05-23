@@ -1,24 +1,36 @@
-QIIME 1.6.0-dev (changes since QIIME 1.6.0 go here)
+QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
+* core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
+
+QIIME 1.7.0 (14 May 2013)
+=========================
+* Required biom-format version is now 1.1.2.
+* core_qiime_analyses.py has been replaced with core_diversity_analyses.py. This follows a re-factoring to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
+* Added support for usearch v6.1 OTU picking and chimera checking. This is in addition to existing support for usearch v5.2.236. 
+* Added section on using usearch 6.1 chimera checking with ``identify_chimeric_seqs.py`` to "Chimera checking sequences with QIIME" tutorial.
+* ``compare_alpha_diversity.py`` output now includes average alpha diversity values as well as the comparison p and t vals. 
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
 * ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
-* Modified add_qiime_labels script to use normal metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
+* Modified add_qiime_labels.py script to use standard metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
 * otu_category_significance.py now makes better use of the BIOM Table API, addressing a performance issue when using CSMat as the sparse backend.
-* Required biom-format version is now 1.1.2.
 * Added qiime.group.get_adjacent_distances, which is useful for plotting distances between "adjacent" sample ids in a list provided by the user. This is useful, for example, in plotting distances between adjacent temporal samples in a time series.
-* core_qiime_analyses.py has been replaced with core_diversity_analyses.py. This follows a re-factoring to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
 * Fixed a bug in make_3d_plots.py related to biplot calculations. This bug would change the placement of taxonomic groups based on how many taxa were included in the biplot analysis. Examples and additional details can be found here: [#677](https://github.com/qiime/qiime/issues/677).
 * Major refactoring of workflow tests and organization of workflow code. The workflow library code and tests have now been split apart into separate files. This makes it a lot more manageable, which will support a more general refactoring of the workflow code in the future to make it easier to develop new workflows. The workflow tests have also been updated to use the new test data described in [#582](https://github.com/qiime/qiime/issues/582), which is now accessible through ``qiime.test. get_test_data()`` and ``qiime.test.get_test_data_fps()``. This provides improved testing of boundary cases in each workflow, as well as more consistent tests across the workflows.
-* otu_category_significance.py now supports an input directory of biom tables, and can write out either a single collated results file or an individual file for every input table in the directory. The -o output_fp is now a required parameter rather than an optional parameter.
+* otu_category_significance.py now supports an input directory of BIOM tables, and can write out either a single collated results file or an individual file for every input table in the directory. The -o output_fp is now a required parameter rather than an optional parameter.
 * simsam.py now has a -m/--mapping_fp option and writes output to a directory instead of a single file. -n/--num and -d/--dissim now accept a single number or comma-separated list of values.
 * supervised_learning.py can now handle input directorys of otu tables, can write a single collated results file if the input directory is of rarefied otu tables, and the -o output fp option is now a required parameter.
 * The qiime_test_data repository has been merged into the main qiime repository, which will facilitate development by not requiring users to time pull requests against two repositories. Users will no longer have to specify qiime_test_data_dir in their qiime_config files to include the script usage tests in runs of all_tests.py. all_tests.py will now know how to find qiime_test_data, and will run all of the script usage tests by default.
 * pick_reference_otus_through_otu_table.py now outputs otu_table.biom in top-level output directory rather than nested in the otu picking output directory.
-* pick_reference_otus_through_otu_table.py has been renamed pick_closed_reference_otus.py (issue #708).
-* pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue #708).
-* pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue #708).
+* pick_reference_otus_through_otu_table.py has been renamed pick_closed_reference_otus.py (issue [#708](https://github.com/qiime/qiime/issues/708)).
+* pick_subsampled_reference_otus_through_otu_table.py has been renamed pick_open_reference_otus.py (issue [#708](https://github.com/qiime/qiime/issues/708)).
+* pick_otus_through_otu_table.py has been renamed pick_de_novo_otus.py (issue [#708](https://github.com/qiime/qiime/issues/708)).
 * make_distance_comparison_plots.py now supports auto-sizing of distribution plots via --distribution_width (which is the new default) and better handles numeric label types with very large or small ranges (e.g. elevation) by scaling x-axis units to [1, (number of data points)]. --group_spacing has been removed in favor of the new auto-sizing feature.
-
+* per_library_stats.py removed in favor of biom-format's print_biom_table_summary.py.
+* Add SourceTracker tutorial, and changed QIIME to depend on SourceTracker 0.9.5 (which is modified to facilitate use with QIIME).
+* Moran's I (in compare_categories.py) now supports identical samples (i.e. zeros in the distance matrix that aren't on the diagonal).
+* summarize_taxa.py now outputs taxa summary tables in both classic (TSV) and BIOM formats by default. This will allow taxa summary tables to be used with other QIIME scripts that expect BIOM files as input. This change is the first step towards adding full support for BIOM taxon tables in QIIME. summarize_taxa.py also has two new options: --suppress_classic_table_output and  --supress_biom_table_output.
+* make_distance_boxplots.py and make_distance_comparison_plots.py now explicitly state the alternative hypothesis used in the t-tests.
+* parallel_blast.py now has a different option for providing a blast db (--blast_db). This implies that the current --refseqs_path should be used only for providing a fasta file of reference sequences. The --suppress_format_blastdb option has been removed since it is no longer needed.
 
 QIIME 1.6.0 (18 Dec 2012)
 =========================
