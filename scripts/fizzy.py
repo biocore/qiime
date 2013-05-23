@@ -42,7 +42,7 @@ script_info['required_options'] = [
 	make_option('-i', 
 		'--input_path',
 		type="existing_filepath",
-		help='input sparse biome file'),
+		help='input biome file'),
 	make_option('-m',
 		'--map_path',
 		type="existing_filepath",
