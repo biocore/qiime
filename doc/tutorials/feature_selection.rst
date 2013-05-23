@@ -21,6 +21,6 @@ There are a couple of ways that you can use the Fizzy tool: commandline and call
 
 Given this call, Fizzy will fix the number of features being selected to 15 and the mutual information maximization algorithm will be used. The results will be written to `output.txt` in the directory from which `fizzy.py` was called. The user has control over the number of features being selected and the feature selection algorithm by setting the `-k` and `-f` flags, respectively. Furthermore, the user can also control the output file location by setting the setting te `-o` flag. As an example, ::
 
-	fizzy.py -i data.biom -m labels.map -c Class -k 15 -f JMI -o ~/results/output.txt
+	fizzy.py -i data.biom -m map.txt -c Class -k 15 -f JMI -o ~/results/output.txt
 
 will run the joint mutual information feature selection algorithm on `data.biom` and `label.map`. There will be 15 features selected and saved in `~/results/output.txt`.
