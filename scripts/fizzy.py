@@ -30,7 +30,7 @@ script_info['script_usage'] = [(
 	"""To perform feature selection the biom file, map file must 
 	be specified in advance, and the label column in the map file. 
 	Here we use JMI and select 15 features. """,
-	"""%prog -i data.biom -m map.txt -c Class -f jmi -k 15""")]
+	"""%prog -i data.biom -m map.txt -c Class -f JMI -k 15""")]
 script_info['output_description']= """Text file containing the top features 
 	selected by the algorithm. """
 
