@@ -82,12 +82,12 @@ def main():
 	option_parser, opts, args = parse_command_line_parameters(**script_info)
 
 	# run the fizzy feature selection routine
-	fizzy.run_feature_selection( \
-		open(opts.input_path,'U'), \
-		open(opts.map_path,'U'), \
-		opts.column_label, \
-		opts.output_path, \
-		opts.fs_method, \
+	fizzy.run_feature_selection( 
+		open(opts.input_path,'U'), 
+		open(opts.map_path,'U'), 
+		opts.column_label, 
+		opts.output_path, 
+		opts.fs_method, 
 		opts.n_select)
 
 
