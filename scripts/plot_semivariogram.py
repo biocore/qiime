@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Antonio Gonzalez Pena, Kyle Patnode"]
+__credits__ = ["Antonio Gonzalez Pena, Kyle Patnode", "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
@@ -12,13 +12,15 @@ __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
 from qiime.plot_taxa_summary import make_legend
-from qiime.colors import data_colors, data_color_order
+from qiime.colors import get_qiime_hex_string_color
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat, parse_mapping_file
-from qiime.filter import filter_samples_from_distance_matrix, sample_ids_from_metadata_description
-from pylab import plot, xlabel, ylabel, title, savefig, ylim, xlim, legend, show, figure
+from qiime.filter import (filter_samples_from_distance_matrix,
+    sample_ids_from_metadata_description)
+from pylab import (plot, xlabel, ylabel, title, savefig, ylim, xlim, legend,
+    show, figure)
 from numpy import asarray
 import os
 from os.path import splitext
@@ -28,18 +30,31 @@ options_lookup = get_options_lookup()
 
 script_info={}
 
-script_info['brief_description']="""Fits a model between two distance matrices and plots the result"""
-script_info['script_description']="""Fits a spatial autocorrelation model between two matrices and plots the result. This script will work with two distance matrices but will ignore the 0s at the diagonal and the values that go to N/A"""
+script_info['brief_description']="Fits a model between two distance matrices "+\
+    "and plots the result"
+script_info['script_description']="Fits a spatial autocorrelation model "+\
+    "between two matrices and plots the result. This script will work with "+\
+    "two distance matrices but will ignore the 0s at the diagonal and the "+\
+    "values that go to N/A. See distance_matrix_from_mapping.py."
 script_info['script_usage']=[]
-script_info['script_usage'].append(
-      ("Fitting",
-       "For this script, the user supplies two distance matrices (i.e. resulting file from beta_diversity.py), along with the output filename (e.g. semivariogram), and the model to fit, as follows:",
-       "%prog -x distance.txt -y unifrac.txt -o semivariogram_exponential.png"))
-script_info['script_usage'].append(
-      ("",
-       "Modify the the default method to gaussian",
-       "%prog -x distance.txt -y unifrac.txt -m gaussian -o semivariogram_gaussian.png"))
-script_info['output_description']="""The resulting output file consists of a pdf image containing the plot between the two distances matrices and the fitted model"""
+script_info['script_usage'].append(("Fitting", "For this script, the user "
+    "supplies two distance matrices (i.e. resulting file from "
+    "beta_diversity.py), along with the output filename (e.g. semivariogram), "
+    "and the model to fit, as follows:", "%prog -x distance.txt -y unifrac.txt "
+    "-o semivariogram_exponential.png"))
+script_info['script_usage'].append(("","Modify the the default method to "
+    "gaussian","%prog -x distance.txt -y unifrac.txt --model gaussian -o "
+    "semivariogram_gaussian.png"))
+script_info['script_usage'].append(("Color semivariograms by a category in"
+    " the metadata mapping file", "Using a header name in the mapping file"
+    " (Time), create two separate semivariograms in the same plot, an "
+    "accompanying file with the color coding will be created"
+    "(categories_legend.eps), both the legends and the plot will be in eps "
+    "format.", "%prog -y unweighted_unifrac_dm.txt -x time_dm.txt --model "
+    "gaussian -m Fasting_Map.txt -o categories.eps -c Treatment"))
+script_info['output_description']="The resulting output file consists of a "+\
+    "pdf image containing the plot between the two distances matrices and the"+\
+    " fitted model"
 
 script_info['required_options']=[\
  make_option('-x', '--input_path_x',type='existing_filepath',\
@@ -49,7 +64,6 @@ script_info['required_options']=[\
  make_option('-o', '--output_path',type='new_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),
-
 ]
 script_info['optional_options']=[\
  make_option('-b', '--binning', type='string',\
@@ -93,10 +107,13 @@ script_info['optional_options']=[\
  make_option('-p', '--print_model', action='store_true',
      help='Print in the title of the plot the function of the fit. ' +\
      '[default: %default]',default=False),
- make_option('-c', '--category', type='string', help='category to color the '
-    'plots by [default: %default]', default=None),
+ make_option('-c', '--category', type='string', help='category to color each of'
+    ' the trajectories when you have multiple treatments [default: %default]',
+    default=None),
  make_option('-m', '--mapping_fp', type='existing_filepath', help='metadata '
-    'mapping file, only used when coloring by a category [default: %default]',
+    'mapping file, only used when coloring by a category, a file with the '
+    'legends and color coding will be created with the suffix legend '
+    '[default: %default]',
     default=None)
 ]
 
@@ -191,7 +208,7 @@ def main():
         plot(x_val, y_val, color=opts.dot_color, marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
         plot(x_fit, y_fit, linewidth=2.0, color=opts.line_color, alpha=opts.line_alpha)
     else:
-        for single_category, color_key in zip(categories, data_color_order):
+        for index, single_category in enumerate(categories):
             good_sample_ids = sample_ids_from_metadata_description(
                 open(mapping_fp), '%s:%s' % (category, single_category))
 
@@ -205,7 +222,10 @@ def main():
             x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
                 (_x_samples, _x_distmtx), (_y_samples, _y_distmtx),
                 opts.model,ranges)
-            color_only = str(data_colors[color_key]).split(':')[1]
+
+            # retrieve one of the colors the "QIIME" colors and add it to the
+            # list of used colors for the creation of the legends in the plot
+            color_only = get_qiime_hex_string_color(index)
             colors_used.append(color_only)
 
             plot(x_val, y_val, color=color_only, marker=opts.dot_marker,
@@ -235,6 +255,10 @@ def main():
     if category:
         # if there's a desired format, use that, else default it to png
         _, extension = splitext(opts.output_path)
+
+        # remove the dot, else, make_legend will add it to the filename
+        extension = extension.replace('.', '')
+
         if extension == '':
             extension = 'png'
         make_legend(categories, colors_used, 0, 0, 'black', 'white',
