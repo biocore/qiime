@@ -11,6 +11,7 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
+from qiime.plot_taxa_summary import make_legend
 from qiime.colors import data_colors, data_color_order
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
@@ -20,6 +21,7 @@ from qiime.filter import filter_samples_from_distance_matrix, sample_ids_from_me
 from pylab import plot, xlabel, ylabel, title, savefig, ylim, xlim, legend, show, figure
 from numpy import asarray
 import os
+from os.path import splitext
 from StringIO import StringIO
 
 options_lookup = get_options_lookup()
@@ -106,6 +108,8 @@ def main():
     category = opts.category
     mapping_fp = opts.mapping_fp
 
+    colors_used = []
+
     if (category and mapping_fp == None) or (category == None and mapping_fp):
         option_parser.error('If coloring by a metadata category, both the '
             'category and the mapping file must be supplied.')
@@ -179,7 +183,7 @@ def main():
             raise ValueError, 'The distance matrices have different sizes. ' +\
                 'You can cancel this error by passing --ignore_missing_samples'
 
-    figure(figsize=(3,3))
+    figure()
     if category == None:
         x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
             (x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
@@ -202,14 +206,12 @@ def main():
                 (_x_samples, _x_distmtx), (_y_samples, _y_distmtx),
                 opts.model,ranges)
             color_only = str(data_colors[color_key]).split(':')[1]
-            plot(x_val, y_val, color=color_only,
-                marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
+            colors_used.append(color_only)
+
+            plot(x_val, y_val, color=color_only, marker=opts.dot_marker,
+                linestyle="None", alpha=opts.dot_alpha)
             plot(x_fit, y_fit, linewidth=2.0, color=color_only,
-            alpha=opts.line_alpha, label=single_category)
-
-    legend(loc=0, bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True)
-
+                alpha=opts.line_alpha, label=single_category)
 
     if opts.x_min!=None and opts.x_max!=None:
         xlim([opts.x_min,opts.x_max])
@@ -228,6 +230,15 @@ def main():
         title(fig_title)
     
     savefig(opts.output_path)
+
+    # print the legends after the figure is exported to avoid conflicts
+    if category:
+        # if there's a desired format, use that, else default it to png
+        _, extension = splitext(opts.output_path)
+        if extension == '':
+            extension = 'png'
+        make_legend(categories, colors_used, 0, 0, 'black', 'white',
+            opts.output_path, extension, 80)
 
 if __name__ == "__main__":
     main()
