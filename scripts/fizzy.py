@@ -54,7 +54,7 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
 	make_option('-o',
 		'--output_path',
-		type="new_dirpath",
+		type="new_filepath",
 		help='the output directory [default: %default]',
 		default='output.txt'),
 	make_option('-k',
