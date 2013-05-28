@@ -113,10 +113,9 @@ def run_pyfeast(data, labels, features, method='mim', n_select=15):
 	
 	try:
 		import feast
-	except ApplicationNotFoundError:
+	except ImportError:
 		raise ApplicationNotFoundError("""Error loading 
-			the PyFeast module. It is likely that either: a) you   
-			attempted to load a module that is not in PyFeast, or b) 
+			the PyFeast module. It is likely that  
 			you do not have PyFeast installed locally.""")
 
 	try:
