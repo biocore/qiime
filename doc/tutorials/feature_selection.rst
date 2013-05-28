@@ -6,8 +6,24 @@ Fizzy - Information Theoretic Feature Selection for Metagenomics
 
 
 
+
+Extremely high dimensional data sets are quite common in
+metagenomic data sets. The biologists collecting and analyzing data need efﬁcient methods to determine relationships between classes in a data set and the variables that are capable of differentiating between multiple groups in a study. Feature selection is one such method to reduce the dimensionality of a data set, such that the remaining features provide the highest level differentation between the multiple groups in the study. 
+
+References
+
+* G. Ditzler, R. Polikar, and G. Rosen, "Information theoretic feature selection for high dimensional metagenomic data," in International Workshop on Genomic Signal Processing and Statistics, Washington, DC, 2012, pp. 143--146.
+* G. Brown, A. Pocock, M.-J. Zhao, and M. Lujan, "Conditional likelihood maximisation: A unifying framework for information theoretic feature selection," Journal of Machine Learning Research, vol. 13, pp. 27–66, 2012.
+
+
+
+
+
+
+
 What is Required
 ------------------
+
 * a biom file containing the abundance profiles
 * a mapping file containing the meta-data
 * the column in the mapping file that contains the class information (e.g., unhealthy or control).
