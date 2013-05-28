@@ -60,7 +60,7 @@ script_info['optional_options'] = [
 	make_option('-k',
 		'--n_select',
 		type="int",
-		help='number of feature to select [default: %default]',
+		help='number of features to select [default: %default]',
 		default=15),
 	make_option('-f',
 		'--fs_method',
