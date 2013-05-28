@@ -1,5 +1,3 @@
-.. _fizzy:
-
 .. index:: fizzy.py
 
 
