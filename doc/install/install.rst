@@ -98,7 +98,8 @@ If you plan to use SourceTracker with QIIME:
 
 * SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
 
-If you plan to use PyFeast (fizzy) with QIIME:
+If you plan to use the fizzy.py script in QIIME:
+
 * PyFeast (`src <http://github.com/mutantturkey/PyFeast>`_) (license: GPL)
 
 License information for external dependencies
