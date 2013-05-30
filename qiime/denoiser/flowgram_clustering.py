@@ -544,7 +544,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
               
     return(non_clustered_filename, bestscores, cluster_mapping)
 
-def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
+def denoise_seqs(sff_fps, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
                  num_cpus=1, squeeze=True, percent_id=0.97, bail=1, primer="",
                  low_cutoff=3.75, high_cutoff=4.5, log_fp="denoiser.log",
                  low_memory=False, verbose=False,
@@ -570,7 +570,7 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
 
     if verbose:
         log_fh.write("Denoiser version: %s\n" % __version__)
-        log_fh.write("SFF file: %s\n" % sff_fp)
+        log_fh.write("SFF file: %s\n" % sff_fps)
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Preprocess dir: %s\n" % preprocess_fp)
         if checkpoint_fp:
@@ -602,13 +602,13 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
             # we already have preprocessed data, so use it
             (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(preprocess_fp)
         elif(cluster):
-            preprocess_on_cluster(sff_fp, log_fp, fasta_fp=fasta_fp,
+            preprocess_on_cluster(sff_fps, log_fp, fasta_fp=fasta_fp,
                                   out_fp=tmpoutdir, verbose=verbose,
                                   squeeze=squeeze, primer=primer)
             (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(tmpoutdir)
         else:
             (deprefixed_sff_fp, l, mapping, seqs) = \
-                preprocess(sff_fp, log_fh, fasta_fp=fasta_fp, out_fp=tmpoutdir,
+                preprocess(sff_fps, log_fh, fasta_fp=fasta_fp, out_fp=tmpoutdir,
                            verbose=verbose, squeeze=squeeze, primer=primer)
 
         #preprocessor writes into same file, so better jump to end of file

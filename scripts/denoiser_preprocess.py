@@ -50,9 +50,10 @@ prefix_mapping.txt: This file contains the actual clusters. The cluster centroid
 
 script_info['required_options']=[\
 
-    make_option('-i','--input_file',action='store', type='string',\
-                          dest='sff_fp',help='path to flowgram file '+\
-                          '[REQUIRED]')
+    make_option('-i','--input_file', action='store',
+                type='existing_filepaths', dest='sff_fps',
+                help='path to flowgram files (.sff.txt), '+
+                'comma separated')
     ]
 
 script_info['optional_options']=[ \
@@ -84,12 +85,9 @@ script_info['version'] = __version__
 def main(commandline_args=None):
     parser, opts, args = parse_command_line_parameters(**script_info)
      
-    if not opts.sff_fp:
+    if not opts.sff_fps:
         parser.error('Required option flowgram file path (-i) not specified')
-    elif not files_exist(opts.sff_fp):
-        parser.error('Flowgram file path does not exist:\n %s \n Pass a valid one via -i.'
-                     % opts.sff_fp) 
-
+    
     #make tmp and output dir
     tmp_dir = get_tmp_filename(tmp_dir = opts.output_dir+"/", suffix="/")
     try:
@@ -107,14 +105,14 @@ def main(commandline_args=None):
     if opts.verbose:
         #append to the log file of the master process
         log_fh = open(opts.output_dir+"/"+opts.log_fp, "a", 0)
-        log_fh.write("SFF file: %s\n" % opts.sff_fp)
+        log_fh.write("SFF file: %s\n" % opts.sff_fps)
         log_fh.write("Fasta file: %s\n" % opts.fasta_fp)
         log_fh.write("Output dir: %s\n" % opts.output_dir)
         log_fh.write("Squeeze Seqs: %s\n" % opts.squeeze)
         log_fh.write("Primer sequence: %s\n" % opts.primer)
 
     (deprefixed_sff_fp, l, mapping, seqs) = \
-        preprocess(opts.sff_fp, log_fh, fasta_fp=opts.fasta_fp,
+        preprocess(opts.sff_fps, log_fh, fasta_fp=opts.fasta_fp,
                    out_fp=tmp_dir,
                    verbose=opts.verbose, squeeze=opts.squeeze,
                    primer=opts.primer)
