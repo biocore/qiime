@@ -3,7 +3,7 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Rob Knight","Jesse Stombaugh", "Yoshiki Vazquez-Baeza"]#remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -15,6 +15,7 @@ __status__ = "Development"
 from colorsys import rgb_to_hsv, hsv_to_rgb
 from parse import parse_mapping_file, group_by_field, parse_taxa_summary_table
 from numpy import array
+from math import floor
 import os
 import re
 from qiime.util import MissingFileError
@@ -624,3 +625,23 @@ def taxonomy_process_prefs(taxonomy_levels, color_prefs = None):
                 prefs[key]['colors'] = {}
 
     return prefs
+
+def get_qiime_hex_string_color(index):
+    """Retrieve an HEX color from the list of QIIME colors
+
+
+    Input:
+    index: index of the color to retrieve, if the number is greater than the
+    number of available colors, it will rollover in the list.
+
+    Output:
+    color: string in the format #FF0000
+    """
+    assert index >= 0, "There are no negative indices for the QIIME colors"
+
+    n_colors = len(data_color_order)
+
+    if index >= n_colors:
+        index = int(index - floor((index/n_colors)*n_colors))
+
+    return data_colors[data_color_order[index]].toHex()

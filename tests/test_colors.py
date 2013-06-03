@@ -24,7 +24,7 @@ from qiime.colors import (Color, rgb_tuple_to_hsv, mage_hsv_tuple_to_rgb,
     iter_color_groups, get_group_colors,
     get_color, color_groups,string_to_rgb,
     get_map,map_from_coords,sample_color_prefs_and_map_data_from_options,
-    taxonomy_process_prefs)
+    taxonomy_process_prefs, get_qiime_hex_string_color)
 
 class ColorTests(TestCase):
     """Tests of the Color class"""
@@ -330,6 +330,19 @@ from mapping file to color by"""
         exp2['3']={'column':'3', 'colors':{'a':('red',(0, 100, 100))}}
         exp2['4'] = {'column':'4','colors':{}}
         self.assertEqual(obs1,exp2)
+
+    def test_get_qiime_hex_string_color(self):
+        """Test colors are retreved correctly from the QIIME colors"""
+        # regular indices are supported
+        self.assertEqual(get_qiime_hex_string_color(0), '#ff0000')
+        self.assertEqual(get_qiime_hex_string_color(1), '#0000ff')
+
+        # if there's an overflow, test it rolls-over accordingly
+        self.assertEqual(get_qiime_hex_string_color(87), '#ff0000')
+        self.assertEqual(get_qiime_hex_string_color(100), '#7da9d8')
+
+        # test it raises an exception for negative values
+        self.assertRaises(AssertionError, get_qiime_hex_string_color, -1)
 
         
 #run tests if called from command line
