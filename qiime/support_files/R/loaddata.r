@@ -67,7 +67,8 @@
     while(start.character == '#'){
         linecount <- linecount + 1
         f <- file(filepath,'r') # open file in read mode
-        line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t', quiet=TRUE)
+        line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t',
+                     quote='"', quiet=TRUE)
         close(f)
         # ncolumns is the number of entries in this line
         # not including trailing empties
