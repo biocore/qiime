@@ -22,7 +22,9 @@ from qiime.util import (get_qiime_scripts_dir,
 import shutil
 
 class TestFizzy(TestCase):
-	"""docstring for TestFizzy"""
+	"""
+		docstring for TestFizzy
+	"""
 
 	def setUp(self):
 		"""
@@ -64,6 +66,10 @@ class TestFizzy(TestCase):
 	def test_parse_biom():
 		"""
 		"""
+		# it should be safe to assume the user is working with 
+		# linux / unix. this will not be supported by windows. 
+
+		fizzy.test_parse_biom()
 		return None 
 	
 	def test_parse_map_file():
@@ -79,6 +85,9 @@ class TestFizzy(TestCase):
 	def test_write_output_file():
 		"""
 		"""
+		write_output_file("test","/tmp/test.txt")
+		self.assertEqual(open("/tmp/test.txt").read().replace("\n","").split(),
+			["test"])
 		return None 
 
 	def test_run_feature_selection():
@@ -87,6 +96,9 @@ class TestFizzy(TestCase):
 		return None 
 
 		
+
+biome_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type": "float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows": [{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "S1", "metadata": null},{"id": "S2", "metadata": null},{"id": "S3", "metadata": null}]}"""
+
 
 if __name__ == "__main__":
 	main()
