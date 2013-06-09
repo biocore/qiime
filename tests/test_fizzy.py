@@ -84,9 +84,10 @@ class TestFizzy(TestCase):
 
 	def test_write_output_file():
 		"""
+			wrtie a temporary file to 
 		"""
-		write_output_file("test","/tmp/test.txt")
-		self.assertEqual(open("/tmp/test.txt").read().replace("\n","").split(),
+		write_output_file("test",self.test_out + "/test.txt")
+		self.assertEqual(open(self.test_out + "/test.txt").read().replace("\n","").split(),
 			["test"])
 		return None 
 
