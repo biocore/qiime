@@ -158,4 +158,3 @@ def run_feature_selection(file_biom, file_map, column_name, out_file, method='mi
 	label_vector = parse_map_file(file_map, column_name, observation_names)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
 	write_output_file(reduced_set, out_file)
-
