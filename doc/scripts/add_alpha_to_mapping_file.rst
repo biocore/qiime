@@ -63,7 +63,7 @@ Add the alpha diversity values to a mapping file and classify the normalized val
 
 **Adding collated alpha diversity data:**
 
-Add the mean of the alpha diversity values at a specified rarefaction depth, this case is for use with the output of `collated_alpha.py <./collated_alpha.html>`_. It is recommended that the filenames are the name of the metric used in each file.
+Add the mean of the alpha diversity values at a specified rarefaction depth, this case is for use with the output of `collate_alpha.py <./collated_alpha.html>`_. It is recommended that the filenames are the name of the metric used in each file.
 
 ::
 
