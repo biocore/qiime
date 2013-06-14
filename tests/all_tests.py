@@ -105,8 +105,8 @@ def main():
         # Run the script usage testing functionality
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
-               qiime_test_data_dir=qiime_test_data_dir,
-               qiime_scripts_dir=get_qiime_scripts_dir(),
+               test_data_dir=qiime_test_data_dir,
+               scripts_dir=get_qiime_scripts_dir(),
                working_dir=qiime_config['temp_dir'],
                verbose=True,
                tests=script_usage_tests,
