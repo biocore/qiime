@@ -40,6 +40,11 @@ try:
     from biom import __version__ as biom_lib_version
 except ImportError:
     biom_lib_version = "ERROR: Not installed - this is required!"
+    
+try:
+    from qcli import __version__ as qcli_lib_version
+except ImportError:
+    qcli_lib_version = "ERROR: Not installed - this is required!"
 
 try:
     from matplotlib import __version__ as matplotlib_lib_version
@@ -785,6 +790,7 @@ def main():
      ("NumPy version", numpy_lib_version),
      ("matplotlib version", matplotlib_lib_version),
      ("biom-format version", biom_lib_version),
+     ("qcli version", qcli_lib_version),
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),

@@ -2,6 +2,8 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
 * core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
+* QIIME now depends on [qcli](https://github.com/bipy/qcli), a stand-alone package which performs command line interface parsing and testing.
+* make_qiime_rst_file.py has been removed in favor of qcli_make_rst.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
