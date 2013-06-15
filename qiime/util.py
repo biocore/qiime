@@ -65,11 +65,12 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir, 
                               handle_error_codes)
-from qiime.pycogent_backports.option_parsing import (
-                                        parse_command_line_parameters,
-                                        make_option)
+                              
+from qcli import (parse_command_line_parameters,
+                  make_option,
+                  qcli_system_call)
+                                 
 from qiime.pycogent_backports.test import is_symmetric_and_hollow
-
 from qiime import __version__ as qiime_library_version
 from qiime.parse import (parse_distmat,
                          parse_mapping_file_to_dict,
@@ -1083,22 +1084,8 @@ def get_java_version():
     else:
         return version_line.split()[-1].strip('"')
 
-def qiime_system_call(cmd, shell=True):
-    """Call cmd and return (stdout, stderr, return_value).
-
-    cmd can be either a string containing the command to be run, or a sequence
-    of strings that are the tokens of the command.
-
-    Please see Python's subprocess.Popen for a description of the shell
-    parameter and how cmd is interpreted differently based on its value.
-    """
-    proc = Popen(cmd, shell=shell, universal_newlines=True, stdout=PIPE,
-                 stderr=PIPE)
-    # communicate pulls all stdout/stderr from the PIPEs to 
-    # avoid blocking -- don't remove this line!
-    stdout, stderr = proc.communicate()
-    return_value = proc.returncode
-    return stdout, stderr, return_value
+# retain qiime_system_call function name for backward compatibility
+qiime_system_call = qcli_system_call
 
 def get_qiime_library_version():
     """get QIIME version and the git SHA + current branch (if applicable)"""

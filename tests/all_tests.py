@@ -10,7 +10,7 @@ from sys import exit
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                        load_qiime_config,qiime_system_call,get_qiime_scripts_dir,
                        make_option, get_tmp_filename, get_qiime_project_dir)
-from qiime.test import run_script_usage_tests
+from qcli import run_script_usage_tests
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
@@ -105,8 +105,8 @@ def main():
         # Run the script usage testing functionality
         script_usage_result_summary, num_script_usage_example_failures = \
          run_script_usage_tests(
-               qiime_test_data_dir=qiime_test_data_dir,
-               qiime_scripts_dir=get_qiime_scripts_dir(),
+               test_data_dir=qiime_test_data_dir,
+               scripts_dir=get_qiime_scripts_dir(),
                working_dir=qiime_config['temp_dir'],
                verbose=True,
                tests=script_usage_tests,
