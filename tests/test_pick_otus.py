@@ -833,12 +833,13 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
                                           'remove_usearch_logs':True,
                                           'rev':True
                                          })
-        
-        obs_clusters = app(self.tmp_seq_filepath_97perc_id_rc)
+         
+        obs_clusters =\
+         set(app(self.tmp_seq_filepath_97perc_id_rc).values()[0])
                                        
         # All seqs should fall into a single cluster
-        expected_clusters = {'denovo0': ['usearch_ecoli_seq', 
-        'usearch_ecoli_seq_2bp_change_rc', 'usearch_ecoli_seq_1bp_change']}
+        expected_clusters = set(['usearch_ecoli_seq', 
+        'usearch_ecoli_seq_2bp_change_rc', 'usearch_ecoli_seq_1bp_change'])
         
         self.assertEqual(obs_clusters, expected_clusters)
         
@@ -1357,7 +1358,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         
         expected_failures = ['usearch_ecoli_seq',
          'usearch_ecoli_seq_1bp_change']
-        self.assertEqual(failures, expected_failures)
+        self.assertEqual(set(failures), set(expected_failures))
         
         
     def test_call_open_reference_usearch61(self):
