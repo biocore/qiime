@@ -22,19 +22,22 @@ from qiime.transform_coordinate_matrices import procrustes_monte_carlo,\
     get_procrustes_results
 
 script_info={}
-script_info['brief_description']="""Transform 2 coordinate matrices"""
-script_info['script_description']="""This script transforms 2 coordinate matrices (e.g., the output of principal_coordinates.py) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2."""
+script_info['brief_description']="""Transform two or more coordinate matrices"""
+script_info['script_description']="""This script transforms two or more coordinate matrices (e.g., the output of principal_coordinates.py) using procrustes analysis to minimize the distances between corresponding points. The first coordinate matrix provided is treated as the reference, and all other coordinate matrices are transformed to minimize distances to the reference points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("Write the transformed procrustes matrices to file","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o procrustes_output"""))
 
-script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o mc_procrustes_output -r 1000""",))
+script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values for two principal coordinate matrices","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o mc_procrustes_output_2 -r 1000""",))
+script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values for four principal coordinate matrices","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt,euclidean_pc.txt,bray_curtis_pc.txt -o mc_procrustes_output_4 -r 1000""",))
 
 script_info['output_description']="""Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations."""
-script_info['required_options']=[\
- make_option('-i','--input_fps',type='existing_filepaths',help='comma-separated input files'),\
- make_option('-o','--output_dir',type='new_dirpath',help='the output directory'),\
+script_info['required_options']=[
+ make_option('-i','--input_fps',type='existing_filepaths',
+             help='comma-separated list of input coordinate matrices'),
+ make_option('-o','--output_dir',type='new_dirpath',
+             help='the output directory'),
 ]
-script_info['optional_options']=[\
+script_info['optional_options']=[
  make_option('-r','--random_trials',type='int',
     help='Number of random permutations of matrix2 to perform. '+
     ' [default: (no Monte Carlo analysis performed)]',default=None),
@@ -43,7 +46,7 @@ script_info['optional_options']=[\
     ' [default: %default]'),
  make_option('-s','--sample_id_map_fps',
     type='existing_filepaths',
-    help='Map of original sample ids to new sample ids [default: %default]',
+    help='Map of original sample ids to new sample ids - if values are provided, there must be exactly one fewer file here than are provided for --input_fps [default: %default]',
     default=None),
  make_option('--store_trial_details',
     help='Store PC matrices for individual trials [default: %default]',
@@ -57,13 +60,20 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    random_trials = opts.random_trials
-    if random_trials != None and random_trials < 10:
-        option_parser.error('Must perform >= 10 trails for Monte Carlo analysis.')
-        
-    output_dir = opts.output_dir
+    input_fps = opts.input_fps
     sample_id_map_fps = opts.sample_id_map_fps
     num_dimensions = opts.num_dimensions
+    output_dir = opts.output_dir
+    random_trials = opts.random_trials
+    
+    if random_trials != None and random_trials < 10:
+        option_parser.error('Must perform >= 10 trails for Monte Carlo analysis.')
+    
+    if sample_id_map_fps and \
+       (len(sample_id_map_fps) + 1) != len(opts.input_fps):
+       option_parser.error('If providing sample id maps, there must be exactly'
+                           ' one fewer sample id maps than input coordinate'
+                           ' matrices.')
     
     if not exists(output_dir): 
         makedirs(output_dir)
@@ -77,8 +87,10 @@ def main():
     for i,input_fp2 in enumerate(opts.input_fps[1:]):
         input_fp2_dir, input_fn2 = split(input_fp2)
         input_fp2_basename, input_fp2_ext = splitext(input_fn2)
-        output_matrix1_fp = '%s/pc1_transformed.txt' % output_dir
-        output_matrix2_fp = '%s/pc%d_transformed.txt' % (output_dir, i+2)
+        output_matrix1_fp = '%s/%s_transformed_reference.txt' % \
+                             (output_dir, input_fp1_basename)
+        output_matrix2_fp = '%s/%s_transformed_q%d.txt' % \
+                             (output_dir, input_fp2_basename, i+1)
     
         if sample_id_map_fps:
             sample_id_map = dict([(k,v[0]) \
