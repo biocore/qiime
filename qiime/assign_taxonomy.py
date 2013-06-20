@@ -28,7 +28,11 @@ from cogent.app import rtax
 from qiime.pycogent_backports import mothur
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
+from qiime.parse import parse_taxonomy, taxa_split
+from qiime.util import (
+    FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir,
+    get_tmp_filename,
+    )
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
 # to raise errors if the user tries to use it.
@@ -354,22 +358,72 @@ class MothurTaxonAssigner(TaxonAssigner):
         _params.update(params)
         super(MothurTaxonAssigner, self).__init__(_params)
 
+    def _reformat_taxonomy(self):
+        """Reformat id-to-taxonomy file for Mothur"""
+        id_to_tax_file = open(self.Params['id_to_taxonomy_fp'])
+        id_to_tax = parse_taxonomy(id_to_tax_file)
+        
+        temp_tax_fp = get_tmp_filename(
+            prefix="MothurTaxonAssigner_taxonomy_", result_constructor=str)
+        temp_tax_file = open(temp_tax_fp, "w")
+
+        for seq_id, lineage in id_to_tax.iteritems():
+            taxa = taxa_split(lineage)
+            
+            # Mothur taxonomy format prohibits spaces in the taxonomy string,
+            # so replace all spaces with underscores
+            taxa = [t.replace(" ", "_") for t in taxa]
+
+            # Mothur requires the taxonomy line to end with a semicolon
+            mothur_lineage = ''.join("%s;" % t for t in taxa)
+            
+            temp_tax_file.write("%s\t%s\n" % (seq_id, mothur_lineage))
+
+        temp_tax_file.close()
+        return temp_tax_fp
+
     def __call__(self, seq_path, result_path=None, log_path=None):
         seq_file = open(seq_path)
-        percent_confidence = int(self.Params['Confidence'] * 100)
-        result = mothur.mothur_classify_file(
-            query_file=seq_file,
-            ref_fp=self.Params['reference_sequences_fp'],
-            tax_fp=self.Params['id_to_taxonomy_fp'],
-            cutoff=percent_confidence,
-            iters=self.Params['Iterations'],
-            ksize=self.Params['KmerSize'],
-            output_fp=result_path,
-            )
+
+        # Mothur uses confidence values from 0 to 100, not 0 to 1
+        confidence = int(self.Params['Confidence'] * 100)
+        reformatted_id_to_taxonomy_fp = self._reformat_taxonomy()
+        
+        mothur_params = {
+            "reference": self.Params['reference_sequences_fp'],
+            "taxonomy": temp_tax_fp,
+            "cutoff": confidence,
+            }
+        if self.Params['KmerSize'] is not None:
+            mothur_params['ksize'] = self.Params['KmerSize']
+        if self.Params['Iterations'] is not None:
+            mothur_params['iters'] = self.Params['Iterations']
+        app = mothur.MothurClassifySeqs(
+            mothur_params,
+            TmpDir=get_qiime_temp_dir(),
+            InputHandler='_input_as_lines')
+        result = app(seq_file)
+
+        if "assignments" not in result:
+            raise RuntimeError(
+                "Mothur classification failed, see log file for details.")
+
+        raw_assignments = result['assignments']
+        assignments = list(mothur.parse_mothur_assignments(raw_assignments))
+        result.cleanUp()
+
         if log_path:
             self.writeLog(log_path)
-        return result
 
+        if result_path is not None:
+            f = open(result_path, "w")
+            for query_id, taxa, conf in assignments:
+                taxa_str = ";".join(taxa)
+                f.write("%s\t%s\t%.2f\n" % (query_id, taxa_str, conf))
+            f.close()
+            return None
+        else:
+            return dict((a, (b, c)) for a, b, c in assignments)
 
 class RdpTaxonAssigner(TaxonAssigner):
     """Assign taxon using RDP's naive Bayesian classifier
