@@ -64,6 +64,7 @@ def main():
     input_fps = opts.input_fps
     sample_id_map_fps = opts.sample_id_map_fps
     num_dimensions = opts.num_dimensions
+    max_dims_str = str(num_dimensions or 'alldim')
     output_dir = opts.output_dir
     random_trials = opts.random_trials
     
@@ -130,13 +131,12 @@ def main():
             # truncate the p-value to the correct number of significant
             # digits
             mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
-            max_dims_str = str(num_dimensions or 'alldim')
             summary_file_lines.append('%s\t%s\t%s\t%s\t%d\t%1.3f' %\
-             (reference_input_fp, query_input_fp, str(max_dims_str), mc_p_value_str,\
+             (reference_input_fp, query_input_fp, max_dims_str, mc_p_value_str,\
               count_better, actual_m_squared))
         else:
             summary_file_lines.append('%s\t%s\t%s\tNA\tNA\t%1.3f' %\
-             (reference_input_fp, query_input_fp, str(max_dims_str), m_squared))
+             (reference_input_fp, query_input_fp, max_dims_str, m_squared))
     # Write output summary
     f = open(output_summary_fp,'w')
     f.write('\n'.join(summary_file_lines))
