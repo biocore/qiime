@@ -47,7 +47,7 @@ script_info['optional_options']=[
     ' [default: %default]'),
  make_option('-s','--sample_id_map_fps',
     type='existing_filepaths',
-    help='Map of original sample ids to new sample ids - if values are provided, there must be exactly one fewer file here than are provided for --input_fps [default: %default]',
+    help='Map of original sample ids to new sample ids. If and sample id maps are provided, there must be exactly one fewer files here than provided then there are coordinate matrices provide (as each nth sample id map will provide the mapping from the first input coordinate matrix to the n+1th coordinate matrix) [default: %default]',
     default=None),
  make_option('--store_trial_details',
     help='Store PC matrices for individual trials [default: %default]',
