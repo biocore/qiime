@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import make_option
-from os.path import split, splitext, exists
+from os.path import split, splitext, exists, join
 from os import makedirs
 from numpy import log10
 from qiime.util import parse_command_line_parameters
@@ -83,7 +83,7 @@ def main():
     reference_input_fp = input_fps[0]
     reference_input_fp_dir, input_fn1 = split(reference_input_fp)
     reference_input_fp_basename, reference_input_fp_ext = splitext(input_fn1)
-    output_summary_fp = '%s/procrustes_results.txt' % output_dir
+    output_summary_fp = join(output_dir,'procrustes_results.txt')
     summary_file_lines = \
      ['#FP1\tFP2\tNum included dimensions\tMonte Carlo p-value\tCount better\tM^2',
       '#Warning: p-values in this file are NOT currently adjusted for multiple comparisons.']
@@ -91,10 +91,10 @@ def main():
     for i,query_input_fp in enumerate(input_fps[1:]):
         query_input_fp_dir, query_input_fn = split(query_input_fp)
         query_input_fp_basename, query_input_fp_ext = splitext(query_input_fn)
-        output_matrix1_fp = '%s/%s_transformed_reference.txt' % \
-                             (output_dir, reference_input_fp_basename)
-        output_matrix2_fp = '%s/%s_transformed_q%d.txt' % \
-                             (output_dir, query_input_fp_basename, i+1)
+        output_matrix1_fp = join(output_dir,
+         '%s_transformed_reference.txt' % reference_input_fp_basename)
+        output_matrix2_fp = join(output_dir,\
+         '%s_transformed_q%d.txt' % (query_input_fp_basename, i+1))
         
         if sample_id_map_fps:
             sample_id_map = dict([(k,v[0]) \
@@ -118,7 +118,7 @@ def main():
         
         if random_trials:
             if opts.store_trial_details:
-                trial_output_dir = '%s/trial_details_%d/' % (output_dir,i+2)
+                trial_output_dir = join(output_dir,'trial_details_%d' % i+2)
             else:
                 trial_output_dir = None
             coords_f1 = list(open(reference_input_fp,'U'))
