@@ -83,7 +83,7 @@ def main():
     reference_input_fp_dir, input_fn1 = split(reference_input_fp)
     reference_input_fp_basename, reference_input_fp_ext = splitext(input_fn1)
     output_summary_fp = '%s/procrustes_results.txt' % output_dir
-    summary_file_lines = ['#FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
+    summary_file_lines = ['#FP1\tFP2\tNum included dimensions\tMonte Carlo p-value\tCount better\tM^2']
     
     for i,query_input_fp in enumerate(input_fps[1:]):
         query_input_fp_dir, query_input_fn = split(query_input_fp)
@@ -131,7 +131,7 @@ def main():
             # digits
             mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
             max_dims_str = str(num_dimensions or 'alldim')
-            summary_file_lines.append('%s %s %s %s %d %1.3f' %\
+            summary_file_lines.append('%s\t%s\t%s\t%s\t%d\t%1.3f' %\
              (reference_input_fp, query_input_fp, str(max_dims_str), mc_p_value_str,\
               count_better, actual_m_squared))
     
