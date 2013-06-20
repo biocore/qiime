@@ -29,6 +29,7 @@ script_info['script_usage'].append(("Write the transformed procrustes matrices t
 
 script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values for two principal coordinate matrices","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o mc_procrustes_output_2 -r 1000""",))
 script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values for four principal coordinate matrices","","""%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt,euclidean_pc.txt,bray_curtis_pc.txt -o mc_procrustes_output_4 -r 1000""",))
+script_info['script_usage'].append(("Generate transformed procrustes matrices and monte carlo p-values for three principal coordinate matrices where the sample ids must be mapped between matrices","","""%prog -i s1_pc.txt,s2_pc.txt,s3_pc.txt -s s1_s2_map.txt,s1_s3_map.txt -o mc_procrustes_output_3 -r 1000""",))
 
 script_info['output_description']="""Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations."""
 script_info['required_options']=[
@@ -91,26 +92,27 @@ def main():
                              (output_dir, reference_input_fp_basename)
         output_matrix2_fp = '%s/%s_transformed_q%d.txt' % \
                              (output_dir, query_input_fp_basename, i+1)
-    
+        
         if sample_id_map_fps:
             sample_id_map = dict([(k,v[0]) \
              for k,v in fields_to_dict(open(sample_id_map_fps[i], "U")).items()])
         else:
             sample_id_map = None
-    
+        
         transformed_coords1, transformed_coords2, m_squared, randomized_coords2 =\
           get_procrustes_results(open(reference_input_fp,'U'),\
                                  open(query_input_fp,'U'),\
                                  sample_id_map=sample_id_map,\
                                  randomize=False,
                                  max_dimensions=num_dimensions)
+        
         output_matrix1_f = open(output_matrix1_fp,'w')
         output_matrix1_f.write(transformed_coords1)
         output_matrix1_f.close()
         output_matrix2_f = open(output_matrix2_fp,'w')
         output_matrix2_f.write(transformed_coords2)
         output_matrix2_f.close()
-    
+        
         if random_trials:
             if opts.store_trial_details:
                 trial_output_dir = '%s/trial_details_%d/' % (output_dir,i+2)
