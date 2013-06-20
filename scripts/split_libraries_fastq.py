@@ -262,7 +262,7 @@ def main():
         barcode_read_fp = barcode_read_fps[i]
         mapping_fp = mapping_fps[i]
         mapping_f = open(mapping_fp, 'U')
-        check_map(mapping_f, 
+        _, _, barcode_to_sample_id, _, _, _, _ = check_map(mapping_f,
                   disable_primer_check=True, 
                   has_barcodes=barcode_read_fp != None)
         
