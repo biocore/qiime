@@ -84,7 +84,9 @@ def main():
     reference_input_fp_dir, input_fn1 = split(reference_input_fp)
     reference_input_fp_basename, reference_input_fp_ext = splitext(input_fn1)
     output_summary_fp = '%s/procrustes_results.txt' % output_dir
-    summary_file_lines = ['#FP1\tFP2\tNum included dimensions\tMonte Carlo p-value\tCount better\tM^2']
+    summary_file_lines = \
+     ['#FP1\tFP2\tNum included dimensions\tMonte Carlo p-value\tCount better\tM^2',
+      '#Warning: p-values in this file are NOT currently adjusted for multiple comparisons.']
     
     for i,query_input_fp in enumerate(input_fps[1:]):
         query_input_fp_dir, query_input_fn = split(query_input_fp)
