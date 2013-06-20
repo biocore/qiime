@@ -41,8 +41,8 @@ script_info['optional_options']=[\
  make_option('-d','--num_dimensions',type='int',default=3,
     help='Number of dimensions to include in output matrices'+
     ' [default: %default]'),
- make_option('-s','--sample_id_map_fp',
-    type='existing_filepath',
+ make_option('-s','--sample_id_map_fps',
+    type='existing_filepaths',
     help='Map of original sample ids to new sample ids [default: %default]',
     default=None),
  make_option('--store_trial_details',
@@ -62,69 +62,70 @@ def main():
         option_parser.error('Must perform >= 10 trails for Monte Carlo analysis.')
         
     output_dir = opts.output_dir
-    sample_id_map_fp = opts.sample_id_map_fp
+    sample_id_map_fps = opts.sample_id_map_fps
     num_dimensions = opts.num_dimensions
     
     if not exists(output_dir): 
         makedirs(output_dir)
-    
-    if opts.store_trial_details:
-        trial_output_dir = '%s/trial_details/' % output_dir
-    else:
-        trial_output_dir = None
   
     input_fp1 = opts.input_fps[0]
-    input_fp2 = opts.input_fps[1]
     input_fp1_dir, input_fn1 = split(input_fp1)
     input_fp1_basename, input_fp1_ext = splitext(input_fn1)
-    input_fp2_dir, input_fn2 = split(input_fp2)
-    input_fp2_basename, input_fp2_ext = splitext(input_fn2)
-    output_summary_fp = '%s/%s_%s_procrustes_results.txt' %\
-     (output_dir,input_fp1_basename,input_fp2_basename)
-    output_matrix1_fp = '%s/pc1_transformed.txt' % output_dir
-    output_matrix2_fp = '%s/pc2_transformed.txt' % output_dir
+    output_summary_fp = '%s/procrustes_results.txt' % output_dir
+    summary_file_lines = ['#FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
     
-    if sample_id_map_fp:
-        sample_id_map = dict([(k,v[0]) \
-         for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
-    else:
-        sample_id_map = None
+    for i,input_fp2 in enumerate(opts.input_fps[1:]):
+        input_fp2_dir, input_fn2 = split(input_fp2)
+        input_fp2_basename, input_fp2_ext = splitext(input_fn2)
+        output_matrix1_fp = '%s/pc1_transformed.txt' % output_dir
+        output_matrix2_fp = '%s/pc%d_transformed.txt' % (output_dir, i+2)
     
-    transformed_coords1, transformed_coords2, m_squared, randomized_coords2 =\
-      get_procrustes_results(open(input_fp1,'U'),\
-                             open(input_fp2,'U'),\
-                             sample_id_map=sample_id_map,\
-                             randomize=False,
-                             max_dimensions=num_dimensions)
-    output_matrix1_f = open(output_matrix1_fp,'w')
-    output_matrix1_f.write(transformed_coords1)
-    output_matrix1_f.close()
-    output_matrix2_f = open(output_matrix2_fp,'w')
-    output_matrix2_f.write(transformed_coords2)
-    output_matrix2_f.close()
+        if sample_id_map_fps:
+            sample_id_map = dict([(k,v[0]) \
+             for k,v in fields_to_dict(open(sample_id_map_fps[i], "U")).items()])
+        else:
+            sample_id_map = None
     
-    if random_trials:
-        summary_file_lines = ['FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
-        coords_f1 = list(open(input_fp1,'U'))
-        coords_f2 = list(open(input_fp2,'U'))
-        actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
-         procrustes_monte_carlo(coords_f1,\
-                                coords_f2,\
-                                trials=random_trials,\
-                                max_dimensions=num_dimensions,
-                                sample_id_map=sample_id_map,
-                                trial_output_dir=trial_output_dir)
-        # truncate the p-value to the correct number of significant
-        # digits
-        mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
-        max_dims_str = str(num_dimensions or 'alldim')
-        summary_file_lines.append('%s %s %s %s %d %1.3f' %\
-         (input_fp1, input_fp2, str(max_dims_str), mc_p_value_str,\
-          count_better, actual_m_squared))
-        f = open(output_summary_fp,'w')
-        f.write('\n'.join(summary_file_lines))
-        f.write('\n')
-        f.close()
+        transformed_coords1, transformed_coords2, m_squared, randomized_coords2 =\
+          get_procrustes_results(open(input_fp1,'U'),\
+                                 open(input_fp2,'U'),\
+                                 sample_id_map=sample_id_map,\
+                                 randomize=False,
+                                 max_dimensions=num_dimensions)
+        output_matrix1_f = open(output_matrix1_fp,'w')
+        output_matrix1_f.write(transformed_coords1)
+        output_matrix1_f.close()
+        output_matrix2_f = open(output_matrix2_fp,'w')
+        output_matrix2_f.write(transformed_coords2)
+        output_matrix2_f.close()
+    
+        if random_trials:
+            if opts.store_trial_details:
+                trial_output_dir = '%s/trial_details_%d/' % (output_dir,i+2)
+            else:
+                trial_output_dir = None
+            coords_f1 = list(open(input_fp1,'U'))
+            coords_f2 = list(open(input_fp2,'U'))
+            actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
+             procrustes_monte_carlo(coords_f1,
+                                    coords_f2,
+                                    trials=random_trials,
+                                    max_dimensions=num_dimensions,
+                                    sample_id_map=sample_id_map,
+                                    trial_output_dir=trial_output_dir)
+            # truncate the p-value to the correct number of significant
+            # digits
+            mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
+            max_dims_str = str(num_dimensions or 'alldim')
+            summary_file_lines.append('%s %s %s %s %d %1.3f' %\
+             (input_fp1, input_fp2, str(max_dims_str), mc_p_value_str,\
+              count_better, actual_m_squared))
+    
+    # Write output summary
+    f = open(output_summary_fp,'w')
+    f.write('\n'.join(summary_file_lines))
+    f.write('\n')
+    f.close()
 
 
 if __name__ == "__main__":
