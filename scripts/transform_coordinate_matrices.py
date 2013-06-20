@@ -78,19 +78,19 @@ def main():
     if not exists(output_dir): 
         makedirs(output_dir)
   
-    input_fp1 = opts.input_fps[0]
-    input_fp1_dir, input_fn1 = split(input_fp1)
-    input_fp1_basename, input_fp1_ext = splitext(input_fn1)
+    reference_input_fp = input_fps[0]
+    reference_input_fp_dir, input_fn1 = split(reference_input_fp)
+    reference_input_fp_basename, reference_input_fp_ext = splitext(input_fn1)
     output_summary_fp = '%s/procrustes_results.txt' % output_dir
     summary_file_lines = ['#FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
     
-    for i,input_fp2 in enumerate(opts.input_fps[1:]):
-        input_fp2_dir, input_fn2 = split(input_fp2)
-        input_fp2_basename, input_fp2_ext = splitext(input_fn2)
+    for i,query_input_fp in enumerate(input_fps[1:]):
+        query_input_fp_dir, query_input_fn = split(query_input_fp)
+        query_input_fp_basename, query_input_fp_ext = splitext(query_input_fn)
         output_matrix1_fp = '%s/%s_transformed_reference.txt' % \
-                             (output_dir, input_fp1_basename)
+                             (output_dir, reference_input_fp_basename)
         output_matrix2_fp = '%s/%s_transformed_q%d.txt' % \
-                             (output_dir, input_fp2_basename, i+1)
+                             (output_dir, query_input_fp_basename, i+1)
     
         if sample_id_map_fps:
             sample_id_map = dict([(k,v[0]) \
@@ -99,8 +99,8 @@ def main():
             sample_id_map = None
     
         transformed_coords1, transformed_coords2, m_squared, randomized_coords2 =\
-          get_procrustes_results(open(input_fp1,'U'),\
-                                 open(input_fp2,'U'),\
+          get_procrustes_results(open(reference_input_fp,'U'),\
+                                 open(query_input_fp,'U'),\
                                  sample_id_map=sample_id_map,\
                                  randomize=False,
                                  max_dimensions=num_dimensions)
@@ -116,8 +116,8 @@ def main():
                 trial_output_dir = '%s/trial_details_%d/' % (output_dir,i+2)
             else:
                 trial_output_dir = None
-            coords_f1 = list(open(input_fp1,'U'))
-            coords_f2 = list(open(input_fp2,'U'))
+            coords_f1 = list(open(reference_input_fp,'U'))
+            coords_f2 = list(open(query_input_fp,'U'))
             actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
              procrustes_monte_carlo(coords_f1,
                                     coords_f2,
@@ -130,7 +130,7 @@ def main():
             mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
             max_dims_str = str(num_dimensions or 'alldim')
             summary_file_lines.append('%s %s %s %s %d %1.3f' %\
-             (input_fp1, input_fp2, str(max_dims_str), mc_p_value_str,\
+             (reference_input_fp, query_input_fp, str(max_dims_str), mc_p_value_str,\
               count_better, actual_m_squared))
     
     # Write output summary
