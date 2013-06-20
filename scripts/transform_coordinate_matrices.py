@@ -134,7 +134,9 @@ def main():
             summary_file_lines.append('%s\t%s\t%s\t%s\t%d\t%1.3f' %\
              (reference_input_fp, query_input_fp, str(max_dims_str), mc_p_value_str,\
               count_better, actual_m_squared))
-    
+        else:
+            summary_file_lines.append('%s\t%s\t%s\tNA\tNA\t%1.3f' %\
+             (reference_input_fp, query_input_fp, str(max_dims_str), m_squared))
     # Write output summary
     f = open(output_summary_fp,'w')
     f.write('\n'.join(summary_file_lines))
