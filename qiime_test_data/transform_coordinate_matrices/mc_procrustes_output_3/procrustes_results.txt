@@ -1,0 +1,3 @@
+#FP1 FP2 Included_dimensions MC_p_value Count_better M^2
+s1_pc.txt s2_pc.txt 3 0.000 0 0.343
+s1_pc.txt s3_pc.txt 3 0.011 11 0.434
