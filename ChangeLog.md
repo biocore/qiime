@@ -4,6 +4,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 * QIIME now depends on [qcli](https://github.com/bipy/qcli), a stand-alone package which performs command line interface parsing and testing.
 * make_qiime_rst_file.py has been removed in favor of qcli_make_rst.
+* transform_coordinate_matrices.py can now take more than two input coordinate matrices. When used this way, the first coordinate matrix will be treated as the reference, and the 2nd through nth will be compared against that reference. The output file names, which were all previously hard-coded, are now generated on the fly for clarity of the results.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
