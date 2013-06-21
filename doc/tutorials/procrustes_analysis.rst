@@ -37,11 +37,10 @@ Defining reference filepaths with environment variables
 Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we'll define them as environment variables using the paths as they would be if you're running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We'll then reference the environment variables through-out this tutorial when they are used. If you're not working on either of these systems, you'll have to modify these paths. Run the following::
 
 	export QIIME_DIR=$HOME/qiime_software
-	export reference_seqs $QIIME_DIR/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
-	export reference_tree $QIIME_DIR/gg_otus-4feb2011-release/trees/gg_97_otus_4feb2011.tre
-	export reference_tax $QIIME_DIR/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt
-
-
+	export GG_DIR=$QIIME_DIR/gg_13_5_otus-release
+	export reference_seqs=$GG_DIR/rep_set/97_otus.fasta
+	export reference_tree=$GG_DIR/trees/97_otus.tree
+	export reference_tax=$GG_DIR/taxonomy/97_otu_taxonomy.txt
 
 Pick OTUs on Illumina data and generate an OTU table (including taxonomic assignment of samples)::
 	
@@ -55,13 +54,13 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
-	beta_diversity_through_plots.py -i ./illumina_ucrC/uclust_ref_picked_otus/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t $reference_tree -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./illumina_ucrC/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t $reference_tree -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Repeat the above steps on the 454 data::
 
 	pick_closed_reference_otus.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
-	print_biom_table_summary.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom
-	beta_diversity_through_plots.py -i ./454_ucrC/uclust_ref_picked_otus/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	print_biom_table_summary.py -i ./454_ucrC/otu_table.biom
+	beta_diversity_through_plots.py -i ./454_ucrC/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
 
 Perform Procrustes analysis::
 	
@@ -69,7 +68,7 @@ Perform Procrustes analysis::
 
 Generate Procrustes plot, including an explicit time axis::
 	
-	compare_3d_plots.py -i ./454_v_illumina/pc1_transformed.txt,./454_v_illumina/pc2_transformed.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
+	compare_3d_plots.py -i ./454_v_illumina/unweighted_unifrac_pc_transformed_reference.txt,./454_v_illumina/unweighted_unifrac_pc_transformed_q1.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
 
 There will now be several results of interest. For the Procrustes analysis you can find the statistical results in ``./454_v_illumina/unweighted_unifrac_pc_unweighted_unifrac_pc_procrustes_results.txt`` and you can view the Procrustes plot by opening ``./454_v_illumina/plots/pc1_transformed_3D_PCoA_plots.html`` in a web browser.
 
