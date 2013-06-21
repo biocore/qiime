@@ -148,10 +148,9 @@ def main():
     
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps
-    try:
+    sample_ids = None
+    if opts.sample_ids is not None:
         sample_ids = opts.sample_ids.split(',')
-    except AttributeError:
-        sample_ids = None
     mapping_fps = opts.mapping_fps
     phred_quality_threshold = opts.phred_quality_threshold
     retain_unassigned_reads = opts.retain_unassigned_reads
@@ -171,7 +170,7 @@ def main():
     
     # if this is not a demultiplexed run, 
     if barcode_type == 'not-barcoded':
-        if sample_ids == None:
+        if sample_ids is None:
             option_parser.error("If not providing barcode reads (because "
             "your data is not multiplexed), must provide --sample_ids.")
         if len(sample_ids) != len(sequence_read_fps):
@@ -264,7 +263,7 @@ def main():
         mapping_f = open(mapping_fp, 'U')
         _, _, barcode_to_sample_id, _, _, _, _ = check_map(mapping_f,
                   disable_primer_check=True, 
-                  has_barcodes=barcode_read_fp != None)
+                  has_barcodes=barcode_read_fp is not None)
         
         if rev_comp_mapping_barcodes:
             barcode_to_sample_id = \
