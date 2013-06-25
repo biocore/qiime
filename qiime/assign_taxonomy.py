@@ -391,7 +391,7 @@ class MothurTaxonAssigner(TaxonAssigner):
         
         mothur_params = {
             "reference": self.Params['reference_sequences_fp'],
-            "taxonomy": temp_tax_fp,
+            "taxonomy": reformatted_id_to_taxonomy_fp,
             "cutoff": confidence,
             }
         if self.Params['KmerSize'] is not None:
