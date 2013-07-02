@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Dan Knights",
-               "Jai Ram Rideout", "Daniel McDonald"]
+               "Jai Ram Rideout", "Daniel McDonald", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Catherine Lozupone"
@@ -14,7 +14,7 @@ __status__ = "Development"
 
 
 from optparse import OptionParser
-from os.path import split, splitext, join
+from os.path import split, splitext
 from os import listdir
 from string import strip
 import sys
@@ -22,7 +22,8 @@ import numpy as np
 from numpy import argsort, mean, array
 from cogent.util.dict2d import Dict2D
 from qiime.pycogent_backports.test import calc_contingency_expected, \
-    G_fit_from_Dict2D, ANOVA_one_way, correlation, t_paired
+    G_fit_from_Dict2D, ANOVA_one_way, t_paired
+from cogent.maths.stats.test import correlation_test
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
@@ -304,9 +305,10 @@ def get_single_paired_T_values(OTU, mapping_data, header, individual_column,
                             timepoint_zero_vals.append(timepoint_zero_val)
     return timepoint_zero_vals, after_treatment_vals
 
-def run_correlation_OTUs(OTU_list, category_info, otu_table, ignore_val=None,
+def run_correlation_OTUs(OTU_list, category_info, otu_table, test, ignore_val=None,
                          filt=1):
-    """runs pearson correlation on all OTUs in the OTU list
+    """runs correlation on all OTUs in the OTU list
+    using test (either spearman or pearson)
     """
     result = {}
     num_samples = len(category_info)
@@ -317,8 +319,8 @@ def run_correlation_OTUs(OTU_list, category_info, otu_table, ignore_val=None,
                 get_single_correlation_values(OTU, category_info, \
                 otu_table, ignore_val=ignore_val)
             if len(category_vals) >= round(filt):
-                r, prob = run_single_correlation(OTU_abundance_vals, \
-                    category_vals)
+                r, prob, corr_vals, parametric_prob, ci = \
+                    run_single_correlation(OTU_abundance_vals, category_vals, test)
             else:
                 r, prob = None, None
         else:
@@ -330,10 +332,11 @@ def run_correlation_OTUs(OTU_list, category_info, otu_table, ignore_val=None,
             result[OTU] = [r, prob, str(OTU_abundance_vals), str(category_vals)]
     return result
 
-def run_single_correlation(OTU_abundance_values, category_values):
-    """runs pearson correlation  on the designated OTU
+def run_single_correlation(OTU_abundance_values, category_values, corr_test):
+    """runs correlation on the designated OTU, using 
+    corr_test (either pearson or spearman)
     """
-    return correlation(Numbers(category_values), Numbers(OTU_abundance_values))
+    return correlation_test(Numbers(category_values), Numbers(OTU_abundance_values), corr_test)
 
 def get_single_correlation_values(OTU, category_info, otu_table,
                                   ignore_val=None):
@@ -650,7 +653,7 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
     if ignore_val == 'None':
         ignore_val = None
     
-    if test == 'ANOVA' or test == 'correlation': 
+    if test == 'ANOVA' or test == 'pearson' or test == 'spearman': 
         if not otu_table_relative_abundance:
             otu_table = otu_table.normObservationBySample()
         all_samples = False
@@ -669,7 +672,7 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
             get_category_info(mapping_data, header, category, threshold)
     #do not apply the filter_OTUs to the longitudinal studies as they are
     #filtered later
-    if test == 'ANOVA' or test == 'correlation' or test == 'g_test':
+    if test == 'ANOVA' or test == 'pearson' or test == 'spearman' or test == 'g_test':
         OTU_list = filter_OTUs(otu_table, filt, all_samples=all_samples,
                                category_mapping_info=category_info)
     elif test == 'paired_T':
@@ -685,9 +688,9 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
         results = run_ANOVA_OTUs(OTU_list, category_info, otu_table,
                                  category_values)
         output = output_results_ANOVA(results, category_values, taxonomy_info)
-    elif test == 'correlation':
+    elif test == 'pearson' or 'spearman':
         results = run_correlation_OTUs(OTU_list, category_info, \
-            otu_table, ignore_val=ignore_val, filt=filt)
+            otu_table, test, ignore_val=ignore_val, filt=filt)
         output = output_results_correlation(results, taxonomy_info)
     elif test == 'g_test':
         results = run_G_test_OTUs(OTU_list, category_info, otu_table, \
@@ -764,7 +767,7 @@ def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
         count += 1
         sys.stdout.flush()
 
-        if test == 'ANOVA' or test == 'correlation': 
+        if test == 'ANOVA' or test == 'pearson' or test == 'spearman': 
             if not otu_table_relative_abundance:
                 otu_table = otu_table.normObservationBySample()
         elif not test=='g_test':
@@ -775,8 +778,8 @@ def test_wrapper_multiple(test, parsed_otu_tables, category_mapping, category, \
         if test == 'ANOVA':
             results = run_ANOVA_OTUs(OTU_list, category_info, otu_table,
                                      category_values)
-        elif test == 'correlation':
-            results = run_correlation_OTUs(OTU_list, category_info, otu_table)
+        elif test == 'spearman' or 'pearson':
+            results = run_correlation_OTUs(OTU_list, category_info, otu_table, test)
         elif test == 'g_test':
             results = run_G_test_OTUs(OTU_list, category_info, otu_table,
                         category_values, suppress_warnings=True)
