@@ -32,8 +32,9 @@ script_info['brief_description']="""OTU significance and co-occurence analysis""
 script_info['script_description']="""The script otu_category_significance.py  
 tests whether any of the OTUs in an OTU table are significantly associated with 
 a category in the category mapping file. This code uses ANOVA, the G test of 
-independence, Pearson correlation, or a paired t-test to find OTUs that are 
-differentially represented across experimental treatments or measured variables.
+independence, Pearson correlation, Spearman correlation, or a paired t-test 
+to find OTUs that are differentially represented across experimental treatments 
+or measured variables.
 
 The script can also be used to measure co-occurrence. For instance it can also 
 be used with presence/absence or abundance data for a phylogenetic group (such 
@@ -70,9 +71,15 @@ ANOVA (ANOVA): determines whether OTU relative abundance is different between
 categories (e.g. if any OTUs are increased or decreased in relative abundance in 
 the gut microbiota of obese versus lean individuals). 
 
-Pearson correlation (correlation): determines whether OTU abundance is 
+Pearson correlation (pearson): determines whether OTU abundance is 
 correlated with a continuous variable in the category mapping file. (e.g. which
- OTUs are positively or negatively correlated with measured pH across soil samples)
+OTUs are positively or negatively correlated with measured pH across soil samples)
+
+Spearman correlation (spearman): uses the rankings of an OTUs abundance vs.
+a continuous variable in the category mapping file to determine if their is a
+non-parametric association.
+
+
 
 
 The tests also include options for longitudinal data (i.e. datasets in which 
@@ -87,7 +94,7 @@ which individual or site, and a "reference_sample" column, indicating which
 sample is the reference sample for an individual or site (e.g. time point zero 
 in a timeseries experiment). The longitudinal options include:
 
-Pearson correlation (longitudinal_correlation): determines whether OTU 
+Pearson correlation in longitudinal_correlation: determines whether OTU 
 relative abundance is correlated with a continuous variable in the category 
 mapping file while accounting for an experimental design where multiple samples
 are collected from the same individual or site. Uses the change in relative
@@ -146,7 +153,7 @@ Excel. The output has the following columns:
 * Category Mean Columns: Contains one column for each category reporting the mean count of the OTU in that category.
 * Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.
 
-The correlation and longitudinal_correlation test results are output as tab 
+The pearson, spearman, and longitudinal_correlation test results are output as tab 
 delimited text, which can be examined in Excel. The output has the following columns:
 
 * OTU: The name of the OTU.  
@@ -194,14 +201,16 @@ script_info['optional_options']=[
         'with a category using the G test of Independence.      '
         'ANOVA: determines whether OTU abundance is associated with a '
         'category.      ' 
-        'correlation: determines whether OTU abundance is correlated ' 
-        'with a continuous variable in the category mapping file.     ' 
+        'pearson: determines whether OTU abundance is correlated ' 
+        'with a continuous variable in the category mapping file using Pearson.    '
+        'spearman: determines whether an OTU abundance is correlated '
+        'with a continuous variable in the category mapping file using Spearman.    ' 
         'longitudinal_correlation: determine whether OTU relative ' 
         'abundance is correlated with a continuous variable in the ' 
         'category mapping file in longitudinal study designs such as ' 
         'with timeseries data.     paired_T: determine whether OTU ' 
         'relative abundance goes up or down in response to a treatment. [default: %default]',
-        type="choice",choices=["g_test", "ANOVA", "correlation", 
+        type="choice",choices=["g_test", "ANOVA", "pearson", "spearman", 
         "longitudinal_correlation", "paired_T"]),
     make_option('-f','--filter', dest='filter', type='float', 
         default= 0.25, 
