@@ -57,7 +57,7 @@ script_info['optional_options'] = [
     
     make_option('-w', '--max_walltime', type='int',
                     help='maximum time in hours the job will run for [default: %default]',
-                    default="72"),
+                    default=72),
 
     make_option('-c', '--cpus', type='int', 
                     help='number of CPUs to use [default:%default]',
