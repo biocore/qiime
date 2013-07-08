@@ -6,10 +6,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Rob Knight", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.7.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from optparse import OptionParser
 from os.path import exists
@@ -55,11 +55,28 @@ script_info['optional_options'] = [
     make_option('-j','--job_dir', action='store',
                     type='string',dest='job_dir',
                     help='directory to store the jobs [default: %default]',
-                    default="jobs/")
+                    default="jobs/"),
+    
+    make_option('-w', '--max_walltime', action='store',
+                    type='string', dest='max_walltime',
+                    help='maximum time in hours the job will run for [default: %default]',
+                    default="72"),
+
+    make_option('-c', '--cpus', action='store',
+                    type='int', dest='use_cpus',
+                    help='number of CPUs to use [default:%default]',
+                    default=1),
+    
+    make_option('-n', '--nodes', action='store',
+                    type='int', dest='use_nodes',
+                    help='number of nodes to use [default:%default]',
+                    default=1)
+
 ]
 
 script_info['version'] = __version__
 script_info['disallow_positional_arguments'] = False
+
 
 def main():
     option_parser, opts, args =\
@@ -89,7 +106,7 @@ def main():
                  % opts.job_dir)
 
     if (opts.make_jobs):
-        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir)
+        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir, (opts.max_walltime + :00:00), opts.use_cpus, opts.use_nodes)
     else:
         exit("Should we ever get here???")
     if (opts.submit_jobs):
