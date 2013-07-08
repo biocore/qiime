@@ -58,7 +58,7 @@ script_info['optional_options'] = [
                     default="jobs/"),
     
     make_option('-w', '--max_walltime', action='store',
-                    type='string', dest='max_walltime',
+                    type='int', dest='max_walltime',
                     help='maximum time in hours the job will run for [default: %default]',
                     default="72"),
 
@@ -106,7 +106,7 @@ def main():
                  % opts.job_dir)
 
     if (opts.make_jobs):
-        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir, (opts.max_walltime + :00:00), opts.use_cpus, opts.use_nodes)
+        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir, (opts.max_walltime + ":00:00"), opts.use_cpus, opts.use_nodes)
     else:
         exit("Should we ever get here???")
     if (opts.submit_jobs):
