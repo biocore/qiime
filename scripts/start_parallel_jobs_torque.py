@@ -47,28 +47,23 @@ script_info['optional_options'] = [
     make_option('-s','--submit_jobs',action='store_true',
                     help='submit the job files [default: %default]'),
 
-    make_option('-q','--queue',action='store',
-                    type='string',dest='queue',
+    make_option('-q','--queue',
                     help='name of queue to submit to [default: %default]',
                     default=qiime_config['torque_queue']),
 
-    make_option('-j','--job_dir', action='store',
-                    type='string',dest='job_dir',
+    make_option('-j','--job_dir',
                     help='directory to store the jobs [default: %default]',
                     default="jobs/"),
     
-    make_option('-w', '--max_walltime', action='store',
-                    type='int', dest='max_walltime',
+    make_option('-w', '--max_walltime', type='int',
                     help='maximum time in hours the job will run for [default: %default]',
                     default="72"),
 
-    make_option('-c', '--cpus', action='store',
-                    type='int', dest='use_cpus',
+    make_option('-c', '--cpus', type='int', 
                     help='number of CPUs to use [default:%default]',
                     default=1),
     
-    make_option('-n', '--nodes', action='store',
-                    type='int', dest='use_nodes',
+    make_option('-n', '--nodes', type='int', 
                     help='number of nodes to use [default:%default]',
                     default=1)
 
@@ -106,7 +101,7 @@ def main():
                  % opts.job_dir)
 
     if (opts.make_jobs):
-        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir, (opts.max_walltime + ":00:00"), opts.use_cpus, opts.use_nodes)
+        filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir, (str(opts.max_walltime) + ":00:00"), opts.cpus, opts.nodes)
     else:
         exit("Should we ever get here???")
     if (opts.submit_jobs):
