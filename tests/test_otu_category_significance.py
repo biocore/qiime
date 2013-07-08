@@ -917,22 +917,21 @@ s6\t0\tC""".split('\n')
         #OTU1 should be positively correlated, OTU2 negatively correlated
         self.assertFloatEqual(result['OTU1'][0], 0.99472406356429188)#r
         self.assertFloatEqual(result['OTU1'][1], 0.001)#prob
-        self.assertEqual(result['OTU1'][2], "[50.0, 55.0, 40.0, 45.0, 30.0, 35.0, 20.0, 25.0, 10.0, 15.0, 80.0, 85.0, 70.0, 75.0, 100.0, 90.0, 95.0, 60.0, 65.0, 5.0]")
         
         x = result['OTU1'][3]
         x = x[1:-1]
         x = x.split(',')
-        x = [float(i) for i in x]
+        x = set([float(i) for i in x])
 
-        self.assertFloatEqual(x, [0.3, 0.3, 0.2, 0.2, 0.15, 0.15, 0.1, 0.1, 0.05, 0.05, 0.65, 0.75, 0.5, 0.5, 0.99, 0.72, 0.8, 0.4, 0.4, 0.05])
+        self.assertFloatEqual(x, set([0.3, 0.3, 0.2, 0.2, 0.15, 0.15, 0.1, 0.1, 0.05, 0.05, 0.65, 0.75, 0.5, 0.5, 0.99, 0.72, 0.8, 0.4, 0.4, 0.05]))
         self.assertFloatEqual(result['OTU2'][0], -0.99472406356429188)#r
         self.assertFloatEqual(result['OTU2'][1], 0.001)#prob
         y = result['OTU1'][2]
         y = y[1:-1]
         y = y.split(',')
-        y = [float(i) for i in y]
+        y = set([float(i) for i in y])
 
-        self.assertFloatEqual(y, [50.0, 55.0, 40.0, 45.0, 30.0, 35.0, 20.0, 25.0, 10.0, 15.0, 80.0, 85.0, 70.0, 75.0, 100.0, 90.0, 95.0, 60.0, 65.0, 5.0])
+        self.assertFloatEqual(y, set([50.0, 55.0, 40.0, 45.0, 30.0, 35.0, 20.0, 25.0, 10.0, 15.0, 80.0, 85.0, 70.0, 75.0, 100.0, 90.0, 95.0, 60.0, 65.0, 5.0]))
 
         #test that appropriate error is raised is categorical
         category_info = {'sample1':'A',
