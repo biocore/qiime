@@ -14,7 +14,8 @@ from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
     regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, \
     pearson, spearman, _get_rank, kendall_correlation, std, median, \
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, \
-    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow
+    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow, _corr_kw, ssl_ssr_sx, \
+    tie_correction, kruskal_wallis
 
 from numpy import array, concatenate, fill_diagonal, reshape, arange, matrix, \
         ones, testing, tril, cov, sqrt
@@ -26,7 +27,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Gavin Huttley",
                "Sandra Smit", "Daniel McDonald", "Jai Ram Rideout",
-               "Michael Dwan"]
+               "Michael Dwan", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -1657,6 +1658,51 @@ class TestDistMatrixPermutationTest(TestCase):
         self.assertFloatEqual(within_MS, 2.9871794871794868)
         self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
         self.assertFloatEqual(prob, 0.00015486238993089464)
+
+    def test_kw_correction(self):
+        """Test n**3-n values for kruskal_wallis correction"""
+        # number of ties broken in datasets
+        t1 = 3
+        t2 = 7
+        t1_corr = _corr_kw(3)
+        t2_corr = _corr_kw(7)
+        self.assertEqual(t1_corr, 24)
+        self.assertEqual(t2_corr, 336)
+
+    def test_ssl_ssr_kw(self):
+        d = array([75, 67, 70, 75, 65, 71, 67, 67, 76, 68, 57, 58, 60, 59, 62, 60, 60,
+        57, 59, 61, 58, 61, 56, 58, 57, 56, 61, 60, 57, 58, 58, 59, 58, 61,
+        57, 56, 58, 57, 57, 59, 62, 66, 65, 63, 64, 62, 65, 65, 62, 67])
+        
+        ssl, ssr, y = ssl_ssr_sx(d)
+        self.assertEqual(ssl, array([47, 40, 45, 47, 35, 46, 40, 40, 49, 44,  3, 10, 21, 17, 29, 21, 21,
+        3, 17, 25, 10, 25,  0, 10,  3,  0, 25, 21,  3, 10, 10, 17, 10, 25,
+        3,  0, 10,  3,  3, 17, 29, 39, 35, 33, 34, 29, 35, 35, 29, 40]))
+        self.assertEqual(ssr, array([49, 44, 46, 49, 39, 47, 44, 44, 50, 45, 10, 17, 25, 21, 33, 25, 25,
+        10, 21, 29, 17, 29,  3, 17, 10,  3, 29, 25, 10, 17, 17, 21, 17, 29,
+        10,  3, 17, 10, 10, 21, 33, 40, 39, 34, 35, 33, 39, 39, 33, 44]))
+        self.assertEqual(y, array([56, 56, 56, 57, 57, 57, 57, 57, 57, 57, 58, 58, 58, 58, 58, 58, 58,
+        59, 59, 59, 59, 60, 60, 60, 60, 61, 61, 61, 61, 62, 62, 62, 62, 63,
+        64, 65, 65, 65, 65, 66, 67, 67, 67, 67, 68, 70, 71, 75, 75, 76]))
+
+    def test_tie_correction_kw(self):
+        d = array([56, 56, 56, 57, 57, 57, 57, 57, 57, 57, 58, 58, 58, 58, 58, 58, 58,
+        59, 59, 59, 59, 60, 60, 60, 60, 61, 61, 61, 61, 62, 62, 62, 62, 63,
+        64, 65, 65, 65, 65, 66, 67, 67, 67, 67, 68, 70, 71, 75, 75, 76])
+
+        tie_corr = tie_correction(d)
+        self.assertFloatEqual(tie_corr, 0.99150060024)
+
+    def test_kruskal_wallis(self):
+        """test kruskal_wallis on Sokal & Rohlf Box 13.6 dataset"""
+        d_control = [75,67,70,75,65,71,67,67,76,68]
+        d_2_gluc = [57,58,60,59,62,60,60,57,59,61]
+        d_2_fruc = [58,61,56,58,57,56,61,60,57,58]
+        d_1_1 = [58,59,58,61,57,56,58,57,57,59]
+        d_2_sucr = [62,66,65,63,64,62,65,65,62,67]
+
+        kw_pval = kruskal_wallis(d_control, d_2_gluc, d_2_fruc, d_1_1, d_2_sucr)
+        self.assertFloatEqual(kw_pval, 9.105424085598766e-08)
 
 #execute tests if called from command line
 if __name__ == '__main__':
