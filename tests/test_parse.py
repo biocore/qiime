@@ -1058,8 +1058,8 @@ otu3	s8_7	s2_5""".split('\n')
         self.assertRaises(ValueError, parse_sample_id_map,
                           sample_id_map)
     
-    def test_extract_per_individual_states_and_responses_from_mapping_f(self):
-        """extract_per_individual_states_and_responses_from_mapping_f functions as expected
+    def test_extract_per_individual_states_from_mapping_f(self):
+        """extract_per_individual_states_from_mapping_f functions as expected
         """
         expected = {'001':['001A','001B'],
                     '006':['006A','006B'],
