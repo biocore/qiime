@@ -1103,7 +1103,7 @@ otu3	s8_7	s2_5""".split('\n')
 
     def test_extract_per_individual_state_metadata_from_mapping_f(self):
         """ """
-        expected = {'001':[6.9,9.3],
+        veil_expected = {'001':[6.9,9.3],
                     '006':[4.2,5.1],
                     '007':[12.0,1.8],
                     '008':[10.0,None]}
@@ -1114,7 +1114,35 @@ otu3	s8_7	s2_5""".split('\n')
                    individual_identifier_category="PersonalID",
                    metadata_category="VeillonellaAbundance",
                    process_f=float)
-        self.assertEqual(actual,expected)
+        self.assertEqual(actual,veil_expected)
+        
+        # different metadata_category yields different result
+        strep_expected = {'001':[57.4,26],
+                    '006':[19,15.2],
+                    '007':[33.2,50],
+                    '008':[3.2,20]}
+        actual = extract_per_individual_state_metadata_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="StreptococcusAbundance",
+                   process_f=float)
+        self.assertEqual(actual,strep_expected)
+        
+        # different metadata_category yields different result
+        response_expected = {'001':["Improved","Improved"],
+                    '006':["Improved","Improved"],
+                    '007':["Worsened","Worsened"],
+                    '008':["Worsened","Worsened"]}
+        actual = extract_per_individual_state_metadata_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="Response",
+                   process_f=str)
+        self.assertEqual(actual,response_expected)
 
 individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
