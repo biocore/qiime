@@ -213,7 +213,8 @@ def extract_per_individual_states_from_mapping_f(
       mapping_f,
       state_category,
       state_values,
-      individual_identifier_category):
+      individual_identifier_category,
+      filter_missing_data=True):
     """
     returns {'individual-identifier':
                [sample-id-at-state-value1,
@@ -242,6 +243,12 @@ def extract_per_individual_states_from_mapping_f(
         
         results[individual_id][state_index] = sample_id
         
+    if filter_missing_data:
+        # delete individual results if sample ids corresponding to
+        # any of the states are missing
+        for individual_id, sample_ids in results.items():
+            if None in sample_ids:
+                del results[individual_id]
     return results
 
 def parse_distmat(lines):

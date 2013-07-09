@@ -1064,9 +1064,7 @@ otu3	s8_7	s2_5""".split('\n')
         expected = {'001':['001A','001B'],
                     '006':['006A','006B'],
                     '007':['007A','007B'],
-                    '008':['008A','008B'],
-                    '009':[None,'post.only'],
-                    '010':['pre.only',None]}
+                    '008':['008A','008B']}
         actual = extract_per_individual_states_from_mapping_f(
                    self.individual_states_and_responses_map_f,
                    state_category="TreatmentState",
@@ -1079,14 +1077,27 @@ otu3	s8_7	s2_5""".split('\n')
         expected = {'001':['001B','001A'],
                     '006':['006B','006A'],
                     '007':['007B','007A'],
-                    '008':['008B','008A'],
-                    '009':['post.only',None],
-                    '010':[None,'pre.only']}
+                    '008':['008B','008A']}
         actual = extract_per_individual_states_from_mapping_f(
                    self.individual_states_and_responses_map_f,
                    state_category="TreatmentState",
                    state_values=["Post","Pre"],
                    individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+        
+        # don't filter missing data
+        expected = {'001':['001A','001B'],
+                    '006':['006A','006B'],
+                    '007':['007A','007B'],
+                    '008':['008A','008B'],
+                    '009':[None,'post.only'],
+                    '010':['pre.only',None]}
+        actual = extract_per_individual_states_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   filter_missing_data=False)
         self.assertEqual(actual,expected)
         
 
