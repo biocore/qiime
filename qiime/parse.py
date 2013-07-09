@@ -209,6 +209,41 @@ def group_by_fields(table, names):
         result[states].append(header)
     return result
 
+def extract_per_individual_states_from_mapping_f(
+      mapping_f,
+      state_category,
+      state_values,
+      individual_identifier_category):
+    """
+    returns {'individual-identifier':
+               [sample-id-at-state-value1,
+                sample-id-at-state-value2,
+                sample-id-at-state-value3,
+                ...],
+              ...
+             }
+    """
+    mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
+    len_state_values = len(state_values)
+    results = {}
+    for sample_id, metadata in mapping_data.items():
+        individual_id = metadata[individual_identifier_category]
+        state_value = metadata[state_category]
+        state_index = state_values.index(state_value)
+        
+        if individual_id not in results:
+            # our first observation for this individual_id, 
+            # so need to initiate the result data structure
+            results[individual_id] = [None] * len_state_values
+        else:
+            # we already have observations for this individual_id, 
+            # so don't need to initiate the result data structure
+            pass
+        
+        results[individual_id][state_index] = sample_id
+        
+    return results
+
 def parse_distmat(lines):
     """Parser for distance matrix file (e.g. UniFrac dist matrix).
 

@@ -29,7 +29,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
     parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
-    parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser)
+    parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser,
+    extract_per_individual_states_from_mapping_f)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -79,6 +80,8 @@ class TopLevelTests(TestCase):
         self.denoiser_mapping1 = denoiser_mapping1.split('\n')
         self.sam_data1 = sam_data1.split("\n")
         self.sam1_expected = sam1_expected
+        self.individual_states_and_responses_map_f = \
+         individual_states_and_responses_map_f.split('\n')
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -1054,7 +1057,51 @@ otu3	s8_7	s2_5""".split('\n')
         sample_id_map = ['S1\ta', 'T1\ta', 'S2\ta']
         self.assertRaises(ValueError, parse_sample_id_map,
                           sample_id_map)
+    
+    def test_extract_per_individual_states_and_responses_from_mapping_f(self):
+        """extract_per_individual_states_and_responses_from_mapping_f functions as expected
+        """
+        expected = {'001':['001A','001B'],
+                    '006':['006A','006B'],
+                    '007':['007A','007B'],
+                    '008':['008A','008B'],
+                    '009':[None,'post.only'],
+                    '010':['pre.only',None]}
+        actual = extract_per_individual_states_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+        
+        # change to state_values order is reflected in order 
+        # of output sample ids
+        expected = {'001':['001B','001A'],
+                    '006':['006B','006A'],
+                    '007':['007B','007A'],
+                    '008':['008B','008A'],
+                    '009':['post.only',None],
+                    '010':[None,'pre.only']}
+        actual = extract_per_individual_states_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Post","Pre"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+        
 
+individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+001A	001	Improved	Pre	57.4	6.9
+001B	001	Improved	Post	26	9.3
+006A	006	Improved	Pre	19	4.2
+006B	006	Improved	Post	15.2	5.1
+007A	007	Worsened	Pre	33.2	12
+007B	007	Worsened	Post	50	1.8
+008A	008	Worsened	Pre	3.2	10
+008B	008	Worsened	Post	20	2.8
+post.only	009	Worsened	Post	22	42.0
+pre.only	010	Worsened	Pre	21	41.0
+"""
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')
