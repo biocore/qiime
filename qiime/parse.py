@@ -251,6 +251,33 @@ def extract_per_individual_states_from_mapping_f(
                 del results[individual_id]
     return results
 
+def extract_per_individual_state_metadata_from_mapping_f(
+        mapping_f,
+        state_category,
+        state_values,
+        individual_identifier_category,
+        metadata_category,
+        process_f=float):
+    per_individual_states = extract_per_individual_states_from_mapping_f(
+     mapping_f,
+     state_category,
+     state_values,
+     individual_identifier_category,
+     filter_missing_data=True)
+    
+    mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
+    results = {}
+    for individual_id, sample_ids in per_individual_states.items():
+        per_state_metadata_values = []
+        for sample_id in sample_ids:
+            try:
+                v = process_f(mapping_data[sample_id][metadata_category])
+            except ValueError, e:
+                v = None
+            per_state_metadata_values.append(v)
+        results[individual_id] = per_state_metadata_values
+    return results
+
 def parse_distmat(lines):
     """Parser for distance matrix file (e.g. UniFrac dist matrix).
 

@@ -30,7 +30,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
     parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
     parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser,
-    extract_per_individual_states_from_mapping_f)
+    extract_per_individual_states_from_mapping_f,
+    extract_per_individual_state_metadata_from_mapping_f)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -1099,7 +1100,21 @@ otu3	s8_7	s2_5""".split('\n')
                    individual_identifier_category="PersonalID",
                    filter_missing_data=False)
         self.assertEqual(actual,expected)
-        
+
+    def test_extract_per_individual_state_metadata_from_mapping_f(self):
+        """ """
+        expected = {'001':[6.9,9.3],
+                    '006':[4.2,5.1],
+                    '007':[12.0,1.8],
+                    '008':[10.0,None]}
+        actual = extract_per_individual_state_metadata_from_mapping_f(
+                   self.individual_states_and_responses_map_f,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,expected)
 
 individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
@@ -1109,7 +1124,7 @@ individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	Treatme
 007A	007	Worsened	Pre	33.2	12
 007B	007	Worsened	Post	50	1.8
 008A	008	Worsened	Pre	3.2	10
-008B	008	Worsened	Post	20	2.8
+008B	008	Worsened	Post	20	n/a
 post.only	009	Worsened	Post	22	42.0
 pre.only	010	Worsened	Pre	21	41.0
 """
