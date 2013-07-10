@@ -19,7 +19,9 @@ from matplotlib.pyplot import subplots
 from pylab import savefig
 from cogent.util.misc import create_dir
 from cogent.maths.stats.test import t_one_sample
-from qiime.parse import extract_per_individual_state_metadata_from_mapping_f
+from biom.parse import parse_biom_table
+from qiime.parse import (extract_per_individual_state_metadata_from_mapping_f,
+ extract_per_individual_state_metadata_from_mapping_f_and_biom)
 from qiime.util import (parse_command_line_parameters, 
                   make_option)
 
@@ -29,25 +31,24 @@ script_info['script_description'] = ""
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Generate plots for two categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results"))
 script_info['script_usage'].append(("Generate plots for four categories from the mapping file, where the y-axes should be set on a per-plot basis.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results --suppress_share_y_axis"))
+script_info['script_usage'].append(("Generate plots for all observations in a biom file, where the y-axes should be set on a per-plot basis.","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results --suppress_share_y_axis"))
 
 script_info['output_description']= ""
 
 script_info['required_options'] = [
  make_option('-m','--mapping_fp',type="existing_filepath",help='the input filepath'),
  make_option('-o','--output_dir',type="new_filepath",help='directory where output files should be saved'),
- make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity")'),
  make_option('--state_category',help='the mapping file column name to plot change over (usually has values like "pre-treatment" and "post-treatment")'),
  make_option('--state_values',help='ordered list of state values to test change over (defines direction of graphs, generally something like "pre-treatment,post-treatment"). currently limited to two states.'),
  make_option('--individual_id_category',help='the mapping file column name containing each individual\'s identifier (usually something like "personal_identifier")'),
 ]
 
 script_info['optional_options'] = [
- make_option('--ymin',type="float",default=None,
-             help='minimum value for y-axis [default: determined automatically]'),
- make_option('--ymax',type="float",default=None,
-             help='maximum value for y-axis [default: determined automatically]'),
- make_option('--suppress_share_y_axis',default=False,action='store_true',
-             help='set the scale of the y-axes will be set on a per-plot basis, rather than made consistent across all subplots [default: %default]')
+ make_option('--suppress_share_y_axis',default=False,action='store_true',help='set the scale of the y-axes will be set on a per-plot basis, rather than made consistent across all subplots [default: %default]'),
+  make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity") [default: %default]',default=None),
+  make_option('--observation_ids',help='ordered list of the observation ids to test for paired differences if a biom table is provided (usually something like "otu1,otu2") [default: compute paired differences for all observation ids]',default=None),
+  make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]', default=None)
+  
  ]
 
 script_info['version'] = __version__
@@ -60,13 +61,43 @@ def main():
     
     mapping_fp = opts.mapping_fp
     state_values = opts.state_values.split(',')
-    metadata_categories = opts.metadata_categories.split(',')
+    metadata_categories = opts.metadata_categories
     state_category = opts.state_category
     individual_id_category = opts.individual_id_category
     output_dir = opts.output_dir
+    biom_table_fp = opts.biom_table_fp
+    observation_ids = opts.observation_ids
+    
+    if metadata_categories and biom_table_fp:
+        option_parser.error("Can only pass --metadata_categories or --biom_table_fp, not both.")
+    elif not (metadata_categories or biom_table_fp):
+        option_parser.error("Must pass either --metadata_categories or --biom_table_fp.")
+    else:
+        pass
     
     if len(state_values) != 2:
         option_parser.error("Exactly two state_values must be passed separated by a comma.")
+    
+    if biom_table_fp:
+        biom_table = parse_biom_table(open(biom_table_fp,'U'))
+        metadata_categories = observation_ids or biom_table.ObservationIds
+        personal_ids_to_state_metadata = \
+         extract_per_individual_state_metadata_from_mapping_f_and_biom(
+                                     open(mapping_fp,'U'),
+                                     biom_table,
+                                     state_category,
+                                     state_values,
+                                     individual_id_category,
+                                     observation_ids=metadata_categories)
+    else:
+        metadata_categories = metadata_categories.split(',')
+        personal_ids_to_state_metadata = \
+         extract_per_individual_state_metadata_from_mapping_f(
+                                     open(mapping_fp,'U'),
+                                     state_category,
+                                     state_values,
+                                     individual_id_category,
+                                     metadata_categories)
     
     num_cols = 3
     num_metadata_categories = len(metadata_categories)
@@ -93,13 +124,7 @@ def main():
     paired_difference_output_f.write("#Metadata category\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
     
     plot_output_fp = join(opts.output_dir,'plots.pdf')
-    personal_ids_to_state_metadata = \
-         extract_per_individual_state_metadata_from_mapping_f(
-                                     open(mapping_fp,'U'),
-                                     state_category,
-                                     state_values,
-                                     individual_id_category,
-                                     metadata_categories)
+
     
     for category_number, metadata_category in enumerate(metadata_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_metadata[metadata_category]
