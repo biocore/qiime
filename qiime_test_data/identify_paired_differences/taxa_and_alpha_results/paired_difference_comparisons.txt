@@ -1,0 +1,5 @@
+#Metadata category	Mean difference	Median difference	t one sample	t one sample parametric p-value
+Streptococcus Abundance	-0.4	6.5	-0.0350347417639	0.974252801573
+Veillonella Abundance	-2.3	0.9	-0.578810993268	0.621216312867
+Phylogenetic Diversity	22.8125	16.72	2.0573656709	0.131828591989
+Observed OTUs	81.5	105.5	3.1390686531	0.0517007939479

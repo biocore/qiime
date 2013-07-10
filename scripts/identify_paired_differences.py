@@ -24,10 +24,11 @@ from qiime.util import (parse_command_line_parameters,
                   make_option)
 
 script_info = {}
-script_info['brief_description'] = "Generate plots which illustrate the change in some data point(s) with treatment on a per-individual basis."
+script_info['brief_description'] = "Generate plots which illustrate the change in some data point(s) with a state change on a per-individual basis."
 script_info['script_description'] = ""
 script_info['script_usage'] = []
-script_info['script_usage'].append(("","","%prog -m map.txt --metadata_categories 'StreptococcusAbundance,VeillonellaAbundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o results"))
+script_info['script_usage'].append(("Generate plots for two categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results"))
+script_info['script_usage'].append(("Generate plots for four categories from the mapping file, where the y-axes should be set on a per-plot basis.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results --suppress_share_y_axis"))
 
 script_info['output_description']= ""
 
@@ -45,6 +46,8 @@ script_info['optional_options'] = [
              help='minimum value for y-axis [default: determined automatically]'),
  make_option('--ymax',type="float",default=None,
              help='maximum value for y-axis [default: determined automatically]'),
+ make_option('--suppress_share_y_axis',default=False,action='store_true',
+             help='set the scale of the y-axes will be set on a per-plot basis, rather than made consistent across all subplots [default: %default]')
  ]
 
 script_info['version'] = __version__
@@ -67,7 +70,10 @@ def main():
     num_unused_subplots = (num_rows * num_cols) - num_subplots
     
     # create the subplot grid
-    f, splts = subplots(num_rows, num_cols, sharex=False, sharey=True)
+    f, splts = subplots(num_rows,
+                        num_cols,
+                        sharex=False,
+                        sharey=not opts.suppress_share_y_axis)
     for i in range(num_cols,num_cols - num_unused_subplots,-1):
         # blank out un-used subplot spaces
         try:

@@ -1,0 +1,3 @@
+#Metadata category	Mean difference	Median difference	t one sample	t one sample parametric p-value
+Streptococcus Abundance	-0.4	6.5	-0.0350347417639	0.974252801573
+Veillonella Abundance	-2.3	0.9	-0.578810993268	0.621216312867
