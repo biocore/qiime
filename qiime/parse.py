@@ -256,7 +256,7 @@ def extract_per_individual_states_from_mapping_f(
                 del results[individual_id]
     return results
 
-def extract_per_individual_state_metadata_from_mapping_f(
+def extract_per_individual_state_metadatum_from_mapping_f(
         mapping_f,
         state_category,
         state_values,
@@ -283,6 +283,26 @@ def extract_per_individual_state_metadata_from_mapping_f(
                 v = None
             per_state_metadata_values.append(v)
         results[individual_id] = per_state_metadata_values
+    return results
+
+def extract_per_individual_state_metadata_from_mapping_f(
+        mapping_f,
+        state_category,
+        state_values,
+        individual_identifier_category,
+        metadata_categories,
+        process_f=float):
+    
+    results = {}
+    for metadata_category in metadata_categories:
+        results[metadata_category] = \
+         extract_per_individual_state_metadatum_from_mapping_f(
+           mapping_f,
+           state_category,
+           state_values,
+           individual_identifier_category,
+           metadata_categories,
+           process_f)
     return results
 
 def extract_per_individual_state_metadata_from_mapping_f_and_biom(

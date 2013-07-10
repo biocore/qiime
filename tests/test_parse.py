@@ -33,7 +33,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
     parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser,
     extract_per_individual_states_from_mapping_f,
-    extract_per_individual_state_metadata_from_mapping_f,
+    extract_per_individual_state_metadatum_from_mapping_f,
     extract_per_individual_state_metadata_from_mapping_f_and_biom)
 
 class TopLevelTests(TestCase):
@@ -1126,13 +1126,13 @@ otu3	s8_7	s2_5""".split('\n')
                    individual_identifier_category="PersonalID")
         self.assertEqual(actual,expected)
 
-    def test_extract_per_individual_state_metadata_from_mapping_f(self):
+    def test_extract_per_individual_state_metadatum_from_mapping_f(self):
         """ """
         veil_expected = {'001':[6.9,9.3],
                     '006':[4.2,5.1],
                     '007':[12.0,1.8],
                     '008':[10.0,None]}
-        actual = extract_per_individual_state_metadata_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_mapping_f(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1146,7 +1146,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '006':[19,15.2],
                     '007':[33.2,50],
                     '008':[3.2,20]}
-        actual = extract_per_individual_state_metadata_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_mapping_f(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1160,7 +1160,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '006':["Improved","Improved"],
                     '007':["Worsened","Worsened"],
                     '008':["Worsened","Worsened"]}
-        actual = extract_per_individual_state_metadata_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_mapping_f(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1171,7 +1171,7 @@ otu3	s8_7	s2_5""".split('\n')
 
         ## alt input file with more states
         expected = {'001':[6.9,9.3,10.1]}
-        actual = extract_per_individual_state_metadata_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_mapping_f(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post","PostPost"],
@@ -1182,7 +1182,7 @@ otu3	s8_7	s2_5""".split('\n')
 
         # unlisted states are ignored
         expected = {'001':[6.9,9.3]}
-        actual = extract_per_individual_state_metadata_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_mapping_f(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
