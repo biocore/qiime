@@ -15,7 +15,7 @@ from os.path import join
 from math import ceil
 from numpy import median, mean
 import matplotlib
-from matplotlib.pyplot import subplots
+import matplotlib.pyplot as plt
 from pylab import savefig
 from cogent.util.misc import create_dir
 from cogent.maths.stats.test import t_one_sample
@@ -106,23 +106,7 @@ def main():
                                      state_values,
                                      individual_id_category,
                                      metadata_categories)
-    
-    num_cols = 3
     num_metadata_categories = len(metadata_categories)
-    num_rows = int(ceil(num_metadata_categories / num_cols))
-    num_unused_subplots = (num_rows * num_cols) - num_metadata_categories
-    
-    # create the subplot grid
-    fig, splts = subplots(num_rows,
-                        num_cols,
-                        sharex=False,
-                        sharey=not opts.suppress_share_y_axis)
-    for i in range(num_cols,num_cols - num_unused_subplots,-1):
-        # blank out un-used subplot spaces
-        try:
-            splts[-1][i-1].axis('off')
-        except TypeError:
-            splts[i-1].axis('off')
     x_values = range(len(state_values))
     
     create_dir(opts.output_dir)
@@ -136,16 +120,9 @@ def main():
 
     for category_number, metadata_category in enumerate(metadata_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_metadata[metadata_category]
-
-        # identify the current subplot
-        row_num = int(category_number/num_cols)
-        col_num = int(category_number % num_cols)
-        try:
-            current_subplot = splts[row_num][col_num]
-        except TypeError:
-            # there is only one row, so the plot is 
-            # access only by column number
-            current_subplot = splts[col_num]
+        plot_output_fp = join(opts.output_dir,'%s.pdf' % metadata_category.replace(' ','-'))
+        fig = plt.figure()
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         
         # initialize a list to store the distribution of changes in metadata 
         # value with state change
@@ -161,10 +138,7 @@ def main():
                 # and starting state
                 differences.append(data[1] - data[0])
                 # and plot the start and stop values as a line
-                current_subplot.plot(x_values,
-                                     data,
-                                     "black",
-                                     linewidth=0.5)
+                axes.plot(x_values,data,"black",linewidth=0.5)
         
         # Compute stats for current metadata category
         t_one_sample_results = t_one_sample(differences)
@@ -180,11 +154,10 @@ def main():
                                         bonferroni_p_value])
         
         # Finalize plot for current metadata category
-        current_subplot.set_title(metadata_category,size=8)
-        current_subplot.set_xticks(range(len(state_values)))
-        current_subplot.set_xticklabels(state_values,size=6)
-    
-    fig.savefig(plot_output_fp)
+        axes.set_ylabel(metadata_category,size=8)
+        axes.set_xticks(range(len(state_values)))
+        axes.set_xticklabels(state_values,size=6)
+        fig.savefig(plot_output_fp)
     # sort output by uncorrected p-value
     paired_difference_results.sort(key=lambda x: x[5])
     for r in paired_difference_results:
