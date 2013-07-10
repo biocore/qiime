@@ -93,15 +93,16 @@ def main():
     paired_difference_output_f.write("#Metadata category\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
     
     plot_output_fp = join(opts.output_dir,'plots.pdf')
-    
-    for category_number, metadata_category in enumerate(metadata_categories):
-        personal_ids_to_state_metadata = \
+    personal_ids_to_state_metadata = \
          extract_per_individual_state_metadata_from_mapping_f(
                                      open(mapping_fp,'U'),
                                      state_category,
                                      state_values,
                                      individual_id_category,
-                                     metadata_category)
+                                     metadata_categories)
+    
+    for category_number, metadata_category in enumerate(metadata_categories):
+        personal_ids_to_state_metadatum = personal_ids_to_state_metadata[metadata_category]
 
         # identify the current subplot
         row_num = int(category_number/num_cols)
@@ -117,7 +118,7 @@ def main():
         # value with state change
         differences = []
         
-        for pid, data in personal_ids_to_state_metadata.items():
+        for pid, data in personal_ids_to_state_metadatum.items():
             if None in data:
                 # if any of the data points are missing, skip this 
                 # individual

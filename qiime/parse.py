@@ -292,7 +292,7 @@ def extract_per_individual_state_metadata_from_mapping_f(
         individual_identifier_category,
         metadata_categories,
         process_f=float):
-    
+    mapping_f = list(mapping_f)
     results = {}
     for metadata_category in metadata_categories:
         results[metadata_category] = \
@@ -301,7 +301,7 @@ def extract_per_individual_state_metadata_from_mapping_f(
            state_category,
            state_values,
            individual_identifier_category,
-           metadata_categories,
+           metadata_category,
            process_f)
     return results
 
