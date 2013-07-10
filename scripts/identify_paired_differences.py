@@ -102,23 +102,8 @@ def main():
                                      state_values,
                                      individual_id_category,
                                      metadata_category)
-        
-        differences = []
-        for e in personal_ids_to_responses.values():
-            if None in e:
-                # no data for some of the entries, so skip this pid
-                continue
-            else:
-                differences.append(e[1] - e[0])
-        
-        t_one_sample_results = t_one_sample(differences)
-        paired_difference_output_f.write('\t'.join([metadata_category,
-                                        str(mean(differences)),
-                                        str(median(differences)),
-                                        str(t_one_sample_results[0]),
-                                        str(t_one_sample_results[1])]))
-        paired_difference_output_f.write('\n')
 
+        # identify the current subplot
         row_num = int(category_number/num_cols)
         col_num = int(category_number % num_cols)
         try:
@@ -127,44 +112,38 @@ def main():
             # there is only one row, so the plot is 
             # access only by column number
             current_subplot = splts[col_num]
+        
         current_x_values = []
         current_y_values = []
+        differences = []
         
         for pid, data in personal_ids_to_responses.items():
             if None in data:
-                # no data for some of the entries, so skip this pid
+                # if any of the data points are missing, skip this 
+                # individual
                 continue
-            all_y_values.extend(data)            
-            current_subplot.plot(x_values,
-                                 data,
-                                 "black",
-                                 linewidth=0.5)
-
+            else:
+                # otherwise compute the difference between the ending
+                # and starting state
+                differences.append(data[1] - data[0])
+                all_y_values.extend(data)
+                current_subplot.plot(x_values,
+                                     data,
+                                     "black",
+                                     linewidth=0.5)
+        
+        # Compute stats for current metadata category
+        t_one_sample_results = t_one_sample(differences)
+        paired_difference_output_f.write('\t'.join([metadata_category,
+                                        str(mean(differences)),
+                                        str(median(differences)),
+                                        str(t_one_sample_results[0]),
+                                        str(t_one_sample_results[1])]))
+        paired_difference_output_f.write('\n')
+        # Finalize plot for current metadata category
         current_subplot.set_title(metadata_category,size=8)
         current_subplot.set_xticks(range(len(state_values)))
         current_subplot.set_xticklabels(state_values,size=6)
-        
-        
-    #     for row_num in range(num_rows):
-    #         splt = splts[row_num][col_num]
-    #         slope = median_slopes[row_num]
-    #         splt.text(0.40*(len(treatment_values)-1),
-    #                   0.85*max(all_y_values),
-    #                   "d=%1.2f" % slope,
-    #                   size=8)
-    #         min_y = opts.ymin or min(all_y_values)
-    #         max_y = opts.ymax or max(all_y_values)
-    #         splt.set_ylim(min_y,max_y)
-    #         yticks = map(int,[min_y,mean([min_y,max_y]),max_y])
-    #         splt.set_yticks(yticks)
-    #         splt.set_xticks(range(len(treatment_values)))
-    #                 
-    #     splts[-1][col_num].set_xticklabels(treatment_values,size=6)
-    #     splts[0][col_num].set_title(plot_category,size=10)
-    # 
-    # for i,response_value in enumerate(response_values):
-    #     splts[i][0].set_ylabel(response_value,size=8)
-    #     splts[i][0].set_yticklabels(yticks,size=6)
     
     savefig(plot_output_fp)
     paired_difference_output_f.close()
