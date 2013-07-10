@@ -185,9 +185,8 @@ def main():
         current_subplot.set_xticklabels(state_values,size=6)
     
     fig.savefig(plot_output_fp)
-    # sort output by absolute value of t (largest to smallest)
-    paired_difference_results.sort(key=lambda x: abs(x[4]))
-    paired_difference_results.reverse()
+    # sort output by uncorrected p-value
+    paired_difference_results.sort(key=lambda x: x[5])
     for r in paired_difference_results:
         paired_difference_output_f.write('\t'.join(map(str,r)))
         paired_difference_output_f.write('\n')
