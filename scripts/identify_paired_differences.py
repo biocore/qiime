@@ -72,7 +72,7 @@ def main():
         # blank out un-used subplot spaces
         try:
             splts[-1][i-1].axis('off')
-        except AttributeError:
+        except TypeError:
             splts[i-1].axis('off')
     x_values = range(len(state_values))
     all_y_values = []
@@ -114,7 +114,7 @@ def main():
         col_num = int(category_number % num_cols)
         try:
             current_subplot = splts[row_num][col_num]
-        except AttributeError:
+        except TypeError:
             # there is only one row, so the plot is 
             # access only by column number
             current_subplot = splts[col_num]
