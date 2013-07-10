@@ -64,6 +64,9 @@ def main():
     state_category = opts.state_category
     individual_id_category = opts.individual_id_category
     
+    if len(state_values) != 2:
+        option_parser.error("Exactly two state_values must be passed separated by a comma.")
+    
     num_cols = 3
     num_subplots = len(metadata_categories)
     num_rows = int(ceil(num_subplots / num_cols))
