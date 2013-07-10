@@ -63,6 +63,7 @@ def main():
     metadata_categories = opts.metadata_categories.split(',')
     state_category = opts.state_category
     individual_id_category = opts.individual_id_category
+    output_dir = opts.output_dir
     
     if len(state_values) != 2:
         option_parser.error("Exactly two state_values must be passed separated by a comma.")
@@ -94,7 +95,7 @@ def main():
     plot_output_fp = join(opts.output_dir,'plots.pdf')
     
     for category_number, metadata_category in enumerate(metadata_categories):
-        personal_ids_to_responses = \
+        personal_ids_to_state_metadata = \
          extract_per_individual_state_metadata_from_mapping_f(
                                      open(mapping_fp,'U'),
                                      state_category,
@@ -112,9 +113,11 @@ def main():
             # access only by column number
             current_subplot = splts[col_num]
         
+        # initialize a list to store the distribution of changes in metadata 
+        # value with state change
         differences = []
         
-        for pid, data in personal_ids_to_responses.items():
+        for pid, data in personal_ids_to_state_metadata.items():
             if None in data:
                 # if any of the data points are missing, skip this 
                 # individual
