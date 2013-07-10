@@ -13,6 +13,8 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from biom.table import table_factory
+from biom.parse import parse_biom_table
+from biom.exception import UnknownID
 from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase,main
@@ -31,7 +33,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
     parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser,
     extract_per_individual_states_from_mapping_f,
-    extract_per_individual_state_metadata_from_mapping_f)
+    extract_per_individual_state_metadata_from_mapping_f,
+    extract_per_individual_state_metadata_from_mapping_f_and_biom)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -85,6 +88,8 @@ class TopLevelTests(TestCase):
          individual_states_and_responses_map_f1.split('\n')
         self.individual_states_and_responses_map_f2 = \
          individual_states_and_responses_map_f2.split('\n')
+        self.paired_difference_biom1 = \
+         parse_biom_table(paired_difference_biom_f1.split('\n'))
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -1186,6 +1191,55 @@ otu3	s8_7	s2_5""".split('\n')
                    process_f=float)
         self.assertEqual(actual,expected)
 
+    def test_extract_per_individual_state_metadata_from_mapping_f_and_biom(self):
+        """ """
+        # single observations
+        o1_expected = {'o1':{'001':[22,10],
+                             '006':[25,4],
+                             '007':[33,26],
+                             '008':[99,75]}}
+        actual = extract_per_individual_state_metadata_from_mapping_f_and_biom(
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=['o1'])
+        self.assertEqual(actual,o1_expected)
+        
+        # all observations
+        all_expected = {'o1':{'001':[22,10],
+                              '006':[25,4],
+                              '007':[33,26],
+                              '008':[99,75]},
+                        'o2':{'001':[10,44],
+                              '006':[3,99],
+                              '007':[8,18],
+                              '008':[64,164]},
+                        'o3':{'001':[10,50],
+                              '006':[50,10],
+                              '007':[10,50],
+                              '008':[50,10]}}
+        actual = extract_per_individual_state_metadata_from_mapping_f_and_biom(
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=None)
+        self.assertEqual(actual,all_expected)
+        
+        # invalid observation id
+        self.assertRaises(
+                   UnknownID,
+                   extract_per_individual_state_metadata_from_mapping_f_and_biom,
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=['o1','bad.obs.id'])
+
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
 001B	001	Improved	Post	26	9.3
@@ -1198,6 +1252,15 @@ individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	Treatm
 post.only	009	Worsened	Post	22	42.0
 pre.only	010	Worsened	Pre	21	41.0
 """
+
+paired_difference_biom_f1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-07-10T09:22:39.602392","matrix_type": "sparse","matrix_element_type": "float","shape": [3, 10],"data": [[0,0,22.0],[0,1,10.0],[0,2,25.0],[0,3,4.0],[0,4,33.0],[0,5,26.0],[0,6,99.0],[0,7,75.0],[0,8,66.0],[0,9,67.0],[1,0,10.0],[1,1,44.0],[1,2,3.0],[1,3,99.0],[1,4,8.0],[1,5,18.0],[1,6,64.0],[1,7,164.0],[1,8,22.0],[1,9,22.0],[2,0,10.0],[2,1,50.0],[2,2,50.0],[2,3,10.0],[2,4,10.0],[2,5,50.0],[2,6,50.0],[2,7,10.0],[2,8,10.0],[2,9,50.0]],"rows": [{"id": "o1", "metadata": null},{"id": "o2", "metadata": null},{"id": "o3", "metadata": null}],"columns": [{"id": "001A", "metadata": null},{"id": "001B", "metadata": null},{"id": "006A", "metadata": null},{"id": "006B", "metadata": null},{"id": "007A", "metadata": null},{"id": "007B", "metadata": null},{"id": "008A", "metadata": null},{"id": "008B", "metadata": null},{"id": "post.only", "metadata": null},{"id": "pre.only", "metadata": null}]}"""
+
+# txt version of paired_difference_biom_f1 for readability
+# #SampleID 001A    001B    006A    006B    007A    007B    008A    008B    post.only   pre.only
+# o1    22  10  25  4   33  26  99  75  66  67
+# o2    10  44  3   99  8   18  64  164 22  22
+# o3    10  50  50  10  10  50  50  10  10  50
+
 
 individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9

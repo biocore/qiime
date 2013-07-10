@@ -285,6 +285,35 @@ def extract_per_individual_state_metadata_from_mapping_f(
         results[individual_id] = per_state_metadata_values
     return results
 
+def extract_per_individual_state_metadata_from_mapping_f_and_biom(
+        mapping_f,
+        biom_table,
+        state_category,
+        state_values,
+        individual_identifier_category,
+        observation_ids=None):
+    """
+    """
+    per_individual_states = extract_per_individual_states_from_mapping_f(
+     mapping_f,
+     state_category,
+     state_values,
+     individual_identifier_category,
+     filter_missing_data=True)
+    results = {}
+    if observation_ids is None:
+        observation_ids = biom_table.ObservationIds
+    for observation_id in observation_ids:
+        observation_data = biom_table.observationData(observation_id)
+        results[observation_id] = {}
+        for individual_id, sample_ids in per_individual_states.items():
+            per_state_metadata_values = []
+            for sample_id in sample_ids:
+                sample_index = biom_table.getSampleIndex(sample_id)
+                per_state_metadata_values.append(observation_data[sample_index])
+            results[observation_id][individual_id] = per_state_metadata_values
+    return results
+     
 def parse_distmat(lines):
     """Parser for distance matrix file (e.g. UniFrac dist matrix).
 
