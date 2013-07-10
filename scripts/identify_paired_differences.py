@@ -47,7 +47,8 @@ script_info['required_options'] = [
 ]
 
 script_info['optional_options'] = [
- make_option('--suppress_share_y_axis',default=False,action='store_true',help='set the scale of the y-axes will be set on a per-plot basis, rather than made consistent across all subplots [default: %default]'),
+ make_option('--ymin',default=None,type='float',help='set the minimum y-value across plots [default: determined on a per-plot basis]'),
+ make_option('--ymax',default=None,type='float',help='set the maximum y-value across plots [default: determined on a per-plot basis]'),
   make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity") [default: %default]',default=None),
   make_option('--observation_ids',help='ordered list of the observation ids to test for paired differences if a biom table is provided (usually something like "otu1,otu2") [default: compute paired differences for all observation ids]',default=None),
   make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]', default=None),
@@ -69,6 +70,8 @@ def main():
     biom_table_fp = opts.biom_table_fp
     observation_ids = opts.observation_ids.split(',')
     valid_states = opts.valid_states
+    ymin = opts.ymin
+    ymax = opts.ymax
     
     if metadata_categories and biom_table_fp:
         option_parser.error("Can only pass --metadata_categories or --biom_table_fp, not both.")
@@ -157,6 +160,7 @@ def main():
         axes.set_ylabel(metadata_category,size=8)
         axes.set_xticks(range(len(state_values)))
         axes.set_xticklabels(state_values,size=6)
+        axes.set_ylim(ymin=ymin,ymax=ymax)
         fig.savefig(plot_output_fp)
     # sort output by uncorrected p-value
     paired_difference_results.sort(key=lambda x: x[5])
