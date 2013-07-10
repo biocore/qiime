@@ -67,7 +67,7 @@ def main():
     individual_id_category = opts.individual_id_category
     output_dir = opts.output_dir
     biom_table_fp = opts.biom_table_fp
-    observation_ids = opts.observation_ids
+    observation_ids = opts.observation_ids.split(',')
     valid_states = opts.valid_states
     
     if metadata_categories and biom_table_fp:
