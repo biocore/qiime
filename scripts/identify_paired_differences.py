@@ -64,9 +64,16 @@ def main():
     num_cols = 3
     num_subplots = len(metadata_categories)
     num_rows = int(ceil(num_subplots / num_cols))
+    num_unused_subplots = (num_rows * num_cols) - num_subplots
     
-    f, splts = subplots(num_rows, num_cols, sharex=True, sharey=True)
-    matplotlib.rc('ytick', labelsize=6)
+    # create the subplot grid
+    f, splts = subplots(num_rows, num_cols, sharex=False, sharey=True)
+    for i in range(num_cols,num_cols - num_unused_subplots,-1):
+        # blank out un-used subplot spaces
+        try:
+            splts[-1][i-1].axis('off')
+        except AttributeError:
+            splts[i-1].axis('off')
     x_values = range(len(state_values))
     all_y_values = []
     
@@ -105,6 +112,12 @@ def main():
 
         row_num = int(category_number/num_cols)
         col_num = int(category_number % num_cols)
+        try:
+            current_subplot = splts[row_num][col_num]
+        except AttributeError:
+            # there is only one row, so the plot is 
+            # access only by column number
+            current_subplot = splts[col_num]
         current_x_values = []
         current_y_values = []
         
@@ -113,15 +126,15 @@ def main():
                 # no data for some of the entries, so skip this pid
                 continue
             all_y_values.extend(data)            
-            splts[category_number].plot(x_values,
-                                         data,
-                                         "black",
-                                         linewidth=0.5)
+            current_subplot.plot(x_values,
+                                 data,
+                                 "black",
+                                 linewidth=0.5)
 
-        splts[category_number].set_title(metadata_category,size=10)
-        splts[category_number].set_xticklabels(state_values,size=6)
-        # splts[row_num][col_num].set_title(plot_category,size=10)
-        # splts[row_num][col_num].set_xticklabels(state_values,size=6)
+        current_subplot.set_ylabel(metadata_category,size=8)
+        current_subplot.set_xticks(range(len(state_values)))
+        current_subplot.set_xticklabels(state_values,size=6)
+        
         
     #     for row_num in range(num_rows):
     #         splt = splts[row_num][col_num]
