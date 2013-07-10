@@ -186,7 +186,7 @@ def main():
     
     fig.savefig(plot_output_fp)
     # sort output by absolute value of t (largest to smallest)
-    paired_difference_results.sort(key=lambda x: abs(x[3]))
+    paired_difference_results.sort(key=lambda x: abs(x[4]))
     paired_difference_results.reverse()
     for r in paired_difference_results:
         paired_difference_output_f.write('\t'.join(map(str,r)))
