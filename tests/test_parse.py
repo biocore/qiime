@@ -1164,6 +1164,28 @@ otu3	s8_7	s2_5""".split('\n')
                    process_f=str)
         self.assertEqual(actual,response_expected)
 
+        ## alt input file with more states
+        expected = {'001':[6.9,9.3,10.1]}
+        actual = extract_per_individual_state_metadata_from_mapping_f(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post","PostPost"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,expected)
+
+        # unlisted states are ignored
+        expected = {'001':[6.9,9.3]}
+        actual = extract_per_individual_state_metadata_from_mapping_f(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,expected)
+
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
 001B	001	Improved	Post	26	9.3
