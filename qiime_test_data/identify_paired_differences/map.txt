@@ -1,0 +1,11 @@
+#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+001A	001	Improved	Pre	57.4	6.9
+001B	001	Improved	Post	26	9.3
+006A	006	Improved	Pre	19	4.2
+006B	006	Improved	Post	15.2	5.1
+007A	007	Worsened	Pre	33.2	12
+007B	007	Worsened	Post	50	1.8
+008A	008	Worsened	Pre	3.2	10
+008B	008	Worsened	Post	20	n/a
+post.only	009	Worsened	Post	22	42.0
+pre.only	010	Worsened	Pre	21	41.0

@@ -263,6 +263,8 @@ def extract_per_individual_state_metadata_from_mapping_f(
         individual_identifier_category,
         metadata_category,
         process_f=float):
+    # need to parse mapping file twice - should clean this up
+    mapping_f = list(mapping_f)
     per_individual_states = extract_per_individual_states_from_mapping_f(
      mapping_f,
      state_category,
