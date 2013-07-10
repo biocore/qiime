@@ -137,7 +137,7 @@ def main():
                                  "black",
                                  linewidth=0.5)
 
-        current_subplot.set_ylabel(metadata_category,size=8)
+        current_subplot.set_title(metadata_category,size=8)
         current_subplot.set_xticks(range(len(state_values)))
         current_subplot.set_xticklabels(state_values,size=6)
         
