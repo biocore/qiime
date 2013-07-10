@@ -68,12 +68,12 @@ def main():
         option_parser.error("Exactly two state_values must be passed separated by a comma.")
     
     num_cols = 3
-    num_subplots = len(metadata_categories)
-    num_rows = int(ceil(num_subplots / num_cols))
-    num_unused_subplots = (num_rows * num_cols) - num_subplots
+    num_metadata_categories = len(metadata_categories)
+    num_rows = int(ceil(num_metadata_categories / num_cols))
+    num_unused_subplots = (num_rows * num_cols) - num_metadata_categories
     
     # create the subplot grid
-    f, splts = subplots(num_rows,
+    fig, splts = subplots(num_rows,
                         num_cols,
                         sharex=False,
                         sharey=not opts.suppress_share_y_axis)
@@ -84,13 +84,12 @@ def main():
         except TypeError:
             splts[i-1].axis('off')
     x_values = range(len(state_values))
-    all_y_values = []
     
     create_dir(opts.output_dir)
     
     paired_difference_output_fp = join(opts.output_dir,'paired_difference_comparisons.txt')
     paired_difference_output_f = open(paired_difference_output_fp,'w')
-    paired_difference_output_f.write("#Metadata category\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\n")
+    paired_difference_output_f.write("#Metadata category\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
     
     plot_output_fp = join(opts.output_dir,'plots.pdf')
     
@@ -113,8 +112,6 @@ def main():
             # access only by column number
             current_subplot = splts[col_num]
         
-        current_x_values = []
-        current_y_values = []
         differences = []
         
         for pid, data in personal_ids_to_responses.items():
@@ -126,7 +123,7 @@ def main():
                 # otherwise compute the difference between the ending
                 # and starting state
                 differences.append(data[1] - data[0])
-                all_y_values.extend(data)
+                # and plot the start and stop values as a line
                 current_subplot.plot(x_values,
                                      data,
                                      "black",
@@ -134,18 +131,23 @@ def main():
         
         # Compute stats for current metadata category
         t_one_sample_results = t_one_sample(differences)
+        t = t_one_sample_results[0]
+        p_value = t_one_sample_results[1]
+        bonferroni_p_value = min([p_value * num_metadata_categories,1.0])
         paired_difference_output_f.write('\t'.join([metadata_category,
                                         str(mean(differences)),
                                         str(median(differences)),
-                                        str(t_one_sample_results[0]),
-                                        str(t_one_sample_results[1])]))
+                                        str(t),
+                                        str(p_value),
+                                        str(bonferroni_p_value)]))
         paired_difference_output_f.write('\n')
+        
         # Finalize plot for current metadata category
         current_subplot.set_title(metadata_category,size=8)
         current_subplot.set_xticks(range(len(state_values)))
         current_subplot.set_xticklabels(state_values,size=6)
     
-    savefig(plot_output_fp)
+    fig.savefig(plot_output_fp)
     paired_difference_output_f.close()
         
 
