@@ -129,7 +129,7 @@ def main():
     
     paired_difference_output_fp = join(opts.output_dir,'paired_difference_comparisons.txt')
     paired_difference_output_f = open(paired_difference_output_fp,'w')
-    paired_difference_output_f.write("#Metadata category\tNum differences (i.e., n)\nMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
+    paired_difference_output_f.write("#Metadata category\tNum differences (i.e., n)\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
     paired_difference_results = []
     plot_output_fp = join(opts.output_dir,'plots.pdf')
 
