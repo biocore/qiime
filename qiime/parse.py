@@ -230,7 +230,12 @@ def extract_per_individual_states_from_mapping_f(
     for sample_id, metadata in mapping_data.items():
         individual_id = metadata[individual_identifier_category]
         state_value = metadata[state_category]
-        state_index = state_values.index(state_value)
+        try:
+            state_index = state_values.index(state_value)
+        except ValueError:
+            # hit a state that is in the mapping file but not in 
+            # state_values - this is silently ignored
+            continue
         
         if individual_id not in results:
             # our first observation for this individual_id, 

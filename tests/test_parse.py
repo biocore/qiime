@@ -81,8 +81,10 @@ class TopLevelTests(TestCase):
         self.denoiser_mapping1 = denoiser_mapping1.split('\n')
         self.sam_data1 = sam_data1.split("\n")
         self.sam1_expected = sam1_expected
-        self.individual_states_and_responses_map_f = \
-         individual_states_and_responses_map_f.split('\n')
+        self.individual_states_and_responses_map_f1 = \
+         individual_states_and_responses_map_f1.split('\n')
+        self.individual_states_and_responses_map_f2 = \
+         individual_states_and_responses_map_f2.split('\n')
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -1067,7 +1069,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '007':['007A','007B'],
                     '008':['008A','008B']}
         actual = extract_per_individual_states_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID")
@@ -1080,7 +1082,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '007':['007B','007A'],
                     '008':['008B','008A']}
         actual = extract_per_individual_states_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Post","Pre"],
                    individual_identifier_category="PersonalID")
@@ -1094,11 +1096,29 @@ otu3	s8_7	s2_5""".split('\n')
                     '009':[None,'post.only'],
                     '010':['pre.only',None]}
         actual = extract_per_individual_states_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID",
                    filter_missing_data=False)
+        self.assertEqual(actual,expected)
+        
+        ## alt input file with more states
+        expected = {'001':['001A','001B','001C']}
+        actual = extract_per_individual_states_from_mapping_f(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post","PostPost"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+
+        # unlisted states are ignored
+        expected = {'001':['001A','001B']}
+        actual = extract_per_individual_states_from_mapping_f(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
         self.assertEqual(actual,expected)
 
     def test_extract_per_individual_state_metadata_from_mapping_f(self):
@@ -1108,7 +1128,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '007':[12.0,1.8],
                     '008':[10.0,None]}
         actual = extract_per_individual_state_metadata_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID",
@@ -1122,7 +1142,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '007':[33.2,50],
                     '008':[3.2,20]}
         actual = extract_per_individual_state_metadata_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID",
@@ -1136,7 +1156,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '007':["Worsened","Worsened"],
                     '008':["Worsened","Worsened"]}
         actual = extract_per_individual_state_metadata_from_mapping_f(
-                   self.individual_states_and_responses_map_f,
+                   self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID",
@@ -1144,7 +1164,7 @@ otu3	s8_7	s2_5""".split('\n')
                    process_f=str)
         self.assertEqual(actual,response_expected)
 
-individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
 001B	001	Improved	Post	26	9.3
 006A	006	Improved	Pre	19	4.2
@@ -1155,6 +1175,12 @@ individual_states_and_responses_map_f = """#SampleID	PersonalID	Response	Treatme
 008B	008	Worsened	Post	20	n/a
 post.only	009	Worsened	Post	22	42.0
 pre.only	010	Worsened	Pre	21	41.0
+"""
+
+individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+001A	001	Improved	Pre	57.4	6.9
+001B	001	Improved	Post	26	9.3
+001C	001	Improved	PostPost	22	10.1
 """
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
