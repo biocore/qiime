@@ -4,7 +4,8 @@ from __future__ import division
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
-               "Damien Coy", "Levi McCracken", "Andrew Cochran"]
+               "Damien Coy", "Levi McCracken", "Andrew Cochran",
+               "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -21,16 +22,18 @@ provides a hierarchy of statistical classes that can be inherited from to
 create new statistical method implementations.
 """
 
+from os.path import join
 from types import ListType
 from copy import deepcopy
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
-        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor)
+        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median)
 from numpy import argsort, min as np_min, max as np_max
 from numpy.random import permutation
-from cogent.util.misc import combinate
+from cogent.util.misc import combinate, create_dir
+from cogent.maths.stats.test import t_one_sample
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
@@ -1691,3 +1694,133 @@ class PartialMantel(CorrelationStats):
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (num_perms + 1)
         return res
+
+def run_paired_difference_analyses(personal_ids_to_state_values,
+                                   analysis_categories,
+                                   state_values,
+                                   output_dir,
+                                   ymin=None,
+                                   ymax=None):
+    """run paired difference analysis one sample t-tests and generate plots
+    
+       Apply one-sample t-tests and generate plots to test for changes in
+       certain values with a state change. A state change here refers to a 
+       pre/post-type experimental design, such as pre-treatment to 
+       post-treatment, and the values that are being tested for change can
+       be things like alpha diversity, abundance of specific taxa, a principal 
+       coordinate value (e.g., PC1 value before and after treatment), and so 
+       on. 
+       
+       The one-sample t-test is applied on each pair of differences. So, if 
+       experiment was based on looking for changes in proteobacteria abundance
+       with treatment, you would have pre- and post-treatment proteobacteria 
+       abundances for a number of individuals. The difference would be computed
+       between those, and the null hypothesis is that the mean of those differences
+       is equal to zero (i.e., no change with treatment).
+       
+       Line plots are also generated to show the change on a per-individual basis.
+    
+     personal_ids_to_state_values: a 2d dictionary mapping personal ids to potential 
+      analysis categories, which each contain a pre/post value. this might look like
+      the following:
+       {'subject1':{'firmicutes-abundance':[0.45,0.55],
+                   'bacteroidetes-abundace':[0.22,0.11]},
+        'subject2':{'firmicutes-abundance':[0.11,0.52],
+                   'bacteroidetes-abundace':[0.28,0.21]},
+         ...
+        }
+       examples of functions that can be useful for generating these data are
+        qiime.parse.extract_per_individual_state_metadata_from_sample_metadata and
+        qiime.parse.extract_per_individual_state_metadata_from_sample_metadata_and_biom
+      
+     analysis_categories: a list of categories to include in analyses (e.g, 
+       ['firmicutes-abundance', 'bacteroidetes-abundace'])
+      
+     state_values: an ordered list describing each of the states being compared (these
+       are the x labels in the resulting plots)
+       
+     output_dir: directory where output should be written (will be created if 
+       it doesn't exist)
+       
+     ymin: minimum y-value in plots (if it should be consistent across 
+       plots - by default will be chosen on a per-plot basis)
+       
+     ymax: maximum y-value in plots (if it should be consistent across 
+       plots - by default will be chosen on a per-plot basis)
+    """
+                                   
+    if len(state_values) != 2:
+        raise ValueError, ("Only two state values can be provided. "
+        "Support currently exists only for pre/post experimental design.")
+    
+    # create the output directory if it doesn't already exist
+    create_dir(output_dir)
+    
+    num_analysis_categories = len(analysis_categories)
+    x_values = range(len(state_values))
+    
+    paired_difference_output_fp = \
+     join(output_dir,'paired_difference_comparisons.txt')
+    paired_difference_output_f = open(paired_difference_output_fp,'w')
+    # write header line to output file
+    paired_difference_output_f.write(
+     "#Metadata category\tNum differences (i.e., n)\tMean difference\t"
+     "Median difference\tt one sample\tt one sample parametric p-value\t"
+     "t one sample parametric p-value (Bonferroni-corrected)\n")
+    
+    paired_difference_t_test_results = []
+    # initiate list of output file paths to return 
+    output_fps = [paired_difference_output_fp]
+
+    for category_number, analysis_category in enumerate(analysis_categories):
+        personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]
+        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
+        fig = figure()
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        
+        # initialize a list to store the distribution of changes 
+        # with state change
+        differences = []
+        
+        for pid, data in personal_ids_to_state_metadatum.items():
+            if None in data:
+                # if any of the data points are missing, skip this 
+                # individual
+                continue
+            else:
+                # otherwise compute the difference between the ending
+                # and starting state
+                differences.append(data[1] - data[0])
+                # and plot the start and stop values as a line
+                axes.plot(x_values,data,"black",linewidth=0.5)
+        
+        # run stats for current analysis category
+        t_one_sample_results = t_one_sample(differences)
+        t = t_one_sample_results[0]
+        p_value = t_one_sample_results[1]
+        bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        paired_difference_t_test_results.append([analysis_category,
+                                        len(differences),
+                                        mean(differences),
+                                        median(differences),
+                                        t,
+                                        p_value,
+                                        bonferroni_p_value])
+        
+        # Finalize plot for current analysis category
+        axes.set_ylabel(analysis_category)
+        axes.set_xticks(range(len(state_values)))
+        axes.set_xticklabels(state_values)
+        axes.set_ylim(ymin=ymin,ymax=ymax)
+        fig.savefig(plot_output_fp)
+        output_fps.append(plot_output_fp)
+    
+    # sort output by uncorrected p-value and write results
+    # to file
+    paired_difference_t_test_results.sort(key=lambda x: x[5])
+    for r in paired_difference_t_test_results:
+        paired_difference_output_f.write('\t'.join(map(str,r)))
+        paired_difference_output_f.write('\n')
+    paired_difference_output_f.close()
+    
+    return output_fps

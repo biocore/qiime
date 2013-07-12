@@ -13,16 +13,19 @@ __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
 
+from shutil import rmtree
+from os.path import exists, join
 from string import digits
 from cogent.util.unit_test import TestCase, main
+from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median
 from numpy.random import permutation, shuffle
-
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
-        _quantile)
-from qiime.util import DistanceMatrix, MetadataMap
+        _quantile,run_paired_difference_analyses)
+from qiime.util import (DistanceMatrix, MetadataMap, get_qiime_temp_dir,
+                        get_tmp_filename)
 
 
 class TestHelper(TestCase):
@@ -1638,6 +1641,83 @@ class TopLevelTests(TestCase):
         sample_data.sort()
         self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
+class PairedDifferenceTests(TestCase):
+    
+    def setUp(self):
+        self.personal_ids_to_state_values1 = \
+          {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,0.52]},
+           'bacteroidetes-abundace':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
+           }
+        self.files_to_remove = []
+        self.dirs_to_remove = []
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='qiime_paired_diff_tests_',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
+
+    def tearDown(self):
+        
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+    
+    def test_run_paired_difference_analyses(self):
+        """run_paired_difference_analyses functions as expected
+        """
+        actual = run_paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundace'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+                                   
+    def test_run_paired_difference_analyses_wo_ymin_ymax(self):
+        """run_paired_difference_analyses functions as expected w/o ymin/ymax
+        """
+        # runs successfully with ymin/ymax
+        run_paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundace'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=None,
+                                   ymax=None)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+
+    def test_run_paired_difference_analyses_analysis_cat_subset(self):
+        """run_paired_difference_analyses fns w a subset of analysis categories
+        """
+        actual = run_paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
 
 if __name__ == "__main__":
     main()
