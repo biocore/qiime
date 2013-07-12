@@ -159,9 +159,9 @@ def main():
                                         bonferroni_p_value])
         
         # Finalize plot for current metadata category
-        axes.set_ylabel(metadata_category,size=8)
+        axes.set_ylabel(metadata_category)
         axes.set_xticks(range(len(state_values)))
-        axes.set_xticklabels(state_values,size=6)
+        axes.set_xticklabels(state_values)
         axes.set_ylim(ymin=ymin,ymax=ymax)
         fig.savefig(plot_output_fp)
     # sort output by uncorrected p-value
