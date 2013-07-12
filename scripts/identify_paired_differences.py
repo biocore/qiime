@@ -68,7 +68,9 @@ def main():
     individual_id_category = opts.individual_id_category
     output_dir = opts.output_dir
     biom_table_fp = opts.biom_table_fp
-    observation_ids = opts.observation_ids.split(',')
+    observation_ids = opts.observation_ids
+    if not observation_ids is None:
+        observation_ids = observation_ids.split(',')
     valid_states = opts.valid_states
     ymin = opts.ymin
     ymax = opts.ymax
