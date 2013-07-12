@@ -12,9 +12,9 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from biom.parse import parse_biom_table
-from qiime.parse import (extract_per_individual_state_metadata_from_sample_metadata,
- extract_per_individual_state_metadata_from_sample_metadata_and_biom,
- parse_mapping_file_to_dict)
+from qiime.group import (extract_per_individual_state_metadata_from_sample_metadata,
+ extract_per_individual_state_metadata_from_sample_metadata_and_biom)
+from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import (parse_command_line_parameters, 
                   make_option)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -22,13 +22,13 @@ from qiime.filter import (filter_mapping_file_from_mapping_f,
 from qiime.stats import (paired_difference_analyses)
 
 script_info = {}
-script_info['brief_description'] = "Generate plots which illustrate the change in some data point(s) with a state change on a per-individual basis."
+script_info['brief_description'] = "Generate plots and stats to test for change in some data point(s) with a state change on a per-individual basis."
 script_info['script_description'] = ""
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Generate plots for two categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results"))
-script_info['script_usage'].append(("Generate plots for four categories from the mapping file, where the y-axes should be set on a per-plot basis.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
-script_info['script_usage'].append(("Generate plots for all observations in a biom file, where the y-axes should be set on a per-plot basis.","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
-script_info['script_usage'].append(("Generate plots for all observations in a biom file, where the y-axes should be set on a per-plot basis, and only including samples from individuals whose 'TreatmentResponse' was 'Improved' (as defined in the mapping file).","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results_improved_only --valid_states TreatmentResponse:Improved"))
+script_info['script_usage'].append(("Generate plots and stats for two categories from the mapping file where the y-axis should be consistent across plots.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results --ymin 0.0 --ymax 1.0"))
+script_info['script_usage'].append(("Generate plots and stats for four categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
+script_info['script_usage'].append(("Generate plots for all observations in a biom file,","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
+script_info['script_usage'].append(("Generate plots for all observations in a biom file, but only including samples from individuals whose 'TreatmentResponse' was 'Improved' (as defined in the mapping file).","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results_improved_only --valid_states TreatmentResponse:Improved"))
 
 script_info['output_description']= ""
 
@@ -46,7 +46,7 @@ script_info['optional_options'] = [
   make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity") [default: %default]',default=None),
   make_option('--observation_ids',help='ordered list of the observation ids to test for paired differences if a biom table is provided (usually something like "otu1,otu2") [default: compute paired differences for all observation ids]',default=None),
   make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]', default=None),
-  make_option('-s','--valid_states', help="string describing valid samples that should be included based on their metadata (e.g. 'TreatmentResponse:Improved') [default: %default]",default=None),
+  make_option('-s','--valid_states', help="string describing samples that should be included based on their metadata (e.g. 'TreatmentResponse:Improved') [default: %default]",default=None),
 ]
 
 script_info['version'] = __version__
@@ -82,18 +82,17 @@ def main():
     # parse the mapping file to a dict
     mapping_data = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
     
-    # currently only support for pre/post tests
+    # currently only support for pre/post (ie, two-state) tests
     if len(state_values) != 2:
         option_parser.error("Exactly two state_values must be passed separated by a comma.")
     
-    # filter the mapping file, if requested
+    # filter mapping_data, if requested
     if valid_states:
         sample_ids_to_keep = sample_ids_from_metadata_description(
                               open(mapping_fp,'U'),valid_states)
-        mapping_f = \
-         filter_mapping_file_from_mapping_f(
-          open(mapping_fp,'U'), sample_ids_to_keep).split('\n')
-        mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
+        for sid in mapping_data.keys():
+            if sid not in sample_ids_to_keep:
+                del mapping_data[sid]
     
     if biom_table_fp:
         biom_table = parse_biom_table(open(biom_table_fp,'U'))
