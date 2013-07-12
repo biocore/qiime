@@ -1723,11 +1723,12 @@ def paired_difference_analyses(personal_ids_to_state_values,
      personal_ids_to_state_values: a 2d dictionary mapping personal ids to potential 
       analysis categories, which each contain a pre/post value. this might look like
       the following:
-       {'subject1':{'firmicutes-abundance':[0.45,0.55],
-                   'bacteroidetes-abundace':[0.22,0.11]},
-        'subject2':{'firmicutes-abundance':[0.11,0.52],
-                   'bacteroidetes-abundace':[0.28,0.21]},
-         ...
+       {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,0.52]},
+           'bacteroidetes-abundace':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
         }
        examples of functions that can be useful for generating these data are
         qiime.parse.extract_per_individual_state_metadata_from_sample_metadata and
@@ -1768,7 +1769,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
      "Median difference\tt one sample\tt one sample parametric p-value\t"
      "t one sample parametric p-value (Bonferroni-corrected)\n")
     
-    paired_difference_t_test_results = []
+    paired_difference_t_test_results = {}
     # initiate list of output file paths to return 
     output_fps = [paired_difference_output_fp]
 
@@ -1799,13 +1800,17 @@ def paired_difference_analyses(personal_ids_to_state_values,
         t = t_one_sample_results[0]
         p_value = t_one_sample_results[1]
         bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
-        paired_difference_t_test_results.append([analysis_category,
+        # analysis_category gets stored as the key and the first entry 
+        # in the value to faciliate sorting the values and writing to 
+        # file
+        paired_difference_t_test_results[analysis_category] = \
+                                       [analysis_category,
                                         len(differences),
                                         mean(differences),
                                         median(differences),
                                         t,
                                         p_value,
-                                        bonferroni_p_value])
+                                        bonferroni_p_value]
         
         # Finalize plot for current analysis category
         axes.set_ylabel(analysis_category)
@@ -1817,10 +1822,12 @@ def paired_difference_analyses(personal_ids_to_state_values,
     
     # sort output by uncorrected p-value and write results
     # to file
-    paired_difference_t_test_results.sort(key=lambda x: x[5])
-    for r in paired_difference_t_test_results:
+    paired_difference_t_test_lines = \
+     paired_difference_t_test_results.values()
+    paired_difference_t_test_lines.sort(key=lambda x: x[5])
+    for r in paired_difference_t_test_lines:
         paired_difference_output_f.write('\t'.join(map(str,r)))
         paired_difference_output_f.write('\n')
     paired_difference_output_f.close()
     
-    return output_fps
+    return output_fps, paired_difference_t_test_results
