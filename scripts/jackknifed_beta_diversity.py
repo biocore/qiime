@@ -63,7 +63,7 @@ options_lookup = get_options_lookup()
 
 script_info['required_options']=[\
  make_option('-i','--otu_table_fp',type='existing_filepath',
-            help='the input fasta file [REQUIRED]'),
+            help='the input OTU table in biom format [REQUIRED]'),
  make_option('-o','--output_dir',type='new_dirpath',
             help='the output directory [REQUIRED]'),
  make_option('-e','--seqs_per_sample',type='int',\
