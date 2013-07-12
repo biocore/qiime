@@ -93,7 +93,7 @@ def main():
     
     if biom_table_fp:
         biom_table = parse_biom_table(open(biom_table_fp,'U'))
-        metadata_categories = observation_ids or biom_table.ObservationIds
+        analysis_categories = observation_ids or biom_table.ObservationIds
         personal_ids_to_state_metadata = \
          extract_per_individual_state_metadata_from_mapping_f_and_biom(
                                      mapping_f,
@@ -101,17 +101,17 @@ def main():
                                      state_category,
                                      state_values,
                                      individual_id_category,
-                                     observation_ids=metadata_categories)
+                                     observation_ids=analysis_categories)
     else:
-        metadata_categories = metadata_categories.split(',')
+        analysis_categories = metadata_categories.split(',')
         personal_ids_to_state_metadata = \
          extract_per_individual_state_metadata_from_mapping_f(
                                      mapping_f,
                                      state_category,
                                      state_values,
                                      individual_id_category,
-                                     metadata_categories)
-    num_metadata_categories = len(metadata_categories)
+                                     analysis_categories)
+    num_analysis_categories = len(analysis_categories)
     x_values = range(len(state_values))
     
     create_dir(opts.output_dir)
@@ -123,14 +123,14 @@ def main():
     plot_output_fp = join(opts.output_dir,'plots.pdf')
 
 
-    for category_number, metadata_category in enumerate(metadata_categories):
-        personal_ids_to_state_metadatum = personal_ids_to_state_metadata[metadata_category]
-        plot_output_fp = join(opts.output_dir,'%s.pdf' % metadata_category.replace(' ','-'))
+    for category_number, analysis_category in enumerate(analysis_categories):
+        personal_ids_to_state_metadatum = personal_ids_to_state_metadata[analysis_category]
+        plot_output_fp = join(opts.output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
         fig = plt.figure()
         axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         
-        # initialize a list to store the distribution of changes in metadata 
-        # value with state change
+        # initialize a list to store the distribution of changes 
+        # with state change
         differences = []
         
         for pid, data in personal_ids_to_state_metadatum.items():
@@ -145,12 +145,12 @@ def main():
                 # and plot the start and stop values as a line
                 axes.plot(x_values,data,"black",linewidth=0.5)
         
-        # Compute stats for current metadata category
+        # Compute stats for current analysis category
         t_one_sample_results = t_one_sample(differences)
         t = t_one_sample_results[0]
         p_value = t_one_sample_results[1]
-        bonferroni_p_value = min([p_value * num_metadata_categories,1.0])
-        paired_difference_results.append([metadata_category,
+        bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        paired_difference_results.append([analysis_category,
                                         len(differences),
                                         mean(differences),
                                         median(differences),
@@ -158,8 +158,8 @@ def main():
                                         p_value,
                                         bonferroni_p_value])
         
-        # Finalize plot for current metadata category
-        axes.set_ylabel(metadata_category)
+        # Finalize plot for current analysis category
+        axes.set_ylabel(analysis_category)
         axes.set_xticks(range(len(state_values)))
         axes.set_xticklabels(state_values)
         axes.set_ylim(ymin=ymin,ymax=ymax)
