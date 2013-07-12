@@ -58,6 +58,69 @@ script_info['optional_options'] = [
 
 script_info['version'] = __version__
 
+def run_paired_difference_analyses(personal_ids_to_state_metadata,
+                                   analysis_categories,
+                                   state_values,
+                                   output_dir,
+                                   ymin=None,
+                                   ymax=None):
+    num_analysis_categories = len(analysis_categories)
+    x_values = range(len(state_values))
+    paired_difference_output_fp = join(output_dir,'paired_difference_comparisons.txt')
+    paired_difference_output_f = open(paired_difference_output_fp,'w')
+    paired_difference_output_f.write("#Metadata category\tNum differences (i.e., n)\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
+    paired_difference_results = []
+    plot_output_fp = join(output_dir,'plots.pdf')
+
+
+    for category_number, analysis_category in enumerate(analysis_categories):
+        personal_ids_to_state_metadatum = personal_ids_to_state_metadata[analysis_category]
+        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
+        fig = plt.figure()
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        
+        # initialize a list to store the distribution of changes 
+        # with state change
+        differences = []
+        
+        for pid, data in personal_ids_to_state_metadatum.items():
+            if None in data:
+                # if any of the data points are missing, skip this 
+                # individual
+                continue
+            else:
+                # otherwise compute the difference between the ending
+                # and starting state
+                differences.append(data[1] - data[0])
+                # and plot the start and stop values as a line
+                axes.plot(x_values,data,"black",linewidth=0.5)
+        
+        # Compute stats for current analysis category
+        t_one_sample_results = t_one_sample(differences)
+        t = t_one_sample_results[0]
+        p_value = t_one_sample_results[1]
+        bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        paired_difference_results.append([analysis_category,
+                                        len(differences),
+                                        mean(differences),
+                                        median(differences),
+                                        t,
+                                        p_value,
+                                        bonferroni_p_value])
+        
+        # Finalize plot for current analysis category
+        axes.set_ylabel(analysis_category)
+        axes.set_xticks(range(len(state_values)))
+        axes.set_xticklabels(state_values)
+        axes.set_ylim(ymin=ymin,ymax=ymax)
+        fig.savefig(plot_output_fp)
+    # sort output by uncorrected p-value
+    paired_difference_results.sort(key=lambda x: x[5])
+    for r in paired_difference_results:
+        paired_difference_output_f.write('\t'.join(map(str,r)))
+        paired_difference_output_f.write('\n')
+    paired_difference_output_f.close()
+
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
@@ -117,65 +180,14 @@ def main():
                                      state_values,
                                      individual_id_category,
                                      analysis_categories)
-    num_analysis_categories = len(analysis_categories)
-    x_values = range(len(state_values))
-    
-    create_dir(opts.output_dir)
-    
-    paired_difference_output_fp = join(opts.output_dir,'paired_difference_comparisons.txt')
-    paired_difference_output_f = open(paired_difference_output_fp,'w')
-    paired_difference_output_f.write("#Metadata category\tNum differences (i.e., n)\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
-    paired_difference_results = []
-    plot_output_fp = join(opts.output_dir,'plots.pdf')
 
+    
+    create_dir(output_dir)
+    run_paired_difference_analyses(personal_ids_to_state_metadata,
+                                   analysis_categories,
+                                   state_values,
+                                   output_dir)
 
-    for category_number, analysis_category in enumerate(analysis_categories):
-        personal_ids_to_state_metadatum = personal_ids_to_state_metadata[analysis_category]
-        plot_output_fp = join(opts.output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
-        fig = plt.figure()
-        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        
-        # initialize a list to store the distribution of changes 
-        # with state change
-        differences = []
-        
-        for pid, data in personal_ids_to_state_metadatum.items():
-            if None in data:
-                # if any of the data points are missing, skip this 
-                # individual
-                continue
-            else:
-                # otherwise compute the difference between the ending
-                # and starting state
-                differences.append(data[1] - data[0])
-                # and plot the start and stop values as a line
-                axes.plot(x_values,data,"black",linewidth=0.5)
-        
-        # Compute stats for current analysis category
-        t_one_sample_results = t_one_sample(differences)
-        t = t_one_sample_results[0]
-        p_value = t_one_sample_results[1]
-        bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
-        paired_difference_results.append([analysis_category,
-                                        len(differences),
-                                        mean(differences),
-                                        median(differences),
-                                        t,
-                                        p_value,
-                                        bonferroni_p_value])
-        
-        # Finalize plot for current analysis category
-        axes.set_ylabel(analysis_category)
-        axes.set_xticks(range(len(state_values)))
-        axes.set_xticklabels(state_values)
-        axes.set_ylim(ymin=ymin,ymax=ymax)
-        fig.savefig(plot_output_fp)
-    # sort output by uncorrected p-value
-    paired_difference_results.sort(key=lambda x: x[5])
-    for r in paired_difference_results:
-        paired_difference_output_f.write('\t'.join(map(str,r)))
-        paired_difference_output_f.write('\n')
-    paired_difference_output_f.close()
         
 
 if __name__ == "__main__":
