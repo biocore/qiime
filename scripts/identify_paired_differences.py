@@ -70,12 +70,13 @@ def run_paired_difference_analyses(personal_ids_to_state_metadata,
     paired_difference_output_f = open(paired_difference_output_fp,'w')
     paired_difference_output_f.write("#Metadata category\tNum differences (i.e., n)\tMean difference\tMedian difference\tt one sample\tt one sample parametric p-value\tt one sample parametric p-value (Bonferroni-corrected)\n")
     paired_difference_results = []
-    plot_output_fp = join(output_dir,'plots.pdf')
+    output_fps = [paired_difference_output_fp]
 
 
     for category_number, analysis_category in enumerate(analysis_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_metadata[analysis_category]
         plot_output_fp = join(output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
+        output_fps.append(plot_output_fp)
         fig = plt.figure()
         axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         
@@ -120,6 +121,8 @@ def run_paired_difference_analyses(personal_ids_to_state_metadata,
         paired_difference_output_f.write('\t'.join(map(str,r)))
         paired_difference_output_f.write('\n')
     paired_difference_output_f.close()
+    
+    return output_fps
 
 def main():
     option_parser, opts, args =\
