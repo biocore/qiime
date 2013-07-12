@@ -1686,12 +1686,17 @@ class PairedDifferenceTests(TestCase):
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),3)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
                                    
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
         """
         # runs successfully with ymin/ymax
-        paired_difference_analyses(
+        actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
                                     'bacteroidetes-abundace'],
@@ -1703,6 +1708,11 @@ class PairedDifferenceTests(TestCase):
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),3)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
 
     def test_paired_difference_analyses_analysis_cat_subset(self):
         """paired_difference_analyses fns w a subset of analysis categories
@@ -1718,6 +1728,10 @@ class PairedDifferenceTests(TestCase):
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),2)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
 
 if __name__ == "__main__":
     main()
