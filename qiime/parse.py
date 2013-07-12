@@ -209,8 +209,8 @@ def group_by_fields(table, names):
         result[states].append(header)
     return result
 
-def extract_per_individual_states_from_mapping_f(
-      mapping_f,
+def extract_per_individual_states_from_sample_metadata(
+      sample_metadata,
       state_category,
       state_values,
       individual_identifier_category,
@@ -224,10 +224,9 @@ def extract_per_individual_states_from_mapping_f(
               ...
              }
     """
-    mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
     len_state_values = len(state_values)
     results = {}
-    for sample_id, metadata in mapping_data.items():
+    for sample_id, metadata in sample_metadata.items():
         individual_id = metadata[individual_identifier_category]
         state_value = metadata[state_category]
         try:
@@ -256,48 +255,46 @@ def extract_per_individual_states_from_mapping_f(
                 del results[individual_id]
     return results
 
-def extract_per_individual_state_metadatum_from_mapping_f(
-        mapping_f,
+def extract_per_individual_state_metadatum_from_sample_metadata(
+        sample_metadata,
         state_category,
         state_values,
         individual_identifier_category,
         metadata_category,
         process_f=float):
-    # need to parse mapping file twice - should clean this up
-    mapping_f = list(mapping_f)
-    per_individual_states = extract_per_individual_states_from_mapping_f(
-     mapping_f,
+    """
+    """
+    per_individual_states = extract_per_individual_states_from_sample_metadata(
+     sample_metadata,
      state_category,
      state_values,
      individual_identifier_category,
      filter_missing_data=True)
     
-    mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
     results = {}
     for individual_id, sample_ids in per_individual_states.items():
         per_state_metadata_values = []
         for sample_id in sample_ids:
             try:
-                v = process_f(mapping_data[sample_id][metadata_category])
+                v = process_f(sample_metadata[sample_id][metadata_category])
             except ValueError, e:
                 v = None
             per_state_metadata_values.append(v)
         results[individual_id] = per_state_metadata_values
     return results
 
-def extract_per_individual_state_metadata_from_mapping_f(
-        mapping_f,
+def extract_per_individual_state_metadata_from_sample_metadata(
+        sample_metadata,
         state_category,
         state_values,
         individual_identifier_category,
         metadata_categories,
         process_f=float):
-    mapping_f = list(mapping_f)
     results = {}
     for metadata_category in metadata_categories:
         results[metadata_category] = \
-         extract_per_individual_state_metadatum_from_mapping_f(
-           mapping_f,
+         extract_per_individual_state_metadatum_from_sample_metadata(
+           sample_metadata,
            state_category,
            state_values,
            individual_identifier_category,
@@ -305,8 +302,8 @@ def extract_per_individual_state_metadata_from_mapping_f(
            process_f)
     return results
 
-def extract_per_individual_state_metadata_from_mapping_f_and_biom(
-        mapping_f,
+def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
+        sample_metadata,
         biom_table,
         state_category,
         state_values,
@@ -314,8 +311,8 @@ def extract_per_individual_state_metadata_from_mapping_f_and_biom(
         observation_ids=None):
     """
     """
-    per_individual_states = extract_per_individual_states_from_mapping_f(
-     mapping_f,
+    per_individual_states = extract_per_individual_states_from_sample_metadata(
+     sample_metadata,
      state_category,
      state_values,
      individual_identifier_category,

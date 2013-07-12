@@ -32,9 +32,9 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
     parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
     parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser,
-    extract_per_individual_states_from_mapping_f,
-    extract_per_individual_state_metadatum_from_mapping_f,
-    extract_per_individual_state_metadata_from_mapping_f_and_biom)
+    extract_per_individual_states_from_sample_metadata,
+    extract_per_individual_state_metadatum_from_sample_metadata,
+    extract_per_individual_state_metadata_from_sample_metadata_and_biom)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -85,9 +85,9 @@ class TopLevelTests(TestCase):
         self.sam_data1 = sam_data1.split("\n")
         self.sam1_expected = sam1_expected
         self.individual_states_and_responses_map_f1 = \
-         individual_states_and_responses_map_f1.split('\n')
+         parse_mapping_file_to_dict(individual_states_and_responses_map_f1.split('\n'))[0]
         self.individual_states_and_responses_map_f2 = \
-         individual_states_and_responses_map_f2.split('\n')
+         parse_mapping_file_to_dict(individual_states_and_responses_map_f2.split('\n'))[0]
         self.paired_difference_biom1 = \
          parse_biom_table(paired_difference_biom_f1.split('\n'))
     
@@ -1066,14 +1066,14 @@ otu3	s8_7	s2_5""".split('\n')
         self.assertRaises(ValueError, parse_sample_id_map,
                           sample_id_map)
     
-    def test_extract_per_individual_states_from_mapping_f(self):
-        """extract_per_individual_states_from_mapping_f functions as expected
+    def test_extract_per_individual_states_from_sample_metadata(self):
+        """extract_per_individual_states_from_sample_metadata functions as expected
         """
         expected = {'001':['001A','001B'],
                     '006':['006A','006B'],
                     '007':['007A','007B'],
                     '008':['008A','008B']}
-        actual = extract_per_individual_states_from_mapping_f(
+        actual = extract_per_individual_states_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1086,7 +1086,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '006':['006B','006A'],
                     '007':['007B','007A'],
                     '008':['008B','008A']}
-        actual = extract_per_individual_states_from_mapping_f(
+        actual = extract_per_individual_states_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Post","Pre"],
@@ -1100,7 +1100,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '008':['008A','008B'],
                     '009':[None,'post.only'],
                     '010':['pre.only',None]}
-        actual = extract_per_individual_states_from_mapping_f(
+        actual = extract_per_individual_states_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1110,7 +1110,7 @@ otu3	s8_7	s2_5""".split('\n')
         
         ## alt input file with more states
         expected = {'001':['001A','001B','001C']}
-        actual = extract_per_individual_states_from_mapping_f(
+        actual = extract_per_individual_states_from_sample_metadata(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post","PostPost"],
@@ -1119,20 +1119,20 @@ otu3	s8_7	s2_5""".split('\n')
 
         # unlisted states are ignored
         expected = {'001':['001A','001B']}
-        actual = extract_per_individual_states_from_mapping_f(
+        actual = extract_per_individual_states_from_sample_metadata(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
                    individual_identifier_category="PersonalID")
         self.assertEqual(actual,expected)
 
-    def test_extract_per_individual_state_metadatum_from_mapping_f(self):
+    def test_extract_per_individual_state_metadatum_from_sample_metadata(self):
         """ """
         veil_expected = {'001':[6.9,9.3],
                     '006':[4.2,5.1],
                     '007':[12.0,1.8],
                     '008':[10.0,None]}
-        actual = extract_per_individual_state_metadatum_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1146,7 +1146,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '006':[19,15.2],
                     '007':[33.2,50],
                     '008':[3.2,20]}
-        actual = extract_per_individual_state_metadatum_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1160,7 +1160,7 @@ otu3	s8_7	s2_5""".split('\n')
                     '006':["Improved","Improved"],
                     '007':["Worsened","Worsened"],
                     '008':["Worsened","Worsened"]}
-        actual = extract_per_individual_state_metadatum_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
                    self.individual_states_and_responses_map_f1,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1171,7 +1171,7 @@ otu3	s8_7	s2_5""".split('\n')
 
         ## alt input file with more states
         expected = {'001':[6.9,9.3,10.1]}
-        actual = extract_per_individual_state_metadatum_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post","PostPost"],
@@ -1182,7 +1182,7 @@ otu3	s8_7	s2_5""".split('\n')
 
         # unlisted states are ignored
         expected = {'001':[6.9,9.3]}
-        actual = extract_per_individual_state_metadatum_from_mapping_f(
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
                    self.individual_states_and_responses_map_f2,
                    state_category="TreatmentState",
                    state_values=["Pre","Post"],
@@ -1191,14 +1191,15 @@ otu3	s8_7	s2_5""".split('\n')
                    process_f=float)
         self.assertEqual(actual,expected)
 
-    def test_extract_per_individual_state_metadata_from_mapping_f_and_biom(self):
-        """ """
+    def test_extract_per_individual_state_metadata_from_sample_metadata_and_biom(self):
+        """extract_per_individual_state_metadata_from_sample_metadata_and_biom functions as expected
+        """
         # single observations
         o1_expected = {'o1':{'001':[22,10],
                              '006':[25,4],
                              '007':[33,26],
                              '008':[99,75]}}
-        actual = extract_per_individual_state_metadata_from_mapping_f_and_biom(
+        actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
                    self.individual_states_and_responses_map_f1,
                    self.paired_difference_biom1,
                    state_category="TreatmentState",
@@ -1220,7 +1221,7 @@ otu3	s8_7	s2_5""".split('\n')
                               '006':[50,10],
                               '007':[10,50],
                               '008':[50,10]}}
-        actual = extract_per_individual_state_metadata_from_mapping_f_and_biom(
+        actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
                    self.individual_states_and_responses_map_f1,
                    self.paired_difference_biom1,
                    state_category="TreatmentState",
@@ -1232,7 +1233,7 @@ otu3	s8_7	s2_5""".split('\n')
         # invalid observation id
         self.assertRaises(
                    UnknownID,
-                   extract_per_individual_state_metadata_from_mapping_f_and_biom,
+                   extract_per_individual_state_metadata_from_sample_metadata_and_biom,
                    self.individual_states_and_responses_map_f1,
                    self.paired_difference_biom1,
                    state_category="TreatmentState",
