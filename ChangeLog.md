@@ -6,6 +6,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * make_qiime_rst_file.py has been removed in favor of qcli_make_rst.
 * transform_coordinate_matrices.py can now take more than two input coordinate matrices. When used this way, the first coordinate matrix will be treated as the reference, and the 2nd through nth will be compared against that reference. The output file names, which were all previously hard-coded, are now generated on the fly for clarity of the results.
 * split_libraries_fastq.py can now handle per-sample, non-barcoded fastq files. Some sequencing centers are now providing data in this way - if this becomes more common, we'll want to make this more convenient, but for now it's possible.
+* added a parallel merge OTUs method that will combine OTU tables in parallel where possible.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
