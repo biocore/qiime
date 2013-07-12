@@ -1695,7 +1695,7 @@ class PartialMantel(CorrelationStats):
         res['mantel_p'] = (numerator + 1) / (num_perms + 1)
         return res
 
-def run_paired_difference_analyses(personal_ids_to_state_values,
+def paired_difference_analyses(personal_ids_to_state_values,
                                    analysis_categories,
                                    state_values,
                                    output_dir,

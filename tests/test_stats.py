@@ -23,7 +23,7 @@ from numpy.random import permutation, shuffle
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
-        _quantile,run_paired_difference_analyses)
+        _quantile,paired_difference_analyses)
 from qiime.util import (DistanceMatrix, MetadataMap, get_qiime_temp_dir,
                         get_tmp_filename)
 
@@ -1671,10 +1671,10 @@ class PairedDifferenceTests(TestCase):
             if exists(d):
                 rmtree(d)
     
-    def test_run_paired_difference_analyses(self):
-        """run_paired_difference_analyses functions as expected
+    def test_paired_difference_analyses(self):
+        """paired_difference_analyses functions as expected
         """
-        actual = run_paired_difference_analyses(
+        actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
                                     'bacteroidetes-abundace'],
@@ -1687,11 +1687,11 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
                                    
-    def test_run_paired_difference_analyses_wo_ymin_ymax(self):
-        """run_paired_difference_analyses functions as expected w/o ymin/ymax
+    def test_paired_difference_analyses_wo_ymin_ymax(self):
+        """paired_difference_analyses functions as expected w/o ymin/ymax
         """
         # runs successfully with ymin/ymax
-        run_paired_difference_analyses(
+        paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
                                     'bacteroidetes-abundace'],
@@ -1704,10 +1704,10 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
 
-    def test_run_paired_difference_analyses_analysis_cat_subset(self):
-        """run_paired_difference_analyses fns w a subset of analysis categories
+    def test_paired_difference_analyses_analysis_cat_subset(self):
+        """paired_difference_analyses fns w a subset of analysis categories
         """
-        actual = run_paired_difference_analyses(
+        actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance'],
                                    ['Pre','Post'],

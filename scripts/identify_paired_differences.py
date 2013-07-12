@@ -19,7 +19,7 @@ from qiime.util import (parse_command_line_parameters,
                   make_option)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           sample_ids_from_metadata_description)
-from qiime.stats import (run_paired_difference_analyses)
+from qiime.stats import (paired_difference_analyses)
 
 script_info = {}
 script_info['brief_description'] = "Generate plots which illustrate the change in some data point(s) with a state change on a per-individual basis."
@@ -116,7 +116,7 @@ def main():
                                      individual_id_category,
                                      analysis_categories)
 
-    run_paired_difference_analyses(personal_ids_to_state_values,
+    paired_difference_analyses(personal_ids_to_state_values,
                                    analysis_categories,
                                    state_values,
                                    output_dir)
