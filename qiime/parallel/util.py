@@ -81,7 +81,7 @@ class ParallelWrapper(object):
                  poll_directly=False,
                  suppress_submit_jobs=False):
         """ """
-        # Generate a list of files and directories that to be cleaned up
+        # Generate a list of files and directories that will be cleaned up
         self.files_to_remove = []
         
         # Allow the user to override the default job_prefix (defined by the 
