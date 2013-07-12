@@ -34,17 +34,17 @@ script_info['script_description'] = ""
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q 20"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q 20"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q 20"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
 
 script_info['output_description']= ""
 script_info['required_options'] = [\
