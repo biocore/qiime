@@ -328,12 +328,12 @@ def extract_per_individual_state_metadata_from_sample_metadata(
     metadata_categories: metadata categories to extract from sample_metadata
     process_f: function to apply to metadata values (default: float)
     
-    returns {'individual-identifier':
-              {'metadata-category-1:
+    returns {'metadata-category-1':
+              {'individual-identifier-1':
                [difference-in-metadata-value-bw-states-2-and-1,
                [difference-in-metadata-value-bw-states-3-and-2,
                 ...],
-               'metadata-category-2:
+               'individual-identifier-2:
                [difference-in-metadata-value-bw-states-2-and-1,
                [difference-in-metadata-value-bw-states-3-and-2,
                 ...],
@@ -374,14 +374,14 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
     observation_ids: observations (usually OTUs) to extract from biom_table
      (default is all)
     
-    returns {'individual-identifier':
-              {'otu1:
+    returns {'otu1':
+              {'individual-identifier-1:
                [difference-in-otu1-abundance-bw-states-2-and-1,
                [difference-in-otu1-abundance-bw-states-3-and-2,
                 ...],
-               'otu2:
-               [difference-in-otu2-abundance-bw-states-2-and-1,
-               [difference-in-otu2-abundance-bw-states-3-and-2,
+               'individual-identifier-2:
+               [difference-in-otu1-abundance-bw-states-2-and-1,
+               [difference-in-otu1-abundance-bw-states-3-and-2,
                 ...],
                }
               ...
