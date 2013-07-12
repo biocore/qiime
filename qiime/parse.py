@@ -216,6 +216,15 @@ def extract_per_individual_states_from_sample_metadata(
       individual_identifier_category,
       filter_missing_data=True):
     """
+    sample_metadata : 2d dictionary mapping sample ids to metadata (as 
+     returned from qiime.parse.parse_mapping_file_to_dict)
+    state_category: metadata category name describing state of interest
+     (usually something like 'TreatmentState') as a string
+    state_values: ordered list of values of interest in the state_category
+     metadata entry (usually something like ['PreTreatment','PostTreatment'])
+    individual_identifier_category: metadata category name describing the
+     individual (usually something like 'PersonalID') as a string
+    
     returns {'individual-identifier':
                [sample-id-at-state-value1,
                 sample-id-at-state-value2,
@@ -263,6 +272,23 @@ def extract_per_individual_state_metadatum_from_sample_metadata(
         metadata_category,
         process_f=float):
     """
+    sample_metadata : 2d dictionary mapping sample ids to metadata (as 
+     returned from qiime.parse.parse_mapping_file_to_dict)
+    state_category: metadata category name describing state of interest
+     (usually something like 'TreatmentState') as a string
+    state_values: ordered list of values of interest in the state_category
+     metadata entry (usually something like ['PreTreatment','PostTreatment'])
+    individual_identifier_category: metadata category name describing the
+     individual (usually something like 'PersonalID') as a string
+    metadata_category: metadata category to extract from sample_metadata
+    process_f: function to apply to metadata values (default: float)
+    
+    returns {'individual-identifier':
+               [difference-in-metadata-value-bw-states-2-and-1,
+               [difference-in-metadata-value-bw-states-3-and-2,
+                ...],
+              ...
+             }
     """
     per_individual_states = extract_per_individual_states_from_sample_metadata(
      sample_metadata,
@@ -290,6 +316,31 @@ def extract_per_individual_state_metadata_from_sample_metadata(
         individual_identifier_category,
         metadata_categories,
         process_f=float):
+    """
+    sample_metadata : 2d dictionary mapping sample ids to metadata (as 
+     returned from qiime.parse.parse_mapping_file_to_dict)
+    state_category: metadata category name describing state of interest
+     (usually something like 'TreatmentState') as a string
+    state_values: ordered list of values of interest in the state_category
+     metadata entry (usually something like ['PreTreatment','PostTreatment'])
+    individual_identifier_category: metadata category name describing the
+     individual (usually something like 'PersonalID') as a string
+    metadata_categories: metadata categories to extract from sample_metadata
+    process_f: function to apply to metadata values (default: float)
+    
+    returns {'individual-identifier':
+              {'metadata-category-1:
+               [difference-in-metadata-value-bw-states-2-and-1,
+               [difference-in-metadata-value-bw-states-3-and-2,
+                ...],
+               'metadata-category-2:
+               [difference-in-metadata-value-bw-states-2-and-1,
+               [difference-in-metadata-value-bw-states-3-and-2,
+                ...],
+               }
+              ...
+              }
+    """
     results = {}
     for metadata_category in metadata_categories:
         results[metadata_category] = \
@@ -310,6 +361,31 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
         individual_identifier_category,
         observation_ids=None):
     """
+    sample_metadata : 2d dictionary mapping sample ids to metadata (as 
+     returned from qiime.parse.parse_mapping_file_to_dict)
+    biom_table: biom table object containing observation counts for 
+     samples in sample_metadata
+    state_category: metadata category name describing state of interest
+     (usually something like 'TreatmentState') as a string
+    state_values: ordered list of values of interest in the state_category
+     metadata entry (usually something like ['PreTreatment','PostTreatment'])
+    individual_identifier_category: metadata category name describing the
+     individual (usually something like 'PersonalID') as a string
+    observation_ids: observations (usually OTUs) to extract from biom_table
+     (default is all)
+    
+    returns {'individual-identifier':
+              {'otu1:
+               [difference-in-otu1-abundance-bw-states-2-and-1,
+               [difference-in-otu1-abundance-bw-states-3-and-2,
+                ...],
+               'otu2:
+               [difference-in-otu2-abundance-bw-states-2-and-1,
+               [difference-in-otu2-abundance-bw-states-3-and-2,
+                ...],
+               }
+              ...
+              }
     """
     per_individual_states = extract_per_individual_states_from_sample_metadata(
      sample_metadata,
