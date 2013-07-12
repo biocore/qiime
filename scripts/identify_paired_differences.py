@@ -20,8 +20,9 @@ from pylab import savefig
 from cogent.util.misc import create_dir
 from cogent.maths.stats.test import t_one_sample
 from biom.parse import parse_biom_table
-from qiime.parse import (extract_per_individual_state_metadata_from_mapping_f,
- extract_per_individual_state_metadata_from_mapping_f_and_biom)
+from qiime.parse import (extract_per_individual_state_metadata_from_sample_metadata,
+ extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+ parse_mapping_file_to_dict)
 from qiime.util import (parse_command_line_parameters, 
                   make_option)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -75,6 +76,9 @@ def main():
     ymin = opts.ymin
     ymax = opts.ymax
     
+    # parse the mapping file to a dict
+    mapping_data = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
+    
     if metadata_categories and biom_table_fp:
         option_parser.error("Can only pass --metadata_categories or --biom_table_fp, not both.")
     elif not (metadata_categories or biom_table_fp):
@@ -85,18 +89,20 @@ def main():
     if len(state_values) != 2:
         option_parser.error("Exactly two state_values must be passed separated by a comma.")
     
-    mapping_f = list(open(mapping_fp,'U'))
     if valid_states:
         sample_ids_to_keep = sample_ids_from_metadata_description(
-                              mapping_f,valid_states)
-        mapping_f = filter_mapping_file_from_mapping_f(mapping_f,sample_ids_to_keep).split('\n')
+                              open(mapping_fp,'U'),valid_states)
+        mapping_f = \
+         filter_mapping_file_from_mapping_f(
+          open(mapping_fp,'U'), sample_ids_to_keep).split('\n')
+        mapping_data = parse_mapping_file_to_dict(mapping_f)[0]
     
     if biom_table_fp:
         biom_table = parse_biom_table(open(biom_table_fp,'U'))
         analysis_categories = observation_ids or biom_table.ObservationIds
         personal_ids_to_state_metadata = \
-         extract_per_individual_state_metadata_from_mapping_f_and_biom(
-                                     mapping_f,
+         extract_per_individual_state_metadata_from_sample_metadata_and_biom(
+                                     mapping_data,
                                      biom_table,
                                      state_category,
                                      state_values,
@@ -105,8 +111,8 @@ def main():
     else:
         analysis_categories = metadata_categories.split(',')
         personal_ids_to_state_metadata = \
-         extract_per_individual_state_metadata_from_mapping_f(
-                                     mapping_f,
+         extract_per_individual_state_metadata_from_sample_metadata(
+                                     mapping_data,
                                      state_category,
                                      state_values,
                                      individual_id_category,
