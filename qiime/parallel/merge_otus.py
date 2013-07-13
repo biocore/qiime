@@ -117,22 +117,21 @@ def job_complete(node, verbose=False):
     else:
         return False
         
-def torque_job(cmd, pollpath, name, queue="memroute", mem="64gb", 
-               walltime="999:00:00"):
+def torque_job(cmd, pollpath, name, queue):
     """Wrap a cmd for job submission"""
-    qsub_call = "qsub -k oe -N %s -q %s -l walltime=%s -l pvmem=%s" % (name,
-                    queue, walltime, mem)
+    qsub_call = "qsub -k oe -N %s -q %s" % (name,queue)
     to_submit = 'echo "%s; echo $? > %s" | %s' % (cmd, pollpath, qsub_call)
     
     return to_submit
 
-def local_job(cmd, pollpath, name):
+def local_job(cmd, pollpath, name, queue):
     """make a local job"""
     to_submit = '%s; echo $? > %s' % (cmd, pollpath)
     
     return to_submit
     
-def start_job(node, python_exe_fp, merge_otus_fp, wrap_call=torque_job, submit=True):
+def start_job(node, python_exe_fp, merge_otus_fp, queue,
+              wrap_call=torque_job, submit=True):
     """Starts a process"""
     strfmt = {'Python':python_exe_fp,'MergeOTUs':merge_otus_fp, 
               'Output':node.FilePath,
@@ -140,7 +139,7 @@ def start_job(node, python_exe_fp, merge_otus_fp, wrap_call=torque_job, submit=T
               'BIOM_B':node.Children[1].FilePath}
     
     cmd = "%(Python)s %(MergeOTUs)s -i %(BIOM_A)s,%(BIOM_B)s -o %(Output)s"
-    wrapped = wrap_call(cmd % strfmt, node.PollPath, node.Name)
+    wrapped = wrap_call(cmd % strfmt, node.PollPath, node.Name, queue)
     
     if submit:
         system(wrapped)
