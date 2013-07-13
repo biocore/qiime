@@ -208,7 +208,7 @@ def group_by_fields(table, names):
         states = tuple([row[i] for i in col_indices])
         result[states].append(header)
     return result
-     
+
 def parse_distmat(lines):
     """Parser for distance matrix file (e.g. UniFrac dist matrix).
 
