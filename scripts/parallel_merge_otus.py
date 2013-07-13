@@ -41,8 +41,8 @@ script_info['required_options'] = [\
              help='the output otu table directory path')]
 
 script_info['optional_options'] = [\
-    make_option('-L','--local',action='store_true', default=False,
-           help="Fork processes to the local system"),
+    make_option('-C','--cluster',action='store_true', default=False,
+           help="Submit to a torque cluster"),
     make_option('-N','--merge_otus_fp',action='store',\
            type='existing_filepath',help='full path to '+\
            'scripts/merge_otu_tables.py [default: %default]',\
@@ -133,12 +133,12 @@ def main():
     while not tree.Processed:
         # check if we have nodes to process, if so, shoot them off
         for node in to_process:
-            if opts.local:
+            if opts.cluster:
                 start_job(node, python_exe_fp, merge_otus_fp, 
-                       qiime_config['torque_queue'], wrap_call=local_job)
+                       qiime_config['torque_queue'], wrap_call=torque_job)
             else:
                 start_job(node, python_exe_fp, merge_otus_fp, 
-                       qiime_config['opts.torque_queue'], wrap_call=torque_job)
+                       qiime_config['torque_queue'], wrap_call=local_job)
 
             wrapper_log_output.write(node.FullCommand)
             wrapper_log_output.write('\n')
