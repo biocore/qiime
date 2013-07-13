@@ -17,10 +17,13 @@ __status__ = "Development"
 
 class JobError(Exception):
     pass
-    
+
+INTERNAL_COUNT = 0
 def mergetree(left, right, working_dir):
     """Reconstruct a tree from merge order"""
     # decorate and infer filenames for tips
+    global INTERNAL_COUNT
+
     if not isinstance(left, TreeNode):
         filepath = str(left[0])
         name = basename(filepath.split('.')[0])
@@ -46,7 +49,7 @@ def mergetree(left, right, working_dir):
         right.TotalTime = None
         
     # internal node
-    name = '_'.join([left.Name, right.Name])
+    name = '_'.join([left.Name, right.Name, str(INTERNAL_COUNT)])
     filepath = join(working_dir,name) + '.biom'
     merged = TreeNode(Name=name, Children=[left,right])
     merged.FilePath = filepath
@@ -57,8 +60,13 @@ def mergetree(left, right, working_dir):
     merged.StartTime = None
     merged.TotalTime = None
     
+    INTERNAL_COUNT += 1
     return merged
         
+def reset_internal_count():
+    global INTERNAL_COUNT
+    INTERNAL_COUNT = 0
+
 def mergeorder(items, working_dir):
     """Code taken from http://en.literateprograms.org/Merge_sort_(Python)"""
     if len(items) < 2:
@@ -119,7 +127,7 @@ def job_complete(node, verbose=False):
         
 def torque_job(cmd, pollpath, name, queue):
     """Wrap a cmd for job submission"""
-    qsub_call = "qsub -k oe -N %s -q %s" % (name,queue)
+    qsub_call = "qsub -k oe -N %s -q %s" % ("MOTU",queue)
     to_submit = 'echo "%s; echo $? > %s" | %s' % (cmd, pollpath, qsub_call)
     
     return to_submit
