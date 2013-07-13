@@ -19,6 +19,7 @@ from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from qiime.util import get_tmp_filename
 from cogent.core.tree import TreeNode
+from random import choice
 from time import sleep, time
 from qiime.parallel.merge_otus import start_job, local_job, torque_job, \
     job_complete, initial_has_dependencies, initial_nodes_to_merge, \
@@ -30,16 +31,18 @@ script_info={}
 script_info['brief_description']="""Parallel merge BIOM tables"""
 script_info['script_description']="""This script works like the merge_otu_tables.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Merge the OTU tables $PWD/my_otu_table_1.biom,$PWD/my_otu_table_2.biom,$PWD/my_otu_table_3.biom,$PWD/my_otu_table_4.biom and write the resulting output table to the $PWD/merged_table/ directory. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/table1.biom,$PWD/table2.biom -o $PWD/merged_table/"""))
+script_info['script_usage'].append(("""Example""","""Merge the OTU tables $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom and write the resulting output table to the $PWD/merged/ directory.""","""%prog -i $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom -o $PWD/merged/ -L"""))
 script_info['output_description']="""The output consists of many files (i.e. merged_table.biom, merged_table.log and all intermediate merge tables). The .biom file contains the result of merging the individual BIOM tables. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file, the dependency hierarchy and runtime information for each individual merge."""
 
 script_info['required_options'] = [\
  make_option('-i','--input_fps',type='existing_filepaths',
              help='the otu tables in biom format (comma-separated)'),\
- make_option('-o','--output_fp',type='new_filepath',
-             help='the output otu table filepath')]
+ make_option('-o','--output_dir',type='new_dirpath',
+             help='the output otu table directory path')]
 
 script_info['optional_options'] = [\
+    make_option('-L','--local',action='store_true', default=False,
+           help="Fork processes to the local system"),
     make_option('-N','--merge_otus_fp',action='store',\
            type='existing_filepath',help='full path to '+\
            'scripts/merge_otu_tables.py [default: %default]',\
@@ -74,7 +77,7 @@ def main():
        
     input_fps = opts.input_fps
     python_exe_fp = opts.python_exe_fp
-    output_fp = opts.output_fp
+    output_dir = opts.output_dir
     merge_otus_fp = opts.merge_otus_fp
     seconds_to_sleep = opts.seconds_to_sleep
     verbose = opts.verbose
@@ -90,7 +93,7 @@ def main():
     # directory to the output directory when they are complete, allowing
     # a poller to detect when runs complete by the presence of their
     # output files.
-    working_dir = '%s/%s' % (output_fp,job_prefix)
+    working_dir = '%s/%s' % (output_dir,job_prefix)
     try:
         makedirs(working_dir)
     except OSError:
@@ -99,23 +102,11 @@ def main():
     
     import os.path
     # wrapper log output contains run details
-    log_fp = os.path.join(working_dir, 'parallel_merge_otus.log')
-    #log_fp = 'parallel_merge_otus.log'
-    if os.path.exists(log_fp):
-        raise IOError,"log file already exists!"
+    log_fp = os.path.join(output_dir, 'parallel_merge_otus.log')
         
     wrapper_log_output = open(log_fp, 'w')
     wrapper_log_output.write("Parallel merge output\n\n")
 
-    # munge input filenames intentionally, output munge
-    #filenames = munge_filenames(input_fps)
-    #wrapper_log_output.write("Munge file mapping:\n")
-    #for m,f in zip(filenames,input_fps):
-    #    wrapper_log_output.write('\t'.join([m,f]))
-    #    wrapper_log_output.write('\n')
-    #wrapper_log_output.write('\n')
-    #wrapper_log_output.flush()
-    
     # construct the dependency tree
     import os
 
@@ -142,8 +133,13 @@ def main():
     while not tree.Processed:
         # check if we have nodes to process, if so, shoot them off
         for node in to_process:
-            start_job(node, python_exe_fp, merge_otus_fp, wrap_call=local_job)
-                
+            if opts.local:
+                start_job(node, python_exe_fp, merge_otus_fp, 
+                       qiime_config['torque_queue'], wrap_call=local_job)
+            else:
+                start_job(node, python_exe_fp, merge_otus_fp, 
+                       qiime_config['opts.torque_queue'], wrap_call=torque_job)
+
             wrapper_log_output.write(node.FullCommand)
             wrapper_log_output.write('\n')
             wrapper_log_output.flush()
@@ -178,6 +174,6 @@ def main():
         has_dependencies = current_dependencies
 
         sleep(seconds_to_sleep)
-        
+    os.rename(tree.FilePath, "%s/%s" % (output_dir, "merged.biom"))
 if __name__ == '__main__':
     main()
