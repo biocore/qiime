@@ -118,7 +118,9 @@ def main():
     paired_difference_analyses(personal_ids_to_state_values,
                                    analysis_categories,
                                    state_values,
-                                   output_dir)
+                                   output_dir,
+                                   ymin=ymin,
+                                   ymax=ymax)
 
         
 
