@@ -31,7 +31,7 @@ script_info={}
 script_info['brief_description']="""Parallel merge BIOM tables"""
 script_info['script_description']="""This script works like the merge_otu_tables.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Merge the OTU tables $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom and write the resulting output table to the $PWD/merged/ directory.""","""%prog -i $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom -o $PWD/merged/ -L"""))
+script_info['script_usage'].append(("""Example""","""Merge the OTU tables $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom and write the resulting output table to the $PWD/merged/ directory.""","""%prog -i $PWD/t1.biom,$PWD/t2.biom,$PWD/t3.biom,$PWD/t4.biom -o $PWD/merged/"""))
 script_info['output_description']="""The output consists of many files (i.e. merged_table.biom, merged_table.log and all intermediate merge tables). The .biom file contains the result of merging the individual BIOM tables. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file, the dependency hierarchy and runtime information for each individual merge."""
 
 script_info['required_options'] = [\
