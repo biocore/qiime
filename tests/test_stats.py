@@ -1653,6 +1653,14 @@ class PairedDifferenceTests(TestCase):
              {'subject1':[0.28,0.21],
               'subject2':[0.11,0.01]}
            }
+        self.personal_ids_to_state_values2 = \
+          {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,None]},
+           'bacteroidetes-abundace':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
+           }
         self.files_to_remove = []
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
@@ -1717,6 +1725,27 @@ class PairedDifferenceTests(TestCase):
             [table.getObservationIndex('bacteroidetes-abundace')],-0.1,2)
         self.assertFloatEqual(table[table.getSampleIndex('subject2')]
             [table.getObservationIndex('firmicutes-abundance')],0.41,2)
+        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
+            [table.getObservationIndex('bacteroidetes-abundace')],-0.07,2)
+
+        # missing data results in skipped observation ids
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values2,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundace'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        biom_table_fp = join(self.test_out,'differences.biom')
+        self.assertTrue(exists(biom_table_fp))
+        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
+        table = parse_biom_table(open(biom_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
+        self.assertEqualItems(table.ObservationIds,
+         ['bacteroidetes-abundace'])
+        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
+            [table.getObservationIndex('bacteroidetes-abundace')],-0.1,2)
         self.assertFloatEqual(table[table.getSampleIndex('subject2')]
             [table.getObservationIndex('bacteroidetes-abundace')],-0.07,2)
 
