@@ -66,23 +66,29 @@ script_info['optional_options'] = [\
     make_option('-d','--delimiter',action='store',type='string',
         dest='delimiter',default=';', 
         help='Delimiter separating taxonomy levels. [default: %default]'),
-    make_option('-r', '--relative_abundance', action='store',\
-        dest='relative_abundance', default='', \
-        help='DEPRECATED: please use -a/--absolute_abundance to disable ' +\
-        'relative abundance [default: %default]'),
     make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
         help='If present, the absolute abundance of the lineage in ' +\
         ' each sample is reported. By default, this script uses relative' +\
         ' abundance [default: %default]'),
     make_option('-l', '--lower_percentage', type='float', default=None,
-        help='If present, taxa having higher absolute abundance are trimmed. '
-        'To remove taxa that make up more than 5% of the total dataset you '
-        'would pass 0.05. [default: no taxa are trimmed]'),
+        help='If present, taxa having higher *absolute* abundance are '
+        'trimmed. IMPORTANT: these taxa will be trimmed based on *absolute '
+        'abundance*. Thus, if -a/--absolute_abundance is not provided (the '
+        'default), the taxa will be trimmed *before* the table is converted '
+        'into relative abundances (so the relative abundance calculation will '
+        'only consider the remaining taxa that were *not* trimmed). For '
+        'example, to remove taxa that make up more than 5% of the total '
+        'dataset you would pass 0.05. [default: no taxa are trimmed]'),
     make_option('-u', '--upper_percentage', type='float', default=None,
-        help='If present, taxa having lower absolute abundance are trimmed. '
-        'To remove taxa that makes up less than 45% of the total dataset you '
-        'would pass 0.45. [default: no taxa are trimmed]'),
+        help='If present, taxa having lower *absolute* abundance are '
+        'trimmed. IMPORTANT: these taxa will be trimmed based on *absolute '
+        'abundance*. Thus, if -a/--absolute_abundance is not provided (the '
+        'default), the taxa will be trimmed *before* the table is converted '
+        'into relative abundances (so the relative abundance calculation will '
+        'only consider the remaining taxa that were *not* trimmed). For '
+        'example, to remove taxa that make up less than 45% of the total '
+        'dataset you would pass 0.45. [default: no taxa are trimmed]'),
     make_option('-t', '--transposed_output', action='store_true',\
         dest='transposed_output', default=False, \
         help='If present, the output will be written transposed from' +\
@@ -103,7 +109,6 @@ script_info['option_label']={'otu_table_fp':'OTU table filepath',
                              'mapping':'QIIME-formatted mapping filepath',
                              'level':'Summarize level',
                              'delimiter': 'Taxonomic delimiter',
-                             'relative_abundance':'Use relative abundance',
                              'absolute_abundance':'Use absolute abundance',
                              'lower_percentage':'Top % of taxa to remove',
                              'upper_percentage':'Bottom % of taxa to remove'}
@@ -158,9 +163,6 @@ def main():
         if suppress_classic_table_output and suppress_biom_table_output:
             option_parser.error("Both classic and BIOM output formats were "
                                 "suppressed.")
-
-    if opts.relative_abundance != '':
-        option_parser.error("Deprecated. Please use --absolute_abundance to disable relative abundance")
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:
