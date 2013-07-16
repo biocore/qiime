@@ -21,7 +21,7 @@ class MergeTests(TestCase):
     
     def test_mergetree(self):
         """construct a merge subtreetree with various properties set"""
-        exp = "(A,B)A_B_0;"
+        exp = "(A,B)0;"
         obs = mergetree(['A.biom'],['B.biom'],'foo')
         self.assertEqual(obs.getNewick(escape_name=False), exp)
         
@@ -37,15 +37,15 @@ class MergeTests(TestCase):
         self.assertEqual(obs.Children[1].PollPath, None)
         self.assertEqual(obs.Children[1].FullCommand, None)
 
-        self.assertEqual(obs.Name, 'A_B_0')
-        self.assertEqual(obs.FilePath, 'foo/A_B_0.biom')
+        self.assertEqual(obs.Name, '0')
+        self.assertEqual(obs.FilePath, 'foo/0.biom')
         self.assertEqual(obs.Processed, False)
-        self.assertEqual(obs.PollPath, 'foo/A_B_0.biom.poll')
+        self.assertEqual(obs.PollPath, 'foo/0.biom.poll')
         self.assertEqual(obs.FullCommand, None)
         
     def test_mergeorder(self):
         """recursively build and join all the subtrees"""
-        exp = "((A,B)A_B_0,(C,(D,E)D_E_1)C_D_E_1_2)A_B_0_C_D_E_1_2_3;"
+        exp = "((A,B)0,(C,(D,E)1)2)3;"
         obs = mergeorder(['A','B','C','D','E'],'foo')
         self.assertEqual(obs.getNewick(escape_name=False), exp)
         
@@ -103,7 +103,7 @@ class MergeTests(TestCase):
         
     def test_start_job(self):
         """start a job"""
-        exp = 'echo "x y -i A.biom,B.biom -o foo/A_B_0.biom; echo $? > foo/A_B_0.biom.poll" | qsub -k oe -N MOTU -q ignored'
+        exp = 'echo "x y -i A.biom,B.biom -o foo/0.biom; echo $? > foo/0.biom.poll" | qsub -k oe -N MOTU -q ignored'
         t = mergeorder(['A.biom','B.biom','C','D','E'],'foo')
         start_job(t.Children[0], 'x','y','ignored',torque_job,False)
         self.assertEqual(t.Children[0].FullCommand, exp)
