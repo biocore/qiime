@@ -19,12 +19,16 @@ from qiime.util import make_option,get_options_lookup,create_dir
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_mapping_file
-from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
-        format_summarize_taxa, format_add_taxa_summary_mapping
+from qiime.format import write_add_taxa_summary_mapping, format_biom_table
 from os.path import split,splitext,join
 from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
+
+# Define the upper/lower percentage defaults here so that we can check whether
+# the user supplied -u/-l on the command line with -m (which is not supported).
+lower_percentage_default = 1.0
+upper_percentage_default = 0.0
 
 script_info={}
 script_info['brief_description']="""Summarize taxa and store results in a new table or appended to an existing mapping file."""
@@ -71,14 +75,14 @@ script_info['optional_options'] = [\
         help='If present, the absolute abundance of the lineage in ' +\
         ' each sample is reported. By default, this script uses relative' +\
         ' abundance [default: %default]'),
-    make_option('-l', '--lower_percentage', type='float', default=None, \
-        help='If present, OTUs having higher absolute abundance are' +\
-        ' trimmed. To remove OTUs that make up more than 5% of the total' +\
-        ' dataset you would pass 0.05. [default: %default]'),
-    make_option('-u', '--upper_percentage', type='float', default=None, \
-        help='If present, OTUs having lower absolute abundance are' +\
-        ' trimmed. To remove the OTUs that makes up less than 45% of the' +\
-        ' total dataset you would pass 0.45. [default: %default]'),
+    make_option('-l', '--lower_percentage', type='float', default=None,
+        help='If present, taxa having higher absolute abundance are trimmed. '
+        'To remove taxa that make up more than 5% of the total dataset you '
+        'would pass 0.05. [default: no taxa are trimmed]'),
+    make_option('-u', '--upper_percentage', type='float', default=None,
+        help='If present, taxa having lower absolute abundance are trimmed. '
+        'To remove taxa that makes up less than 45% of the total dataset you '
+        'would pass 0.45. [default: no taxa are trimmed]'),
     make_option('-t', '--transposed_output', action='store_true',\
         dest='transposed_output', default=False, \
         help='If present, the output will be written transposed from' +\
@@ -101,8 +105,8 @@ script_info['option_label']={'otu_table_fp':'OTU table filepath',
                              'delimiter': 'Taxonomic delimiter',
                              'relative_abundance':'Use relative abundance',
                              'absolute_abundance':'Use absolute abundance',
-                             'lower_percentage':'Top % of OTUs to remove',
-                             'upper_percentage':'Bottom % of OTUs to remove'}
+                             'lower_percentage':'Top % of taxa to remove',
+                             'upper_percentage':'Bottom % of taxa to remove'}
 
 script_info['version'] = __version__
 
@@ -110,6 +114,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    absolute_abundance = opts.absolute_abundance
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
     otu_table_fp = opts.otu_table_fp
@@ -122,18 +127,21 @@ def main():
     suppress_classic_table_output = opts.suppress_classic_table_output
     suppress_biom_table_output = opts.suppress_biom_table_output
 
-    if upper_percentage!=None and lower_percentage!=None:
-        raise ValueError("upper_percentage and lower_percentage are mutually exclusive")
+    if (upper_percentage is not None or lower_percentage is not None) and \
+            mapping_fp:
+        raise ValueError("upper_percentage and lower_percentage cannot be used with mapping file")
+
+    if upper_percentage is None:
+        upper_percentage = upper_percentage_default
+    if lower_percentage is None:
+        lower_percentage = lower_percentage_default
+
+    if upper_percentage < 0 or upper_percentage > 1.0:
+        raise ValueError('upper_percentage should be between 0.0 and 1.0')
     
-    if upper_percentage!=None and lower_percentage!=None and mapping:
-        raise ValueError("upper_percentage and lower_percentage can not be using with mapping file")
-        
-    if upper_percentage!=None and (upper_percentage<0 or upper_percentage>1.0):
-        raise ValueError('max_otu_percentage should be between 0.0 and 1.0')
-    
-    if lower_percentage!=None and (lower_percentage<0 or lower_percentage>1.0):
+    if lower_percentage < 0 or lower_percentage > 1.0:
         raise ValueError('lower_percentage should be between 0.0 and 1.0')
-        
+
     if mapping_fp:
         mapping_file = open(mapping_fp, 'U')
         mapping, header, comments = parse_mapping_file(mapping_file)
@@ -141,16 +149,18 @@ def main():
         # use the input Mapping file for producing the output filenames
         map_dir_path,map_fname=split(mapping_fp)
         map_basename,map_fname_ext=splitext(map_fname)
+
+        # Compute relative abundance here since we don't need to worry about
+        # filtering based on absolute abundance (not supported for this mode).
+        if not absolute_abundance:
+            otu_table = otu_table.normObservationBySample()
     else:
         if suppress_classic_table_output and suppress_biom_table_output:
             option_parser.error("Both classic and BIOM output formats were "
                                 "suppressed.")
 
     if opts.relative_abundance != '':
-        option_parser.error("Deprecated. Please use --absolute_abundances to disable relative abundance")
-
-    if not opts.absolute_abundance:
-        otu_table = otu_table.normObservationBySample()
+        option_parser.error("Deprecated. Please use --absolute_abundance to disable relative abundance")
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:
@@ -168,36 +178,51 @@ def main():
         if mapping_fp:
             #define output filename
             output_fname = join(output_dir_path,
-                                        map_basename+'_L%s.txt' % (level))
-                                        
+                                map_basename+'_L%s.txt' % (level))
+
             summary, tax_order = add_summary_mapping(otu_table, 
                                                      mapping,
                                                      int(level),
                                                      md_as_string,
-                                                     md_identifier)
-                                                     
+                                                     md_identifier,
+                                                     delimiter=delimiter)
+
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
-                                            header,output_fname,delimiter)
+                                           header,output_fname)
         else:
             # define the output filename. The extension will be added to the
             # end depending on the output format
             output_fname = join(output_dir_path, basename + '_L%s' % level)
 
-            summary, header = make_summary(otu_table,
-                                           int(level),
-                                           upper_percentage,
-                                           lower_percentage,
-                                           md_as_string,
-                                           md_identifier)
+            ts_table = make_summary(otu_table,
+                                    int(level),
+                                    upper_percentage,
+                                    lower_percentage,
+                                    md_as_string,
+                                    md_identifier,
+                                    delimiter=delimiter)
+
+            # Compute relative abundance after summarizing since we need to
+            # perform the filtering based on absolute abundance of the taxa.
+            if not absolute_abundance:
+                ts_table = ts_table.normObservationBySample()
+
+            if opts.transposed_output:
+                ts_table = ts_table.transpose()
+                obs_col_name = 'SampleID'
+            else:
+                obs_col_name = 'Taxon'
 
             if not suppress_classic_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.txt',
-                                     delimiter, opts.transposed_output,
-                                     file_format='classic')
+                classic_table_str = ts_table.delimitedSelf(
+                        observation_column_name=obs_col_name)
+                with open(output_fname + '.txt', 'w') as output_f:
+                    output_f.write(classic_table_str)
+                    output_f.write('\n')
+
             if not suppress_biom_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.biom',
-                                     delimiter, opts.transposed_output,
-                                     file_format='biom')
+                with open(output_fname + '.biom', 'w') as output_f:
+                    output_f.write(format_biom_table(ts_table))
 
 
 if __name__ == "__main__":

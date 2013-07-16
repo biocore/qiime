@@ -84,64 +84,8 @@ def format_qiime_parameters(params, header="#QIIME parameters"):
             qiime_params.append(full_line)
     return qiime_params
 
-def format_summarize_taxa(summary, header, delimiter=';',
-                          file_format='classic'):
-    """Formats a summarized taxonomy table for output"""
-    if file_format == 'classic':
-        yield "%s\n" % '\t'.join(header)
-        for row in summary:
-            # taxon is tuple, join together for foo;bar;foobar
-            taxon = row[0]
-            line = [delimiter.join(taxon)]
-
-            # add on otu counts
-            line.extend(map(str, row[1:]))
-
-            yield "%s\n" % '\t'.join(line)
-    elif file_format == 'biom':
-        # Skip 'Taxon' or 'SampleId' label in first column.
-        sample_ids = header[1:]
-
-        observation_ids = []
-        data = []
-        for row in summary:
-            # Join taxonomic levels to create an observation ID.
-            observation_ids.append(delimiter.join(row[0]))
-            data.append(row[1:])
-
-        table = table_factory(asarray(data), sample_ids, observation_ids,
-                              constructor=SparseTaxonTable)
-        yield format_biom_table(table)
-    else:
-        raise ValueError("Invalid file format '%s'. Must be either 'classic' "
-                         "or 'biom'." % file_format)
- 
-def write_summarize_taxa(summary, header, output_fp, delimiter=';',
-                         transposed_output=False, file_format='classic'):
-    """ """
-    # Fixing headers
-    pattern = compile('\W')
-    header = [sub(pattern, '.', label) for label in header]
-
-    if transposed_output:
-         # transposing the summary
-         summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
-         # adding the first column into the new summary matrix
-         for i in range(1,len(summary)):
-             summary[i] = [([header[i]])] + summary[i]
-         # replacing header and trimming summary
-         header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
-         summary = summary[1:]
-    
-    with open(output_fp,'w') as of:
-        for line in format_summarize_taxa(summary, header, delimiter,
-                                          file_format=file_format):
-            of.write(line)
-
-def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
-        delimiter=';'):
+def format_add_taxa_summary_mapping(summary, tax_order, mapping, header):
     """Formats a summarized taxonomy with mapping information"""
-    tax_order = [delimiter.join(tax) for tax in tax_order]
     header.extend(tax_order)
     yield "#%s\n" % '\t'.join(header)
 
@@ -156,12 +100,12 @@ def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
         row.extend(map(str, summary[sample_id]))
         yield "%s\n" % '\t'.join(row)
 
-def write_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
-        output_fp, delimiter=';'):
+def write_add_taxa_summary_mapping(summary, tax_order, mapping, header,
+                                   output_fp):
     """ """
     of = open(output_fp,'w')
-    for line in format_add_taxa_summary_mapping(summary, tax_order, mapping, \
-                                                header, delimiter):
+    for line in format_add_taxa_summary_mapping(summary, tax_order, mapping,
+                                                header):
         of.write(line)
     of.close()
 

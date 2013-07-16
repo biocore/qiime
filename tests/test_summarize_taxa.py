@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+from __future__ import division
 
-"""Tests of code for adding taxa to OTU table"""
+"""Tests of code for summarizing taxa in an OTU table"""
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Daniel McDonald", "Antonio Gonzalez Pena", "Jose Carlos Clemente Litran"] 
+__credits__ = ["Rob Knight", "Daniel McDonald", "Antonio Gonzalez Pena",
+               "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -13,43 +15,52 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.summarize_taxa import make_summary, \
-	add_summary_mapping, sum_counts_by_consensus
+from qiime.summarize_taxa import (make_summary, add_summary_mapping)
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
-from biom.table import table_factory
+from biom.exception import TableException
+from biom.table import SparseOTUTable, SparseTaxonTable, table_factory
 from biom.parse import parse_biom_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
     def setUp(self):
-        self.otu_table_vals = array([[1,0,2,4],
-                               [1,2,0,1],
-                               [0,1,1,0],
-                               [1,2,1,0]])
-        
-        {(0, 0):1.0, (0, 2):2.0, (0, 3):4.0,
-                               (1, 0):1.0, (1, 1):2.0, (1, 3):1.0,
-                               (2, 1):1.0, (2, 2):1.0, (3, 0):1.0,
-                               (3, 1): 2.0, (3, 2):1.0}
+        # #OTU ID s1 s2 s3 s4 Consensus Lineage
+        # 0 1 0 2 4 Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
+        # 1 1 2 0 1 Root;Bacteria;Firmicutes;"Clostridia"
+        # 2 0 1 1 0 Root;Bacteria;Firmicutes;"Clostridia"
+        # 3 1 2 1 0 Root;Bacteria
 
-        self.otu_table = table_factory(self.otu_table_vals,
-                                        ['s1', 's2', 's3', 's4'],
-                                        ['0', '1', '2', '3'],
-                                        None,
-                                        [{"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]},
-                                         {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},
-                                         {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},
-                                         {"taxonomy": ["Root", "Bacteria"]}])
+        otu_table_vals = array([[1,0,2,4],
+                                [1,2,0,1],
+                                [0,1,1,0],
+                                [1,2,1,0]])
+        sample_ids = ['s1', 's2', 's3', 's4']
+        obs_ids = ['0', '1', '2', '3']
 
-#        self.otu_table="""#Full OTU Counts
-##OTU ID\ts1\ts2\ts3\ts4\tConsensus Lineage
-#0\t1\t0\t2\t4\tRoot;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-#1\t1\t2\t0\t1\tRoot;Bacteria;Firmicutes;"Clostridia"
-#2\t0\t1\t1\t0\tRoot;Bacteria;Firmicutes;"Clostridia"
-#3\t1\t2\t1\t0\tRoot;Bacteria""".split('\n')
+        md_as_list = [{"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]},
+                      {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},
+                      {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},
+                      {"taxonomy": ["Root", "Bacteria"]}]
+
+        md_as_string = [{"taxonomy": "Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae"},
+                      {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
+                      {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
+                      {"taxonomy": "Root;Bacteria"}]
+
+        self.otu_table = table_factory(otu_table_vals, sample_ids, obs_ids,
+                                       None, md_as_list)
+
+        self.otu_table_rel = self.otu_table.normObservationBySample()
+
+        self.otu_table_md_as_string = table_factory(otu_table_vals, sample_ids,
+                                                    obs_ids, None,
+                                                    md_as_string)
+
+        self.minimal_table = table_factory(otu_table_vals, sample_ids, obs_ids,
+                                           None, None)
 
         self.mapping="""#SampleID\tBarcodeSequence\tTreatment\tDescription
 #Test mapping file
@@ -58,89 +69,146 @@ s2\tGGGG\tControl\tControl mouse, I.D. 355
 s3\tCCCC\tExp\tDisease mouse, I.D. 356
 s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
 
-    def test_sum_counts_by_consensus(self):
-        """should sum otu counts by consensus"""
-        #otu_table = parse_otu_table(self.otu_table)
-        #otu_table = parse_biom_table(self.otu_table)
-        obs_result, obs_mapping = sum_counts_by_consensus(self.otu_table, 3)
-        exp_result = {('Root','Bacteria','Actinobacteria'):array([1,0,2,4]),
-                      ('Root','Bacteria','Firmicutes'):array([1,3,1,1]),
-                      ('Root','Bacteria','Other'):array([1,2,1,0])}
-        exp_mapping = {'s1':0, 's2':1, 's3':2, 's4':3}
-        self.assertEqual(obs_result, exp_result)
-        self.assertEqual(obs_mapping, exp_mapping)
+    def test_make_summary(self):
+        """make_summary works"""
+        # level 2
+        exp_data = array([3.0, 5.0, 4.0, 5.0])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria'])
+        obs = make_summary(self.otu_table, 2)
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
 
-        obs_result, obs_mapping = sum_counts_by_consensus(self.otu_table, 2)
-        exp_result = {('Root','Bacteria'):array([3,5,4,5])}
-        exp_mapping = {'s1':0, 's2':1, 's3':2, 's4':3}
-        self.assertEqual(obs_result, exp_result)
-        self.assertEqual(obs_mapping, exp_mapping)
+        # level 3
+        exp_data = array([[1.0, 0.0, 2.0, 4.0],
+                          [1.0, 3.0, 1.0, 1.0],
+                          [1.0, 2.0, 1.0, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Actinobacteria',
+                             'Root;Bacteria;Firmicutes',
+                             'Root;Bacteria;Other'])
+        obs = make_summary(self.otu_table, 3)
+        self.assertEqual(obs, exp)
 
-        obs_result, obs_mapping = sum_counts_by_consensus(self.otu_table, 4)
-        exp_result = {('Root','Bacteria','Actinobacteria','Actinobacteria'):\
-                array([1,0,2,4]),
-                      ('Root','Bacteria','Firmicutes','"Clostridia"'):\
-                              array([1,3,1,1]),
-                      ('Root','Bacteria','Other','Other'):array([1,2,1,0])}
-        exp_mapping = {'s1':0, 's2':1, 's3':2, 's4':3}
-        self.assertEqual(obs_result, exp_result)
-        self.assertEqual(obs_mapping, exp_mapping)
+        # level 4
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Actinobacteria;Actinobacteria',
+                             'Root;Bacteria;Firmicutes;"Clostridia"',
+                             'Root;Bacteria;Other;Other'])
+        obs = make_summary(self.otu_table, 4)
+        self.assertEqual(obs, exp)
 
-    def test_make_new_summary_file(self):
-        """make_new_summary_file works
-        """
-        lower_percentage, upper_percentage = None, None
-        #otu_table = parse_otu_table(self.otu_table, int)
-        #otu_table = parse_biom_table(self.otu_table)
-        summary, header = make_summary(self.otu_table, 3, upper_percentage, lower_percentage)
-        self.assertEqual(header, ['Taxon','s1','s2','s3','s4'])
-        self.assertEqual(summary, [[('Root','Bacteria','Actinobacteria'),1,0,2,4], 
-                                   [('Root','Bacteria','Firmicutes'),1,3,1,1], 
-                                   [('Root','Bacteria','Other'),1,2,1,0]])
+        # md_as_string=True
+        obs = make_summary(self.otu_table_md_as_string, 4, md_as_string=True)
+        self.assertEqual(obs, exp)
 
-        #test that works with relative abundances
-        #otu_table = parse_otu_table(self.otu_table, float)
-        #otu_table = parse_biom_table(self.otu_table, float)
-        #otu_table = convert_otu_table_relative(otu_table)
-        otu_table = self.otu_table.normObservationBySample()
-        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
-        self.assertEqual(header, ['Taxon','s1','s2','s3','s4'])
-        self.assertEqual(summary[0][0], ('Root','Bacteria','Actinobacteria'))
-        self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.0, 0.5, 0.8])
-        self.assertEqual(summary[1][0], ('Root','Bacteria','Firmicutes'))
-        self.assertFloatEqual(summary[1][1:], [1.0 / 3, 0.6, 0.25, 0.2])
-        self.assertEqual(summary[2][0], ('Root','Bacteria','Other'))
-        self.assertFloatEqual(summary[2][1:], [1.0 / 3, 0.4, 0.25, 0.0])
-        
-        ##
-        # testing lower triming 
-        lower_percentage, upper_percentage = 0.3, None
-        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
-        self.assertEqual(summary[0][0], ('Root','Bacteria','Other'))
-        self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.4, 0.25, 0.0])
-        
-        ##
-        # testing upper triming 
-        lower_percentage, upper_percentage = None, 0.4
-        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
-        self.assertEqual(summary[0][0], ('Root','Bacteria','Actinobacteria'))
-        self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.0, 0.5, 0.8])
-        
+        # custom delimiter
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root>Bacteria>Actinobacteria>Actinobacteria',
+                             'Root>Bacteria>Firmicutes>"Clostridia"',
+                             'Root>Bacteria>Other>Other'])
+        obs = make_summary(self.otu_table, 4, delimiter='>')
+        self.assertEqual(obs, exp)
 
-    def test_add_summary_category_mapping(self):
-        """make_new_summary_file works
-        """
-        #otu_table = parse_otu_table(self.otu_table, int)
-        #otu_table = parse_biom_table(self.otu_table)
+        # custom constructor
+        obs = make_summary(self.otu_table, 4, delimiter='>',
+                           constructor=SparseOTUTable)
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseOTUTable)
+
+    def test_make_summary_invalid_input(self):
+        """make_summary handles invalid input"""
+        # No metadata.
+        with self.assertRaises(ValueError):
+            make_summary(self.minimal_table, 2)
+
+        # Wrong metadata key.
+        with self.assertRaises(KeyError):
+            make_summary(self.otu_table, 2, md_identifier='foo')
+
+    def test_make_summary_relative_abundances(self):
+        """make_summary works with relative abundances"""
+        exp_data = array([[1.0 / 3, 0.0, 0.5, 0.8],
+                          [1.0 / 3, 0.6, 0.25, 0.2],
+                          [1.0 / 3, 0.4, 0.25, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Actinobacteria',
+                             'Root;Bacteria;Firmicutes',
+                             'Root;Bacteria;Other'])
+
+        obs = make_summary(self.otu_table_rel, 3)
+
+        # Can't use __eq__ here because of floating point error.
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
+        self.assertEqual(obs.ObservationIds, exp.ObservationIds)
+        self.assertFloatEqual(obs.sampleData('s1'), exp.sampleData('s1'))
+        self.assertFloatEqual(obs.sampleData('s2'), exp.sampleData('s2'))
+        self.assertFloatEqual(obs.sampleData('s3'), exp.sampleData('s3'))
+        self.assertFloatEqual(obs.sampleData('s4'), exp.sampleData('s4'))
+
+    def test_make_summary_trimming(self):
+        """make_summary correctly trims taxa based on abundance"""
+        # testing lower trimming 
+        exp_data = array([[1.0 / 3, 0.4, 0.25, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Other'])
+
+        obs = make_summary(self.otu_table_rel, 3, lower_percentage=0.3)
+
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
+        self.assertEqual(obs.ObservationIds, exp.ObservationIds)
+        self.assertFloatEqual(obs.sampleData('s1'), exp.sampleData('s1'))
+        self.assertFloatEqual(obs.sampleData('s2'), exp.sampleData('s2'))
+        self.assertFloatEqual(obs.sampleData('s3'), exp.sampleData('s3'))
+        self.assertFloatEqual(obs.sampleData('s4'), exp.sampleData('s4'))
+
+        # testing upper trimming 
+        exp_data = array([[1.0 / 3, 0.0, 0.5, 0.8]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Actinobacteria'])
+
+        obs = make_summary(self.otu_table_rel, 3, upper_percentage=0.4)
+
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
+        self.assertEqual(obs.ObservationIds, exp.ObservationIds)
+        self.assertFloatEqual(obs.sampleData('s1'), exp.sampleData('s1'))
+        self.assertFloatEqual(obs.sampleData('s2'), exp.sampleData('s2'))
+        self.assertFloatEqual(obs.sampleData('s3'), exp.sampleData('s3'))
+        self.assertFloatEqual(obs.sampleData('s4'), exp.sampleData('s4'))
+
+        # test lower and upper trimming 
+        exp_data = array([[1.0 / 3, 0.6, 0.25, 0.2]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria;Firmicutes'])
+
+        obs = make_summary(self.otu_table_rel, 3, upper_percentage=0.3,
+                           lower_percentage=0.4)
+
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
+        self.assertEqual(obs.ObservationIds, exp.ObservationIds)
+        self.assertFloatEqual(obs.sampleData('s1'), exp.sampleData('s1'))
+        self.assertFloatEqual(obs.sampleData('s2'), exp.sampleData('s2'))
+        self.assertFloatEqual(obs.sampleData('s3'), exp.sampleData('s3'))
+        self.assertFloatEqual(obs.sampleData('s4'), exp.sampleData('s4'))
+
+        # test trimming everything out
+        with self.assertRaises(TableException):
+            make_summary(self.otu_table_rel, 3, upper_percentage=0.2,
+                         lower_percentage=0.2)
+
+    def test_add_summary_mapping(self):
+        """add_summary_mapping works"""
         mapping, header, comments = parse_mapping_file(self.mapping)
-        summary, taxon_order = add_summary_mapping(self.otu_table, mapping, 3)
-        self.assertEqual(taxon_order, [('Root','Bacteria','Actinobacteria'),
-                                       ('Root','Bacteria','Firmicutes'),
-                                       ('Root','Bacteria','Other')])
+        summary, taxon_order = add_summary_mapping(self.otu_table, mapping, 3,
+                                                   delimiter='FOO')
+        self.assertEqual(taxon_order, ('RootFOOBacteriaFOOActinobacteria',
+                                       'RootFOOBacteriaFOOFirmicutes',
+                                       'RootFOOBacteriaFOOOther'))
         self.assertEqual(summary, {'s1':[1,1,1],
                                    's2':[0,3,2],
                                    's3':[2,1,1],
                                    's4':[4,1,0]})
+
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
