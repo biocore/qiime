@@ -49,7 +49,7 @@ def mergetree(left, right, working_dir):
         right.TotalTime = None
         
     # internal node
-    name = '_'.join([left.Name, right.Name, str(INTERNAL_COUNT)])
+    name = str(INTERNAL_COUNT)
     filepath = join(working_dir,name) + '.biom'
     merged = TreeNode(Name=name, Children=[left,right])
     merged.FilePath = filepath
