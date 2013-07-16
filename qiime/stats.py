@@ -1772,8 +1772,6 @@ def paired_difference_analyses(personal_ids_to_state_values,
      "t one sample parametric p-value (Bonferroni-corrected)\n")
     
     paired_difference_t_test_results = {}
-    # initiate list of output file paths to return 
-    output_fps = [paired_difference_output_fp]
     
     biom_table_fp = join(output_dir,'differences.biom')
     biom_sids_fp = join(output_dir,'differences_sids.txt')
@@ -1785,6 +1783,11 @@ def paired_difference_analyses(personal_ids_to_state_values,
     for c in personal_ids_to_state_values.values():
         pids.extend(c.keys())
     pids = list(set(pids))
+    
+    # initiate list of output file paths to return 
+    output_fps = [paired_difference_output_fp,
+                  biom_table_fp,
+                  biom_sids_fp]
     
     for category_number, analysis_category in enumerate(analysis_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]

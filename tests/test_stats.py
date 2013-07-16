@@ -20,6 +20,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median
 from numpy.random import permutation, shuffle
+from biom.parse import parse_biom_table
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
@@ -1687,11 +1688,30 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),3)
+        self.assertEqual(len(actual[0]),5)
         # expected t values returned
         self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
         self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
-                                   
+
+    def test_paired_difference_analyses_biom_output(self):
+        """paired_difference_analyses generates correct biom tables
+        """
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundace'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        biom_table_fp = join(self.test_out,'differences.biom')
+        self.assertTrue(exists(biom_table_fp))
+        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
+        table = parse_biom_table(open(biom_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
+        self.assertEqualItems(table.ObservationIds,
+         ['firmicutes-abundance','bacteroidetes-abundace'])
+
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
         """
@@ -1709,7 +1729,7 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),3)
+        self.assertEqual(len(actual[0]),5)
         # expected t values returned
         self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
         self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
@@ -1729,7 +1749,7 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
         self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),2)
+        self.assertEqual(len(actual[0]),4)
         # expected t values returned
         self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
 
