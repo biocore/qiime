@@ -1711,6 +1711,14 @@ class PairedDifferenceTests(TestCase):
         self.assertEqualItems(table.SampleIds,['subject1','subject2'])
         self.assertEqualItems(table.ObservationIds,
          ['firmicutes-abundance','bacteroidetes-abundace'])
+        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
+            [table.getObservationIndex('firmicutes-abundance')],0.1,2)
+        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
+            [table.getObservationIndex('bacteroidetes-abundace')],-0.1,2)
+        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
+            [table.getObservationIndex('firmicutes-abundance')],0.41,2)
+        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
+            [table.getObservationIndex('bacteroidetes-abundace')],-0.07,2)
 
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
