@@ -1821,18 +1821,26 @@ def paired_difference_analyses(personal_ids_to_state_values,
             biom_data.append(differences)
         
         # run stats for current analysis category
-        t_one_sample_results = t_one_sample(differences)
-        t = t_one_sample_results[0]
-        p_value = t_one_sample_results[1]
-        bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        n = len(differences)
+        mean_differences = mean(differences)
+        median_differences = median(differences)
+        if len(set(differences)) != 1:
+            t_one_sample_results = t_one_sample(differences)
+            t = t_one_sample_results[0]
+            p_value = t_one_sample_results[1]
+            bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        else:
+            t = None
+            p_value = None
+            bonferroni_p_value = None
         # analysis_category gets stored as the key and the first entry 
         # in the value to faciliate sorting the values and writing to 
         # file
         paired_difference_t_test_results[analysis_category] = \
                                        [analysis_category,
-                                        len(differences),
-                                        mean(differences),
-                                        median(differences),
+                                        n,
+                                        mean_differences,
+                                        median_differences,
                                         t,
                                         p_value,
                                         bonferroni_p_value]

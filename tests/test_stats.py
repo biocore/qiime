@@ -1649,7 +1649,7 @@ class PairedDifferenceTests(TestCase):
           {'firmicutes-abundance':
             {'subject1':[0.45,0.55],
              'subject2':[0.11,0.52]},
-           'bacteroidetes-abundace':
+           'bacteroidetes-abundance':
              {'subject1':[0.28,0.21],
               'subject2':[0.11,0.01]}
            }
@@ -1657,7 +1657,7 @@ class PairedDifferenceTests(TestCase):
           {'firmicutes-abundance':
             {'subject1':[0.45,0.55],
              'subject2':[0.11,None]},
-           'bacteroidetes-abundace':
+           'bacteroidetes-abundance':
              {'subject1':[0.28,0.21],
               'subject2':[0.11,0.01]}
            }
@@ -1686,7 +1686,7 @@ class PairedDifferenceTests(TestCase):
         actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
-                                    'bacteroidetes-abundace'],
+                                    'bacteroidetes-abundance'],
                                    ['Pre','Post'],
                                    output_dir=self.test_out,
                                    ymin=0.0,
@@ -1694,12 +1694,12 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]),5)
         # expected t values returned
         self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
-        self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
 
     def test_paired_difference_analyses_biom_output(self):
         """paired_difference_analyses generates correct biom tables
@@ -1707,7 +1707,7 @@ class PairedDifferenceTests(TestCase):
         actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
-                                    'bacteroidetes-abundace'],
+                                    'bacteroidetes-abundance'],
                                    ['Pre','Post'],
                                    output_dir=self.test_out,
                                    ymin=0.0,
@@ -1718,21 +1718,29 @@ class PairedDifferenceTests(TestCase):
         table = parse_biom_table(open(biom_table_fp,'U'))
         self.assertEqualItems(table.SampleIds,['subject1','subject2'])
         self.assertEqualItems(table.ObservationIds,
-         ['firmicutes-abundance','bacteroidetes-abundace'])
-        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
-            [table.getObservationIndex('firmicutes-abundance')],0.1,2)
-        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
-            [table.getObservationIndex('bacteroidetes-abundace')],-0.1,2)
-        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
-            [table.getObservationIndex('firmicutes-abundance')],0.41,2)
-        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
-            [table.getObservationIndex('bacteroidetes-abundace')],-0.07,2)
+         ['firmicutes-abundance','bacteroidetes-abundance'])
+        self.assertFloatEqual(table
+            [table.getObservationIndex('firmicutes-abundance')]
+            [table.getSampleIndex('subject1')],
+            0.1,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('bacteroidetes-abundance')]
+            [table.getSampleIndex('subject1')],
+            -0.1,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('firmicutes-abundance')]
+            [table.getSampleIndex('subject2')],
+            0.41,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('bacteroidetes-abundance')]
+            [table.getSampleIndex('subject2')],
+            -0.07,2)
 
         # missing data results in skipped observation ids
         actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values2,
                                    ['firmicutes-abundance',
-                                    'bacteroidetes-abundace'],
+                                    'bacteroidetes-abundance'],
                                    ['Pre','Post'],
                                    output_dir=self.test_out,
                                    ymin=0.0,
@@ -1743,11 +1751,15 @@ class PairedDifferenceTests(TestCase):
         table = parse_biom_table(open(biom_table_fp,'U'))
         self.assertEqualItems(table.SampleIds,['subject1','subject2'])
         self.assertEqualItems(table.ObservationIds,
-         ['bacteroidetes-abundace'])
-        self.assertFloatEqual(table[table.getSampleIndex('subject1')]
-            [table.getObservationIndex('bacteroidetes-abundace')],-0.1,2)
-        self.assertFloatEqual(table[table.getSampleIndex('subject2')]
-            [table.getObservationIndex('bacteroidetes-abundace')],-0.07,2)
+         ['bacteroidetes-abundance'])
+        self.assertFloatEqual(table
+         [table.getObservationIndex('bacteroidetes-abundance')]
+         [table.getSampleIndex('subject1')],
+         -0.1,2)
+        self.assertFloatEqual(table
+         [table.getObservationIndex('bacteroidetes-abundance')]
+         [table.getSampleIndex('subject2')],
+         -0.07,2)
 
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
@@ -1756,7 +1768,7 @@ class PairedDifferenceTests(TestCase):
         actual = paired_difference_analyses(
                                    self.personal_ids_to_state_values1,
                                    ['firmicutes-abundance',
-                                    'bacteroidetes-abundace'],
+                                    'bacteroidetes-abundance'],
                                    ['Pre','Post'],
                                    output_dir=self.test_out,
                                    ymin=None,
@@ -1764,12 +1776,12 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]),5)
         # expected t values returned
         self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
-        self.assertFloatEqual(actual[1]['bacteroidetes-abundace'][4],-4.500,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
 
     def test_paired_difference_analyses_analysis_cat_subset(self):
         """paired_difference_analyses fns w a subset of analysis categories
@@ -1784,7 +1796,7 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
         self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundace.pdf')))
+        self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]),4)
         # expected t values returned
