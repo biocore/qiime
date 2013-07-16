@@ -30,7 +30,7 @@ use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
         log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median)
-from numpy import argsort, min as np_min, max as np_max
+from numpy import argsort, min as np_min, max as np_max, log10
 from numpy.random import permutation
 from cogent.util.misc import combinate, create_dir
 from cogent.maths.stats.test import t_one_sample
@@ -1777,6 +1777,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     
     biom_table_fp = join(output_dir,'differences.biom')
     biom_sids_fp = join(output_dir,'differences_sids.txt')
+    biom_observation_ids = []
     biom_data = []
     # need a list of pids to build the biom table - 
     # ugly, but get it working first
@@ -1795,25 +1796,26 @@ def paired_difference_analyses(personal_ids_to_state_values,
         # initialize a list to store the distribution of changes 
         # with state change
         differences = []
-        biom_datum = []
+        store_biom_datum = True
         
         for pid in pids:
             data = personal_ids_to_state_metadatum[pid]
             if None in data:
                 # if any of the data points are missing, don't store 
-                # a difference for this individual, and store a 0 
-                # for their difference in biom_table. Might need to 
-                # exclude this category from the final biom table though...
-                biom_datum.append(0)
+                # a difference for this individual, and don't store
+                # the category in the BIOM table
+                store_biom_datum = False
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
-                differences.append(data[1] - data[0])
-                biom_datum.append(data[1] - data[0])
+                difference = data[1] - data[0]
+                differences.append(difference)
                 # and plot the start and stop values as a line
                 axes.plot(x_values,data,"black",linewidth=0.5)
-                # store the differences to add to the biom table
-        biom_data.append(biom_datum)
+                
+        if store_biom_datum:
+            biom_observation_ids.append(analysis_category)
+            biom_data.append(differences)
         
         # run stats for current analysis category
         t_one_sample_results = t_one_sample(differences)
@@ -1846,7 +1848,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     
     biom_table = table_factory(biom_data,
                                pids,
-                               analysis_categories,
+                               biom_observation_ids,
                                constructor=DenseOTUTable)
     biom_table_f = open(biom_table_fp,'w')
     biom_table_f.write(format_biom_table(biom_table))
