@@ -35,9 +35,11 @@ from numpy.random import permutation
 from cogent.util.misc import combinate, create_dir
 from cogent.maths.stats.test import t_one_sample
 
+from biom.table import table_factory, DenseOTUTable
+
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
-from qiime.format import format_p_value_for_num_iters
+from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.util import DistanceMatrix, MetadataMap
 
 # Top-level stats functions.
@@ -1772,28 +1774,46 @@ def paired_difference_analyses(personal_ids_to_state_values,
     paired_difference_t_test_results = {}
     # initiate list of output file paths to return 
     output_fps = [paired_difference_output_fp]
-
+    
+    biom_table_fp = join(output_dir,'differences.biom')
+    biom_sids_fp = join(output_dir,'differences_sids.txt')
+    biom_data = []
+    # need a list of pids to build the biom table - 
+    # ugly, but get it working first
+    pids = []
+    for c in personal_ids_to_state_values.values():
+        pids.extend(c.keys())
+    pids = list(set(pids))
+    
     for category_number, analysis_category in enumerate(analysis_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]
-        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category.replace(' ','-'))
+        analysis_category_fn_label = analysis_category.replace(' ','-')
+        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category_fn_label)
         fig = figure()
         axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         
         # initialize a list to store the distribution of changes 
         # with state change
         differences = []
+        biom_datum = []
         
-        for pid, data in personal_ids_to_state_metadatum.items():
+        for pid in pids:
+            data = personal_ids_to_state_metadatum[pid]
             if None in data:
-                # if any of the data points are missing, skip this 
-                # individual
-                continue
+                # if any of the data points are missing, don't store 
+                # a difference for this individual, and store a 0 
+                # for their difference in biom_table. Might need to 
+                # exclude this category from the final biom table though...
+                biom_datum.append(0)
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
                 differences.append(data[1] - data[0])
+                biom_datum.append(data[1] - data[0])
                 # and plot the start and stop values as a line
                 axes.plot(x_values,data,"black",linewidth=0.5)
+                # store the differences to add to the biom table
+        biom_data.append(biom_datum)
         
         # run stats for current analysis category
         t_one_sample_results = t_one_sample(differences)
@@ -1820,7 +1840,23 @@ def paired_difference_analyses(personal_ids_to_state_values,
         fig.savefig(plot_output_fp)
         output_fps.append(plot_output_fp)
     
-    # sort output by uncorrected p-value and write results
+    # write a biom table based on differences and 
+    # a list of the sample ids that could be converted 
+    # to a mapping file for working with this biom table
+    
+    biom_table = table_factory(biom_data,
+                               pids,
+                               analysis_categories,
+                               constructor=DenseOTUTable)
+    biom_table_f = open(biom_table_fp,'w')
+    biom_table_f.write(format_biom_table(biom_table))
+    biom_table_f.close()
+    biom_sids_f = open(biom_sids_fp,'w')
+    biom_sids_f.write('#SampleID\n')
+    biom_sids_f.write('\n'.join(pids))
+    biom_sids_f.close()
+    
+    # sort stats output by uncorrected p-value and write results
     # to file
     paired_difference_t_test_lines = \
      paired_difference_t_test_results.values()
