@@ -3,7 +3,7 @@
 from cogent.util.unit_test import TestCase, main
 from qiime.parallel.merge_otus import mergetree, mergeorder, \
     initial_nodes_to_merge, initial_has_dependencies, job_complete, \
-    torque_job, local_job, start_job, JobError
+    torque_job, local_job, start_job, JobError, reset_internal_count
 import os
 
 __author__ = "Daniel McDonald"
@@ -17,11 +17,11 @@ __status__ = "Development"
 
 class MergeTests(TestCase):
     def setUp(self):
-        pass
+        reset_internal_count()
     
     def test_mergetree(self):
         """construct a merge subtreetree with various properties set"""
-        exp = "(A,B)A_B;"
+        exp = "(A,B)0;"
         obs = mergetree(['A.biom'],['B.biom'],'foo')
         self.assertEqual(obs.getNewick(escape_name=False), exp)
         
@@ -37,15 +37,15 @@ class MergeTests(TestCase):
         self.assertEqual(obs.Children[1].PollPath, None)
         self.assertEqual(obs.Children[1].FullCommand, None)
 
-        self.assertEqual(obs.Name, 'A_B')
-        self.assertEqual(obs.FilePath, 'foo/A_B.biom')
+        self.assertEqual(obs.Name, '0')
+        self.assertEqual(obs.FilePath, 'foo/0.biom')
         self.assertEqual(obs.Processed, False)
-        self.assertEqual(obs.PollPath, 'foo/A_B.biom.poll')
+        self.assertEqual(obs.PollPath, 'foo/0.biom.poll')
         self.assertEqual(obs.FullCommand, None)
         
     def test_mergeorder(self):
         """recursively build and join all the subtrees"""
-        exp = "((A,B)A_B,(C,(D,E)D_E)C_D_E)A_B_C_D_E;"
+        exp = "((A,B)0,(C,(D,E)1)2)3;"
         obs = mergeorder(['A','B','C','D','E'],'foo')
         self.assertEqual(obs.getNewick(escape_name=False), exp)
         
@@ -97,21 +97,21 @@ class MergeTests(TestCase):
         
     def test_torque_job(self):
         """wrap a torque job"""
-        exp = 'echo "abc; echo $? > xyz" | qsub -k oe -N 123 -q memroute -l walltime=999:00:00 -l pvmem=64gb'
-        obs = torque_job('abc','xyz','123')
+        exp = 'echo "abc; echo $? > xyz" | qsub -k oe -N MOTU -q queue'
+        obs = torque_job('abc','xyz','123','queue')
         self.assertEqual(obs,exp)
         
     def test_start_job(self):
         """start a job"""
-        exp = 'echo "x y -i A.biom,B.biom -o foo/A_B.biom; echo $? > foo/A_B.biom.poll" | qsub -k oe -N A_B -q memroute -l walltime=999:00:00 -l pvmem=64gb'
+        exp = 'echo "x y -i A.biom,B.biom -o foo/0.biom; echo $? > foo/0.biom.poll" | qsub -k oe -N MOTU -q ignored'
         t = mergeorder(['A.biom','B.biom','C','D','E'],'foo')
-        start_job(t.Children[0], 'x','y',torque_job,False)
+        start_job(t.Children[0], 'x','y','ignored',torque_job,False)
         self.assertEqual(t.Children[0].FullCommand, exp)
-        
+
     def test_local_job(self):
         """fire off a local job"""
         exp = "abc; echo $? > xyz"
-        obs = local_job('abc','xyz','notused')
+        obs = local_job('abc','xyz','notused','notused')
         self.assertEqual(obs,exp)
         
 if __name__ == '__main__':
