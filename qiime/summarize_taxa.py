@@ -88,12 +88,14 @@ def _make_collapse_fn(level, md_identifier='taxonomy', md_as_string=False,
                       one_to_many='first'):
     """Returns a collapsing function for 1-1 and 1-M relationships."""
     if one_to_many not in ONE_TO_MANY_TYPES:
-        raise ValueError('Unrecognized method "%s" specified for handling '
-                         'one-to-many relationships.' % one_to_many)
+        raise ValueError('Encountered unrecognized method "%s" for handling '
+                         'one-to-many relationships in metadata.' %
+                         one_to_many)
 
     if md_as_string:
         # Strings will always be processed as one-to-one because they will be
         # split into a single-level list.
+        one_to_many = 'first'
         def process_md(v):
             return v.split(delimiter)
     else:
@@ -129,8 +131,9 @@ def _make_collapse_fn(level, md_identifier='taxonomy', md_as_string=False,
 
             yield md_item, md_item
 
-            # If we only have one list of strings, we're done - bail.
-            if is_single_level:
+            # If we only have one list of strings or we were told to only use
+            # the first metadata item, we're done.
+            if is_single_level or one_to_many == 'first':
                 break
 
     return collapse

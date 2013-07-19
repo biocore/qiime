@@ -15,13 +15,14 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.summarize_taxa import (make_summary, add_summary_mapping)
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
 from biom.exception import TableException
 from biom.table import SparseOTUTable, SparseTaxonTable, table_factory
 from biom.parse import parse_biom_table
+from qiime.summarize_taxa import (_make_collapse_fn, make_summary,
+                                  add_summary_mapping)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -46,9 +47,16 @@ class TopLevelTests(TestCase):
                       {"taxonomy": ["Root", "Bacteria"]}]
 
         md_as_string = [{"taxonomy": "Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae"},
-                      {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
-                      {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
-                      {"taxonomy": "Root;Bacteria"}]
+                        {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
+                        {"taxonomy": "Root;Bacteria;Firmicutes;\"Clostridia\""},
+                        {"taxonomy": "Root;Bacteria"}]
+
+        # Mixed 1-1 and 1-M metadata, in various supported formats.
+        one_to_many_md = [{"taxonomy": [['a', 'b', 'c'],
+                                        ['a', 'b']]},
+                          {"taxonomy": ['a', 'b', 'c']},
+                          {"taxonomy": [['a', 'bb', 'c', 'd']]},
+                          {"taxonomy": [['a', 'bb'], ['b']]}]
 
         self.otu_table = table_factory(otu_table_vals, sample_ids, obs_ids,
                                        None, md_as_list)
@@ -61,6 +69,10 @@ class TopLevelTests(TestCase):
 
         self.minimal_table = table_factory(otu_table_vals, sample_ids, obs_ids,
                                            None, None)
+
+        self.otu_table_one_to_many = table_factory(otu_table_vals, sample_ids,
+                                                   obs_ids, None,
+                                                   one_to_many_md)
 
         self.mapping="""#SampleID\tBarcodeSequence\tTreatment\tDescription
 #Test mapping file
@@ -196,6 +208,33 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
             make_summary(self.otu_table_rel, 3, upper_percentage=0.2,
                          lower_percentage=0.2)
 
+    def test_make_summary_one_to_many(self):
+        """make_summary works with one-to-many obs-md relationship"""
+        # one_to_many='first'
+        exp_data = array([[2.0, 2.0, 2.0, 5.0],
+                          [1.0, 2.0, 1.0, 0.0],
+                          [0.0, 1.0, 1.0, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['a;b;c', 'a;bb;Other', 'a;bb;c'])
+
+        obs = make_summary(self.otu_table_one_to_many, 3, one_to_many='first')
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
+
+        # one_to_many='add'
+        exp_data = array([[1.0, 0.0, 2.0, 4.0],
+                          [2.0, 2.0, 2.0, 5.0],
+                          [1.0, 2.0, 1.0, 0.0],
+                          [0.0, 1.0, 1.0, 0.0],
+                          [1.0, 2.0, 1.0, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['a;b;Other', 'a;b;c', 'a;bb;Other', 'a;bb;c',
+                             'b;Other;Other'])
+
+        obs = make_summary(self.otu_table_one_to_many, 3, one_to_many='add')
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
+
     def test_add_summary_mapping(self):
         """add_summary_mapping works"""
         mapping, header, comments = parse_mapping_file(self.mapping)
@@ -208,6 +247,11 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
                                    's2':[0,3,2],
                                    's3':[2,1,1],
                                    's4':[4,1,0]})
+
+    def test_make_collapse_fn_invalid_input(self):
+        """_make_collapse_fn correctly handles invalid input"""
+        with self.assertRaises(ValueError):
+            _make_collapse_fn(1, one_to_many='foo')
 
 
 #run unit tests if run from command-line
