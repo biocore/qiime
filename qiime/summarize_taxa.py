@@ -44,7 +44,7 @@ def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
 
     ts_table = otu_table.collapseObservationsByMetadata(collapse_fn,
             norm=False, min_group_size=1, include_collapsed_metadata=False,
-            constructor=constructor, one_to_many=True)
+            constructor=constructor, one_to_many=True, strict=True)
 
     filter_fn = _make_abundance_filter_fn(ts_table, upper_percentage,
                                           lower_percentage)
