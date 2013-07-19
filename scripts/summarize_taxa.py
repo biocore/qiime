@@ -16,12 +16,13 @@ __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option,get_options_lookup,create_dir
-from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_mapping_file
 from qiime.format import write_add_taxa_summary_mapping, format_biom_table
 from os.path import split,splitext,join
 from biom.parse import parse_biom_table
+from qiime.summarize_taxa import (make_summary, add_summary_mapping,
+                                  ONE_TO_MANY_TYPES)
 
 options_lookup = get_options_lookup()
 
@@ -62,10 +63,36 @@ script_info['optional_options'] = [\
     make_option('--md_identifier',default='taxonomy', type='string',
              help='the relevant observation metadata key [default: %default]'),
     make_option('--md_as_string',default=False,action='store_true',
-             help='metadata is included as string [default: metadata is included as list]'),
+             help='metadata is included as a string. The string will be split '
+             'on the delimiter and used as one-to-one metadata (see '
+             '-M/--one_to_many for more details) [default: metadata is '
+             'included as a list of strings or a list of list of strings]'),
     make_option('-d','--delimiter',action='store',type='string',
         dest='delimiter',default=';', 
         help='Delimiter separating taxonomy levels. [default: %default]'),
+    make_option('-M', '--one_to_many', type='choice',
+        choices=ONE_TO_MANY_TYPES, default='first',
+        help='the method of handling one-to-many relationships with metadata. '
+        'If an observation (e.g., OTU) has more than one piece of metadata '
+        'associated with it (identified via --md_identifier; e.g., multiple '
+        'taxonomy assignments or gene pathways), this is a one-to-many '
+        'relationship between the observation and its metadata. If "first" is '
+        'supplied via this option, only the first piece of metadata (e.g., '
+        'the first gene pathway) is used to summarize/collapse the '
+        'observations, and all other pieces of metadata are ignored (this is '
+        'the default behavior). If "add" is supplied via this option, the '
+        'resulting summarized table will have the observation abundances '
+        'counted for each of the pieces of metadata. This has the side effect '
+        'of increasing the total count of observations in the table. '
+        'One-to-many relationships will exist if the metadata is stored as a '
+        'list of list of strings, where each inner list of strings is a '
+        'single piece of metadata (e.g. taxonomy assignment or gene pathway). '
+        'If the metadata is instead a list of strings, or the nested list '
+        'only contains a single piece of metadata, this indicates a '
+        'one-to-one relationship. Note that one-to-many and one-to-one '
+        'relationships may both exist within a single BIOM table, as some '
+        'observations may only be associated with a single piece of metadata '
+        'while others may be associated with many [default: %default]'),
     make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
         help='If present, the absolute abundance of the lineage in ' +\
@@ -183,11 +210,8 @@ def main():
                                 map_basename+'_L%s.txt' % (level))
 
             summary, tax_order = add_summary_mapping(otu_table, 
-                                                     mapping,
-                                                     int(level),
-                                                     md_as_string,
-                                                     md_identifier,
-                                                     delimiter=delimiter)
+                    mapping, int(level), md_as_string, md_identifier,
+                    delimiter=delimiter, one_to_many=opts.one_to_many)
 
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
                                            header,output_fname)
@@ -202,7 +226,8 @@ def main():
                                     lower_percentage,
                                     md_as_string,
                                     md_identifier,
-                                    delimiter=delimiter)
+                                    delimiter=delimiter,
+                                    one_to_many=opts.one_to_many)
 
             # Compute relative abundance after summarizing since we need to
             # perform the filtering based on absolute abundance of the taxa.
