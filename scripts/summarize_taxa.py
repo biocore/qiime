@@ -85,15 +85,20 @@ script_info['optional_options'] = [\
         'resulting summarized table will have the observation abundances '
         'counted for each of the pieces of metadata. This has the side effect '
         'of increasing the total count of observations in the table. '
-        'One-to-many relationships will exist if the metadata is stored as a '
-        'list of list of strings, where each inner list of strings is a '
-        'single piece of metadata (e.g. taxonomy assignment or gene pathway). '
-        'If the metadata is instead a list of strings, or the nested list '
-        'only contains a single piece of metadata, this indicates a '
-        'one-to-one relationship. Note that one-to-many and one-to-one '
+        'If "divide" is supplied via this option, the observation abundances '
+        'are divided evenly between each of the pieces of metadata. The total '
+        'count of observations in the table will not be increased when this '
+        'mode is used. One-to-many relationships will exist if the metadata '
+        'is stored as a list of list of strings, where each inner list of '
+        'strings is a single piece of metadata (e.g. taxonomy assignment or '
+        'gene pathway). If the metadata is instead a list of strings, or the '
+        'nested list only contains a single piece of metadata, this indicates '
+        'a one-to-one relationship. Note that one-to-many and one-to-one '
         'relationships may both exist within a single BIOM table, as some '
         'observations may only be associated with a single piece of metadata '
-        'while others may be associated with many [default: %default]'),
+        'while others may be associated with many. Therefore, this option '
+        'only specifies how to handle one-to-many relationships and does not '
+        'affect how one-to-one relationships are handled [default: %default]'),
     make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
         help='If present, the absolute abundance of the lineage in ' +\
