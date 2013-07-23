@@ -32,16 +32,20 @@ def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
     there is a special case where you may end up with a summarized BIOM table
     that is neither in relative or absolute abundances. This can happen if you
     supply a relative abundance table and one-to-many relationships exist in
-    the metadata, and you specify one_to_many='add'. With this type of
+    the metadata, and you specify ``one_to_many='add'``. With this type of
     one-to-many relationship handling, the counts in the table may increase, so
     the resulting summarized table will need to have its relative abundances
-    recalculated (which will happen by default with absolute_abudance=False).
-    Thus, this problem only exists if you specify absolute_abundance=True.
+    recalculated (which will happen by default with
+    ``absolute_abudance=False``). Thus, this problem only exists if you specify
+    ``absolute_abundance=True``.
 
     WARNING: Specifying ``upper_percentage`` and ``lower_percentage`` may
     change what summarized taxa are filtered out depending on whether
     ``otu_table`` has absolute or relative abundances. In most cases, users
     will likely want to supply ``otu_table`` in absolute abundances.
+
+    ``one_to_many='divide'`` and ``absolute_abundance=True`` are not supported
+    because counts will not always evenly divide.
     """
     if otu_table.ObservationMetadata is None:
         raise ValueError("BIOM table does not contain any observation "
@@ -50,10 +54,21 @@ def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
 
     collapse_fn = _make_collapse_fn(level, md_identifier, md_as_string,
                                     delimiter=delimiter,
-                                    one_to_many=one_to_many)
+                                    one_to_many=one_to_many,
+                                    absolute_abundance=absolute_abundance)
+
+    if one_to_many in ['add', 'divide']:
+        one_to_many_mode = one_to_many
+    else:
+        # If we're not adding or dividing, it doesn't matter which mode we
+        # pick, so we'll choose to add since it should have slightly better
+        # performance than divide mode.
+        one_to_many_mode = 'add'
+
     ts_table = otu_table.collapseObservationsByMetadata(collapse_fn,
             norm=False, min_group_size=1, include_collapsed_metadata=False,
-            constructor=constructor, one_to_many=True, strict=True)
+            constructor=constructor, one_to_many=True,
+            one_to_many_mode=one_to_many_mode, strict=True)
 
     filter_fn = _make_abundance_filter_fn(ts_table, upper_percentage,
                                           lower_percentage)
@@ -100,7 +115,7 @@ def add_summary_mapping(otu_table,
 # (http://picrust.github.io/picrust/) and modified.
 def _make_collapse_fn(level, md_identifier='taxonomy', md_as_string=False,
                       missing_name='Other', delimiter=';',
-                      one_to_many='first'):
+                      one_to_many='first', absolute_abundance=False):
     """Returns a collapsing function for 1-1 and 1-M relationships."""
     if one_to_many not in ONE_TO_MANY_TYPES:
         raise ValueError('Encountered unrecognized method "%s" for handling '
@@ -150,6 +165,16 @@ def _make_collapse_fn(level, md_identifier='taxonomy', md_as_string=False,
             # the first metadata item, we're done.
             if is_single_level or one_to_many == 'first':
                 break
+            elif one_to_many == 'divide' and absolute_abundance:
+                raise ValueError("Encountered a one-to-many relationship "
+                                 "between an observation (e.g., OTU) and its "
+                                 "metadata. The one-to-many mode '%s' cannot "
+                                 "be used when absolute abundance is "
+                                 "specified as the output type because "
+                                 "observation counts will not always divide "
+                                 "evenly between the multiple metadata "
+                                 "values. The output type must be in relative "
+                                 "abundances." % one_to_many)
 
     return collapse
 

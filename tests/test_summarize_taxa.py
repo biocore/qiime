@@ -52,8 +52,7 @@ class TopLevelTests(TestCase):
                         {"taxonomy": "Root;Bacteria"}]
 
         # Mixed 1-1 and 1-M metadata, in various supported formats.
-        one_to_many_md = [{"taxonomy": [['a', 'b', 'c'],
-                                        ['a', 'b']]},
+        one_to_many_md = [{"taxonomy": [['a', 'b', 'c'], ['a', 'b']]},
                           {"taxonomy": ['a', 'b', 'c']},
                           {"taxonomy": [['a', 'bb', 'c', 'd']]},
                           {"taxonomy": [['a', 'bb'], ['b']]}]
@@ -147,6 +146,11 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         # Wrong metadata key.
         with self.assertRaises(KeyError):
             make_summary(self.otu_table, 2, md_identifier='foo')
+
+        # one_to_many='divide' and absolute_abundance=True
+        with self.assertRaises(ValueError):
+            obs = make_summary(self.otu_table_one_to_many, 3,
+                               one_to_many='divide', absolute_abundance=True)
 
     def test_make_summary_relative_abundances(self):
         """make_summary works with relative abundances"""
@@ -247,6 +251,34 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         obs = make_summary(self.otu_table_one_to_many, 3,
                            absolute_abundance=True, one_to_many='add')
         self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
+
+        # one_to_many='divide'
+        exp_data = array([[1/6, 0.0, 0.25, 0.4],
+                          [0.5, 0.4, 0.25, 0.6],
+                          [1/6, 0.2, 0.125, 0.0],
+                          [0.0, 0.2, 0.25, 0.0],
+                          [1/6, 0.2, 0.125, 0.0]])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['a;b;Other', 'a;b;c', 'a;bb;Other', 'a;bb;c',
+                             'b;Other;Other'])
+
+        # Using absolute abundance input table.
+        obs = make_summary(self.otu_table_one_to_many, 3, one_to_many='divide')
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
+
+        # Using relative abundance input table. Should get same result as
+        # above.
+        obs = make_summary(
+                self.otu_table_one_to_many.normObservationBySample(), 3,
+                one_to_many='divide')
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
+        self.assertEqual(obs.ObservationIds, exp.ObservationIds)
+        self.assertFloatEqual(obs.sampleData('s1'), exp.sampleData('s1'))
+        self.assertFloatEqual(obs.sampleData('s2'), exp.sampleData('s2'))
+        self.assertFloatEqual(obs.sampleData('s3'), exp.sampleData('s3'))
+        self.assertFloatEqual(obs.sampleData('s4'), exp.sampleData('s4'))
         self.assertEqual(type(obs), SparseTaxonTable)
 
     def test_add_summary_mapping(self):
