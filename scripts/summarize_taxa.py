@@ -33,7 +33,7 @@ upper_percentage_default = 0.0
 
 script_info={}
 script_info['brief_description']="""Summarize taxa and store results in a new table or appended to an existing mapping file."""
-script_info['script_description']="""The summarize_taxa.py script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.
+script_info['script_description']="""The summarize_taxa.py script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. This OTU table should contain absolute abundances (not relative abundances). The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.
 
 By default, taxa summary tables will be output in both classic (tab-separated) and BIOM formats. The BIOM-formatted taxa summary tables can be used as input to other QIIME scripts that accept BIOM files.
 """
@@ -48,7 +48,8 @@ script_info['output_description']="""There are two possible output formats depen
 
 script_info['required_options']= [\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',
-        help='Input OTU table filepath [REQUIRED]',
+        help='Input OTU table filepath. Table should contain absolute '
+        'abundances (i.e. raw counts), not relative abundances [REQUIRED]',
         type='existing_filepath'),
 ]
 script_info['optional_options'] = [\
@@ -146,7 +147,6 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    absolute_abundance = opts.absolute_abundance
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
     otu_table_fp = opts.otu_table_fp
@@ -181,11 +181,6 @@ def main():
         # use the input Mapping file for producing the output filenames
         map_dir_path,map_fname=split(mapping_fp)
         map_basename,map_fname_ext=splitext(map_fname)
-
-        # Compute relative abundance here since we don't need to worry about
-        # filtering based on absolute abundance (not supported for this mode).
-        if not absolute_abundance:
-            otu_table = otu_table.normObservationBySample()
     else:
         if suppress_classic_table_output and suppress_biom_table_output:
             option_parser.error("Both classic and BIOM output formats were "
@@ -211,7 +206,8 @@ def main():
 
             summary, tax_order = add_summary_mapping(otu_table, 
                     mapping, int(level), md_as_string, md_identifier,
-                    delimiter=delimiter, one_to_many=opts.one_to_many)
+                    delimiter=delimiter, one_to_many=opts.one_to_many,
+                    absolute_abundance=opts.absolute_abundance)
 
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
                                            header,output_fname)
@@ -227,12 +223,8 @@ def main():
                                     md_as_string,
                                     md_identifier,
                                     delimiter=delimiter,
-                                    one_to_many=opts.one_to_many)
-
-            # Compute relative abundance after summarizing since we need to
-            # perform the filtering based on absolute abundance of the taxa.
-            if not absolute_abundance:
-                ts_table = ts_table.normObservationBySample()
+                                    one_to_many=opts.one_to_many,
+                                    absolute_abundance=opts.absolute_abundance)
 
             if opts.transposed_output:
                 ts_table = ts_table.transpose()

@@ -18,15 +18,25 @@ from collections import defaultdict
 from string import strip
 from biom.table import SparseTaxonTable
 
-ONE_TO_MANY_TYPES = ['first', 'add']
+ONE_TO_MANY_TYPES = ['first', 'add', 'divide']
 
 def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
                  md_as_string=False, md_identifier='taxonomy', delimiter=';',
-                 one_to_many='first', constructor=SparseTaxonTable):
+                 one_to_many='first', absolute_abundance=False,
+                 constructor=SparseTaxonTable):
     """Returns a taxa summary table in BIOM format.
 
-    ``otu_table`` should be a BIOM table with either absolute or relative
-    abundances.
+    ``otu_table`` should be a BIOM table with absolute or relative abundances.
+
+    WARNING: this function will work with relative abundance BIOM tables, but
+    there is a special case where you may end up with a summarized BIOM table
+    that is neither in relative or absolute abundances. This can happen if you
+    supply a relative abundance table and one-to-many relationships exist in
+    the metadata, and you specify one_to_many='add'. With this type of
+    one-to-many relationship handling, the counts in the table may increase, so
+    the resulting summarized table will need to have its relative abundances
+    recalculated (which will happen by default with absolute_abudance=False).
+    Thus, this problem only exists if you specify absolute_abundance=True.
 
     WARNING: Specifying ``upper_percentage`` and ``lower_percentage`` may
     change what summarized taxa are filtered out depending on whether
@@ -41,16 +51,19 @@ def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
     collapse_fn = _make_collapse_fn(level, md_identifier, md_as_string,
                                     delimiter=delimiter,
                                     one_to_many=one_to_many)
-
     ts_table = otu_table.collapseObservationsByMetadata(collapse_fn,
             norm=False, min_group_size=1, include_collapsed_metadata=False,
             constructor=constructor, one_to_many=True, strict=True)
 
     filter_fn = _make_abundance_filter_fn(ts_table, upper_percentage,
                                           lower_percentage)
-    filtered_table = ts_table.filterObservations(filter_fn)
+    ts_table = ts_table.filterObservations(filter_fn)
+    ts_table = ts_table.sortByObservationId(sorted)
 
-    return filtered_table.sortByObservationId(sorted)
+    if not absolute_abundance:
+        ts_table = ts_table.normObservationBySample()
+
+    return ts_table
 
 def add_summary_mapping(otu_table,
                         mapping, 
@@ -58,7 +71,8 @@ def add_summary_mapping(otu_table,
                         md_as_string=False,
                         md_identifier='taxonomy',
                         delimiter=';',
-                        one_to_many='first'):
+                        one_to_many='first',
+                        absolute_abundance=False):
     """Returns sample summary of sample counts by taxon
     
     Summary is keyed by sample_id, valued by otu counts for each taxon
@@ -66,7 +80,8 @@ def add_summary_mapping(otu_table,
     """
     ts_table = make_summary(otu_table, level, md_as_string=md_as_string,
                             md_identifier=md_identifier, delimiter=delimiter,
-                            one_to_many=one_to_many)
+                            one_to_many=one_to_many,
+                            absolute_abundance=absolute_abundance)
 
     summary = defaultdict(list)
     for row in mapping:

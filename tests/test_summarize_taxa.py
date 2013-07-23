@@ -87,7 +87,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         exp_data = array([3.0, 5.0, 4.0, 5.0])
         exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
                             ['Root;Bacteria'])
-        obs = make_summary(self.otu_table, 2)
+        obs = make_summary(self.otu_table, 2, absolute_abundance=True)
         self.assertEqual(obs, exp)
         self.assertEqual(type(obs), SparseTaxonTable)
 
@@ -99,7 +99,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
                             ['Root;Bacteria;Actinobacteria',
                              'Root;Bacteria;Firmicutes',
                              'Root;Bacteria;Other'])
-        obs = make_summary(self.otu_table, 3)
+        obs = make_summary(self.otu_table, 3, absolute_abundance=True)
         self.assertEqual(obs, exp)
 
         # level 4
@@ -107,11 +107,12 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
                             ['Root;Bacteria;Actinobacteria;Actinobacteria',
                              'Root;Bacteria;Firmicutes;"Clostridia"',
                              'Root;Bacteria;Other;Other'])
-        obs = make_summary(self.otu_table, 4)
+        obs = make_summary(self.otu_table, 4, absolute_abundance=True)
         self.assertEqual(obs, exp)
 
         # md_as_string=True
-        obs = make_summary(self.otu_table_md_as_string, 4, md_as_string=True)
+        obs = make_summary(self.otu_table_md_as_string, 4,
+                           absolute_abundance=True, md_as_string=True)
         self.assertEqual(obs, exp)
 
         # custom delimiter
@@ -119,14 +120,23 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
                             ['Root>Bacteria>Actinobacteria>Actinobacteria',
                              'Root>Bacteria>Firmicutes>"Clostridia"',
                              'Root>Bacteria>Other>Other'])
-        obs = make_summary(self.otu_table, 4, delimiter='>')
+        obs = make_summary(self.otu_table, 4, absolute_abundance=True,
+                           delimiter='>')
         self.assertEqual(obs, exp)
 
         # custom constructor
-        obs = make_summary(self.otu_table, 4, delimiter='>',
-                           constructor=SparseOTUTable)
+        obs = make_summary(self.otu_table, 4, absolute_abundance=True,
+                           delimiter='>', constructor=SparseOTUTable)
         self.assertEqual(obs, exp)
         self.assertEqual(type(obs), SparseOTUTable)
+
+        # absolute_abudance=False
+        exp_data = array([1.0, 1.0, 1.0, 1.0])
+        exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
+                            ['Root;Bacteria'])
+        obs = make_summary(self.otu_table, 2, absolute_abundance=False)
+        self.assertEqual(obs, exp)
+        self.assertEqual(type(obs), SparseTaxonTable)
 
     def test_make_summary_invalid_input(self):
         """make_summary handles invalid input"""
@@ -165,7 +175,8 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
                             ['Root;Bacteria;Other'])
 
-        obs = make_summary(self.otu_table_rel, 3, lower_percentage=0.3)
+        obs = make_summary(self.otu_table_rel, 3, absolute_abundance=True,
+                           lower_percentage=0.3)
 
         self.assertEqual(obs.SampleIds, exp.SampleIds)
         self.assertEqual(obs.ObservationIds, exp.ObservationIds)
@@ -179,7 +190,8 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
                             ['Root;Bacteria;Actinobacteria'])
 
-        obs = make_summary(self.otu_table_rel, 3, upper_percentage=0.4)
+        obs = make_summary(self.otu_table_rel, 3, absolute_abundance=True,
+                           upper_percentage=0.4)
 
         self.assertEqual(obs.SampleIds, exp.SampleIds)
         self.assertEqual(obs.ObservationIds, exp.ObservationIds)
@@ -193,8 +205,8 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
                             ['Root;Bacteria;Firmicutes'])
 
-        obs = make_summary(self.otu_table_rel, 3, upper_percentage=0.3,
-                           lower_percentage=0.4)
+        obs = make_summary(self.otu_table_rel, 3, absolute_abundance=True,
+                           upper_percentage=0.3, lower_percentage=0.4)
 
         self.assertEqual(obs.SampleIds, exp.SampleIds)
         self.assertEqual(obs.ObservationIds, exp.ObservationIds)
@@ -217,7 +229,8 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         exp = table_factory(exp_data, ['s1', 's2', 's3', 's4'],
                             ['a;b;c', 'a;bb;Other', 'a;bb;c'])
 
-        obs = make_summary(self.otu_table_one_to_many, 3, one_to_many='first')
+        obs = make_summary(self.otu_table_one_to_many, 3,
+                           absolute_abundance=True, one_to_many='first')
         self.assertEqual(obs, exp)
         self.assertEqual(type(obs), SparseTaxonTable)
 
@@ -231,7 +244,8 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
                             ['a;b;Other', 'a;b;c', 'a;bb;Other', 'a;bb;c',
                              'b;Other;Other'])
 
-        obs = make_summary(self.otu_table_one_to_many, 3, one_to_many='add')
+        obs = make_summary(self.otu_table_one_to_many, 3,
+                           absolute_abundance=True, one_to_many='add')
         self.assertEqual(obs, exp)
         self.assertEqual(type(obs), SparseTaxonTable)
 
@@ -239,6 +253,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         """add_summary_mapping works"""
         mapping, header, comments = parse_mapping_file(self.mapping)
         summary, taxon_order = add_summary_mapping(self.otu_table, mapping, 3,
+                                                   absolute_abundance=True,
                                                    delimiter='FOO')
         self.assertEqual(taxon_order, ('RootFOOBacteriaFOOActinobacteria',
                                        'RootFOOBacteriaFOOFirmicutes',
