@@ -6,7 +6,8 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran"]
+__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -32,7 +33,10 @@ options_lookup = get_options_lookup()
 #make_otu_heatmap_html.py
 script_info={}
 script_info['brief_description']="""Make heatmap of OTU table"""
-script_info['script_description']="""Create an interactive OTU heatmap from an OTU table. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap."""
+script_info['script_description']="""Create an interactive OTU heatmap from an OTU table. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap.
+
+Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy, pathways) associated with its observations (e.g., OTUs), this represents a one-to-many relationship between the observation and its metadata, which is not currently supported by this script. Only the first metadata entry will be used and the remaining metadata entries will be ignored. For example, if an observation in the BIOM table has more than one taxonomy assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy assignment will be used by this script. Support for one-to-many relationships is a new addition to QIIME and while support is currently very limited, these types of relationships will be better incorporated in future versions of the software.
+"""
 script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Generate an OTU heatmap""","""By using the default values ("-n 5), you can then use the code as follows:""","""%prog -i otu_table.biom -o heatmap/"""))
