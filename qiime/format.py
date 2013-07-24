@@ -19,7 +19,8 @@ from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
-from qiime.util import get_qiime_library_version, load_qiime_config
+from qiime.util import (get_first_metadata_entry, get_qiime_library_version,
+                        load_qiime_config)
 from qiime.colors import data_color_hsv
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
@@ -788,7 +789,14 @@ def format_te_prefs(prefs_dict):
 
 def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines, 
                           prefs_dict):
-    """ Format the tep file for TopiaryExplorer """
+    """ Format the tep file for TopiaryExplorer
+    
+    If the taxonomy metadata in ``otu_table_data`` is a list of lists of
+    strings (instead of a list of strings denoting taxonomic level), only the
+    first list of strings will be used to represent the metadata
+    (e.g., taxonomy) for the observation. The other entries in the list will be
+    ignored.
+    """
     
     # write tree file lines
     lines = ['>>tre\n']
@@ -800,7 +808,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
         for i in range(len(otu_table_data.ObservationIds)):
             new_string = otu_table_data.ObservationIds[i] + '\t'
-            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
+            for m in get_first_metadata_entry(
+                    otu_table_data.ObservationMetadata[i]['taxonomy']):
                 new_string += m + ';'
             lines += [new_string]
             lines += '\n'
@@ -811,8 +820,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
         lines += [str(otu_table_data.delimitedSelf())]
     elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
         lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy", 
-                                       header_value="Consensus Lineage",
-                                       metadata_formatter=lambda x: ';'.join(x)))]
+                header_value="Consensus Lineage", metadata_formatter=lambda x:
+                        ';'.join(get_first_metadata_entry(x))))]
     
     # write mapping file lines
     lines += ['\n>>sam\n']
