@@ -2083,26 +2083,3 @@ def add_filename_suffix(filepath, suffix):
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
 
-def get_first_metadata_entry(md):
-    """Return the first metadata entry in a (possibly) nested list of metadata.
-
-    ``md`` is expected to be a piece of metadata associated with a sample or
-    observation in a BIOM table. If it is a list of strings, ``md`` is returned
-    unchanged. If it is a list of lists of strings, only the first list of
-    strings is returned.
-
-    For example, if ['Bacteria', 'Firmicutes'] is supplied,
-    ['Bacteria', 'Firmicutes'] is returned.
-
-    If [['Bacteria', 'Firmicutes'], ['Bacteria', 'Acidobacteria']] is supplied,
-    ['Bacteria', 'Firmicutes'] is returned because it is the first entry.
-    """
-    if isinstance(md, basestring):
-        raise TypeError("Encountered metadata stored as a string. Metadata is "
-                        "currently only supported as a list of strings or a "
-                        "list of lists of strings.")
-    for entry in md:
-        if isinstance(entry, basestring):
-            return md
-        else:
-            return md[0]

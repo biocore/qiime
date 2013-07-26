@@ -2,7 +2,7 @@
 #make_otu_table: makes sample x OTU table
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight", "Justin Kuczynski", "Jai Ram Rideout"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -49,16 +49,9 @@ def make_otu_table(otu_map_f,
         otu_metadata = []
         for o in otu_ids:
             try:
-                md = otu_to_taxonomy[o]
+                otu_metadata.append({'taxonomy':otu_to_taxonomy[o].split(';')})
             except KeyError:
-                md = None
-
-            if md is None:
-                otu_metadata.append({'taxonomy': ["None"]})
-            elif isinstance(md, basestring):
-                otu_metadata.append({'taxonomy': md.split(';')})
-            else:
-                otu_metadata.append({'taxonomy': [e.split(';') for e in md]})
+                otu_metadata.append({'taxonomy':["None"]})
     else: 
         otu_metadata = None
     

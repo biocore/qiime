@@ -381,7 +381,7 @@ def parse_rarefaction_fname(name_string):
     base_name = "_".join(root_list)
     return base_name, seqs_per_sam, iters, ext
 
-def parse_taxonomy(infile, parse_all_fields=False):
+def parse_taxonomy(infile):
     """parse a taxonomy file.
 
 
@@ -397,15 +397,9 @@ def parse_taxonomy(infile, parse_all_fields=False):
       sequence. these lines might look like:
       3 SAM1_32 \t Root;Bacteria;Fi... \t 1e-42 \t A1237756
 
-    If ``parse_all_fields=False``, only the first field following the sequence
-    identifier will be parsed and retained as a string.
-
-    If ``parse_all_fields=True``, all fields will be parsed and retained as a
-    list of strings. This is useful, for example, if there are multiple
-    taxonomy assignments for a single sequence.
-
-    Returns: dict of otu id to taxonomy name (string) or a list of strings if
-    ``parse_all_fields=True``.
+    Returns: dict of otu id to taxonomy name.
+    ignores other parts of the otu file, such as confidence and seq id (otu id
+    only)
     """
 
     res = {}
@@ -415,11 +409,7 @@ def parse_taxonomy(infile, parse_all_fields=False):
         line = line.rstrip("\n")
         fields = line.split('\t')
         otu = fields[0].split(' ')[0]
-
-        if parse_all_fields:
-            res[otu] = fields[1:]
-        else:
-            res[otu] = fields[1]
+        res[otu] = fields[1]
 
     return res
 parse_observation_metadata = parse_taxonomy

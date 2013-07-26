@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -17,17 +17,14 @@ from numpy import linspace
 from cogent.util.misc import create_dir
 from biom.parse import parse_biom_table
 from biom.exception import TableException
-from qiime.util import (get_first_metadata_entry,
-                        parse_command_line_parameters, make_option)
+from qiime.util import parse_command_line_parameters, make_option
 from qiime.format import format_biom_table
 from qiime.core_microbiome import filter_table_to_core
 from qiime.filter import sample_ids_from_metadata_description
 
 script_info = {}
 script_info['brief_description'] = "Identify the core microbiome."
-script_info['script_description'] = """
-Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy, pathways) associated with its observations (e.g., OTUs), this represents a one-to-many relationship between the observation and its metadata, which is not currently supported by this script. Only the first metadata entry will be listed in the output and the remaining metadata entries will be ignored. For example, if an observation in the BIOM table has more than one taxonomy assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy assignment will be listed alongside the OTU in the generated output. Support for one-to-many relationships is a new addition to QIIME and while support is currently very limited, these types of relationships will be better incorporated in future versions of the software.
-"""
+script_info['script_description'] = ""
 script_info['script_usage'] = []
 script_info['script_usage'].append(("","Identify the core OTUs in otu_table.biom, defined as the OTUs that are present in at least 50% of the samples. Write the list of core OTUs to a text file, and a new BIOM file containing only the core OTUs.","%prog -i otu_table.biom -o otu_table_core"))
 
@@ -35,7 +32,7 @@ script_info['script_usage'].append(("","Identify the core OTUs in otu_table.biom
 
 
 script_info['output_description']= ""
-script_info['required_options'] = [
+script_info['required_options'] = [\
  make_option('-i','--input_fp',type="existing_filepath",help='the input otu table in BIOM format'),
  make_option('-o','--output_dir',type="new_dirpath",help='directory to store output data'),
 ]
@@ -47,10 +44,7 @@ script_info['optional_options'] = [
  make_option('--num_fraction_for_core_steps',type=int,
              help='the number of evenly sizes steps to take between min_fraction_for_core and max_fraction_for_core [default: %default]',default=11),
  make_option('--otu_md',default='taxonomy',
-             help='the otu metadata category to write to the output file. '
-             'Currently only one-to-one relationships are supported; please '
-             'see the full script description for details '
-             '[default: %default]'),
+             help='the otu metadata category to write to the output file [defualt: %default]'),\
  make_option('--mapping_fp',type='existing_filepath',
   help='mapping file path (for use with --valid_states) [default: %default]'),
  make_option('--valid_states',
@@ -126,8 +120,7 @@ def main():
         # write the otu id and corresponding metadata for all core otus
         otu_count = 0
         for value, id_, md in core_table.iterObservations():
-            output_f.write('%s\t%s\n' % (id_,
-                                         get_first_metadata_entry(md[otu_md])))
+            output_f.write('%s\t%s\n' % (id_,md[otu_md]))
             otu_count += 1
         output_f.close()
     
