@@ -18,7 +18,7 @@ from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
-from qiime.util import MetadataMap
+from qiime.util import get_first_metadata_entry, MetadataMap
 from biom.parse import parse_biom_table
 
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
@@ -40,6 +40,12 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
          observation metadata
          
         Note: string matches are case insensitive.
+
+        Note: if the metadata referenced by ``metadata_field`` is a list of
+        lists of strings (instead of a list of strings as described above),
+        only the first list of strings (e.g., the first taxonomy assignment)
+        will be used during the filtering. The other entries in the list will
+        be ignored.
     """
     # define a positive screening function - if the user doesn't pass
     # positive_taxa, all OTUs will pass this filter 
@@ -76,7 +82,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
     def result(v,oid,md):
         positive_hit = False
         negative_hit = False
-        for e in md[metadata_field]:
+        for e in get_first_metadata_entry(md[metadata_field]):
             if positive_screen(e.strip().lower()):
                 # Note that we don't want to just do
                 # positive_hit = positive_screen(e.strip())

@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Julia Goodrich"] #remember to add yourself
+__credits__ = ["Julia Goodrich", "Jai Ram Rideout"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jose Clemente"
@@ -30,6 +30,7 @@ from random import choice, randrange
 from qiime.pycogent_backports.test import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file
+from qiime.util import get_first_metadata_entry
 from biom.parse import parse_biom_table
 
 def get_sample_info(lines):
@@ -151,7 +152,8 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
         con = ''
         if is_con:
             #con = ':'.join(lineages[idx][:6])
-            con = ':'.join(otu_metadata['taxonomy'][:6])
+            con = ':'.join(
+                    get_first_metadata_entry(otu_metadata['taxonomy'])[:6])
             con = con.replace(" ","_")
             con = con.replace("\t","_")
         # Not required: otu_values (data) is always numpy vector

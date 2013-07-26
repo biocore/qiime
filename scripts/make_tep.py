@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Meg Pirrung", "Jesse Stombaugh"]
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Meg Pirrung"
@@ -23,7 +23,13 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Makes TopiaryExplorer project file"
-script_info['script_description'] = "This script makes a TopiaryExplorer project file (.tep) and a jnlp file with the data location preloaded.\n\nWARNING: The jnlp file relies on an absolute path, if you move the .tep file, the generated jnlp will no longer work. However, you can still open the .tep file from your normal TopiaryExplorer install."
+script_info['script_description'] = """
+This script makes a TopiaryExplorer project file (.tep) and a jnlp file with the data location preloaded.
+
+WARNING: The jnlp file relies on an absolute path, if you move the .tep file, the generated jnlp will no longer work. However, you can still open the .tep file from your normal TopiaryExplorer install.
+
+Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy, pathways) associated with its observations (e.g., OTUs), this represents a one-to-many relationship between the observation and its metadata, which is not currently supported by this script. Only the first metadata entry will be listed in the output and the remaining metadata entries will be ignored. For example, if an observation in the BIOM table has more than one taxonomy assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy assignment will be listed in the output as the consensus lineage for the OTU. Support for one-to-many relationships is a new addition to QIIME and while support is currently very limited, these types of relationships will be better incorporated in future versions of the software.
+"""
 
 script_info['script_usage'] = []
 

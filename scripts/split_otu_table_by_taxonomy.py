@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from qiime.util import make_option
+from qiime.util import get_first_metadata_entry, make_option
 from os.path import split
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 from qiime.format import format_biom_table
@@ -22,7 +22,11 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth."
-script_info['script_description'] = ""
+script_info['script_description'] = """
+Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy, pathways) associated with its observations (e.g., OTUs), this represents a one-to-many relationship between the observation and its metadata, which is not currently supported by this script. Only the first metadata entry will be used to split the table and the remaining metadata entries will be ignored. For example, if an observation in the BIOM table has more than one taxonomy assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy assignment will be used to split the table. Support for one-to-many relationships is a new addition to QIIME and while support is currently very limited, these types of relationships will be better incorporated in future versions of the software.
+
+Note that if --md_as_string is provided, this will only specify a one-to-one relationship, not one-to-many. One-to-many relationships only exist if the metadata is a list of lists of strings, as opposed to a list of strings denoting different taxonomic levels.
+"""
 script_info['script_usage'] = [("","Split seqs_otu_table.biom into taxon-specific OTU tables based on the third level in the taxonomy, and write the taxon-specific OTU tables to ./L3/","%prog -i otu_table.biom -L 3 -o ./L3/")]
 script_info['output_description']= ""
 
@@ -40,7 +44,9 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
  make_option('--md_identifier',default='taxonomy', type='string',
-             help='the relevant observation metadat key [default: %default]'),
+             help='the relevant observation metadata key. Currently only '
+             'one-to-one relationships are supported; please see the full '
+             'script description for details [default: %default]'),
  make_option('--md_as_string',default=False,action='store_true',
              help='metadata is included as string [default: metadata is included as list]'),
 ]
@@ -51,7 +57,7 @@ def process_md_as_string(md,md_identifier,level):
     return '_'.join(md[md_identifier].split(';')[:level]).replace(' ','')
 
 def process_md_as_list(md,md_identifier,level):
-    return '_'.join(md[md_identifier][:level]).replace(' ','')
+    return '_'.join(get_first_metadata_entry(md[md_identifier])[:level]).replace(' ','')
 
 def split_otu_table_on_taxonomy_to_files(otu_table_fp,
                                          level,
