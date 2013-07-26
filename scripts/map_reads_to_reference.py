@@ -66,14 +66,7 @@ script_info['optional_options'] = [
               '. [default: %default]')),
 
     make_option('-t', '--observation_metadata_fp',type='existing_filepath',
-        help=('Path to observation metadata (e.g., taxonomy, EC, etc.). If an '
-              'observation has multiple metadata entries (e.g., more than one '
-              'pathway), all entries are added to the output BIOM table in '
-              'the order they were found in the observation metadata file '
-              '(this represents a one-to-many relationship between an '
-              'observation and its metadata). Each metadata entry should be '
-              'in its own column following the observation ID '
-              '[default: %default]')),
+        help=('Path to observation metadata (e.g., taxonomy, EC, etc) [default: %default]')),
 
     make_option('-o', '--output_dir',type='new_dirpath',\
         help=('Path to store result file '

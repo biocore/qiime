@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -32,8 +32,7 @@ class ParallelDatabaseMapper(ParallelPickOtus):
         if poll_directly:
             if params['observation_metadata_fp'] != None:
                 observation_metadata = \
-                 parse_observation_metadata(open(params['observation_metadata_fp'],'U'),
-                                            parse_all_fields=True)
+                 parse_observation_metadata(open(params['observation_metadata_fp'],'U'))
             else:
                 observation_metadata = None
             biom_fp = join(output_dir,'observation_table.biom')

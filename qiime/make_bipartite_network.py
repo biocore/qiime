@@ -2,7 +2,7 @@
 
 __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME Project" 
-__credits__ = ["Will Van Treuren", "Julia Goodrich", "Jai Ram Rideout"]
+__credits__ = ["Will Van Treuren, Julia Goodrich"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Will Van Treuren"
@@ -11,7 +11,6 @@ __status__ = "Development"
 
 from numpy import array
 from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import get_first_metadata_entry
 from collections import defaultdict
 
 """
@@ -58,12 +57,6 @@ def make_otu_node_table(bt, md_key, md_fields):
     This function will attempt to divine which type of metadata exists in the
     file. If the metadata is a string, it will be assumed that it is delimited 
     by semicolons. If it is not this function will fail not split it.
-
-    If the metadata is a list of lists of strings (instead of a list of strings
-    as described above), only the first list of strings will be used to
-    represent the metadata (e.g., taxonomy) for the observation. The other
-    entries in the list will be ignored.
-
     Inputs:
      bt - biom table
      md_key - str, key to access the metadata str/list/dict
@@ -98,8 +91,7 @@ def make_otu_node_table(bt, md_key, md_fields):
     if md_type is list:
         for i,otu in enumerate(bt.ObservationIds):
             line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-            line += '\t'.join(
-                get_first_metadata_entry(bt.ObservationMetadata[i][md_key]))
+            line += '\t'.join(bt.ObservationMetadata[i][md_key])
             lines.append(line)
     if md_type is defaultdict:
         # if md_type is defaultdict keys in md_fields that fail will produce
