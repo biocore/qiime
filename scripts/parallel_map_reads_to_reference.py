@@ -36,7 +36,14 @@ script_info['required_options'] = [
 ]
 script_info['optional_options'] = [
     make_option('-t', '--observation_metadata_fp',type='existing_filepath',
-        help=('Path to observation metadata (e.g., taxonomy, EC, etc) [default: %default]')),
+        help=('Path to observation metadata (e.g., taxonomy, EC, etc.). If an '
+              'observation has multiple metadata entries (e.g., more than one '
+              'pathway), all entries are added to the output BIOM table in '
+              'the order they were found in the observation metadata file '
+              '(this represents a one-to-many relationship between an '
+              'observation and its metadata). Each metadata entry should be '
+              'in its own column following the observation ID '
+              '[default: %default]')),
         
     make_option('-m', '--assignment_method', type='choice',
         choices=['usearch','blat','bwa-short'], default = "usearch",

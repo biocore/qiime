@@ -47,7 +47,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
     qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-    is_valid_git_sha1)
+    is_valid_git_sha1, get_first_metadata_entry)
 
 import numpy
 from numpy import array, asarray
@@ -826,6 +826,24 @@ GTCTGA
             'fb5dy0f85a8b11f199c4f3a75474a2das8138373'))
         self.assertFalse(is_valid_git_sha1(
             '0x5dcc816fbc1c2e8eX087d7d2ed8d2950a7c16b'))
+
+    def test_get_first_metadata_entry(self):
+        """Test extracting first metadata entry from a table's metadata."""
+        # Single entry.
+        exp = ['foo', 'bar', 'baz']
+        obs = get_first_metadata_entry(exp)
+        self.assertEqual(obs, exp)
+
+        # Single entry (nested).
+        obs = get_first_metadata_entry([exp])
+        self.assertEqual(obs, exp)
+
+        # Multiple entries.
+        obs = get_first_metadata_entry([exp, ['baz', 'bar', 'foo']])
+        self.assertEqual(obs, exp)
+
+        with self.assertRaises(TypeError):
+            get_first_metadata_entry('foo;bar;baz')
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
