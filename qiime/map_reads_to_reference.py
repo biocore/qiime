@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -64,8 +64,7 @@ class DatabaseMapper(object):
                               observation_metadata_fp):
         if observation_metadata_fp != None:
             observation_metadata = \
-             parse_taxonomy(open(observation_metadata_fp,'U'),
-                            parse_all_fields=True)
+             parse_taxonomy(open(observation_metadata_fp,'U'))
         else:
             observation_metadata = None
         

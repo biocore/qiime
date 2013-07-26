@@ -37,7 +37,7 @@ Defining environment variables for use in this tutorial
 Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this::
 
 	export QIIME_DIR=$HOME/qiime_software
-	export reference_seqs=$QIIME_DIR/img-qiime-***/aa_seqs.faa
+	export reference_seqs=$QIIME_DIR/img-qiime-***/gene_aa_seqs.faa
 	export reference_md=$QIIME_DIR/img-qiime-***/gene_ko_pathway.txt
 
 where ``img-qiime-***`` will be specific to the version of the reference dataset you downloaded from the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.

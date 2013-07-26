@@ -4,9 +4,8 @@ from __future__ import division
 
 __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel",
-               "Dan Knights", "Greg Caporaso", "Luke Ursell",
-               "Jai Ram Rideout"]
+__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", \
+                "Dan Knights", "Greg Caporaso", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Doug Wendel"
@@ -113,18 +112,6 @@ of the p-values observed when running a single test on each otu_table
 separately. It is generally a good practice to rarefy the OTU table 
 (e.g. with single_rarefaction.py) prior to running these significance tests 
 in order to avoid artifacts or biases from unequal sample sizes.
-
-Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy,
-pathways) associated with its observations (e.g., OTUs), this represents a
-one-to-many relationship between the observation and its metadata, which is not
-currently supported by this script. Only the first metadata entry will be
-listed in the output and the remaining metadata entries will be ignored. For
-example, if an observation in the BIOM table has more than one taxonomy
-assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy
-assignment will be listed in the output as the consensus lineage for the OTU.
-Support for one-to-many relationships is a new addition to QIIME and while
-support is currently very limited, these types of relationships will be better
-incorporated in future versions of the software.
 """
 script_info['script_usage']=[]
 

@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Dan Knights", "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
+__credits__ = ["Dan Knights", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Dan Knights"
@@ -22,7 +22,7 @@ from qiime.make_otu_heatmap_html import get_otu_counts, \
 import shutil
 import os
 from os.path import join
-from qiime.util import get_first_metadata_entry, get_qiime_project_dir
+from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 from numpy import array, arange, asarray
 #from qiime.parse import parse_otu_table
@@ -37,10 +37,7 @@ options_lookup = get_options_lookup()
 #make_otu_heatmap_html.py
 script_info={}
 script_info['brief_description']="""Make heatmap of OTU table"""
-script_info['script_description']="""Once an OTU table has been generated, it can be visualized using a heatmap. In these heatmaps each row corresponds to an OTU, and each column corresponds to a sample. The higher the relative abundance of an OTU in a sample, the more intense the color at the corresponsing position in the heatmap. By default, the OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the samples (columns) will be presented in the order in which they appear in the OTU table. Alternatively, the user may pass in a tree to sort the OTUs (rows) or samples (columns), or both. For samples, the user may also pass in a mapping file. If the user passes in a mapping file and a metadata category, samples (columns in the heatmap) will be grouped by category value and subsequently clustered within each group.
-
-Note: If the input BIOM table has multiple metadata entries (e.g., taxonomy, pathways) associated with its observations (e.g., OTUs), this represents a one-to-many relationship between the observation and its metadata, which is not currently supported by this script. Only the first metadata entry will be listed in the output and the remaining metadata entries will be ignored. For example, if an observation in the BIOM table has more than one taxonomy assignment (e.g., a list of taxonomy assignments), only the *first* taxonomy assignment will be listed alongside the OTU in the generated output. Support for one-to-many relationships is a new addition to QIIME and while support is currently very limited, these types of relationships will be better incorporated in future versions of the software.
-"""
+script_info['script_description']="""Once an OTU table has been generated, it can be visualized using a heatmap. In these heatmaps each row corresponds to an OTU, and each column corresponds to a sample. The higher the relative abundance of an OTU in a sample, the more intense the color at the corresponsing position in the heatmap. By default, the OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the samples (columns) will be presented in the order in which they appear in the OTU table. Alternatively, the user may pass in a tree to sort the OTUs (rows) or samples (columns), or both. For samples, the user may also pass in a mapping file. If the user passes in a mapping file and a metadata category, samples (columns in the heatmap) will be grouped by category value and subsequently clustered within each group."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""Using default values:""","""%prog -i otu_table.biom"""))
 script_info['script_usage'].append(("","""Different output directory (i.e., "otu_heatmap"):""","""%prog -i otu_table.biom -o otu_heatmap"""))
@@ -96,8 +93,7 @@ def main():
         lineages = [''] * len(otu_table.ObservationIds)
     else:
         for val, id, meta in otu_table.iterObservations():
-            lineages.append([v for v in
-                             get_first_metadata_entry(meta['taxonomy'])])
+            lineages.append([v for v in meta['taxonomy']])
 
     otu_labels = make_otu_labels(otu_table.ObservationIds, lineages)
 
