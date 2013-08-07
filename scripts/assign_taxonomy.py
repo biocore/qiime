@@ -124,10 +124,11 @@ script_info['optional_options']=[\
         'respectively.  (used for RTAX only). '
         '[default: %default]',default="(\\S+)\\s+(\\S+?)\/"),\
  make_option('--header_id_regex',type="string",
-        help='Used to choose the part of the header in the OTU clustering file '
-        'that Rtax reports back as the ID.  The default uses the amplicon ID, '
-        'not including /1 or /3, as the primary key for the query sequences. '
-        '(used for RTAX only). '
+        help='Used to parse the result of split_libraries, to get the portion '
+        'of the header that Rtax uses to match mate pairs.  The default uses '
+        'the amplicon ID, not including /1 or /3, as the primary key for the '
+        'query sequences.  Typically this will be the same as amplicon_id_regex, '
+        'except that only the second group is captured.  (used for RTAX only). '
         '[default: %default]',default="\\S+\\s+(\\S+?)\/"),\
  make_option('-m', '--assignment_method', type='choice',
         help='Taxon assignment method, must be one of ' +
