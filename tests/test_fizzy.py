@@ -51,7 +51,7 @@ class TestFizzy(TestCase):
 			if os.path.exists(d):
 				shutil.rmtree(d)
 	
-	def test_get_fs_methods():
+	def test_get_fs_methods(self):
 		"""
 			this test is going to make sure that we are only 
 			implementing feature selection methods that are in 
@@ -63,7 +63,7 @@ class TestFizzy(TestCase):
 			fizzy.get_fs_methods())
 		return None 
 
-	def test_parse_biom():
+	def test_parse_biom(self):
 		"""
 		"""
 		# it should be safe to assume the user is working with 
@@ -72,7 +72,7 @@ class TestFizzy(TestCase):
 		fizzy.test_parse_biom()
 		return None 
 	
-	def test_parse_map_file():
+	def test_parse_map_file(self):
 		"""
 		"""
 		return None 
@@ -82,7 +82,7 @@ class TestFizzy(TestCase):
 		"""
 		return None 
 
-	def test_write_output_file():
+	def test_write_output_file(self):
 		"""
 			wrtie a temporary file to 
 		"""
@@ -91,7 +91,7 @@ class TestFizzy(TestCase):
 			["test"])
 		return None 
 
-	def test_run_feature_selection():
+	def test_run_feature_selection(self):
 		"""
 		"""
 		return None 
