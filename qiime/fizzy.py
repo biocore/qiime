@@ -93,7 +93,7 @@ def parse_map_file(fname, column_name, observation_names):
 	return numpy.array(labels)
 
 
-def run_pyfeast(data, labels, features, method='mim', n_select=15):
+def run_pyfeast(data, labels, features, method='MIM', n_select=15):
 	"""
 		run_pyfeast(data, labels, method)
 		@data - numpy data (dense)
