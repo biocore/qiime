@@ -57,8 +57,6 @@ class TestFizzy(TestCase):
 			implementing feature selection methods that are in 
 			a predefined list. 
 		"""
-		information_theoretic_methods = ['CIFE','CMIM','CondMI',\
-			'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 		self.assertEqual(information_theoretic_methods, 
 			fizzy.get_fs_methods())
 		return None 
@@ -86,7 +84,7 @@ class TestFizzy(TestCase):
 		"""
 			wrtie a temporary file to 
 		"""
-		write_output_file("test",self.test_out + "/test.txt")
+		fizzy.write_output_file("test",self.test_out + "/test.txt")
 		self.assertEqual(open(self.test_out + "/test.txt").read().replace("\n","").split(),
 			["test"])
 		return None 
@@ -97,7 +95,7 @@ class TestFizzy(TestCase):
 		return None 
 
 		
-
+information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 biome_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type": "float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows": [{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "S1", "metadata": null},{"id": "S2", "metadata": null},{"id": "S3", "metadata": null}]}"""
 
 
