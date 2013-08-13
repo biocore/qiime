@@ -63,11 +63,17 @@ class TestFizzy(TestCase):
 
 	def test_parse_biom(self):
 		"""
+      this test is going to ensure that we can properly parse our biom file
 		"""
 		# it should be safe to assume the user is working with 
 		# linux / unix. this will not be supported by windows. 
 
-		fizzy.test_parse_biom()
+		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'S1', u'S2', u'S3'])
+
+		biom_file_handle = StringIO.StringIO(biom_file_string)
+		parsed_biom = fizzy.parse_biom(biom_file_handle)
+		self.assertEqual(correct_biom, parsed_biom)
+			
 		return None 
 	
 	def test_parse_map_file(self):
