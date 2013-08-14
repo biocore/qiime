@@ -176,6 +176,6 @@ def _reorder_unifrac_res_one_sample(unifrac_res, sample_names_in_desired_order):
                         
             # sam_i is present, so get unifrac dist
             else:
-                unifrac_i =  unifrac_sample_names[sam_i]
+                unifrac_i =  unifrac_sample_names_idx[sam_i]
                 dist_arry[i] = unifrac_dist_arry[unifrac_i]
     return dist_arry
