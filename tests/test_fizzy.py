@@ -148,9 +148,9 @@ class TestFizzy(TestCase):
 		map_file_handle = StringIO.StringIO(map_file_string)
 		biom_file_handle = StringIO.StringIO(biom_file_string)
 		column_name = "Class"
-		method = "MIM"
 
-		fizzy.run_feature_selection(biom_file_handle, map_file_handle, column_name, self.test_out + "fs_test", method='MIM', n_select=15)
+		fizzy.run_feature_selection(biom_file_handle, map_file_handle, column_name, self.test_out + "/fs_test", n_select=3)
+		self.assertEqual(open(self.test_out + "/fs_test").read().replace("\n"," ").split(),['OTU0', "OTU1", "OTU3"])
 
 		return None 
 

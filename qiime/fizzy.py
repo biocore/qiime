@@ -143,7 +143,7 @@ def write_output_file(selected_features, f_out):
 		f.write(sf + '\n')
 	f.close()
 
-def run_feature_selection(file_biom, file_map, column_name, out_file, method='mim', n_select=15):
+def run_feature_selection(file_biom, file_map, column_name, out_file, method='MIM', n_select=15):
 	"""
 		run_feature_selection(fname_biom, fname_csv, method)
 		@file_biom - handle of the biom file
