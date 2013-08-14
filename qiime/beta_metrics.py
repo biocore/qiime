@@ -119,6 +119,7 @@ def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     sample_names = sample_names_in_desired_order
     unifrac_dist_mtx = unifrac_res[0]
     unifrac_sample_names = unifrac_res[1]
+    unifrac_sample_names_idx = dict([(n,i) for i,n in enumerate(unifrac_sample_names)])
     if unifrac_sample_names == sample_names:
         dist_mtx = unifrac_dist_mtx
     else:
@@ -127,24 +128,24 @@ def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
         for i, sam_i in enumerate(sample_names):
             
             # make dist zero if both absent, else dist=1. dist to self is 0
-            if sam_i not in unifrac_sample_names:
+            if sam_i not in unifrac_sample_names_idx:
                 warnings.warn('unifrac had no information for sample ' +\
                  sam_i + ". Distances involving that sample aren't meaningful")
                 for j, sam_j in enumerate(sample_names):
-                    if sam_j not in unifrac_sample_names:
+                    if sam_j not in unifrac_sample_names_idx:
                         dist_mtx[i,j] = 0.0
                     else:
                         dist_mtx[i,j] = 1.0
                         
             # sam_i is present, so get unifrac dist
             else:
-                unifrac_i =  unifrac_sample_names.index(sam_i)
+                unifrac_i =  unifrac_sample_names_idx[sam_i]
                 
                 for j, sam_j in enumerate(sample_names):
-                    if sam_j not in unifrac_sample_names:
+                    if sam_j not in unifrac_sample_names_idx:
                         dist_mtx[i,j] = 1.0
                     else:
-                        unifrac_j =  unifrac_sample_names.index(sam_j)
+                        unifrac_j =  unifrac_sample_names_idx[sam_j]
                         dist_mtx[i,j] = unifrac_dist_mtx[unifrac_i, unifrac_j]
     return dist_mtx
 
@@ -161,6 +162,7 @@ def _reorder_unifrac_res_one_sample(unifrac_res, sample_names_in_desired_order):
     sample_names = sample_names_in_desired_order
     unifrac_dist_arry = unifrac_res[0]
     unifrac_sample_names = unifrac_res[1]
+    unifrac_sample_names_idx = dict([(n,i) for i,n in enumerate(unifrac_sample_names)])
     if unifrac_sample_names == sample_names:
         dist_arry = unifrac_dist_arry
     else:
@@ -169,11 +171,11 @@ def _reorder_unifrac_res_one_sample(unifrac_res, sample_names_in_desired_order):
         for i, sam_i in enumerate(sample_names):
             
             # make dist zero if both absent, else dist=1. dist to self is 0
-            if sam_i not in unifrac_sample_names:
+            if sam_i not in unifrac_sample_names_idx:
                 dist_arry[i] = 1.0
                         
             # sam_i is present, so get unifrac dist
             else:
-                unifrac_i =  unifrac_sample_names.index(sam_i)
+                unifrac_i =  unifrac_sample_names[sam_i]
                 dist_arry[i] = unifrac_dist_arry[unifrac_i]
     return dist_arry
