@@ -20,6 +20,7 @@ from qiime.util import (get_qiime_scripts_dir,
 	get_qiime_temp_dir,
 	create_dir)
 import shutil
+import StringIO
 
 class TestFizzy(TestCase):
 	"""
@@ -68,7 +69,7 @@ class TestFizzy(TestCase):
 		# it should be safe to assume the user is working with 
 		# linux / unix. this will not be supported by windows. 
 
-		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'S1', u'S2', u'S3'])
+		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
 
 		biom_file_handle = StringIO.StringIO(biom_file_string)
 		parsed_biom = fizzy.parse_biom(biom_file_handle)
@@ -78,7 +79,15 @@ class TestFizzy(TestCase):
 	
 	def test_parse_map_file(self):
 		"""
+			this test ensures that the map file is proerply parsed
 		"""
+
+		correct_map = [0,1.,1.]
+
+		map_file_handle = StringIO.StringIO(map_file_string)
+		parsed_map = fizzy.parse_map_file(map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
+
+		self.assertEqual(correct_map, parsed_map)
 		return None 
 
 	def uniform_data(self, n_observations, n_features, n_select):
@@ -135,12 +144,20 @@ class TestFizzy(TestCase):
 	def test_run_feature_selection(self):
 		"""
 		"""
+  
+		map_file_handle = StringIO.StringIO(map_file_string)
+		biom_file_handle = StringIO.StringIO(biom_file_string)
+		column_name = "Class"
+		method = "MIM"
+
+		fizzy.run_feature_selection(biom_file_handle, map_file_handle, column_name, self.test_out + "fs_test", method='MIM', n_select=15)
+
 		return None 
 
 		
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
-biome_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type": "float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows": [{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "S1", "metadata": null},{"id": "S2", "metadata": null},{"id": "S3", "metadata": null}]}"""
-
+map_file_string = """#SampleID	Class\nID0	S1\nID1	S2\nID2	S2\n"""
+biom_file_string = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date":"2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type":"float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows":[{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "ID0", "metadata": null},{"id": "ID1", "metadata": null},{"id": "ID2", "metadata": null}]}"""
 
 if __name__ == "__main__":
 	main()
