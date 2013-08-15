@@ -39,83 +39,83 @@ from biom.exception import TableException
     associated with a continuous variable in the category mapping file (e.g. pH)
 """
 
-def filter_OTUs(otu_table, filt, all_samples=True,\
-                category_mapping_info=None, max_filter=None):
-    """Get the list of OTUs found in at least <filter> samples. 
+# def filter_OTUs(otu_table, filt, all_samples=True,\
+#                 category_mapping_info=None, max_filter=None):
+#     """Get the list of OTUs found in at least <filter> samples. 
 
-    The filter is supplied as a fraction of samples.
+#     The filter is supplied as a fraction of samples.
 
-    optionally filters out those that are found in all_samples if True:                                                              
-        G_test: set to True since can't show presence/absence patterns if                                                            
-            present in all (also causes an error)                                                                                    
-        ANOVA: set to False since can still see differences in abundance                                                             
+#     optionally filters out those that are found in all_samples if True:                                                              
+#         G_test: set to True since can't show presence/absence patterns if                                                            
+#             present in all (also causes an error)                                                                                    
+#         ANOVA: set to False since can still see differences in abundance                                                             
 
-    optionally takes a category mapping file as input and only considers                                                             
-        inclusion in samples that are included therein. This is a method                                                             
-        of making sure that the samples represented in the category                                                                  
-        mapping file and the OTU table are in sync         
+#     optionally takes a category mapping file as input and only considers                                                             
+#         inclusion in samples that are included therein. This is a method                                                             
+#         of making sure that the samples represented in the category                                                                  
+#         mapping file and the OTU table are in sync         
 
-    If max_filter is set, it will exclude OTUs from the list that are 
-        found above that value.
-    """
-    result = []
-    # Only consider samples that are present in mapping file AND otu table.
-    if category_mapping_info:
-        mapping_file_samples = set(category_mapping_info.keys())
-        otu_table_samples = set(otu_table.SampleIds)
-        included_samples = mapping_file_samples & otu_table_samples
-        otu_table = otu_table.filterSamples(lambda v,i,m: i in included_samples)
+#     If max_filter is set, it will exclude OTUs from the list that are 
+#         found above that value.
+#     """
+#     result = []
+#     # Only consider samples that are present in mapping file AND otu table.
+#     if category_mapping_info:
+#         mapping_file_samples = set(category_mapping_info.keys())
+#         otu_table_samples = set(otu_table.SampleIds)
+#         included_samples = mapping_file_samples & otu_table_samples
+#         otu_table = otu_table.filterSamples(lambda v,i,m: i in included_samples)
 
-    # min and max number of samples per observation to keep
-    min_filter = int(round(filt * len(otu_table.SampleIds)))
-    if max_filter:
-        max_filter = int(round(max_filter * len(otu_table.SampleIds)))
+#     # min and max number of samples per observation to keep
+#     min_filter = int(round(filt * len(otu_table.SampleIds)))
+#     if max_filter:
+#         max_filter = int(round(max_filter * len(otu_table.SampleIds)))
 
-    def filter_f(values, id_, md):
-        """filter observations based on how many samples are covered"""
-        # determine the number of samples the observation occurs in
-        n_samples = sum(values > 0)
+#     def filter_f(values, id_, md):
+#         """filter observations based on how many samples are covered"""
+#         # determine the number of samples the observation occurs in
+#         n_samples = sum(values > 0)
 
-        # we don't have enough samples represented
-        if n_samples < min_filter:
-            return False
+#         # we don't have enough samples represented
+#         if n_samples < min_filter:
+#             return False
 
-        # we have to many samples represented
-        if max_filter and n_samples > max_filter:
-            return False
+#         # we have to many samples represented
+#         if max_filter and n_samples > max_filter:
+#             return False
 
-        # if all samples have this observation
-        if all_samples and n_samples == len(values):
-            return False
+#         # if all samples have this observation
+#         if all_samples and n_samples == len(values):
+#             return False
 
-        return True
+#         return True
     
-    try:
-        filtered = otu_table.filterObservations(filter_f)
-    except TableException:
-        # all observations filtered out
-        return []
+#     try:
+#         filtered = otu_table.filterObservations(filter_f)
+#     except TableException:
+#         # all observations filtered out
+#         return []
 
-    return list(filtered.ObservationIds)
+#     return list(filtered.ObservationIds)
 
-def sync_mapping_to_otu_table(otu_table, mapping):
-    """removes samples from the mapping file that are not in the otu table
+# def sync_mapping_to_otu_table(otu_table, mapping):
+#     """removes samples from the mapping file that are not in the otu table
 
-    otu_table and mapping are each parsed with the standard parsers first
-    returns a new parsed mapping and a list of samples removed
-    """
-    mapping_data, header, comments = mapping
-    otu_table_samples = otu_table.SampleIds
+#     otu_table and mapping are each parsed with the standard parsers first
+#     returns a new parsed mapping and a list of samples removed
+#     """
+#     mapping_data, header, comments = mapping
+#     otu_table_samples = otu_table.SampleIds
 
-    new_mapping_data = []
-    removed_samples = []
-    for i in mapping_data:
-        sample = i[0]
-        if sample not in otu_table_samples:
-            removed_samples.append(sample)
-        else:
-            new_mapping_data.append(i)
-    return [new_mapping_data, header, comments], removed_samples
+#     new_mapping_data = []
+#     removed_samples = []
+#     for i in mapping_data:
+#         sample = i[0]
+#         if sample not in otu_table_samples:
+#             removed_samples.append(sample)
+#         else:
+#             new_mapping_data.append(i)
+#     return [new_mapping_data, header, comments], removed_samples
 
 def run_single_G_test(OTU_name, category_info, otu_table, category_values,
                       suppress_warnings=True):

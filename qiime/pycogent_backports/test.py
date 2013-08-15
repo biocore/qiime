@@ -3,19 +3,19 @@
 """
 from __future__ import division
 import warnings
-from cogent.maths.stats.distribution import chi_high, z_low, z_high, zprob, \
-    t_high, t_low, tprob, f_high, f_low, fprob, binomial_high, binomial_low, \
-    ndtri
-from cogent.maths.stats.special import lgam, log_one_minus, one_minus_exp,\
-    MACHEP
+from cogent.maths.stats.distribution import (chi_high, z_low, z_high, zprob,
+    t_high, t_low, tprob, f_high, f_low, fprob, binomial_high, binomial_low,
+    ndtri)
+from cogent.maths.stats.special import (lgam, log_one_minus, one_minus_exp,
+    MACHEP)
 from cogent.maths.stats.ks import psmirnov2x, pkstwo
 from cogent.maths.stats.kendall import pkendall, kendalls_tau
 from cogent.maths.stats.special import Gamma
 
-from numpy import absolute, arctanh, array, asarray, concatenate, transpose, \
-        ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any, \
-        reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp, \
-        median as _median, zeros, ones
+from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
+        ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
+        reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
+        median as _median, zeros, ones)
         #, std - currently incorrect
 from numpy.random import permutation, randint
 from cogent.maths.stats.util import Numbers
@@ -26,9 +26,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Gavin Huttley", "Rob Knight", "Catherine Lozupone",
                "Sandra Smit", "Micah Hamady", "Daniel McDonald",
-               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan"]
+               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan",
+               "Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.5.3-dev"
+__version__ = "1.7-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Production"
@@ -239,6 +240,72 @@ def G_ind(m, williams=False):
     return G, chi_high(max(G,0), df)
 
 
+def williams_correction(n, a, G):
+    """Return the Williams corrected G statistic for G goodness of fit test.
+    
+    For discussion read Sokal and Rohlf Biometry pg 698,699.
+    Inputs:
+     n - int, sum of observed frequencies
+     a - int, number of groups that are being compared
+     G - float, uncorrected G statistic
+    """
+    # q = 1. + (a**2 - 1)/(6.*n*a - 6.*n) == 1. + (a+1.)/(6.*n)
+    q = 1. + (a+1.)/(6.*n)
+    return G/q
+
+def G_stat(data):
+    """Calculate the G statistic for data. 
+
+    For discussion read Sokal and Rohlf Biometry pg. 695-699. The G tests is 
+    normally applied to data where you have only one observation of any given
+    sample class (e.g. you observe 90 wildtype and 30 mutants). In microbial
+    ecology it is normal to have multiple samples which contain a given feature
+    where those samples share a metadata class (e.g. you observe OTUX at certain
+    frequencies in 12 samples, 6 of which are treatment samples, 6 of which are 
+    control samples). To reconcile these approaches this function averages the 
+    frequency of the given feature (OTU) across all samples in the metadata 
+    class (e.g. in the 6 treatment samples, the value for OTUX is averaged, and 
+    this forms the average frequency which represents all treatment samples in 
+    aggregate). 
+
+    In addition, this function assumes the extrinsic hypothesis is that the 
+    mean frequency in all the samples groups is the same.
+
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+    """
+    # G = 2*sum(f_i*ln(f_i/f_i_hat)) over all i phenotypes/sample classes 
+    n = sum([arr.sum() for arr in data]) #total observations
+    a = len(data) #a is number of phenotypes or sample classes
+    obs_freqs = array([sample_type.mean() for sample_type in data]) #f_i vals 
+    exp_freqs = zeros(a)+n/float(a) #f_i_hat vals
+    G = 2.*(obs_freqs*log(obs_freqs/exp_freqs)).sum()
+    return G
+
+def G_fit(data, williams=True):
+    """Calculate G statistic and compare to one tailed chi-squared distribution.
+
+    For discussion read Sokal and Rohlf Biometry pg. 695-699. This function 
+    compares teh calculated G statistic (with Williams correction by default) to 
+    the chi-squared distribution with the appropriate number of degrees of 
+    freedom. 
+
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+     williams - boolean, whether or not to apply williams correction before 
+      comparing to the chi-squared dsitribution.
+    """
+    G = G_stat(data)
+    a = len(data) #a is number of phenotypes or sample classes
+    if willliams:
+        n = sum([arr.sum() for arr in data]) #total observations
+        G = williams_correction(n, a, G)
+    return G, chi_high(G, a-1) #a-1 degrees of freedom because of sum constraint
+
 def calc_contingency_expected(matrix):
         """Calculates expected frequencies from a table of observed frequencies
 
@@ -271,85 +338,85 @@ def calc_contingency_expected(matrix):
                 result[row][item].append(Expected)
         return result
 
-def G_fit(obs, exp, williams=1):
-    """G test for fit between two lists of counts.
+# def G_fit(obs, exp, williams=1):
+#     """G test for fit between two lists of counts.
 
-    Usage: test, prob = G_fit(obs, exp, williams)
+#     Usage: test, prob = G_fit(obs, exp, williams)
     
-    obs and exp are two lists of numbers.
-    williams is a boolean stating whether to do the Williams correction.
+#     obs and exp are two lists of numbers.
+#     williams is a boolean stating whether to do the Williams correction.
     
-    SUM(2 f(obs)ln (f(obs)/f(exp)))
+#     SUM(2 f(obs)ln (f(obs)/f(exp)))
     
-    See Sokal and Rohlf chapter 17.
-    """
-    k = len(obs)
-    if k != len(exp):
-        raise ValueError, "G_fit requires two lists of equal length."
-    G = 0
-    n = 0
+#     See Sokal and Rohlf chapter 17.
+#     """
+#     k = len(obs)
+#     if k != len(exp):
+#         raise ValueError, "G_fit requires two lists of equal length."
+#     G = 0
+#     n = 0
     
-    for o, e in zip(obs, exp):
-        if o < 0:
-            raise ValueError, \
-            "G_fit requires all observed values to be positive."
-        if e <= 0:
-            raise ZeroExpectedError, \
-            "G_fit requires all expected values to be positive."
-        if o:   #if o is zero, o * log(o/e) must be zero as well.
-            G += o * log(o/e)
-            n += o
+#     for o, e in zip(obs, exp):
+#         if o < 0:
+#             raise ValueError, \
+#             "G_fit requires all observed values to be positive."
+#         if e <= 0:
+#             raise ZeroExpectedError, \
+#             "G_fit requires all expected values to be positive."
+#         if o:   #if o is zero, o * log(o/e) must be zero as well.
+#             G += o * log(o/e)
+#             n += o
     
-    G *= 2
-    if williams:
-        q = 1 + (k + 1)/(6*n)
-        G /= q
+#     G *= 2
+#     if williams:
+#         q = 1 + (k + 1)/(6*n)
+#         G /= q
 
-    return G, chi_high(G, k - 1)
+#     return G, chi_high(G, k - 1)
 
-def G_fit_from_Dict2D(data):
-    """G test for fit on a Dict2D
+# def G_fit_from_Dict2D(data):
+#     """G test for fit on a Dict2D
 
-    data is a dict2D. Values are a list containing the observed
-    and expected frequencies (can be created with calc_contingency_expected)
-    """
-    obs_counts = []
-    exp_counts = []
-    for item in data.Items:
-        if len(item) == 2:
-            obs_counts.append(item[0])
-            exp_counts.append(item[1])
-    g_val, prob = G_fit(obs_counts, exp_counts)
-    return g_val, prob
+#     data is a dict2D. Values are a list containing the observed
+#     and expected frequencies (can be created with calc_contingency_expected)
+#     """
+#     obs_counts = []
+#     exp_counts = []
+#     for item in data.Items:
+#         if len(item) == 2:
+#             obs_counts.append(item[0])
+#             exp_counts.append(item[1])
+#     g_val, prob = G_fit(obs_counts, exp_counts)
+#     return g_val, prob
 
-def chi_square_from_Dict2D(data):
-    """Chi Square test on a Dict2D
+# def chi_square_from_Dict2D(data):
+#     """Chi Square test on a Dict2D
 
-    data is a Dict2D. The values are a list of the observed (O)
-    and expected (E) frequencies,(can be created with calc_contingency_expected)
+#     data is a Dict2D. The values are a list of the observed (O)
+#     and expected (E) frequencies,(can be created with calc_contingency_expected)
 
-    The chi-square value (test) is the sum of (O-E)^2/E over the items in data
+#     The chi-square value (test) is the sum of (O-E)^2/E over the items in data
 
-    degrees of freedom are calculated from data as:
-    (r-1)*(c-1) if cols and rows are both > 1
-    otherwise is just 1 - the # of rows or columns
-    (whichever is greater than 1)
+#     degrees of freedom are calculated from data as:
+#     (r-1)*(c-1) if cols and rows are both > 1
+#     otherwise is just 1 - the # of rows or columns
+#     (whichever is greater than 1)
     
-    """
-    test =  sum([((item[0] - item[1]) * (item[0] - item[1]))/item[1] \
-                   for item in data.Items])
-    num_rows = len(data)
-    num_cols = len([col for col in data.Cols])
-    if num_rows == 1:
-        df = num_cols - 1
-    elif num_cols == 1:
-        df = num_rows - 1
-    elif num_rows == 0 or num_cols == 0:
-        raise ValueError, "data matrix must have data"
-    else:
-        df = (len(data) - 1) * (len([col for col in data.Cols]) - 1)
+#     """
+#     test =  sum([((item[0] - item[1]) * (item[0] - item[1]))/item[1] \
+#                    for item in data.Items])
+#     num_rows = len(data)
+#     num_cols = len([col for col in data.Cols])
+#     if num_rows == 1:
+#         df = num_cols - 1
+#     elif num_cols == 1:
+#         df = num_rows - 1
+#     elif num_rows == 0 or num_cols == 0:
+#         raise ValueError, "data matrix must have data"
+#     else:
+#         df = (len(data) - 1) * (len([col for col in data.Cols]) - 1)
     
-    return test, chi_high(test, df)
+#     return test, chi_high(test, df)
     
 
 def likelihoods(d_given_h, priors):
