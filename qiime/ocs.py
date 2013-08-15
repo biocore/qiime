@@ -18,6 +18,8 @@ from numpy import array
 from qiime.pycogent_backports.test import ANOVA_one_way, correlation_test
 from cogent.maths.stats.util import Numbers
 
+from collections import defaultdict
+
 """To Do:
 
 """
@@ -25,146 +27,201 @@ from cogent.maths.stats.util import Numbers
 otu_table_fp = "/Users/lukeursell/Desktop/otu_table.biom"
 mapping_file_fp = '/Users/lukeursell/Desktop/Fasting_Map.txt'
 
-def get_biom_data(otu_table_fp):
-    """parse out biom table, get important info 
-    """
-    # get biom table data in array format    
-    bt = parse_biom_table(open(otu_table_fp))
-    bt_data = array([bt.observationData(i) for i in bt.ObservationIds])
+# def get_biom_data(otu_table_fp):
+#     """parse out biom table, get important info 
+#     """
+#     # get biom table data in array format    
+#     bt = parse_biom_table(open(otu_table_fp))
+#     bt_data = array([bt.observationData(i) for i in bt.ObservationIds])
 
-    #get list of OTU ids for writing out results
-    otu_ids = [i for i in bt.ObservationIds]
+#     #get list of OTU ids for writing out results
+#     otu_ids = [i for i in bt.ObservationIds]
     
-    return bt_data, otu_ids
+#     return bt_data, otu_ids
 
 # might move this to script level...
-def parse_mapping(mapping_file_fp):
-    """Parses mapping file
+# def parse_mapping(mapping_file_fp):
+#     """Parses mapping file
 
-    Input: mapping file filepath
+#     Input: mapping file filepath
 
-    Output:
-    map_data is a list of all metadata:
-    ['PC.636',
-      'ACGGTGAGTGTC',
-      'YATGCTGCCTCCCGTAGGAGT',
-      'Fast',
-      '',
-      '20080116',
-      'Fasting_mouse_I.D._636']
+#     Output:
+#     map_data is a list of all metadata:
+#     ['PC.636',
+#       'ACGGTGAGTGTC',
+#       'YATGCTGCCTCCCGTAGGAGT',
+#       'Fast',
+#       '',
+#       '20080116',
+#       'Fasting_mouse_I.D._636']
 
-    map_headers is a list of headers:
-      ['SampleID',
-     'BarcodeSequence',
-     'LinkerPrimerSequence',
-     'Treatment',
-     'test_col',
-     'DOB',
-     'Description']
-    """
-    map_data, map_headers, map_comments = \
-        parse_mapping_file(mapping_file_fp)
+#     map_headers is a list of headers:
+#       ['SampleID',
+#      'BarcodeSequence',
+#      'LinkerPrimerSequence',
+#      'Treatment',
+#      'test_col',
+#      'DOB',
+#      'Description']
+#     """
+#     map_data, map_headers, _ = parse_mapping_file(mapping_file_fp)
 
-    return map_data, map_headers
+#     return map_data, map_headers
 
 ## These two functions could probably be combined somehow...
-def get_category_info(map_data, map_headers, category):
-    """Create a dict of {SampleID: category_value} and continuous category values 
 
-    When the category of interest is catageorical, the dicionary produced
-    contains the SampleId and which categorical group it belongs to.
-    When the category contains continuous data, the category_values is produced
-    and contains a list of all values
+# def get_category_info(map_data, map_headers, category):
+#     """Create a dict of {SampleID: category_value} and continuous category values 
+
+#     When the category of interest is catageorical, the dicionary produced
+#     contains the SampleId and which categorical group it belongs to.
+#     When the category contains continuous data, the category_values is produced
+#     and contains a list of all values
     
-    Input: map_data, map_headers (from parse_mapping), and category of interest
-    e.g. cat_info, category_values = get_category_info(map_data, map_headers, 'Treatment')
+#     Input: map_data, map_headers (from parse_mapping), and category of interest
+#     e.g. cat_info, category_values = get_category_info(map_data, map_headers, 'Treatment')
 
-    Output: 
-    cat_info: dictionary relating SampleIds
-    {'PC.354': 'Control',
-     'PC.355': 'Control',
-     'PC.356': 'Control',
-     'PC.481': 'Control',
-     'PC.593': 'Control',
-     'PC.607': 'Fast',
-     'PC.634': 'Fast',
-     'PC.635': 'Fast',
-     'PC.636': 'Fast'}
+#     Output: 
+#     cat_info: dictionary relating SampleIds
+#     {'PC.354': 'Control',
+#      'PC.355': 'Control',
+#      'PC.356': 'Control',
+#      'PC.481': 'Control',
+#      'PC.593': 'Control',
+#      'PC.607': 'Fast',
+#      'PC.634': 'Fast',
+#      'PC.635': 'Fast',
+#      'PC.636': 'Fast'}
 
-     category_values: ['10', '20', '30', '40', '50', '60', '70', '80', '90']
-    """
-    cat_info = {}
-    category_values = []
+#      category_values: ['10', '20', '30', '40', '50', '60', '70', '80', '90']
+#     """
+#     cat_info = {}
+#     category_values = []
 
-    # find index in mapping data of category of interest
-    category_index = map_headers.index(category)
+#     # find index in mapping data of category of interest
+#     category_index = map_headers.index(category)
     
-    # walk through each SampleID individually
-    for line in map_data:
-        sample_id = line[0]
-        category_val = line[category_index]
+#     # walk through each SampleID individually
+#     for line in map_data:
+#         sample_id = line[0]
+#         category_val = line[category_index]
         
-        # if the category value is blank in the mapping file, ignore SampleID
-        if category_val != "":
-            cat_info[sample_id] = category_val
-            if category_val not in category_values:
-                category_values.append(category_val)
-        elif category_val == "":
-            print "Sample %s contained an empty field for the category %s \
-                and will be ignored" % (sample_id,category)
-            pass
+#         # if the category value is blank in the mapping file, ignore SampleID
+#         if category_val != "":
+#             cat_info[sample_id] = category_val
+#             if category_val not in category_values:
+#                 category_values.append(category_val)
+#         elif category_val == "":
+#             print "Sample %s contained an empty field for the category %s \
+#                 and will be ignored" % (sample_id,category)
+#             pass
 
-    return cat_info, category_values
+#     return cat_info, category_values
 
 # this function could probably be incorporated into get_category_info
 # feel free to combine them if you see an easy way
-def build_category_sampleid_dict(category_result):
-    """Take output of get_category_info and build a {category: [list of ids]}
-    like: 
-    {'Control': ['PC.355', 'PC.593', 'PC.356', 'PC.481', 'PC.354'],
-     'Fast': ['PC.636', 'PC.607', 'PC.634', 'PC.635']}
-    """
-    cat_to_ids = {}
-    for k, v in category_result.iteritems():
-        cat_to_ids.setdefault(v, []).append(k)
-    return cat_to_ids
 
-def get_sampleid_indices(cat_to_ids, otu_table_fp):
-    """Take in put of cat_to_ids, and replace the SampleIDs with their
-    indexed position in the otu table:
 
-    Output:
-    {'Control': [6, 5, 2, 3, 4], 'Fast': [0, 7, 8, 1]}
-    """
-    #Parse otu table and create list of SampleIds found in table
-    otu_table = parse_biom_table(open(otu_table_fp))
-    otu_table_ids = [i for i in otu_table.SampleIds]
 
-    cat_to_sampleid_index = {}
+# def build_category_sampleid_dict(category_result):
+#     """Take output of get_category_info and build a {category: [list of ids]}
+#     like: 
+#     {'Control': ['PC.355', 'PC.593', 'PC.356', 'PC.481', 'PC.354'],
+#      'Fast': ['PC.636', 'PC.607', 'PC.634', 'PC.635']}
+#     """
+#     cat_to_ids = {}
+#     for k, v in category_result.iteritems():
+#         cat_to_ids.setdefault(v, []).append(k)
+#     return cat_to_ids
+
+
+# this would be run at the beginning of the script
+def sync_biom_and_mf(pmf, bt):
+    """Reduce mapping file dict and biom table to shared samples."""
+    mf_samples = set(pmf.keys())
+    bt_samples = set(bt.SampleIds)
+    if mf_samples == bt_samples:
+        # agreement, can continue without fear of breaking code
+        pass
+    else: 
+        shared_samples = mf_samples.intersection(bt_samples)
+        # check that we shared something
+        assert len(shared_samples)!=0, \
+            "sync_biom_and_mf: No shared samples, no point in continuing."
+        # tell the user which samples we are excluding
+        print "The following samples were not shared, and will not be "+\
+            "considered in the analysis:\n" + \
+            ', '.join(shared_samples-(mf_samples.union(bt_samples)))
+        # remove samples that were in the mapping file but not biom file
+        [pmf.pop(i) for i in pmf if i not in shared_samples]
+        # remove samples in the biom table that were not in the mapping file
+        def _f(sv, sid, smd):
+            if sid in shared_samples:
+                return True
+            else:
+                return False
+        bt = bt.filterSamples(_f)
+    return pmf, bt
+
+
+def get_sample_cats(pmf, category):
+    """Create {SampleID:category_value} for samples in parsed mf dict."""
+    return {k:pmf[k][category] for k in pmf.keys() if pmf[k][category] != ""}
+
+def get_cat_sample_groups(sam_cats):
+    """Create {category_value:[samples_with_that_value} dict."""
+    cat_sam_groups = {group:[] for group in set(sam_cats.values())}
+    [cat_sam_groups[v].append(k) for k,v in sam_cats.items()]
+    return cat_sam_groups
+
+def get_sample_indices(cat_sam_groups, bt):
+    """Create {category_value:index_of_sample_with_that_value} dict."""
+    return {k:[bt.SampleIds.index(i) for i in v] for k,v in cat_sam_groups.items}
+
+def row_generator(bt, cat_sam_groups):
+    """Produce a generator that can feed lists of arrays to any test."""
+    data = array([bt.observationData(i) for i in bt.ObservationIds])
+    return ([row[cat_sam_groups[k]] for k in groups] for row in data)
+
+def get_category_arrays(cat_sam_indices, bt):
+
+
+# def get_sampleid_indices(cat_to_ids, otu_table_fp):
+#     """Take in put of cat_to_ids, and replace the SampleIDs with their
+#     indexed position in the otu table:
+
+#     Output:
+#     {'Control': [6, 5, 2, 3, 4], 'Fast': [0, 7, 8, 1]}
+#     """
+#     #Parse otu table and create list of SampleIds found in table
+#     otu_table = parse_biom_table(open(otu_table_fp))
+#     otu_table_ids = [i for i in otu_table.SampleIds]
+
+#     cat_to_sampleid_index = {}
     
-    for cat,ids in cat_to_ids.iteritems():
-        # check if category is already added
-        if cat not in cat_to_sampleid_index:
-            cat_to_sampleid_index[cat] = []
+#     for cat,ids in cat_to_ids.iteritems():
+#         # check if category is already added
+#         if cat not in cat_to_sampleid_index:
+#             cat_to_sampleid_index[cat] = []
             
-            # append SampleID indexed position in otu table to dict
-            for id in ids:
+#             # append SampleID indexed position in otu table to dict
+#             for id in ids:
                 
-                #check to see if SampleID is in the mapping file but not the
-                # OTU table
-                if id not in otu_table_ids:
-                    print "Sample %s is not found in the otu table and will \
-                        be ignored" % id
+#                 #check to see if SampleID is in the mapping file but not the
+#                 # OTU table
+#                 if id not in otu_table_ids:
+#                     print "Sample %s is not found in the otu table and will \
+#                         be ignored" % id
                 
-                #if SampleID is in both mapping file and OTU table, get index
-                else: 
-                    id in otu_table_ids        
-                    index = otu_table.getSampleIndex(id)
-                    cat_to_sampleid_index[cat].append(index)
-        else:
-            continue
+#                 #if SampleID is in both mapping file and OTU table, get index
+#                 else: 
+#                     id in otu_table_ids        
+#                     index = otu_table.getSampleIndex(id)
+#                     cat_to_sampleid_index[cat].append(index)
+#         else:
+#             continue
 
-    return cat_to_sampleid_index
+#     return cat_to_sampleid_index
 
 def get_category_arrays(cat_to_sampleid_index, bt_data):
     """Take bt_data array, and pull out indexed positions for each category of
