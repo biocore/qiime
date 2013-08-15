@@ -14,14 +14,14 @@ from qiime.pycogent_backports.test import (tail, likelihoods,
     pearson, spearman, _get_rank, kendall_correlation, std, median, 
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
     ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
-
 # G Test related imports
 from qiime.pycogent_backports.test import (williams_correction, G_stat, G_fit)
 from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
-
+# Kruskal Wallis related imports
+from qiime.pycogent_backports.test import (_corr_kw, ssl_ssr_sx, tie_correction,
+    kruskal_wallis)
 from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
     ones, testing, tril, cov, sqrt)
-from cogent.util.dict2d import Dict2D
 import math
 from cogent.maths.stats.util import Numbers
 
@@ -1387,7 +1387,58 @@ class MannWhitneyTests(TestCase):
         U, p = mw_boot(self.x, self.y, 10)
         self.assertFloatEqual(U, 123.5)
         self.assertTrue(0 <= p <= 0.5)
-    
+
+class KruskalWallisTests(TestCase):
+    """Check that Kruskal Wallis tests are performing as expected."""
+    def setUp(self):
+        """Set values used for all Kruskal Wallis tests."""
+        pass #nothing used by all
+
+    def test_kw_correction(self):
+        """Test n**3-n values for kruskal_wallis correction."""
+        self.assertEqual(_corr_kw(10), 990)
+        self.assertEqual(_corr_kw(5), 120)
+        self.assertFloatEqual(_corr_kw(5.4), 152.064)
+
+    def test_ssl_ssr_kw(self):
+        """Test the searchsorted and sorting is behaving as expected."""
+        x = array([75,67,70,75,65,71,67,67,76,68,57,58,60,59,62,60,60,57,59,61,
+            58,61,56,58,57,56,61,60,57,58,58,59,58,61,57,56,58,57,57,59,62,66,
+            65,63,64,62,65,65,62,67])
+        obs_ssl, obs_ssr, obs_sx = ssl_ssr_sx(x)
+        exp_ssl = array([47,40,45,47,35,46,40,40,49,44,3,10,21,17,29,21,21,3,17,
+            25,10,25,0,10,3,0,25,21,3,10,10,17,10,25,3,0,10,3,3,17,29,39,35,33,
+            34,29,35,35,29,40])
+        exp_ssr = array([49,44,46,49,39,47,44,44,50,45,10,17,25,21,33,25,25,10,
+            21,29,17,29,3,17,10,3,29,25,10,17,17,21,17,29,10,3,17,10,10,21,33,
+            40,39,34,35,33,39,39,33,44])
+        exp_sx = array([56,56,56,57,57,57,57,57,57,57,58,58,58,58,58,58,58,59,
+            59,59,59,60,60,60,60,61,61,61,61,62,62,62,62,63,64,65,65,65,65,66,
+            67,67,67,67,68,70,71,75,75,76])
+        self.assertEqual(obs_ssl, exp_ssl)
+        self.assertEqual(obs_ssr, exp_ssr)
+        self.assertEqual(obs_sx, exp_sx)
+
+    def test_tie_correction_kw(self):
+        """Test that tie correction for Kruskal Wallis behaves as expected."""
+        # sorted input data
+        sx = array([56,56,56,57,57,57,57,57,57,57,58,58,58,58,58,58,58,59,
+            59,59,59,60,60,60,60,61,61,61,61,62,62,62,62,63,64,65,65,65,65,66,
+            67,67,67,67,68,70,71,75,75,76])
+        obs = tie_correction(sx)
+        self.assertFloatEqual(obs, 0.99150060024)
+
+    def test_kruskal_wallis(self):
+        """Test kruskal_wallis on Sokal & Rohlf Box 13.6 dataset"""
+        d_control = [75,67,70,75,65,71,67,67,76,68]
+        d_2_gluc = [57,58,60,59,62,60,60,57,59,61]
+        d_2_fruc = [58,61,56,58,57,56,61,60,57,58]
+        d_1_1 = [58,59,58,61,57,56,58,57,57,59]
+        d_2_sucr = [62,66,65,63,64,62,65,65,62,67]
+        data = [d_control, d_2_gluc, d_2_fruc, d_1_1, d_2_sucr]
+        kw_stat, pval = kruskal_wallis(data)
+        self.assertFloatEqual(kw_stat, 38.436807439)
+        self.assertFloatEqual(pval, 9.105424085598766e-08)
 
 class KendallTests(TestCase):
     """check accuracy of Kendall tests against values from R"""

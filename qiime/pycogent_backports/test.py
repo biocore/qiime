@@ -8,6 +8,7 @@ from cogent.maths.stats.distribution import (chi_high, z_low, z_high, zprob,
     ndtri)
 from cogent.maths.stats.special import (lgam, log_one_minus, one_minus_exp,
     MACHEP)
+from cogent.maths.stats import chisqprob
 from cogent.maths.stats.ks import psmirnov2x, pkstwo
 from cogent.maths.stats.kendall import pkendall, kendalls_tau
 from cogent.maths.stats.special import Gamma
@@ -15,7 +16,7 @@ from cogent.maths.stats.special import Gamma
 from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
-        median as _median, zeros, ones)
+        median as _median, zeros, ones, unique, copy, searchsorted)
         #, std - currently incorrect
 from numpy.random import permutation, randint
 from cogent.maths.stats.util import Numbers
