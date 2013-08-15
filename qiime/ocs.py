@@ -13,23 +13,37 @@ __status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file
+import numpy
 from numpy import array
+from qiime.pycogent_backports.test import ANOVA_one_way, correlation_test
+from cogent.maths.stats.util import Numbers
 
 """To Do:
 
 """
 
 otu_table_fp = "/Users/lukeursell/Desktop/otu_table.biom"
+mapping_file_fp = '/Users/lukeursell/Desktop/Fasting_Map.txt'
 
 def get_biom_data(otu_table_fp):
-    
+    """parse out biom table, get important info 
+    """
+    # get biom table data in array format    
     bt = parse_biom_table(open(otu_table_fp))
     bt_data = array([bt.observationData(i) for i in bt.ObservationIds])
-    return bt_data
 
-def parse_mapping():
-    """Parse mapping file
+    #get list of OTU ids for writing out results
+    otu_ids = [i for i in bt.ObservationIds]
+    
+    return bt_data, otu_ids
 
+# might move this to script level...
+def parse_mapping(mapping_file_fp):
+    """Parses mapping file
+
+    Input: mapping file filepath
+
+    Output:
     map_data is a list of all metadata:
     ['PC.636',
       'ACGGTGAGTGTC',
@@ -39,7 +53,7 @@ def parse_mapping():
       '20080116',
       'Fasting_mouse_I.D._636']
 
-  map_headers is a list of headers:
+    map_headers is a list of headers:
       ['SampleID',
      'BarcodeSequence',
      'LinkerPrimerSequence',
@@ -49,18 +63,24 @@ def parse_mapping():
      'Description']
     """
     map_data, map_headers, map_comments = \
-        parse_mapping_file('/Users/lukeursell/Desktop/Fasting_Map.txt')
+        parse_mapping_file(mapping_file_fp)
 
     return map_data, map_headers
 
 ## These two functions could probably be combined somehow...
 def get_category_info(map_data, map_headers, category):
-    """Create a dict of {SampleID: category_value} and a list of all possible
-    category_values (to be used when the category contains continuous data)
+    """Create a dict of {SampleID: category_value} and continuous category values 
 
-    e.g. result, category_values = get_category_info(map_data, map_headers, 'Treatment')
+    When the category of interest is catageorical, the dicionary produced
+    contains the SampleId and which categorical group it belongs to.
+    When the category contains continuous data, the category_values is produced
+    and contains a list of all values
+    
+    Input: map_data, map_headers (from parse_mapping), and category of interest
+    e.g. cat_info, category_values = get_category_info(map_data, map_headers, 'Treatment')
 
-    results:
+    Output: 
+    cat_info: dictionary relating SampleIds
     {'PC.354': 'Control',
      'PC.355': 'Control',
      'PC.356': 'Control',
@@ -71,9 +91,9 @@ def get_category_info(map_data, map_headers, category):
      'PC.635': 'Fast',
      'PC.636': 'Fast'}
 
-     category_values: ['Control', 'Fast']
+     category_values: ['10', '20', '30', '40', '50', '60', '70', '80', '90']
     """
-    result = {}
+    cat_info = {}
     category_values = []
 
     # find index in mapping data of category of interest
@@ -86,7 +106,7 @@ def get_category_info(map_data, map_headers, category):
         
         # if the category value is blank in the mapping file, ignore SampleID
         if category_val != "":
-            result[sample_id] = category_val
+            cat_info[sample_id] = category_val
             if category_val not in category_values:
                 category_values.append(category_val)
         elif category_val == "":
@@ -94,7 +114,7 @@ def get_category_info(map_data, map_headers, category):
                 and will be ignored" % (sample_id,category)
             pass
 
-    return result, category_values
+    return cat_info, category_values
 
 # this function could probably be incorporated into get_category_info
 # feel free to combine them if you see an easy way
@@ -137,7 +157,8 @@ def get_sampleid_indices(cat_to_ids, otu_table_fp):
                         be ignored" % id
                 
                 #if SampleID is in both mapping file and OTU table, get index
-                elif: id in otu_table_ids:        
+                else: 
+                    id in otu_table_ids        
                     index = otu_table.getSampleIndex(id)
                     cat_to_sampleid_index[cat].append(index)
         else:
@@ -154,7 +175,7 @@ def get_category_arrays(cat_to_sampleid_index, bt_data):
        [ 0.,  0.,  0.,  0.,  0.],
        ...
        [ 0.,  0.,  0.,  0.,  0.]])],
- [array([[ 1.,  0.,  0.,  0.],
+    [array([[ 1.,  0.,  0.,  0.],
        [ 0.,  0.,  0.,  1.],
        ..., 
        [ 0.,  0.,  0.,  0.],
@@ -162,13 +183,68 @@ def get_category_arrays(cat_to_sampleid_index, bt_data):
     """
     listed_category_data = []
     for cat in cat_to_sampleid_index.keys():
-        listed_category_data.append([bt_data[:,cat_to_sampleid_index[cat]]])
+        listed_category_data.append(bt_data[:,cat_to_sampleid_index[cat]])
 
     return listed_category_data
 
+def run_ANOVA(listed_category_data):
+    """Compute the ANOVA for inputed lists of data
 
+    Take in the list of array data produced by get_category_arrays.
+    Runs ANOVA_one_way on each OTU.
 
+    Returns a list of group means and the propability from ANOVA
 
+        [([0.2, 0.0], 0.40708382206558885),
+        ([0.0, 0.25], 0.29235199244023835)]
+    """
+    result = []
+    counter = 0
+
+    while counter < len(listed_category_data[0]):
+        a = []
+        
+        # Create a list of lists where contents are in Numbers format
+        a.append(Numbers(listed_category_data[0][counter].tolist()))
+        a.append(Numbers(listed_category_data[1][counter].tolist()))
+        
+        # Compute ANOVA
+        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(a)
+        
+        # Append ANOVA output to result
+        output = group_means, prob
+        result.append(output)
+        counter += 1
+
+    return result
+
+def run_correlation(bt_data, category_values, corr_method, tails=None, 
+                    permutations=999, confidence_level=0.95):
+    """Compute specified correlation between x and y data
+
+    Take in bt_data (an array of the biom table observations), a list of the
+    category_values (obtained from the mapping file), and the desired
+    correlation method (either 'spearman' or 'pearson')
+
+    Returns list of results, each entry containing corr_coeff, parametric_p_val,
+    and nonparametric_p_val
+    """
+    result = []
+    
+    #Convert continuous variables from the mapping file to integers
+    cat_vals = [int(i) for i in category_values]
+
+    for otu in bt_data:
+        # compute correlation
+        (corr_coeff, parametric_p_val, permuted_corr_coeffs, \
+        nonparametric_p_val, (ci_low, ci_high)) = \
+        correlation_test(otu, cat_vals, corr_method, tails, permutations, confidence_level)
+
+        # grab selected correlation info and append to results
+        output = corr_coeff, parametric_p_val, nonparametric_p_val
+        result.append(output)
+
+    return result
 
 
 
