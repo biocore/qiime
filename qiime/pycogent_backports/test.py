@@ -29,7 +29,7 @@ __credits__ = ["Gavin Huttley", "Rob Knight", "Catherine Lozupone",
                "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan",
                "Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.7-dev"
+__version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Production"
@@ -220,6 +220,10 @@ def safe_sum_p_log_p(a, base=None):
         logs /= log(base)
     return sum(nz * logs, 0)
 
+# def safe_ln(arr):
+#     """Take natural log of arr substituting 0 for ln(0)."""
+#     return log(where(arr==0, 1, arr))
+
 def G_ind(m, williams=False):
     """Returns G test for independence in an r x c table.
     
@@ -239,7 +243,7 @@ def G_ind(m, williams=False):
         G = G/q
     return G, chi_high(max(G,0), df)
 
-
+## Start functions for G goodness of fit 
 def williams_correction(n, a, G):
     """Return the Williams corrected G statistic for G goodness of fit test.
     
@@ -266,7 +270,8 @@ def G_stat(data):
     frequency of the given feature (OTU) across all samples in the metadata 
     class (e.g. in the 6 treatment samples, the value for OTUX is averaged, and 
     this forms the average frequency which represents all treatment samples in 
-    aggregate). 
+    aggregate). This means that this version of the G stat cannot detect sample
+    heterogeneity as a replicated goodness of fit test would be able to. 
 
     In addition, this function assumes the extrinsic hypothesis is that the 
     mean frequency in all the samples groups is the same.
@@ -276,8 +281,10 @@ def G_stat(data):
       represents the observed frequencies of a given OTU in one of the sample
       classes.
     """
-    # G = 2*sum(f_i*ln(f_i/f_i_hat)) over all i phenotypes/sample classes 
-    n = sum([arr.sum() for arr in data]) #total observations
+    # G = 2*sum(f_i*ln(f_i/f_i_hat)) over all i phenotypes/sample classes
+    # calculate the total number of observations under the consideration that
+    # multiple observations in a given group are averaged. 
+    n = sum([arr.mean() for arr in data])
     a = len(data) #a is number of phenotypes or sample classes
     obs_freqs = array([sample_type.mean() for sample_type in data]) #f_i vals 
     exp_freqs = zeros(a)+n/float(a) #f_i_hat vals
@@ -299,125 +306,99 @@ def G_fit(data, williams=True):
      williams - boolean, whether or not to apply williams correction before 
       comparing to the chi-squared dsitribution.
     """
+    # first compute sanity checks on the data so errors are informative
+    assert all([(i>=0).all() for i in data]), \
+        'G_fit: data contains negative values. G test would be undefined.'
+    assert all([i.size!=0 for i in data]), \
+        'G_fit: Empty array in data, will cause calculation errors.'
+    assert all([i.sum()>0 for i in data]), \
+        'G_fit: data contains sample group with zero only values. This means '+\
+        'that the given OTU was never observed in this sample class. The '+\
+        'G test fails in this case because we would be forced to take log(0).'
+
     G = G_stat(data)
     a = len(data) #a is number of phenotypes or sample classes
-    if willliams:
-        n = sum([arr.sum() for arr in data]) #total observations
+    if williams:
+        # calculate the total number of observations under the consideration 
+        # that multiple observations in a given group are averaged. 
+        n = sum([arr.mean() for arr in data]) #total observations
         G = williams_correction(n, a, G)
     return G, chi_high(G, a-1) #a-1 degrees of freedom because of sum constraint
+## End functions for G goodness of fit test
 
-def calc_contingency_expected(matrix):
-        """Calculates expected frequencies from a table of observed frequencies
+## Start functions for kruskal_wallis test
+def _corr_kw(n):
+    """Return n**3-n. Used for correction of Kruskal Wallis."""
+    return n**3 - n 
 
-        The input matrix is a dict2D object and represents a frequency table
-        with different variables in the rows and columns. (observed
-        frequencies as values)
-                                
-        The expected value is calculated with the following equation:
-            Expected = row_total x column_total / overall_total
-                                            
-        The returned matrix (dict2D) has lists of the observed and the 
-        expected frequency as values
-        """
-        #transpose matrix for calculating column totals
-        t_matrix = matrix.copy()
-        t_matrix.transpose()
+def ssl_ssr_sx(x):
+    """Return searchsorted right and left indices of x and sorted copy of x."""
+    y = copy(x)
+    y.sort()
+    ssl = searchsorted(y, x, 'left')
+    ssr = searchsorted(y, x, 'right')
+    return ssl, ssr, y
 
-        overall_total = sum(list(matrix.Items))
-        #make new matrix for storing results
-        result = matrix.copy()
+def tie_correction(sx):
+    """Correct for ties in Kruskal Wallis."""
+    ux = unique(sx)
+    uxl = searchsorted(sx, ux, 'left')
+    uxr = searchsorted(sx, ux, 'right')
+    return 1.-_corr_kw(uxr-uxl).sum()/float(_corr_kw(len(sx)))
 
-        #populate result with expected values
-        for row in matrix:
-            row_sum = sum(matrix[row].values())
-            for item in matrix[row]:
-                column_sum = sum(t_matrix[item].values())
-                #calculate expected frequency
-                Expected = (row_sum * column_sum)/overall_total
-                result[row][item] = [result[row][item]]
-                result[row][item].append(Expected)
-        return result
+def kruskal_wallis(data):
+    """Calculates corrected Kruskal Wallis statistic (Sokal and Rolhf pg. 423).
 
-# def G_fit(obs, exp, williams=1):
-#     """G test for fit between two lists of counts.
+    Implementation taken from Wikipedia and Sokal and Rohlf Biometry pg. 423. 
+    H = [12/n(n+1) * sum(T_i^2/n_i)] - 3(n+1) = the Kruskal Wallis value, the 
+    expected value of the variance of the sum of the ranks. Summation occurs
+    over all groups (samples)
+    T_i = sum of the ranks (with ties resolved by the Kruskal Wallis procedure) 
+    of the values (or variates) in the ith group (sample). 
+    n_i = number of values in the ith group. 
+    n = total number of samples in all groups being compared. 
+    D = 1 - sum(T_j^3-T_j)/(n^3-n) = correction factor for ties. 
+    T_j = number of ties in the jth group of ties. 
 
-#     Usage: test, prob = G_fit(obs, exp, williams)
-    
-#     obs and exp are two lists of numbers.
-#     williams is a boolean stating whether to do the Williams correction.
-    
-#     SUM(2 f(obs)ln (f(obs)/f(exp)))
-    
-#     See Sokal and Rohlf chapter 17.
-#     """
-#     k = len(obs)
-#     if k != len(exp):
-#         raise ValueError, "G_fit requires two lists of equal length."
-#     G = 0
-#     n = 0
-    
-#     for o, e in zip(obs, exp):
-#         if o < 0:
-#             raise ValueError, \
-#             "G_fit requires all observed values to be positive."
-#         if e <= 0:
-#             raise ZeroExpectedError, \
-#             "G_fit requires all expected values to be positive."
-#         if o:   #if o is zero, o * log(o/e) must be zero as well.
-#             G += o * log(o/e)
-#             n += o
-    
-#     G *= 2
-#     if williams:
-#         q = 1 + (k + 1)/(6*n)
-#         G /= q
-
-#     return G, chi_high(G, k - 1)
-
-# def G_fit_from_Dict2D(data):
-#     """G test for fit on a Dict2D
-
-#     data is a dict2D. Values are a list containing the observed
-#     and expected frequencies (can be created with calc_contingency_expected)
-#     """
-#     obs_counts = []
-#     exp_counts = []
-#     for item in data.Items:
-#         if len(item) == 2:
-#             obs_counts.append(item[0])
-#             exp_counts.append(item[1])
-#     g_val, prob = G_fit(obs_counts, exp_counts)
-#     return g_val, prob
-
-# def chi_square_from_Dict2D(data):
-#     """Chi Square test on a Dict2D
-
-#     data is a Dict2D. The values are a list of the observed (O)
-#     and expected (E) frequencies,(can be created with calc_contingency_expected)
-
-#     The chi-square value (test) is the sum of (O-E)^2/E over the items in data
-
-#     degrees of freedom are calculated from data as:
-#     (r-1)*(c-1) if cols and rows are both > 1
-#     otherwise is just 1 - the # of rows or columns
-#     (whichever is greater than 1)
-    
-#     """
-#     test =  sum([((item[0] - item[1]) * (item[0] - item[1]))/item[1] \
-#                    for item in data.Items])
-#     num_rows = len(data)
-#     num_cols = len([col for col in data.Cols])
-#     if num_rows == 1:
-#         df = num_cols - 1
-#     elif num_cols == 1:
-#         df = num_rows - 1
-#     elif num_rows == 0 or num_cols == 0:
-#         raise ValueError, "data matrix must have data"
-#     else:
-#         df = (len(data) - 1) * (len([col for col in data.Cols]) - 1)
-    
-#     return test, chi_high(test, df)
-    
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+    Outputs:
+     H/D
+    """ 
+    # record number of groups for comparison
+    num_groups = len(data)
+    # ugly, slow, accounts for unequal input size, format. 
+    x = []
+    [x.extend(i) for i in data]
+    x = array(x)
+    # calculate searchsorted right and searchsroted left indices.
+    ssl, ssr, sx = ssl_ssr_sx(x)
+    # calculate H
+    start = 0
+    stop = 0
+    tot = 0
+    for group in data:
+        stop += len(group)
+        # To average the ranks for tied entries we compute leftmost rank of 
+        # value i, minus rightmost rank of value i (and divide by 2). Since 
+        # python indexes to 0, ssl ranks are 1 lower than they shoud be (i.e.
+        # the smallest value has rank 0 instead of 1). The +1 below corrects for
+        # this and .5 averages. 
+        ranks = (ssr[start:stop]+ssl[start:stop]+1)*.5
+        tot+=(ranks.sum()**2)/float(len(group))
+        start += len(group)
+    n = len(x)
+    a = 12./(n*(n+1))
+    b = -3.*(n+1)
+    H = (a*tot + b)
+    # correct for ties by calulating D
+    D = tie_correction(sx)
+    # give chisqprob the kw statistic, and degrees of freedom (num groups - 1)
+    p_value = chisqprob(H/D, num_groups-1)
+    return H/D, p_value
+## End functions for kruskal_wallis test
 
 def likelihoods(d_given_h, priors):
     """Calculate likelihoods through marginalization, given Pr(D|H) and priors.

@@ -2,22 +2,25 @@
 """Unit tests for statistical tests and utility functions.
 """
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
-    posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, \
-    mc_t_two_sample, _permute_observations, t_one_observation, correlation, \
-    correlation_test, correlation_matrix, z_test, z_tailed_prob, \
-    t_tailed_prob, sign_test, reverse_tails, ZeroExpectedError, combinations, \
-    multiple_comparisons, multiple_inverse, multiple_n, fisher, regress, \
-    regress_major, f_value, f_two_sample, calc_contingency_expected, \
-    G_fit_from_Dict2D, chi_square_from_Dict2D, MonteCarloP, \
-    regress_residuals, safe_sum_p_log_p, G_ind, regress_origin, stdev_from_mean, \
-    regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, \
-    pearson, spearman, _get_rank, kendall_correlation, std, median, \
-    get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, \
-    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow
+from qiime.pycogent_backports.test import (tail, likelihoods,
+    posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, 
+    mc_t_two_sample, _permute_observations, t_one_observation, correlation, 
+    correlation_test, correlation_matrix, z_test, z_tailed_prob, 
+    t_tailed_prob, sign_test, reverse_tails, ZeroExpectedError, combinations, 
+    multiple_comparisons, multiple_inverse, multiple_n, fisher, regress, 
+    regress_major, f_value, f_two_sample, MonteCarloP, 
+    regress_residuals, safe_sum_p_log_p, regress_origin, stdev_from_mean, 
+    regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, 
+    pearson, spearman, _get_rank, kendall_correlation, std, median, 
+    get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
+    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
 
-from numpy import array, concatenate, fill_diagonal, reshape, arange, matrix, \
-        ones, testing, tril, cov, sqrt
+# G Test related imports
+from qiime.pycogent_backports.test import (williams_correction, G_stat, G_fit)
+from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
+
+from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
+    ones, testing, tril, cov, sqrt)
 from cogent.util.dict2d import Dict2D
 import math
 from cogent.maths.stats.util import Numbers
@@ -26,7 +29,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Gavin Huttley",
                "Sandra Smit", "Daniel McDonald", "Jai Ram Rideout",
-               "Michael Dwan"]
+               "Michael Dwan, Luke Ursell, Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -213,7 +216,6 @@ class TestsTests(TestCase):
         y = [2.28,2.43]
         exp = (8.761682243E-05, -5.341209112E-01)
         self.assertFloatEqual(regress(x,y),exp,0.001)
- 
 
     def test_regress_origin(self):
         """regression slope constrained through origin should match Excel"""
@@ -226,7 +228,6 @@ class TestsTests(TestCase):
         y = [2.28,2.43]
         exp = (7.1428649481939822e-05, 0)
         self.assertFloatEqual(regress_origin(x,y),exp,0.001)
- 
 
     def test_regress_R2(self):
         """regress_R2 returns the R^2 value of a regression"""
@@ -285,6 +286,67 @@ class TestsTests(TestCase):
 
 class GTests(TestCase):
     """Tests implementation of the G tests for fit and independence."""
+    def setUp(self):
+        """Set up required values for all G test test."""
+        pass # nothing required by all
+
+    def test_williams_correction(self):
+        """Test that the Williams correction is correctly computed."""
+        n = 100
+        a = 10
+        G = 10.5783
+        exp = 10.387855973813421
+        self.assertFloatEqual(williams_correction(n,a,G), exp)
+        # test with an example from Sokal and Rohlf pg 699
+        n = 241
+        a = 8
+        G = 8.82396
+        exp = 8.76938
+        self.assertFloatEqual(williams_correction(n,a,G), exp)
+
+    def test_G_stat(self):
+        """Test G-stat is correct when extrinsic hypothesis is equal freqs."""
+        # test with equal len=1 vectors
+        data = [array(i) for i in [63,31,28,12,39,16,40,12]]
+        exp = 69.030858949133162
+        self.assertFloatEqual(G_stat(data), exp)
+        # test with a hand computed example 
+        data = [array([75,65,48]), array([200]), array([10,250,13,85])]
+        exp = 85.908598110052
+        self.assertFloatEqual(G_stat(data), exp)
+
+    def test_G_fit(self):
+        """Test G fit is correct with and without Williams correction."""
+        # test with williams correction
+        data = [array(i) for i in [63,31,28,12,39,16,40,12]]
+        exp_G = 69.030858949133162/1.00622406639
+        exp_p = 2.8277381487281706e-12
+        obs_G, obs_p = G_fit(data, williams=True)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # test with hand computed example and williams correction
+        data = [array([75,65,48]), array([200]), array([10,250,13,85])]
+        exp_G = 85.90859811005285/1.0018930430667
+        exp_p = 2.4012235241479195e-19
+        obs_G, obs_p = G_fit(data, williams=True)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # test without williams correction on another hand computed example
+        data = [array([10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
+        exp_G = 1.6610421781232
+        exp_p = 0.43582212499949591
+        obs_G, obs_p = G_fit(data, williams=False)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # now test that assertions raise AssertionErrors
+        neg_data = [array([-10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
+        self.assertRaises(AssertionError, G_fit, neg_data)
+        emp_data = [array([]), array([15,12,17,18]), array([6,9,13])]
+        self.assertRaises(AssertionError, G_fit, emp_data)
+        zer_data = [array([0,0,0]), array([15,12,17,18]), array([6,9,13])]
+        self.assertRaises(AssertionError, G_fit, zer_data)
+
+
     def test_G_2_by_2_2tailed_equal(self):
         """G_2_by_2 should return 0 if all cell counts are equal"""
         self.assertFloatEqual(0, G_2_by_2(1, 1, 1, 1, False, False)[0])
@@ -322,55 +384,6 @@ class GTests(TestCase):
         self.assertFloatEqualAbs(G_2_by_2(5,47,36,108), (-6.065167, 0.993106),
             0.00001)
 
-    def test_calc_contingency_expected(self):
-        """calcContingencyExpected returns new matrix with expected freqs"""
-        matrix = Dict2D({'rest_of_tree': {'env1': 2, 'env3': 1, 'env2': 0},
-                  'b': {'env1': 1, 'env3': 1, 'env2': 3}})
-        result = calc_contingency_expected(matrix)
-        self.assertFloatEqual(result['rest_of_tree']['env1'], [2, 1.125])
-        self.assertFloatEqual(result['rest_of_tree']['env3'], [1, 0.75])
-        self.assertFloatEqual(result['rest_of_tree']['env2'], [0, 1.125])
-        self.assertFloatEqual(result['b']['env1'], [1, 1.875])
-        self.assertFloatEqual(result['b']['env3'], [1, 1.25])
-        self.assertFloatEqual(result['b']['env2'], [3, 1.875])
-        
-    def test_Gfit_unequal_lists(self):
-        """Gfit should raise errors if lists unequal"""
-        #lists must be equal
-        self.assertRaises(ValueError, G_fit, [1, 2, 3], [1, 2])
-
-    def test_Gfit_negative_observeds(self):
-        """Gfit should raise ValueError if any observeds are negative."""
-        self.assertRaises(ValueError, G_fit, [-1, 2, 3], [1, 2, 3])
-    
-    def test_Gfit_nonpositive_expecteds(self):
-        """Gfit should raise ZeroExpectedError if expecteds are zero/negative"""
-        self.assertRaises(ZeroExpectedError, G_fit, [1, 2, 3], [0, 1, 2])
-        self.assertRaises(ZeroExpectedError, G_fit, [1, 2, 3], [-1, 1, 2])
-    
-    def test_Gfit_good_data(self):
-        """Gfit tests for fit should match examples in Sokal and Rohlf"""
-        #example from p. 699, Sokal and Rohlf (1995)
-        obs = [63, 31, 28, 12, 39, 16, 40, 12]
-        exp = [ 67.78125, 22.59375, 22.59375, 7.53125, 45.18750,
-                15.06250, 45.18750, 15.06250]
-        #without correction
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[0], 8.82397, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[1], 0.26554, 0.00002)
-        #with correction
-        self.assertFloatEqualAbs(G_fit(obs, exp)[0], 8.76938, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp)[1], 0.26964, 0.00002)
-        
-        #example from p. 700, Sokal and Rohlf (1995)
-        obs = [130, 46]
-        exp = [132, 44]
-        #without correction
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[0], 0.12002, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[1], 0.72901, 0.00002)
-        #with correction
-        self.assertFloatEqualAbs(G_fit(obs, exp)[0], 0.11968, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp)[1], 0.72938, 0.00002)
-
     def test_safe_sum_p_log_p(self):
         """safe_sum_p_log_p should ignore zero elements, not raise error"""
         m = array([2,4,0,8])
@@ -381,47 +394,6 @@ class GTests(TestCase):
         a = array([[29,11],[273,191],[8,31],[64,64]])
         self.assertFloatEqual(G_ind(a)[0], 28.59642)
         self.assertFloatEqual(G_ind(a, True)[0], 28.31244)
-
-    def test_G_fit_from_Dict2D(self):
-        """G_fit_from_Dict2D runs G-fit on data in a Dict2D
-        """
-        matrix = Dict2D({'Marl': {'val':[2, 5.2]},
-                        'Chalk': {'val':[10, 5.2]},
-                        'Sandstone':{'val':[8, 5.2]},
-                        'Clay':{'val':[2, 5.2]},
-                        'Limestone':{'val':[4, 5.2]}
-                        })
-        g_val, prob = G_fit_from_Dict2D(matrix)
-        self.assertFloatEqual(g_val, 9.84923)
-        self.assertFloatEqual(prob, 0.04304536)
-
-    def test_chi_square_from_Dict2D(self):
-        """chi_square_from_Dict2D calcs a Chi-Square and p value from Dict2D"""
-        #test1
-        obs_matrix = Dict2D({'rest_of_tree': {'env1': 2, 'env3': 1, 'env2': 0},
-                  'b': {'env1': 1, 'env3': 1, 'env2': 3}})
-        input_matrix = calc_contingency_expected(obs_matrix)
-        test, csp = chi_square_from_Dict2D(input_matrix)
-        self.assertFloatEqual(test, 3.0222222222222221)
-        #test2
-        test_matrix_2 = Dict2D({'Marl': {'val':[2, 5.2]},
-                                'Chalk': {'val':[10, 5.2]},
-                                'Sandstone':{'val':[8, 5.2]},
-                                'Clay':{'val':[2, 5.2]},
-                                'Limestone':{'val':[4, 5.2]}
-                                })
-        test2, csp2 = chi_square_from_Dict2D(test_matrix_2)
-        self.assertFloatEqual(test2, 10.1538461538)
-        self.assertFloatEqual(csp2, 0.0379143890013)
-        #test3
-        matrix3_obs = Dict2D({'AIDS':{'Males':4, 'Females':2, 'Both':3},
-                        'No_AIDS':{'Males':3, 'Females':16, 'Both':2}
-                       })
-        matrix3 = calc_contingency_expected(matrix3_obs)
-        test3, csp3 = chi_square_from_Dict2D(matrix3)
-        self.assertFloatEqual(test3, 7.6568405139833722)
-        self.assertFloatEqual(csp3, 0.0217439383468)
-
 
 class LikelihoodTests(TestCase):
     """Tests implementations of likelihood calculations."""
