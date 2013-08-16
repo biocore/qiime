@@ -307,16 +307,18 @@ def G_fit(data, williams=True):
      williams - boolean, whether or not to apply williams correction before 
       comparing to the chi-squared dsitribution.
     """
-    # first compute sanity checks on the data so errors are informative
-    assert all([(i>=0).all() for i in data]), \
-        'G_fit: data contains negative values. G test would be undefined.'
-    assert all([i.size!=0 for i in data]), \
-        'G_fit: Empty array in data, will cause calculation errors.'
-    assert all([i.sum()>0 for i in data]), \
-        'G_fit: data contains sample group with zero only values. This means '+\
-        'that the given OTU was never observed in this sample class. The '+\
-        'G test fails in this case because we would be forced to take log(0).'
-
+    # sanity checks on the data to return nans if conditions are not met
+    if not all([(i>=0).all() for i in data]):
+        print 'G_fit: data contains negative values. G test would be '+\
+            'undefined. Ignoring this OTU.\n'
+        return nan, nan
+    if not all([i.sum()>0 for i in data]):
+        print 'G_fit: data contains sample group with zero only values. This '+\
+            'means that the given OTU was never observed in this sample class'+\
+            '. The G test fails in this case because we would be forced to ' +\
+            'take log(0). Ignoring this OTU.\n'
+        return nan, nan
+   
     G = G_stat(data)
     a = len(data) #a is number of phenotypes or sample classes
     if williams:
@@ -1301,7 +1303,9 @@ def ANOVA_one_way(a):
     dfn = len(group_means) - 1
     between_Groups = between_Groups/dfn
     F = between_Groups/within_Groups
-    return dfn, dfd, F, between_Groups, within_Groups, group_means, f_high(dfn, dfd, F)
+    #return dfn, dfd, F, between_Groups, within_Groups, group_means, f_high(dfn, dfd, F)
+    return F, f_high(dfn, dfd, F)
+
 
 def MonteCarloP(value, rand_values, tail = 'high'):
     """takes a true value and a list of random values as

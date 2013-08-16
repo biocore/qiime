@@ -339,12 +339,12 @@ class GTests(TestCase):
         self.assertFloatEqual(obs_G, exp_G)
         self.assertFloatEqual(obs_p, exp_p)
         # now test that assertions raise AssertionErrors
-        neg_data = [array([-10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
-        self.assertRaises(AssertionError, G_fit, neg_data)
-        emp_data = [array([]), array([15,12,17,18]), array([6,9,13])]
-        self.assertRaises(AssertionError, G_fit, emp_data)
-        zer_data = [array([0,0,0]), array([15,12,17,18]), array([6,9,13])]
-        self.assertRaises(AssertionError, G_fit, zer_data)
+        # neg_data = [array([-10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, neg_data)
+        # emp_data = [array([]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, emp_data)
+        # zer_data = [array([0,0,0]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, zer_data)
 
 
     def test_G_2_by_2_2tailed_equal(self):
@@ -1672,14 +1672,15 @@ class TestDistMatrixPermutationTest(TestCase):
         g2 = array([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
         g3 = array([6.0, 7.0, 5.0, 6.0, 7.0])
         i = [g1, g2, g3]
-        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(i)
-        self.assertEqual(dfn, 2)
-        self.assertEqual(dfd, 13)
+        # dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(i)
+        F, pval = ANOVA_one_way(i)
+        # self.assertEqual(dfn, 2)
+        # self.assertEqual(dfd, 13)
         self.assertFloatEqual(F, 18.565450643776831)
-        self.assertFloatEqual(between_MS, 55.458333333333343)
-        self.assertFloatEqual(within_MS, 2.9871794871794868)
-        self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
-        self.assertFloatEqual(prob, 0.00015486238993089464)
+        # self.assertFloatEqual(between_MS, 55.458333333333343)
+        # self.assertFloatEqual(within_MS, 2.9871794871794868)
+        # self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
+        self.assertFloatEqual(pval, 0.00015486238993089464)
 
 #execute tests if called from command line
 if __name__ == '__main__':
