@@ -40,7 +40,7 @@ def sync_biom_and_mf(pmf, bt):
             "considered in the analysis:\n" + \
             ', '.join(shared_samples-(mf_samples.union(bt_samples)))
         # remove samples that were in the mapping file but not biom file
-        [pmf.pop(i) for i in pmf if i not in shared_samples]
+        npmf = {k:v for k,v in pmf.items() if k in shared_samples}
         # remove samples in the biom table that were not in the mapping file
         def _f(sv, sid, smd):
             if sid in shared_samples:
@@ -133,6 +133,11 @@ def sort_by_pval(lines):
     # output_formatter will always put pvals in index 2
     return [lines[0]] + sorted(lines[1:], key=lambda x: float(x.split('\t')[2]))
 
+##########
+##########
+# Functions for gradient correlation testing
+##########
+##########
 
 
 
