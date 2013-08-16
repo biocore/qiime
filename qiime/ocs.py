@@ -23,180 +23,6 @@ from collections import defaultdict
 
 """
 
-otu_table_fp = "/Users/lukeursell/Desktop/otu_table.biom"
-mapping_file_fp = '/Users/lukeursell/Desktop/Fasting_Map.txt'
-
-# def get_biom_data(otu_table_fp):
-#     """parse out biom table, get important info 
-#     """
-#     # get biom table data in array format    
-#     bt = parse_biom_table(open(otu_table_fp))
-#     bt_data = array([bt.observationData(i) for i in bt.ObservationIds])
-
-#     #get list of OTU ids for writing out results
-#     otu_ids = [i for i in bt.ObservationIds]
-    
-#     return bt_data, otu_ids
-
-# might move this to script level...
-# def parse_mapping(mapping_file_fp):
-#     """Parses mapping file
-
-#     Input: mapping file filepath
-
-#     Output:
-#     map_data is a list of all metadata:
-#     ['PC.636',
-#       'ACGGTGAGTGTC',
-#       'YATGCTGCCTCCCGTAGGAGT',
-#       'Fast',
-#       '',
-#       '20080116',
-#       'Fasting_mouse_I.D._636']
-
-#     map_headers is a list of headers:
-#       ['SampleID',
-#      'BarcodeSequence',
-#      'LinkerPrimerSequence',
-#      'Treatment',
-#      'test_col',
-#      'DOB',
-#      'Description']
-#     """
-#     map_data, map_headers, _ = parse_mapping_file(mapping_file_fp)
-
-#     return map_data, map_headers
-
-## These two functions could probably be combined somehow...
-
-# def get_category_info(map_data, map_headers, category):
-#     """Create a dict of {SampleID: category_value} and continuous category values 
-
-#     When the category of interest is catageorical, the dicionary produced
-#     contains the SampleId and which categorical group it belongs to.
-#     When the category contains continuous data, the category_values is produced
-#     and contains a list of all values
-    
-#     Input: map_data, map_headers (from parse_mapping), and category of interest
-#     e.g. cat_info, category_values = get_category_info(map_data, map_headers, 'Treatment')
-
-#     Output: 
-#     cat_info: dictionary relating SampleIds
-#     {'PC.354': 'Control',
-#      'PC.355': 'Control',
-#      'PC.356': 'Control',
-#      'PC.481': 'Control',
-#      'PC.593': 'Control',
-#      'PC.607': 'Fast',
-#      'PC.634': 'Fast',
-#      'PC.635': 'Fast',
-#      'PC.636': 'Fast'}
-
-#      category_values: ['10', '20', '30', '40', '50', '60', '70', '80', '90']
-#     """
-#     cat_info = {}
-#     category_values = []
-
-#     # find index in mapping data of category of interest
-#     category_index = map_headers.index(category)
-    
-#     # walk through each SampleID individually
-#     for line in map_data:
-#         sample_id = line[0]
-#         category_val = line[category_index]
-        
-#         # if the category value is blank in the mapping file, ignore SampleID
-#         if category_val != "":
-#             cat_info[sample_id] = category_val
-#             if category_val not in category_values:
-#                 category_values.append(category_val)
-#         elif category_val == "":
-#             print "Sample %s contained an empty field for the category %s \
-#                 and will be ignored" % (sample_id,category)
-#             pass
-
-#     return cat_info, category_values
-
-# this function could probably be incorporated into get_category_info
-# feel free to combine them if you see an easy way
-
-
-
-# def build_category_sampleid_dict(category_result):
-#     """Take output of get_category_info and build a {category: [list of ids]}
-#     like: 
-#     {'Control': ['PC.355', 'PC.593', 'PC.356', 'PC.481', 'PC.354'],
-#      'Fast': ['PC.636', 'PC.607', 'PC.634', 'PC.635']}
-#     """
-#     cat_to_ids = {}
-#     for k, v in category_result.iteritems():
-#         cat_to_ids.setdefault(v, []).append(k)
-#     return cat_to_ids
-
-
-# this would be run at the beginning of the script
-
-
-
-# def get_sampleid_indices(cat_to_ids, otu_table_fp):
-#     """Take in put of cat_to_ids, and replace the SampleIDs with their
-#     indexed position in the otu table:
-
-#     Output:
-#     {'Control': [6, 5, 2, 3, 4], 'Fast': [0, 7, 8, 1]}
-#     """
-#     #Parse otu table and create list of SampleIds found in table
-#     otu_table = parse_biom_table(open(otu_table_fp))
-#     otu_table_ids = [i for i in otu_table.SampleIds]
-
-#     cat_to_sampleid_index = {}
-    
-#     for cat,ids in cat_to_ids.iteritems():
-#         # check if category is already added
-#         if cat not in cat_to_sampleid_index:
-#             cat_to_sampleid_index[cat] = []
-            
-#             # append SampleID indexed position in otu table to dict
-#             for id in ids:
-                
-#                 #check to see if SampleID is in the mapping file but not the
-#                 # OTU table
-#                 if id not in otu_table_ids:
-#                     print "Sample %s is not found in the otu table and will \
-#                         be ignored" % id
-                
-#                 #if SampleID is in both mapping file and OTU table, get index
-#                 else: 
-#                     id in otu_table_ids        
-#                     index = otu_table.getSampleIndex(id)
-#                     cat_to_sampleid_index[cat].append(index)
-#         else:
-#             continue
-
-#     return cat_to_sampleid_index
-
-# def get_category_arrays(cat_to_sampleid_index, bt_data):
-#     """Take bt_data array, and pull out indexed positions for each category of
-#     interest.
-
-#     Returns a list of arrays:
-#     [[array([[ 0.,  0.,  0.,  0.,  0.],
-#        [ 0.,  0.,  0.,  0.,  0.],
-#        ...
-#        [ 0.,  0.,  0.,  0.,  0.]])],
-#     [array([[ 1.,  0.,  0.,  0.],
-#        [ 0.,  0.,  0.,  1.],
-#        ..., 
-#        [ 0.,  0.,  0.,  0.],
-#        [ 1.,  0.,  0.,  0.]])]]
-#     """
-#     listed_category_data = []
-#     for cat in cat_to_sampleid_index.keys():
-#         listed_category_data.append(bt_data[:,cat_to_sampleid_index[cat]])
-
-#     return listed_category_data
-
-
 def sync_biom_and_mf(pmf, bt):
     """Reduce mapping file dict and biom table to shared samples."""
     mf_samples = set(pmf.keys())
@@ -238,10 +64,89 @@ def get_sample_indices(cat_sam_groups, bt):
     """Create {category_value:index_of_sample_with_that_value} dict."""
     return {k:[bt.SampleIds.index(i) for i in v] for k,v in cat_sam_groups.items}
 
-def row_generator(bt, cat_sam_groups):
-    """Produce a generator that can feed lists of arrays to any test."""
+def row_generator(bt, cat_sam_indices):
+    """Produce a generator that feeds lists of arrays to any test."""
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    return ([row[cat_sam_groups[k]] for k in cat_sam_groups] for row in data)
+    return ([row[cat_sam_indices[k]] for k in cat_sam_indices] for row in data)
+
+
+
+###################
+# output formatters 
+
+
+
+def G_fit_formatter(bt, gs, ps, means, cat_sample_indices):
+    """Create list of lines for writing G_fit results."""
+    # find out if bt came with taxonomy. this could be improved
+    if bt.ObservationMetadata is None:
+        header =['OTU', 'G-Stat', 'Pvalue', 'FDR-Pvalue', 'Bonferroni-Pvalue']+\
+            ['%i_mean' % i for i in cat_sample_indices.keys()
+        include_taxonomy = False
+    else: 
+        header = header + ['Taxonomy']
+        include_taxonomy = True
+    # avoid zip; creates a new object, wastes memory and compute. all items of
+    # equal length, index is sufficient.
+    num_lines = len(gs)
+    lines = ['\t'.join(header)]
+    for i in range(num_lines):
+        nl = '\t'.join(map(str,[bt.ObservationIds[i], gs[i], ps[i]]+means[i]))
+        if include_taxonomy == True:
+            nl+='\t%s' % ';'.join(bt.ObservationMetadata[i])
+        lines.append(nl)
+     return lines
+
+def ANOVA_formatter(bt, ps, means, cat_sample_indices):
+    """Create list of lines for writing simple ANOVA results."""
+    # find out if bt came with taxonomy. this could be improved
+    if bt.ObservationMetadata is None:
+        header =['OTU', 'Pvalue', 'FDR-Pvalue', 'Bonferroni-Pvalue']+\
+            ['%i_mean' % i for i in cat_sample_indices.keys()
+        include_taxonomy = False
+    else: 
+        header = header + ['Taxonomy']
+        include_taxonomy = True
+    # avoid zip; creates a new object, wastes memory and compute. all items of
+    # equal length, index is sufficient.
+    num_lines = len(gs)
+    lines = ['\t'.join(header)]
+    for i in range(num_lines):
+        nl = '\t'.join(map(str,[bt.ObservationIds[i], ps[i]]+means[i]))
+        if include_taxonomy == True:
+            nl+='\t%s' % ';'.join(bt.ObservationMetadata[i])
+        lines.append(nl)
+     return lines
+
+
+
+# def get_group_means(data):
+#     """Return mean of each group in data. Format is output of row_generator."""
+#     return [i.mean() for i in data]
+
+# def get_group_names(cat_sample_indices):
+#     """Return names of groups in order of generation by row_generator."""
+#     return cat_sample_indices.keys()
+
+# # order of means is cat_sample_indices.keys()
+# def add_means(bt.ObservationIds, taxonomy_key):
+
+#     if include_means:
+
+#     if include_taxonomy:
+
+# G_fit_header = ['OTU', 'G-Stat', 'Pvalue', 'FDR-Pvalue', 'Bonferroni-Pvalue'] +\
+#     cat_sample_indices.keys()
+
+# ANOVA_header = ['OTU', 'Pvalue', 'FDR-Pvalue', 'Bonferroni-Pvalue']
+
+
+
+# kruskal_wallis(data)
+# G_fit(data, williams=True)
+
+
+
 
 def run_ANOVA(listed_category_data):
     """Compute the ANOVA for inputed lists of data

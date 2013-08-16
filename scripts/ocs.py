@@ -31,18 +31,26 @@ script_info['optional_options'] = [\
 ]
 script_info['version'] = __version__
 
+# to write in the script description
+'''
+silenty ignores samples in the mapping file which have no value for a given 
+category.
 
+
+'''
 
 def main():
-    option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # sync the mapping file and the biom file
     bt = parse_biom_table(open(opts.biom_fp))
     pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
-    pmf, bt sync_biom_and_mf(pmf, bt)
+    pmf, bt = sync_biom_and_mf(pmf, bt)
 
-    
+    sam_cats = get_sample_cats(pmf, opts.category)
+    cat_sam_groups = get_cat_sample_groups(sam_cats)
+    cat_sam_indices = get_sample_indices(cat_sam_groups, bt)
+    data_feed = row_generator(bt, cat_sam_indices)
 
 
 if __name__ == "__main__":
