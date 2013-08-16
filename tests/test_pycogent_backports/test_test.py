@@ -1668,9 +1668,9 @@ class TestDistMatrixPermutationTest(TestCase):
     def test_ANOVA_one_way(self):
         """ANOVA one way returns same values as ANOVA on a stats package
         """
-        g1 = Numbers([10.0, 11.0, 10.0, 5.0, 6.0])
-        g2 = Numbers([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
-        g3 = Numbers([6.0, 7.0, 5.0, 6.0, 7.0])
+        g1 = array([10.0, 11.0, 10.0, 5.0, 6.0])
+        g2 = array([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
+        g3 = array([6.0, 7.0, 5.0, 6.0, 7.0])
         i = [g1, g2, g3]
         dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(i)
         self.assertEqual(dfn, 2)

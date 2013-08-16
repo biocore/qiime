@@ -16,10 +16,10 @@ from cogent.maths.stats.special import Gamma
 from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
-        median as _median, zeros, ones, unique, copy, searchsorted)
+        median as _median, zeros, ones, unique, copy, searchsorted, var)
         #, std - currently incorrect
 from numpy.random import permutation, randint
-from cogent.maths.stats.util import Numbers
+#from cogent.maths.stats.util import Numbers
 from operator import add
 from random import choice
 
@@ -1267,38 +1267,41 @@ def ANOVA_one_way(a):
 
     a is a list of lists of observed values. Each list is the values
     within a category. The analysis must include 2 or more categories(lists).
-    the lists must have a Mean and variance attribute. Recommende to make
-    the Numbers objects
-    
+    Each category of the list, and overall list, is converted to a numpy array.
+
     An F value is first calculated as the variance of the group means
     divided by the mean of the within-group variances.
     """
+    a = array(a)
     group_means = []
     group_variances = []
-    num_cases = 0
+    num_cases = 0 # total observations in all groups
     all_vals = []
     for i in a:
         num_cases += len(i)
-        group_means.append(i.Mean)
-        group_variances.append(i.Variance * (len(i)-1))
+        group_means.append(mean(i))
+        group_variances.append(i.var(ddof=1) * (len(i)-1))
         all_vals.extend(i)
-    group_means = Numbers(group_means)
-    #get within group variances (denominator)
-    group_variances = Numbers(group_variances)
+
+    # Get within Group variances (denominator)
     dfd = num_cases - len(group_means)
-    within_MS = sum(group_variances)/dfd
-    #get between group variances (numerator)
-    grand_mean = Numbers(all_vals).Mean
-    between_MS = 0
+    within_Groups = sum(group_variances) / dfd
+
+    # Get between Group variances (numerator)
+    all_vals = array(all_vals)
+    grand_mean = all_vals.mean()
+
+    between_Groups = 0
     for i in a:
-        diff = i.Mean - grand_mean
+        diff = i.mean() - grand_mean
         diff_sq = diff * diff
         x = diff_sq * len(i)
-        between_MS += x
+        between_Groups += x
+
     dfn = len(group_means) - 1
-    between_MS = between_MS/dfn
-    F = between_MS/within_MS
-    return dfn, dfd, F, between_MS, within_MS, group_means, f_high(dfn, dfd, F)
+    between_Groups = between_Groups/dfn
+    F = between_Groups/within_Groups
+    return dfn, dfd, F, between_Groups, within_Groups, group_means, f_high(dfn, dfd, F)
 
 def MonteCarloP(value, rand_values, tail = 'high'):
     """takes a true value and a list of random values as
