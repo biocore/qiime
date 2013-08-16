@@ -16,11 +16,22 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort
 from cogent.maths.stats.util import Numbers
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
-    nonparametric_correlation_significance, fisher_confidence_intervals)
+    nonparametric_correlation_significance, fisher_confidence_intervals,
+    pearson, spearman, kendall_correlation, G_fit, ANOVA_one_way, 
+    kruskal_wallis, mw_test, mw_boot)
+from cogent.maths.stats.test import (t_two_sample, mc_t_two_sample)
 
 """
 Library for otu_category_significance.
 """
+
+correlation_test_choices = {'pearson': pearson, 'spearman': spearman,
+    'kendall': kendall_correlation}
+
+group_test_choices = {'ANOVA': ANOVA_one_way, 'g_test': G_fit, 
+    'kruskal_wallis': kruskal_wallis, 'parametric_t_test': t_two_sample,
+    'nonparametric_t_test': mc_t_two_sample, 'mann_whitney_u': mw_test, 
+    'bootstrap_mann_whitney_u': mw_boot}
 
 two_group_tests = ['parametric_t_test', 'nonparametric_t_test', 
     'mann_whitney_u', 'bootstrap_mann_whitney_u']
@@ -148,23 +159,28 @@ def correlation_row_generator(bt, pmf, category):
     data = array([bt.observationData(i) for i in bt.ObservationIds])
     # ensure that the order of the category vector is the same as the order of
     # the samples, otherwise will have hard to diagnose correspondence issues 
-    category_vector = \
-        array([pmf[s][category] for s in bt.SampleIds]).astype(float)
-    return ((row,category_vector) for row in data)
-
+    try:
+        category_vector = \
+            array([pmf[s][category] for s in bt.SampleIds]).astype(float)
+        return ((row,category_vector) for row in data)
+    except ValueError:
+        raise ValueError("Mapping file category contained data that couldn't "+\
+            "be converted to float. Can't continue.")
+    
 def run_correlation_test(data_generator, test, test_choices):
     """Run correlation tests."""
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
+    test_fn = test_choices[test]
     for row in data_generator:
         # kendalls tau calculates its own paramteric p value
         if test == 'kendall':
-            test_stat, p = test(row[0], row[1], return_p=True)
+            test_stat, p = test_fn(row[0], row[1], return_p=True)
             p_pval = p
         else:
-            test_stat = test(row[0], row[1])
+            test_stat = test_fn(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
         
-        np_pval = nonparametric_correlation_significance(test_stat, test, 
+        np_pval = nonparametric_correlation_significance(test_stat, test_fn, 
             row[0], row[1])
         ci_low, ci_high = fisher_confidence_intervals(test_stat,len(row[0]))
         corr_coefs.append(test_stat)

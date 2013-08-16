@@ -3,7 +3,7 @@
 from __future__ import division
 
 __author__ = "Will Van Treuren, Luke Ursell"
-__copyright__ = "Copyright 2013s, The QIIME project"
+__copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren, Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -14,15 +14,11 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.ocs import (sync_biom_and_mf, fdr_correction, bonferroni_correction, 
     sort_by_pval, run_correlation_test, correlation_row_generator, 
-    correlation_output_formatter)
-from qiime.pycogent_backports.test import (pearson, spearman, 
-    kendall_correlation)
+    correlation_output_formatter, correlation_test_choices)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
 
-test_choices = {'pearson': pearson, 'spearman': spearman,
-    'kendall': kendall_correlation}
 
 script_info = {}
 script_info['brief_description'] = """
@@ -45,9 +41,9 @@ script_info['required_options']=[
         help='path to the output file or directory')]
 
 script_info['optional_options']=[
-    make_option('-s', '--test', type="choice", choices=test_choices.keys(),
+    make_option('-s', '--test', type="choice", choices=correlation_test_choices.keys(),
         default='kendall', help='Test to use. Choices are:\n%s' % \
-         (', '.join(test_choices.keys()))+'\n\t' + '[default: %default]'),
+         (', '.join(correlation_test_choices.keys()))+'\n\t' + '[default: %default]'),
     make_option('-w', '--collate_results', dest='collate_results',
         action='store_true', default=False,
         help='When passing in a directory of OTU tables, '
@@ -73,7 +69,8 @@ def main():
 
     data_feed = correlation_row_generator(bt, pmf, opts.category)
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
-        run_correlation_test(data_feed, test_choices[opts.test], test_choices)
+        run_correlation_test(data_feed, opts.test, correlation_test_choices)
+    
     # calculate corrected pvals for both parametric and non-parametric 
     p_pvals_fdr = array(fdr_correction(p_pvals))
     p_pvals_bon = bonferroni_correction(p_pvals)
@@ -84,6 +81,7 @@ def main():
     p_pvals_bon = where(p_pvals_bon>1.0, 1.0, p_pvals_bon)
     np_pvals_fdr = where(np_pvals_fdr>1.0, 1.0, np_pvals_fdr)
     np_pvals_bon = where(np_pvals_bon>1.0, 1.0, np_pvals_bon)
+    
     # write output results after sorting
     lines = correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr, 
         p_pvals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, ci_lows)

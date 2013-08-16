@@ -14,18 +14,12 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.ocs import (sync_biom_and_mf, get_sample_cats, get_sample_indices, 
     get_cat_sample_groups, row_generator, output_formatter, fdr_correction, 
-    bonferroni_correction, sort_by_pval, run_ocs_test, two_group_tests)
-from qiime.pycogent_backports.test import (G_fit, ANOVA_one_way, kruskal_wallis,
-    mw_test, mw_boot)
-from cogent.maths.stats.test import (t_two_sample, mc_t_two_sample)
+    bonferroni_correction, sort_by_pval, run_ocs_test, two_group_tests, 
+    group_test_choices)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
 
-test_choices = {'ANOVA': ANOVA_one_way, 'g_test': G_fit, 
-    'kruskal_wallis': kruskal_wallis, 'parametric_t_test': t_two_sample,
-    'nonparametric_t_test': mc_t_two_sample, 'mann_whitney_u': mw_test, 
-    'bootstrap_mann_whitney_u': mw_boot}
 
 script_info = {}
 script_info['brief_description'] = """
@@ -141,9 +135,9 @@ script_info['required_options']=[
         help='path to the output file or directory')]
 
 script_info['optional_options']=[
-    make_option('-s', '--test', type="choice", choices=test_choices.keys(),
+    make_option('-s', '--test', type="choice", choices=group_test_choices.keys(),
         default='ANOVA', help='Test to use. Choices are:\n%s' % \
-         (', '.join(test_choices.keys()))+'\n\t' + '[default: %default]'),
+         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]'),
     make_option('-w', '--collate_results', dest='collate_results',
         action='store_true', default=False,
         help='When passing in a directory of OTU tables, '
@@ -183,7 +177,8 @@ def main():
                 'metadata category.')
 
     data_feed = row_generator(bt, cat_sam_indices)
-    test_stats, pvals, means = run_ocs_test(data_feed, opts.test, test_choices)
+    test_stats, pvals, means = run_ocs_test(data_feed, opts.test, 
+        group_test_choices)
     # calculate corrected pvals
     fdr_pvals = array(fdr_correction(pvals))
     bon_pvals = bonferroni_correction(pvals)
