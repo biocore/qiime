@@ -1657,7 +1657,8 @@ def _flatten_lower_triangle(matrix):
                     flattened.append(matrix[row_num][col_num])
     return flattened
 
-def kendall_correlation(x, y, alt="two sided", exact=None, warn=True):
+def kendall_correlation(x, y, alt="two sided", exact=None, warn=True,
+    return_p=False):
     """returns the statistic (tau) and probability from Kendall's non-parametric
     test of association that tau==0. Uses the large sample approximation when
     len(x) >= 50 or when there are ties, otherwise it computes the probability
@@ -1670,6 +1671,8 @@ def kendall_correlation(x, y, alt="two sided", exact=None, warn=True):
         - exact: when False, forces use of the large sample approximation
           (normal distribution). Not allowed for len(x) >= 50.
         - warn: whether to warn about tied values
+
+    # needs to be changed to avoid calculating p if the return_p is false
     """
     
     assert len(x) == len(y), "data (x, y) not of same length"
@@ -1714,7 +1717,10 @@ def kendall_correlation(x, y, alt="two sided", exact=None, warn=True):
             p /= 2
         elif alt in lo:
             p = 1 - p/2
-    return tau, p
+    if return_p:
+        return tau, p
+    else:
+        return tau
 
 ## Start functions for distance_matrix_permutation_test
 

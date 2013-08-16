@@ -140,5 +140,90 @@ def sort_by_pval(lines):
 ##########
 ##########
 
+def correlation_row_generator(bt, pmf, category):
+    """Produce a generator which will feed correlation tests rows."""
+    data = array([bt.observationData(i) for i in bt.ObservationIds])
+    # ensure that the order of the category vector is the same as the order of
+    # the samples, otherwise will have hard to diagnose correspondence issues 
+    category_vector = \
+        array([pmf[s][category] for s in bt.SampleIds]).astype(float)
+    return ((row,category_vector) for row in data)
+
+def parametric_correlation_significance(test_stat, n):
+    """Calculate the significance of a Pearson or Spearman r, rho.
+
+    Notes: ignoring the possibility of using something other than a two tailed
+    test since that makes little sense in the context of +- correlation values.
+    Our alternate hypothesis is that uncorrelated bivariate data could generate
+    a r or rho value as extreme or more extreme, thus we have two tails.
+
+    """
+    df = n-2 #degrees of freedom
+    if n<3: #need at least 3 samples for students t parametric p value calc
+        p_pval = 1.0 #p_pval = parametric p value
+    else: 
+        try:
+            t_stat = test_stat/sqrt((1.-test_stat**2)/float(df))
+            p_pval = t_prob(t_stat, df) #we force it to be two tailed
+        except (ZeroDivisionError, FloatingPointError):
+            # something unpleasant happened, most likely r or rho where +- 1 
+            # which means the parametric p val should be 1 or 0 or nan
+            p_pval = nan
+    return pval 
+
+def nonparametric_correlation_significance(test_stat, test, v1, v2,
+    permutations=1000, confidence_level=.95):
+    """Calculate the significance of a Pearson or Spearman r, rho.
+
+    Notes: ignoring the possibility of using something other than a two tailed
+    test since that makes little sense in the context of +- correlation values.
+    Our alternate hypothesis is that uncorrelated bivariate data could generate
+    a r or rho value as extreme or more extreme, thus we have two tails.
+
+    """
+    perm_corr_vals = []
+    for i in range(permutations):
+        perm_corr_vals.append(test(v1, permutation(v2)))
+    # calculate number of bootstrapped statistics which were greater than or 
+    # equal to passed test_stat
+    return (array(perm_corr_vals) >= test_stat).sum()/float(permutations)
+
+def fisher_confidence_intervals(test_stat, n):
+    """Compute the confidence intervals around the test statistic."""
+    # compute confidence intervals using fishers z transform
+    z_crit = abs(ndtri((1 - confidence_level) / 2.))
+    ci_low, ci_high = None, None
+    if n > 3:
+        try:
+            ci_low = tanh(arctanh(test_stat) - (z_crit / sqrt(n - 3)))
+            ci_high = tanh(arctanh(test_stat) + (z_crit / sqrt(n - 3)))
+        except (ZeroDivisionError, FloatingPointError):
+            # r or rho was presumably 1 or -1. Match what R does in this case.
+            # feel like nan should be returned here given that we can't make 
+            # the calculation
+            ci_low, ci_high = test_stat, test_stat
+    return ci_low, ci_high
+
+def run_correlation_test(data_generator, test, test_choices):
+    """Run correlation tests."""
+    corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
+    for row in data_generator:
+        # kendalls tau calculates its own paramteric p value
+        if test == 'kendall':
+            test_stat, p = test_choices[test](row[0], row[1], return_p=True)
+            p_pval = p
+        else:
+            test_stat = test_choices[test](row[0], row[1])
+            p_pval = parametric_correlation_significance(test_stat, len(row[0]))
+        np_pval = nonparametric_correlation_significance(test_stat, test, 
+            row[0], row[1])
+        ci_low, ci_high = fisher_confidence_intervals(test_stat,len(row[0]))
+        corr_coefs.append(test_stat)
+        p_pvals.append(p)
+        np_pvals.append(np_pval)
+        ci_lows.append(ci_low)
+        ci_highs.append(ci_high)
+    return corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows
+
 
 
