@@ -14,7 +14,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.ocs import (sync_biom_and_mf, get_sample_cats, get_sample_indices, 
     get_cat_sample_groups, row_generator, output_formatter, fdr_correction, 
-    bonferroni_correction, sort_by_pval)
+    bonferroni_correction, sort_by_pval, run_ocs_test, two_group_tests)
 from qiime.pycogent_backports.test import (G_fit, ANOVA_one_way, kruskal_wallis,
     mw_test, mw_boot)
 from cogent.maths.stats.test import (t_two_sample, mc_t_two_sample)
@@ -176,8 +176,6 @@ def main():
             'that the mapping file has at least one sample for each value in '+\
             'the passed category.')
     
-    two_group_tests = ['parametric_t_test', 'nonparametric_t_test', 
-        'mann_whitney_u', 'bootstrap_mann_whitney_u']
     if opts.test in two_group_tests and len(cat_sam_indices) > 2:
             raise option_parser.error('The t-test and mann_whitney_u test may'+\
                 ' only be used when there'+\
@@ -185,21 +183,7 @@ def main():
                 'metadata category.')
 
     data_feed = row_generator(bt, cat_sam_indices)
-    pvals, test_stats, means = [], [], []
-    test = test_choices[opts.test]
-    if opts.test in two_group_tests: #test is expecting two arrays 
-        for row in data_feed:
-            test_stat, pval = test(*row)
-            test_stats.append(test_stat)
-            pvals.append(pval)
-            means.append([i.mean() for i in row])
-    else: #test is expecting list of arrays, any length
-        for row in data_feed:
-            test_stat, pval = test(row)
-            test_stats.append(test_stat)
-            pvals.append(pval)
-            means.append([i.mean() for i in row])
-
+    test_stats, pvals, means = run_ocs_test(data_feed, opts.test, test_choices)
     # calculate corrected pvals
     fdr_pvals = array(fdr_correction(pvals))
     bon_pvals = bonferroni_correction(pvals)

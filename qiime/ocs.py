@@ -20,6 +20,9 @@ from cogent.maths.stats.util import Numbers
 Library for otu_category_significance.
 """
 
+two_group_tests = ['parametric_t_test', 'nonparametric_t_test', 
+    'mann_whitney_u', 'bootstrap_mann_whitney_u']
+
 def sync_biom_and_mf(pmf, bt):
     """Reduce mapping file dict and biom table to shared samples."""
     mf_samples = set(pmf.keys())
@@ -65,6 +68,24 @@ def row_generator(bt, cat_sam_indices):
     """Produce a generator that feeds lists of arrays to any test."""
     data = array([bt.observationData(i) for i in bt.ObservationIds])
     return ([row[cat_sam_indices[k]] for k in cat_sam_indices] for row in data)
+
+def run_ocs_test(data_generator, test, test_choices, *args):
+    """Run any of the implemented tests."""
+    pvals, test_stats, means = [], [], []
+    # test choices defined in the ocs.py script
+    for row in data_generator:
+        if test == 'nonparametric_t_test':
+            test_stat, _, _, pval = test_choices[test](row[0], row[1], *args)
+        elif test == 'bootstrap_mann_whitney_u':
+            test_stat, pval = test_choices[test](row[0], row[1], *args)
+        elif test in ['parametric_t_test', 'mann_whitney_u']:
+            test_stat, pval = test_choices[test](row[0], row[1])
+        else:
+            test_stat, pval = test_choices[test](row)
+        test_stats.append(test_stat)
+        pvals.append(pval)
+        means.append([i.mean() for i in row])
+    return test_stats, pvals, means
 
 def fdr_correction(probs):
     """corrects a list of probs using the false discovery rate method
