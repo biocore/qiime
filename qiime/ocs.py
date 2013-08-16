@@ -52,6 +52,7 @@ def sync_biom_and_mf(pmf, bt):
 
 def get_sample_cats(pmf, category):
     """Create {SampleID:category_value} for samples in parsed mf dict."""
+    # ignore samples where the value in the mapping file is empty
     return {k:pmf[k][category] for k in pmf.keys() if pmf[k][category] != ""}
 
 def get_cat_sample_groups(sam_cats):
