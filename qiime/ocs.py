@@ -154,19 +154,25 @@ def sort_by_pval(lines, ind):
 ##########
 ##########
 
-def correlation_row_generator(bt, pmf, category):
+def correlation_row_generator(bt, pmf, category, ref_sample=None):
     """Produce a generator which will feed correlation tests rows."""
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    # ensure that the order of the category vector is the same as the order of
-    # the samples, otherwise will have hard to diagnose correspondence issues 
+    if ref_sample not None:
+        # user passed a ref sample to adjust all the other sample OTU values
+        # we subtract the reference sample from all data as Cathy did in the 
+        # original implementation. 
+        data = (data.T - bt.sampleData(ref_sample)).T
     try:
+        # ensure that the order of the category vector sample values is the same 
+        # as the order of the samples in data. otherwise will have hard to 
+        # diagnose correspondence issues 
         category_vector = \
             array([pmf[s][category] for s in bt.SampleIds]).astype(float)
         return ((row,category_vector) for row in data)
     except ValueError:
         raise ValueError("Mapping file category contained data that couldn't "+\
             "be converted to float. Can't continue.")
-    
+
 def run_correlation_test(data_generator, test, test_choices):
     """Run correlation tests."""
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
@@ -213,5 +219,6 @@ def correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr,
             tmp += [';'.join(bt.ObservationMetadata[i].values()[0])]
         lines.append('\t'.join(map(str, tmp)))
     return lines
+
 
 

@@ -35,15 +35,20 @@ script_info['required_options']=[
         type='existing_path'),
     make_option('-m','--mapping_fp', type='existing_filepath',
         help='path to category mapping file'),
-    make_option('-c', '--category', type='string',
-        help='name of the category over which to run the analysis'),
     make_option('-o', '--output_fp', type='new_filepath',
         help='path to the output file or directory')]
 
 script_info['optional_options']=[
-    make_option('-s', '--test', type="choice", choices=correlation_test_choices.keys(),
+    make_option('-c', '--category', type='string',
+        help='name of the category over which to run the analysis'),
+    make_option('-s', '--test', type="choice", 
+        choices=correlation_test_choices.keys(),
         default='kendall', help='Test to use. Choices are:\n%s' % \
-         (', '.join(correlation_test_choices.keys()))+'\n\t' + '[default: %default]'),
+            (', '.join(correlation_test_choices.keys()))+'\n\t' + \
+            x'[default: %default]'),
+    make_option('-r', '--ref_sample', type='string', default=None, 
+        help='SampleID that is reference or baseline to subtract from all'+\
+            ' other samples.')
     make_option('-w', '--collate_results', dest='collate_results',
         action='store_true', default=False,
         help='When passing in a directory of OTU tables, '
@@ -62,12 +67,15 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    # if opts.ref_sample == "None":
+    #     opts.ref_sample = None
     # sync the mapping file and the biom file
     bt = parse_biom_table(open(opts.otu_table_fp))
     pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
     pmf, bt = sync_biom_and_mf(pmf, bt)
 
-    data_feed = correlation_row_generator(bt, pmf, opts.category)
+    data_feed = correlation_row_generator(bt, pmf, opts.category, 
+        opts.ref_sample)
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
         run_correlation_test(data_feed, opts.test, correlation_test_choices)
     
