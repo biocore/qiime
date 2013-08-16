@@ -47,8 +47,8 @@ def sync_biom_and_mf(pmf, bt):
                 return True
             else:
                 return False
-        bt = bt.filterSamples(_f)
-    return pmf, bt
+        nbt = bt.filterSamples(_f)
+    return npmf, nbt
 
 def get_sample_cats(pmf, category):
     """Create {SampleID:category_value} for samples in parsed mf dict."""
