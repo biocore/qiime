@@ -95,6 +95,7 @@ def run_ocs_test(data_generator, test, test_choices, *args):
         elif test in ['parametric_t_test', 'mann_whitney_u']:
             test_stat, pval = test_choices[test](row[0], row[1])
         else:
+            # ANOVA, kruskal_wallis, G_fit will get caught here
             test_stat, pval = test_choices[test](row)
         test_stats.append(test_stat)
         pvals.append(pval)
