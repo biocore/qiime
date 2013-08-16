@@ -15,6 +15,8 @@ from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort
 from cogent.maths.stats.util import Numbers
+from qiime.pycogent_backports.test import (parametric_correlation_significance,
+    nonparametric_correlation_significance, fisher_confidence_intervals)
 
 """
 Library for otu_category_significance.
@@ -129,10 +131,11 @@ def output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
-def sort_by_pval(lines):
+def sort_by_pval(lines, ind):
     """Sort lines with pvals in descending order."""
     # output_formatter will always put pvals in index 2
-    return [lines[0]] + sorted(lines[1:], key=lambda x: float(x.split('\t')[2]))
+    return [lines[0]] + \
+        sorted(lines[1:], key=lambda x: float(x.split('\t')[ind]))
 
 ##########
 ##########
@@ -149,81 +152,50 @@ def correlation_row_generator(bt, pmf, category):
         array([pmf[s][category] for s in bt.SampleIds]).astype(float)
     return ((row,category_vector) for row in data)
 
-def parametric_correlation_significance(test_stat, n):
-    """Calculate the significance of a Pearson or Spearman r, rho.
-
-    Notes: ignoring the possibility of using something other than a two tailed
-    test since that makes little sense in the context of +- correlation values.
-    Our alternate hypothesis is that uncorrelated bivariate data could generate
-    a r or rho value as extreme or more extreme, thus we have two tails.
-
-    """
-    df = n-2 #degrees of freedom
-    if n<3: #need at least 3 samples for students t parametric p value calc
-        p_pval = 1.0 #p_pval = parametric p value
-    else: 
-        try:
-            t_stat = test_stat/sqrt((1.-test_stat**2)/float(df))
-            p_pval = t_prob(t_stat, df) #we force it to be two tailed
-        except (ZeroDivisionError, FloatingPointError):
-            # something unpleasant happened, most likely r or rho where +- 1 
-            # which means the parametric p val should be 1 or 0 or nan
-            p_pval = nan
-    return pval 
-
-def nonparametric_correlation_significance(test_stat, test, v1, v2,
-    permutations=1000, confidence_level=.95):
-    """Calculate the significance of a Pearson or Spearman r, rho.
-
-    Notes: ignoring the possibility of using something other than a two tailed
-    test since that makes little sense in the context of +- correlation values.
-    Our alternate hypothesis is that uncorrelated bivariate data could generate
-    a r or rho value as extreme or more extreme, thus we have two tails.
-
-    """
-    perm_corr_vals = []
-    for i in range(permutations):
-        perm_corr_vals.append(test(v1, permutation(v2)))
-    # calculate number of bootstrapped statistics which were greater than or 
-    # equal to passed test_stat
-    return (array(perm_corr_vals) >= test_stat).sum()/float(permutations)
-
-def fisher_confidence_intervals(test_stat, n):
-    """Compute the confidence intervals around the test statistic."""
-    # compute confidence intervals using fishers z transform
-    z_crit = abs(ndtri((1 - confidence_level) / 2.))
-    ci_low, ci_high = None, None
-    if n > 3:
-        try:
-            ci_low = tanh(arctanh(test_stat) - (z_crit / sqrt(n - 3)))
-            ci_high = tanh(arctanh(test_stat) + (z_crit / sqrt(n - 3)))
-        except (ZeroDivisionError, FloatingPointError):
-            # r or rho was presumably 1 or -1. Match what R does in this case.
-            # feel like nan should be returned here given that we can't make 
-            # the calculation
-            ci_low, ci_high = test_stat, test_stat
-    return ci_low, ci_high
-
 def run_correlation_test(data_generator, test, test_choices):
     """Run correlation tests."""
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
     for row in data_generator:
         # kendalls tau calculates its own paramteric p value
         if test == 'kendall':
-            test_stat, p = test_choices[test](row[0], row[1], return_p=True)
+            test_stat, p = test(row[0], row[1], return_p=True)
             p_pval = p
         else:
-            test_stat = test_choices[test](row[0], row[1])
+            test_stat = test(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
+        
         np_pval = nonparametric_correlation_significance(test_stat, test, 
             row[0], row[1])
         ci_low, ci_high = fisher_confidence_intervals(test_stat,len(row[0]))
         corr_coefs.append(test_stat)
-        p_pvals.append(p)
+        p_pvals.append(p_pval)
         np_pvals.append(np_pval)
         ci_lows.append(ci_low)
         ci_highs.append(ci_high)
     return corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows
 
+def correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr, 
+    p_vals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, 
+    ci_lows):
+    """Format the output of the correlations for easy writing."""
+    header = ['OTU', 'Correlation_Coef', 'parametric_P', 'parametric_P_FDR',
+        'parametric_P_Bon', 'nonparametric_P', 'nonparametric_P_FDR',
+        'nonparametric_P_Bon', 'confidence_low', 'confidence_high']
+    # find out if bt came with taxonomy. this could be improved
+    if bt.ObservationMetadata is None:
+        include_taxonomy = False
+    else:
+        include_taxonomy = True
+        header += ['Taxonomy']
+    num_lines = len(corr_coefs)
+    lines = ['\t'.join(header)]
+    for i in range(num_lines):
+        tmp = [bt.ObservationIds[i], corr_coefs[i], p_pvals[i], p_pvals_fdr[i], 
+            p_vals_bon[i], np_pvals[i], np_pvals_fdr[i], np_pvals_bon[i], ci_highs[i], 
+            ci_lows[i]]
+        if include_taxonomy:
+            tmp += [';'.join(bt.ObservationMetadata[i].values()[0])]
+        lines.append('\t'.join(map(str, tmp)))
+    return lines
 
 

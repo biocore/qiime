@@ -13,14 +13,15 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.ocs import (sync_biom_and_mf, fdr_correction, bonferroni_correction, 
-    sort_by_pval, run_correlation_test, correlation_row_generator)
+    sort_by_pval, run_correlation_test, correlation_row_generator, 
+    correlation_output_formatter)
 from qiime.pycogent_backports.test import (pearson, spearman, 
     kendall_correlation)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
 
-correlation_test_choices = {'pearson': pearson, 'spearman': spearman,
+test_choices = {'pearson': pearson, 'spearman': spearman,
     'kendall': kendall_correlation}
 
 script_info = {}
@@ -45,7 +46,7 @@ script_info['required_options']=[
 
 script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=test_choices.keys(),
-        default='ANOVA', help='Test to use. Choices are:\n%s' % \
+        default='kendall', help='Test to use. Choices are:\n%s' % \
          (', '.join(test_choices.keys()))+'\n\t' + '[default: %default]'),
     make_option('-w', '--collate_results', dest='collate_results',
         action='store_true', default=False,
@@ -72,17 +73,21 @@ def main():
 
     data_feed = correlation_row_generator(bt, pmf, opts.category)
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
-        run_correlation_test(data_feed, opts.test, test_choices)
-    # calculate corrected pvals
-    fdr_pvals = array(fdr_correction(pvals))
-    bon_pvals = bonferroni_correction(pvals)
+        run_correlation_test(data_feed, test_choices[opts.test], test_choices)
+    # calculate corrected pvals for both parametric and non-parametric 
+    p_pvals_fdr = array(fdr_correction(p_pvals))
+    p_pvals_bon = bonferroni_correction(p_pvals)
+    np_pvals_fdr = array(fdr_correction(np_pvals))
+    np_pvals_bon = bonferroni_correction(np_pvals)
     # correct for cases where values above 1.0 due to correction
-    fdr_pvals = where(fdr_pvals>1.0, 1.0, fdr_pvals)
-    bon_pvals = where(bon_pvals>1.0, 1.0, bon_pvals)
+    p_pvals_fdr = where(p_pvals_fdr>1.0, 1.0, p_pvals_fdr)
+    p_pvals_bon = where(p_pvals_bon>1.0, 1.0, p_pvals_bon)
+    np_pvals_fdr = where(np_pvals_fdr>1.0, 1.0, np_pvals_fdr)
+    np_pvals_bon = where(np_pvals_bon>1.0, 1.0, np_pvals_bon)
     # write output results after sorting
-    lines = output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
-        cat_sam_indices)
-    lines = sort_by_pval(lines)
+    lines = correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr, 
+        p_pvals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, ci_lows)
+    lines = sort_by_pval(lines, ind=2)
     o = open(opts.output_fp, 'w')
     o.writelines('\n'.join(lines))
     o.close()

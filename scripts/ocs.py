@@ -193,7 +193,7 @@ def main():
     # write output results after sorting
     lines = output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
         cat_sam_indices)
-    lines = sort_by_pval(lines)
+    lines = sort_by_pval(lines, ind=2)
     o = open(opts.output_fp, 'w')
     o.writelines('\n'.join(lines))
     o.close()
