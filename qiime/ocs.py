@@ -38,7 +38,7 @@ def sync_biom_and_mf(pmf, bt):
         # tell the user which samples we are excluding
         print "The following samples were not shared, and will not be "+\
             "considered in the analysis:\n" + \
-            ', '.join(shared_samples-(mf_samples.union(bt_samples)))
+            ', '.join(mf_samples.union(bt_samples)-shared_samples)
         # remove samples that were in the mapping file but not biom file
         npmf = {k:v for k,v in pmf.items() if k in shared_samples}
         # remove samples in the biom table that were not in the mapping file
