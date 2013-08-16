@@ -1009,14 +1009,23 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     return (corr_coeff, parametric_p_val, permuted_corr_coeffs,
             nonparametric_p_val, (ci_low, ci_high))
 
+# the following three functions just split and streamline correlation_test to 
+# make it more widely applicable. credit due to the original author.
+
 def parametric_correlation_significance(test_stat, n):
-    """Calculate the significance of a Pearson or Spearman r, rho.
+    """Calc significance of a correlation coefficient with parametric method.
 
-    Notes: ignoring the possibility of using something other than a two tailed
-    test since that makes little sense in the context of +- correlation values.
-    Our alternate hypothesis is that uncorrelated bivariate data could generate
-    a r or rho value as extreme or more extreme, thus we have two tails.
+    Note, we are using a two tailed t_test since our alternate hypothesis is 
+    that uncorrelated bivariate data could generate a test statistic value as 
+    extreme or more extreme in either direction, thus we have two tails 
+    (-inf,-x) and (x, inf). For more information look at Sokal and Rohlf, 
+    Biometry, pg 574. This is a parametric test and makes many assumptions about
+    the data from which the test_stat was calculated. 
 
+    Inputs:
+     test_stat - numeric, the correlation coefficient whose significance we are 
+      to test.
+     n - int, length of vectors that were correlated. 
     """
     df = n-2 #degrees of freedom
     if n<3: #need at least 3 samples for students t parametric p value calc
@@ -1032,26 +1041,41 @@ def parametric_correlation_significance(test_stat, n):
     return p_pval 
 
 def nonparametric_correlation_significance(test_stat, test, v1, v2,
-    permutations=1000, confidence_level=.95):
-    """Calculate the significance of a Pearson or Spearman r, rho.
+    permutations=1000):
+    """Calc significance of a correlation coefficient with nonparametric method.
 
-    Notes: ignoring the possibility of using something other than a two tailed
-    test since that makes little sense in the context of +- correlation values.
-    Our alternate hypothesis is that uncorrelated bivariate data could generate
-    a r or rho value as extreme or more extreme, thus we have two tails.
-    
-    Most of this code is taken directly from pycogent_backports/test.py. Credit 
-    should go to that author. 
+    This function permutes v2 and calculates the correlation coefficient with 
+    the selected test permutations number of times. The reported value is the 
+    number of times the calculated test statistic is more extreme than the 
+    passed test_stat (as a fraction of the number of permutations).
+
+    Inputs:
+     test_stat - numeric, the correlation coefficient whose significance we are 
+      to test.
+     test - function, the test we are to use to calculate the correlations in 
+      the bootstrapped data. must return only correlation value (not a p val).
+     v1,v2 - 1D array of floats, values to be correlated.
+     permutations - int, number of bootstrapped correlation coefficients to 
+      calculate.
     """
     perm_corr_vals = []
     for i in range(permutations):
         perm_corr_vals.append(test(v1, permutation(v2)))
     # calculate number of bootstrapped statistics which were greater than or 
     # equal to passed test_stat
-    return (array(perm_corr_vals) >= test_stat).sum()/float(permutations)
+    return (abs(array(perm_corr_vals)) >= abs(test_stat)).sum()/float(permutations)
 
 def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
-    """Compute the confidence intervals around the test statistic."""
+    """Calc confidence interval of test_stat using Fishers Z transform.
+
+    Fishers Z transform is described in Sokal and Rolhf. 
+    Inputs:
+     test_stat - numeric, the correlation coefficient whose significance we are 
+      to test.
+     n - int, length of vectors that were correlated. 
+     confidence_level - float in (0,1), level of confidence we want for the 
+      intervals.
+    """
     # compute confidence intervals using fishers z transform
     z_crit = abs(ndtri((1 - confidence_level) / 2.))
     ci_low, ci_high = None, None
@@ -1065,10 +1089,6 @@ def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
             # the calculation
             ci_low, ci_high = test_stat, test_stat
     return ci_low, ci_high
-
-
-
-
 
 def correlation_matrix(series, as_rows=True):
     """Returns pairwise correlations between each pair of series.
