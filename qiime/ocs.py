@@ -147,8 +147,13 @@ def output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
     return lines
 
 def sort_by_pval(lines, ind):
-    """Sort lines with pvals in descending order."""
-    # output_formatter will always put pvals in index 2
+    """Sort lines with pvals in descending order.
+
+    Allows user to specify which correction they want the output to be
+    sorted by
+    """
+    # output_formatter will always put uncorrected pvals in index 2
+    # fdr pvals in index 3, bonferonni pvals in index 4
     return [lines[0]] + \
         sorted(lines[1:], key=lambda x: float(x.split('\t')[ind]))
 

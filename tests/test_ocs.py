@@ -522,6 +522,32 @@ class TopLevelTests(TestCase):
         self.assertEqual(lines[1], line_1_out)
         self.assertEqual(lines[6], line_6_out)
 
+    def test_sort_by_pval(self):
+        """sort_by_pval works"""
+        lines = ['OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy',
+             'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One',
+             'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two',
+             'OTU3\t1.84240313452\t0.223502441831\t0.447004883663\t1.34101465099\t29.25\t52.25\tk__Three',
+             'OTU4\t1.46438410075\t0.271740259562\t0.407610389342\t1.63044155737\t59.75\t44.5\tk__Four',
+             'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five',
+             'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six']
+
+        lines_sorted_pval_1 = \
+            'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two'
+        lines_sorted_fdr_1 = \
+            'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five'
+        lines_sorted_bonf_6 = \
+            'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
+
+        lines_pval = sort_by_pval(lines, 2)
+        lines_pval_fdr = sort_by_pval(lines, 3)
+        lines_pval_bonf = sort_by_pval(lines, 4)
+
+        self.assertEqual(lines_pval[1], lines_sorted_pval_1)
+        self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
+        self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
+        
+
 
 
 
