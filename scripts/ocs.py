@@ -3,11 +3,13 @@
 from __future__ import division
 
 __author__ = "Will Van Treuren, Luke Ursell"
-__copyright__ = "Copyright 2013s, The QIIME project"
-__credits__ = ["Will Van Treuren, Luke Ursell"]
+__copyright__ = "Copyright 2013, The QIIME project"
+__credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone",
+    "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso", 
+    "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
-__maintainer__ = "Will Van Treuren, Luke Ursell"
+__maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
 
@@ -19,7 +21,6 @@ from qiime.ocs import (sync_biom_and_mf, get_sample_cats, get_sample_indices,
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
-
 
 script_info = {}
 script_info['brief_description'] = """
@@ -106,7 +107,10 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU. 
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("add", "me", "please"))
+script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'Treatment' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c year -s g_fit -o gfit_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c sex -s mann_whitney_u -o mwu_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'Diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test:", "", "%prog -i otu_table.biom -m map.txt -c Diet -s kruskal_wallis -o kruskal_wallis_diet.txt"))
+
 script_info['output_description']= """
 This script generates a tab separated output file with the following headers.
 OTU - OTU id 
@@ -137,19 +141,23 @@ script_info['required_options']=[
 script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=group_test_choices.keys(),
         default='ANOVA', help='Test to use. Choices are:\n%s' % \
-         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]'),
-    make_option('-w', '--collate_results', dest='collate_results',
-        action='store_true', default=False,
-        help='When passing in a directory of OTU tables, '
-        'this parameter gives you the option of collating those resulting '
-        'values. For example, if your input directory contained multiple '
-        'rarefied OTU tables at the same depth, pass the -w option '
-        'in order to find the average p-value for your statistical test '
-        'over all rarefied tables and collate the results into one file. '
-        'If your input directory contained OTU tables '
-        'that contained different taxonomic levels, filtering levels, etc '
-        'then do not pass the -w option so that an individual results file '
-        'is created for every input OTU table. [default: %default]')]
+         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]')]
+
+
+
+# not currently supported due to mathematical errors
+    # make_option('-w', '--collate_results', dest='collate_results',
+    #     action='store_true', default=False,
+    #     help='When passing in a directory of OTU tables, '
+    #     'this parameter gives you the option of collating those resulting '
+    #     'values. For example, if your input directory contained multiple '
+    #     'rarefied OTU tables at the same depth, pass the -w option '
+    #     'in order to find the average p-value for your statistical test '
+    #     'over all rarefied tables and collate the results into one file. '
+    #     'If your input directory contained OTU tables '
+    #     'that contained different taxonomic levels, filtering levels, etc '
+    #     'then do not pass the -w option so that an individual results file '
+    #     'is created for every input OTU table. [default: %default]')]
 
 script_info['version'] = __version__
 

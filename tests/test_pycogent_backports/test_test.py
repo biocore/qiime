@@ -1446,7 +1446,8 @@ class KendallTests(TestCase):
     def do_test(self, x, y, alt_expecteds):
         """conducts the tests for each alternate hypothesis against expecteds"""
         for alt, exp_p, exp_tau in alt_expecteds:
-            tau, p_val = kendall_correlation(x, y, alt=alt, warn=False)
+            tau, p_val = kendall_correlation(x, y, alt=alt, warn=False, 
+                return_p=True)
             self.assertFloatEqual(tau, exp_tau, eps=1e-3)
             self.assertFloatEqual(p_val, exp_p, eps=1e-3)
     

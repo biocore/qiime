@@ -13,12 +13,12 @@ __status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
-from numpy import array, argsort
+from numpy import array, argsort, vstack
 from cogent.maths.stats.util import Numbers
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
     pearson, spearman, kendall_correlation, G_fit, ANOVA_one_way, 
-    kruskal_wallis, mw_test, mw_boot)
+    kruskal_wallis, mw_test, mw_boot, t_paired)
 from cogent.maths.stats.test import (t_two_sample, mc_t_two_sample)
 
 """
@@ -42,7 +42,7 @@ def sync_biom_and_mf(pmf, bt):
     bt_samples = set(bt.SampleIds)
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
-        pass
+        return pmf, bt
     else: 
         shared_samples = mf_samples.intersection(bt_samples)
         # check that we shared something
@@ -139,7 +139,7 @@ def output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
         tmp = [bt.ObservationIds[i], test_stats[i], pvals[i], fdr_pvals[i], 
             bon_pvals[i]] + means[i] 
         if include_taxonomy:
-            tmp += ';'.join(bt.ObservationMetadata[i].values())
+            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
@@ -158,7 +158,7 @@ def sort_by_pval(lines, ind):
 def correlation_row_generator(bt, pmf, category, ref_sample=None):
     """Produce a generator which will feed correlation tests rows."""
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    if ref_sample not None:
+    if ref_sample is not None:
         # user passed a ref sample to adjust all the other sample OTU values
         # we subtract the reference sample from all data as Cathy did in the 
         # original implementation. 
@@ -217,9 +217,58 @@ def correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr,
             p_vals_bon[i], np_pvals[i], np_pvals_fdr[i], np_pvals_bon[i], ci_highs[i], 
             ci_lows[i]]
         if include_taxonomy:
-            tmp += [';'.join(bt.ObservationMetadata[i].values()[0])]
+            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
+def paired_t_generator(bt, s_before, s_after):
+    """Produce a generator to run paired t tests on each OTU."""
+    b_data = vstack([bt.sampleData(i) for i in s_before]).T
+    a_data = vstack([bt.sampleData(i) for i in s_after]).T
+    return ((b_data[i], a_data[i]) for i in range(len(bt.ObservationIds)))
 
+def run_paired_t(data_generator):
+    """Run paired t test on data."""
+    test_stats, pvals = [], []
+    for b_data, a_data in data_generator:
+        test_stat, pval = t_paired(b_data, a_data)
+        test_stats.append(test_stat)
+        pvals.append(pval)
+    return test_stats, pvals
+
+def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
+    """Format the output for all tests so it can be easily written."""
+    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P']
+    # find out if bt came with taxonomy. this could be improved
+    if bt.ObservationMetadata is None:
+        include_taxonomy = False
+    else:
+        include_taxonomy = True
+        header += ['Taxonomy']
+    num_lines = len(pvals)
+    lines = ['\t'.join(header)]
+    for i in range(num_lines):
+        tmp = [bt.ObservationIds[i], test_stats[i], pvals[i], fdr_pvals[i], 
+            bon_pvals[i]]
+        if include_taxonomy:
+            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
+        lines.append('\t'.join(map(str, tmp)))
+    return lines
+
+def biom_taxonomy_formatter(data):
+    """Figure out what type of metadata the biom table has, create string."""
+    try:
+        keys = data.keys()
+        if len(keys) > 1:
+            raise ValueError("1 < metadata keys. Can't decide which to use.")
+        else: 
+            md_data = data[keys[0]]
+        if type(md_data) == dict:
+            return ''.join(['%s_%s' % (k,v) for k,v in md_data.items()])
+        elif type(md_data) == list:
+            return ';'.join(md_data)
+        elif type(md_data) == str:
+            return md_data
+    except AttributeError:
+        raise ValueError('metadata not formatted in a dictionary.')
 
