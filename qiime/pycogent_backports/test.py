@@ -473,7 +473,7 @@ def bayes_updates(ds_given_h, priors = None):
     except (ZeroDivisionError, FloatingPointError):
         return [0] * length
 
-def t_paired (a,b, tails=None, exp_diff=0):
+def t_paired(a,b, tails=None, exp_diff=0):
     """Returns t and prob for TWO RELATED samples of scores a and b.  
     
     From Sokal and Rohlf (1995), p. 354.
