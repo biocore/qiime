@@ -102,25 +102,26 @@ def run_ocs_test(data_generator, test, test_choices, *args):
         means.append([i.mean() for i in row])
     return test_stats, pvals, means
 
-def fdr_correction(probs):
-    """corrects a list of probs using the false discovery rate method
+def fdr_correction(pvals):
+    """corrects a list of pvals using the false discovery rate method
 
     ranks the p-values from low to high. multiplies each p-value by the #
     of comparison divided by the rank.
     """
-    corrected_probs = [None] * len(probs)
-    for rank, index in enumerate(argsort(probs)):
-        correction = len(probs) / float(rank + 1)
-        if probs[index]:
-            fdr_p = probs[index] * correction
+    corrected_pvals = [None] * len(pvals)
+    for rank, index in enumerate(argsort(pvals)):
+        correction = len(pvals) / float(rank + 1)
+        if pvals[index]:
+            fdr_p = pvals[index] * correction
         else:
             fdr_p = 'NA'
-        corrected_probs[index] = fdr_p
-    return corrected_probs
+        corrected_pvals[index] = fdr_p
+    return corrected_pvals
 
-def bonferroni_correction(probs):
-    """Make Bonferroni correction to probs."""
-    return array(probs)*len(probs)
+def bonferroni_correction(pvals):
+    """Make Bonferroni correction to pvals."""
+    bon_pvals = array(pvals)*len(pvals)
+    return bon_pvals.tolist()
 
 def output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means, 
     cat_sample_indices):
@@ -158,7 +159,7 @@ def sort_by_pval(lines, ind):
 def correlation_row_generator(bt, pmf, category, ref_sample=None):
     """Produce a generator which will feed correlation tests rows."""
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    if ref_sample not None:
+    if ref_sample is not None:
         # user passed a ref sample to adjust all the other sample OTU values
         # we subtract the reference sample from all data as Cathy did in the 
         # original implementation. 
