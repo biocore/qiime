@@ -511,6 +511,16 @@ class TopLevelTests(TestCase):
              5.95444423099965]
         cat_sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
 
+        line_header_out = 'OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy'
+        line_1_out = 'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One'
+        line_6_out = 'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
+
+        lines = output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, \
+            means, cat_sample_indices)
+
+        self.assertEqual(lines[0], line_header_out)
+        self.assertEqual(lines[1], line_1_out)
+        self.assertEqual(lines[6], line_6_out)
 
 
 

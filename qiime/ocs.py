@@ -140,7 +140,8 @@ def output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
         tmp = [bt.ObservationIds[i], test_stats[i], pvals[i], fdr_pvals[i], 
             bon_pvals[i]] + means[i] 
         if include_taxonomy:
-            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
+            taxa_info = get_taxonomy_info(bt)
+            tmp.append(taxa_info[bt.ObservationIds[i]])
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
@@ -256,6 +257,8 @@ def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
+# this could be removed I think given Cathy's code below
+'''
 def biom_taxonomy_formatter(data):
     """Figure out what type of metadata the biom table has, create string."""
     try:
@@ -272,4 +275,17 @@ def biom_taxonomy_formatter(data):
             return md_data
     except AttributeError:
         raise ValueError('metadata not formatted in a dictionary.')
+'''
+
+# from Cathy's code...
+def get_taxonomy_info(otu_table):
+    """Returns a dict mapping OTU ids to taxonomy (if they exist)."""
+    taxonomy_info = {}
+    if (otu_table.ObservationMetadata is not None and
+        otu_table.ObservationMetadata[0]['taxonomy'] is not None):
+        for obs_id, obs_metadata in zip(otu_table.ObservationIds,
+                                        otu_table.ObservationMetadata):
+            curr_tax = obs_metadata['taxonomy']
+            taxonomy_info[obs_id] = curr_tax
+    return taxonomy_info
 
