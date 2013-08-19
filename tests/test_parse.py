@@ -5,14 +5,14 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout","Will Van Treuren"] #remember to add yourself
+               "Jai Ram Rideout","Will Van Treuren",
+               "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from biom.table import table_factory
 from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase,main
@@ -20,16 +20,16 @@ from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    parse_classic_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
-    parse_qiime_parameters, parse_qiime_config_files,sample_mapping_to_biom_table,
+    parse_classic_otu_table, make_envs_dict, fields_to_dict,
+    parse_rarefaction_fname, parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
-    sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
-    parse_metadata_state_descriptions, parse_rarefaction_data,
-    parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
-    parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
-    parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser)
+    parse_taxonomy, parse_mapping_file, parse_metadata_state_descriptions,
+    parse_rarefaction_data, parse_illumina_line, parse_qual_score,
+    parse_qual_scores, QiimeParseError, parse_newick,parse_trflp,
+    parse_taxa_summary_table, parse_prefs_file, parse_mapping_file_to_dict,
+    mapping_file_to_dict, MinimalQualParser, parse_denoiser_mapping,
+    parse_otu_map, parse_sample_id_map, parse_taxonomy_to_otu_metadata,
+    is_casava_v180_or_later, MinimalSamParser)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -665,23 +665,6 @@ eigvals\t4.94\t1.79\t1.50
         OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
         self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '1'}, 'OTU1': {'sample1': '1', 'sample3': '1', 'sample2': '0'}})
         self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
-
-    def test_sample_mapping_to_otu_table(self):
-        """sample_mapping_to_otu_table works"""
-        lines = self.SampleMapping
-        result = sample_mapping_to_otu_table(lines)
-        self.assertEqual(result, ['#Full OTU Counts',\
-         '#OTU ID\tsample1\tsample2\tsample3', 'OTU2\t1\t2\t0', \
-        'OTU1\t3\t0\t2'])
-
-    def test_sample_mapping_to_biom_table(self):
-        """sample_mapping_to_biom_table works"""
-        lines = self.SampleMapping
-        actual = sample_mapping_to_biom_table(lines)
-        exp = table_factory(array([[3.,0.,2.],[1.,2.,0.]]),
-                            ['sample1','sample2','sample3'],
-                            ['OTU1','OTU2'])
-        self.assertEqual(actual.sortBySampleId(), exp.sortBySampleId())
     
     def test_parse_taxonomy(self):
         """ should parse taxonomy example, keeping otu id only"""
