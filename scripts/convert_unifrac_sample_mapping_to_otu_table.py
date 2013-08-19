@@ -18,16 +18,23 @@ from qiime.format import format_biom_table
 
 
 script_info={}
-script_info['brief_description']="""Convert a UniFrac sample mapping file to an OTU table"""
-script_info['script_description']="""This script allows users that have already created sample mapping (environment) files for use with the Unifrac web interface to use QIIME. QIIME records this data in an OTU table."""
+script_info['brief_description']="Convert a UniFrac sample mapping file to an\
+ OTU table"
+script_info['script_description']="This script allows users that have\
+ already created sample mapping (environment) files for use with the Unifrac\
+ web interface to use QIIME. QIIME records this data in an OTU table."
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Convert a UniFrac sample mapping (environment) file into a biom-formatted OTU table: ""","""%prog -i otu_table.sample_mapping.txt -o otu_table.biom"""))
+script_info['script_usage'].append(("Example:",
+    "Convert a UniFrac sample mapping (environment) file into a biom-formatted"+
+    " OTU table: ","%prog -i otu_table.sample_mapping.txt -o otu_table.biom"))
 
-script_info['output_description']="""The result of this script is an OTU table."""
+script_info['output_description']="The result of this script is an OTU table."
 
 script_info['required_options']=[
-    make_option('-i', '--sample_mapping_fp',type='existing_filepath',help='path to the sample mapping file'),
-    make_option('-o', '--output_fp',type='new_filepath',help='path to output file')
+    make_option('-i', '--sample_mapping_fp',type='existing_filepath',
+        help='path to the sample mapping file'),
+    make_option('-o', '--output_fp',type='new_filepath',
+        help='path to output file')
 ]
 
 script_info['version'] = __version__
