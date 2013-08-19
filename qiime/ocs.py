@@ -238,7 +238,7 @@ def run_correlation_test(data_generator, test, test_choices):
         if test == 'kendall':
             test_stat, p = test_fn(row[0], row[1], return_p=True)
             p_pval = p
-        else:
+        else: # spearman, pearson executed here
             test_stat = test_fn(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
         

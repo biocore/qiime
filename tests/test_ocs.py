@@ -546,10 +546,338 @@ class TopLevelTests(TestCase):
         self.assertEqual(lines_pval[1], lines_sorted_pval_1)
         self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
         self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
+
+    def test_corerlation_row_generator(self):
+        """correlation_row_generator works"""
+        # test once Will updates with bt.iterObservationData()
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": 
+        "BIOM-Format 1.1.2","date": "2013-08-16T10:16:20.131837","matrix_type": 
+        "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],
+        [0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],
+        [1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],
+        [2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],
+        [3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],
+        [4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],
+        "rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", 
+        "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": 
+        ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": 
+        "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": 
+        {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},
+        {"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},
+        {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
+        {"id": "Sample6", "metadata": null}]}"""
+        bt = parse_biom_table_str(otu_table_1) 
+        pmf = {'Sample1': {'test_cat': 'cat1', 'test_corr': '1'},
+         'Sample2': {'test_cat': 'cat1', 'test_corr': '2'},
+         'Sample3': {'test_cat': 'cat2', 'test_corr': '3'},
+         'Sample4': {'test_cat': 'cat2', 'test_corr': '4'},
+         'Sample5': {'test_cat': 'cat3', 'test_corr': '5'},
+         'Sample6': {'test_cat': 'cat3', 'test_corr': '6'}}
+        data_result = []
+        corr_row_gen_data = correlation_row_generator(bt, pmf, 'test_corr')
+        for i in corr_row_gen_data:
+            data_result.append(i)
+
+        data_output = [(array([ 28.,  52.,  51.,  78.,  16.,  77.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.])),
+         (array([ 25.,  14.,  11.,  32.,  48.,  63.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.])),
+         (array([ 31.,   2.,  15.,  69.,  64.,  27.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.])),
+         (array([ 36.,  68.,  70.,  65.,  33.,  62.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.])),
+         (array([ 16.,  41.,  59.,  40.,  15.,   3.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.])),
+         (array([ 32.,   8.,  54.,  98.,  29.,  50.]),
+          array([ 1.,  2.,  3.,  4.,  5.,  6.]))]
+
+        self.assertEqual(data_result, data_output)
+
+    def test_run_correlation_test_pearson(self):
+        """run_correlation_test_pearson works"""
+        test_choices = {'pearson': pearson}
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": 
+        "BIOM-Format 1.1.2","date": "2013-08-16T10:16:20.131837","matrix_type": 
+        "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],
+        [0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],
+        [1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],
+        [2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],
+        [3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],
+        [4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],
+        "rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", 
+        "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": 
+        ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": 
+        "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": 
+        {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},
+        {"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},
+        {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
+        {"id": "Sample6", "metadata": null}]}"""
+        bt = parse_biom_table_str(otu_table_1) 
+        pmf = {'Sample1': {'test_cat': 'cat1', 'test_corr': '1'},
+         'Sample2': {'test_cat': 'cat1', 'test_corr': '2'},
+         'Sample3': {'test_cat': 'cat2', 'test_corr': '3'},
+         'Sample4': {'test_cat': 'cat2', 'test_corr': '4'},
+         'Sample5': {'test_cat': 'cat3', 'test_corr': '5'},
+         'Sample6': {'test_cat': 'cat3', 'test_corr': '6'}}
+
+        data_gen = correlation_row_generator(bt, pmf, 'test_corr')
+
+        corr_coeffs_output = [0.34884669332532803,
+         0.83015306552396662,
+         0.44037594794853846,
+         0.064224958686639605,
+         -0.41225244540969846,
+         0.34313146667442163]
+        p_pvals_output = [0.49795623745457107,
+         0.04082210114420709,
+         0.38213734667034305,
+         0.90379502098011888,
+         0.41665291191825937,
+         0.50550281276602604]
+        np_pvals_output = [0.48599999999999999,
+         0.045999999999999999,
+         0.38200000000000001,
+         0.88200000000000001,
+         0.438,
+         0.54700000000000004]
+        ci_highs_output = [0.90437105797013595,
+         0.98087748393368879,
+         0.92231069900787022,
+         0.83239950278244235,
+         0.60007469750146891,
+         0.90318173092399967]
+        ci_lows_output = [-0.64544754081743805,
+         0.056981095244566363,
+         -0.57762332473129863,
+         -0.78843132325670628,
+         -0.91701105702411645,
+         -0.64921936409076253]
+
+        seed(0)
+        corr_coeffs_result, p_pvals_result, np_pvals_result, ci_highs_result, \
+        ci_lows_result = run_correlation_test(data_gen, 'pearson', test_choices)
+
+        self.assertFloatEqual(corr_coeffs_result, corr_coeffs_output)
+        self.assertFloatEqual(p_pvals_result, p_pvals_output)
+        self.assertFloatEqual(np_pvals_result, np_pvals_output)
+        self.assertFloatEqual(ci_highs_result, ci_highs_output)
+        self.assertFloatEqual(ci_lows_result, ci_lows_output)
+
+    def test_run_correlation_test_spearman(self):
+        """run_correlation_test_spearman works"""
+        test_choices = {'spearman': spearman}
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": 
+        "BIOM-Format 1.1.2","date": "2013-08-16T10:16:20.131837","matrix_type": 
+        "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],
+        [0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],
+        [1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],
+        [2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],
+        [3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],
+        [4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],
+        "rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", 
+        "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": 
+        ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": 
+        "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": 
+        {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},
+        {"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},
+        {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
+        {"id": "Sample6", "metadata": null}]}"""
+        bt = parse_biom_table_str(otu_table_1) 
+        pmf = {'Sample1': {'test_cat': 'cat1', 'test_corr': '1'},
+         'Sample2': {'test_cat': 'cat1', 'test_corr': '2'},
+         'Sample3': {'test_cat': 'cat2', 'test_corr': '3'},
+         'Sample4': {'test_cat': 'cat2', 'test_corr': '4'},
+         'Sample5': {'test_cat': 'cat3', 'test_corr': '5'},
+         'Sample6': {'test_cat': 'cat3', 'test_corr': '6'}}
+
+        data_gen = correlation_row_generator(bt, pmf, 'test_corr')
+
+        corr_coeffs_output = [0.25714285714285712,
+         0.77142857142857146,
+         0.31428571428571428,
+         -0.25714285714285712,
+         -0.60000000000000009,
+         0.25714285714285712]
+        p_pvals_output = [0.62278717201166178,
+         0.07239650145772597,
+         0.54409329446064136,
+         0.62278717201166178,
+         0.20799999999999996,
+         0.62278717201166178]
+        np_pvals_output = [0.66200000000000003,
+         0.085999999999999993,
+         0.56299999999999994,
+         0.65100000000000002,
+         0.23100000000000001,
+         0.65500000000000003]
+        ci_highs_output = [0.88418587382825442,
+         0.97351163763440296,
+         0.89704483813983049,
+         0.70063116821712201,
+         0.41234932644798467,
+         0.88418587382825442]
+        ci_lows_output = [-0.70063116821712201,
+         -0.10732436824253763,
+         -0.66753963648898318,
+         -0.88418587382825442,
+         -0.94930820848352271,
+         -0.70063116821712201]
+
+        seed(0)
+        corr_coeffs_result, p_pvals_result, np_pvals_result, ci_highs_result, \
+        ci_lows_result = run_correlation_test(data_gen, 'spearman', test_choices)
+
+        self.assertFloatEqual(corr_coeffs_result, corr_coeffs_output)
+        self.assertFloatEqual(p_pvals_result, p_pvals_output)
+        self.assertFloatEqual(np_pvals_result, np_pvals_output)
+        self.assertFloatEqual(ci_highs_result, ci_highs_output)
+        self.assertFloatEqual(ci_lows_result, ci_lows_output)
+
+    def test_run_correlation_test_kendall(self):
+        """run_correlation_test_kendall works"""
+        test_choices = {'kendall': kendall_correlation}
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": 
+        "BIOM-Format 1.1.2","date": "2013-08-16T10:16:20.131837","matrix_type": 
+        "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],
+        [0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],
+        [1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],
+        [2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],
+        [3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],
+        [4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],
+        "rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", 
+        "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": 
+        ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": 
+        "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": 
+        {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},
+        {"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},
+        {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
+        {"id": "Sample6", "metadata": null}]}"""
+        bt = parse_biom_table_str(otu_table_1) 
+        pmf = {'Sample1': {'test_cat': 'cat1', 'test_corr': '1'},
+         'Sample2': {'test_cat': 'cat1', 'test_corr': '2'},
+         'Sample3': {'test_cat': 'cat2', 'test_corr': '3'},
+         'Sample4': {'test_cat': 'cat2', 'test_corr': '4'},
+         'Sample5': {'test_cat': 'cat3', 'test_corr': '5'},
+         'Sample6': {'test_cat': 'cat3', 'test_corr': '6'}}
+
+        data_gen = correlation_row_generator(bt, pmf, 'test_corr')    
+
+        corr_coeffs_output = [0.2, 0.6, 0.2, -0.2, -0.4666666666666667, 0.2]
+        p_pvals_output = [0.7194444444444446,
+         0.13611111111111107,
+         0.7194444444444446,
+         0.7194444444444444,
+         0.2722222222222222,
+         0.7194444444444446]
+        np_pvals_output = [0.73199999999999998,
+         0.14000000000000001,
+         0.72599999999999998,
+         0.70499999999999996,
+         0.29899999999999999,
+         0.71399999999999997]
+        ci_highs_output = [0.87030079356638179,
+         0.94930820848352271,
+         0.87030079356638179,
+         0.73005876315123075,
+         0.55514322722082421,
+         0.87030079356638179]
+        ci_lows_output = [-0.73005876315123075,
+         -0.41234932644798483,
+         -0.73005876315123075,
+         -0.87030079356638179,
+         -0.92710628349420865,
+         -0.73005876315123075]
+
+        seed(0)
+        corr_coeffs_result, p_pvals_result, np_pvals_result, ci_highs_result, \
+        ci_lows_result = run_correlation_test(data_gen, 'kendall', test_choices)
+
+        self.assertFloatEqual(corr_coeffs_result, corr_coeffs_output)
+        self.assertFloatEqual(p_pvals_result, p_pvals_output)
+        self.assertFloatEqual(np_pvals_result, np_pvals_output)
+        self.assertFloatEqual(ci_highs_result, ci_highs_output)
+        self.assertFloatEqual(ci_lows_result, ci_lows_output)
+
+    def test_correlation_output_formatter(self):
+        """correlation_output_formatter works"""
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": 
+        "BIOM-Format 1.1.2","date": "2013-08-16T10:16:20.131837","matrix_type": 
+        "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],
+        [0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],
+        [1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],
+        [2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],
+        [3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],
+        [4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],
+        "rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", 
+        "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": 
+        ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": 
+        "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": 
+        {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},
+        {"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},
+        {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
+        {"id": "Sample6", "metadata": null}]}"""
+        bt = parse_biom_table_str(otu_table_1)
+
+        corr_coeffs = [0.2, 0.6, 0.2, -0.2, -0.4666666666666667, 0.2]
+        p_pvals = [0.7194444444444446,
+         0.13611111111111107,
+         0.7194444444444446,
+         0.7194444444444444,
+         0.2722222222222222,
+         0.7194444444444446]
+        p_pvals_fdr = [1.0791666666666668,
+         0.8166666666666664,
+         0.8633333333333334,
+         1.4388888888888889,
+         0.8166666666666667,
+         0.7194444444444446]
+        p_pvals_bon = [4.316666666666667,
+         0.8166666666666664,
+         4.316666666666667,
+         4.316666666666666,
+         1.6333333333333333,
+         4.316666666666667]
+        np_pvals = [0.73199999999999998,
+         0.14000000000000001,
+         0.72599999999999998,
+         0.70499999999999996,
+         0.29899999999999999,
+         0.71399999999999997]
+        np_pvals_fdr = [0.73199999999999998,
+         0.84000000000000008,
+         0.87119999999999997,
+         1.4099999999999999,
+         0.89700000000000002,
+         1.071]
+        np_pvals_bon = [4.3919999999999995,
+         0.8400000000000001,
+         4.356,
+         4.2299999999999995,
+         1.794,
+         4.284]
+        ci_highs = [0.87030079356638179,
+         0.94930820848352271,
+         0.87030079356638179,
+         0.73005876315123075,
+         0.55514322722082421,
+         0.87030079356638179]
+        ci_lows = [-0.73005876315123075,
+         -0.41234932644798483,
+         -0.73005876315123075,
+         -0.87030079356638179,
+         -0.92710628349420865,
+         -0.73005876315123075]
+
         
 
-
-
+        lines_result = correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr, \
+            p_vals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, \
+            ci_lows)
 
 
 
