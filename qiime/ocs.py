@@ -191,7 +191,7 @@ def run_correlation_test(data_generator, test, test_choices):
         if test == 'kendall':
             test_stat, p = test_fn(row[0], row[1], return_p=True)
             p_pval = p
-        else:
+        else: # spearman, pearson executed here
             test_stat = test_fn(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
         
@@ -264,7 +264,7 @@ def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
     return lines
 
 # this could be removed I think given Cathy's code below
-'''
+
 def biom_taxonomy_formatter(data):
     """Figure out what type of metadata the biom table has, create string."""
     try:
@@ -281,7 +281,7 @@ def biom_taxonomy_formatter(data):
             return md_data
     except AttributeError:
         raise ValueError('metadata not formatted in a dictionary.')
-'''
+
 
 # from Cathy's code...
 def get_taxonomy_info(otu_table):
