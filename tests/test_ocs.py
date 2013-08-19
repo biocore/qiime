@@ -875,11 +875,13 @@ class TopLevelTests(TestCase):
          -0.92710628349420865,
          -0.73005876315123075]
 
-        
+        lines_output = ['OTU\tCorrelation_Coef\tparametric_P\tparametric_P_FDR\tparametric_P_Bon\tnonparametric_P\tnonparametric_P_FDR\tnonparametric_P_Bon\tconfidence_low\tconfidence_high\tTaxonomy', 'OTU1\t0.2\t0.719444444444\t1.07916666667\t4.31666666667\t0.732\t0.732\t4.392\t0.870300793566\t-0.730058763151\tk__One', 'OTU2\t0.6\t0.136111111111\t0.816666666667\t0.816666666667\t0.14\t0.84\t0.84\t0.949308208484\t-0.412349326448\tk__Two', 'OTU3\t0.2\t0.719444444444\t0.863333333333\t4.31666666667\t0.726\t0.8712\t4.356\t0.870300793566\t-0.730058763151\tk__Three', 'OTU4\t-0.2\t0.719444444444\t1.43888888889\t4.31666666667\t0.705\t1.41\t4.23\t0.730058763151\t-0.870300793566\tk__Four', 'OTU5\t-0.466666666667\t0.272222222222\t0.816666666667\t1.63333333333\t0.299\t0.897\t1.794\t0.555143227221\t-0.927106283494\tk__Five', 'OTU6\t0.2\t0.719444444444\t0.719444444444\t4.31666666667\t0.714\t1.071\t4.284\t0.870300793566\t-0.730058763151\tk__Six']
 
-        lines_result = correlation_output_formatter(bt, corr_coefs, p_pvals, p_pvals_fdr, \
-            p_vals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, \
+        lines_result = correlation_output_formatter(bt, corr_coeffs, p_pvals, p_pvals_fdr, \
+            p_pvals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, ci_highs, \
             ci_lows)
+        
+        self.assertEqual(lines_result, lines_output)
 
 
 
