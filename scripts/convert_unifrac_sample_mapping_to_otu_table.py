@@ -10,7 +10,8 @@ __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
 __status__ = "Development"
 
-from qiime.parse import sample_mapping_to_biom_table
+from qiime.convert_unifrac_sample_mapping_to_otu_table import \
+    sample_mapping_to_biom_table
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_biom_table
