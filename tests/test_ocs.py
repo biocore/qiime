@@ -12,9 +12,9 @@ __email__ = "lkursell@gmail.com"
 __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main 
-from qiime.ocs import sync_biom_and_mf, get_sample_cats, get_cat_sample_groups, \
-    get_sample_indices, row_generator, run_ocs_test, fdr_correction, \
-    bonferroni_correction, output_formatter, sort_by_pval
+from qiime.ocs import (sync_biom_and_mf, get_sample_cats, get_cat_sample_groups,
+    get_sample_indices, row_generator, run_ocs_test, fdr_correction,
+    bonferroni_correction, output_formatter, sort_by_pval)
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
     pearson, spearman, kendall_correlation, G_fit, ANOVA_one_way, 
@@ -54,7 +54,7 @@ class TopLevelTests(TestCase):
         {"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},
         {"id": "Sample6", "metadata": null}]}"""
 
-        mapping_file_1 = """#SampleID\ttest_cat\ttest_corr
+        mapping_file_1 = """#SampleIttest_cat\ttest_corr
         Sample1\tcat1\t1
         Sample2\tcat1\t2
         Sample3\tcat2\t3

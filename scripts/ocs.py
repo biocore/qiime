@@ -51,7 +51,14 @@ There are several important considerations with this script:
 * test) is that the frequency of any given OTU is equal across all sample 
 * groups.
 
-* corrected pvalues greater than 1 will be rounded to 1
+* Corrected pvalues greater than 1 will be rounded to 1.
+
+* Filtering out OTUs which are found in a low percentage of samples is a good 
+* idea before using this script. The old otu_category_significance.py removed 
+* OTUs that were not found in at least 25 percent of samples. This prevents 
+* 0 variance errors and spurious significance for really low abundance OTUs and 
+* focuses the hypothesis discovery process on the abundant OTUs which are likely 
+* playing a larger role. 
 
 The available tests are:
 ANOVA - one way analysis of variance. This test compares the within-group 
@@ -109,7 +116,7 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'Treatment' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c year -s g_fit -o gfit_ocs.txt"))
 script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c sex -s mann_whitney_u -o mwu_ocs.txt"))
-script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'Diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test:", "", "%prog -i otu_table.biom -m map.txt -c Diet -s kruskal_wallis -o kruskal_wallis_diet.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'Diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from printing error messages about samples and OTUs that are excluded from the analysis:", "", "%prog -i otu_table.biom -m map.txt -c Diet -s kruskal_wallis -o kruskal_wallis_diet.txt --verbose_off"))
 
 script_info['output_description']= """
 This script generates a tab separated output file with the following headers.
@@ -141,29 +148,17 @@ script_info['required_options']=[
 script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=group_test_choices.keys(),
         default='ANOVA', help='Test to use. Choices are:\n%s' % \
-         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]')]
-
-
-
-# not currently supported due to mathematical errors
-    # make_option('-w', '--collate_results', dest='collate_results',
-    #     action='store_true', default=False,
-    #     help='When passing in a directory of OTU tables, '
-    #     'this parameter gives you the option of collating those resulting '
-    #     'values. For example, if your input directory contained multiple '
-    #     'rarefied OTU tables at the same depth, pass the -w option '
-    #     'in order to find the average p-value for your statistical test '
-    #     'over all rarefied tables and collate the results into one file. '
-    #     'If your input directory contained OTU tables '
-    #     'that contained different taxonomic levels, filtering levels, etc '
-    #     'then do not pass the -w option so that an individual results file '
-    #     'is created for every input OTU table. [default: %default]')]
+         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]'),
+    make_option('--verbose_off', action='store_true', default='False', 
+        help='Don\'t print info about samples or OTUs excluded because they are not '+\
+            'found in the mapping file and biom file (samples), or have some '+\
+            'feature which makes them unsuitable for analysis (OTUs) like '+\
+            'no variance, or never observed.')]
 
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-
     # sync the mapping file and the biom file
     bt = parse_biom_table(open(opts.otu_table_fp))
     pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
@@ -177,13 +172,10 @@ def main():
         raise ValueError('At least one metadata group has no samples. Check '+\
             'that the mapping file has at least one sample for each value in '+\
             'the passed category.')
-    
     if opts.test in two_group_tests and len(cat_sam_indices) > 2:
-            raise option_parser.error('The t-test and mann_whitney_u test may'+\
-                ' only be used when there'+\
-                ' are two sample groups. Choose another test or another ' +\
-                'metadata category.')
-
+        option_parser.error('The t-test and mann_whitney_u test may '+\
+            'only be used when there are two sample groups. Choose another '+\
+            'test or another metadata category.')
     data_feed = row_generator(bt, cat_sam_indices)
     test_stats, pvals, means = run_ocs_test(data_feed, opts.test, 
         group_test_choices)
