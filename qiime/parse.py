@@ -15,7 +15,6 @@ __status__ = "Development"
 
 from string import strip
 from collections import defaultdict
-from copy import deepcopy
 import os
 from os.path import expandvars
 import re
@@ -646,37 +645,6 @@ def parse_qiime_parameters(lines):
             
             result[script_id][parameter_id] = value
     return result
-
-def parse_sample_mapping(lines):
-    """Parses the UniFrac sample mapping file (environment file)
-
-    The sample mapping file is a required input for the UniFrac web interface.
-    Returns a dict of OTU names mapped to sample:count dictionaries.
-    This code is used to convert this file to an OTU table for QIIME
-    """
-    #add the count of 1 if count info is not supplied
-    new_lines = []
-    for line in lines:
-        line = line.strip().split('\t')
-        if len(line) == 2:
-            line.append('1')
-        new_lines.append(line)
-
-    all_sample_names = [line[1] for line in new_lines]
-    all_sample_names = set(all_sample_names)
-    #create a dict of dicts with the OTU name mapped to a dictionary of
-    #sample names with counts
-    OTU_sample_info = {}
-    for line in new_lines:
-        OTU_name = line[0]
-        if OTU_name not in OTU_sample_info:
-            sample_info = dict([(i,'0') for i in all_sample_names])
-            OTU_sample_info[OTU_name] = deepcopy(sample_info)
-        sample_name = line[1]
-        count = line[2]
-        OTU_sample_info[OTU_name][sample_name] = count
-    return OTU_sample_info, all_sample_names
-
 
 def parse_qiime_config_file(qiime_config_file):
     """ Parse lines in a qiime_config file

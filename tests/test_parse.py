@@ -22,8 +22,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_classic_otu_table, make_envs_dict, fields_to_dict,
     parse_rarefaction_fname, parse_qiime_parameters, parse_qiime_config_files,
-    parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
-    parse_taxonomy, parse_mapping_file, parse_metadata_state_descriptions,
+    parse_bootstrap_support, parse_distmat_to_dict, parse_taxonomy,
+    parse_mapping_file, parse_metadata_state_descriptions,
     parse_rarefaction_data, parse_illumina_line, parse_qual_score,
     parse_qual_scores, QiimeParseError, parse_newick,parse_trflp,
     parse_taxa_summary_table, parse_prefs_file, parse_mapping_file_to_dict,
@@ -62,11 +62,7 @@ class TopLevelTests(TestCase):
         'sam14', 'sam15', 'sam16', 'sam17', 'sam18', 'sam19']
         self.l19_taxon_names =  ['tax1', 'tax2', 'tax3', 'tax4', 'endbigtaxon',\
         'tax6', 'tax7', 'tax8', 'tax9']
-        self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
-        "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
-        self.SampleMapping2 = ["OTU1\tsample1", "OTU1\tsample3", \
-        "OTU2\tsample1", "OTU2\tsample2"]
-        
+
         self.legacy_otu_table1 = legacy_otu_table1
         self.otu_table1 = otu_table1
         self.otu_table_without_leading_comment = \
@@ -653,18 +649,6 @@ eigvals\t4.94\t1.79\t1.50
         # default dict functions as expected -- looking up non-existant key
         # returns empty dict
         self.assertEqual(actual['some_other_script'],{})
-
-    def test_parse_sample_mapping(self):
-        """parse_sample_mapping works"""
-        lines = self.SampleMapping
-        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
-        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '2'}, 'OTU1': {'sample1': '3', 'sample3': '2', 'sample2': '0'}})
-        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
-        #test that it works if no sample counts in there
-        lines = self.SampleMapping2
-        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
-        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '1'}, 'OTU1': {'sample1': '1', 'sample3': '1', 'sample2': '0'}})
-        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
     
     def test_parse_taxonomy(self):
         """ should parse taxonomy example, keeping otu id only"""
