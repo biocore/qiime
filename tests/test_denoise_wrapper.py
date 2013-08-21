@@ -63,7 +63,7 @@ class DenoiseWrapperTests(TestCase):
     def test_fast_denoiser(self):
         """The fast denoiser works as expected."""
 
-        actual_centroids, actual_otu_map = fast_denoiser(self.sff_path2, self.seq_path, self.tmp_out_dir,
+        actual_centroids, actual_otu_map = fast_denoiser([ self.sff_path2 ], self.seq_path, self.tmp_out_dir,
                                                          num_cpus=1, primer="YATGCTGCCTCCCGTAGGAGT", verbose=False)
 
         actual = list(actual_centroids)
