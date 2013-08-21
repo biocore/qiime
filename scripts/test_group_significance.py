@@ -13,11 +13,15 @@ __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
 
-from qiime.util import parse_command_line_parameters, make_option
-from qiime.ocs import (sync_biom_and_mf, get_sample_cats, get_sample_indices, 
-    get_cat_sample_groups, row_generator, output_formatter, fdr_correction, 
-    bonferroni_correction, sort_by_pval, run_ocs_test, two_group_tests, 
-    group_test_choices)
+from qiime.util import (parse_command_line_parameters, make_option, 
+    sync_biom_and_mf)
+from qiime.pycogent_backports.test import (fdr_correction, 
+    bonferroni_correction)
+from qiime.otu_significance import (get_sample_cats, get_sample_indices, 
+    get_cat_sample_groups, group_significance_row_generator, 
+    group_significance_output_formatter, 
+    sort_by_pval, run_group_significance_test, 
+    TWO_GROUP_TESTS, GROUP_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
@@ -146,14 +150,16 @@ script_info['required_options']=[
         help='path to the output file or directory')]
 
 script_info['optional_options']=[
-    make_option('-s', '--test', type="choice", choices=group_test_choices.keys(),
+    make_option('-s', '--test', type="choice", choices=GROUP_TEST_CHOICES.keys(),
         default='ANOVA', help='Test to use. Choices are:\n%s' % \
-         (', '.join(group_test_choices.keys()))+'\n\t' + '[default: %default]'),
+         (', '.join(GROUP_TEST_CHOICES.keys()))+'\n\t' + '[default: %default]'),
     make_option('--verbose_off', action='store_true', default='False', 
         help='Don\'t print info about samples or OTUs excluded because they are not '+\
             'found in the mapping file and biom file (samples), or have some '+\
             'feature which makes them unsuitable for analysis (OTUs) like '+\
-            'no variance, or never observed.')]
+            'no variance, or never observed.'),
+    make_option('--permutations', default=1000, type=int, 
+        help='Number of permutations to use for bootstrapped tests.')]
 
 script_info['version'] = __version__
 
@@ -172,13 +178,13 @@ def main():
         raise ValueError('At least one metadata group has no samples. Check '+\
             'that the mapping file has at least one sample for each value in '+\
             'the passed category.')
-    if opts.test in two_group_tests and len(cat_sam_indices) > 2:
+    if opts.test in TWO_GROUP_TESTS and len(cat_sam_indices) > 2:
         option_parser.error('The t-test and mann_whitney_u test may '+\
             'only be used when there are two sample groups. Choose another '+\
             'test or another metadata category.')
-    data_feed = row_generator(bt, cat_sam_indices)
-    test_stats, pvals, means = run_ocs_test(data_feed, opts.test, 
-        group_test_choices)
+    data_feed = group_significance_row_generator(bt, cat_sam_indices)
+    test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
+        group_test_choices, int(opts.permutations))
     # calculate corrected pvals
     fdr_pvals = array(fdr_correction(pvals))
     bon_pvals = bonferroni_correction(pvals)
@@ -186,8 +192,8 @@ def main():
     fdr_pvals = where(fdr_pvals>1.0, 1.0, fdr_pvals)
     bon_pvals = where(bon_pvals>1.0, 1.0, bon_pvals)
     # write output results after sorting
-    lines = output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, means,
-        cat_sam_indices)
+    lines = group_significance_output_formatter(bt, test_stats, pvals, 
+        fdr_pvals, bon_pvals, means, cat_sam_indices)
     lines = sort_by_pval(lines, ind=2)
     o = open(opts.output_fp, 'w')
     o.writelines('\n'.join(lines))

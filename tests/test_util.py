@@ -13,7 +13,7 @@ from collections import defaultdict
 import gzip
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
-from biom.parse import parse_biom_table_str
+from biom.parse import parse_biom_table_str, parse_biom_table
 from biom.util import get_biom_format_version_string
 
 from cogent import Sequence
@@ -47,7 +47,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
     RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
     qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-    is_valid_git_sha1)
+    is_valid_git_sha1, sync_biom_and_mf)
 
 import numpy
 from numpy import array, asarray
@@ -59,7 +59,8 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"]
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
+               "Will Van Treuren", "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -2138,6 +2139,73 @@ class MetadataMapTests(TestCase):
 
         obs = self.empty_map.CategoryNames
         self.assertEqual(obs, [])
+
+    def test_sync_biom_and_mf(self):
+        """Test syncing removes samples from none, one, or both of mf and bt."""
+        # test removal of samples from mapping file only
+        
+        BT_IN_1 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+        MF_IN_1 = ['#SampleIttest_cat\ttest_corr',
+        'Sample1\tcat1\t1',
+        'Sample2\tcat1\t2',
+        'Sample3\tcat2\t3',
+        'Sample4\tcat2\t4',
+        'Sample5\tcat3\t5',
+        'Sample6\tcat3\t6',
+        'NotInOtuTable1\tcat5\t7',
+        'NotInOtuTable2\tcat5\t8']
+        MF_OUT_1 = ['#SampleIttest_cat\ttest_corr',
+        'Sample1\tcat1\t1',
+        'Sample2\tcat1\t2',
+        'Sample3\tcat2\t3',
+        'Sample4\tcat2\t4',
+        'Sample5\tcat3\t5',
+        'Sample6\tcat3\t6']
+        BT_OUT_2 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T16:00:53.390212","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 4],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null}]}'
+        MF_IN_2 = ['#SampleIttest_cat\ttest_corr',
+        'Sample1\tcat1\t1',
+        'Sample2\tcat1\t2',
+        'Sample3\tcat2\t3',
+        'Sample4\tcat2\t4']
+        BT_OUT_3 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T16:09:55.670254","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 5],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,16.0],[0,4,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,48.0],[1,4,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,64.0],[2,4,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,33.0],[3,4,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,15.0],[4,4,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,29.0],[5,4,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+        MF_IN_3 = ['#SampleIttest_cat\ttest_corr',
+        'Sample1\tcat1\t1',
+        'Sample2\tcat1\t2',
+        'NotInOtuTable2\tcat5\t8',
+        'Sample3\tcat2\t3',
+        'Sample5\tcat3\t5',
+        'Sample6\tcat3\t6',
+        'NotInOtuTable1\tcat5\t7']
+        MF_OUT_3 = ['#SampleIttest_cat\ttest_corr',
+        'Sample1\tcat1\t1',
+        'Sample2\tcat1\t2',
+        'Sample3\tcat2\t3',
+        'Sample5\tcat3\t5',
+        'Sample6\tcat3\t6']
+        BT_4 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-08-16T15:23:02.872397","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 8],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[0,6,73.0],[0,7,6.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[1,6,27.0],[1,7,38.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[2,6,64.0],[2,7,54.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[3,6,60.0],[3,7,23.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[4,6,35.0],[4,7,5.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0],[5,6,93.0],[5,7,19.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null},{"id": "Sample7", "metadata": null},{"id": "Sample8", "metadata": null}]}"""
+        mf_exp, _ = parse_mapping_file_to_dict(MF_OUT_1)
+        bt_exp = parse_biom_table(BT_IN_1) #bt doesn't change in this test
+        mf_obs, bt_obs = \
+            sync_biom_and_mf(parse_mapping_file_to_dict(MF_IN_1)[0],
+                parse_biom_table(BT_IN_1))
+        self.assertEqual(mf_exp, mf_obs)
+        self.assertEqual(bt_exp, bt_obs)
+        # test removal of samples from biom table only
+        mf_exp, _ = parse_mapping_file_to_dict(MF_IN_2) #doesn't change in test
+        bt_exp = parse_biom_table(BT_OUT_2) 
+        mf_obs, bt_obs = \
+            sync_biom_and_mf(parse_mapping_file_to_dict(MF_IN_2)[0], 
+                parse_biom_table(BT_IN_1))
+        self.assertEqual(mf_exp, mf_obs)
+        self.assertEqual(bt_exp, bt_obs)
+        # test removal when neither set of samples is subset of one another
+        mf_exp, _ = parse_mapping_file_to_dict(MF_OUT_3)
+        bt_exp = parse_biom_table(BT_OUT_3) #bt doesn't change in this test
+        mf_obs, bt_obs = \
+            sync_biom_and_mf(parse_mapping_file_to_dict(MF_IN_3)[0], 
+                parse_biom_table(BT_IN_1))
+        self.assertEqual(mf_exp, mf_obs)
+        self.assertEqual(bt_exp, bt_obs)
 
 
 class RExecutorTests(TestCase):
