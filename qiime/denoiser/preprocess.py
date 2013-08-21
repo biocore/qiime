@@ -25,11 +25,11 @@ from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
 from qiime.util import load_qiime_config, get_qiime_scripts_dir
 from qiime.denoiser.cluster_utils import submit_jobs
-from qiime.denoiser.flowgram_filter import cleanup_sff, write_sff_header,\
-    split_sff, truncate_flowgrams_in_SFF, extract_barcodes_from_mapping
+from qiime.denoiser.flowgram_filter import cleanup_sff,\
+     truncate_flowgrams_in_SFF, extract_barcodes_from_mapping
 from qiime.denoiser.utils import squeeze_seq, make_stats, get_representatives,\
      wait_for_file, store_mapping, invert_mapping, cat_sff_files, files_exist,\
-     read_denoiser_mapping, get_denoiser_data_dir
+     read_denoiser_mapping, get_denoiser_data_dir, write_sff_header
 
 STANDARD_BACTERIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT"
 

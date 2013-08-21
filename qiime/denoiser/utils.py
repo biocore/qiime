@@ -30,7 +30,26 @@ from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from qiime.util import (get_qiime_project_dir, get_qiime_scripts_dir,
                         FileFormatError, get_tmp_filename)
-from qiime.denoiser.flowgram_filter import write_sff_header
+
+def write_sff_header(header, fh, num=None):
+    """writes the Common header of a sff.txt file.
+
+    header: the header of an sff file as returned by the sff parser.
+    
+    fh: output file handle
+    
+    num: number of flowgrams to be written in the header.
+          Note that his number should match the final number, if 
+          the resulting sff.txt should be consistent.
+          """
+
+    lines = ["Common Header:"]
+    if (num !=None):
+        header["# of Flows"] = num
+
+    lines.extend(["  %s:\t%s" % (param, header[param]) \
+                      for param in header])
+    fh.write("\n".join(lines)+"\n\n")
 
 #    Wrap into explicit function so we can easily move the data dir around.
 def get_denoiser_data_dir():

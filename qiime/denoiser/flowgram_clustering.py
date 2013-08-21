@@ -39,7 +39,8 @@ from qiime.denoiser.utils import init_flowgram_file, append_to_flowgram_file,\
 from qiime.denoiser.cluster_utils import setup_cluster, adjust_workers,\
     stop_workers, check_workers, ClientHandler,\
     save_send, send_flowgram_to_socket
-from qiime.denoiser.flowgram_filter import write_sff_header, split_sff
+from qiime.denoiser.utils import write_sff_header
+from qiime.denoiser.flowgram_filter import split_sff
 from qiime.denoiser.preprocess import preprocess, preprocess_on_cluster,\
      read_preprocessed_data
 
@@ -242,10 +243,10 @@ def get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir,
     return (scores, names, fc)
 
 def filter_with_flowgram(id, flowgram, flowgrams, header, ids, num_flows, bestscores, log_fh,
-                       outdir="/tmp/", threshold=3.75, num_cpus=32,
-                       fast_method=True, on_cluster = False, mapping=None, spread=[],
-                       verbose=False, pair_id_thresh=0.97, client_sockets=[],
-                       error_profile=DENOISER_DATA_DIR+'FLX_error_profile.dat'):
+                         outdir="/tmp/", threshold=3.75, num_cpus=32,
+                         fast_method=True, on_cluster = False, mapping=None, spread=[],
+                         verbose=False, pair_id_thresh=0.97, client_sockets=[],
+                         error_profile=DENOISER_DATA_DIR+'FLX_error_profile.dat'):
     """Filter all files in flows_filename with flowgram and split according to threshold.
 
     id: The flowgram identifier of the master flowgram of this round
@@ -570,7 +571,7 @@ def denoise_seqs(sff_fps, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False
 
     if verbose:
         log_fh.write("Denoiser version: %s\n" % __version__)
-        log_fh.write("SFF file: %s\n" % sff_fps)
+        log_fh.write("SFF files: %s\n" % sff_fps)
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Preprocess dir: %s\n" % preprocess_fp)
         if checkpoint_fp:
@@ -642,7 +643,7 @@ def denoise_seqs(sff_fps, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False
     store_clusters(mapping, deprefixed_sff_fp, tmpoutdir)
     store_mapping(mapping, tmpoutdir,"denoiser")
 
-def denoise_per_sample(sff_fp, fasta_fp, tmpoutdir, cluster=False,
+def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
                        num_cpus=1, squeeze=True, percent_id=0.97, bail=1,
                        primer="", low_cutoff=3.75, high_cutoff=4.5,
                        log_fp="denoiser.log", low_memory=False, verbose=False,
@@ -667,7 +668,7 @@ def denoise_per_sample(sff_fp, fasta_fp, tmpoutdir, cluster=False,
 
     if verbose:
         log_fh.write("Denoiser version: %s\n" % __version__)
-        log_fh.write("SFF file: %s\n" % sff_fp)
+        log_fh.write("SFF files: %s\n" % sff_fps)
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Cluster: %s\n" % cluster)
         log_fh.write("Num CPUs: %d\n" % num_cpus)
@@ -679,7 +680,7 @@ def denoise_per_sample(sff_fp, fasta_fp, tmpoutdir, cluster=False,
         log_fh.write("Maximal number of iteration: %s\n\n" % max_num_rounds)
         
     # here we go ...
-    sff_files = split_sff(open(sff_fp), open(fasta_fp), tmpoutdir) 
+    sff_files = split_sff(map(open, sff_fps), open(fasta_fp), tmpoutdir) 
     combined_mapping = {}
     result_centroids = []
     result_singletons_files = []
@@ -688,7 +689,7 @@ def denoise_per_sample(sff_fp, fasta_fp, tmpoutdir, cluster=False,
         if not exists(tmpoutdir+("/%d" % i)):
             makedirs(tmpoutdir+("/%d" % i))
         out_fp= tmpoutdir+("/%d/" % i)
-        denoise_seqs(sff_file, fasta_fp, out_fp, None, cluster,
+        denoise_seqs([sff_file], fasta_fp, out_fp, None, cluster,
                      num_cpus, squeeze, percent_id, bail, primer,
                      low_cutoff, high_cutoff, log_fp, low_memory,
                      verbose, error_profile, max_num_rounds)
