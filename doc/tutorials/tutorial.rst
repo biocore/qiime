@@ -566,7 +566,7 @@ This workflow uses jackknife replicates to estimate the uncertainty in PCoA plot
 
   1) Compute the beta diversity distance matrix from the full OTU table (and tree, if applicable) (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
   2) Build UPGMA tree from full distance matrix; (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
-  3) Build rarefied OTU tables (for more information, refer to `multiple_rarefactions_even_depth.py.py <../scripts/multiple_rarefactions_even_depth.py.html>`_)
+  3) Build rarefied OTU tables (for more information, refer to `multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_)
   4) Compute distance matrices for rarefied OTU tables (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_) <../scripts/beta_diversity.html>`_)
   5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
   6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)

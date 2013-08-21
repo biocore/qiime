@@ -32,6 +32,7 @@ The following are required by QIIME:
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * Numpy 1.5.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
 * biom-format 1.1.2 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.1.2.tar.gz>`_) (license: GPL)
+* qcli (`web <https://github.com/bipy/qcli>`_) (license: GPL)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
