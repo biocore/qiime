@@ -121,7 +121,7 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU. 
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'Treatment' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c year -s g_test -o gtest_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c diet -s g_test -o gtest_ocs.txt"))
 script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups 'before_after' using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c before_after -s mann_whitney_u -o mwu_ocs.txt"))
 script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from printing error messages about samples and OTUs that are excluded from the analysis:", "", "%prog -i otu_table.biom -m map.txt -c diet -s kruskal_wallis -o kw_ocs.txt --verbose_off"))
 
