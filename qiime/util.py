@@ -5,7 +5,8 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
+               "Will Van Treuren"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -2130,7 +2131,7 @@ def biom_taxonomy_formatter(data):
             return ''.join(['%s_%s' % (k,v) for k,v in md_data.items()])
         elif type(md_data) == list:
             return ';'.join(md_data)
-        elif type(md_data) == str:
+        elif type(md_data) in [str, unicode]:
             return md_data
     except AttributeError:
         raise ValueError('metadata not formatted in a dictionary.')

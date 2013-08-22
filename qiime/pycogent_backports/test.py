@@ -17,7 +17,7 @@ from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
         median as _median, zeros, ones, unique, copy, searchsorted, var, 
-        argsort, hstack, arange)
+        argsort, hstack, arange, empty)
         #, std - currently incorrect
 from numpy.random import permutation, randint, shuffle
 #from cogent.maths.stats.util import Numbers
@@ -1352,7 +1352,7 @@ def ANOVA_one_way(a):
     An F value is first calculated as the variance of the group means
     divided by the mean of the within-group variances.
     """
-    a = array(a)
+    #a = array(a)
     group_means = []
     group_variances = []
     num_cases = 0 # total observations in all groups
@@ -1918,9 +1918,28 @@ def fdr_correction(pvals):
     tmp = array(pvals)
     return tmp*tmp.size/(1.+argsort(argsort(tmp)).astype(float))
     
+def benjamini_hochberg_step_down(pvals):
+    """Perform Benjamini and Hochberg's 1995 FDR step down procedure.
+
+    In short, compute  the fdr adjusted pvals (ap_i's), and working from
+    the largest to smallest, compare ap_i to ap_i-1. If ap_i < ap_i-1 set ap_i-1
+    equal to ap_i. 
+    """
+    tmp = fdr_correction(pvals)
+    corrected_vals = empty(len(pvals))
+    max_pval = 1. 
+    for i in argsort(pvals)[::-1]:
+        if tmp[i]<max_pval:
+            corrected_vals[i] = tmp[i]
+            max_pval = tmp[i]
+        else:
+            corrected_vals[i] = max_pval
+    return corrected_vals
+
 def bonferroni_correction(pvals):
     """Adjust pvalues for multiple tests using the Bonferroni method.
 
     In short: multiply all pvals by the number of comparisons."""
     return array(pvals)*len(pvals)
+
 

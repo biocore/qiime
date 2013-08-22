@@ -15,7 +15,7 @@ __status__ = "Development"
 
 from qiime.util import (parse_command_line_parameters, make_option, 
     sync_biom_and_mf)
-from qiime.pycogent_backports.test import (fdr_correction, 
+from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
     bonferroni_correction)
 from qiime.otu_significance import (get_sample_cats, get_sample_indices, 
     get_cat_sample_groups, group_significance_row_generator, 
@@ -186,7 +186,7 @@ def main():
     test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
         group_test_choices, int(opts.permutations))
     # calculate corrected pvals
-    fdr_pvals = array(fdr_correction(pvals))
+    fdr_pvals = array(benjamini_hochberg_step_down(pvals))
     bon_pvals = bonferroni_correction(pvals)
     # correct for cases where values above 1.0 due to correction
     fdr_pvals = where(fdr_pvals>1.0, 1.0, fdr_pvals)
