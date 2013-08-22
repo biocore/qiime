@@ -38,7 +38,9 @@ abundance in the different sample groups. The script will compare each OTU based
 on the passed sample groupings to see if it is differentially represented. The 
 sample groupings are determined by the -c option. The script will group together
 samples which have the same value in the mapping file under the header passed 
-with the -c option. At a basic level, the script is constructing a OTUxSample
+with the -c option. Any samples that do not contain a value under the given
+header will not be included in the comparison.
+At a basic level, the script is constructing a OTUxSample
 (rowXcolumn) contingency table, and testing whether or not each OTU is 
 differentially represented in certain groups of columns (determined by the 
 metadata category passed). 
@@ -55,7 +57,8 @@ There are several important considerations with this script:
 * test) is that the frequency of any given OTU is equal across all sample 
 * groups.
 
-* Corrected pvalues greater than 1 will be rounded to 1.
+* P-values greater than one after correcting for multiple comparisons will
+* be rounded to 1.
 
 * Filtering out OTUs which are found in a low percentage of samples is a good 
 * idea before using this script. The old otu_category_significance.py removed 
@@ -75,12 +78,12 @@ kruskal_wallis - nonparametric ANOVA. This test is functionally an expansion of
 ANOVA to cases where the sample means are not equal (although other assumptions
 like equal skewness remain). This is a nonparametric test. 
 
-g_test - goodness of git or log-likelihood ratio test. This test compares the 
+g_test - goodness of fit or log-likelihood ratio test. This test compares the 
 ratio of the OTU frequencies in the sample groups to an 'extrinsic hypothesis' 
 about what their distribution should be. The extrinsic hypothesis coded in this
 script is that all sample groups have equal OTU frequencies. The test compares
 the ratio of the observed OTU frequencies in the sample groups to the expected
-frequencies based on the extrinsic hypothesis. This is a XXXX test. 
+frequencies based on the extrinsic hypothesis. This is a parametric test. 
 
 parametric_t_test - Student's t-test. This test compares the frequencies of an
 OTU in one sample group versus another sample group to see what the probability 
@@ -88,16 +91,16 @@ of drawing the samples given that each sample had an equal proportion of the OTU
 in it. This is a parametric test whose assumptions are likely violated by data 
 found in most gene surveys.
 
-nonparametric_t_test - nonparametric t-test calculated using Monte Carlo 
+nonparametric_t_test - nonparametric t-test is calculated using Monte Carlo 
 simulation. This test performs in the same way as the t-test, but computes the 
 probability based on a boot-strap procedure where the sample group values are 
 permuted. The fraction of the time that a t-statistic greater than or equal to
 the observed t-statistic is found is the basis of the nonparametric p-value. 
 This is a nonparametric test.
 
-mann_whitney_u - aka wilcoxon rank sum test is a nonparametric test that the
-means of two populations represented by samples are even (null hypothesis). It 
-is basically an extension of the t-test. This is a nonparametric test.
+mann_whitney_u - aka wilcoxon rank sum test is a nonparametric test where the
+null hypothesis is that the populations from which the two samples come have
+equal means. It is basically an extension of the t-test. This is a nonparametric test.
 
 bootstrap_mann_whitney_u - the bootstrapped version of the mann_whitney_u test. 
 Identical behavior to the nonparametric_t_test. This is a nonparametric_t_test.
@@ -118,9 +121,9 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU. 
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'Treatment' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c year -s g_fit -o gfit_ocs.txt"))
-script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c sex -s mann_whitney_u -o mwu_ocs.txt"))
-script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'Diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from printing error messages about samples and OTUs that are excluded from the analysis:", "", "%prog -i otu_table.biom -m map.txt -c Diet -s kruskal_wallis -o kruskal_wallis_diet.txt --verbose_off"))
+script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c diet -s g_test -o gtest_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups 'before_after' using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c before_after -s mann_whitney_u -o mwu_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from printing error messages about samples and OTUs that are excluded from the analysis:", "", "%prog -i otu_table.biom -m map.txt -c diet -s kruskal_wallis -o kw_ocs.txt --verbose_off"))
 
 script_info['output_description']= """
 This script generates a tab separated output file with the following headers.
