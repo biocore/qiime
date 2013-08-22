@@ -14,10 +14,11 @@ __status__ = "Development"
 from numpy import array, isnan, min as np_min
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
+from qiime.pycogent_backports.test import (mc_t_two_sample, t_two_sample, 
+    benjamini_hochberg_step_down, bonferroni_correction)
 from itertools import combinations
 from collections import defaultdict
-from qiime.otu_category_significance import fdr_correction
+
 
 test_types = ['parametric', 'nonparametric']
 correction_types = ['bonferroni', 'fdr', 'none']
@@ -96,7 +97,7 @@ def _correct_compare_alpha_results(result, method):
         # which are (None,None). If left in, FDR correction will count them as
         # tests for the purpose of the correction factor. 
         tmp_pvals = [v[1] for k,v in result.items() if v!=(None,None)]
-        fdr_corr_vals = fdr_correction(tmp_pvals)
+        fdr_corr_vals = benjamini_hochberg_step_down(tmp_pvals)
         # Place values in corrected_result in same order as they were extracted
         # skipping nones. 
         i=0

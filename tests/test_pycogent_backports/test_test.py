@@ -20,6 +20,9 @@ from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
 # Kruskal Wallis related imports
 from qiime.pycogent_backports.test import (_corr_kw, ssl_ssr_sx, tie_correction,
     kruskal_wallis)
+# fdr/bonferroni imports
+from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
+    fdr_correction, bonferroni_correction)
 from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
     ones, testing, tril, cov, sqrt)
 import math
@@ -1682,6 +1685,43 @@ class TestDistMatrixPermutationTest(TestCase):
         # self.assertFloatEqual(within_MS, 2.9871794871794868)
         # self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
         self.assertFloatEqual(pval, 0.00015486238993089464)
+
+    def test_fdr_correction(self):
+        """Test that the fdr_correction works as anticipated."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = array([.5, .7*5/4., .5*5/3., .3*5/2., .9])
+        obs = fdr_correction(pvals)
+        self.assertFloatEqual(obs, exp)
+
+    def test_benjamini_hochberg_step_down(self):
+        """Test that the BH step down procedure behaves as it does in R."""
+        # r values 
+        #q = c(0.64771481,  0.93517796,  0.7169902 ,  0.18223457,  0.26918556,
+        #  0.1450153 ,  0.22448242,  0.74723508,  0.89061034,  0.74007906)
+        # p.adjust(q, method='BH')
+        #  [1] 0.9340439 0.9351780 0.9340439 0.6729639 0.6729639 0.6729639 0.6729639
+        #  [8] 0.9340439 0.9351780 0.9340439
+        pvals = array([ 0.64771481,  0.93517796,  0.7169902 ,  0.18223457, 
+            0.26918556, 0.1450153 ,  0.22448242,  0.74723508,  0.89061034,  
+            0.74007906])
+        exp = array([0.9340439, 0.9351780, 0.9340439, 0.6729639, 0.6729639, 
+            0.6729639, 0.6729639, 0.9340439, 0.9351780, 0.9340439])
+        obs = benjamini_hochberg_step_down(pvals)
+        self.assertFloatEqual(obs, exp)
+        # example 2
+        pvals = array([ 1.32305426,  1.9345059 ,  0.87129877,  1.89957702, 
+            1.85712616, 0.68757988,  0.41248969,  0.20751712,  1.97658599, 
+            1.06209437])
+        exp = array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])
+        obs = benjamini_hochberg_step_down(pvals)
+        self.assertFloatEqual(obs,exp)
+
+    def test_bonferroni_correction(self):
+        """Test that Bonferroni correction behaves correctly."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = pvals*5.
+        obs = bonferroni_correction(pvals)
+        self.assertFloatEqual(obs, exp)
 
 #execute tests if called from command line
 if __name__ == '__main__':

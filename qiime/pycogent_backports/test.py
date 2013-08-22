@@ -16,9 +16,10 @@ from cogent.maths.stats.special import Gamma
 from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
-        median as _median, zeros, ones, unique, copy, searchsorted, var)
+        median as _median, zeros, ones, unique, copy, searchsorted, var, 
+        argsort, hstack, arange, empty)
         #, std - currently incorrect
-from numpy.random import permutation, randint
+from numpy.random import permutation, randint, shuffle
 #from cogent.maths.stats.util import Numbers
 from operator import add
 from random import choice
@@ -682,8 +683,10 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
     if permutations > 0 and obs_t is not None and param_p_val is not None:
         # Permute observations between x_items and y_items the specified number
         # of times.
-        perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
-                                                           permutations)
+        # perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
+        #                                                    permutations)
+        perm_x_items, perm_y_items = _permute_observations(x_items, y_items, 
+            permutations)
         perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
                                      tails=tails, exp_diff=exp_diff,
                                      none_on_zero_variance=False)[0]
@@ -700,28 +703,22 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
 
     return obs_t, param_p_val, perm_t_stats, nonparam_p_val
 
-def _permute_observations(x_items, y_items, permutations,
-                          permute_f=permutation):
-    """Returns permuted versions of the sequences of observations.
-
-    Values are permuted between x_items and y_items (i.e. shuffled between the
-    two input sequences of observations).
-
-    This code is based on Jeremy Widmann's
-    qiime.make_distance_histograms.permute_between_groups code.
-    """
-    num_x = len(x_items)
-    num_y = len(y_items)
-    num_total_obs = num_x + num_y
-    combined_obs = concatenate((x_items, y_items))
-
-    # Generate a list of all permutations.
-    perms = [permute_f(num_total_obs) for i in range(permutations)]
-
-    # Use random permutations to split into groups.
-    rand_xs = [combined_obs[perm[:num_x]] for perm in perms]
-    rand_ys = [combined_obs[perm[num_x:num_total_obs]] for perm in perms]
-    return rand_xs, rand_ys
+def _permute_observations(x, y, num_perms):
+    """Return num_perms pairs of permuted vectors x,y."""
+    vals = hstack([array(x), array(y)])
+    lenx = len(x)
+    # sorting step is unnecessary for this code, but it ensure that test code 
+    # which relies on seeding the prng works (if we dont do this then different
+    # observation orders in x and y for eg. the mc_t_two_sample test will fail
+    # to produce the same results)
+    vals.sort()
+    inds = arange(vals.size)
+    xs, ys = [], []
+    for i in range(num_perms):
+        shuffle(inds)
+        xs.append(vals[inds[:lenx]])
+        ys.append(vals[inds[lenx:]])
+    return xs, ys
 
 def t_one_observation(x, sample, tails=None, exp_diff=0,
                       none_on_zero_variance=True):
@@ -1355,7 +1352,7 @@ def ANOVA_one_way(a):
     An F value is first calculated as the variance of the group means
     divided by the mean of the within-group variances.
     """
-    a = array(a)
+    #a = array(a)
     group_means = []
     group_variances = []
     num_cases = 0 # total observations in all groups
@@ -1548,65 +1545,66 @@ def ks_boot(x, y, alt = "two sided", num_reps=1000):
             num_greater += 1
     return observed_stat, num_greater / num_reps
 
-def _average_rank(start_rank, end_rank):
-    ave_rank = sum(range(start_rank, end_rank+1)) / (1+end_rank-start_rank)
-    return ave_rank
+def mw_test(n1, n2):
+    """Compute Mann-Whitney U (equivalent to Wilcoxon ranked sum) stat. 
 
-def mw_test(x, y):
-    """computes the Mann-Whitney U statistic and the probability using the
-    normal approximation"""
-    if len(x) > len(y):
-        x, y = y, x
-    
-    num_x = len(x)
-    num_y = len(y)
-    
-    x = zip(x, zeros(len(x), int), zeros(len(x), int))
-    y = zip(y, ones(len(y), int), zeros(len(y), int))
-    combined = x+y
-    combined = array(combined, dtype=[('stat', float), ('sample', int),
-                                      ('rank', float)])
-    combined.sort(order='stat')
-    prev = None
-    start = None
-    ties = False
-    T = 0.0
-    for index in range(combined.shape[0]):
-        value = combined['stat'][index]
-        sample = combined['sample'][index]
-        if value == prev and start is None:
-            start = index
-            continue
-        
-        if value != prev and start is not None:
-            ties = True
-            ave_rank = _average_rank(start, index)
-            num_tied = index - start + 1
-            T += (num_tied**3 - num_tied)
-            for i in range(start-1, index):
-                combined['rank'][i] = ave_rank
-            start = None
-        combined['rank'][index] = index+1
-        prev = value
-    
-    if start is not None:
-        ave_rank = _average_rank(start, index)
-        num_tied = index - start + 2
-        T += (num_tied**3 - num_tied)
-        for i in range(start-1, index+1):
-            combined['rank'][i] = ave_rank
-    
-    total = combined.shape[0]
-    x_ranks_sum = sum(combined['rank'][i] for i in range(total) if combined['sample'][i] == 0)
-    prod = num_x * num_y
-    U1 = prod + (num_x * (num_x+1) / 2) - x_ranks_sum
-    U2 = prod - U1
-    U = max([U1, U2])
-    numerator = U - prod / 2
-    denominator = sqrt((prod / (total * (total-1)))*((total**3 - total - T)/12))
-    z = (numerator/denominator)
-    p = zprob(z)
-    return U, p
+    This function computes the MWU statistic which is equivalent to the 
+    Wilcoxon ranked sum test. It then computes the (two-tail) pval based on 
+    the normal approximation. Two tails is appropriate because we do not know 
+    which of our groups has a higher mean, thus our alternate hypothesis is that
+    the distributions from which the two samples come are not the same (FA!=FB)
+    and we must account for E[FA] > E[FB] and E[FB] < E[FA].
+
+    Implementation of test from Sokal and Rolhf, Biometry, pgs 427-431. 
+    Specifically the algorithm is derived from pgs 429-430 under heading 
+    'The Wilcoxon two-sample test'. 
+    C = n1*n2 + n2(n2+1)/2 - sum(ranks of n2)
+    U = max(C, n1*n2 - C) 
+
+    n1 and n2 are lists or arrays of numeric values.
+    """
+    # find smaller sample, defined historically as n2. modify the names so we 
+    # don't risk modifying data outside the scope of the function.
+    if len(n2) > len(n1):
+        sn1, sn2 = array(n2), array(n1)
+    else:
+        sn1, sn2 = array(n1), array(n2)
+    # sum the ranks of s2 by using the searchsorted magic. the logic is that we
+    # use a sorted copy of the data from both groups (n1 and n2) to figure out 
+    # at what index we would insert the values from sample 2. by assessing the 
+    # difference between the index that value x would be inserted in if we were
+    # doing left insertion versus right insertion, we can tell how many values 
+    # are tied with x. this allows us to calculate the average ranks easily. 
+    data = hstack([sn1,sn2])
+    data.sort()
+    ssl = searchsorted(data, sn2, 'left')
+    ssr = searchsorted(data, sn2, 'right')
+    sum_sn2_ranks = ((ssl+ssr+1)/2.).sum()
+    ln1, ln2 = sn1.size, sn2.size
+    C = (ln1*ln2)+ (ln2*(ln2+1)/2.) - sum_sn2_ranks
+    U = max(C, ln1*ln2 - C)
+    # now we calculate the pvalue using the normal approximation and the two 
+    # tailed test. our formula corrects for ties, because in the case where 
+    # there are no ties, the forumla on the bootm of pg 429 = the formula on the
+    # bottom of pg 430.
+    numerator = (U - ln1*ln2/2.)
+    # follwing three lines give the T value in the formula on page 430. same 
+    # logic as above; we calculate the left and right indices of the unique 
+    # values for all combined data from both samples, then calculate ti**3-ti 
+    # for each value. 
+    ux = unique(data)
+    uxl = searchsorted(data, ux, 'left')
+    uxr = searchsorted(data, ux, 'right')
+    T = _corr_kw(uxr-uxl).sum()
+    denominator = sqrt(((ln1*ln2)/float((ln1+ln2)*(ln1+ln2-1)))*(((ln1+ln2)**3 \
+        - (ln1+ln2) - T)/12.))
+    if denominator == 0:
+        print "Warning: probability of U can't be calculated by mw_test "+\
+            "because all ranks of data were tied. Returning nan as pvalue."
+        return U, nan
+    else:
+        pval = zprob(numerator/float(denominator))
+        return U, pval
 
 def mw_boot(x, y, num_reps=1000):
     """Monte Carlo (bootstrap) variant of the Mann-Whitney test.
@@ -1909,3 +1907,39 @@ def get_ltm_cells(cells):
     return list(new_cells)
 
 ## End functions for distance_matrix_permutation_test
+
+def fdr_correction(pvals):
+    """Adjust pvalues for multiple tests using the false discovery rate method.
+
+    In short: ranks the p-values in ascending order and multiplies each p-value 
+    by the number of comparisons divided by the rank of the p-value in the 
+    sorted list. Input is list of floats.
+    """
+    tmp = array(pvals)
+    return tmp*tmp.size/(1.+argsort(argsort(tmp)).astype(float))
+    
+def benjamini_hochberg_step_down(pvals):
+    """Perform Benjamini and Hochberg's 1995 FDR step down procedure.
+
+    In short, compute  the fdr adjusted pvals (ap_i's), and working from
+    the largest to smallest, compare ap_i to ap_i-1. If ap_i < ap_i-1 set ap_i-1
+    equal to ap_i. 
+    """
+    tmp = fdr_correction(pvals)
+    corrected_vals = empty(len(pvals))
+    max_pval = 1. 
+    for i in argsort(pvals)[::-1]:
+        if tmp[i]<max_pval:
+            corrected_vals[i] = tmp[i]
+            max_pval = tmp[i]
+        else:
+            corrected_vals[i] = max_pval
+    return corrected_vals
+
+def bonferroni_correction(pvals):
+    """Adjust pvalues for multiple tests using the Bonferroni method.
+
+    In short: multiply all pvals by the number of comparisons."""
+    return array(pvals)*len(pvals)
+
+

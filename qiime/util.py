@@ -5,7 +5,8 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
+               "Will Van Treuren"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -2082,4 +2083,56 @@ def add_filename_suffix(filepath, suffix):
     """
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
+
+def sync_biom_and_mf(pmf, bt, verbose=True):
+    """Reduce mapping file dict and biom table to shared samples.
+
+    Inputs: 
+     pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
+     bt - parse biom table from parse_biom_table (biom table object).
+    Outputs are a bt and pmf that contain only shared samples.
+    """
+    mf_samples = set(pmf.keys())
+    bt_samples = set(bt.SampleIds)
+    if mf_samples == bt_samples:
+        # agreement, can continue without fear of breaking code
+        return pmf, bt
+    else: 
+        shared_samples = mf_samples.intersection(bt_samples)
+        # check that we shared something
+        assert len(shared_samples)!=0, \
+            "sync_biom_and_mf: No shared samples, no point in continuing."
+        if verbose:
+            print "The following samples were not shared, and will not be "+\
+                "considered in the analysis:\n" + \
+                ', '.join(mf_samples.union(bt_samples)-shared_samples)
+        # remove samples that were in the mapping file but not biom file
+        npmf = {k:v for k,v in pmf.items() if k in shared_samples}
+        # remove samples in the biom table that were not in the mapping file
+        def _f(sv, sid, smd):
+            return sid in shared_samples
+        nbt = bt.filterSamples(_f)
+    return npmf, nbt
+
+def biom_taxonomy_formatter(data):
+    """Figure out type of metadata biom table has, create string. 
+
+    Note: Daniel suggests inclusion of this function is a bad idea because 
+    biom table metadata should only ever be in one format. I have included it 
+    because there are multiple legacy formats that we have run in to on the 
+    forum. Data is an entry in bt.ObservationMetadata"""
+    try:
+        keys = data.keys()
+        if len(keys) > 1:
+            raise ValueError("1<num metadata keys. Can't decide which to use.")
+        else: 
+            md_data = data[keys[0]]
+        if type(md_data) == dict:
+            return ''.join(['%s_%s' % (k,v) for k,v in md_data.items()])
+        elif type(md_data) == list:
+            return ';'.join(md_data)
+        elif type(md_data) in [str, unicode]:
+            return md_data
+    except AttributeError:
+        raise ValueError('metadata not formatted in a dictionary.')
 
