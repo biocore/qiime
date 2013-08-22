@@ -184,7 +184,7 @@ def main():
             'test or another metadata category.')
     data_feed = group_significance_row_generator(bt, cat_sam_indices)
     test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
-        group_test_choices, int(opts.permutations))
+        GROUP_TEST_CHOICES, int(opts.permutations))
     # calculate corrected pvals
     fdr_pvals = array(benjamini_hochberg_step_down(pvals))
     bon_pvals = bonferroni_correction(pvals)

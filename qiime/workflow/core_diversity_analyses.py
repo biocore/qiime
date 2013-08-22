@@ -34,7 +34,7 @@ _index_headers = {
      "alpha_diversity": "Alpha diversity results",
      "taxa_summary": "Taxonomic summary results",
      "taxa_summary_categorical": "Taxonomic summary results (by %s)",
-     "otu_category_sig": "Category results"}
+     "group_significance": "Group significance results"}
 
 def format_index_link(link_description,relative_path):
     
@@ -104,7 +104,7 @@ def run_core_diversity_analyses(
     suppress_taxa_summary=False,
     suppress_beta_diversity=False,
     suppress_alpha_diversity=False,
-    suppress_otu_category_significance=False,
+    suppress_group_significance=False,
     status_update_callback=print_to_stdout):
     """
     """
@@ -388,30 +388,30 @@ def run_core_diversity_analyses(
                                   % taxa_plots_output_dir,
                                 _index_headers['taxa_summary_categorical'] % category))
     
-    if not suppress_otu_category_significance:
+    if not suppress_group_significance:
         try:
-            params_str = get_params_str(params['otu_category_significance'])
+            params_str = get_params_str(params['test_group_significance'])
         except KeyError:
             params_str = ''
-        # OTU category significance
+        # group significance tests, aka category significance 
         for category in categories:
-            category_signifance_fp = \
-             '%s/category_significance_%s.txt' % (output_dir, category)
-            if not exists(category_signifance_fp):
+            group_signifance_fp = \
+             '%s/group_significance_%s.txt' % (output_dir, category)
+            if not exists(group_signifance_fp):
                 # Build the OTU cateogry significance command
-                category_significance_cmd = \
-                 'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
+                group_significance_cmd = \
+                 'test_group_significance.py -i %s -m %s -c %s -o %s %s' %\
                  (biom_fp, mapping_fp, category, 
-                  category_signifance_fp, params_str)
-                commands.append([('OTU category significance (%s)' % category, 
-                                  category_significance_cmd)])
+                  group_signifance_fp, params_str)
+                commands.append([('Group significance (%s)' % category, 
+                                  group_significance_cmd)])
             else:
-                logger.write("Skipping otu_category_significance.py for %s as %s exists.\n\n" \
-                             % (category, category_signifance_fp))
+                logger.write("Skipping test_group_significance.py for %s as %s exists.\n\n" \
+                             % (category, group_signifance_fp))
             
             index_links.append(('Category significance (%s)' % category,
-                        category_signifance_fp,
-                        _index_headers['otu_category_sig']))
+                        group_signifance_fp,
+                        _index_headers['group_significance']))
     filtered_biom_gzip_fp = '%s.gz' % filtered_biom_fp
     if not exists(filtered_biom_gzip_fp):
         commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
