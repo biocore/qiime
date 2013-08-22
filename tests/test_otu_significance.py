@@ -541,115 +541,79 @@ class TestGroupSignificanceFunctions(TestCase):
         self.assertFloatEqual(exp_pvals, obs_pvals)
         self.assertFloatEqual(exp_means, obs_means)
 
-    # def test_fdr_correction(self):
-    #     """fdr_correction works"""
-    #     pvals_1 = [0.56370286165077377,
-    #          0.043308142810792101,
-    #          0.38363032713198986,
-    #          0.08326451666355042,
-    #          0.043308142810792101,
-    #          0.77282999268444919]
-    #     pvals_1_output = [0.67644343398092854,
-    #          0.25984885686475262,
-    #          0.57544549069798479,
-    #          0.16652903332710084,
-    #          0.12992442843237631,
-    #          0.77282999268444919]
+    def test_group_significance_output_formatter(self):
+        """output_formatter works"""
+        #Using ANOVA test for example
+        otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-08-16T15:23:02.872397","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 8],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[0,6,73.0],[0,7,6.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[1,6,27.0],[1,7,38.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[2,6,64.0],[2,7,54.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[3,6,60.0],[3,7,23.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[4,6,35.0],[4,7,5.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0],[5,6,93.0],[5,7,19.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null},{"id": "Sample7", "metadata": null},{"id": "Sample8", "metadata": null}]}"""
+        bt = parse_biom_table(otu_table_1)
 
-    #     pvals_1_result = fdr_correction(pvals_1)
-    #     self.assertFloatEqual(pvals_1_result, pvals_1_output)
+        test_stats = [0.18990151199889027,
+             6.7142857142857144,
+             1.8424031345232912,
+             1.4643841007477372,
+             4.5675332910589734,
+             9.8389688760617899e-05]
+        pvals = [0.6782397284636259,
+             0.041145883121579234,
+             0.22350244183135481,
+             0.27174025956151771,
+             0.076447615888438403,
+             0.9924073718332751]
+        means = [[52.25, 43.0],
+             [20.5, 44.0],
+             [29.25, 52.25],
+             [59.75, 44.5],
+             [39.0, 14.5],
+             [48.0, 47.75]]
+        fdr_pvals = [0.8138876741563511,
+             0.24687529872947539,
+             0.44700488366270963,
+             0.40761038934227656,
+             0.22934284766531521,
+             0.9924073718332751]
+        bon_pvals = [4.069438370781755,
+             0.2468752987294754,
+             1.3410146509881289,
+             1.6304415573691062,
+             0.4586856953306304,
+             5.95444423099965]
+        cat_sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
 
-    # def test_bonferroni_correction(self):
-    #     """bonferroni_correction works"""
-    #     pvals_1 = [0.56370286165077377,
-    #          0.043308142810792101,
-    #          0.38363032713198986,
-    #          0.08326451666355042,
-    #          0.043308142810792101,
-    #          0.77282999268444919]
-    #     pvals_1_output = [3.3822171699046426,
-    #          0.2598488568647526,
-    #          2.301781962791939,
-    #          0.4995870999813025,
-    #          0.2598488568647526,
-    #          4.636979956106695]
-        
-    #     pvals_1_result = bonferroni_correction(pvals_1)
-    #     self.assertFloatEqual(pvals_1_result, pvals_1_output)  
+        line_header_out = 'OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy'
+        line_1_out = 'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One'
+        line_6_out = 'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
 
-    # def test_output_formatter(self):
-    #     """output_formatter works"""
-    #     #Using ANOVA test for example
-    #     otu_table_1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-08-16T15:23:02.872397","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 8],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[0,6,73.0],[0,7,6.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[1,6,27.0],[1,7,38.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[2,6,64.0],[2,7,54.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[3,6,60.0],[3,7,23.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[4,6,35.0],[4,7,5.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0],[5,6,93.0],[5,7,19.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null},{"id": "Sample7", "metadata": null},{"id": "Sample8", "metadata": null}]}"""
-    #     bt = parse_biom_table(otu_table_1)
+        lines = group_significance_output_formatter(bt, test_stats, pvals, 
+            fdr_pvals, bon_pvals, means, cat_sample_indices)
 
-    #     test_stats = [0.18990151199889027,
-    #          6.7142857142857144,
-    #          1.8424031345232912,
-    #          1.4643841007477372,
-    #          4.5675332910589734,
-    #          9.8389688760617899e-05]
-    #     pvals = [0.6782397284636259,
-    #          0.041145883121579234,
-    #          0.22350244183135481,
-    #          0.27174025956151771,
-    #          0.076447615888438403,
-    #          0.9924073718332751]
-    #     means = [[52.25, 43.0],
-    #          [20.5, 44.0],
-    #          [29.25, 52.25],
-    #          [59.75, 44.5],
-    #          [39.0, 14.5],
-    #          [48.0, 47.75]]
-    #     fdr_pvals = [0.8138876741563511,
-    #          0.24687529872947539,
-    #          0.44700488366270963,
-    #          0.40761038934227656,
-    #          0.22934284766531521,
-    #          0.9924073718332751]
-    #     bon_pvals = [4.069438370781755,
-    #          0.2468752987294754,
-    #          1.3410146509881289,
-    #          1.6304415573691062,
-    #          0.4586856953306304,
-    #          5.95444423099965]
-    #     cat_sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
+        self.assertEqual(lines[0], line_header_out)
+        self.assertEqual(lines[1], line_1_out)
+        self.assertEqual(lines[6], line_6_out)
 
-    #     line_header_out = 'OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy'
-    #     line_1_out = 'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One'
-    #     line_6_out = 'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
+    def test_sort_by_pval(self):
+        """sort_by_pval works"""
+        lines = ['OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy',
+             'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One',
+             'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two',
+             'OTU3\t1.84240313452\t0.223502441831\t0.447004883663\t1.34101465099\t29.25\t52.25\tk__Three',
+             'OTU4\t1.46438410075\t0.271740259562\t0.407610389342\t1.63044155737\t59.75\t44.5\tk__Four',
+             'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five',
+             'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six']
 
-    #     lines = output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals, \
-    #         means, cat_sample_indices)
+        lines_sorted_pval_1 = \
+            'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two'
+        lines_sorted_fdr_1 = \
+            'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five'
+        lines_sorted_bonf_6 = \
+            'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
 
-    #     self.assertEqual(lines[0], line_header_out)
-    #     self.assertEqual(lines[1], line_1_out)
-    #     self.assertEqual(lines[6], line_6_out)
+        lines_pval = sort_by_pval(lines, 2)
+        lines_pval_fdr = sort_by_pval(lines, 3)
+        lines_pval_bonf = sort_by_pval(lines, 4)
 
-    # def test_sort_by_pval(self):
-    #     """sort_by_pval works"""
-    #     lines = ['OTU\tTest-Statistic\tP\tFDR_P\tBonferroni_P\tcat1_mean\tcat2_mean\tTaxonomy',
-    #          'OTU1\t0.189901511999\t0.678239728464\t0.813887674156\t4.06943837078\t52.25\t43.0\tk__One',
-    #          'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two',
-    #          'OTU3\t1.84240313452\t0.223502441831\t0.447004883663\t1.34101465099\t29.25\t52.25\tk__Three',
-    #          'OTU4\t1.46438410075\t0.271740259562\t0.407610389342\t1.63044155737\t59.75\t44.5\tk__Four',
-    #          'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five',
-    #          'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six']
-
-    #     lines_sorted_pval_1 = \
-    #         'OTU2\t6.71428571429\t0.0411458831216\t0.246875298729\t0.246875298729\t20.5\t44.0\tk__Two'
-    #     lines_sorted_fdr_1 = \
-    #         'OTU5\t4.56753329106\t0.0764476158884\t0.229342847665\t0.458685695331\t39.0\t14.5\tk__Five'
-    #     lines_sorted_bonf_6 = \
-    #         'OTU6\t9.83896887606e-05\t0.992407371833\t0.992407371833\t5.954444231\t48.0\t47.75\tk__Six'
-
-    #     lines_pval = sort_by_pval(lines, 2)
-    #     lines_pval_fdr = sort_by_pval(lines, 3)
-    #     lines_pval_bonf = sort_by_pval(lines, 4)
-
-    #     self.assertEqual(lines_pval[1], lines_sorted_pval_1)
-    #     self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
-    #     self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
+        self.assertEqual(lines_pval[1], lines_sorted_pval_1)
+        self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
+        self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
 
     # def test_corerlation_row_generator(self):
     #     """correlation_row_generator works"""

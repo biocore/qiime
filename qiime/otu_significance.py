@@ -14,12 +14,11 @@ __status__ = "Development"
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack
-from cogent.maths.stats.util import Numbers
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
     pearson, spearman, kendall_correlation, G_fit, ANOVA_one_way, 
     kruskal_wallis, mw_test, mw_boot, t_paired, mc_t_two_sample, t_two_sample)
-
+from qiime.util import biom_taxonomy_formatter
 """
 Library for test_group_significance.py and test_gradient_correlation.py. 
 The code in this library is based around two central frameworks. For the group
