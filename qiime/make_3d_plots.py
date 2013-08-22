@@ -3,8 +3,9 @@
 
 __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",\
-"Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
+    "Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza", "Will Van Treuren"] 
+    #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -521,11 +522,12 @@ def run_ANOVA_trajetories(groups):
     labels = []
     for trajectory in groups:
         labels.append(trajectory)
-        values.append(Numbers(groups[trajectory]))
+        values.append(groups[trajectory])
     
     # This is copied from otu_category_significance.py
     try:
-        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
+        F, prob = ANOVA_one_way(values)
+        group_means = [i.mean() for i in values]
     except ValueError:
         #set the p-value to 'diff' if the variances are 0.0 (within rounding 
         #error) and the means are not all the same. If the means are all
