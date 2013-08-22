@@ -13,11 +13,16 @@ __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
 
-from qiime.util import parse_command_line_parameters, make_option
-from qiime.ocs import (sync_biom_and_mf, fdr_correction, bonferroni_correction, 
-    sort_by_pval, run_correlation_test, correlation_row_generator, 
-    correlation_output_formatter, correlation_test_choices, paired_t_generator,
-    run_paired_t, paired_t_output_formatter)
+from qiime.util import (parse_command_line_parameters, make_option,
+    sync_biom_and_mf)
+from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
+    bonferroni_correction)
+from qiime.otu_significance import (sort_by_pval, run_correlation_test, 
+    correlation_row_generator, correlation_output_formatter, 
+    CORRELATION_TEST_CHOICES, paired_t_generator, run_paired_t, 
+    paired_t_output_formatter, longitudinal_row_generator,
+    run_longitudinal_correlation_test, longitudinal_correlation_formatter, 
+    CORRELATION_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
@@ -41,14 +46,19 @@ The tests of OTU correlation to a metadata field are accomplished by passing a
 mapping file and a category from which to pull the data. If the data are not 
 convertable to floats, the script will abort. 
 The tests of OTU correlation to a metadata field with a longitudinal component 
-are accomplished by passing a reference sample which has its OTU abundance 
-subtracted from all other samples before the correlation is calculated. This is
-helpful when there is time series data, or some other data with a baseline. 
+are accomplished by passing the --individual_column which tells the script which
+samples are from which individual, along with the -c option which tells the 
+script which metadata field/column to use as the gradient for the longitudinal 
+correlation. This will most frequently be useful when there is time series data
+and you have sampes from an individual at a host of time points.  
 The paired t test is accomplished by passing a paired mapping file which is just
 a two column (tab separation) table with the samples that should be paired in 
-each row. It may not have headers. 
+each row. It should not have headers.
 The available tests are Kendall's Tau, Spearmans rank correlation, and Pearson. 
-This script generates a tab separated output file with the following headers.
+This script generates a tab separated output file which differs based on which 
+test you have chosen. If you have chosen simple correlation or paired_t (i.e. 
+you have not passed the --individual_column option ) then you will see
+the following headers:
 OTU - OTU id 
 Test-Statistic - the value of the test statistic for the given test
 P - the raw P value returned by the given test. 
@@ -58,14 +68,23 @@ Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
  comparisons.
 Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU.
+If you have opted for the longitudinal correlation test (with the
+--individual_column) you will have:
+OTU
+Individual:X stat - correlation statistics from the given test. There will be as
+ many of these headers as there are individuals in the individual column.
+Taxonomy
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:", "", "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
-script_info['script_usage'].append(("Calculate correlation between OTUs assuming that 'sampleX' is a reference sample thats a baseline before treatment starts:", "", "%prog -i otu_table.biom -m map.txt -c pH -s kendall -r sampleX -o kendall_longitudinal_otu_gradient.txt"))
+script_info['script_usage'].append(("Calculate correlation between OTUs over the course of a treatment regimen assuming that 'hsid' is the column in the mapping file which identifies the individual subject from which each sample came and 'treatment_day' refers to the day after treatment was started for each individual:", "", "%prog -i otu_table.biom -m map.txt -c treatment_day -s kendall --individual_column hsid -o kendall_longitudinal_otu_gradient.txt"))
 script_info['script_usage'].append(("Calculate paired t values for a before and after group of samples:", "", "%prog -i otu_table.biom --paired_t_fp=paired_samples.txt -o kendall_longitudinal_otu_gradient.txt"))
 
 script_info['output_description']= """
-This script generates a tab separated output file with the following headers.
+This script generates a tab separated output file which differs based on which 
+test you have chosen. If you have chosen simple correlation or paired_t (i.e. 
+you have not passed the --individual_column option) then you will see
+the following headers:
 OTU - OTU id 
 Test-Statistic - the value of the test statistic for the given test
 P - the raw P value returned by the given test. 
@@ -73,12 +92,14 @@ FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for
  multiple comparisons.
 Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
  comparisons.
-groupX_mean - there will be as many of these headers as there are unique values
- in the mapping file under the category passed with the -c option. Each of these
- fields will contain the mean frequency/abundance/count of the given OTU for the
- given sample group.
 Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU.
+If you have opted for the longitudinal correlation test (with the
+--individual_column) you will have:
+OTU
+Individual:X stat - correlation statistics from the given test. There will be as
+ many of these headers as there are individuals in the individual column.
+Taxonomy
 """
 script_info['required_options']=[
     make_option('-i','--otu_table_fp',
@@ -93,31 +114,18 @@ script_info['optional_options']=[
     make_option('-c', '--category', type='string',
         help='name of the category over which to run the analysis'),
     make_option('-s', '--test', type="choice", 
-        choices=correlation_test_choices.keys(),
+        choices=CORRELATION_TEST_CHOICES.keys(),
         default='kendall', help='Test to use. Choices are:\n%s' % \
-            (', '.join(correlation_test_choices.keys()))+'\n\t' + \
+            (', '.join(CORRELATION_TEST_CHOICES.keys()))+'\n\t' + \
             '[default: %default]'),
-    make_option('-r', '--ref_sample', type='string', default=None, 
-        help='SampleID that is reference or baseline to subtract from all'+\
-            ' other samples.'),
+    make_option('--individual_column', type='string', default=None, 
+        help='Column header in mapping file that designates which sample '+\
+            'is from which individual.'),
     make_option('--paired_t_fp', type='existing_filepath', default=None, 
         help='Pass a paired sample map as described in help to test with a '+\
             'paired_t_two_sample test. Overrides all other options. A '+\
             'paired sample map must be two columns without header that are '+\
             'tab separated. Each row contains samples which should be paired.')]
-# not currently supported due to mathematical errors
-    # make_option('-w', '--collate_results',
-    #     action='store_true', default=False,
-    #     help='When passing in a directory of OTU tables, '
-    #     'this parameter gives you the option of collating those resulting '
-    #     'values. For example, if your input directory contained multiple '
-    #     'rarefied OTU tables at the same depth, pass the -w option '
-    #     'in order to find the average p-value for your statistical test '
-    #     'over all rarefied tables and collate the results into one file. '
-    #     'If your input directory contained OTU tables '
-    #     'that contained different taxonomic levels, filtering levels, etc '
-    #     'then do not pass the -w option so that an individual results file '
-    #     'is created for every input OTU table. [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -140,7 +148,7 @@ def main():
         data_feed = paired_t_generator(bt, b_samples, a_samples)
         test_stats, pvals = run_paired_t(data_feed)
         # calculate corrected pvals
-        fdr_pvals = array(fdr_correction(pvals))
+        fdr_pvals = array(benjamini_hochberg_step_down(pvals))
         bon_pvals = bonferroni_correction(pvals)
         # write output results after sorting
         lines = paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, 
@@ -149,18 +157,35 @@ def main():
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
         o.close()
+    elif opts.individual_column is not None:
+        # user wants longitudinal correlation
+        pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
+        pmf, bt = sync_biom_and_mf(pmf, bt)
+        sample_to_hsid = get_sample_cats(pmf, opts.individual_column)
+        hsid_to_samples = get_cat_sample_groups(sample_to_hsid)
+        hsid_to_sample_indices = get_sample_indices(hsid_to_samples, bt)
+        data_feed = longitudinal_row_generator(bt, pmf, opts.category, 
+            hsid_to_samples, hsid_to_sample_indices)
+        test_stats = run_longitudinal_correlation_test(data_feed, opts.test,
+            CORRELATION_TEST_CHOICES)
+        lines = longitudinal_correlation_formatter(bt, test_stats, 
+            hsid_to_samples)
+        # no sorting to do given that we have a bunch of correlation values
+        o = open(opts.output_fp, 'w')
+        o.writelines('\n'.join(lines))
+        o.close()
     else: 
-        # sync biom file and mapping file
+        # simple correlation analysis requested
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
         pmf, bt = sync_biom_and_mf(pmf, bt)
         data_feed = correlation_row_generator(bt, pmf, opts.category, 
             opts.ref_sample)
         corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
-            run_correlation_test(data_feed, opts.test, correlation_test_choices)
+            run_correlation_test(data_feed, opts.test, CORRELATION_TEST_CHOICES)
         # calculate corrected pvals for both parametric and non-parametric 
-        p_pvals_fdr = array(fdr_correction(p_pvals))
+        p_pvals_fdr = array(benjamini_hochberg_step_down(p_pvals))
         p_pvals_bon = bonferroni_correction(p_pvals)
-        np_pvals_fdr = array(fdr_correction(np_pvals))
+        np_pvals_fdr = array(benjamini_hochberg_step_down(np_pvals))
         np_pvals_bon = bonferroni_correction(np_pvals)
         # correct for cases where values above 1.0 due to correction
         p_pvals_fdr = where(p_pvals_fdr>1.0, 1.0, p_pvals_fdr)

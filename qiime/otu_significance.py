@@ -156,6 +156,68 @@ def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals,
 
 # Functions for gradient correlation testing
 
+def longitudinal_row_generator(bt, pmf, category, hsid_to_samples, 
+    hsid_to_sample_indices):
+    """Produce generator that feeds lists of arrays to longitudinal tests.
+
+    This function groups samples based on hsid_to_samples which is a dict of 
+    {value:[list of sample ids]}. It returns nested lists where each row is a 
+    tuple with the values of the observations in that row grouped by the sample 
+    groupings found in hsid_to_samples, and then the value of in the mapping 
+    file for those samples based on the passed category. Example output row:
+    ([array([ 28.,  52.]), array([ 16.,  77.]), array([ 78.,  51.])],
+     [array([ 1.,  2.]),   array([ 5.,  6.]),   array([ 4.,  3.])]),
+    Inputs: 
+     bt - biom table object. Described at top of library.
+     pmf - nested dict, parsed mapping file object.
+     category - str, column header of parsed_mapping_file. 
+     hsid_to_samples - nested_dict, dict where top level key is a value which 
+      all sample ids in the list of values share. ex {'subject1':['s1', 's2']}.
+     hsid_to_sample_indices - nested dict, conversion of hsid_to_samples where 
+      instead of sample ids, column indices in the biom file are provided.
+    """
+    data = array([bt.observationData(i) for i in bt.ObservationIds])
+    try: #create longitudinal data values from the mapping file
+        l_arr = [array([pmf[sid][category] for sid in sids]).astype(float) for \
+            hsid,sids in hsid_to_samples.items()]
+    except ValueError:
+        raise ValueError("Couldn't convert values to float. Can't continue.")
+    return (([row[v] for k,v in hsid_to_sample_indices.items()],l_arr) for \
+        row in data)
+
+def run_longitudinal_correlation_test(data_generator, test, test_choices):
+    """Run longitudinal correlation test."""
+    test_stats = []
+    for obs_vals, gradient_vals in data_generator:
+        test_stats_i = []
+        for i in range(len(obs_vals)):
+            t = test_choices[test](obs_vals[i], gradient_vals[i])
+            test_stats_i.append(t)
+        test_stats.append(test_stats_i)
+    return test_stats
+
+def longitudinal_correlation_formatter(bt, test_stats, hsid_to_samples):
+    """Format output from longitudinal tests to be written.
+
+    Inputs are biom table, list of test statistics, dict of {hsid:sample id}.
+    """
+    header = ['OTU']+\
+        ['Individual:%s Test-Stat' % i for i in hsid_to_samples.keys()]
+    # find out if bt came with taxonomy. this could be improved
+    if bt.ObservationMetadata is None:
+        include_taxonomy = False
+    else:
+        include_taxonomy = True
+        header += ['Taxonomy']
+    num_lines = len(test_stats)
+    lines = ['\t'.join(header)]
+    for i in range(num_lines):
+        tmp = [bt.ObservationIds[i]]+[k for k in test_stats[i]]
+        if include_taxonomy:
+            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
+        lines.append('\t'.join(map(str, tmp)))
+    return lines
+
 def correlation_row_generator(bt, pmf, category, ref_samples=None):
     """Produce a generator that feeds lists of arrays to any gradient test.
 
