@@ -26,7 +26,6 @@ from qiime.pycogent_backports.test import (benjamini_hochberg_step_down,
 from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
     ones, testing, tril, cov, sqrt)
 import math
-from cogent.maths.stats.util import Numbers
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"

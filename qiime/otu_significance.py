@@ -2,7 +2,7 @@
 # File created on 13 Aug 2013
 from __future__ import division
 
-__author__ = "Luke Ursell"
+__author__ = "Will Van Treuren, Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone"]
 __license__ = "GPL"
@@ -16,9 +16,10 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
-    pearson, spearman, kendall_correlation, G_fit, ANOVA_one_way, 
+    pearson, spearman, G_fit, ANOVA_one_way, 
     kruskal_wallis, mw_test, mw_boot, t_paired, mc_t_two_sample, t_two_sample)
 from qiime.util import biom_taxonomy_formatter
+from cogent.maths.stats.kendall import kendalls_tau
 """
 Library for test_group_significance.py and test_gradient_correlation.py. 
 The code in this library is based around two central frameworks. For the group
@@ -46,7 +47,7 @@ row - row is used in several places (eg. row_generator). The 'row' being
 # Pursuant to cogent/qiime coding guidelines, globals are uppercase. These dicts
 # map the script interface names to the actual functions running these tests.
 CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearman,
-    'kendall': kendall_correlation}
+    'kendall': kendalls_tau}
 
 GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': G_fit, 
     'kruskal_wallis': kruskal_wallis, 'parametric_t_test': t_two_sample,

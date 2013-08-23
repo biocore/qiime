@@ -15,7 +15,8 @@ from cogent.util.unit_test import TestCase, main
 from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups, 
     get_sample_indices, group_significance_row_generator, sort_by_pval,
     run_group_significance_test, group_significance_output_formatter,
-    GROUP_TEST_CHOICES)
+    GROUP_TEST_CHOICES, longitudinal_row_generator, 
+    run_longitudinal_correlation_test, CORRELATION_TEST_CHOICES)
 from numpy import array, hstack
 from numpy.random import seed
 from cogent.util.dict2d import Dict2D
@@ -614,6 +615,108 @@ class TestGroupSignificanceFunctions(TestCase):
         self.assertEqual(lines_pval[1], lines_sorted_pval_1)
         self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
         self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
+
+    # def test_longitudinal_row_generator(self):
+    #     """Test that longitudinal row generator behaves as expected."""
+    #     MF_2 = ['#SampleIDt\thsid\tval',
+    #         'Sample1\t1\t1',
+    #         'Sample2\t1\t2',
+    #         'Sample3\t2\t3',
+    #         'Sample4\t2\t4',
+    #         'Sample5\t3\t5',
+    #         'Sample6\t3\t6']
+    #     bt = parse_biom_table(BT_IN_1)
+    #     pmf, _ = parse_mapping_file_to_dict(MF_2)
+    #     category = 'val'
+    #     hsid_to_samples = {'1': ['Sample1', 'Sample2'],
+    #         '2': ['Sample4', 'Sample3'],
+    #         '3': ['Sample5', 'Sample6']}
+    #     hsid_to_sample_indices = {'1': [0, 1], '2': [3, 2], '3': [4, 5]}
+    #     # for convinience 
+    #     data = array([bt.observationData(i) for i in bt.ObservationIds])
+    #     exp_otus = [[i.take([0,1]), i.take([4,5]), i.take([3,2])] for i in data]
+    #     exp_grad_vals = [array([1,2]), array([5,6]), array([4,3])]
+    #     obs_data = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+    #     for i,j in zip(obs_data, exp_otus):
+    #         self.assertFloatEqual(i[0], j)
+    #         self.assertFloatEqual(i[1], exp_grad_vals)
+    #     # test with hand calculated example
+    #     bt_str = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-22T18:23:28.199054","matrix_type": "sparse","matrix_element_type": "float","shape": [7, 6],"data": [[0,0,1.0],[0,1,2.0],[0,2,3.0],[0,3,4.0],[0,4,5.0],[0,5,6.0],[1,0,12.0],[1,1,11.0],[1,2,10.0],[1,3,9.0],[1,4,8.0],[1,5,7.0],[2,0,13.0],[2,1,14.0],[2,2,15.0],[2,3,16.0],[2,4,17.0],[2,5,18.0],[3,0,24.0],[3,1,23.0],[3,2,22.0],[3,3,21.0],[3,4,20.0],[3,5,19.0],[4,0,25.0],[4,1,26.0],[4,2,27.0],[4,3,28.0],[4,4,29.0],[4,5,30.0],[5,0,36.0],[5,1,35.0],[5,2,34.0],[5,3,33.0],[5,4,32.0],[5,5,31.0],[6,0,37.0],[6,1,38.0],[6,2,39.0],[6,3,40.0],[6,4,41.0],[6,5,42.0]],"rows": [{"id": "a", "metadata": null},{"id": "b", "metadata": null},{"id": "c", "metadata": null},{"id": "d", "metadata": null},{"id": "e", "metadata": null},{"id": "f", "metadata": null},{"id": "g", "metadata": null}],"columns": [{"id": "A", "metadata": null},{"id": "C", "metadata": null},{"id": "D", "metadata": null},{"id": "E", "metadata": null},{"id": "F", "metadata": null},{"id": "B", "metadata": null}]}'
+    #     bt = parse_biom_table(bt_str)
+    #     mf = ['#SampleIDt\thsid\tval\tph',
+    #         'A\ta\tdummy\t-17.8',
+    #         'B\tb\tdummy\t6.9',
+    #         'C\ta\tdummy\t3.1',
+    #         'D\tb\tdummy\t4.44',
+    #         'E\ta\tdummy\t52.0',
+    #         'F\ta\tdummy\t13.4']
+    #     pmf, _ = parse_mapping_file_to_dict(mf)
+    #     category = 'ph'
+    #     hsid_to_samples = {'a':['A', 'C', 'E', 'F'], 'b':['B', 'D']}
+    #     hsid_to_sample_indices = {'a':[0,1,3,4], 'b':[5, 2]}
+    #     data = array([bt.observationData(i) for i in bt.ObservationIds])
+    #     exp_otus = [[i.take([0,1,3,4]), i.take([5,2])] for i in data]
+    #     exp_grad_vals = [array([-17.8, 3.1, 52.0, 13.4]), array([6.9, 4.44])]
+    #     obs_data = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+    #     for i,j in zip(obs_data, exp_otus):
+    #         self.assertFloatEqual(i[0], j)
+    #         self.assertFloatEqual(i[1], exp_grad_vals)
+
+    # def test_run_longitudinal_correlation_test(self):
+    #     """Test the longitudinal correlations are calculated correctly."""
+    #     bt_str = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-22T18:23:28.199054","matrix_type": "sparse","matrix_element_type": "float","shape": [7, 6],"data": [[0,0,1.0],[0,1,2.0],[0,2,3.0],[0,3,4.0],[0,4,5.0],[0,5,6.0],[1,0,12.0],[1,1,11.0],[1,2,10.0],[1,3,9.0],[1,4,8.0],[1,5,7.0],[2,0,13.0],[2,1,14.0],[2,2,15.0],[2,3,16.0],[2,4,17.0],[2,5,18.0],[3,0,24.0],[3,1,23.0],[3,2,22.0],[3,3,21.0],[3,4,20.0],[3,5,19.0],[4,0,25.0],[4,1,26.0],[4,2,27.0],[4,3,28.0],[4,4,29.0],[4,5,30.0],[5,0,36.0],[5,1,35.0],[5,2,34.0],[5,3,33.0],[5,4,32.0],[5,5,31.0],[6,0,37.0],[6,1,38.0],[6,2,39.0],[6,3,40.0],[6,4,41.0],[6,5,42.0]],"rows": [{"id": "a", "metadata": null},{"id": "b", "metadata": null},{"id": "c", "metadata": null},{"id": "d", "metadata": null},{"id": "e", "metadata": null},{"id": "f", "metadata": null},{"id": "g", "metadata": null}],"columns": [{"id": "A", "metadata": null},{"id": "C", "metadata": null},{"id": "D", "metadata": null},{"id": "E", "metadata": null},{"id": "F", "metadata": null},{"id": "B", "metadata": null}]}'
+    #     bt = parse_biom_table(bt_str)
+    #     mf = ['#SampleIDt\thsid\tval\tph',
+    #         'A\ta\tdummy\t-17.8',
+    #         'B\tb\tdummy\t6.9',
+    #         'C\ta\tdummy\t3.1',
+    #         'D\tb\tdummy\t4.44',
+    #         'E\ta\tdummy\t52.0',
+    #         'F\ta\tdummy\t13.4']
+    #     pmf, _ = parse_mapping_file_to_dict(mf)
+    #     hsid_to_samples = {'a':['A', 'C', 'E', 'F'], 'b':['B', 'D']}
+    #     hsid_to_sample_indices = {'a':[0,1,3,4], 'b':[5, 2]}
+    #     data_feed = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+    #     # test pearson
+    #     exp = [[0.69462346989315615, 1.0],
+    #         [-0.69462346989315593, -0.99999999999999445],
+    #         [0.69462346989315671, 1.0],
+    #         [-0.69462346989315593, -1.0],
+    #         [0.69462346989315593, 0.99999999999998868],
+    #         [-0.69462346989315737, -0.99999999999998868]]
+    #     obs_test_stats = run_longitudinal_correlation_test(data_feed, 'pearson',
+    #         CORRELATION_TEST_CHOICES)
+    #     # test spearman
+    #     data_feed = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+    #     obs_test_stats = run_longitudinal_correlation_test(data_feed, 'spearman',
+    #         CORRELATION_TEST_CHOICES)
+    #     exp = [[0.80000000000000004, 1.0],
+    #         [-0.80000000000000004, -1.0],
+    #         [0.80000000000000004, 1.0],
+    #         [-0.80000000000000004, -1.0],
+    #         [0.80000000000000004, 1.0],
+    #         [-0.80000000000000004, -1.0]]
+    #     # test kendalls_tau
+    #     data_feed = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+    #     self.assertRaises(AssertionError, run_longitudinal_correlation_test, 
+    #         data_feed, 'kendall', CORRELATION_TEST_CHOICES)
+    #     hsid_to_samples = {'a':['A', 'C', 'F'], 'b':['B','E','D']}
+    #     hsid_to_sample_indices = {'a':[0,1,4], 'b':[5, 3, 2]}
+    #     data_feed = longitudinal_row_generator(bt, pmf, category, 
+    #         hsid_to_samples, hsid_to_sample_indices)
+
+    #     exp = [[0.6666666666666666, 1.0],
+    #         [-0.6666666666666666, -1.0],
+    #         [0.6666666666666666, 1.0],
+    #         [-0.6666666666666666, -1.0],
+    #         [0.6666666666666666, 1.0],
+    #         [-0.6666666666666666, -1.0]]
+
 
     # def test_corerlation_row_generator(self):
     #     """correlation_row_generator works"""

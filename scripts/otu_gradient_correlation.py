@@ -134,8 +134,7 @@ def main():
 
     bt = parse_biom_table(open(opts.otu_table_fp))
 
-    if opts.paired_t_fp is not None:
-        # user wants to conduct paired t_test
+    if opts.paired_t_fp is not None: #user wants to conduct paired t_test
         o = open(opts.paired_t_fp, 'U')
         lines = o.readlines()
         o.close()
@@ -157,8 +156,7 @@ def main():
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
         o.close()
-    elif opts.individual_column is not None:
-        # user wants longitudinal correlation
+    elif opts.individual_column is not None: #user wants longitudinal corr
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
         pmf, bt = sync_biom_and_mf(pmf, bt)
         sample_to_hsid = get_sample_cats(pmf, opts.individual_column)
@@ -170,12 +168,12 @@ def main():
             CORRELATION_TEST_CHOICES)
         lines = longitudinal_correlation_formatter(bt, test_stats, 
             hsid_to_samples)
-        # no sorting to do given that we have a bunch of correlation values
+        # no sorting to do given that we have a bunch of correlation values and 
+        # don't know which to sort on
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
         o.close()
-    else: 
-        # simple correlation analysis requested
+    else: #simple correlation analysis requested
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
         pmf, bt = sync_biom_and_mf(pmf, bt)
         data_feed = correlation_row_generator(bt, pmf, opts.category, 
@@ -192,7 +190,6 @@ def main():
         p_pvals_bon = where(p_pvals_bon>1.0, 1.0, p_pvals_bon)
         np_pvals_fdr = where(np_pvals_fdr>1.0, 1.0, np_pvals_fdr)
         np_pvals_bon = where(np_pvals_bon>1.0, 1.0, np_pvals_bon)
-        
         # write output results after sorting
         lines = correlation_output_formatter(bt, corr_coefs, p_pvals,
             p_pvals_fdr, p_pvals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, 
