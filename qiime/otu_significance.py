@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
-from numpy import array, argsort, vstack
+from numpy import array, argsort, vstack, isnan, inf, nan
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
     pearson, spearman, G_fit, ANOVA_one_way, 
@@ -327,9 +327,18 @@ def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
 
 # Functions used by both scripts
 
+# def nan_safe_sort(line, ind):
+#     """Sorting function that sets nan to +inf for comparisons with floats."""
+#     val = float(line.split('\t')[ind])
+#     if isnan(val):
+#         return inf
+#     else:
+        
+
 def sort_by_pval(lines, ind):
     """Sort lines with pvals in descending order.
 
     ind is the index of each line, split on \t, that is to be used for sorting.
     """
-    return [lines[0]]+sorted(lines[1:], key=lambda x: float(x.split('\t')[ind]))
+    return [lines[0]]+sorted(lines[1:], key=lambda x: float(x.split('\t')[ind])
+        if not isnan(float(x.split('\t')[ind])) else inf)
