@@ -399,9 +399,20 @@ def kruskal_wallis(data):
     H = (a*tot + b)
     # correct for ties by calulating D
     D = tie_correction(sx)
-    # give chisqprob the kw statistic, and degrees of freedom (num groups - 1)
-    p_value = chisqprob(H/D, num_groups-1)
-    return H/D, p_value
+    # after experiencing some failures with kruskal_wallis I was able to 
+    # identify a possible source as described in this SO post:
+    # http://stackoverflow.com/questions/11670404/mod-wsgi-hangs-on-runtimewarning-divide-by-zero
+    # somehow the chisqprob import accesses numpy (or this module does) from a 
+    # python sub-interpreter, which causes the thread to deadlock without 
+    # reporting an error if H/D throws an invalid divide in double scalers 
+    # error. it just hangs indefinitely. setting a check for D should prevent. 
+    if D==0:
+        return nan, nan
+    else:
+        # give chisqprob the kw statistic, degrees of freedom = (num groups - 1)
+        p_value = chisqprob(H/D, num_groups-1)
+        return H/D, p_value
+
 ## End functions for kruskal_wallis test
 
 def likelihoods(d_given_h, priors):
