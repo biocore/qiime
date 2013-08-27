@@ -1596,7 +1596,7 @@ def mw_test(n1, n2):
     U = max(C, ln1*ln2 - C)
     # now we calculate the pvalue using the normal approximation and the two 
     # tailed test. our formula corrects for ties, because in the case where 
-    # there are no ties, the forumla on the bootm of pg 429 = the formula on the
+    # there are no ties, the forumla on the bottom of pg 429=the formula on the
     # bottom of pg 430.
     numerator = (U - ln1*ln2/2.)
     # follwing three lines give the T value in the formula on page 430. same 

@@ -67,6 +67,13 @@ There are several important considerations with this script:
 * focuses the hypothesis discovery process on the abundant OTUs which are likely 
 * playing a larger role. 
 
+* If your results file contains nans for p values its because one or more of the 
+* assumptions the selected test makes about the data was not met by the given 
+* OTU. The inverse of this statement is not guaranteed; just because the test
+* worked on the data doesn't mean all its assumptions are met, just that enough
+* assumptions are met so it doesn't fail. 
+
+
 The available tests are:
 ANOVA - one way analysis of variance. This test compares the within-group 
 variance to the between-group variance in order to assess whether or not the 

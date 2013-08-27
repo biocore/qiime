@@ -164,8 +164,8 @@ def longitudinal_row_generator(bt, pmf, category, hsid_to_samples,
     This function groups samples based on hsid_to_samples which is a dict of 
     {value:[list of sample ids]}. It returns nested lists where each row is a 
     tuple with the values of the observations in that row grouped by the sample 
-    groupings found in hsid_to_samples, and then the value of in the mapping 
-    file for those samples based on the passed category. Example output row:
+    groupings found in hsid_to_samples, and then the metadata value of those
+    samples in the mapping file based on the given category. Example output row:
     ([array([ 28.,  52.]), array([ 16.,  77.]), array([ 78.,  51.])],
      [array([ 1.,  2.]),   array([ 5.,  6.]),   array([ 4.,  3.])]),
     Inputs: 
@@ -183,27 +183,42 @@ def longitudinal_row_generator(bt, pmf, category, hsid_to_samples,
             hsid,sids in hsid_to_samples.items()]
     except ValueError:
         raise ValueError("Couldn't convert values to float. Can't continue.")
-    return (([row[v] for k,v in hsid_to_sample_indices.items()],l_arr) for \
-        row in data)
+    return ((array([row[v] for k,v in hsid_to_sample_indices.items()]),l_arr) \
+        for row in data)
 
-def run_longitudinal_correlation_test(data_generator, test, test_choices):
+def run_longitudinal_correlation_test(data_generator, test, test_choices, 
+    permuations):
     """Run longitudinal correlation test."""
     test_stats = []
     for obs_vals, gradient_vals in data_generator:
         test_stats_i = []
         for i in range(len(obs_vals)):
-            t = test_choices[test](obs_vals[i], gradient_vals[i])
-            test_stats_i.append(t)
-        test_stats.append(test_stats_i)
+            # Kendalls Tau is currently implemented in a way that will cause it
+            # to fail unpleasantly if it recieves an all zero vector.
+            if (obs_vals[i]==0).all() or (gradient_vals[i]==0).all():
+                test_stat = nan
+                np_pval = nan
+            else:
+                test_stat = test_choices[test](obs_vals[i], gradient_vals[i])
+                np_pval = nonparametric_correlation_significance(test_stat, 
+                    test_choices[test], obs_vals[i], gradient_vals[i], 
+                    permutations)
+
+            #test_stats_i.append(
+        #test_stats.append(test_stats_i)
+        # conduct non-parametric pvalue calculation
+
     return test_stats
+
 
 def longitudinal_correlation_formatter(bt, test_stats, hsid_to_samples):
     """Format output from longitudinal tests to be written.
 
     Inputs are biom table, list of test statistics, dict of {hsid:sample id}.
     """
-    header = ['OTU']+\
-        ['Individual:%s Test-Stat' % i for i in hsid_to_samples.keys()]
+    header = ['OTU', 'Individual Order', 'Fisher Correlation', 'Fisher P-value',
+        'FDR Fisher P-value', 'Bonferroni Fisher P-value', 'Corrcoefs', 
+        'P-values']
     # find out if bt came with taxonomy. this could be improved
     if bt.ObservationMetadata is None:
         include_taxonomy = False
@@ -326,14 +341,6 @@ def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
     return lines
 
 # Functions used by both scripts
-
-# def nan_safe_sort(line, ind):
-#     """Sorting function that sets nan to +inf for comparisons with floats."""
-#     val = float(line.split('\t')[ind])
-#     if isnan(val):
-#         return inf
-#     else:
-        
 
 def sort_by_pval(lines, ind):
     """Sort lines with pvals in descending order.
