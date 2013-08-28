@@ -58,10 +58,10 @@ def read_params(args):
     return vars(p.parse_args())
 
 # Calculate sum of QA sequence
-def sumQA(R):
+def sumQA(QA):
     tot = 0
-    for q in R["Qa"]:
-        tot += int(q)
+    for q in QA:
+        tot += (ord(q)-33)
     return tot    
 
 # Main loop to read input files and write output files
