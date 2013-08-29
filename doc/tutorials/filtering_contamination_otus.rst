@@ -42,7 +42,7 @@ To create per-run OTU tables containing, use the following command: ::
 
 One can observe the initial sequences/sample in the run 1 OTU table: ::
 
-	print_biom_table_summary.py -i split_otu_tables/otu_table_1.biom 
+	biom summarize-table -i split_otu_tables/otu_table_1.biom -o split_otu_tables/otu_table_1_summary.txt
 
 .. note::
 
@@ -93,7 +93,7 @@ The otu_table_1_minus_contaminants.biom file now has two samples with zero seque
 	
 The final OTU table sequences/sample summary can be displayed now, sans OTUs from the Control_Blank samples: ::
 
-	print_biom_table_summary.py -i final_otu_table_1_minus_contaminants.biom
+	biom summarize-table -i final_otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants_summary.txt
 
 .. note::
 
