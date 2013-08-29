@@ -32,10 +32,11 @@ from numpy import argsort, min as np_min, max as np_max
 from numpy.random import permutation
 from cogent.util.misc import combinate
 
+from qiime.core import DistanceMatrix
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters
-from qiime.util import DistanceMatrix, MetadataMap
+from qiime.util import MetadataMap
 
 # Top-level stats functions.
 
@@ -271,14 +272,14 @@ class DistanceMatrixStats(object):
             if not isinstance(dm, DistanceMatrix):
                 raise TypeError('Invalid type: %s; expected DistanceMatrix' %
                                 dm.__class__.__name__)
-            if self._min_dm_size >= 0 and dm.Size < self._min_dm_size:
+            if self._min_dm_size >= 0 and dm.NumSamples < self._min_dm_size:
                 raise ValueError("Distance matrix of size %dx%d is smaller "
                                  "than the minimum allowable distance matrix "
                                  "size of %dx%d for this analysis." %
-                                 (dm.Size, dm.Size, self._min_dm_size,
+                                 (dm.NumSamples, dm.NumSamples, self._min_dm_size,
                                   self._min_dm_size))
             if not self._suppress_symmetry_and_hollowness_check:
-                if not dm.is_symmetric_and_hollow():
+                if not dm.isSymmetricAndHollow():
                     raise ValueError("The distance matrix must be symmetric "
                                      "and hollow.")
         self._dms = dms
@@ -372,10 +373,10 @@ class CorrelationStats(DistanceMatrixStats):
 
         if len(dms) < 1:
             raise ValueError("Must provide at least one distance matrix.")
-        size = dms[0].Size
+        size = dms[0].NumSamples
         sample_ids = dms[0].SampleIds
         for dm in dms:
-            if dm.Size != size:
+            if dm.NumSamples != size:
                 raise ValueError("All distance matrices must have the same "
                                  "number of rows and columns.")
             if dm.SampleIds != sample_ids:
@@ -705,7 +706,7 @@ class Anosim(CategoryStats):
                 matrix
         """
         dm = self.DistanceMatrices[0]
-        dm_size = dm.Size
+        dm_size = dm.NumSamples
 
         # Create grouping matrix, where a one means that the two samples are in
         # the same group (e.g. control) and a zero means that they aren't.
@@ -716,7 +717,7 @@ class Anosim(CategoryStats):
                     within_between[i][j] = 1
 
         # Extract upper triangle from the distance and grouping matrices.
-        distances = dm.DataMatrix[tri(dm_size) == 0]
+        distances = dm[tri(dm_size) == 0]
         grouping = within_between[tri(dm_size) == 0]
 
         # Sort extracted data.
@@ -936,7 +937,7 @@ class Permanova(CategoryStats):
             unique_n.append(grouping.values().count(i_string))
 
         # Create grouping matrix.
-        grouping_matrix = -1 * ones((dm.Size, dm.Size))
+        grouping_matrix = -1 * ones((dm.NumSamples, dm.NumSamples))
         for i, i_sample in enumerate(samples):
             grouping_i = grouping[i_sample]
             for j, j_sample in enumerate(samples):
@@ -944,11 +945,11 @@ class Permanova(CategoryStats):
                     grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
         # Extract upper triangle.
-        distances = dm[tri(dm.Size) == 0]
+        distances = dm[tri(dm.NumSamples) == 0]
         groups = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute F value.
-        return self._compute_f_value(distances, groups, dm.Size,
+        return self._compute_f_value(distances, groups, dm.NumSamples,
                                      number_groups, unique_n)
 
     def _compute_f_value(self, distances, groupings, number_samples,
@@ -1039,9 +1040,9 @@ class Best(CategoryStats):
         res = super(Best, self).__call__()
         cats = self.Categories
         dm = self.DistanceMatrices[0]
-        dm_flat = dm.flatten()
+        dm_flat = dm.extractTriangle()
 
-        row_count = dm.Size
+        row_count = dm.NumSamples
         col_count = len(cats)
         sum = 0
         stats = [(-777777777, '') for c in range(col_count+1)]
@@ -1051,7 +1052,7 @@ class Best(CategoryStats):
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
-                cat_dm_flat = cat_dm.flatten()
+                cat_dm_flat = cat_dm.extractTriangle()
                 r = spearman(dm_flat, cat_dm_flat)
                 if r > stats[i-1][0]:
                     stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
@@ -1074,7 +1075,7 @@ class Best(CategoryStats):
                 res_mat[i][j] = self._vector_dist(cat_mat[i], cat_mat[j])
                 res_mat[j][i] = res_mat[i][j]
 
-        return DistanceMatrix(asarray(res_mat), dm_labels, dm_labels)
+        return DistanceMatrix(asarray(res_mat), dm_labels)
 
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors."""
@@ -1191,7 +1192,7 @@ class MantelCorrelogram(CorrelationStats):
         results = super(MantelCorrelogram, self).__call__(num_perms)
         eco_dm = self.DistanceMatrices[0]
         geo_dm = self.DistanceMatrices[1]
-        dm_size = eco_dm.Size
+        dm_size = eco_dm.NumSamples
 
         # Find the number of lower triangular elements (excluding the
         # diagonal).
@@ -1226,8 +1227,7 @@ class MantelCorrelogram(CorrelationStats):
                     curr_ele = dist_class_matrix[i][j]
                     if curr_ele == class_num and i != j:
                         model_matrix[i][j] = 1
-            model_matrix = DistanceMatrix(model_matrix, geo_dm.SampleIds,
-                                          geo_dm.SampleIds)
+            model_matrix = DistanceMatrix(model_matrix, geo_dm.SampleIds)
 
             # Count the number of distances in the current distance class.
             num_distances = int(model_matrix.sum())
@@ -1236,7 +1236,7 @@ class MantelCorrelogram(CorrelationStats):
                 results['mantel_r'].append(None)
                 results['mantel_p'].append(None)
             else:
-                row_sums = model_matrix.sum(axis='observation')
+                row_sums = model_matrix.sum(axis=0)
                 row_sums = map(int, row_sums)
                 has_zero_sum = 0 in row_sums
 
@@ -1304,8 +1304,8 @@ class MantelCorrelogram(CorrelationStats):
         if num_classes < 1:
             raise ValueError("Cannot have fewer than one distance class.")
 
-        dm_lower_flat = dm.flatten()
-        size = dm.Size
+        dm_lower_flat = dm.extractTriangle()
+        size = dm.NumSamples
 
         if self.VariableSizeDistanceClasses:
             class_size = int(ceil(len(dm_lower_flat) / num_classes))
@@ -1388,7 +1388,7 @@ class MantelCorrelogram(CorrelationStats):
         It is assumed that the index points to a matrix that was flattened,
         containing only the lower triangular elements (excluding the diagonal)
         in left-to-right, top-to-bottom order (such as that given by
-        DistanceMatrix.flatten(lower=True).
+        DistanceMatrix.extractTriangle().
         """
         if idx < 0:
             raise IndexError("The index %d must be greater than or equal to "
@@ -1581,7 +1581,7 @@ class Mantel(CorrelationStats):
         # We suppress the symmetric and hollowness check since that is
         # guaranteed to have already happened when the distance matrices were
         # set (we don't need to do it a second time here).
-        results = mantel_test(m1.DataMatrix, m2.DataMatrix, num_perms, alt=alt,
+        results = mantel_test(m1, m2, num_perms, alt=alt,
                               suppress_symmetry_and_hollowness_check=True)
 
         resultsDict = super(Mantel, self).__call__(num_perms)
@@ -1657,9 +1657,9 @@ class PartialMantel(CorrelationStats):
         res['mantel_p'] = None
 
         dm1, dm2, cdm = self.DistanceMatrices
-        dm1_flat = dm1.flatten()
-        dm2_flat = dm2.flatten()
-        cdm_flat = cdm.flatten()
+        dm1_flat = dm1.extractTriangle()
+        dm2_flat = dm2.extractTriangle()
+        cdm_flat = cdm.extractTriangle()
 
         # Get the initial r-values before permuting.
         rval1 = pearson(dm1_flat, dm2_flat)
@@ -1676,9 +1676,9 @@ class PartialMantel(CorrelationStats):
         for i in range(0, num_perms):
             # Permute the first distance matrix and calculate new
             # r and p-values.
-            p1 = permute_2d(dm1, permutation(dm1.Size))
-            dm1_perm = DistanceMatrix(p1, dm1.SampleIds, dm1.SampleIds)
-            dm1_perm_flat = dm1_perm.flatten()
+            p1 = permute_2d(dm1, permutation(dm1.NumSamples))
+            dm1_perm = DistanceMatrix(p1, dm1.SampleIds)
+            dm1_perm_flat = dm1_perm.extractTriangle()
             rval1 = pearson(dm1_perm_flat, dm2_flat)
             rval2 = pearson(dm1_perm_flat, cdm_flat)
             perm_stats.append(corr(rval1, rval2, rval3))

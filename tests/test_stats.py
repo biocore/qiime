@@ -18,11 +18,12 @@ from cogent.util.unit_test import TestCase, main
 from numpy import array, asarray, roll, median
 from numpy.random import permutation, shuffle
 
+from qiime.core import DistanceMatrix
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
         _quantile)
-from qiime.util import DistanceMatrix, MetadataMap
+from qiime.util import MetadataMap
 
 
 class TestHelper(TestCase):
@@ -73,8 +74,7 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
-            self.overview_dm_str)
+        self.overview_dm = DistanceMatrix.fromFile(self.overview_dm_str)
 
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
@@ -103,7 +103,7 @@ class TestHelper(TestCase):
         self.test_map = MetadataMap.parseMetadataMap(self.test_map_str)
 
         # A 1x1 dm.
-        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'])
 
         # How many times to test a p-value.
         self.p_val_tests = 10
@@ -378,10 +378,8 @@ class DistanceMatrixStatsTests(TestHelper):
                 'DistanceMatrices', [1])
         self.assertRaises(ValueError, setattr, self.empty_dms,
                 'DistanceMatrices',
-                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])])
+                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'])])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -392,10 +390,8 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
         self.assertRaises(ValueError, DistanceMatrixStats, 
-                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])])
+                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'])])
 
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
@@ -415,16 +411,12 @@ class DistanceMatrixStatsTests(TestHelper):
         dms = DistanceMatrixStats([],
                                   suppress_symmetry_and_hollowness_check=True)
         dms.DistanceMatrices = [
-                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])]
+                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'])]
 
         dms = DistanceMatrixStats([
-                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])],
+                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar']),
+                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'])],
                 suppress_symmetry_and_hollowness_check=True)
 
     def test_call(self):
@@ -458,7 +450,7 @@ class CorrelationStatsTests(TestHelper):
 
     def test_DistanceMatrices_setter_mismatched_labels(self):
         """Test setting dms with mismatching sample ID labels."""
-        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
+        mismatch = DistanceMatrix(array([[0]]), ['s2'])
 
         self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
             [self.single_ele_dm, mismatch])
@@ -620,14 +612,14 @@ class AnosimTests(TestHelper):
                              "sam2\t1\t0\t3\t2",
                              "sam3\t5\t3\t0\t3",
                              "sam4\t4\t2\t3\t0"]
-        self.small_dm = DistanceMatrix.parseDistanceMatrix(self.small_dm_str)
+        self.small_dm = DistanceMatrix.fromFile(self.small_dm_str)
 
         self.small_dm_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
                                  "sam1\t0\t1\t1\t4",
                                  "sam2\t1\t0\t3\t2",
                                  "sam3\t1\t3\t0\t3",
                                  "sam4\t4\t2\t3\t0"]
-        self.small_dm_tie = DistanceMatrix.parseDistanceMatrix(
+        self.small_dm_tie = DistanceMatrix.fromFile(
                 self.small_dm_tie_str)
 
         self.small_map_str = ["#SampleID\tBarcodeSequence\
@@ -793,7 +785,7 @@ class PermanovaTests(TestHelper):
                             "sam3\t5\t3\t0\t3",
                             "sam4\t4\t2\t3\t0"]
 
-        self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
+        self.distmtx = DistanceMatrix.fromFile(self.distmtx_str)
         self.distmtx_samples = self.distmtx.SampleIds
 
         self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
@@ -801,7 +793,7 @@ class PermanovaTests(TestHelper):
                                 "sam2\t1\t0\t3\t2",
                                 "sam3\t1\t3\t0\t3",
                                 "sam4\t4\t2\t3\t0"]
-        self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(
+        self.distmtx_tie = DistanceMatrix.fromFile(
                 self.distmtx_tie_str)
         self.distmtx_tie_samples = self.distmtx_tie.SampleIds
 
@@ -812,7 +804,7 @@ class PermanovaTests(TestHelper):
                                     "sam3\t7\t5\t0\t2\t6",
                                     "sam4\t2\t4\t2\t0\t2",
                                     "sam5\t1\t1\t6\t2\t0"]
-        self.distmtx_uneven = DistanceMatrix.parseDistanceMatrix(
+        self.distmtx_uneven = DistanceMatrix.fromFile(
                 self.distmtx_uneven_str)
         self.distmtx_uneven_samples = self.distmtx_uneven.SampleIds
 
@@ -957,7 +949,7 @@ class BestTests(TestHelper):
         "0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t"
         "0.711173405838", "SN3.141650\t0.622135587669\t0.629507320436\t"
         "0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
-        self.bv_dm_88soils = DistanceMatrix.parseDistanceMatrix(
+        self.bv_dm_88soils = DistanceMatrix.fromFile(
                 self.bv_dm_88soils_str)
 
         self.bv_map_88soils_str = ["#SampleId\tTOT_ORG_CARB\tSILT_CLAY\t"
@@ -1045,9 +1037,11 @@ class BestTests(TestHelper):
         [10.3908084382,1.58142340946,8.49351975531,
         4.13376879093,32.2187374711,0.0]]
 
-        exp = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
+        exp = DistanceMatrix(asarray(mtx), dm_lbls)
         obs = self.best._derive_euclidean_dm(cat_mat,
-                                               self.bv_dm_88soils.Size)
+                                             self.bv_dm_88soils.NumSamples)
+        self.assertFloatEqual(obs, exp)
+        self.assertEqual(obs.SampleIds, exp.SampleIds)
 
     def test_call(self):
         """Test the overall functionality of Best."""
@@ -1089,10 +1083,8 @@ class MantelCorrelogramTests(TestHelper):
 
         # Smallest test case: 3x3 matrices.
         ids = ['s1', 's2', 's3']
-        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]),
-                             ids, ids)
-        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
-                             ids, ids)
+        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids)
+        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids)
 
         self.small_mc = MantelCorrelogram(dm1, dm2)
 
@@ -1417,8 +1409,8 @@ class MantelTests(TestHelper):
         sample_ids = ["S1", "S2", "S3"]
         m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
         m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m1_dm = DistanceMatrix(m1, sample_ids, sample_ids)
-        m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
+        m1_dm = DistanceMatrix(m1, sample_ids)
+        m2_dm = DistanceMatrix(m2, sample_ids)
 
         self.small_mantel = Mantel(m1_dm, m2_dm, 'less')
         self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
@@ -1504,16 +1496,16 @@ class PartialMantelTests(TestHelper):
         # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
         self.small_pm = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
-            smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
-            [10, 2, 0]]), smpl_ids, smpl_ids))
+            [1, 0, 3], [4, 3, 0]]), smpl_ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids),
+            DistanceMatrix(array([[0, 9, 10], [9, 0, 2], [10, 2, 0]]),
+                    smpl_ids))
 
         self.small_pm_diff = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
+            [1, 0, 3], [4, 3, 0]]), smpl_ids),
             DistanceMatrix(array([[0, 20, 51], [20, 0, 888], [51, 888, 0]]),
-            smpl_ids, smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
-            [10, 2, 0]]), smpl_ids, smpl_ids))
+            smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
+            [10, 2, 0]]), smpl_ids))
 
         smpl_ids = ['s1', 's2', 's3', 's4', 's5']
         self.small_pm_diff2 = PartialMantel(
@@ -1521,17 +1513,17 @@ class PartialMantelTests(TestHelper):
                                   [1,0,1.5,1.6,1.7],
                                   [2,1.5,0,0.8,1.9],
                                   [3,1.6,0.8,0,1.0],
-                                  [1.4,1.7,1.9,1.0,0]]), smpl_ids, smpl_ids),
+                                  [1.4,1.7,1.9,1.0,0]]), smpl_ids),
             DistanceMatrix(array([[0,1,2,3,4.1],
                                   [1,0,5,6,7],
                                   [2,5,0,8,9],
                                   [3,6,8,0,10],
-                                  [4.1,7,9,10,0]]), smpl_ids, smpl_ids),
+                                  [4.1,7,9,10,0]]), smpl_ids),
             DistanceMatrix(array([[0,1,2,3,4],
                                   [1,0,5,6,7],
                                   [2,5,0,8,9.1],
                                   [3,6,8,0,10],
-                                  [4,7,9.1,10,0]]), smpl_ids, smpl_ids))
+                                  [4,7,9.1,10,0]]), smpl_ids))
 
     def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
