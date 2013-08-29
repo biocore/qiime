@@ -55,7 +55,7 @@ Miscellaneous
 Summarizing
 -----------
 
-To summarize the information in a BIOM file, you can call `print_biom_table_summary.py <http://biom-format.org/documentation/summarizing_biom_tables.html>`_. This will provide you with information including the number of samples in the BIOM table, the number of observations/OTUs in the BIOM table, and a summary of the total counts observed in each sample.
+To summarize the information in a BIOM file, you can call `biom summarize-table <http://biom-format.org/documentation/summarizing_biom_tables.html>`_. This will provide you with information including the number of samples in the BIOM table, the number of observations/OTUs in the BIOM table, and a summary of the total counts observed in each sample.
 
 Adding metadata
 ---------------
