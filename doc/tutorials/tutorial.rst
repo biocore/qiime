@@ -256,9 +256,9 @@ View statistics of the OTU table
 --------------------------------------------------------------------
 To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type::
 
-    print_biom_table_summary.py -i otus/otu_table.biom
+    biom summarize-table -i otus/otu_table.biom -o otus/otu_table_summary.txt
 
-The output shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
+Open the output file :file:`otus/otu_table_summary.txt`, which contains a summary of the OTU table. The summary shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
 
 .. note ::
 
@@ -600,7 +600,7 @@ Steps 3, 4 and 5. Perform Jackknifing Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To measure the robustness of this result to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire available data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.
 
-First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `print_biom_table_summary.py`__:
+First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `biom summarize-table`__:
 
 __ perlibrarystats_
 
