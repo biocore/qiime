@@ -46,7 +46,7 @@ Convert table from BIOM to tab-separated text format
 ----------------------------------------------------
 SourceTracker does not work with the `BIOM format <http://www.biom-format.org>`_, so the OTU table needs to be converted to tab-separated text format. You can do that with the following command::
 
-    convert_biom.py -i filtered_otu_table.biom -o filtered_otu_table.txt -b
+    biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt -b
 
 This creates a file named ``filtered_otu_table.txt``.
 
