@@ -194,7 +194,7 @@ def preprocess(sff_fp, log_fh, fasta_fp=None, out_fp="/tmp/",
             removed from all reads during the preprocessing
     """
     
-    flowgrams, header = cat_sff_files(map(open, sff_fp.split(',')))
+    flowgrams, header = cat_sff_files(map(open, sff_fp))
     
     if(fasta_fp):
         #remove barcodes and sequences tossed by split_libraries, i.e. not in fasta_fp
