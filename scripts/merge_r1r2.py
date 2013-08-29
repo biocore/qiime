@@ -129,15 +129,15 @@ def processFiles(I1FName, R1FName, R2FName, ROFName, IOFName, minOverlap, revCom
                             r2 = R2["Seq"]
                             r2q = R2["Qa"]
                             
-                        IOFh.write(R2["Id"]+"\n")
-                        IOFh.write(r2+"\n")
-                        IOFh.write(R2["Plus"]+"\n")
-                        IOFh.write(r2q+"\n")   
+                        ROFh.write(R2["Id"]+"\n")
+                        ROFh.write(r2+"\n")
+                        ROFh.write(R2["Plus"]+"\n")
+                        ROFh.write(r2q+"\n")   
                     else:
-                        IOFh.write(R1["Id"]+"\n")
-                        IOFh.write(R1["Seq"]+"\n")
-                        IOFh.write(R1["Plus"]+"\n")
-                        IOFh.write(R1["Qa"]+"\n")   
+                        ROFh.write(R1["Id"]+"\n")
+                        ROFh.write(R1["Seq"]+"\n")
+                        ROFh.write(R1["Plus"]+"\n")
+                        ROFh.write(R1["Qa"]+"\n")   
 
                     IOFh.write(I1["Id"]+"\n")
                     IOFh.write(I1["Seq"]+"\n")
@@ -146,10 +146,10 @@ def processFiles(I1FName, R1FName, R2FName, ROFName, IOFName, minOverlap, revCom
 
                 elif include == "R1":
                     
-                    IOFh.write(R1["Id"]+"\n")
-                    IOFh.write(R1["Seq"]+"\n")
-                    IOFh.write(R1["Plus"]+"\n")
-                    IOFh.write(R1["Qa"]+"\n")   
+                    ROFh.write(R1["Id"]+"\n")
+                    ROFh.write(R1["Seq"]+"\n")
+                    ROFh.write(R1["Plus"]+"\n")
+                    ROFh.write(R1["Qa"]+"\n")   
 
                     IOFh.write(I1["Id"]+"\n")
                     IOFh.write(I1["Seq"]+"\n")
@@ -165,10 +165,10 @@ def processFiles(I1FName, R1FName, R2FName, ROFName, IOFName, minOverlap, revCom
                         r2 = R2["Seq"]
                         r2q = R2["Qa"]
                         
-                    IOFh.write(R2["Id"]+"\n")
-                    IOFh.write(r2+"\n")
-                    IOFh.write(R2["Plus"]+"\n")
-                    IOFh.write(r2q+"\n")   
+                    ROFh.write(R2["Id"]+"\n")
+                    ROFh.write(r2+"\n")
+                    ROFh.write(R2["Plus"]+"\n")
+                    ROFh.write(r2q+"\n")   
 
                     IOFh.write(I1["Id"]+"\n")
                     IOFh.write(I1["Seq"]+"\n")
