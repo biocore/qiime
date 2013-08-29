@@ -71,7 +71,8 @@ def sum_counts_by_consensus(otu_table,
     if otu_table.ObservationMetadata is None:
         raise ValueError, ("BIOM table does not contain any "
                            "observation metadata (e.g., taxonomy)."
-                           " You can add metadata to it using add_metadata.py.")
+                           " You can add metadata to it using the "
+                           "'biom add-metadata' command.")
     
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
