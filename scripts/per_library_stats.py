@@ -12,4 +12,4 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-print "\nThis script has been renamed print_biom_table_summary.py and ported to the biom-format software package (www.biom-format.org). For help, call print_biom_table_summary.py -h\n"
+print "\nThis script has been moved to the biom-format software package (www.biom-format.org). For help, call:\n\n  biom summarize-table -h\n"

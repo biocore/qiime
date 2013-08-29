@@ -29,7 +29,7 @@ The included scripts are those run by the workflow scripts `alpha_rarefaction.py
 	-m, `-`-mapping_fp
 		The mapping filepath [REQUIRED]
 	-e, `-`-sampling_depth
-		Sequencing depth to use for even sub-sampling and maximum rarefaction depth. You should review the output of `print_biom_table_summary.py <./print_biom_table_summary.html>`_ to decide on this value.
+		Sequencing depth to use for even sub-sampling and maximum rarefaction depth. You should review the output of `biom summarize-table <http://biom-format.org/documentation/summarizing_biom_tables.html>`_ to decide on this value.
 	
 	**[OPTIONAL]**
 		
