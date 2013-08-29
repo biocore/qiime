@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout", 
+               "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -80,8 +81,26 @@ class ParallelWrapper(object):
                  poll_directly=False,
                  suppress_submit_jobs=False):
         """ """
-        ## Generate a list of files and directories that will need to be cleaned up
+        # Generate a list of files and directories that will be cleaned up
         self.files_to_remove = []
+        
+        # Allow the user to override the default job_prefix (defined by the 
+        # base classes)
+        if job_prefix is None:
+            job_prefix = self._get_random_job_prefix(self._job_prefix)
+        
+        # A temporary output directory is created in output_dir named
+        # job_prefix. Output files are then moved from the temporary
+        # directory to the output directory when they are complete,
+        # allowing a poller to detect when runs complete by the presence
+        # of their output files.
+        working_dir = join(output_dir,job_prefix)
+        try:
+            makedirs(working_dir)
+            self.files_to_remove.append(working_dir)
+        except OSError:
+            # working dir already exists
+            pass
         
         # Perform any method-specific setup. This should prevent the need to 
         # overwrite __call__
@@ -102,23 +121,6 @@ class ParallelWrapper(object):
             ## PREVIOUS BLOCK WON'T WORK... WHAT DO WE WANT TO DO?
             input_dir, input_fn = split(input_fp[0])
             input_file_basename, input_ext = splitext(input_fn)
-        
-        # Allow the user to override the default job_prefix (defined by the 
-        # base classes)
-        if job_prefix is None:
-            job_prefix = self._get_random_job_prefix(self._job_prefix)
-        # A temporary output directory is created in output_dir named
-        # job_prefix. Output files are then moved from the temporary
-        # directory to the output directory when they are complete,
-        # allowing a poller to detect when runs complete by the presence
-        # of their output files.
-        working_dir = join(output_dir,job_prefix)
-        try:
-            makedirs(working_dir)
-            self.files_to_remove.append(working_dir)
-        except OSError:
-            # working dir already exists
-            pass
         
         # Split the input file into the individual job input files. Add the
         # individual job files to the files_to_remove list
