@@ -21,7 +21,7 @@ from qiime.workflow.util import (print_to_stdout,
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
