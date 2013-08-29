@@ -15,10 +15,12 @@ from cogent.maths.stats.special import Gamma
 from numpy import absolute, arctanh, array, asarray, concatenate, transpose, \
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any, \
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp, \
-        median as _median, zeros, ones
+        median as _median, zeros, ones, copy, searchsorted, arange, where, \
+        vstack, unique
         #, std - currently incorrect
 from numpy.random import permutation, randint
 from cogent.maths.stats.util import Numbers
+from cogent.maths.stats import chisqprob
 from operator import add
 from random import choice
 
@@ -26,7 +28,8 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Gavin Huttley", "Rob Knight", "Catherine Lozupone",
                "Sandra Smit", "Micah Hamady", "Daniel McDonald",
-               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan"]
+               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan",
+               "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -1766,3 +1769,86 @@ def get_ltm_cells(cells):
     return list(new_cells)
 
 ## End functions for distance_matrix_permutation_test
+
+## Start functions for kruskal_wallis test
+def _corr_kw(n):
+    '''Return n**3-n. Used for correction of Kruskal Wallis'''
+    return n**3 - n 
+
+def ssl_ssr_sx(x):
+    '''Return searchsorted right and left indices for x and a sorted copy of x.
+    '''
+    y = copy(x)
+    y.sort()
+    ssl = searchsorted(y, x, 'left')
+    ssr = searchsorted(y, x, 'right')
+    return ssl, ssr, y
+
+def tie_correction(sx):
+    '''Correct for ties in Kruskal Wallis.'''
+    ux = unique(sx)
+    uxl = searchsorted(sx, ux, 'left')
+    uxr = searchsorted(sx, ux, 'right')
+    return 1.-_corr_kw(uxr-uxl).sum()/float(_corr_kw(len(sx)))
+
+def kruskal_wallis(*args):
+    '''
+    Calculates the corrected Kruskal Wallis statistic (Sokal and Rolhf pg. 423).
+
+    Inputs:
+     *args - any number of 1D arrays or lists with numeric values. 
+    Outputs:
+     H/D
+
+    Functionally implements the following:
+
+    H = [12/n(n+1) * sum(T_i^2/n_i)] - 3(n+1) 
+    H is the Kruskal Wallis value, the expected value of the variance of the sum
+    of the ranks. 
+    T_i is the sum of the ranks (with ties resolved by the Kruskal Wallis 
+    procedure) of the values (or variates) in the ith group (sample). 
+    n_i is the number of values in the ith group. 
+    The summation occurs over all groups (samples)
+    n is the total number of samples in all groups being compared. 
+
+    D = 1 - sum(T_j^3-T_j)/(n^3-n)
+    D is the correction factor for ties. 
+    T_j is the number of ties in the jth group of ties. 
+
+    Implementation taken from Wikipedia and Sokal and Rohlf Biometry pg. 423. 
+    ''' 
+    # record number of groups for comparison
+    num_groups = len(args)
+
+    # ugly, slow, accounts for unequal input size, format. 
+    x = []
+    [x.extend(i) for i in args]
+    x = array(x)
+    # calculate searchsorted right and searchsroted left indices.
+    ssl, ssr, sx = ssl_ssr_sx(x)
+    # calculate H
+    start = 0
+    stop = 0
+    tot = 0
+    for group in args:
+        stop += len(group)
+        # To average the ranks for tied entries we compute leftmost rank of 
+        # value i, minus rightmost rank of value i (and divide by 2). Since 
+        # python indexes to 0, ssl ranks are 1 lower than they shoud be (i.e.
+        # the smallest value has rank 0 instead of 1). The +1 below corrects for
+        # this and .5 averages. 
+        ranks = (ssr[start:stop]+ssl[start:stop]+1)*.5
+        tot+=(ranks.sum()**2)/float(len(group))
+        start += len(group)
+    n = len(x)
+    a = 12./(n*(n+1))
+    b = -3.*(n+1)
+    H = (a*tot + b)
+    # correct for ties by calulating D
+    D = tie_correction(sx)
+    
+    # give chisqprob the kw statistic, and degrees of freedom (#groups - 1)
+    p_value = chisqprob(H/D, num_groups-1)
+    return p_value
+
+## End functions for kruskal_wallis test
