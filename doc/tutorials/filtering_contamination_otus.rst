@@ -81,7 +81,7 @@ Filter out OTU ids that have zero counts, as we only want the OTUs with positive
 	
 Then create a tab separated version of this OTU table::
 
-	convert_biom.py -b -i filtered_otu_table_blank_samples.biom -o otus_to_remove.txt
+	biom convert -b -i filtered_otu_table_blank_samples.biom -o otus_to_remove.txt
 	
 Filter out OTU ids from the run 1 OTU table that were determined to be present in the Control_Blank samples::
 
