@@ -5,7 +5,8 @@
 
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Catherine Lozupone", "Dan Knights", "Jai Ram Rideout"]
+__credits__ = ["Catherine Lozupone", "Dan Knights", "Jai Ram Rideout",
+                "Luke Ursell"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Catherine Lozupone"
@@ -234,8 +235,8 @@ NotInOtuTable2\thello\t27""".split('\n')
             otu_table, category_values)
         self.assertEqual(group_means, [10.0, 1.5])
         
-    def test_run_single_correlation(self):
-        """run_single_correlation works"""
+    def test_run_single_correlation_pearson(self):
+        """run_single_correlation_pearson works"""
         category_info = {'sample1': '1',
                         'sample2': '2',
                         'sample3': '3',
@@ -255,15 +256,110 @@ NotInOtuTable2\thello\t27""".split('\n')
         "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "date": "2011-12-21T18:52:44.318249", "type": "OTU table", "id": null,
         "matrix_element_type": "float"}"""
+        
         otu_table = parse_biom_table_str(otu_table_str)
-
-        category_values = ['A', 'B']
         otu_ab_vals, cat_vals = get_single_correlation_values('0', category_info,\
-                otu_table)
-        r, prob = run_single_correlation(otu_ab_vals, cat_vals)
+                otu_table) # using '0' will look at the first OTU in the table
+
+        # run_single_correlation provides more information than is used
+        # we only want r, parametric_pval
+        r, parametric_pval, corr_vals, nonparametric_pval, ci = \
+            run_single_correlation(otu_ab_vals, cat_vals, 'pearson')
+        
         self.assertFloatEqual(r, 0.923380516877)
-        self.assertFloatEqual(prob, 0.0766194831234)
-    
+        self.assertFloatEqual(parametric_pval, 0.0766194831234)
+
+    def test_run_single_correlation_spearman_long(self):
+        """run_single_correlation_spearman works"""
+
+        # Spearman only works on datasets larger than 11 or 12
+        otu_table_str_long = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2",
+        "date": "2013-07-03T19:24:37.387250","matrix_type": "sparse","matrix_element_type": "float",
+        "shape": [3, 40],"data": [[0,0,1.0],[0,1,2.0],[0,2,3.0],[0,3,4.0],[0,4,5.0],[0,5,6.0],[0,6,7.0],
+        [0,7,8.0],[0,8,9.0],[0,9,10.0],[0,10,11.0],[0,11,12.0],[0,12,13.0],[0,13,14.0],[0,14,15.0],[0,15,16.0],
+        [0,16,17.0],[0,17,18.0],[0,18,19.0],[0,19,20.0],[0,20,21.0],[0,21,22.0],[0,22,23.0],[0,23,24.0],
+        [0,24,25.0],[0,25,26.0],[0,26,27.0],[0,27,28.0],[0,28,29.0],[0,29,30.0],[0,30,31.0],[0,31,32.0],
+        [0,32,33.0],[0,33,34.0],[0,34,35.0],[0,35,36.0],[0,36,37.0],[0,37,38.0],[0,38,39.0],[0,39,40.0],
+        [1,0,5.0],[1,1,10.0],[1,2,15.0],[1,3,20.0],[1,4,25.0],[1,5,30.0],[1,6,35.0],[1,7,40.0],[1,8,45.0],
+        [1,9,50.0],[1,10,55.0],[1,11,60.0],[1,12,65.0],[1,13,70.0],[1,14,75.0],[1,15,80.0],[1,16,85.0],
+        [1,17,90.0],[1,18,95.0],[1,19,100.0],[1,20,105.0],[1,21,110.0],[1,22,115.0],[1,23,120.0],[1,24,125.0],
+        [1,25,130.0],[1,26,135.0],[1,27,140.0],[1,28,145.0],[1,29,150.0],[1,30,155.0],[1,31,160.0],
+        [1,32,165.0],[1,33,170.0],[1,34,175.0],[1,35,180.0],[1,36,185.0],[1,37,190.0],[1,38,195.0],
+        [1,39,200.0],[2,0,3.0],[2,1,6.0],[2,2,15.0],[2,3,12.0],[2,4,15.0],[2,5,18.0],[2,6,21.0],
+        [2,7,24.0],[2,8,27.0],[2,9,28.0],[2,10,33.0],[2,11,36.0],[2,12,39.0],[2,13,42.0],[2,14,42.0],
+        [2,15,48.0],[2,16,51.0],[2,17,54.0],[2,18,57.0],[2,19,61.0],[2,20,63.0],[2,21,66.0],[2,22,69.0],
+        [2,23,72.0],[2,24,75.0],[2,25,78.0],[2,26,81.0],[2,27,82.0],[2,28,85.0],[2,29,91.0],[2,30,94.0],
+        [2,31,95.0],[2,32,100.0],[2,33,102.0],[2,34,105.0],[2,35,108.0],[2,36,111.0],[2,37,120.0],
+        [2,38,125.0],[2,39,140.0]],"rows": [{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},
+        {"id": "OTU3", "metadata": null}],"columns": [{"id": "sample1", "metadata": null},
+        {"id": "sample2", "metadata": null},{"id": "sample3", "metadata": null},{"id": "sample4", "metadata": null},
+        {"id": "sample5", "metadata": null},{"id": "sample6", "metadata": null},{"id": "sample7", "metadata": null},
+        {"id": "sample8", "metadata": null},{"id": "sample9", "metadata": null},{"id": "sample10", "metadata": null},
+        {"id": "sample11", "metadata": null},{"id": "sample12", "metadata": null},{"id": "sample13", "metadata": null},
+        {"id": "sample14", "metadata": null},{"id": "sample15", "metadata": null},{"id": "sample16", "metadata": null},
+        {"id": "sample17", "metadata": null},{"id": "sample18", "metadata": null},{"id": "sample19", "metadata": null},
+        {"id": "sample20", "metadata": null},{"id": "sample21", "metadata": null},{"id": "sample22", "metadata": null},
+        {"id": "sample23", "metadata": null},{"id": "sample24", "metadata": null},{"id": "sample25", "metadata": null},
+        {"id": "sample26", "metadata": null},{"id": "sample27", "metadata": null},{"id": "sample28", "metadata": null},
+        {"id": "sample29", "metadata": null},{"id": "sample30", "metadata": null},{"id": "sample31", "metadata": null},
+        {"id": "sample32", "metadata": null},{"id": "sample33", "metadata": null},{"id": "sample34", "metadata": null},
+        {"id": "sample35", "metadata": null},{"id": "sample36", "metadata": null},{"id": "sample37", "metadata": null},
+        {"id": "sample38", "metadata": null},{"id": "sample39", "metadata": null},{"id": "sample40", "metadata": null}]}"""
+
+        # Give each sample a simple continuous variable for correlation
+        category_info = {'sample1': '1',
+                    'sample2': '2',
+                    'sample3': '3',
+                    'sample4': '4',
+                    'sample5': '5',
+                    'sample6': '6',
+                    'sample7': '7',
+                    'sample8': '8',
+                    'sample9': '9',
+                    'sample10': '10',
+                    'sample11': '11',
+                    'sample12': '12',
+                    'sample13': '13',
+                    'sample14': '14',
+                    'sample15': '15',
+                    'sample16': '16',
+                    'sample17': '17',
+                    'sample18': '18',
+                    'sample19': '19',
+                    'sample20': '20',
+                    'sample21': '21',
+                    'sample22': '22',
+                    'sample23': '23',
+                    'sample24': '24',
+                    'sample25': '25',
+                    'sample26': '26',
+                    'sample27': '27',
+                    'sample28': '28',
+                    'sample29': '29',
+                    'sample30': '30',
+                    'sample31': '31',
+                    'sample32': '32',
+                    'sample33': '33',
+                    'sample34': '34',
+                    'sample35': '35',
+                    'sample36': '36',
+                    'sample37': '37',
+                    'sample38': '38',
+                    'sample39': '39',
+                    'sample40': '40'}
+
+        otu_table = parse_biom_table_str(otu_table_str_long)
+        otu_ab_vals, cat_vals = get_single_correlation_values('OTU3', category_info,\
+                otu_table) # using will look at the first OTU in the table
+        # run_single_correlation provides more information than is used
+        # we only want r, prob
+        r, parametric_pval, corr_vals, nonparametric_pval, ci = \
+            run_single_correlation(otu_ab_vals, cat_vals, 'spearman')
+        
+        self.assertFloatEqual(r, 0.999624734674)
+        self.assertFloatEqual(nonparametric_pval, 0.001)
+
     def test_get_single_correlation_values(self):
         """get_single_correlation_values works
         """
@@ -448,12 +544,12 @@ s6\t0\tC""".split('\n')
         """run_single_paired_T_test works
         """
         cat_mapping = """#SampleID\ttimepoint_zero\tindividual
-s1\t1\tA
-s2\t0\tA
-s3\t1\tB
-s4\t0\tB
-s5\t1\tC
-s6\t0\tC""".split('\n')
+                s1\t1\tA
+                s2\t0\tA
+                s3\t1\tB
+                s4\t0\tB
+                s5\t1\tC
+                s6\t0\tC""".split('\n')
 
         otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
         "metadata": null}, {"id": "2", "metadata": null}], "format":
@@ -493,12 +589,12 @@ s6\t0\tC""".split('\n')
         """run_single_paired_T_test works
         """
         cat_mapping = """#SampleID\ttimepoint_zero\tindividual
-s1\t1\tA
-s2\t0\tA
-s3\t1\tB
-s4\t0\tB
-s5\t1\tC
-s6\t0\tC""".split('\n')
+            s1\t1\tA
+            s2\t0\tA
+            s3\t1\tB
+            s4\t0\tB
+            s5\t1\tC
+            s6\t0\tC""".split('\n')
         otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
         "metadata": null}, {"id": "2", "metadata": null}], "format":
         "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
@@ -528,12 +624,12 @@ s6\t0\tC""".split('\n')
         """output_results_paired_T_test works
         """
         cat_mapping = """#SampleID\ttimepoint_zero\tindividual
-s1\t1\tA
-s2\t0\tA
-s3\t1\tB
-s4\t0\tB
-s5\t1\tC
-s6\t0\tC""".split('\n')
+            s1\t1\tA
+            s2\t0\tA
+            s3\t1\tB
+            s4\t0\tB
+            s5\t1\tC
+            s6\t0\tC""".split('\n')
         otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
         "metadata": null}, {"id": "2", "metadata": null}], "format":
         "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
@@ -719,7 +815,7 @@ s6\t0\tC""".split('\n')
         output = output_results_G_test(G_test_results, taxonomy_info)
         self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos\tConsensus Lineage', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]\ttaxon1', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]\ttaxon2', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]\ttaxon4'])
 
-    def test_run_correlation_OTUs(self):
+    def test_run_correlation_OTUs_pearson(self):
         """run_correlation_OTUs works"""
         category_info = {'sample1':'0.1',
                         'sample2':'0.2',
@@ -744,7 +840,7 @@ s6\t0\tC""".split('\n')
         otu_table = parse_biom_table_str(otu_table_str)
 
         OTU_list = ['1', '0', '2', '3'] 
-        result = run_correlation_OTUs(OTU_list, category_info, otu_table)
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table, 'pearson')
         #OTU 0 should be positively correlated, 1 negative, and 2&3 neutral
         self.assertFloatEqual(result['0'][0], 1.0)#r
         self.assertFloatEqual(result['0'][1], 0.0)#prob
@@ -768,9 +864,84 @@ s6\t0\tC""".split('\n')
                         'sample3':'A',
                         'sample4':'B'}
         self.assertRaises(ValueError, run_correlation_OTUs, OTU_list,
-                          category_info, otu_table)
+                          category_info, otu_table, 'pearson')
+
+    def test_run_correlation_OTUs_spearman(self):
+        """run_correlation_OTUs works"""
+        otu_table_str_long = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2",
+        "date": "2013-07-05T14:47:57.587736","matrix_type": "sparse","matrix_element_type": "float",
+        "shape": [2, 20],"data": [[0,0,100.0],[0,1,95.0],[0,2,90.0],[0,3,85.0],[0,4,80.0],[0,5,75.0],
+        [0,6,70.0],[0,7,65.0],[0,8,60.0],[0,9,55.0],[0,10,50.0],[0,11,45.0],[0,12,40.0],[0,13,35.0],
+        [0,14,30.0],[0,15,25.0],[0,16,20.0],[0,17,15.0],[0,18,10.0],[0,19,5.0],[1,1,5.0],[1,2,10.0],
+        [1,3,15.0],[1,4,20.0],[1,5,25.0],[1,6,30.0],[1,7,35.0],[1,8,40.0],[1,9,45.0],[1,10,50.0],
+        [1,11,55.0],[1,12,60.0],[1,13,65.0],[1,14,70.0],[1,15,75.0],[1,16,80.0],[1,17,85.0],
+        [1,18,90.0],[1,19,95.0]],"rows": [{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null}],
+        "columns": [{"id": "sample1", "metadata": null},{"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null},{"id": "sample4", "metadata": null},
+        {"id": "sample5", "metadata": null},{"id": "sample6", "metadata": null},
+        {"id": "sample7", "metadata": null},{"id": "sample8", "metadata": null},
+        {"id": "sample9", "metadata": null},{"id": "sample10", "metadata": null},
+        {"id": "sample11", "metadata": null},{"id": "sample12", "metadata": null},
+        {"id": "sample13", "metadata": null},{"id": "sample14", "metadata": null},
+        {"id": "sample15", "metadata": null},{"id": "sample16", "metadata": null},
+        {"id": "sample17", "metadata": null},{"id": "sample18", "metadata": null},
+        {"id": "sample19", "metadata": null},{"id": "sample20", "metadata": null}]}"""
+
+        # Give each sample a simple continuous variable for correlation
+        category_info = {'sample1': '0.99',
+                    'sample2': '0.8',
+                    'sample3': '0.72',
+                    'sample4': '0.75',
+                    'sample5': '0.65',
+                    'sample6': '0.5',
+                    'sample7': '0.5',
+                    'sample8': '0.4',
+                    'sample9': '0.4',
+                    'sample10': '0.3',
+                    'sample11': '0.3',
+                    'sample12': '0.2',
+                    'sample13': '0.2',
+                    'sample14': '0.15',
+                    'sample15': '0.15',
+                    'sample16': '0.1',
+                    'sample17': '0.1',
+                    'sample18': '0.05',
+                    'sample19': '0.05',
+                    'sample20': '0.05'}
+        otu_table = parse_biom_table_str(otu_table_str_long)
+
+        OTU_list = ['OTU1', 'OTU2'] 
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table, 'spearman')
+
+        #OTU1 should be positively correlated, OTU2 negatively correlated
+        self.assertFloatEqual(result['OTU1'][0], 0.99472406356429188)#r
+        self.assertFloatEqual(result['OTU1'][1], 0.001)#prob
         
-    def test_output_results_correlation(self):
+        x = result['OTU1'][3]
+        x = x[1:-1]
+        x = x.split(',')
+        x = set([float(i) for i in x])
+
+        self.assertFloatEqual(x, set([0.3, 0.3, 0.2, 0.2, 0.15, 0.15, 0.1, 0.1, 0.05, 0.05, 0.65, 0.75, 0.5, 0.5, 0.99, 0.72, 0.8, 0.4, 0.4, 0.05]))
+        self.assertFloatEqual(result['OTU2'][0], -0.99472406356429188)#r
+        self.assertFloatEqual(result['OTU2'][1], 0.001)#prob
+        y = result['OTU1'][2]
+        y = y[1:-1]
+        y = y.split(',')
+        y = set([float(i) for i in y])
+
+        self.assertFloatEqual(y, set([50.0, 55.0, 40.0, 45.0, 30.0, 35.0, 20.0, 25.0, 10.0, 15.0, 80.0, 85.0, 70.0, 75.0, 100.0, 90.0, 95.0, 60.0, 65.0, 5.0]))
+
+        #test that appropriate error is raised is categorical
+        category_info = {'sample1':'A',
+                        'sample2':'B',
+                        'sample3':'A',
+                        'sample4':'B'}
+        self.assertRaises(ValueError, run_correlation_OTUs, OTU_list,
+                          category_info, otu_table, 'spearman')
+
+    def test_output_results_correlation_pearson(self):
         """output_results_correlation works"""
         category_info = {'sample1':'0.1',
                         'sample2':'0.2',
@@ -798,7 +969,7 @@ s6\t0\tC""".split('\n')
                         '2': 'taxon3',
                         '3': 'taxon4'}
         OTU_list = ['1', '0', '2', '3'] 
-        result = run_correlation_OTUs(OTU_list, category_info, otu_table)
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table, 'pearson')
         output = output_results_correlation(result, taxonomy_info)
         self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
         line2 = output[2].split('\t')
@@ -807,9 +978,69 @@ s6\t0\tC""".split('\n')
         self.assertFloatEqual(float(line2[4]), 1.7763568394e-15)
         self.assertFloatEqual(float(line2[5]), 8.881784197e-16)
         self.assertFloatEqual(float(line2[6]), -1.0)
-        self.assertFloatEqual(line2[7], 'taxon2')
-        
+        self.assertFloatEqual(line2[7], 'taxon2')        
         self.assertEqual(len(output), 5)
+
+    def test_output_results_correlation_spearman(self):
+        """output_results_correlation works"""
+        otu_table_str_long = """{"id": "None","format": "Biological Observation Matrix 1.0.0",
+        "format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2",
+        "date": "2013-07-05T14:47:57.587736","matrix_type": "sparse","matrix_element_type": "float",
+        "shape": [2, 20],"data": [[0,0,100.0],[0,1,95.0],[0,2,90.0],[0,3,85.0],[0,4,80.0],[0,5,75.0],
+        [0,6,70.0],[0,7,65.0],[0,8,60.0],[0,9,55.0],[0,10,50.0],[0,11,45.0],[0,12,40.0],[0,13,35.0],
+        [0,14,30.0],[0,15,25.0],[0,16,20.0],[0,17,15.0],[0,18,10.0],[0,19,5.0],[1,1,5.0],[1,2,10.0],
+        [1,3,15.0],[1,4,20.0],[1,5,25.0],[1,6,30.0],[1,7,35.0],[1,8,40.0],[1,9,45.0],[1,10,50.0],
+        [1,11,55.0],[1,12,60.0],[1,13,65.0],[1,14,70.0],[1,15,75.0],[1,16,80.0],[1,17,85.0],
+        [1,18,90.0],[1,19,95.0]],"rows": [{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null}],
+        "columns": [{"id": "sample1", "metadata": null},{"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null},{"id": "sample4", "metadata": null},
+        {"id": "sample5", "metadata": null},{"id": "sample6", "metadata": null},
+        {"id": "sample7", "metadata": null},{"id": "sample8", "metadata": null},
+        {"id": "sample9", "metadata": null},{"id": "sample10", "metadata": null},
+        {"id": "sample11", "metadata": null},{"id": "sample12", "metadata": null},
+        {"id": "sample13", "metadata": null},{"id": "sample14", "metadata": null},
+        {"id": "sample15", "metadata": null},{"id": "sample16", "metadata": null},
+        {"id": "sample17", "metadata": null},{"id": "sample18", "metadata": null},
+        {"id": "sample19", "metadata": null},{"id": "sample20", "metadata": null}]}"""
+
+        # Give each sample a simple continuous variable for correlation
+        category_info = {'sample1': '0.99',
+                    'sample2': '0.8',
+                    'sample3': '0.72',
+                    'sample4': '0.75',
+                    'sample5': '0.65',
+                    'sample6': '0.5',
+                    'sample7': '0.5',
+                    'sample8': '0.4',
+                    'sample9': '0.4',
+                    'sample10': '0.3',
+                    'sample11': '0.3',
+                    'sample12': '0.2',
+                    'sample13': '0.2',
+                    'sample14': '0.15',
+                    'sample15': '0.15',
+                    'sample16': '0.1',
+                    'sample17': '0.1',
+                    'sample18': '0.05',
+                    'sample19': '0.05',
+                    'sample20': '0.05'}
+
+        otu_table = parse_biom_table_str(otu_table_str_long)
+        taxonomy_info = {'OTU1': 'taxon1',
+                        'OTU2': 'taxon2'}
+        OTU_list = ['OTU1', 'OTU2'] 
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table, 'spearman')
+        output = output_results_correlation(result, taxonomy_info)
+        self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
+        line2 = output[2].split('\t')
+        self.assertEqual(line2[0], 'OTU1')
+        self.assertFloatEqual(float(line2[1]), 0.001)
+        self.assertFloatEqual(float(line2[4]), 0.002)
+        self.assertFloatEqual(float(line2[5]), 0.001)
+        self.assertFloatEqual(float(line2[6]), 0.994724064)
+        self.assertFloatEqual(line2[7], 'taxon1')
+        
+        self.assertEqual(len(output), 3)
 
     def test_get_taxonomy_info(self):
         """get_taxonomy_info works"""
@@ -860,9 +1091,9 @@ s6\t0\tC""".split('\n')
     def test_get_category_info(self):
         """get_category_info works"""
         category_mapping = """#SampleID\tcat1\tcat2
-sample1\tA\t0
-sample2\tB\t8.0
-sample3\tC\t1.0""".split('\n')
+            sample1\tA\t0
+            sample2\tB\t8.0
+            sample3\tC\t1.0""".split('\n')
         mapping_data, header, comments = parse_mapping_file(category_mapping)
         result, cat_vals = get_category_info(mapping_data, header, 'cat1')
         self.assertEqual(result, {'sample1': 'A', 'sample3': 'C', 'sample2': 'B'})
@@ -926,26 +1157,26 @@ sample3\tC\t1.0""".split('\n')
         B_mean = float(otu0_results[5])
         self.assertFloatEqual(B_mean, 0.5)
         
-        # correlation
+        # pearson
         threshold = None
         otu_include = None
-        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+        results1 = test_wrapper('pearson', otu_table1, category_mapping, \
             'cat2', threshold, filt=0, otu_include=None)
         self.assertEqual(len(results1), 4)
         self.assertEqual(results1[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
         
-        #correlation with filter: should filter out 1 of the 3 otus when
+        #pearson with filter: should filter out 1 of the 3 otus when
         #set to >0.75
         filt = 0.75
-        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+        results1 = test_wrapper('pearson', otu_table1, category_mapping, \
             'cat2', threshold, filt=filt)
         self.assertEqual(len(results1), 3)
         #should filter out 2 of 3 when sent to 0.9
-        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+        results1 = test_wrapper('pearson', otu_table1, category_mapping, \
             'cat2', threshold, filt=0.9)
         self.assertEqual(len(results1), 2)
         #should filter out none when sent to 0.5
-        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+        results1 = test_wrapper('pearson', otu_table1, category_mapping, \
             'cat2', threshold, filt=0.5)
         self.assertEqual(len(results1), 4)
 
@@ -1181,19 +1412,19 @@ sample3\tC\t1.0""".split('\n')
                 mean = round((entry1+entry2)/2.0, 3)
                 self.assertEqual(round(entry_combined, 3), mean)
 
-        # correlation
+        # pearson
         threshold = None
         filt = 0
         otu_include = None
         category = 'cat2'
 
-        # get expected correlation output from each file separately
-        results1 = test_wrapper('correlation', otu_table1, category_mapping, category, threshold, \
+        # get expected pearson output from each file separately
+        results1 = test_wrapper('pearson', otu_table1, category_mapping, category, threshold, \
                  filt, otu_include=None)
-        results2 = test_wrapper('correlation', otu_table2, category_mapping, category, threshold, \
+        results2 = test_wrapper('pearson', otu_table2, category_mapping, category, threshold, \
                  filt, otu_include=None)
 
-        results = test_wrapper_multiple('correlation', otu_tables,
+        results = test_wrapper_multiple('pearson', otu_tables,
                                         category_mapping, category,
                                         threshold, filt,
                                         otu_include)
@@ -1276,23 +1507,23 @@ sample3\tC\t1.0""".split('\n')
         """longitudinal correlation filter works as expected
         """
         mapping_lines = """#SampleID\tindividual\ttimepoint_zero\ttimepoint
-AT0\tA\t1\t0
-AT1\tA\t0\t1
-AT2\tA\t0\t2
-BT0\tB\t1\t0
-BT1\tB\t0\t1
-BT2\tB\t0\t2
-""".split('\n')
+            AT0\tA\t1\t0
+            AT1\tA\t0\t1
+            AT2\tA\t0\t2
+            BT0\tB\t1\t0
+            BT1\tB\t0\t1
+            BT2\tB\t0\t2
+            """.split('\n')
         category_mapping = parse_mapping_file(mapping_lines)
         otu_table = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata": null}], "format": "Biological Observation Matrix 1.0.0", "data": [[0, 0, 1.0], [0, 1, 2.0], [0, 2, 3.0], [1, 3, 1.0], [1, 4, 2.0], [1, 5, 3.0], [2, 0, 1.0], [2, 1, 2.0], [2, 2, 3.0], [2, 4, 1.0], [2, 5, 2.0], [3, 0, 2.0], [3, 1, 4.0], [3, 2, 6.0], [3, 4, 1.0], [3, 5, 2.0], [4, 0, 3.0], [4, 1, 2.0], [4, 2, 1.0], [4, 3, 6.0], [4, 4, 4.0], [4, 5, 2.0]], "columns": [{"id": "AT0", "metadata": null}, {"id": "AT1", "metadata": null}, {"id": "AT2", "metadata": null}, {"id": "BT0", "metadata": null}, {"id": "BT1", "metadata": null}, {"id": "BT2", "metadata": null}], "generated_by": "BIOM-Format 1.0.0-dev", "matrix_type": "sparse", "shape": [5, 6], "format_url": "http://biom-format.org", "date": "2012-08-01T09:14:03.574451", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         otu_table = parse_biom_table_str(otu_table)
         converted_otu_table = longitudinal_otu_table_conversion_wrapper(\
             otu_table, category_mapping, 'individual', 'timepoint_zero')
-        output = test_wrapper('correlation', converted_otu_table,\
+        output = test_wrapper('pearson', converted_otu_table,\
             category_mapping, category='timepoint', threshold=None, filt=0.1,\
             ignore_val=999999999.0, otu_table_relative_abundance=True)
         self.assertEqual(len(output), 5)
-        output = test_wrapper('correlation', converted_otu_table,\
+        output = test_wrapper('pearson', converted_otu_table,\
             category_mapping, category='timepoint', threshold=None, filt=0.6,\
             ignore_val=999999999.0, otu_table_relative_abundance=True)
         self.assertEqual(len(output), 3)
