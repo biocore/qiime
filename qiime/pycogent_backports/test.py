@@ -415,6 +415,157 @@ def kruskal_wallis(data):
 
 ## End functions for kruskal_wallis test
 
+### Start functions for Kendall tau
+def get_group_ranks(v1, v2):
+    """Calculate the Kendall tau using method 3a from Sokal and Rohlf, pg. 594
+    """
+    group_ranks = []
+    if len(v1) != len(v2):
+        raise ValueError, "Lists not equal lengths, cannot proceed with Kendall tau"
+    
+    # for each input group, calculate ranking of values within that group
+    # append ranking results, adjusted for ties, to group_ranks list
+    data = []
+    data.append(v1)
+    data.append(v2)
+    for group in data:
+        group = array(group)
+        ssl, ssr, sx = ssl_ssr_sx(group)
+        start = 0
+        stop = 0
+        tot = 0
+        stop += len(group)
+        # To average the ranks for tied entries we compute leftmost rank of 
+        # value i, minus rightmost rank of value i (and divide by 2). Since 
+        # python indexes to 0, ssl ranks are 1 lower than they shoud be (i.e.
+        # the smallest value has rank 0 instead of 1). The +1 below corrects for
+        # this and .5 averages. 
+        ranks = (ssr[start:stop]+ssl[start:stop]+1)*.5
+        group_ranks.append(ranks)
+        tot+=(ranks.sum()**2)/float(len(group))
+        start += len(group)
+
+    #sort both groups while maintaining pairwise order, such that group[0] is
+    #sorted from high to low, and the corresponding vals in group[1] are paired up
+    group_1_sorted, group_2_sorted = zip(*sorted(zip(group_ranks[0],group_ranks[1])))
+    return group_1_sorted, group_2_sorted
+
+def compute_rank_count(v1, v2):
+    """Computes the sum of counts (Ci) as per method 3a in Sokal & Rohlf, pg 594,
+    for use in calculating Kendall tau.
+
+    Example: for list = [1,2,5,3,4]
+    For the first rank 1, there are 4 ranks after which are greater
+    For the second rank 2, there are 3 ranks after which are greater
+    For the third rank 5, there are 0 ranks after which are greater,...
+    Ci = 4 + 3 + 0 + 1 + 0 = 8
+    (ties get a value of 1/2 added instead of 1)
+
+    Input: data is a list containing lists of ranks (the output from get_group_ranks)
+    These two lists must be 1-D and the same length.
+
+    Output: group_C_sum = the summed Ci for each group
+    n = the number of observations in each group
+    """
+    data = []
+    data.append(v1)
+    data.append(v2)
+
+    group_C = []
+    ties = []
+    for group in data:
+        n = len(group)
+        group_counts = []
+        
+        # walk through every rank, comparing each rank to remaining ranks
+        for i,rank in enumerate(group):
+            count = 0
+            curr_rank = rank
+            for r in group[i+1:]:
+                # if next rank is greater than current rank, add 1 to count
+                if r > curr_rank:
+                    count += 1
+                # if next rank is a tie, add 1/2 to count
+                if r == curr_rank:
+                    count += 0.5
+            group_counts.append(count)
+        group_C.append(group_counts)
+
+    # find the number of ties, T, and report it for each group
+    for group in data:
+        group = array(group)
+        group.sort()
+        ux = unique(group)
+        uxl = searchsorted(group, ux, 'left')
+        uxr = searchsorted(group, ux, 'right')
+        x = uxr - uxl
+        T = (x*(x-1)).sum()
+        ties.append(T)
+
+    # sum the counts of ranks, so each group is left with a single value
+    group_C_sum = []
+    for x in group_C:
+        x = array(x)
+        group_C_sum.append(x.sum())
+    return group_C_sum, n, ties
+
+def calc_kendall_statistic(group_C_sum, n, ties):
+    """Calculate Kendall tau from group rank sums and sample size
+
+    N (count of ranks) is defined as: N = 4*Ci - n(n-1)
+    where n = sample size (observations per group), and Ci is the sum of the
+    count of ranks determined in compute_rank_count
+
+    tau = N / sqrt([n(n-1) - sum(T1)][n(n-1)- sum(T2)])
+    where T1 is the sum of the number of ties in group 1
+    and T2 is the sum of the number of ties in group 2
+
+    When there are no ties, tau reduces to tau = N / n(n-1)
+
+    For large sample sizes, n > 40, the test statistic is approx. normally
+    distributed and is calculated by:
+    ts = tau / (sqrt(2(2n+5)/(9n(n-1))))
+    """
+    N1 = 4 * group_C_sum[0] - n * (n-1)
+    N2 = 4 * group_C_sum[1] - n * (n-1)
+
+    # only calculating tau on second group, since the first will be perfectly
+    # correlated with itself
+    tau = (N2) / (sqrt((n * (n - 1) - ties[0]) * (n * (n-1) - ties[1])))
+
+    # calc test statistic (ts)
+    numerator = 2*(2*n + 5)
+    denominator = 9*n * (n-1)
+    ts = tau / sqrt(numerator/denominator)
+    return tau, ts
+
+def new_kendall_tau(v1, v2, force_normal=True):
+    """Returns Kendall tau and probability
+    Null hypothesis is that tau == 0
+    Assumes two tailed test by default (in using zprob function)
+    Normal approximation only good when sample sizes are greater than 40, otherwise
+    a special table has to be used, by default the script will force the normal approx
+    calc even if n < 40 (for testing purposes)
+
+    Input: two lists of data, must be same size
+    Output: Kendall tau, probability
+    """
+    # check that the lengths are equal, and sample size > 40 for normal approximation
+    if len(v1) != len(v2):
+        raise ValueError, "Lists are not of equal length, cannot proceed"
+    if force_normal is False:
+        if len(v1) or len(v2) < 40:
+            raise ValueError, "Not enough observations to calculate tau based on normal approximation"
+
+    # calculate kendall tau
+    sorted_rank1, sorted_rank2 = get_group_ranks(v1, v2)
+    group_C_sum, n, ties = compute_rank_count(sorted_rank1, sorted_rank2)
+    tau, ts = calc_kendall_statistic(group_C_sum, n, ties)
+    prob = zprob(ts)
+    return tau, prob
+
+##### End functions for Kendall Tau
+
 def likelihoods(d_given_h, priors):
     """Calculate likelihoods through marginalization, given Pr(D|H) and priors.
 
@@ -1747,71 +1898,6 @@ def _flatten_lower_triangle(matrix):
                     flattened.append(matrix[row_num][col_num])
     return flattened
 
-def kendall_correlation(x, y, alt="two sided", exact=None, warn=True,
-    return_p=False):
-    """returns the statistic (tau) and probability from Kendall's non-parametric
-    test of association that tau==0. Uses the large sample approximation when
-    len(x) >= 50 or when there are ties, otherwise it computes the probability
-    exactly.
-    
-    Based on the algorithm implemented in R v2.5
-    
-    Arguments:
-        - alt: the alternate hypothesis (greater, less, two sided)
-        - exact: when False, forces use of the large sample approximation
-          (normal distribution). Not allowed for len(x) >= 50.
-        - warn: whether to warn about tied values
-
-    # needs to be changed to avoid calculating p if the return_p is false
-    """
-    
-    assert len(x) == len(y), "data (x, y) not of same length"
-    assert len(x) > 2, "not enough observations"
-    
-    # possible alternate hypotheses arguments
-    lo = ["less", "lo", "lower", "l", "lt"]
-    hi = ["greater", "hi", "high", "h", "g", "gt"]
-    two = ["two sided", "2", 2, "two tailed", "two", "two.sided", "ts"]
-    
-    ties = False
-    num = len(x)
-    ties = len(set(x)) != num or len(set(y)) != num
-    if ties and warn:
-        warnings.warn("Tied values, using normal approximation")
-    
-    if not ties and num < 50:
-        exact = True
-    
-    if num < 50 and not ties and exact:
-        combs = int(num * (num-1) / 2)
-        working = []
-        for i in range(combs):
-            row = [-1 for j in range(combs)]
-            working.append(row)
-        
-        tau = kendalls_tau(x, y, False)
-        q = round((tau+1)*num*(num-1) / 4)
-        if alt in two:
-            if q > num * (num - 1) / 4:
-                p = 1 - pkendall(q-1, num, Gamma(num+1), working)
-            else:
-                p = pkendall(q, num, Gamma(num+1), working)
-            p = min(2*p, 1)
-        elif alt in hi:
-            p = 1 - pkendall(q-1, num, Gamma(num+1), working)
-        elif alt in lo:
-            p = pkendall(q, num, Gamma(num+1), working)
-    else:
-        tau, p = kendalls_tau(x, y, True)
-        if alt in hi:
-            p /= 2
-        elif alt in lo:
-            p = 1 - p/2
-    if return_p:
-        return tau, p
-    else:
-        return tau
-
 ## Start functions for distance_matrix_permutation_test
 
 def distance_matrix_permutation_test(matrix, cells, cells2=None,\
@@ -1952,5 +2038,4 @@ def bonferroni_correction(pvals):
 
     In short: multiply all pvals by the number of comparisons."""
     return array(pvals)*len(pvals)
-
 
