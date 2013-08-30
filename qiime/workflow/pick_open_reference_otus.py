@@ -653,6 +653,13 @@ def pick_subsampled_open_reference_otus(input_fp,
     step1_pick_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
      (step1_otu_map_fp, step1_repset_fasta_fp, input_fp)
     commands.append([('Pick rep set',step1_pick_rep_set_cmd)])
+
+    # Call the command handler on the list of commands
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=False)
+    commands = []
     
     ## Subsample the failures fasta file to retain (roughly) the
     ## percent_subsample
@@ -661,6 +668,10 @@ def pick_subsampled_open_reference_otus(input_fp,
     subsample_fasta(step1_failures_fasta_fp,
                     step2_input_fasta_fp,
                     percent_subsample)
+
+    logger.write('# Subsample the failures fasta file using API \n' + 
+          'subsample_fasta(%s, %s, %s)\n\n' % (step1_failures_fasta_fp,
+              step2_input_fasta_fp, percent_subsample))
     
     ## Prep the OTU picking command for the subsampled failures
     step2_dir = '%s/step2_otus/' % output_dir
@@ -742,6 +753,10 @@ def pick_subsampled_open_reference_otus(input_fp,
     # Filter singletons from the otu map
     otu_no_singletons_fp = '%s/final_otu_map_mc%d.txt' % (output_dir,min_otu_size)
     otus_to_keep = filter_otus_from_otu_map(otu_fp,otu_no_singletons_fp,min_otu_size)
+
+    logger.write('# Filter singletons from the otu map using API \n' + 
+          'filter_otus_from_otu_map(%s, %s, %s)\n\n' % (otu_fp,
+              otu_no_singletons_fp, min_otu_size))
     
     ## make the final representative seqs file and a new refseqs file that 
     ## could be used in subsequent otu picking runs.
@@ -761,10 +776,14 @@ def pick_subsampled_open_reference_otus(input_fp,
     for otu_id, seq in MinimalFastaParser(open(step1_repset_fasta_fp,'U')):
             if otu_id.split()[0] in otus_to_keep:
                 final_repset_f.write('>%s\n%s\n' % (otu_id,seq))
+    logger.write('# Write non-singleton otus representative sequences ' + 
+      'from step1 to the final rep set file: %s\n\n' % final_repset_fp)
     # copy the full input refseqs file to the new refseqs_fp
     copy(refseqs_fp,new_refseqs_fp)
     new_refseqs_f = open(new_refseqs_fp,'a')
     new_refseqs_f.write('\n')
+    logger.write('# Copy the full input refseqs file to the new refseq file\n' +
+          'cp %s %s\n\n' % (refseqs_fp, new_refseqs_fp))
     # iterate over all representative sequences from step2 and step4 and write 
     # those corresponding to non-singleton otus to the final representative set
     # file and the new reference sequences file.
@@ -779,6 +798,9 @@ def pick_subsampled_open_reference_otus(input_fp,
                 final_repset_f.write('>%s\n%s\n' % (otu_id,seq))
     new_refseqs_f.close()
     final_repset_f.close()
+    logger.write('# Write non-singleton otus representative sequences from ' +
+      'step 2 and step 4 to the final representative set and the new reference'+
+      ' set (%s and %s respectivelly)\n\n' % (final_repset_fp, new_refseqs_fp))
     
     # Prep the make_otu_table.py command
     otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir,min_otu_size)
