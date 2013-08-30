@@ -16,10 +16,12 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack, isnan, inf, nan
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
-    pearson, spearman, G_fit, ANOVA_one_way, 
-    kruskal_wallis, mw_test, mw_boot, t_paired, mc_t_two_sample, t_two_sample)
+    pearson, spearman, G_fit, ANOVA_one_way, fisher_population_correlation,
+    kruskal_wallis, mw_test, mw_boot, t_paired, mc_t_two_sample, t_two_sample,
+    fisher)
 from qiime.util import biom_taxonomy_formatter
 from cogent.maths.stats.kendall import kendalls_tau
+
 """
 Library for test_group_significance.py and test_gradient_correlation.py. 
 The code in this library is based around two central frameworks. For the group
@@ -186,49 +188,49 @@ def longitudinal_row_generator(bt, pmf, category, hsid_to_samples,
     return ((array([row[v] for k,v in hsid_to_sample_indices.items()]),l_arr) \
         for row in data)
 
-def run_longitudinal_correlation_test(data_generator, test, test_choices, 
-    permuations):
+def run_longitudinal_correlation_test(data_generator, test, test_choices):
     """Run longitudinal correlation test."""
-    test_stats = []
+    rs, combo_pvals, combo_rhos, homogenous = [], [], [], []
     for obs_vals, gradient_vals in data_generator:
-        test_stats_i = []
+        rs_i, pvals_i = [], []
         for i in range(len(obs_vals)):
-            # Kendalls Tau is currently implemented in a way that will cause it
-            # to fail unpleasantly if it recieves an all zero vector.
-            if (obs_vals[i]==0).all() or (gradient_vals[i]==0).all():
-                test_stat = nan
-                np_pval = nan
-            else:
-                test_stat = test_choices[test](obs_vals[i], gradient_vals[i])
-                np_pval = nonparametric_correlation_significance(test_stat, 
-                    test_choices[test], obs_vals[i], gradient_vals[i], 
-                    permutations)
+            r = test_choices[test](obs_vals[i], gradient_vals[i])
+            rs_i.append(r)
+            pval = parametric_correlation_significance(r, len(obs_vals[i]))
+            pvals_i.append(pval)
+        # append to values for all individuals
+        rs.append(rs_i)
+        # compute fisher stats
+        combo_pvals.append(fisher(pvals_i))
+        sample_sizes = [len(vals) for vals in obs_vals]
+        fisher_rho, h = fisher_population_correlation(rs[-1], sample_sizes)
+        combo_rhos.append(fisher_rho)
+        homogenous.append(h)
 
-            #test_stats_i.append(
-        #test_stats.append(test_stats_i)
-        # conduct non-parametric pvalue calculation
+    return rs, combo_pvals, combo_rhos, homogenous
 
-    return test_stats
-
-
-def longitudinal_correlation_formatter(bt, test_stats, hsid_to_samples):
+def longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, homogenous, 
+    fdr_ps, bon_ps, corrcoefs, hsid_to_samples):
     """Format output from longitudinal tests to be written.
 
     Inputs are biom table, list of test statistics, dict of {hsid:sample id}.
     """
-    header = ['OTU', 'Individual Order', 'Fisher Correlation', 'Fisher P-value',
-        'FDR Fisher P-value', 'Bonferroni Fisher P-value', 'Corrcoefs', 
-        'P-values']
+    ind_order = ', '.join(hsid_to_samples.keys())
+    header = ['OTU', 'Fisher Combined Rho', 'P Rho is Homogenous', 
+        'Fisher Combined P', 'FDR P', 'Bonferroni P', 'Corrcoefs', 
+        'Individual Order']
     # find out if bt came with taxonomy. this could be improved
     if bt.ObservationMetadata is None:
         include_taxonomy = False
     else:
         include_taxonomy = True
         header += ['Taxonomy']
-    num_lines = len(test_stats)
+    num_lines = len(combo_rhos)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.ObservationIds[i]]+[k for k in test_stats[i]]
+        tmp = [bt.ObservationIds[i], combo_rhos[i], homogenous[i], 
+            combo_pvals[i], fdr_ps[i],  bon_ps[i], ', '.join(map(str,
+            corrcoefs[i])), ind_order]
         if include_taxonomy:
             tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
@@ -243,7 +245,7 @@ def correlation_row_generator(bt, pmf, category, ref_samples=None):
      cat_sam_indices - dict, output of get_sample_indices.
     """
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    if ref_sample is not None:
+    if ref_samples is not None:
         # user passed a ref sample to adjust all the other sample OTU values
         # we subtract the reference sample from all data as Cathy did in the 
         # original implementation. 
@@ -264,6 +266,7 @@ def run_correlation_test(data_generator, test, test_choices):
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
     test_fn = test_choices[test]
     for row in data_generator:
+        disp_row+=1
         # kendalls tau calculates its own paramteric p value
         if test == 'kendall':
             test_stat, p = test_fn(row[0], row[1], return_p=True)
@@ -271,7 +274,7 @@ def run_correlation_test(data_generator, test, test_choices):
         else: # spearman, pearson executed here
             test_stat = test_fn(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
-        
+
         np_pval = nonparametric_correlation_significance(test_stat, test_fn, 
             row[0], row[1])
         ci_low, ci_high = fisher_confidence_intervals(test_stat,len(row[0]))

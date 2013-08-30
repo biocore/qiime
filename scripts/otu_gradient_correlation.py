@@ -22,7 +22,8 @@ from qiime.otu_significance import (sort_by_pval, run_correlation_test,
     CORRELATION_TEST_CHOICES, paired_t_generator, run_paired_t, 
     paired_t_output_formatter, longitudinal_row_generator,
     run_longitudinal_correlation_test, longitudinal_correlation_formatter, 
-    CORRELATION_TEST_CHOICES)
+    CORRELATION_TEST_CHOICES, get_sample_cats, get_cat_sample_groups, 
+    get_sample_indices)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
@@ -125,7 +126,9 @@ script_info['optional_options']=[
         help='Pass a paired sample map as described in help to test with a '+\
             'paired_t_two_sample test. Overrides all other options. A '+\
             'paired sample map must be two columns without header that are '+\
-            'tab separated. Each row contains samples which should be paired.')]
+            'tab separated. Each row contains samples which should be paired.'),
+    make_option('--permutations', default=1000, type=int, 
+        help='Number of permutations to use for bootstrapped tests.')]
 
 script_info['version'] = __version__
 
@@ -164,12 +167,18 @@ def main():
         hsid_to_sample_indices = get_sample_indices(hsid_to_samples, bt)
         data_feed = longitudinal_row_generator(bt, pmf, opts.category, 
             hsid_to_samples, hsid_to_sample_indices)
-        test_stats = run_longitudinal_correlation_test(data_feed, opts.test,
-            CORRELATION_TEST_CHOICES)
-        lines = longitudinal_correlation_formatter(bt, test_stats, 
-            hsid_to_samples)
-        # no sorting to do given that we have a bunch of correlation values and 
-        # don't know which to sort on
+        rs, combo_pvals, combo_rhos, homogenous = \
+            run_longitudinal_correlation_test(data_feed, opts.test, 
+                CORRELATION_TEST_CHOICES)
+        # make corrections
+        fdr_ps = array(benjamini_hochberg_step_down(combo_pvals))
+        fdr_ps = where(fdr_ps>1.0, 1.0, fdr_ps)
+        bon_ps = array(bonferroni_correction(combo_pvals))
+        bon_ps = where(bon_ps>1.0, 1.0, bon_ps)
+        lines = longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, 
+            homogenous, fdr_ps, bon_ps, rs, hsid_to_samples)
+        # arange by fdr_ps
+        lines = sort_by_pval(lines, 4)
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
         o.close()
@@ -177,7 +186,7 @@ def main():
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
         pmf, bt = sync_biom_and_mf(pmf, bt)
         data_feed = correlation_row_generator(bt, pmf, opts.category, 
-            opts.ref_sample)
+            opts.individual_column)
         corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
             run_correlation_test(data_feed, opts.test, CORRELATION_TEST_CHOICES)
         # calculate corrected pvals for both parametric and non-parametric 
