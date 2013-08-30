@@ -17,9 +17,8 @@ from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
         median as _median, zeros, ones, unique, copy, searchsorted, var, 
-        argsort, hstack, arange, empty, logical_or, isnan, e)
+        argsort, hstack, arange, empty)
         #, std - currently incorrect
-from numpy.ma import masked_array
 from numpy.random import permutation, randint, shuffle
 #from cogent.maths.stats.util import Numbers
 from operator import add
@@ -1250,44 +1249,6 @@ def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
             ci_low, ci_high = test_stat, test_stat
     return ci_low, ci_high
 
-def fisher_z_transform(r):
-    """Calculate the Fisher Z transform of a correlation coefficient.
-
-    Relies on formulation in Sokal and Rohlf Biometry pg 575.
-    """
-    return .5*log((1.+r)/(1.-r))
-
-def inverse_fisher_z_transform(z):
-    """Calculate the inverse of the Fisher Z transform on a z value.
-
-    Relies on formulation in Sokal and Rohlf Biometry pg 576.
-    """
-    return ((e**(2*z))-1.)/((e**(2*z))+1.)
-
-def fisher_population_correlation(corrcoefs, sample_sizes):
-    """Calculate population rho, homogeneity from corrcoefs using Z transform.
-
-    Exclude pvals of nan. 
-    """
-    rs = array(corrcoefs)
-    ns = array(sample_sizes)
-    # make checks for nans and exclude them as they will cause things to break
-    rs = rs[~isnan(rs)]
-    ns = ns[~isnan(rs)]
-    if not (ns > 3).all():
-        print 'fisher_population_correlation: not all samples '+\
-            'have size > 3 which causes 0 varaince estimation. returning nan.'
-        return nan, nan
-    # calculate zs
-    zs = fisher_z_transform(rs)
-    # calculate variance weighted z average = z_bar
-    z_bar = (zs*(ns-3)).sum()/float((ns-3).sum())
-    rho = inverse_fisher_z_transform(z_bar)
-    # calculate homogeneity
-    x_2 = ((ns-3)*(zs-z_bar)).sum()
-    h_val = chisqprob(x_2, len(ns)-1)
-    return rho, h_val
-
 def correlation_matrix(series, as_rows=True):
     """Returns pairwise correlations between each pair of series.
     """
@@ -1495,14 +1456,12 @@ def multiple_n(p_initial, p_final):
 def fisher(probs):
     """Uses Fisher's method to combine multiple tests of a hypothesis.
 
-    Exclude consideration of pvals which are nan or 0.0 because these will cause
-    numeric errors and are outside the domain of the function. 
-
     -2 * SUM(ln(P)) gives chi-squared distribution with 2n degrees of freedom.
     """
-    tmp = array(probs)
-    chi_val = log(tmp[~logical_or(isnan(tmp), tmp==0)]).sum()
-    return chi_high(-2.*chi_val, 2*tmp.size)
+    try:
+        return chi_high(-2 * sum(map(log, probs)), 2 * len(probs))
+    except OverflowError, e:
+        return 0.0 
 
 def f_value(a,b):
     """Returns the num df, the denom df, and the F value.
