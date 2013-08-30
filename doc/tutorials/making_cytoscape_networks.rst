@@ -89,7 +89,7 @@ Formating and coloring your network
 
 
 	11. If you want to do anything more “custom”, you need to play around with your node and edge tables. For example, how can we color the otus that are shared between the Control and Fasting groups a different color than the otus that belong to just one treatment group? To do this, we can:
-		a. Convert your biom table to a classic otu table using convert_biom.py
+		a. Convert your biom table to a classic otu table using the ``biom convert`` command
 		b. Copy out all the OTU Ids seen in your study
 		c. Open up your real_edge_table.txt in Excel
 		d. Make a new excel sheet that contains where column A represents the OTUs seen in the Control group, column B represents the samples in Fasting group. In column C put your entire list of OTUs taken from the otu_table.txt. You can now use the COUNTIF function in Excel to find if each OTU is present in either the Control group only, the Fasting group only, or in both. With this information, make a new column in your real_node_table.txt where you label each OTU based on it being shared or not_shared, and each sample based on being a Control or Fasting sample. Now you can click on Node Color and color each individually. Here, we can see that the shared OTUs are colored yellow, and the not_shared OTUs are colored pink.

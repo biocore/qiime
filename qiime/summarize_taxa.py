@@ -50,7 +50,7 @@ def make_summary(otu_table, level, upper_percentage=0.0, lower_percentage=1.0,
     if otu_table.ObservationMetadata is None:
         raise ValueError("BIOM table does not contain any observation "
                          "metadata (e.g., taxonomy). You can add metadata to "
-                         "it using add_metadata.py.")
+                         "it using the 'biom add-metadata' command.")
 
     collapse_fn = _make_collapse_fn(level, md_identifier, md_as_string,
                                     delimiter=delimiter,

@@ -13,7 +13,7 @@ rm -rf split_library_output ; split_libraries.py -m Fasting_Map.txt -f Fasting_E
 echo "Pick OTUs through OTU table"
 rm -rf otus ; pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus
 
-#print_biom_table_summary.py -i otus/otu_table.biom
+#biom summarize-table -i otus/otu_table.biom -o otus/otu_table_summary.txt
 
 #OTU Heatmap
 echo "OTU Heatmap"

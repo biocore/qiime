@@ -79,7 +79,7 @@ Collapsing functions for computation of beta diversity
 One thing that can be useful in comparing samples is to collapse genes by their metadata categories so, for example, all counts of genes in the same level 3 EC category are collapsed to a single category, and then compute beta diversity. This gives a coarser view of the data by collapsing related genes to observations of functions (rather than observations of specific genes). This can be achieved with the following steps::
 
 	summarize_taxa.py -i blat_mapped/observation_table.biom -o blat_mapped/ko_tables/ -L 2,3,4 -a
-	convert_biom.py -i blat_mapped/ko_tables/observation_table_L3.txt -o blat_mapped/ko_tables/observation_table_L3.biom --biom_table_type "function table"
+	biom convert -i blat_mapped/ko_tables/observation_table_L3.txt -o blat_mapped/ko_tables/observation_table_L3.biom --table-type "function table"
 	beta_diversity_through_plots.py -i blat_mapped/ko_tables/observation_table_L3.biom -e 2159 -o blat_mapped/bdiv_l3_even2159/ -p shotgun_bdiv_params.txt -m map.txt
 
 Generating summaries of samples by KO category

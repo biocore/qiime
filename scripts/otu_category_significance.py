@@ -53,7 +53,7 @@ output will then contain an individual results file that
 is written for each summarized taxa table. Note for QIIME 1.6: the input  
 directory that you pass to this script must contain biom tables. Thus, you 
 might need to convert your summarized taxa tables that are in the classic OTU 
-table form to biom tables using the convert_biom.py script. 
+table form to biom tables using the 'biom convert' command.
 
 If you run multiple_rarefactions_even_depth.py on your OTU table, you may 
 want to run otu_category_significance on each table and then collate the results 
