@@ -50,7 +50,7 @@ prefix_mapping.txt: This file contains the actual clusters. The cluster centroid
 
 script_info['required_options']=[\
 
-    make_option('-i','--input_file', action='store',
+    make_option('-i','--input_files', action='store',
                 type='existing_filepaths', dest='sff_fps',
                 help='path to flowgram files (.sff.txt), '+
                 'comma separated')
@@ -84,10 +84,7 @@ script_info['version'] = __version__
 
 def main(commandline_args=None):
     parser, opts, args = parse_command_line_parameters(**script_info)
-     
-    if not opts.sff_fps:
-        parser.error('Required option flowgram file path (-i) not specified')
-    
+         
     #make tmp and output dir
     tmp_dir = get_tmp_filename(tmp_dir = opts.output_dir+"/", suffix="/")
     try:
@@ -105,7 +102,7 @@ def main(commandline_args=None):
     if opts.verbose:
         #append to the log file of the master process
         log_fh = open(opts.output_dir+"/"+opts.log_fp, "a", 0)
-        log_fh.write("SFF file: %s\n" % opts.sff_fps)
+        log_fh.write("SFF files: %s" % ', '.join(opts.sff_fps))
         log_fh.write("Fasta file: %s\n" % opts.fasta_fp)
         log_fh.write("Output dir: %s\n" % opts.output_dir)
         log_fh.write("Squeeze Seqs: %s\n" % opts.squeeze)

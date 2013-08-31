@@ -571,7 +571,7 @@ def denoise_seqs(sff_fps, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False
 
     if verbose:
         log_fh.write("Denoiser version: %s\n" % __version__)
-        log_fh.write("SFF files: %s\n" % sff_fps)
+        log_fh.write("SFF files: %s\n" % ', '.join(sff_fps))
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Preprocess dir: %s\n" % preprocess_fp)
         if checkpoint_fp:
@@ -668,7 +668,7 @@ def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
 
     if verbose:
         log_fh.write("Denoiser version: %s\n" % __version__)
-        log_fh.write("SFF files: %s\n" % sff_fps)
+        log_fh.write("SFF files: %s\n" % ', '.join(sff_fps))
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Cluster: %s\n" % cluster)
         log_fh.write("Num CPUs: %d\n" % num_cpus)

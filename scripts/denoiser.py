@@ -75,7 +75,7 @@ Note that the centroids and singleton files are disjoint. For most downstream an
 
 script_info['required_options']=[\
 
-    make_option('-i','--input_file', action='store',
+    make_option('-i','--input_files', action='store',
                 type='existing_filepaths', dest='sff_fps',
                 help='path to flowgram files (.sff.txt), '+
                 'comma separated')
@@ -196,12 +196,6 @@ script_info['version'] = __version__
 
 def main(commandline_args=None):
     parser, opts, args = parse_command_line_parameters(**script_info)
-
-    sff_files = opts.sff_fps
-    for f in sff_files:
-        if (not exists(f)):
-            option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
-                                 'Pass a valid one via -i.')% f)
 
     if(opts.checkpoint_fp):
         bp_fp = opts.checkpoint_fp
