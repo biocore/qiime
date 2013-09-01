@@ -417,11 +417,16 @@ def kruskal_wallis(data):
 
 ### Start functions for Kendall tau
 def get_group_ranks(v1, v2):
-    """Calculate the Kendall tau using method 3a from Sokal and Rohlf, pg. 594
+    """Takes two input lists, sorts them, determines ranks, and returns sorted
+    ranks.
+
+    Returns two lists, one is sorted high to low, the other is sorted pairwise
+    against that list.
     """
     group_ranks = []
-    if len(v1) != len(v2):
-        raise ValueError, "Lists not equal lengths, cannot proceed with Kendall tau"
+    assert len(v1) == len(v2), "Lists not equal lengths, cannot proceed with Kendall tau"
+    assert len(set(v1)) != 1, "Cannot calc Kendall tau on a dataset with a single repeated value"
+    assert len(set(v2)) != 1, "Cannot calc Kendall tau on a dataset with a single repeated value"
     
     # for each input group, calculate ranking of values within that group
     # append ranking results, adjusted for ties, to group_ranks list
@@ -526,13 +531,12 @@ def calc_kendall_statistic(group_C_sum, n, ties):
     distributed and is calculated by:
     ts = tau / (sqrt(2(2n+5)/(9n(n-1))))
     """
-    N1 = 4 * group_C_sum[0] - n * (n-1)
+    #N1 = 4 * group_C_sum[0] - n * (n-1)
     N2 = 4 * group_C_sum[1] - n * (n-1)
-
     # only calculating tau on second group, since the first will be perfectly
     # correlated with itself
     tau = (N2) / (sqrt((n * (n - 1) - ties[0]) * (n * (n-1) - ties[1])))
-
+    
     # calc test statistic (ts)
     numerator = 2*(2*n + 5)
     denominator = 9*n * (n-1)
@@ -551,11 +555,11 @@ def new_kendall_tau(v1, v2, force_normal=True):
     Output: Kendall tau, probability
     """
     # check that the lengths are equal, and sample size > 40 for normal approximation
-    if len(v1) != len(v2):
-        raise ValueError, "Lists are not of equal length, cannot proceed"
-    if force_normal is False:
-        if len(v1) or len(v2) < 40:
-            raise ValueError, "Not enough observations to calculate tau based on normal approximation"
+    # if len(v1) != len(v2):
+    #     raise ValueError, "Lists are not of equal length, cannot proceed"
+    # if force_normal is False:
+    #     if len(v1) or len(v2) < 40:
+    #         raise ValueError, "Not enough observations to calculate tau based on normal approximation"
 
     # calculate kendall tau
     sorted_rank1, sorted_rank2 = get_group_ranks(v1, v2)
