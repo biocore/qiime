@@ -22,10 +22,7 @@ from qiime.util import (get_qiime_scripts_dir,
 import shutil
 import StringIO
 
-class TestFizzy(TestCase):
-	"""
-		docstring for TestFizzy
-	"""
+class FizzyTests(TestCase):
 
 	def setUp(self):
 		"""
@@ -58,9 +55,7 @@ class TestFizzy(TestCase):
 			implementing feature selection methods that are in 
 			a predefined list. 
 		"""
-		self.assertEqual(information_theoretic_methods, 
-			fizzy.get_fs_methods())
-		return None 
+		self.assertEqual(fizzy.get_fs_methods(), information_theoretic_methods)
 
 	def test_parse_biom(self):
 		"""
@@ -75,7 +70,6 @@ class TestFizzy(TestCase):
 		parsed_biom = fizzy.parse_biom(biom_file_handle)
 		self.assertEqual(correct_biom, parsed_biom)
 			
-		return None 
 	
 	def test_parse_map_file(self):
 		"""
@@ -87,8 +81,7 @@ class TestFizzy(TestCase):
 		map_file_handle = StringIO.StringIO(map_file_string)
 		parsed_map = fizzy.parse_map_file(map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
 
-		self.assertEqual(correct_map, parsed_map)
-		return None 
+		self.assertEqual(parsed_map, correct_map)
 
 	def uniform_data(self, n_observations, n_features, n_select):
 		""" Generate some uniform data to use for test_pyfeast_run """
@@ -130,21 +123,16 @@ class TestFizzy(TestCase):
 			if k != selected_features[k]:
 				self.assertEqual(True, k in range(n_select))
 
-		return None 
 
 	def test_write_output_file(self):
 		"""
-			wrtie a temporary file to 
+			write a temporary file to 
 		"""
 		fizzy.write_output_file("test",self.test_out + "/test.txt")
 		self.assertEqual(open(self.test_out + "/test.txt").read().replace("\n","").split(),
 			["test"])
-		return None 
 
-	def test_run_feature_selection(self):
-		"""
-		"""
-  
+	def test_run_feature_selection(self):  
 		map_file_handle = StringIO.StringIO(map_file_string)
 		biom_file_handle = StringIO.StringIO(biom_file_string)
 		column_name = "Class"
@@ -152,7 +140,6 @@ class TestFizzy(TestCase):
 		fizzy.run_feature_selection(biom_file_handle, map_file_handle, column_name, self.test_out + "/fs_test", n_select=3)
 		self.assertEqual(open(self.test_out + "/fs_test").read().replace("\n"," ").split(),['OTU0', "OTU1", "OTU3"])
 
-		return None 
 
 		
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
