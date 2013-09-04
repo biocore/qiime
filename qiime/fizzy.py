@@ -65,14 +65,19 @@ def parse_map_file(fname, column_name, observation_names):
 
 	# grab the class labels which are likely to be in string 
 	# format. 
+
 	for id_set in observation_names:
-		try:
-			label_full.append(obj[id_set][column_name])
-		except ValueError:
-			raise ValueError(""" 
-				Unknown column name in map file. Make sure the column 
-				you specified is in the map file you specified.""")
-			
+		if(id_set not in obj):
+			raise ValueError("""Unknown observation name supplied. Make sure that the
+			observation name is in map file you specified""")
+
+	for id_set in observation_names:
+		if(column_name not in obj[id_set]):
+			raise ValueError("""Unknown observation name supplied. Make sure that the
+			observation name is in map file you specified""")
+
+	for id_set in observation_names:
+		label_full.append(obj[id_set][column_name])
 
 	# now that we have the full class labels we need to determine
 	# the number of unique classes in the the data. if the number of
