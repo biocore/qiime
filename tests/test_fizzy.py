@@ -105,7 +105,7 @@ class FizzyTests(TestCase):
 				else:
 					labels[m] = 2
 		data = data.transpose()
- 		return data, labels
+		return data, labels
 
 	def test_run_pyfeast(self):
 		"""
