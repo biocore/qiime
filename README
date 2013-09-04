@@ -6,3 +6,62 @@ The definitive source for information on QIIME is the QIIME website at `http://w
 :Download: via GitHub at `https://github.com/qiime/qiime <https://github.com/qiime/qiime>`_.
 
 :Registration: To be informed of bugs, new releases, and new features subscribe to the QIIME blog at `http://qiime.wordpress.com <http://qiime.wordpress.com>`_.
+
+Dependencies
+------------
+
+QIIME requires Python_ 2.7.3, Numpy_ 1.5.1, and PyCogent_ 1.5.3. 
+
+Required
+^^^^^^^^
+
+- Python_: the language the toolkit is primarily written in, and in which the user writes control scripts.
+- Numpy_: This is a python module used for speeding up matrix computations. It is available as source code for \*nix.
+- PyCogent_: the Python Comparative Genomics Toolkit, a library containing core objects commonly used in Bioinformatics applications, wrappers for external applications (e.g., blast), and a lot more.
+
+Note: On some linux platforms (like Ubuntu), you must specifically install a ``python-dev`` package so that the Python_ header files required for building some external dependencies are available.
+
+Documentation
+^^^^^^^^^^^^^
+
+Installation instructions, a tutorial, and documentation
+--------------------------------------------------------
+
+Installation notes, a tutorial, and documentation is provided at `http://www.qiime.org <http://www.qiime.org>`_.
+
+Testing
+-------
+
+``QIIME/tests`` contains all the tests. You can most readily run the tests using the ``QIIME/tests/all_tests.py`` shell script. This is done by typing:
+
+::
+    
+    $ python Qiime/tests/all_tests.py
+
+Note that if certain optional applications are not installed this will be indicated in the output as test fails beginning with ``ApplicationNotFoundError``.
+
+Tips for use
+^^^^^^^^^^^^
+
+All QIIME scripts provide usage information when called with their -h option. This should be the first place to look for information about how to interact with QIIME's scripts. For example, to learn about how QIIME's pick_otus.py script works, call:
+
+::
+    
+    $ pick_otus.py -h	
+
+.. _Python: http://www.python.org
+.. _BLAST: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/
+.. _PyCogent: http://www.pycogent.org
+.. _Cython: http://www.cython.org/
+.. _Numpy: http://numpy.scipy.org/
+.. _Matplotlib: http://matplotlib.sourceforge.net
+.. _Apple: http://www.apple.com
+.. _Pyrex: http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/
+.. _`editors go here`: http://www.python.org/cgi-bin/moinmoin/PythonEditors
+.. _mpi4py: http://code.google.com/p/mpi4py
+.. _`restructured text`: http://docutils.sourceforge.net/rst.html
+.. _gcc: http://gcc.gnu.org/
+.. _SQLAlchemy: http://www.sqlalchemy.org
+.. _`MySQL-python`: http://sourceforge.net/projects/mysql-python
+.. _zlib: http://www.zlib.net/
+.. _`compiling matplotlib`: http://bioinformatics.anu.edu.au/groups/huttleylab/wiki/da9fe/Building_matplotlib_for_Snow_Leopard.html
