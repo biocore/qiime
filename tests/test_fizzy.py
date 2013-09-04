@@ -29,6 +29,9 @@ class FizzyTests(TestCase):
 			setup function defined by the bioler plate qiime 
 			test functions. 
 		"""
+		self.biom_file_handle = StringIO.StringIO(biom_file_string)
+		self.map_file_handle = StringIO.StringIO(map_file_string)
+
 		self.dirs_to_remove = []
 		self.files_to_remove = []
 
@@ -66,8 +69,7 @@ class FizzyTests(TestCase):
 
 		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
 
-		biom_file_handle = StringIO.StringIO(biom_file_string)
-		parsed_biom = fizzy.parse_biom(biom_file_handle)
+		parsed_biom = fizzy.parse_biom(self.biom_file_handle)
 		self.assertEqual(correct_biom, parsed_biom)
 			
 	
@@ -133,11 +135,9 @@ class FizzyTests(TestCase):
 			["test"])
 
 	def test_run_feature_selection(self):  
-		map_file_handle = StringIO.StringIO(map_file_string)
-		biom_file_handle = StringIO.StringIO(biom_file_string)
 		column_name = "Class"
 
-		fizzy.run_feature_selection(biom_file_handle, map_file_handle, column_name, self.test_out + "/fs_test", n_select=3)
+		fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, self.test_out + "/fs_test", n_select=3)
 		self.assertEqual(open(self.test_out + "/fs_test").read().replace("\n"," ").split(),['OTU0', "OTU1", "OTU3"])
 
 
