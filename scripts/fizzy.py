@@ -6,7 +6,7 @@ import qiime.fizzy as fizzy
 
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Gregory Ditzler","Calvin Morrison","Gail Rosen"]
+__credits__ = ["Gregory Ditzler", "Calvin Morrison","Gail Rosen"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Gregory Ditzler"
@@ -38,6 +38,10 @@ script_info['output_description']= """Text file containing the top features
 # that we can set some default parameters to run a feature selection 
 # algorithm.
 script_info['required_options'] = [
+	make_option('-c',
+		'--column_label',
+		type="string",
+		help='column indicating the labels in the mapping file.'),
 	make_option('-i', 
 		'--input_path',
 		type="existing_filepath",
@@ -46,17 +50,13 @@ script_info['required_options'] = [
 		'--map_path',
 		type="existing_filepath",
 		help='mapping file with labeling scheme'),
-	make_option('-c',
-		'--column_label',
-		type="string",
-		help='column indicating the labels in the mapping file.')
-]
-script_info['optional_options'] = [
 	make_option('-o',
 		'--output_path',
 		type="new_filepath",
-		help='the output directory [default: %default]',
-		default='output.txt'),
+		help='the output file [default: %default]',
+		default='output.txt')
+]
+script_info['optional_options'] = [
 	make_option('-k',
 		'--n_select',
 		type="int",
