@@ -91,7 +91,7 @@ def parse_map_file(fname, column_name, observation_names):
 			map file that was specified.""")
 
 	for str_lab in label_full:
-		for uclass,n in map(None, unique_classes, range(len(unique_classes))):
+		for uclass,n in enumerate(unique_classes):
 			if str_lab == uclass:
 				labels.append(float(n))
 				break
