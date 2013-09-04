@@ -125,6 +125,10 @@ class FizzyTests(TestCase):
 			if k != selected_features[k]:
 				self.assertTrue(k in range(n_select))
 
+	def test_run_pyfeast_invalid(self):
+		"""test the run_pyfeast function with an invalid algorithm name"""
+
+ 		self.assertRaises(AttributeError, fizzy.run_pyfeast, None, None, None, "An Invalid Name", None)
 
 	def test_write_output_file(self):
 		"""
