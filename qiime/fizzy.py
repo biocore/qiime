@@ -2,6 +2,8 @@
 # File created on 02 May 2013
 from __future__ import division
 from cogent.app.util import ApplicationNotFoundError
+from biom.parse import parse_biom_table
+from qiime.parse import parse_mapping_file_to_dict
 import numpy
 
 
@@ -36,7 +38,6 @@ def parse_biom(fname):
 		@observation_names (return) - names of the samples in the 
 			database found in fname. 
 	"""
-	from biom.parse import parse_biom_table
 	biom_table = parse_biom_table(fname)
 	observation_names = list(biom_table.SampleIds)
 	variable_names = list(biom_table.ObservationIds)
@@ -58,7 +59,6 @@ def parse_map_file(fname, column_name, observation_names):
 			of which the samples appear in the data set. 
 		@labels - numpy array of class labels
 	"""
-	from qiime.parse import parse_mapping_file_to_dict
 	obj, comm = parse_mapping_file_to_dict(fname)
 	label_full = []
 	labels = []
