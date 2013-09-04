@@ -123,7 +123,7 @@ class FizzyTests(TestCase):
 
 		for k in range(n_select):
 			if k != selected_features[k]:
-				self.assertEqual(True, k in range(n_select))
+				self.assertTrue(k in range(n_select))
 
 
 	def test_write_output_file(self):
