@@ -16,19 +16,24 @@ __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option,get_options_lookup,create_dir
-from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_mapping_file
-from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
-        format_summarize_taxa, format_add_taxa_summary_mapping
+from qiime.format import write_add_taxa_summary_mapping, format_biom_table
 from os.path import split,splitext,join
 from biom.parse import parse_biom_table
+from qiime.summarize_taxa import (make_summary, add_summary_mapping,
+                                  ONE_TO_MANY_TYPES)
 
 options_lookup = get_options_lookup()
 
+# Define the upper/lower percentage defaults here so that we can check whether
+# the user supplied -u/-l on the command line with -m (which is not supported).
+lower_percentage_default = 1.0
+upper_percentage_default = 0.0
+
 script_info={}
 script_info['brief_description']="""Summarize taxa and store results in a new table or appended to an existing mapping file."""
-script_info['script_description']="""The summarize_taxa.py script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.
+script_info['script_description']="""The summarize_taxa.py script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. This OTU table should contain absolute abundances (not relative abundances). The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.
 
 By default, taxa summary tables will be output in both classic (tab-separated) and BIOM formats. The BIOM-formatted taxa summary tables can be used as input to other QIIME scripts that accept BIOM files.
 """
@@ -43,7 +48,8 @@ script_info['output_description']="""There are two possible output formats depen
 
 script_info['required_options']= [\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',
-        help='Input OTU table filepath [REQUIRED]',
+        help='Input OTU table filepath. Table should contain absolute '
+        'abundances (i.e. raw counts), not relative abundances [REQUIRED]',
         type='existing_filepath'),
 ]
 script_info['optional_options'] = [\
@@ -58,27 +64,64 @@ script_info['optional_options'] = [\
     make_option('--md_identifier',default='taxonomy', type='string',
              help='the relevant observation metadata key [default: %default]'),
     make_option('--md_as_string',default=False,action='store_true',
-             help='metadata is included as string [default: metadata is included as list]'),
+             help='metadata is included as a string. The string will be split '
+             'on the delimiter and used as one-to-one metadata (see '
+             '-M/--one_to_many for more details) [default: metadata is '
+             'included as a list of strings or a list of list of strings]'),
     make_option('-d','--delimiter',action='store',type='string',
         dest='delimiter',default=';', 
         help='Delimiter separating taxonomy levels. [default: %default]'),
-    make_option('-r', '--relative_abundance', action='store',\
-        dest='relative_abundance', default='', \
-        help='DEPRECATED: please use -a/--absolute_abundance to disable ' +\
-        'relative abundance [default: %default]'),
+    make_option('-M', '--one_to_many', type='choice',
+        choices=ONE_TO_MANY_TYPES, default='first',
+        help='the method of handling one-to-many relationships with metadata. '
+        'If an observation (e.g., OTU) has more than one piece of metadata '
+        'associated with it (identified via --md_identifier; e.g., multiple '
+        'taxonomy assignments or gene pathways), this is a one-to-many '
+        'relationship between the observation and its metadata. If "first" is '
+        'supplied via this option, only the first piece of metadata (e.g., '
+        'the first gene pathway) is used to summarize/collapse the '
+        'observations, and all other pieces of metadata are ignored (this is '
+        'the default behavior). If "add" is supplied via this option, the '
+        'resulting summarized table will have the observation abundances '
+        'counted for each of the pieces of metadata. This has the side effect '
+        'of increasing the total count of observations in the table. '
+        'If "divide" is supplied via this option, the observation abundances '
+        'are divided evenly between each of the pieces of metadata. The total '
+        'count of observations in the table will not be increased when this '
+        'mode is used. One-to-many relationships will exist if the metadata '
+        'is stored as a list of list of strings, where each inner list of '
+        'strings is a single piece of metadata (e.g. taxonomy assignment or '
+        'gene pathway). If the metadata is instead a list of strings, or the '
+        'nested list only contains a single piece of metadata, this indicates '
+        'a one-to-one relationship. Note that one-to-many and one-to-one '
+        'relationships may both exist within a single BIOM table, as some '
+        'observations may only be associated with a single piece of metadata '
+        'while others may be associated with many. Therefore, this option '
+        'only specifies how to handle one-to-many relationships and does not '
+        'affect how one-to-one relationships are handled [default: %default]'),
     make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
         help='If present, the absolute abundance of the lineage in ' +\
         ' each sample is reported. By default, this script uses relative' +\
         ' abundance [default: %default]'),
-    make_option('-l', '--lower_percentage', type='float', default=None, \
-        help='If present, OTUs having higher absolute abundance are' +\
-        ' trimmed. To remove OTUs that make up more than 5% of the total' +\
-        ' dataset you would pass 0.05. [default: %default]'),
-    make_option('-u', '--upper_percentage', type='float', default=None, \
-        help='If present, OTUs having lower absolute abundance are' +\
-        ' trimmed. To remove the OTUs that makes up less than 45% of the' +\
-        ' total dataset you would pass 0.45. [default: %default]'),
+    make_option('-l', '--lower_percentage', type='float', default=None,
+        help='If present, taxa having higher *absolute* abundance are '
+        'trimmed. IMPORTANT: these taxa will be trimmed based on *absolute '
+        'abundance*. Thus, if -a/--absolute_abundance is not provided (the '
+        'default), the taxa will be trimmed *before* the table is converted '
+        'into relative abundances (so the relative abundance calculation will '
+        'only consider the remaining taxa that were *not* trimmed). For '
+        'example, to remove taxa that make up more than 5% of the total '
+        'dataset you would pass 0.05. [default: no taxa are trimmed]'),
+    make_option('-u', '--upper_percentage', type='float', default=None,
+        help='If present, taxa having lower *absolute* abundance are '
+        'trimmed. IMPORTANT: these taxa will be trimmed based on *absolute '
+        'abundance*. Thus, if -a/--absolute_abundance is not provided (the '
+        'default), the taxa will be trimmed *before* the table is converted '
+        'into relative abundances (so the relative abundance calculation will '
+        'only consider the remaining taxa that were *not* trimmed). For '
+        'example, to remove taxa that make up less than 45% of the total '
+        'dataset you would pass 0.45. [default: no taxa are trimmed]'),
     make_option('-t', '--transposed_output', action='store_true',\
         dest='transposed_output', default=False, \
         help='If present, the output will be written transposed from' +\
@@ -99,10 +142,9 @@ script_info['option_label']={'otu_table_fp':'OTU table filepath',
                              'mapping':'QIIME-formatted mapping filepath',
                              'level':'Summarize level',
                              'delimiter': 'Taxonomic delimiter',
-                             'relative_abundance':'Use relative abundance',
                              'absolute_abundance':'Use absolute abundance',
-                             'lower_percentage':'Top % of OTUs to remove',
-                             'upper_percentage':'Bottom % of OTUs to remove'}
+                             'lower_percentage':'Top % of taxa to remove',
+                             'upper_percentage':'Bottom % of taxa to remove'}
 
 script_info['version'] = __version__
 
@@ -122,18 +164,21 @@ def main():
     suppress_classic_table_output = opts.suppress_classic_table_output
     suppress_biom_table_output = opts.suppress_biom_table_output
 
-    if upper_percentage!=None and lower_percentage!=None:
-        raise ValueError("upper_percentage and lower_percentage are mutually exclusive")
+    if (upper_percentage is not None or lower_percentage is not None) and \
+            mapping_fp:
+        raise ValueError("upper_percentage and lower_percentage cannot be used with mapping file")
+
+    if upper_percentage is None:
+        upper_percentage = upper_percentage_default
+    if lower_percentage is None:
+        lower_percentage = lower_percentage_default
+
+    if upper_percentage < 0 or upper_percentage > 1.0:
+        raise ValueError('upper_percentage should be between 0.0 and 1.0')
     
-    if upper_percentage!=None and lower_percentage!=None and mapping:
-        raise ValueError("upper_percentage and lower_percentage can not be using with mapping file")
-        
-    if upper_percentage!=None and (upper_percentage<0 or upper_percentage>1.0):
-        raise ValueError('max_otu_percentage should be between 0.0 and 1.0')
-    
-    if lower_percentage!=None and (lower_percentage<0 or lower_percentage>1.0):
+    if lower_percentage < 0 or lower_percentage > 1.0:
         raise ValueError('lower_percentage should be between 0.0 and 1.0')
-        
+
     if mapping_fp:
         mapping_file = open(mapping_fp, 'U')
         mapping, header, comments = parse_mapping_file(mapping_file)
@@ -145,12 +190,6 @@ def main():
         if suppress_classic_table_output and suppress_biom_table_output:
             option_parser.error("Both classic and BIOM output formats were "
                                 "suppressed.")
-
-    if opts.relative_abundance != '':
-        option_parser.error("Deprecated. Please use --absolute_abundances to disable relative abundance")
-
-    if not opts.absolute_abundance:
-        otu_table = otu_table.normObservationBySample()
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:
@@ -168,36 +207,46 @@ def main():
         if mapping_fp:
             #define output filename
             output_fname = join(output_dir_path,
-                                        map_basename+'_L%s.txt' % (level))
-                                        
+                                map_basename+'_L%s.txt' % (level))
+
             summary, tax_order = add_summary_mapping(otu_table, 
-                                                     mapping,
-                                                     int(level),
-                                                     md_as_string,
-                                                     md_identifier)
-                                                     
+                    mapping, int(level), md_as_string, md_identifier,
+                    delimiter=delimiter, one_to_many=opts.one_to_many,
+                    absolute_abundance=opts.absolute_abundance)
+
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
-                                            header,output_fname,delimiter)
+                                           header,output_fname)
         else:
             # define the output filename. The extension will be added to the
             # end depending on the output format
             output_fname = join(output_dir_path, basename + '_L%s' % level)
 
-            summary, header = make_summary(otu_table,
-                                           int(level),
-                                           upper_percentage,
-                                           lower_percentage,
-                                           md_as_string,
-                                           md_identifier)
+            ts_table = make_summary(otu_table,
+                                    int(level),
+                                    upper_percentage,
+                                    lower_percentage,
+                                    md_as_string,
+                                    md_identifier,
+                                    delimiter=delimiter,
+                                    one_to_many=opts.one_to_many,
+                                    absolute_abundance=opts.absolute_abundance)
+
+            if opts.transposed_output:
+                ts_table = ts_table.transpose()
+                obs_col_name = 'SampleID'
+            else:
+                obs_col_name = 'Taxon'
 
             if not suppress_classic_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.txt',
-                                     delimiter, opts.transposed_output,
-                                     file_format='classic')
+                classic_table_str = ts_table.delimitedSelf(
+                        observation_column_name=obs_col_name)
+                with open(output_fname + '.txt', 'w') as output_f:
+                    output_f.write(classic_table_str)
+                    output_f.write('\n')
+
             if not suppress_biom_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.biom',
-                                     delimiter, opts.transposed_output,
-                                     file_format='biom')
+                with open(output_fname + '.biom', 'w') as output_f:
+                    output_f.write(format_biom_table(ts_table))
 
 
 if __name__ == "__main__":

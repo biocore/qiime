@@ -26,6 +26,7 @@ from qiime.pycogent_backports.test import calc_contingency_expected, \
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
+from qiime.util import get_first_metadata_entry
 from biom.exception import TableException
 
 """Look for OTUs that are associated with a category. Currently can do:
@@ -542,7 +543,7 @@ def get_taxonomy_info(otu_table):
         otu_table.ObservationMetadata[0]['taxonomy'] is not None):
         for obs_id, obs_metadata in zip(otu_table.ObservationIds,
                                         otu_table.ObservationMetadata):
-            curr_tax = obs_metadata['taxonomy']
+            curr_tax = get_first_metadata_entry(obs_metadata['taxonomy'])
             taxonomy_info[obs_id] = '; '.join(curr_tax)
     return taxonomy_info
 

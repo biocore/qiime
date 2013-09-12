@@ -19,7 +19,8 @@ from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
-from qiime.util import get_qiime_library_version, load_qiime_config
+from qiime.util import (get_first_metadata_entry, get_qiime_library_version,
+                        load_qiime_config)
 from qiime.colors import data_color_hsv
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
@@ -84,64 +85,8 @@ def format_qiime_parameters(params, header="#QIIME parameters"):
             qiime_params.append(full_line)
     return qiime_params
 
-def format_summarize_taxa(summary, header, delimiter=';',
-                          file_format='classic'):
-    """Formats a summarized taxonomy table for output"""
-    if file_format == 'classic':
-        yield "%s\n" % '\t'.join(header)
-        for row in summary:
-            # taxon is tuple, join together for foo;bar;foobar
-            taxon = row[0]
-            line = [delimiter.join(taxon)]
-
-            # add on otu counts
-            line.extend(map(str, row[1:]))
-
-            yield "%s\n" % '\t'.join(line)
-    elif file_format == 'biom':
-        # Skip 'Taxon' or 'SampleId' label in first column.
-        sample_ids = header[1:]
-
-        observation_ids = []
-        data = []
-        for row in summary:
-            # Join taxonomic levels to create an observation ID.
-            observation_ids.append(delimiter.join(row[0]))
-            data.append(row[1:])
-
-        table = table_factory(asarray(data), sample_ids, observation_ids,
-                              constructor=SparseTaxonTable)
-        yield format_biom_table(table)
-    else:
-        raise ValueError("Invalid file format '%s'. Must be either 'classic' "
-                         "or 'biom'." % file_format)
- 
-def write_summarize_taxa(summary, header, output_fp, delimiter=';',
-                         transposed_output=False, file_format='classic'):
-    """ """
-    # Fixing headers
-    pattern = compile('\W')
-    header = [sub(pattern, '.', label) for label in header]
-
-    if transposed_output:
-         # transposing the summary
-         summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
-         # adding the first column into the new summary matrix
-         for i in range(1,len(summary)):
-             summary[i] = [([header[i]])] + summary[i]
-         # replacing header and trimming summary
-         header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
-         summary = summary[1:]
-    
-    with open(output_fp,'w') as of:
-        for line in format_summarize_taxa(summary, header, delimiter,
-                                          file_format=file_format):
-            of.write(line)
-
-def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
-        delimiter=';'):
+def format_add_taxa_summary_mapping(summary, tax_order, mapping, header):
     """Formats a summarized taxonomy with mapping information"""
-    tax_order = [delimiter.join(tax) for tax in tax_order]
     header.extend(tax_order)
     yield "#%s\n" % '\t'.join(header)
 
@@ -156,12 +101,12 @@ def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
         row.extend(map(str, summary[sample_id]))
         yield "%s\n" % '\t'.join(row)
 
-def write_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
-        output_fp, delimiter=';'):
+def write_add_taxa_summary_mapping(summary, tax_order, mapping, header,
+                                   output_fp):
     """ """
     of = open(output_fp,'w')
-    for line in format_add_taxa_summary_mapping(summary, tax_order, mapping, \
-                                                header, delimiter):
+    for line in format_add_taxa_summary_mapping(summary, tax_order, mapping,
+                                                header):
         of.write(line)
     of.close()
 
@@ -844,7 +789,14 @@ def format_te_prefs(prefs_dict):
 
 def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines, 
                           prefs_dict):
-    """ Format the tep file for TopiaryExplorer """
+    """ Format the tep file for TopiaryExplorer
+    
+    If the taxonomy metadata in ``otu_table_data`` is a list of lists of
+    strings (instead of a list of strings denoting taxonomic level), only the
+    first list of strings will be used to represent the metadata
+    (e.g., taxonomy) for the observation. The other entries in the list will be
+    ignored.
+    """
     
     # write tree file lines
     lines = ['>>tre\n']
@@ -856,7 +808,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
         for i in range(len(otu_table_data.ObservationIds)):
             new_string = otu_table_data.ObservationIds[i] + '\t'
-            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
+            for m in get_first_metadata_entry(
+                    otu_table_data.ObservationMetadata[i]['taxonomy']):
                 new_string += m + ';'
             lines += [new_string]
             lines += '\n'
@@ -867,8 +820,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
         lines += [str(otu_table_data.delimitedSelf())]
     elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
         lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy", 
-                                       header_value="Consensus Lineage",
-                                       metadata_formatter=lambda x: ';'.join(x)))]
+                header_value="Consensus Lineage", metadata_formatter=lambda x:
+                        ';'.join(get_first_metadata_entry(x))))]
     
     # write mapping file lines
     lines += ['\n>>sam\n']

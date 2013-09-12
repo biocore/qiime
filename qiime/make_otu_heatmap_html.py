@@ -16,7 +16,7 @@ from numpy import array,concatenate,asarray,transpose,log,invert,asarray,\
     float32,float64, minimum, inf
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
-from qiime.util import MissingFileError
+from qiime.util import get_first_metadata_entry, MissingFileError
 import os
 from qiime.filter import filter_otus_from_otu_table
 from biom.parse import parse_biom_table
@@ -161,8 +161,8 @@ def create_javascript_array(otu_table, use_floats=False):
     js_array.append("OTU_table[%i][0]='Consensus Lineage';\n" % last_idx)
     i = 1
     for (otu_val, otu_id, meta) in otu_table.iterObservations():
-        js_array.append("OTU_table[%i][%i]='%s';\n" %
-                        (last_idx, i, ";".join(meta['taxonomy']).strip('"')))
+        js_array.append("OTU_table[%i][%i]='%s';\n" % (last_idx, i,
+            ";".join(get_first_metadata_entry(meta['taxonomy'])).strip('"')))
         i += 1
 
     return ''.join(js_array)
