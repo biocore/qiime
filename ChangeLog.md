@@ -1,7 +1,7 @@
 QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
 * Added a feature (e.g., OTU) selection script, fizzy.py.
-* PyFeast v1.0 is now an (optional) QIIME dependency. (https://github.com/EESI/PyFeast/releases/v1.0/) 
+* [PyFeast](https://github.com/EESI/PyFeast/releases/v1.0/) v1.0 is now an (optional) QIIME dependency.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
