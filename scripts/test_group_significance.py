@@ -161,7 +161,7 @@ script_info['required_options']=[
 
 script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=GROUP_TEST_CHOICES.keys(),
-        default='ANOVA', help='Test to use. Choices are:\n%s' % \
+        default='kruskal_wallis', help='Test to use. Choices are:\n%s' % \
          (', '.join(GROUP_TEST_CHOICES.keys()))+'\n\t' + '[default: %default]'),
     make_option('--verbose_off', action='store_true', default='False', 
         help='Don\'t print info about samples or OTUs excluded because they are not '+\

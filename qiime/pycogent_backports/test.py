@@ -1417,12 +1417,14 @@ def ANOVA_one_way(a):
 
     # Get within Group variances (denominator)
     dfd = num_cases - len(group_means)
+    # need to add a check -- if the sum of the group variances is zero it will 
+    # error, but only if the between_Groups value is not zero
     within_Groups = sum(group_variances) / dfd
-
+    if within_Groups == 0.:
+        return nan, nan
     # Get between Group variances (numerator)
     all_vals = array(all_vals)
     grand_mean = all_vals.mean()
-
     between_Groups = 0
     for i in a:
         diff = i.mean() - grand_mean
@@ -1966,6 +1968,8 @@ def fdr_correction(pvals):
     In short: ranks the p-values in ascending order and multiplies each p-value 
     by the number of comparisons divided by the rank of the p-value in the 
     sorted list. Input is list of floats.
+
+    Does *not* assume pvals is sorted.
     """
     tmp = array(pvals)
     return tmp*tmp.size/(1.+argsort(argsort(tmp)).astype(float))
@@ -1976,6 +1980,8 @@ def benjamini_hochberg_step_down(pvals):
     In short, compute  the fdr adjusted pvals (ap_i's), and working from
     the largest to smallest, compare ap_i to ap_i-1. If ap_i < ap_i-1 set ap_i-1
     equal to ap_i. 
+
+    Does *not* assume pvals is sorted
     """
     tmp = fdr_correction(pvals)
     corrected_vals = empty(len(pvals))
