@@ -85,10 +85,14 @@ def main():
 		open(opts.input_path,'U'), 
 		open(opts.map_path,'U'), 
 		opts.column_label, 
-		opts.output_path, 
 		opts.fs_method, 
 		opts.n_select)
 
+
+	f = open(opts.output_path, 'w')
+	for sf in selected_features:
+		f.write(sf + '\n')
+	f.close()
 
 if __name__ == "__main__":
 	main()

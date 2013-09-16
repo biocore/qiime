@@ -32,26 +32,6 @@ class FizzyTests(TestCase):
 		self.biom_file_handle = StringIO.StringIO(biom_file_string)
 		self.map_file_handle = StringIO.StringIO(map_file_string)
 
-		self.dirs_to_remove = []
-		self.files_to_remove = []
-
-		tmp_dir = get_qiime_temp_dir()
-		self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-			prefix='qiime_parallel_tests_',
-			suffix='',
-			result_constructor=str)
-		self.dirs_to_remove.append(self.test_out)
-		create_dir(self.test_out)
-
-	def tearDown(self):
-		"""
-			tear down function defined by the bioler plate qiime 
-			test functions. 
-		"""
-		for d in self.dirs_to_remove:
-			if os.path.exists(d):
-				shutil.rmtree(d)
-	
 	def test_get_fs_methods(self):
 		"""
 			this test is going to make sure that we are only 
@@ -130,19 +110,11 @@ class FizzyTests(TestCase):
 
  		self.assertRaises(AttributeError, fizzy.run_pyfeast, None, None, None, "An Invalid Name", None)
 
-	def test_write_output_file(self):
-		"""
-			write a temporary file to 
-		"""
-		fizzy.write_output_file("test",self.test_out + "/test.txt")
-		self.assertEqual(open(self.test_out + "/test.txt").read().replace("\n","").split(),
-			["test"])
-
 	def test_run_feature_selection(self):  
 		column_name = "Class"
 
-		fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, self.test_out + "/fs_test", n_select=3)
-		self.assertEqual(open(self.test_out + "/fs_test").read().replace("\n"," ").split(),['OTU0', "OTU1", "OTU3"])
+		selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=3)
+		self.assertEqual(selected_features, ['OTU0', "OTU1", "OTU3"])
 
 
 		

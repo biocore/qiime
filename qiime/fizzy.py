@@ -137,18 +137,7 @@ def run_pyfeast(data, labels, features, method='MIM', n_select=15):
 	return reduced_set
 
 
-def write_output_file(selected_features, f_out):
-	"""
-		write_output_file(selected_features, f_out)
-		@selected_features - list of strings contaning feature names
-		@f_out - output file name. this is a string not a handle!
-	"""
-	f = open(f_out, 'w')
-	for sf in selected_features:
-		f.write(sf + '\n')
-	f.close()
-
-def run_feature_selection(file_biom, file_map, column_name, out_file, method='MIM', n_select=15):
+def run_feature_selection(file_biom, file_map, column_name, method='MIM', n_select=15):
 	"""
 		run_feature_selection(fname_biom, fname_csv, method)
 		@file_biom - handle of the biom file
@@ -162,4 +151,4 @@ def run_feature_selection(file_biom, file_map, column_name, out_file, method='MI
 	data_matrix, variable_names, observation_names = parse_biom(file_biom)
 	label_vector = parse_map_file(file_map, column_name, observation_names)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
-	write_output_file(reduced_set, out_file)
+	return(reduced_set)
