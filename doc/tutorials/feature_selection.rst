@@ -1,7 +1,7 @@
 .. _feature_selection:
 
 ========================
-Fizzy - Information Theoretic Feature Selection for Metagenomics
+Selecting Differentiating Features Using Fizzy
 ========================
 
 
