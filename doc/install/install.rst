@@ -100,7 +100,7 @@ If you plan to use SourceTracker with QIIME:
 
 If you plan to use the fizzy.py script in QIIME:
 
-* PyFeast (`src <http://github.com/mutantturkey/PyFeast>`_) (license: GPL)
+* PyFeast 1.0 (`src <https://github.com/EESI/PyFeast/releases/tag/v1.0>`_) (license: GPL)
 
 License information for external dependencies
 ---------------------------------------------
