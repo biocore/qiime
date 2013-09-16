@@ -11,7 +11,7 @@ from qiime.pycogent_backports.test import (tail, likelihoods,
     regress_major, f_value, f_two_sample, MonteCarloP, 
     regress_residuals, safe_sum_p_log_p, regress_origin, stdev_from_mean, 
     regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, 
-    pearson, spearman, _get_rank, kendall_correlation, std, median, 
+    pearson, spearman, _get_rank, std, median, 
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
     ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
 # G Test related imports
@@ -1442,80 +1442,6 @@ class KruskalWallisTests(TestCase):
         self.assertFloatEqual(kw_stat, 38.436807439)
         self.assertFloatEqual(pval, 9.105424085598766e-08)
 
-class KendallTests(TestCase):
-    """check accuracy of Kendall tests against values from R"""
-    
-    def do_test(self, x, y, alt_expecteds):
-        """conducts the tests for each alternate hypothesis against expecteds"""
-        for alt, exp_p, exp_tau in alt_expecteds:
-            tau, p_val = kendall_correlation(x, y, alt=alt, warn=False, 
-                return_p=True)
-            self.assertFloatEqual(tau, exp_tau, eps=1e-3)
-            self.assertFloatEqual(p_val, exp_p, eps=1e-3)
-    
-    def test_exact_calcs(self):
-        """calculations of exact probabilities should match R"""
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [["gt", 0.05972, 0.4444444],
-                     ["lt",  0.9624, 0.4444444],
-                     ["ts",  0.1194, 0.4444444]]
-        self.do_test(x,y,expecteds)
-    
-    def test_with_ties(self):
-        """tied values calculated from normal approx"""
-        # R example with ties in x
-        x = (44.4, 45.9, 41.9, 53.3, 44.4, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [#["gt", 0.05793, 0.4225771],
-                     ["lt", 0.942, 0.4225771],
-                     ["ts", 0.1159, 0.4225771]]
-        self.do_test(x,y,expecteds)
-        
-        # R example with ties in y
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.1,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [["gt", 0.03737, 0.4789207],
-                     ["lt",  0.9626, 0.4789207],
-                     ["ts", 0.07474, 0.4789207]]
-        self.do_test(x,y,expecteds)
-        # R example with ties in x and y
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 44.4, 60.1)
-        y = ( 2.6,  3.6,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds=[["gt", 0.02891, 0.5142857],
-                   ["lt",   0.971, 0.5142857],
-                   ["ts", 0.05782, 0.5142857]]
-        self.do_test(x,y,expecteds)
-    
-    def test_bigger_vectors(self):
-        """docstring for test_bigger_vectors"""
-        # q < expansion
-        x= (0.118583104633, 0.227860069338, 0.143856130991, 0.935362617582,
-            0.0471303856799, 0.659819202174, 0.739247965907, 0.268929000278,
-            0.848250568194, 0.307764819102, 0.733949480141, 0.271662210481,
-            0.155903098872)
-        y= (0.749762144455, 0.407571703468, 0.934176427266, 0.188638794706,
-            0.184844781493, 0.391485553856, 0.735504815302, 0.363655952442,
-            0.18489971978, 0.851075466765, 0.139932273818, 0.333675110224,
-            0.570250937033)
-        expecteds = [["gt", 0.9183, -0.2820513],
-                     ["lt", 0.1022, -0.2820513],
-                     ["ts", 0.2044, -0.2820513]]
-        self.do_test(x,y,expecteds)
-        # q > expansion
-        x= (0.2602556958, 0.441506392849, 0.930624643531, 0.728461775775,
-            0.234341774892, 0.725677256368, 0.354788882728, 0.475882541956,
-            0.347533553428, 0.608578046857, 0.144697962102, 0.784502692164,
-            0.872607603407)
-        y= (0.753056395718, 0.454332072011, 0.791882395707, 0.622853579015,
-            0.127030232518, 0.232086215578, 0.586604349918, 0.0139051260749,
-            0.579079370051, 0.0550643809812, 0.94798878249, 0.318410679439,
-            0.86725134615)
-        expecteds = [["gt", 0.4762, 0.02564103],
-                     ["lt", 0.5711, 0.02564103],
-                     ["ts", 0.9524, 0.02564103]]
-        self.do_test(x,y,expecteds)
-
 class TestDistMatrixPermutationTest(TestCase):
     """Tests of distance_matrix_permutation_test"""
 
@@ -1721,6 +1647,96 @@ class TestDistMatrixPermutationTest(TestCase):
         exp = pvals*5.
         obs = bonferroni_correction(pvals)
         self.assertFloatEqual(obs, exp)
+
+class Test_Kendall_tau(TestCase):
+    """Tests for functions calculating Kendall tau"""
+
+    def test_get_group_ranks(self):
+        """test get_group_ranks to return two sorted, ranked lists"""
+        d1 = [1,2,3,4,5]
+        d2 = [1,3,5,4,2]
+        exp1 = (1.0, 2.0, 3.0, 4.0, 5.0)
+        exp2 = (1.0, 3.0, 5.0, 4.0, 2.0)
+        res1, res2 = get_group_ranks(d1, d2)
+        self.assertEqual(res1, exp1)
+        self.assertEqual(res2, exp2)
+
+        # test when ranks results in ties
+        d1 = [2,2,4,4,6,6,8,8]
+        d2 = [1,2,3,4,5,6,7,8]
+        exp1 = (1.5, 1.5, 3.5, 3.5, 5.5, 5.5, 7.5, 7.5)
+        exp2 = (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
+        res1, res2 = get_group_ranks(d1,d2)
+        self.assertEqual(res1, exp1)
+        self.assertEqual(res2, exp2)
+
+        #test from pg. 594 Sokal and Rohlf, Box 15.7
+        d1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
+        d2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,6.30,6.03]
+        exp1 = (1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0)
+        exp2 = (2.0,1.0,13.0,5.0,3.0,4.0,12.0,9.0,10.0,6.5,6.5,8.0,14.0,11.0,15.0)
+        res1, res2 = get_group_ranks(d1,d2)
+        self.assertEqual(res1, exp1)
+        self.assertEqual(res2, exp2)
+
+        # lists not the same length, raise error
+        d1 = [1,1,1,1]
+        d2 = [2,2]
+        self.assertRaises(AssertionError, get_group_ranks, d1, d2)
+
+        # one list has no variance, aka all the same value, raise error
+        d1 = [0,0,0,0,0]
+        d2 = [2,4,6,8,10]
+        self.assertRaises(AssertionError, get_group_ranks, d1, d2)
+
+    def test_compute_rank_count(self):
+        """test compute_rank_count to return sum of counts"""
+        #test from pg. 594 Sokal and Rohlf, Box 15.7
+        s1 = (1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0)
+        s2 = (2.0,1.0,13.0,5.0,3.0,4.0,12.0,9.0,10.0,6.5,6.5,8.0,14.0,11.0,15.0)
+        exp_sums = [105, 78.5]
+        exp_n = 15
+        exp_ties = [0,2]
+        sums, n, ties = compute_rank_count(s1, s2)
+        self.assertEqual(sums,exp_sums)
+        self.assertEqual(n, exp_n)
+        self.assertEqual(ties,exp_ties)
+
+        s1 = [2,2,2,4]
+        s2 = [2,4,6,8]
+        exp_sums = [4.5, 6]
+        exp_n = 4
+        exp_ties = [6, 0]
+        sums, n, ties = compute_rank_count(s1, s2)
+        self.assertEqual(sums,exp_sums)
+        self.assertEqual(n, exp_n)
+        self.assertEqual(ties,exp_ties)
+
+    def test_calc_kendall_statistic(self):
+        """tests calc_kendall_statistic to return tau and test statistic"""
+
+        #test from pg. 594 Sokal and Rohlf, Box 15.7
+        #returns tau and test statistic (ts)
+        sums = [105, 78.5]
+        n = 15
+        ties = [0,2]
+        exp_tau = 0.49761335152811925
+        exp_ts = 2.5856748221140036
+        tau, p = calc_kendall_statistic(sums, n, ties)
+        self.assertFloatEqual(tau, exp_tau)
+        self.assertFloatEqual(p, exp_ts)
+
+    def test_new_kendall_tau(self):
+        """tests new kendall tau implamentation, returns tau, prob"""
+        #test from pg. 594 Sokal and Rohlf, Box 15.7
+        d1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
+        d2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,6.30,6.03]
+        exp_tau = 0.49761335152811925
+        exp_prob = 0.0097188572446995618
+        tau, prob = new_kendall_tau(d1, d2)
+        self.assertFloatEqual(tau, exp_tau)
+        self.assertFloatEqual(prob, exp_prob)
+
 
 #execute tests if called from command line
 if __name__ == '__main__':

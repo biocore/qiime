@@ -193,6 +193,7 @@ class TestGroupSignificanceFunctions(TestCase):
         self.assertFloatEqual(exp_means, obs_means)
 
         # test with parametric t test
+        # bt_1 agrees with Prism
         sample_indices = {'cat1': [4, 1, 2], 'cat2': [5, 0, 3]}
         row_gen = group_significance_row_generator(bt, sample_indices)
         exp_test_stats = [-1.0504514628777806, -0.94113003446934629,
