@@ -16,17 +16,17 @@ __status__ = "Development"
 
 script_info = {}
 script_info['brief_description'] = """Run feature selection on 
-  aubundance data contained in a Biom file."""
+  aubundance data contained in a BIOM file."""
 script_info['script_description'] ="""This script will run a 
 	feature selection algorithm on abundance data contained in a 
-	Biom file given a mapping file. The current feature selection methods uses a forward 
+	BIOM file given a mapping file. The current feature selection methods uses a forward 
 	search algorithm to select the features. The objective functions 
 	are based on information theory. At the moment, users are limited 
 	to the objective functions implemented in the PyFeast feature 
 	selection module. """
 script_info['script_usage'] = [(
-	"""Run JMI feature selection on a Biom file:""",
-	"""To perform feature selection the biom file, mapping file must 
+	"""Run JMI feature selection on a BIOM file:""",
+	"""To perform feature selection the BIOM file, mapping file must 
 	be specified in advance, and the label column in the mapping file. 
 	Here we use JMI and select 15 features. """,
 	"""%prog -i data.biom -m map.txt -c Class -f JMI -k 15""")]
@@ -45,7 +45,7 @@ script_info['required_options'] = [
 	make_option('-i', 
 		'--input_path',
 		type="existing_filepath",
-		help='input biome file'),
+		help='input biom file'),
 	make_option('-m',
 		'--map_path',
 		type="existing_filepath",
@@ -85,10 +85,14 @@ def main():
 		open(opts.input_path,'U'), 
 		open(opts.map_path,'U'), 
 		opts.column_label, 
-		opts.output_path, 
 		opts.fs_method, 
 		opts.n_select)
 
+
+	f = open(opts.output_path, 'w')
+	for sf in selected_features:
+		f.write(sf + '\n')
+	f.close()
 
 if __name__ == "__main__":
 	main()
