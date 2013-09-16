@@ -7,7 +7,7 @@ Fizzy - Information Theoretic Feature Selection for Metagenomics
 
 
 
-Extremely high dimensional data sets are quite common in metagenomic data sets. The biologists collecting and analyzing data need efﬁcient methods to determine relationships between classes in a data set and the variables that are capable of differentiating between multiple groups in a study. Feature selection is one such method to reduce the dimensionality of a data set, such that the remaining features provide the highest level differentation between the multiple groups in the study. 
+Extremely high dimensional data sets are quite common in metagenomic data sets. The biologists collecting and analyzing data need efﬁcient methods to determine relationships between classes in a data set and the variables that are capable of differentiating between multiple groups in a study. Feature selection is one such method to reduce the dimensionality of a data set, such that the remaining features provide the highest level of differentation between the multiple groups in the study. 
 
 The Fizzy tool implements information theoretic feature selection routines on metagenomic data. Feature selection is the process of selecting a subset of relevant features defining a prediction problem. The tool has been implemented to specifically handle data within the QIIME suite of tools. Fizzy implements the feature selection algorithms described by Brown et al. (2012). 
 
