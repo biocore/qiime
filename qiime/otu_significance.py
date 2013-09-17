@@ -16,8 +16,8 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack, isnan, inf, nan
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
-    pearson, spearman, G_fit, ANOVA_one_way, fisher_population_correlation,
-    kruskal_wallis, mw_test, mw_boot, t_paired, mc_t_two_sample, t_two_sample,
+    pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
+    mw_boot, t_paired, mc_t_two_sample, t_two_sample,
     fisher)
 from qiime.util import biom_taxonomy_formatter
 from cogent.maths.stats.kendall import kendalls_tau
