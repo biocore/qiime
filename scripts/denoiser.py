@@ -75,10 +75,10 @@ Note that the centroids and singleton files are disjoint. For most downstream an
 
 script_info['required_options']=[\
 
-    make_option('-i','--input_file',action='store',\
-                    type='string',dest='sff_fp',help='path to flowgram file. '+\
-                    'Separate several files by commas '+\
-                    '[REQUIRED]', default=None)
+    make_option('-i','--input_files', action='store',
+                type='existing_filepaths', dest='sff_fps',
+                help='path to flowgram files (.sff.txt), '+
+                'comma separated')
     ]
 
 script_info['optional_options']=[ \
@@ -197,12 +197,6 @@ script_info['version'] = __version__
 def main(commandline_args=None):
     parser, opts, args = parse_command_line_parameters(**script_info)
 
-    if not opts.sff_fp:
-        parser.error('Required option flowgram file path (-i) not specified')
-    elif not files_exist(opts.sff_fp):
-        parser.error('Flowgram file path does not exist:\n %s \n Pass a valid one via -i.'
-                     % opts.sff_fp)
-
     if(opts.checkpoint_fp):
         bp_fp = opts.checkpoint_fp
         if not exists(bp_fp):
@@ -210,7 +204,7 @@ def main(commandline_args=None):
 
     #peek into sff.txt files to make sure they are parseable
     #cat_sff_fles is lazy and only reads header
-    flowgrams, header = cat_sff_files(map(open, opts.sff_fp.split(',')))
+    flowgrams, header = cat_sff_files(map(open, opts.sff_fps))
     
     if(opts.split and opts.preprocess_fp):
         parser.error('Options --split and --preprocess_fp are exclusive')
@@ -243,13 +237,13 @@ def main(commandline_args=None):
     log_fp = 'denoiser.log'
     
     if opts.split:
-        denoise_per_sample(opts.sff_fp, opts.fasta_fp, tmpoutdir, opts.cluster,
+        denoise_per_sample(opts.sff_fps, opts.fasta_fp, tmpoutdir, opts.cluster,
                            opts.num_cpus, opts.squeeze, opts.percent_id, opts.bail,
                            opts.primer, opts.low_cutoff, opts.high_cutoff, log_fp,
                            opts.low_memory, opts.verbose, opts.error_profile, opts.max_num_iter,
                            opts.titanium)
     else:
-        denoise_seqs(opts.sff_fp, opts.fasta_fp, tmpoutdir, opts.preprocess_fp, opts.cluster,
+        denoise_seqs(opts.sff_fps, opts.fasta_fp, tmpoutdir, opts.preprocess_fp, opts.cluster,
                      opts.num_cpus, opts.squeeze, opts.percent_id, opts.bail, opts.primer,
                      opts.low_cutoff, opts.high_cutoff, log_fp, opts.low_memory,
                      opts.verbose, opts.error_profile, opts.max_num_iter, opts.titanium,

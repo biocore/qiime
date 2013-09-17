@@ -25,15 +25,15 @@ from cogent.parse.record import RecordError
 from qiime.util import load_qiime_config
 from qiime.denoiser.flowgram_clustering import denoise_seqs
 
-def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True,
+def fast_denoiser(sff_fps, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True,
                   titanium=False):
     """wrapper function calling methods from the Denoiser package."""
     if num_cpus>1:
-        denoise_seqs(sff_fp, fasta_fp, tmp_outdir,
+        denoise_seqs(sff_fps, fasta_fp, tmp_outdir,
                      primer=primer, cluster=True, num_cpus=num_cpus,
                      verbose=verbose, titanium=titanium)
     else:
-        denoise_seqs(sff_fp, fasta_fp, tmp_outdir, primer=primer,
+        denoise_seqs(sff_fps, fasta_fp, tmp_outdir, primer=primer,
                      verbose=verbose, titanium=titanium)
 
     #read centroids and singletons

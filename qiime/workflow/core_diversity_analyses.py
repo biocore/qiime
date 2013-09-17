@@ -21,7 +21,7 @@ from qiime.workflow.util import (print_to_stdout,
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -149,20 +149,20 @@ def run_core_diversity_analyses(
         input_fps.append(tree_fp)
     log_input_md5s(logger,input_fps)
 
-    # run print_biom_table_summary.py on input BIOM table
+    # run 'biom summarize-table' on input BIOM table
     try:
-        params_str = get_params_str(params['print_biom_table_summary'])
+        params_str = get_params_str(params['biom-summarize-table'])
     except KeyError:
         params_str = ''
     biom_table_stats_output_fp = '%s/biom_table_summary.txt' % output_dir
     if not exists(biom_table_stats_output_fp):
-        print_biom_table_summary_cmd = \
-         "print_biom_table_summary.py -i %s -o %s --suppress_md5 %s" % \
+        biom_table_summary_cmd = \
+         "biom summarize-table -i %s -o %s --suppress-md5 %s" % \
          (biom_fp, biom_table_stats_output_fp,params_str)
         commands.append([('Generate BIOM table summary',
-                          print_biom_table_summary_cmd)])
+                          biom_table_summary_cmd)])
     else:
-        logger.write("Skipping print_biom_table_summary.py as %s exists.\n\n" \
+        logger.write("Skipping 'biom summarize-table' as %s exists.\n\n" \
                      % biom_table_stats_output_fp)
     index_links.append(('BIOM table statistics',
                         biom_table_stats_output_fp,

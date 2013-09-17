@@ -363,7 +363,7 @@ class Qiime_config(TestCase):
             version_string))
 
     def test_matplotlib_suported_version(self):
-        """maptplotlib version is supported """
+        """matplotlib version is supported """
         #min_acceptable_version = (1,1,0)
         #min_unacceptable_version = (1,1,0)
         matplotlib_acceptable_version = (1,1,0)
