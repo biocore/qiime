@@ -524,11 +524,11 @@ def extract_per_individual_state_metadata_from_sample_metadata(
     returns {'metadata-category-1':
               {'individual-identifier-1':
                [difference-in-metadata-value-bw-states-2-and-1,
-               [difference-in-metadata-value-bw-states-3-and-2,
+                difference-in-metadata-value-bw-states-3-and-2,
                 ...],
                'individual-identifier-2:
                [difference-in-metadata-value-bw-states-2-and-1,
-               [difference-in-metadata-value-bw-states-3-and-2,
+                difference-in-metadata-value-bw-states-3-and-2,
                 ...],
                }
               ...
@@ -570,11 +570,11 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
     returns {'otu1':
               {'individual-identifier-1:
                [difference-in-otu1-abundance-bw-states-2-and-1,
-               [difference-in-otu1-abundance-bw-states-3-and-2,
+                difference-in-otu1-abundance-bw-states-3-and-2,
                 ...],
                'individual-identifier-2:
                [difference-in-otu1-abundance-bw-states-2-and-1,
-               [difference-in-otu1-abundance-bw-states-3-and-2,
+                difference-in-otu1-abundance-bw-states-3-and-2,
                 ...],
                }
               ...
