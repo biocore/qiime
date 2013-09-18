@@ -13,6 +13,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
+from collections import defaultdict
 from numpy import array
 from qiime.pycogent_backports.test import is_symmetric_and_hollow
 from qiime.parse import group_by_field
@@ -426,8 +427,12 @@ def extract_per_individual_states_from_sample_metadata(
               ...
              }
     """
+    # prep the result object, which will be a dict of lists
     len_state_values = len(state_values)
-    results = {}
+    def inner_dict_constructor():
+        return [None] * len_state_values
+    results = defaultdict(inner_dict_constructor)
+    
     for sample_id, metadata in sample_metadata.items():
         individual_id = metadata[individual_identifier_category]
         state_value = metadata[state_category]
@@ -437,15 +442,6 @@ def extract_per_individual_states_from_sample_metadata(
             # hit a state that is in the mapping file but not in 
             # state_values - this is silently ignored
             continue
-        
-        if individual_id not in results:
-            # our first observation for this individual_id, 
-            # so need to initiate the result data structure
-            results[individual_id] = [None] * len_state_values
-        else:
-            # we already have observations for this individual_id, 
-            # so don't need to initiate the result data structure
-            pass
         
         results[individual_id][state_index] = sample_id
         
