@@ -572,7 +572,8 @@ class GroupTests(TestCase):
                    individual_identifier_category="some-other-invalid-category")
 
     def test_extract_per_individual_state_metadatum_from_sample_metadata(self):
-        """ """
+        """extract_per_individual_state_metadatum_from_sample_metadata functions as expected
+        """
         veil_expected = {'001':[6.9,9.3],
                     '006':[4.2,5.1],
                     '007':[12.0,1.8],
@@ -635,6 +636,18 @@ class GroupTests(TestCase):
                    metadata_category="VeillonellaAbundance",
                    process_f=float)
         self.assertEqual(actual,expected)
+
+    def test_extract_per_individual_state_metadatum_from_sample_metadata_invalid(self):
+        """extract_per_individual_state_metadatum_from_sample_metadata handles invalid column header
+        """
+        self.assertRaises(KeyError,
+                   extract_per_individual_state_metadatum_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="some-non-existant-category",
+                   process_f=float)
 
     def test_extract_per_individual_state_metadata_from_sample_metadata_and_biom(self):
         """extract_per_individual_state_metadata_from_sample_metadata_and_biom functions as expected

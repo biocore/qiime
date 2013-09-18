@@ -502,7 +502,12 @@ def extract_per_individual_state_metadatum_from_sample_metadata(
         per_state_metadata_values = []
         for sample_id in sample_ids:
             try:
-                v = process_f(sample_metadata[sample_id][metadata_category])
+                sample_metadata_value = sample_metadata[sample_id][metadata_category]
+            except KeyError:
+                raise KeyError, \
+                 "%s is not a sample metadata category." % metadata_category
+            try:
+                v = process_f(sample_metadata_value)
             except ValueError, e:
                 v = None
             per_state_metadata_values.append(v)
