@@ -1698,11 +1698,11 @@ class PartialMantel(CorrelationStats):
         return res
 
 def paired_difference_analyses(personal_ids_to_state_values,
-                                   analysis_categories,
-                                   state_values,
-                                   output_dir,
-                                   ymin=None,
-                                   ymax=None):
+                               analysis_categories,
+                               state_values,
+                               output_dir,
+                               ymin=None,
+                               ymax=None):
     """run paired difference analysis one sample t-tests and generate plots
     
        Apply one-sample t-tests and generate plots to test for changes in
