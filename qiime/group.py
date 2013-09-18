@@ -478,7 +478,7 @@ def extract_per_individual_state_metadatum_from_sample_metadata(
     
     returns {'individual-identifier':
                [difference-in-metadata-value-bw-states-2-and-1,
-               [difference-in-metadata-value-bw-states-3-and-2,
+                difference-in-metadata-value-bw-states-3-and-2,
                 ...],
               ...
              }
