@@ -35,9 +35,9 @@ script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-m','--mapping_fp',type="existing_filepath",help='the input filepath'),
  make_option('-o','--output_dir',type="new_filepath",help='directory where output files should be saved'),
- make_option('--state_category',help='the mapping file column name to plot change over (usually has values like "pre-treatment" and "post-treatment")'),
- make_option('--state_values',help='ordered list of state values to test change over (defines direction of graphs, generally something like "pre-treatment,post-treatment"). currently limited to two states.'),
- make_option('--individual_id_category',help='the mapping file column name containing each individual\'s identifier (usually something like "personal_identifier")'),
+ make_option('-t','--state_category',help='the mapping file column name to plot change over (usually has values like "pre-treatment" and "post-treatment")'),
+ make_option('-x','--state_values',help='ordered list of state values to test change over (defines direction of graphs, generally something like "pre-treatment,post-treatment"). currently limited to two states.'),
+ make_option('-c','--individual_id_category',help='the mapping file column name containing each individual\'s identifier (usually something like "personal_identifier")'),
 ]
 
 script_info['optional_options'] = [
@@ -45,7 +45,7 @@ script_info['optional_options'] = [
  make_option('--ymax',default=None,type='float',help='set the maximum y-value across plots [default: determined on a per-plot basis]'),
   make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity") [default: %default]',default=None),
   make_option('--observation_ids',help='ordered list of the observation ids to test for paired differences if a biom table is provided (usually something like "otu1,otu2") [default: compute paired differences for all observation ids]',default=None),
-  make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]', default=None),
+  make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]',type='existing_filepath',default=None),
   make_option('-s','--valid_states', help="string describing samples that should be included based on their metadata (e.g. 'TreatmentResponse:Improved') [default: %default]",default=None),
 ]
 
