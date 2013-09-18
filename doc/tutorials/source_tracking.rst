@@ -34,19 +34,19 @@ For information on interacting with SourceTracker, run the following command to 
 
 Filter OTUs present in less than 1% of the samples from the OTU table
 ---------------------------------------------------------------------
-First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define *very few samples* here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn't just use 7 on your own data). You can find the total number of samples in your OTU table by running ``print_biom_table_summary.py`` on it. 
+First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define *very few samples* here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn't just use 7 on your own data). You can find the total number of samples in your OTU table by running the ``biom summarize-table`` command on it. 
 
 To filter the OTU table, run the following command::
 
     filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7
 
-This command will create an output file named ``filtered_otu_table.biom``, which only contains OTUs that appear in at least 7 samples. To see how many OTUs were filtered in this process, you can run ``print_biom_table_summary.py`` and compare *Num observations* for ``otu_table.biom`` and ``filtered_otu_table.biom``. It's not uncommon to filter a large percentage (e.g., greater than 50%) of your OTUs using this process.
+This command will create an output file named ``filtered_otu_table.biom``, which only contains OTUs that appear in at least 7 samples. To see how many OTUs were filtered in this process, you can run the ``biom summarize-table`` command and compare *Num observations* for ``otu_table.biom`` and ``filtered_otu_table.biom``. It's not uncommon to filter a large percentage (e.g., greater than 50%) of your OTUs using this process.
 
 Convert table from BIOM to tab-separated text format
 ----------------------------------------------------
 SourceTracker does not work with the `BIOM format <http://www.biom-format.org>`_, so the OTU table needs to be converted to tab-separated text format. You can do that with the following command::
 
-    convert_biom.py -i filtered_otu_table.biom -o filtered_otu_table.txt -b
+    biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt -b
 
 This creates a file named ``filtered_otu_table.txt``.
 

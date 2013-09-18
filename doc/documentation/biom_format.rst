@@ -11,8 +11,8 @@ Full documentation of the BIOM format can be found at `http://www.biom-format.or
 Motivation for changing the OTU Table Format
 =============================================
 
-We realize that BIOM formatted files can be less convenient to work with in many cases than classic QIIME OTU table files. We considered this to be an essential switch for several reasons detailed below.
+We realize that BIOM formatted files can be less convenient to work with in many cases than classic QIIME OTU table files. We consider this to be an essential switch for several reasons detailed `here <http://biom-format.org/documentation/biom_format.html#motivation-for-the-biom-format>`_.
 
 Converting between BIOM and tab-delimited table representations
 ===============================================================
-Note that you can always using the ``convert_biom.py`` script in `biom-format package <http://www.biom-format.org/documentation/biom_format.html#converting-between-file-formats>`_ (a QIIME dependency), so you already have it installed, to convert BIOM files to tab-delimited text for use in spreadsheet programs.
+Note that you can always use the ``biom convert`` command in `the biom-format package <http://biom-format.org/documentation/biom_conversion.html>`_ (a QIIME dependency, so you already have it installed), to convert BIOM files to tab-delimited text for use in spreadsheet programs.
