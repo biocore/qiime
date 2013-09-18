@@ -413,6 +413,10 @@ def extract_per_individual_states_from_sample_metadata(
      metadata entry (usually something like ['PreTreatment','PostTreatment'])
     individual_identifier_category: metadata category name describing the
      individual (usually something like 'PersonalID') as a string
+    filter_missing_data: if True, an individual is excluded 
+     from the result object if any of it's values are None. This can occur
+     when there is no sample for one or more of the state values for an
+     individual. This is True by default.
     
     returns {'individual-identifier':
                [sample-id-at-state-value1,
