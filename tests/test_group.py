@@ -555,6 +555,22 @@ class GroupTests(TestCase):
                    individual_identifier_category="PersonalID")
         self.assertEqual(actual,expected)
 
+    def test_extract_per_individual_states_from_sample_metadata_invalid(self):
+        """extract_per_individual_states_from_sample_metadata handles invalid input
+        """
+        self.assertRaises(KeyError,
+                   extract_per_individual_states_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="some-invalid-category",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
+        self.assertRaises(KeyError,
+                   extract_per_individual_states_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="some-other-invalid-category")
+
     def test_extract_per_individual_state_metadatum_from_sample_metadata(self):
         """ """
         veil_expected = {'001':[6.9,9.3],

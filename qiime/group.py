@@ -434,8 +434,19 @@ def extract_per_individual_states_from_sample_metadata(
     results = defaultdict(inner_dict_constructor)
     
     for sample_id, metadata in sample_metadata.items():
-        individual_id = metadata[individual_identifier_category]
-        state_value = metadata[state_category]
+        try:
+            individual_id = metadata[individual_identifier_category]
+        except KeyError:
+            raise KeyError, \
+             "%s is not a sample metadata category." %\
+             individual_identifier_category
+        try:
+            state_value = metadata[state_category]
+        except KeyError:
+            raise KeyError, \
+             "%s is not a sample metadata category." %\
+             state_category
+             
         try:
             state_index = state_values.index(state_value)
         except ValueError:
