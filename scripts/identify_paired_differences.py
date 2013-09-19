@@ -27,7 +27,7 @@ script_info['script_description'] = ""
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Generate plots and stats for two categories from the mapping file where the y-axis should be consistent across plots.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results --ymin 0.0 --ymax 1.0"))
 script_info['script_usage'].append(("Generate plots and stats for four categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
-script_info['script_usage'].append(("Generate plots for all observations in a biom file,","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
+script_info['script_usage'].append(("Generate plots for all observations in a biom file","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
 script_info['script_usage'].append(("Generate plots for all observations in a biom file, but only including samples from individuals whose 'TreatmentResponse' was 'Improved' (as defined in the mapping file).","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results_improved_only --valid_states TreatmentResponse:Improved"))
 
 script_info['output_description']= ""
