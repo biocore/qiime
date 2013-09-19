@@ -23,7 +23,8 @@ script_info['script_description'] ="""This script will run a
 	search algorithm to select the features. The objective functions 
 	are based on information theory. At the moment, users are limited 
 	to the objective functions implemented in the PyFeast feature 
-	selection module. """
+	selection module. You can find a tutorial of fizzy at 
+  http://qiime.org/tutorials/feature_selection.html """
 script_info['script_usage'] = [(
 	"""Run JMI feature selection on a BIOM file:""",
 	"""To perform feature selection the BIOM file, mapping file must 
