@@ -29,14 +29,10 @@ script_info['script_usage'] = [(
 	"""To perform feature selection the BIOM file, mapping file must 
 	be specified in advance, and the label column in the mapping file. 
 	Here we use JMI and select 15 features. """,
-	"""%prog -i data.biom -m map.txt -c Class -f JMI -k 15""")]
+	"""%prog -i data.biom -m map.txt -c Class -o result.txt -f JMI -k 15""")]
 script_info['output_description']= """Text file containing the top features 
 	selected by the algorithm. """
 
-# set the required options. for fizzy we need to have an exisiting input 
-# file, mapping file, and label column in the mapping file specified. other than
-# that we can set some default parameters to run a feature selection 
-# algorithm.
 script_info['required_options'] = [
 	make_option('-c',
 		'--column_label',
@@ -53,8 +49,7 @@ script_info['required_options'] = [
 	make_option('-o',
 		'--output_path',
 		type="new_filepath",
-		help='the output file [default: %default]',
-		default='output.txt')
+		help='the output file [default: %default]')
 ]
 script_info['optional_options'] = [
 	make_option('-k',

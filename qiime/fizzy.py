@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # File created on 02 May 2013
+import numpy 
 from __future__ import division
 from cogent.app.util import ApplicationNotFoundError
-import numpy
+from biom.parse import parse_biom_table
 
 
 __author__ = "Gregory Ditzler"
@@ -36,7 +37,6 @@ def parse_biom(fname):
 		@observation_names (return) - names of the samples in the 
 			database found in fname. 
 	"""
-	from biom.parse import parse_biom_table
 	biom_table = parse_biom_table(fname)
 	observation_names = list(biom_table.SampleIds)
 	variable_names = list(biom_table.ObservationIds)
@@ -68,15 +68,9 @@ def parse_map_file(fname, column_name, observation_names):
 
 	for id_set in observation_names:
 		if(id_set not in obj):
-			raise ValueError("""Unknown observation name supplied. Make sure that the
-			observation name is in map file you specified""")
-
-	for id_set in observation_names:
+			raise ValueError("Unknown observation name supplied. Make sure that the observation name is in map file you specified")
 		if(column_name not in obj[id_set]):
-			raise ValueError("""Unknown observation name supplied. Make sure that the
-			observation name is in map file you specified""")
-
-	for id_set in observation_names:
+			raise ValueError("Unknown observation name supplied. Make sure that the observation name is in map file you specified")
 		label_full.append(obj[id_set][column_name])
 
 	# now that we have the full class labels we need to determine
@@ -85,10 +79,7 @@ def parse_map_file(fname, column_name, observation_names):
 	# its likely the user does not know what they are doing. 
 	unique_classes = numpy.unique(label_full)
 	if len(unique_classes) == len(observation_names):
-		raise ValueError("""Number of 
-			classes is the number of observations.  The number of 
-			classes must be less than the number of observations in 
-			map file that was specified.""")
+		raise ValueError("Number of classes is the number of observations.  The number of classes must be less than the number of observations in map file that was specified.")
 
 	for str_lab in label_full:
 		for n,uclass in enumerate(unique_classes):
@@ -119,16 +110,12 @@ def run_pyfeast(data, labels, features, method='MIM', n_select=15):
 	try:
 		import feast
 	except ImportError:
-		raise ApplicationNotFoundError("""Error loading 
-			the PyFeast module. It is likely that  
-			you do not have PyFeast installed locally.""")
+		raise ApplicationNotFoundError("Error loading the PyFeast module. It is likely that you do not have PyFeast installed locally.")
 
 	try:
 		fs_method = getattr(feast, method)
 	except AttributeError:
-		raise AttributeError("""Unknown feature selection method
-			is being specified for PyFeast. Make sure the feature 
-			selection method being selected is a valid one. """)
+		raise AttributeError("Unknown feature selection method is being specified for PyFeast. Make sure the feature selection method being selected is a valid one. ")
 
 	sf = fs_method(data, labels, n_select)
 	reduced_set = []
@@ -142,7 +129,6 @@ def run_feature_selection(file_biom, file_map, column_name, method='MIM', n_sele
 		run_feature_selection(fname_biom, fname_csv, method)
 		@file_biom - handle of the biom file
 		@file_map - handle of the csv file
-		@out_file - result destination (string)
 		@column_name - column name containing the class labels found 
 			in the map file. 
 		@method - feature selection method [see PyFeast docs]
@@ -151,4 +137,4 @@ def run_feature_selection(file_biom, file_map, column_name, method='MIM', n_sele
 	data_matrix, variable_names, observation_names = parse_biom(file_biom)
 	label_vector = parse_map_file(file_map, column_name, observation_names)
 	reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
-	return(reduced_set)
+	return reduced_set 
