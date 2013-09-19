@@ -1777,12 +1777,12 @@ def paired_difference_analyses(personal_ids_to_state_values,
     biom_sids_fp = join(output_dir,'differences_sids.txt')
     biom_observation_ids = []
     biom_data = []
-    # need a list of pids to build the biom table - 
+    # need a list of personal_ids to build the biom table - 
     # ugly, but get it working first
-    pids = []
+    personal_ids = []
     for c in personal_ids_to_state_values.values():
-        pids.extend(c.keys())
-    pids = list(set(pids))
+        personal_ids.extend(c.keys())
+    personal_ids = list(set(personal_ids))
     
     # initiate list of output file paths to return 
     output_fps = [paired_difference_output_fp,
@@ -1801,8 +1801,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
         differences = []
         store_biom_datum = True
         
-        for pid in pids:
-            data = personal_ids_to_state_metadatum[pid]
+        for personal_id in personal_ids:
+            data = personal_ids_to_state_metadatum[personal_id]
             if None in data:
                 # if any of the data points are missing, don't store 
                 # a difference for this individual, and don't store
@@ -1856,7 +1856,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     # to a mapping file for working with this biom table
     
     biom_table = table_factory(biom_data,
-                               pids,
+                               personal_ids,
                                biom_observation_ids,
                                constructor=DenseOTUTable)
     biom_table_f = open(biom_table_fp,'w')
@@ -1864,7 +1864,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     biom_table_f.close()
     biom_sids_f = open(biom_sids_fp,'w')
     biom_sids_f.write('#SampleID\n')
-    biom_sids_f.write('\n'.join(pids))
+    biom_sids_f.write('\n'.join(personal_ids))
     biom_sids_f.close()
     
     # sort stats output by uncorrected p-value and write results
