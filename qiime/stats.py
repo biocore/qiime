@@ -1824,15 +1824,13 @@ def paired_difference_analyses(personal_ids_to_state_values,
         n = len(differences)
         mean_differences = mean(differences)
         median_differences = median(differences)
-        if len(set(differences)) != 1:
-            t_one_sample_results = t_one_sample(differences)
-            t = t_one_sample_results[0]
-            p_value = t_one_sample_results[1]
-            bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
-        else:
-            t = None
-            p_value = None
+        t_one_sample_results = t_one_sample(differences)
+        t = t_one_sample_results[0]
+        p_value = t_one_sample_results[1]
+        if p_value is None:
             bonferroni_p_value = None
+        else:
+            bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
         # analysis_category gets stored as the key and the first entry 
         # in the value to faciliate sorting the values and writing to 
         # file
