@@ -23,14 +23,14 @@ from qiime.stats import (paired_difference_analyses)
 
 script_info = {}
 script_info['brief_description'] = "Generate plots and stats to test for change in some data point(s) with a state change on a per-individual basis."
-script_info['script_description'] = ""
+script_info['script_description'] = "This script provides a framework for paired-difference testing (i.e., analysis of data generated under a pre/post experimental design). In a pre/post experimental design, individuals are sampled before and after some 'treatment'. This code plots differences in values in the sample metadata (i.e., the mapping file) or observation counts in a BIOM table, and runs a (Bonferroni-corrected) one sample t-test on each sample metadata category or BIOM observation to determine if the mean of each distribution of pre/post differences differs from zero."
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Generate plots and stats for two categories from the mapping file where the y-axis should be consistent across plots.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results --ymin 0.0 --ymax 1.0"))
 script_info['script_usage'].append(("Generate plots and stats for four categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
 script_info['script_usage'].append(("Generate plots for all observations in a biom file","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
 script_info['script_usage'].append(("Generate plots for all observations in a biom file, but only including samples from individuals whose 'TreatmentResponse' was 'Improved' (as defined in the mapping file).","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results_improved_only --valid_states TreatmentResponse:Improved"))
 
-script_info['output_description']= ""
+script_info['output_description']= "The output of this script is plots of pre/post differences and associated statistics."
 
 script_info['required_options'] = [
  make_option('-m','--mapping_fp',type="existing_filepath",help='the input filepath'),
@@ -116,11 +116,11 @@ def main():
                                      analysis_categories)
 
     paired_difference_analyses(personal_ids_to_state_values,
-                                   analysis_categories,
-                                   state_values,
-                                   output_dir,
-                                   ymin=ymin,
-                                   ymax=ymax)
+                               analysis_categories,
+                               state_values,
+                               output_dir,
+                               ymin=ymin,
+                               ymax=ymax)
 
         
 
