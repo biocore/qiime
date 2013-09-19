@@ -484,8 +484,8 @@ def extract_per_individual_state_metadatum_from_sample_metadata(
     process_f: function to apply to metadata values (default: float)
     
     returns {'individual-identifier':
-               [difference-in-metadata-value-bw-states-2-and-1,
-                difference-in-metadata-value-bw-states-3-and-2,
+               [state-1-metadata-value,
+                state-2-metadata-value,
                 ...],
               ...
              }
