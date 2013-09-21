@@ -33,7 +33,7 @@ script_info['script_usage'].append(("Generate plots for all observations in a bi
 script_info['output_description']= "The output of this script is plots of pre/post differences and associated statistics."
 
 script_info['required_options'] = [
- make_option('-m','--mapping_fp',type="existing_filepath",help='the input filepath'),
+ make_option('-m','--mapping_fp',type="existing_filepath",help='the input metadata map filepath'),
  make_option('-o','--output_dir',type="new_filepath",help='directory where output files should be saved'),
  make_option('-t','--state_category',help='the mapping file column name to plot change over (usually has values like "pre-treatment" and "post-treatment")'),
  make_option('-x','--state_values',help='ordered list of state values to test change over (defines direction of graphs, generally something like "pre-treatment,post-treatment"). currently limited to two states.'),
