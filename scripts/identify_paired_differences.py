@@ -46,7 +46,7 @@ script_info['optional_options'] = [
   make_option('--metadata_categories',help='ordered list of the mapping file column names to test for paired differences (usually something like "StreptococcusAbundance,Phylogenetic Diversity") [default: %default]',default=None),
   make_option('--observation_ids',help='ordered list of the observation ids to test for paired differences if a biom table is provided (usually something like "otu1,otu2") [default: compute paired differences for all observation ids]',default=None),
   make_option('-b','--biom_table_fp',help='path to biom table to use for computing paired differences [default: %default]',type='existing_filepath',default=None),
-  make_option('-s','--valid_states', help="string describing samples that should be included based on their metadata (e.g. 'TreatmentResponse:Improved') [default: %default]",default=None),
+  make_option('-s','--valid_states', help="string describing samples that should be included based on their metadata (e.g. 'TreatmentResponse:Improved') [default: all samples are included in analysis]",default=None),
 ]
 
 script_info['version'] = __version__
