@@ -1789,6 +1789,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
                   biom_table_fp,
                   biom_sids_fp]
     
+    num_successful_tests = 0
     for category_number, analysis_category in enumerate(analysis_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]
         analysis_category_fn_label = analysis_category.replace(' ','-')
@@ -1827,10 +1828,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
         t_one_sample_results = t_one_sample(differences)
         t = t_one_sample_results[0]
         p_value = t_one_sample_results[1]
-        if p_value is None:
-            bonferroni_p_value = None
-        else:
-            bonferroni_p_value = min([p_value * num_analysis_categories,1.0])
+        if p_value is not None:
+            num_successful_tests += 1
         # analysis_category gets stored as the key and the first entry 
         # in the value to faciliate sorting the values and writing to 
         # file
@@ -1840,8 +1839,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                         mean_differences,
                                         median_differences,
                                         t,
-                                        p_value,
-                                        bonferroni_p_value]
+                                        p_value]
         
         # Finalize plot for current analysis category
         axes.set_ylabel(analysis_category)
@@ -1867,13 +1865,18 @@ def paired_difference_analyses(personal_ids_to_state_values,
     biom_sids_f.write('\n'.join(personal_ids))
     biom_sids_f.close()
     
-    # sort stats output by uncorrected p-value and write results
-    # to file
+    # sort stats output by uncorrected p-value, compute corrected p-value,
+    # and write results to file
     paired_difference_t_test_lines = \
      paired_difference_t_test_results.values()
     paired_difference_t_test_lines.sort(key=lambda x: x[5])
     for r in paired_difference_t_test_lines:
-        paired_difference_output_f.write('\t'.join(map(str,r)))
+        p_value = r[5]
+        if p_value is None:
+            bonferroni_p_value = None
+        else:
+            bonferroni_p_value = min([p_value * num_successful_tests,1.0])
+        paired_difference_output_f.write('\t'.join(map(str,r + [bonferroni_p_value])))
         paired_difference_output_f.write('\n')
     paired_difference_output_f.close()
     
