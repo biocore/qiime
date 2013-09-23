@@ -13,16 +13,20 @@ __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
 
+from shutil import rmtree
+from os.path import exists, join
 from string import digits
 from cogent.util.unit_test import TestCase, main
+from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median
 from numpy.random import permutation, shuffle
-
+from biom.parse import parse_biom_table
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
-        _quantile)
-from qiime.util import DistanceMatrix, MetadataMap
+        _quantile,paired_difference_analyses)
+from qiime.util import (DistanceMatrix, MetadataMap, get_qiime_temp_dir,
+                        get_tmp_filename)
 
 
 class TestHelper(TestCase):
@@ -1638,6 +1642,165 @@ class TopLevelTests(TestCase):
         sample_data.sort()
         self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
+class PairedDifferenceTests(TestCase):
+    
+    def setUp(self):
+        self.personal_ids_to_state_values1 = \
+          {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,0.52]},
+           'bacteroidetes-abundance':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
+           }
+        self.personal_ids_to_state_values2 = \
+          {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,None]},
+           'bacteroidetes-abundance':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
+           }
+        self.files_to_remove = []
+        self.dirs_to_remove = []
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='qiime_paired_diff_tests_',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
+
+    def tearDown(self):
+        
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+    
+    def test_paired_difference_analyses(self):
+        """paired_difference_analyses functions as expected
+        """
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),5)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
+
+    def test_paired_difference_analyses_biom_output(self):
+        """paired_difference_analyses generates correct biom tables
+        """
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        biom_table_fp = join(self.test_out,'differences.biom')
+        self.assertTrue(exists(biom_table_fp))
+        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
+        table = parse_biom_table(open(biom_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
+        self.assertEqualItems(table.ObservationIds,
+         ['firmicutes-abundance','bacteroidetes-abundance'])
+        self.assertFloatEqual(table
+            [table.getObservationIndex('firmicutes-abundance')]
+            [table.getSampleIndex('subject1')],
+            0.1,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('bacteroidetes-abundance')]
+            [table.getSampleIndex('subject1')],
+            -0.1,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('firmicutes-abundance')]
+            [table.getSampleIndex('subject2')],
+            0.41,2)
+        self.assertFloatEqual(table
+            [table.getObservationIndex('bacteroidetes-abundance')]
+            [table.getSampleIndex('subject2')],
+            -0.07,2)
+
+        # missing data results in skipped observation ids
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values2,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        biom_table_fp = join(self.test_out,'differences.biom')
+        self.assertTrue(exists(biom_table_fp))
+        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
+        table = parse_biom_table(open(biom_table_fp,'U'))
+        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
+        self.assertEqualItems(table.ObservationIds,
+         ['bacteroidetes-abundance'])
+        self.assertFloatEqual(table
+         [table.getObservationIndex('bacteroidetes-abundance')]
+         [table.getSampleIndex('subject1')],
+         -0.1,2)
+        self.assertFloatEqual(table
+         [table.getObservationIndex('bacteroidetes-abundance')]
+         [table.getSampleIndex('subject2')],
+         -0.07,2)
+
+    def test_paired_difference_analyses_wo_ymin_ymax(self):
+        """paired_difference_analyses functions as expected w/o ymin/ymax
+        """
+        # runs successfully with ymin/ymax
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance',
+                                    'bacteroidetes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=None,
+                                   ymax=None)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),5)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
+        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
+
+    def test_paired_difference_analyses_analysis_cat_subset(self):
+        """paired_difference_analyses fns w a subset of analysis categories
+        """
+        actual = paired_difference_analyses(
+                                   self.personal_ids_to_state_values1,
+                                   ['firmicutes-abundance'],
+                                   ['Pre','Post'],
+                                   output_dir=self.test_out,
+                                   ymin=0.0,
+                                   ymax=1.0)
+        self.assertTrue(exists(join(self.test_out,
+                        'paired_difference_comparisons.txt')))
+        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
+        self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        # three output paths returned
+        self.assertEqual(len(actual[0]),4)
+        # expected t values returned
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
 
 if __name__ == "__main__":
     main()
