@@ -16,11 +16,10 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack, isnan, inf, nan
 from qiime.pycogent_backports.test import (parametric_correlation_significance,
     nonparametric_correlation_significance, fisher_confidence_intervals,
-    pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
+    pearson, spearmans_rho, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
     mw_boot, t_paired, mc_t_two_sample, t_two_sample,
-    fisher)
+    fisher, kendalls_tau, assign_correlation_pval)
 from qiime.util import biom_taxonomy_formatter
-from cogent.maths.stats.kendall import kendalls_tau
 
 """
 Library for test_group_significance.py and test_gradient_correlation.py. 
@@ -48,7 +47,7 @@ row - row is used in several places (eg. row_generator). The 'row' being
 
 # Pursuant to cogent/qiime coding guidelines, globals are uppercase. These dicts
 # map the script interface names to the actual functions running these tests.
-CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearman,
+CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearmans_rho,
     'kendall': kendalls_tau}
 
 GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': G_fit, 
@@ -58,6 +57,9 @@ GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': G_fit,
 
 TWO_GROUP_TESTS = ['parametric_t_test', 'nonparametric_t_test', 
     'mann_whitney_u', 'bootstrap_mann_whitney_u']
+
+CORRELATION_PVALUE_CHOICES = ['parametric_t_distribution', 'fisher_z_transform',
+    'bootstrapped']
 
 # Functions for group significance testing
 
@@ -191,11 +193,18 @@ def longitudinal_row_generator(bt, pmf, category, hsid_to_samples,
 def run_longitudinal_correlation_test(data_generator, test, test_choices):
     """Run longitudinal correlation test."""
     rs, combo_pvals, combo_rhos, homogenous = [], [], [], []
+    test_fn = test_choices[test]
     for obs_vals, gradient_vals in data_generator:
         rs_i, pvals_i = [], []
         for i in range(len(obs_vals)):
-            r = test_choices[test](obs_vals[i], gradient_vals[i])
+            # calculate test stat
+            r = test_fn(obs_vals[i], gradient_vals[i])
             rs_i.append(r)
+            # calculate pval
+            if test=='kendall':
+                pval = kendall_pval(r, len(obs_vals[i]))
+            else:
+                pval = 
             pval = parametric_correlation_significance(r, len(obs_vals[i]))
             pvals_i.append(pval)
         # append to values for all individuals
@@ -236,7 +245,7 @@ def longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, homogenous,
         lines.append('\t'.join(map(str, tmp)))
     return lines
 
-def correlation_row_generator(bt, pmf, category, ref_samples=None):
+def correlation_row_generator(bt, pmf, category):
     """Produce a generator that feeds lists of arrays to any gradient test.
 
     In this function, a row is a full row of the OTU table, a single 1D array.
@@ -245,36 +254,28 @@ def correlation_row_generator(bt, pmf, category, ref_samples=None):
      cat_sam_indices - dict, output of get_sample_indices.
     """
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    if ref_samples is not None:
-        # user passed a ref sample to adjust all the other sample OTU values
-        # we subtract the reference sample from all data as Cathy did in the 
-        # original implementation. 
-        data = (data.T - bt.sampleData(ref_sample)).T
+    # ensure that the order of the category vector sample values is the same 
+    # as the order of the samples in data. otherwise will have hard to 
+    # diagnose correspondence issues
     try:
-        # ensure that the order of the category vector sample values is the same 
-        # as the order of the samples in data. otherwise will have hard to 
-        # diagnose correspondence issues 
-        category_vector = \
-            array([pmf[s][category] for s in bt.SampleIds]).astype(float)
-        return ((row,category_vector) for row in data)
+        cat_vect = array([pmf[s][category] for s in bt.SampleIds]).astype(float)
+        return ((row,cat_vect) for row in data)
     except ValueError:
         raise ValueError("Mapping file category contained data that couldn't "+\
             "be converted to float. Can't continue.")
 
-def run_correlation_test(data_generator, test, test_choices):
+def run_correlation_test(data_generator, test, test_choices, np_test=False):
     """Run correlation tests."""
     corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = [], [], [], [], []
     test_fn = test_choices[test]
     for row in data_generator:
-        disp_row+=1
         # kendalls tau calculates its own paramteric p value
         if test == 'kendall':
-            test_stat, p = test_fn(row[0], row[1], return_p=True)
+            test_stat, p = test_fn(row[0], row[1])
             p_pval = p
         else: # spearman, pearson executed here
             test_stat = test_fn(row[0], row[1])
             p_pval = parametric_correlation_significance(test_stat, len(row[0]))
-
         np_pval = nonparametric_correlation_significance(test_stat, test_fn, 
             row[0], row[1])
         ci_low, ci_high = fisher_confidence_intervals(test_stat,len(row[0]))

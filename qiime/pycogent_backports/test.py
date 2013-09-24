@@ -222,10 +222,6 @@ def safe_sum_p_log_p(a, base=None):
         logs /= log(base)
     return sum(nz * logs, 0)
 
-# def safe_ln(arr):
-#     """Take natural log of arr substituting 0 for ln(0)."""
-#     return log(where(arr==0, 1, arr))
-
 def G_ind(m, williams=False):
     """Returns G test for independence in an r x c table.
     
@@ -399,176 +395,88 @@ def kruskal_wallis(data):
     H = (a*tot + b)
     # correct for ties by calulating D
     D = tie_correction(sx)
-    # after experiencing some failures with kruskal_wallis I was able to 
-    # identify a possible source as described in this SO post:
-    # http://stackoverflow.com/questions/11670404/mod-wsgi-hangs-on-runtimewarning-divide-by-zero
-    # somehow the chisqprob import accesses numpy (or this module does) from a 
-    # python sub-interpreter, which causes the thread to deadlock without 
-    # reporting an error if H/D throws an invalid divide in double scalers 
-    # error. it just hangs indefinitely. setting a check for D should prevent. 
+    # Because of the way the chisqprob function in pycogent works, if it gets 
+    # H/D = 0/0 it will fail to exit the loop and hang indefintitely.
     if D==0:
         return nan, nan
     else:
         # give chisqprob the kw statistic, degrees of freedom = (num groups - 1)
         p_value = chisqprob(H/D, num_groups-1)
         return H/D, p_value
-
 ## End functions for kruskal_wallis test
 
-### Start functions for Kendall tau
-def get_group_ranks(v1, v2):
-    """Takes two input lists, sorts them, determines ranks, and returns sorted
-    ranks.
+## Begin functinos for Kendalls Tau
+def rank_with_ties(v1):
+    '''Return ranked values of 1D vector v1 with averages for tied entries.'''
+    tmp_v1 = copy(v1).astype(float)
+    tmp_v1.sort()
+    return (searchsorted(tmp_v1,v1,'left')+searchsorted(tmp_v1,v1,'right')+1)*.5
 
-    Returns two lists, one is sorted high to low, the other is sorted pairwise
-    against that list.
-    """
-    group_ranks = []
-    assert len(v1) == len(v2), "Lists not equal lengths, cannot proceed with Kendall tau"
-    assert len(set(v1)) != 1, "Cannot calc Kendall tau on a dataset with a single repeated value"
-    assert len(set(v2)) != 1, "Cannot calc Kendall tau on a dataset with a single repeated value"
-    
-    # for each input group, calculate ranking of values within that group
-    # append ranking results, adjusted for ties, to group_ranks list
-    data = []
-    data.append(v1)
-    data.append(v2)
-    for group in data:
-        group = array(group)
-        ssl, ssr, sx = ssl_ssr_sx(group)
-        start = 0
-        stop = 0
-        tot = 0
-        stop += len(group)
-        # To average the ranks for tied entries we compute leftmost rank of 
-        # value i, minus rightmost rank of value i (and divide by 2). Since 
-        # python indexes to 0, ssl ranks are 1 lower than they shoud be (i.e.
-        # the smallest value has rank 0 instead of 1). The +1 below corrects for
-        # this and .5 averages. 
-        ranks = (ssr[start:stop]+ssl[start:stop]+1)*.5
-        group_ranks.append(ranks)
-        tot+=(ranks.sum()**2)/float(len(group))
-        start += len(group)
+def count_occurrences(x):
+    """Count occurrences of each entry in sorted(unique(x))."""
+    tmp_x = copy(x)
+    tmp_x.sort()
+    ux = unique(x)
+    return searchsorted(tmp_x, ux, 'right') - searchsorted(tmp_x, ux, 'left')
 
-    #sort both groups while maintaining pairwise order, such that group[0] is
-    #sorted from high to low, and the corresponding vals in group[1] are paired up
-    group_1_sorted, group_2_sorted = zip(*sorted(zip(group_ranks[0],group_ranks[1])))
-    return group_1_sorted, group_2_sorted
+def kendalls_tau(v1, v2):
+    '''Compute Kendalls Tau correlation between v1 and v2.
 
-def compute_rank_count(v1, v2):
-    """Computes the sum of counts (Ci) as per method 3a in Sokal & Rohlf, pg 594,
-    for use in calculating Kendall tau.
+    This function calculates tie adjusted Kendalls Tau statistic according to 
+    Wikipedia and Sokal and Rohlf Biometry pg 594-595. Sokal and Rohlf's 
+    implementation is significantly more confusing than that from Wikipedia and 
+    the results are the same. In short, we calculate:
+    tau = n_c - n_d / ((n_o - n_1)(n_o - n_2))^.5
+    n_c = sum concordant pairs
+    n_d = sum discordant pairs
+    n_o = n(n-1)/2 where n is the length either input vector (len(v1)=len(v2))
+    n_1 = sum of ti(ti-1)/2 where ti is the  number of ties in the ith group of 
+    ties for v1
+    n_2 = same as n_1 but for v2.
 
-    Example: for list = [1,2,5,3,4]
-    For the first rank 1, there are 4 ranks after which are greater
-    For the second rank 2, there are 3 ranks after which are greater
-    For the third rank 5, there are 0 ranks after which are greater,...
-    Ci = 4 + 3 + 0 + 1 + 0 = 8
-    (ties get a value of 1/2 added instead of 1)
+    Inputs:
+     v1, v2 = 1D array like, vectors to be correlated
+    '''
+    v1r = rank_with_ties(array(v1))
+    v2r = rank_with_ties(array(v2))
+    # sort both vectors according to v1r's order
+    sort_inds = argsort(v1r)
+    v1rs = v1r[sort_inds]
+    v2rs = v2r[sort_inds]
+    # iterate through vectors counting concordant and discordant pairs
+    c, d = 0. , 0. 
+    n = len(v1r)
+    for i in range(n-1):
+        diff = (v1rs[i+1:] - v1rs[i]) * (v2rs[i+1:] - v2rs[i])
+        c += (diff > 0).sum() # concordant pairs
+        d += (diff < 0).sum() # discordant pairs
+        # if product=0, one or more of the pairs was tied and should be ignored 
+    # count ties in both vectors for correction factor calculation
+    t = count_occurrences(v1)
+    u = count_occurrences(v2)
+    n_o = n*(n-1)*.5
+    denom = ((n_o - (t*(t-1)).sum()*.5) * (n_o - (u*(u-1)).sum()*.5))**.5
+    tau = (c - d)/denom
+    return tau
 
-    Input: data is a list containing lists of ranks (the output from get_group_ranks)
-    These two lists must be 1-D and the same length.
+def kendall_pval(tau, n):
+    '''Calculate the p-value for the passed tau and vector length n.'''
+    test_stat = tau/((2*(2*n+5))/float(9*n*(n-1)))**.5
+    return zprob(test_stat)
 
-    Output: group_C_sum = the summed Ci for each group
-    n = the number of observations in each group
-    """
-    data = []
-    data.append(v1)
-    data.append(v2)
+## End functions for Kendall Tau
 
-    group_C = []
-    ties = []
-    for group in data:
-        n = len(group)
-        group_counts = []
-        
-        # walk through every rank, comparing each rank to remaining ranks
-        for i,rank in enumerate(group):
-            count = 0
-            curr_rank = rank
-            for r in group[i+1:]:
-                # if next rank is greater than current rank, add 1 to count
-                if r > curr_rank:
-                    count += 1
-                # if next rank is a tie, add 1/2 to count
-                if r == curr_rank:
-                    count += 0.5
-            group_counts.append(count)
-        group_C.append(group_counts)
+def pearson(v1, v2):
+    '''Using numpy's builtin corrcoef. Faster, and well tested.'''
+    v1, v2 = array(v1), array(v2)
+    assert v1.size==v2.size>1, "Pearson: one or more vectors isn't '+\
+        'long enough to correlate or they have unequal lengths. Can't continue."
+    return corrcoef(v1,v2)[0][1] # 2x2 symmetric unit matrix
 
-    # find the number of ties, T, and report it for each group
-    for group in data:
-        group = array(group)
-        group.sort()
-        ux = unique(group)
-        uxl = searchsorted(group, ux, 'left')
-        uxr = searchsorted(group, ux, 'right')
-        x = uxr - uxl
-        T = (x*(x-1)).sum()
-        ties.append(T)
+def spearmans_rho(v1, v2):
+    '''Calculate Spearmans rho.'''
+    return pearson(rank_with_ties(v1), rank_with_ties(v2))
 
-    # sum the counts of ranks, so each group is left with a single value
-    group_C_sum = []
-    for x in group_C:
-        x = array(x)
-        group_C_sum.append(x.sum())
-    return group_C_sum, n, ties
-
-def calc_kendall_statistic(group_C_sum, n, ties):
-    """Calculate Kendall tau from group rank sums and sample size
-
-    N (count of ranks) is defined as: N = 4*Ci - n(n-1)
-    where n = sample size (observations per group), and Ci is the sum of the
-    count of ranks determined in compute_rank_count
-
-    tau = N / sqrt([n(n-1) - sum(T1)][n(n-1)- sum(T2)])
-    where T1 is the sum of the number of ties in group 1
-    and T2 is the sum of the number of ties in group 2
-
-    When there are no ties, tau reduces to tau = N / n(n-1)
-
-    For large sample sizes, n > 40, the test statistic is approx. normally
-    distributed and is calculated by:
-    ts = tau / (sqrt(2(2n+5)/(9n(n-1))))
-    """
-    #N1 = 4 * group_C_sum[0] - n * (n-1)
-    N2 = 4 * group_C_sum[1] - n * (n-1)
-    # only calculating tau on second group, since the first will be perfectly
-    # correlated with itself
-    tau = (N2) / (sqrt((n * (n - 1) - ties[0]) * (n * (n-1) - ties[1])))
-    
-    # calc test statistic (ts)
-    numerator = 2*(2*n + 5)
-    denominator = 9*n * (n-1)
-    ts = tau / sqrt(numerator/denominator)
-    return tau, ts
-
-def new_kendall_tau(v1, v2, force_normal=True):
-    """Returns Kendall tau and probability
-    Null hypothesis is that tau == 0
-    Assumes two tailed test by default (in using zprob function)
-    Normal approximation only good when sample sizes are greater than 40, otherwise
-    a special table has to be used, by default the script will force the normal approx
-    calc even if n < 40 (for testing purposes)
-
-    Input: two lists of data, must be same size
-    Output: Kendall tau, probability
-    """
-    # check that the lengths are equal, and sample size > 40 for normal approximation
-    # if len(v1) != len(v2):
-    #     raise ValueError, "Lists are not of equal length, cannot proceed"
-    # if force_normal is False:
-    #     if len(v1) or len(v2) < 40:
-    #         raise ValueError, "Not enough observations to calculate tau based on normal approximation"
-
-    # calculate kendall tau
-    sorted_rank1, sorted_rank2 = get_group_ranks(v1, v2)
-    group_C_sum, n, ties = compute_rank_count(sorted_rank1, sorted_rank2)
-    tau, ts = calc_kendall_statistic(group_C_sum, n, ties)
-    prob = zprob(ts)
-    return tau, prob
-
-##### End functions for Kendall Tau
 
 def likelihoods(d_given_h, priors):
     """Calculate likelihoods through marginalization, given Pr(D|H) and priors.
@@ -920,121 +828,6 @@ def t_one_observation(x, sample, tails=None, exp_diff=0,
 
     return result
 
-def pearson(x_items, y_items):
-    """Returns Pearson's product moment correlation coefficient.
-    
-    This will always be a value between -1.0 and +1.0. x_items and y_items must
-    be the same length, and cannot have fewer than 2 elements each. If one or
-    both of the input vectors do not have any variation, the return value will
-    be 0.0.
-
-    Arguments:
-        x_items - the first list of observations
-        y_items - the second list of observations
-    """
-    x_items, y_items = array(x_items), array(y_items)
-
-    if len(x_items) != len(y_items):
-        raise ValueError("The length of the two vectors must be the same in "
-                         "order to calculate the Pearson correlation "
-                         "coefficient.")
-    if len(x_items) < 2:
-        raise ValueError("The two vectors must both contain at least 2 "
-                "elements. The vectors are of length %d." % len(x_items))
-
-    sum_x = sum(x_items)
-    sum_y = sum(y_items)
-    sum_x_sq = sum(x_items*x_items)
-    sum_y_sq = sum(y_items*y_items)
-    sum_xy = sum(x_items*y_items)
-    n = len(x_items)
-
-    try:
-        r = 1.0 * ((n * sum_xy) - (sum_x * sum_y)) / \
-           (sqrt((n * sum_x_sq)-(sum_x*sum_x))*sqrt((n*sum_y_sq)-(sum_y*sum_y)))
-    except (ZeroDivisionError, ValueError, FloatingPointError): #no variation
-        r = 0.0
-    #check we didn't get a naughty value for r due to rounding error
-    if r > 1.0:
-        r = 1.0
-    elif r < -1.0:
-        r = -1.0
-    return r
-
-def spearman(x_items, y_items):
-    """Returns Spearman's rho.
-
-    This will always be a value between -1.0 and +1.0. x_items and y_items must
-    be the same length, and cannot have fewer than 2 elements each. If one or
-    both of the input vectors do not have any variation, the return value will
-    be 0.0.
-
-    Arguments:
-        x_items - the first list of observations
-        y_items - the second list of observations
-    """
-    x_items, y_items = array(x_items), array(y_items)
-
-    if len(x_items) != len(y_items):
-        raise ValueError("The length of the two vectors must be the same in "
-                         "order to calculate Spearman's rho.")
-    if len(x_items) < 2:
-        raise ValueError("The two vectors must both contain at least 2 "
-                "elements. The vectors are of length %d." % len(x_items))
-
-    # Rank the two input vectors.
-    rank1, ties1 = _get_rank(x_items)
-    rank2, ties2 = _get_rank(y_items)
-
-    if ties1 == 0 and ties2 == 0:
-        n = len(rank1)
-        sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
-        rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
-    else:
-        avg = lambda x: sum(x)/len(x)
-
-        x_bar = avg(rank1)
-        y_bar = avg(rank2)
-
-        numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
-        denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
-                           sum([(y-y_bar)**2 for y in rank2]))
-
-        # Calculate rho. Handle the case when there is no variation in one or
-        # both of the input vectors.
-        if denominator == 0.0:
-            rho = 0.0
-        else:
-            rho = numerator/denominator
-    return rho
-
-def _get_rank(data):
-    """Ranks the elements of a list. Used in Spearman correlation."""
-    indices = range(len(data))
-    ranks = range(1,len(data)+1)
-    indices.sort(key=lambda index:data[index])
-    ranks.sort(key=lambda index:indices[index-1])
-    data_len = len(data)
-    i = 0
-    ties = 0
-    while i < data_len:
-        j = i + 1
-        val = data[indices[i]]
-        try:
-            val += 0
-        except TypeError:
-            raise(TypeError)
-
-        while j < data_len and data[indices[j]] == val:
-            j += 1
-        dup_ranks = j - i
-        val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
-        for k in range(i, i+dup_ranks):
-            ranks[indices[k]] = val
-        i += dup_ranks
-        ties += dup_ranks-1
-    return ranks, ties
-
 def correlation(x_items, y_items):
     """Returns Pearson correlation between x and y, and its significance.
 
@@ -1058,7 +851,7 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     greater than 3. Please see Sokal and Rohlf pp. 575-580 and pg. 598-601 for
     more details regarding these techniques.
 
-    Warning: the parametric p-value is unreliable when the method is spearman
+    Warning: the parametric p-value is unreliable when the method is spearmans
     and there are less than 11 observations in each vector.
 
     Returns the correlation coefficient (r or rho), the parametric p-value, a
@@ -1079,7 +872,7 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     Arguments:
         x_items - the first list of observations
         y_items - the second list of observations
-        method - 'pearson' or 'spearman'
+        method - 'pearson' or 'spearmans_rho'
         tails - if None (the default), a two-sided test is performed. 'high'
             for a one-tailed test for positive association, or 'low' for a
             one-tailed test for negative association. This parameter affects
@@ -1096,11 +889,11 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     # Perform some initial error checking.
     if method == 'pearson':
         corr_fn = pearson
-    elif method == 'spearman':
-        corr_fn = spearman
+    elif method == 'spearmans_rho':
+        corr_fn = spearmans_rho
     else:
         raise ValueError("Invalid method '%s'. Must be either 'pearson' or "
-                         "'spearman'." % method)
+                         "'spearmans_rho'." % method)
     if tails is not None and tails != 'high' and tails != 'low':
         raise ValueError("Invalid tail type '%s'. Must be either None, "
                          "'high', or 'low'." % tails)
@@ -1172,86 +965,6 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     return (corr_coeff, parametric_p_val, permuted_corr_coeffs,
             nonparametric_p_val, (ci_low, ci_high))
 
-# the following three functions just split and streamline correlation_test to 
-# make it more widely applicable. credit due to the original author.
-
-def parametric_correlation_significance(test_stat, n):
-    """Calc significance of a correlation coefficient with parametric method.
-
-    Note, we are using a two tailed t_test since our alternate hypothesis is 
-    that uncorrelated bivariate data could generate a test statistic value as 
-    extreme or more extreme in either direction, thus we have two tails 
-    (-inf,-x) and (x, inf). For more information look at Sokal and Rohlf, 
-    Biometry, pg 574. This is a parametric test and makes many assumptions about
-    the data from which the test_stat was calculated. 
-
-    Inputs:
-     test_stat - numeric, the correlation coefficient whose significance we are 
-      to test.
-     n - int, length of vectors that were correlated. 
-    """
-    df = n-2 #degrees of freedom
-    if n<3: #need at least 3 samples for students t parametric p value calc
-        p_pval = 1.0 #p_pval = parametric p value
-    else: 
-        try:
-            t_stat = test_stat/sqrt((1.-test_stat**2)/float(df))
-            p_pval = tprob(t_stat, df) #we force it to be two tailed
-        except (ZeroDivisionError, FloatingPointError):
-            # something unpleasant happened, most likely r or rho where +- 1 
-            # which means the parametric p val should be 1 or 0 or nan
-            p_pval = nan
-    return p_pval 
-
-def nonparametric_correlation_significance(test_stat, test, v1, v2,
-    permutations=1000):
-    """Calc significance of a correlation coefficient with nonparametric method.
-
-    This function permutes v2 and calculates the correlation coefficient with 
-    the selected test permutations number of times. The reported value is the 
-    number of times the calculated test statistic is more extreme than the 
-    passed test_stat (as a fraction of the number of permutations).
-
-    Inputs:
-     test_stat - numeric, the correlation coefficient whose significance we are 
-      to test.
-     test - function, the test we are to use to calculate the correlations in 
-      the bootstrapped data. must return only correlation value (not a p val).
-     v1,v2 - 1D array of floats, values to be correlated.
-     permutations - int, number of bootstrapped correlation coefficients to 
-      calculate.
-    """
-    perm_corr_vals = []
-    for i in range(permutations):
-        perm_corr_vals.append(test(v1, permutation(v2)))
-    # calculate number of bootstrapped statistics which were greater than or 
-    # equal to passed test_stat
-    return (abs(array(perm_corr_vals)) >= abs(test_stat)).sum()/float(permutations)
-
-def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
-    """Calc confidence interval of test_stat using Fishers Z transform.
-
-    Fishers Z transform is described in Sokal and Rolhf. 
-    Inputs:
-     test_stat - numeric, the correlation coefficient whose significance we are 
-      to test.
-     n - int, length of vectors that were correlated. 
-     confidence_level - float in (0,1), level of confidence we want for the 
-      intervals.
-    """
-    # compute confidence intervals using fishers z transform
-    z_crit = abs(ndtri((1 - confidence_level) / 2.))
-    ci_low, ci_high = None, None
-    if n > 3:
-        try:
-            ci_low = tanh(arctanh(test_stat) - (z_crit / sqrt(n - 3)))
-            ci_high = tanh(arctanh(test_stat) + (z_crit / sqrt(n - 3)))
-        except (ZeroDivisionError, FloatingPointError):
-            # r or rho was presumably 1 or -1. Match what R does in this case.
-            # feel like nan should be returned here given that we can't make 
-            # the calculation
-            ci_low, ci_high = test_stat, test_stat
-    return ci_low, ci_high
 
 def correlation_matrix(series, as_rows=True):
     """Returns pairwise correlations between each pair of series.
@@ -2049,3 +1762,175 @@ def bonferroni_correction(pvals):
     In short: multiply all pvals by the number of comparisons."""
     return array(pvals)*len(pvals)
 
+def fisher_z_transform(r):
+    """Calculate the Fisher Z transform of a correlation coefficient.
+    Relies on formulation in Sokal and Rohlf Biometry pg 575.
+    """
+    return .5*log((1.+r)/(1.-r))
+
+def z_transform_pval(z, n):
+    '''Calculate two tailed probability of value more extreme than z given n.
+    Relies on formulation in Sokal and Rohlf Biometry pg 576.
+    '''
+    assert n > 3, 'z_transform_pval: sample size must be greater than 3.'
+    return zprob(z*((n-3)**.5))
+
+def inverse_fisher_z_transform(z):
+    """Calculate the inverse of the Fisher Z transform on a z value.
+    Relies on formulation in Sokal and Rohlf Biometry pg 576.
+    """
+    return ((e**(2*z))-1.)/((e**(2*z))+1.)
+
+def fisher_population_correlation(corrcoefs, sample_sizes):
+    """Calculate population rho, homogeneity from corrcoefs using Z transform.
+    Exclude pvals of nan. 
+    """
+    rs = array(corrcoefs)
+    ns = array(sample_sizes)
+    # make checks for nans and exclude them as they will cause things to break
+    rs = rs[~isnan(rs)]
+    ns = ns[~isnan(rs)]
+    if not (ns > 3).all():
+        print 'fisher_population_correlation: not all samples '+\
+            'have size > 3 which causes 0 varaince estimation. returning nan.'
+        return nan, nan
+    # calculate zs
+    zs = fisher_z_transform(rs)
+    # calculate variance weighted z average = z_bar
+    z_bar = (zs*(ns-3)).sum()/float((ns-3).sum())
+    rho = inverse_fisher_z_transform(z_bar)
+    # calculate homogeneity
+    x_2 = ((ns-3)*(zs-z_bar)).sum()
+    h_val = chisqprob(x_2, len(ns)-1)
+    return rho, h_val
+
+def assign_correlation_pval(corr, n, method, permutations=None, 
+    perm_test_fn=None, v1=None, v2=None):
+    '''Assign pval to a correlation score with given method.
+
+    This function will assign significance to the correlation score passed given
+    the method that is passed. Some of the methods are appropriate only for 
+    certain types of data and there is no way for this test to determine the 
+    appropriateness, thus you must use this function only when with the proper
+    prior knowledge. The 'parametric_t_distribution' method is described in 
+    Sokal and Rohlf Biometry pg. 576, the 'fisher_z_transform' method is 
+    described on pg 576 and 577. The 'bootstrap' method calculates the given 
+    correlation permutations number of times using perm_test_fn.
+    Also note, this does *not* take the place of FDR correction.
+    Inputs: 
+     corr - float, correlation score from Kendall's Tau, Spearman's Rho, or 
+     Pearson. 
+     n - length of the vectors that were correlated. 
+     method - str in ['parametric_t_distribution', 'fisher_z_transform', 
+        'bootstrapped.'].
+     permutations - int, number of permutations to use if bootstrapped selected.
+    '''
+
+    if method == 'parametric_t_distribution':
+        df = n-2
+        assert df>1, "Must have more than 1 degree of freedom. Can't Continue."
+        ts = corr*(df-df*corr**2)**.5
+        try:
+            return tprob(ts, df) #two tailed test because H0 is corr=0
+        except (ValueError, FloatingPointError, ZeroDivisionError):
+            # something unpleasant happened, most likely r or rho where +- 1 
+            # which means the parametric p val should be 1 or 0 or nan
+            return nan
+    elif method=='fisher_z_transform':
+        if n<50:
+            print 'Warning: Sokal and Rohlf indicate that for n<50, the '+\
+                'Fisher Z transform for assigning correlation probabilities '+\
+                'is not accurate.'
+        z = fisher_z_transform(corr)
+        # the z transform pval compares against a t distribution with inf 
+        # degrees of freedom which is equal to a t distribution. 
+        return z_transform_pval(z, n)
+    elif method=='bootstrapped':
+        if not all([v1, v2, permutations, perm_test_fn]):
+            raise ValueError('You must specify vectors, permutation '+\
+                'function, and number of permutations to calculate '+\
+                'bootstrapped pvalues. Cant continue.')
+        r = empty(len(permutation))
+        for i in range(permutations):
+            r[i] == perm_test_fn(v1,permutation(v2))
+        return (abs(r)>=abs(corr)).sum()/float(permutations)
+    else:
+        raise ValueError("'%s' method is unknown." % method)
+
+# def parametric_correlation_significance(test_stat, n):
+#     """Calc significance of a correlation coefficient with parametric method.
+
+#     Note, we are using a two tailed t_test since our alternate hypothesis is 
+#     that uncorrelated bivariate data could generate a test statistic value as 
+#     extreme or more extreme in either direction, thus we have two tails 
+#     (-inf,-x) and (x, inf). For more information look at Sokal and Rohlf, 
+#     Biometry, pg 574. This is a parametric test and makes many assumptions about
+#     the data from which the test_stat was calculated. 
+
+#     Inputs:
+#      test_stat - numeric, the correlation coefficient whose significance we are 
+#       to test.
+#      n - int, length of vectors that were correlated. 
+#     """
+#     df = n-2 #degrees of freedom
+#     if n<3: #need at least 3 samples for students t parametric p value calc
+#         p_pval = 1.0 #p_pval = parametric p value
+#     else: 
+#         try:
+#             t_stat = test_stat/sqrt((1.-test_stat**2)/float(df))
+#             p_pval = tprob(t_stat, df) #we force it to be two tailed
+#         except (ZeroDivisionError, FloatingPointError):
+#             # something unpleasant happened, most likely r or rho where +- 1 
+#             # which means the parametric p val should be 1 or 0 or nan
+#             p_pval = nan
+#     return p_pval 
+
+# def nonparametric_correlation_significance(test_stat, test, v1, v2,
+#     permutations=1000):
+#     """Calc significance of a correlation coefficient with nonparametric method.
+
+#     This function permutes v2 and calculates the correlation coefficient with 
+#     the selected test permutations number of times. The reported value is the 
+#     number of times the calculated test statistic is more extreme than the 
+#     passed test_stat (as a fraction of the number of permutations).
+
+#     Inputs:
+#      test_stat - numeric, the correlation coefficient whose significance we are 
+#       to test.
+#      test - function, the test we are to use to calculate the correlations in 
+#       the bootstrapped data. must return only correlation value (not a p val).
+#      v1,v2 - 1D array of floats, values to be correlated.
+#      permutations - int, number of bootstrapped correlation coefficients to 
+#       calculate.
+#     """
+#     perm_corr_vals = []
+#     for i in range(permutations):
+#         perm_corr_vals.append(test(v1, permutation(v2)))
+#     # calculate number of bootstrapped statistics which were greater than or 
+#     # equal to passed test_stat
+#     return (abs(array(perm_corr_vals)) >= abs(test_stat)).sum()/float(permutations)
+
+def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
+    """Calc confidence interval of test_stat using Fishers Z transform.
+
+    Fishers Z transform is described in Sokal and Rolhf. 
+    Inputs:
+     test_stat - numeric, the correlation coefficient whose significance we are 
+      to test.
+     n - int, length of vectors that were correlated. 
+     confidence_level - float in (0,1), level of confidence we want for the 
+      intervals.
+    """
+    # compute confidence intervals using fishers z transform
+    z_crit = abs(ndtri((1 - confidence_level) / 2.))
+    ci_low, ci_high = None, None
+    if n > 3:
+        try:
+            ci_low = tanh(arctanh(test_stat) - (z_crit / sqrt(n - 3)))
+            ci_high = tanh(arctanh(test_stat) + (z_crit / sqrt(n - 3)))
+        except (ZeroDivisionError, FloatingPointError):
+            # r or rho was presumably 1 or -1. Match what R does in this case.
+            # feel like nan should be returned here given that we can't make 
+            # the calculation
+            ci_low, ci_high = test_stat, test_stat
+    return ci_low, ci_high

@@ -178,7 +178,7 @@ def main():
         lines = longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, 
             homogenous, fdr_ps, bon_ps, rs, hsid_to_samples)
         # arange by fdr_ps
-        lines = sort_by_pval(lines, 4)
+        lines = sort_by_pval(lines, ind=4)
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
         o.close()

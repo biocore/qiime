@@ -11,9 +11,12 @@ from qiime.pycogent_backports.test import (tail, likelihoods,
     regress_major, f_value, f_two_sample, MonteCarloP, 
     regress_residuals, safe_sum_p_log_p, regress_origin, stdev_from_mean, 
     regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, 
-    pearson, spearman, _get_rank, std, median, 
+    pearson, spearmans_rho, std, median, 
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
     ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
+from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
+    ones, testing, tril, cov, sqrt)
+import math
 # G Test related imports
 from qiime.pycogent_backports.test import (williams_correction, G_stat, G_fit)
 from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
@@ -23,9 +26,9 @@ from qiime.pycogent_backports.test import (_corr_kw, ssl_ssr_sx, tie_correction,
 # fdr/bonferroni imports
 from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
     fdr_correction, bonferroni_correction)
-from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
-    ones, testing, tril, cov, sqrt)
-import math
+# kendalls tau import
+from qiime.pycogent_backports.test import (rank_with_ties, count_occurrences, 
+    kendalls_tau, kendall_pval)
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
@@ -876,7 +879,7 @@ class CorrelationTests(TestsHelper):
         """Sets up variables used in the tests."""
         super(CorrelationTests, self).setUp()
 
-        # For testing spearman and correlation_test using method='spearman'.
+        # For testing spearman and correlation_test using method='spearmans_rho'.
         # Taken from the Spearman wikipedia article. Also used for testing
         # Pearson (verified with R).
         self.data1 = [106, 86, 100, 101, 99, 103, 97, 113, 112, 110]
@@ -1027,88 +1030,41 @@ class CorrelationTests(TestsHelper):
 
     def test_pearson_invalid_input(self):
         """Test running pearson on bad input."""
-        self.assertRaises(ValueError, pearson, [1.4, 2.5], [5.6, 8.8, 9.0])
-        self.assertRaises(ValueError, pearson, [1.4], [5.6])
+        self.assertRaises(AssertionError, pearson, [1.4, 2.5], [5.6, 8.8, 9.0])
+        self.assertRaises(AssertionError, pearson, [1.4], [5.6])
 
     def test_spearman(self):
         """Test the spearman function with valid input."""
         # One vector has no ties.
         exp = 0.3719581
-        obs = spearman(self.a, self.b)
+        obs = spearmans_rho(self.a, self.b)
         self.assertFloatEqual(obs, exp)
 
         # Both vectors have no ties.
         exp = 0.2969697
-        obs = spearman(self.b, self.c)
+        obs = spearmans_rho(self.b, self.c)
         self.assertFloatEqual(obs, exp)
 
         # Both vectors have ties.
         exp = 0.388381
-        obs = spearman(self.a, self.r)
+        obs = spearmans_rho(self.a, self.r)
         self.assertFloatEqual(obs, exp)
 
         exp = -0.17575757575757578
-        obs = spearman(self.data1, self.data2)
+        obs = spearmans_rho(self.data1, self.data2)
         self.assertFloatEqual(obs, exp)
 
     def test_spearman_no_variation(self):
         """Test the spearman function with a vector having no variation."""
         exp = 0.0
-        obs = spearman([1, 1, 1], [1, 2, 3])
+        obs = spearmans_rho([1, 1, 1], [1, 2, 3])
         self.assertFloatEqual(obs, exp)
 
     def test_spearman_ranked(self):
         """Test the spearman function with a vector that is already ranked."""
         exp = 0.2969697
-        obs = spearman(self.b_ranked, self.c_ranked)
+        obs = spearmans_rho(self.b_ranked, self.c_ranked)
         self.assertFloatEqual(obs, exp)
-
-    def test_spearman_one_obs(self):
-        """Test running spearman on a single observation."""
-        self.assertRaises(ValueError, spearman, [1.0], [5.0])
-
-    def test_spearman_invalid_input(self):
-        """Test the spearman function with invalid input."""
-        self.assertRaises(ValueError, spearman, [],[])
-        self.assertRaises(ValueError, spearman, self.a, [])
-        self.assertRaises(TypeError, spearman, {0:2}, [1,2,3])
-
-    def test_get_rank(self):
-        """Test the _get_rank function with valid input."""
-        exp = ([1.5,3.5,7.5,5.5,1.5,9.0,10.0,11.0,12.0,7.5,14.0,3.5,5.5,13.0],
-               4)
-        obs = _get_rank(self.x)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,3.0,5.5,4.0,1.5,7.0,8.0,9.0,10.0,5.5],2)
-        obs = _get_rank(self.a)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([2,7,10,1,3,6,4,8,5,9],0)
-        obs = _get_rank(self.b)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,7.0,10.0,1.5,3.0,6.0,4.0,8.0,5.0,9.0], 1)
-        obs = _get_rank(self.r)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([],0)
-        obs = _get_rank([])
-        self.assertEqual(exp,obs)
-
-    def test_get_rank_invalid_input(self):
-        """Test the _get_rank function with invalid input."""
-        vec = [1, 'a', 3, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, {1:2}, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, [23,1], 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, (1,), 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
 
     def test_correlation(self):
         """Correlations and significance should match R's cor.test()"""
@@ -1164,7 +1120,7 @@ class CorrelationTests(TestsHelper):
         """Test correlation_test using spearman on valid input."""
         # This example taken from Wikipedia page:
         # http://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient
-        obs = correlation_test(self.data1, self.data2, method='spearman',
+        obs = correlation_test(self.data1, self.data2, method='spearmans_rho',
                                tails='high')
         self.assertFloatEqual(obs[:2], (-0.17575757575757578, 0.686405827612))
         self.assertEqual(len(obs[2]), 999)
@@ -1172,7 +1128,7 @@ class CorrelationTests(TestsHelper):
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
         self.assertCorrectPValue(0.67, 0.7, correlation_test,
                 (self.data1, self.data2),
-                {'method':'spearman', 'tails':'high'}, p_val_idx=3)
+                {'method':'spearmans_rho', 'tails':'high'}, p_val_idx=3)
         self.assertFloatEqual(obs[4],
                               (-0.7251388558041697, 0.51034422964834503))
 
@@ -1181,7 +1137,7 @@ class CorrelationTests(TestsHelper):
         # here for a two-tailed test:
         # http://stats.stackexchange.com/questions/22816/calculating-p-value-
         #     for-spearmans-rank-correlation-coefficient-example-on-wikip
-        obs = correlation_test(self.data1, self.data2, method='spearman',
+        obs = correlation_test(self.data1, self.data2, method='spearmans_rho',
                                tails=None)
         self.assertFloatEqual(obs[:2],
                 (-0.17575757575757578, 0.62718834477648433))
@@ -1190,7 +1146,7 @@ class CorrelationTests(TestsHelper):
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
         self.assertCorrectPValue(0.60, 0.64, correlation_test,
                 (self.data1, self.data2),
-                {'method':'spearman', 'tails':None}, p_val_idx=3)
+                {'method':'spearmans_rho', 'tails':None}, p_val_idx=3)
         self.assertFloatEqual(obs[4],
                               (-0.7251388558041697, 0.51034422964834503))
 
@@ -1248,13 +1204,13 @@ class CorrelationTests(TestsHelper):
                 ([1, 2, 3], [1, 2, 3]), p_val_idx=3)
         self.assertFloatEqual(obs[4], (None, None))
 
-        obs = correlation_test([1, 2, 3], [1, 2, 3], method='spearman')
+        obs = correlation_test([1, 2, 3], [1, 2, 3], method='spearmans_rho')
         self.assertFloatEqual(obs[:2], (1.0, 0))
         self.assertEqual(len(obs[2]), 999)
         for r in obs[2]:
             self.assertTrue(r >= -1.0 and r <= 1.0)
         self.assertCorrectPValue(0.3, 0.4, correlation_test,
-                ([1, 2, 3], [1, 2, 3]), {'method':'spearman'}, p_val_idx=3)
+                ([1, 2, 3], [1, 2, 3]), {'method':'spearmans_rho'}, p_val_idx=3)
         self.assertFloatEqual(obs[4], (None, None))
 
     def test_correlation_matrix(self):
@@ -1648,94 +1604,97 @@ class TestDistMatrixPermutationTest(TestCase):
         obs = bonferroni_correction(pvals)
         self.assertFloatEqual(obs, exp)
 
-class Test_Kendall_tau(TestCase):
+class Test_Kendalls_Tau(TestCase):
     """Tests for functions calculating Kendall tau"""
+    def setUp(self):
+        '''Set up things needed for all Kendall's tau tests.'''
+        pass
 
-    def test_get_group_ranks(self):
-        """test get_group_ranks to return two sorted, ranked lists"""
-        d1 = [1,2,3,4,5]
-        d2 = [1,3,5,4,2]
-        exp1 = (1.0, 2.0, 3.0, 4.0, 5.0)
-        exp2 = (1.0, 3.0, 5.0, 4.0, 2.0)
-        res1, res2 = get_group_ranks(d1, d2)
-        self.assertEqual(res1, exp1)
-        self.assertEqual(res2, exp2)
+    def test_rank_with_ties(self):
+        '''Test vector is correctly ranked with and without ties.'''
+        v1 = [1, 1, 1, 1, 4, 5, 10, 1]
+        exp = array([3, 3, 3, 3, 6, 7, 8, 3])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [1.5, 1.3, 0.0, 12, 1.3, 7.9]
+        exp = array([4, 2.5, 1, 6, 2.5, 5])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 1, 0, 0]
+        exp = array([3, 3, 3, 6, 3, 3])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,
+            6.30,6.03]
+        exp = array([9,4,10,6.5,2,3,15,1,13,8,6.5,5,12,14,11])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
 
-        # test when ranks results in ties
-        d1 = [2,2,4,4,6,6,8,8]
-        d2 = [1,2,3,4,5,6,7,8]
-        exp1 = (1.5, 1.5, 3.5, 3.5, 5.5, 5.5, 7.5, 7.5)
-        exp2 = (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
-        res1, res2 = get_group_ranks(d1,d2)
-        self.assertEqual(res1, exp1)
-        self.assertEqual(res2, exp2)
+    def test_count_occurrences(self):
+        '''Test that ties are properly counted in vectors.'''
+        v1 = [1, 1, 1, 1, 4, 5, 10, 1]
+        exp = [5, 1, 1, 1]
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [1.5, 1.3, 0.0, 12, 1.3, 7.9]
+        exp = array([1, 2, 1, 1, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 1, 0, 0]
+        exp = array([5, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [5, 4, 2, 1, 7.8]
+        exp = array([1, 1, 1, 1, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 0, 0, 0]
+        exp = array([6])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
 
-        #test from pg. 594 Sokal and Rohlf, Box 15.7
-        d1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
-        d2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,6.30,6.03]
-        exp1 = (1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0)
-        exp2 = (2.0,1.0,13.0,5.0,3.0,4.0,12.0,9.0,10.0,6.5,6.5,8.0,14.0,11.0,15.0)
-        res1, res2 = get_group_ranks(d1,d2)
-        self.assertEqual(res1, exp1)
-        self.assertEqual(res2, exp2)
-
-        # lists not the same length, raise error
-        d1 = [1,1,1,1]
-        d2 = [2,2]
-        self.assertRaises(AssertionError, get_group_ranks, d1, d2)
-
-        # one list has no variance, aka all the same value, raise error
-        d1 = [0,0,0,0,0]
-        d2 = [2,4,6,8,10]
-        self.assertRaises(AssertionError, get_group_ranks, d1, d2)
-
-    def test_compute_rank_count(self):
-        """test compute_rank_count to return sum of counts"""
-        #test from pg. 594 Sokal and Rohlf, Box 15.7
-        s1 = (1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0)
-        s2 = (2.0,1.0,13.0,5.0,3.0,4.0,12.0,9.0,10.0,6.5,6.5,8.0,14.0,11.0,15.0)
-        exp_sums = [105, 78.5]
-        exp_n = 15
-        exp_ties = [0,2]
-        sums, n, ties = compute_rank_count(s1, s2)
-        self.assertEqual(sums,exp_sums)
-        self.assertEqual(n, exp_n)
-        self.assertEqual(ties,exp_ties)
-
-        s1 = [2,2,2,4]
-        s2 = [2,4,6,8]
-        exp_sums = [4.5, 6]
-        exp_n = 4
-        exp_ties = [6, 0]
-        sums, n, ties = compute_rank_count(s1, s2)
-        self.assertEqual(sums,exp_sums)
-        self.assertEqual(n, exp_n)
-        self.assertEqual(ties,exp_ties)
-
-    def test_calc_kendall_statistic(self):
-        """tests calc_kendall_statistic to return tau and test statistic"""
-
-        #test from pg. 594 Sokal and Rohlf, Box 15.7
-        #returns tau and test statistic (ts)
-        sums = [105, 78.5]
-        n = 15
-        ties = [0,2]
-        exp_tau = 0.49761335152811925
-        exp_ts = 2.5856748221140036
-        tau, p = calc_kendall_statistic(sums, n, ties)
-        self.assertFloatEqual(tau, exp_tau)
-        self.assertFloatEqual(p, exp_ts)
-
-    def test_new_kendall_tau(self):
+    def test_kendalls_tau(self):
         """tests new kendall tau implamentation, returns tau, prob"""
         #test from pg. 594 Sokal and Rohlf, Box 15.7
-        d1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
-        d2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,6.30,6.03]
+        v1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
+        v2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,
+            6.13,6.30,6.03]
+        obs_tau = kendalls_tau(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
         exp_tau = 0.49761335152811925
         exp_prob = 0.0097188572446995618
-        tau, prob = new_kendall_tau(d1, d2)
-        self.assertFloatEqual(tau, exp_tau)
-        self.assertFloatEqual(prob, exp_prob)
+        self.assertFloatEqual(obs_tau, exp_tau)
+        self.assertFloatEqual(obs_prob, exp_prob)
+        # random vectors checked against scipy. v1 has 33 ties, v2 32
+        v1 = array([ 1.2,  9.7,  8.8,  1.7,  8.6,  9.9,  6.8,  7.3,  5.5,  5.4,  8.3,
+        3.6,  7.5,  2. ,  9.3,  5.1,  8.4,  0.3,  8.2,  2.4,  9.8,  8.5,
+        2.1,  6. ,  1.8,  3.7,  1.4,  4.6,  7.6,  5.2,  0.9,  5.2,  4.7,
+        2.9,  5. ,  6.9,  1.3,  6.7,  5.2,  2.4,  6.9,  2. ,  7.4,  0.4,
+        8.2,  9.5,  2.9,  5.7,  2.4,  8.8,  1.6,  3.5,  5.1,  3.6,  3.3,
+        7.5,  0.9,  9.3,  5.4,  6.9,  9.3,  2.3,  1.9,  8.1,  3.2,  4.2,
+        8.7,  3. ,  9.8,  5.3,  6.2,  4.8,  9. ,  2.8,  5.5,  8.4,  4.1,
+        5.6,  5.4,  6.9,  3.8,  2.7,  0.3,  3.9,  8.2,  6.6,  1.9,  3.9,
+        2. ,  4.4,  0.8,  6.5,  4.8,  1.5,  9.9,  9.1,  9.9,  6.2,  2.9,
+        2. ])
+        v2 = array([  6.6,   8.6,   3.9,   6.1,   0.9,   8.4,  10. ,   3.3,   0.4,
+         3.9,   7.6,   8.2,   8.6,   3. ,   6.9,   0.6,   8.4,   8.1,
+         6.3,   0.5,   5.2,   6.4,   8. ,   9.9,   1.2,   6.7,   8.4,
+         2.7,   8.4,   4.1,   4.6,   5.1,   5.2,   5.3,   2.2,   2.2,
+         4.3,   7.1,   1.4,   6.6,   7.6,   4.5,   7.8,   3.5,   7.1,
+         0.6,   4.6,   3.2,   2.2,   0.2,   3.9,   5.9,   7.7,   8.8,
+         1.3,   5.1,   5.6,   8.3,   8.8,   1.7,   5.2,   6.9,   1.3,
+         1.4,   4.9,   9.4,   2.3,   3.7,   9.1,   3.4,   1.6,   4.1,
+         9.7,   2.8,   9.9,   0.5,   2. ,   2.7,   3.3,   2.4,   3.6,
+         7.9,   6.5,   7. ,   4.2,   1.8,   1.6,   1.9,   5.5,   0. ,
+         1.4,   2.2,   7.2,   8.2,   1.1,   2.5,   5.3,   0.2,   9. ,   0.2])
+        exp_tau, exp_prob = (0.024867511238807951, 0.71392573687923555)
+        obs_tau = kendalls_tau(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
+        self.assertFloatEqual(obs_tau, exp_tau)
+        self.assertFloatEqual(obs_prob, exp_prob)
+
+
+
 
 
 #execute tests if called from command line
