@@ -44,8 +44,6 @@ class FizzyTests(TestCase):
 		"""
       this test is going to ensure that we can properly parse our biom file
 		"""
-		# it should be safe to assume the user is working with 
-		# linux / unix. this will not be supported by windows. 
 
 		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
 
