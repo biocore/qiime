@@ -71,12 +71,10 @@ def parse_map_file(fname, column_name, observation_names):
 			raise ValueError("""Unknown observation name supplied. Make sure that the
 			observation name is in map file you specified""")
 
-	for id_set in observation_names:
 		if(column_name not in obj[id_set]):
 			raise ValueError("""Unknown observation name supplied. Make sure that the
 			observation name is in map file you specified""")
 
-	for id_set in observation_names:
 		label_full.append(obj[id_set][column_name])
 
 	# now that we have the full class labels we need to determine
