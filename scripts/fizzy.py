@@ -53,8 +53,7 @@ script_info['required_options'] = [
 	make_option('-o',
 		'--output_path',
 		type="new_filepath",
-		help='the output file [default: %default]',
-		default='output.txt')
+		help='the output file')
 ]
 script_info['optional_options'] = [
 	make_option('-k',
