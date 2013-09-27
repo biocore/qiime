@@ -9,6 +9,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Added a parallel merge OTUs method that will combine OTU tables in parallel where possible.
 * Added identify_paired_differences.py to support paired difference (i.e., Pre/Post) testing as discussed in issue #1040.
 * Required biom-format version is now 1.2.0.
+* merge_otu_tables.py is now merge_biom_tables.py, and parallel_merge_otu_tables.py is now parallel_merge_biom_tables.py
 
 QIIME 1.7.0 (14 May 2013)
 =========================
