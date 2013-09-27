@@ -57,8 +57,7 @@ class FizzyTests(TestCase):
 
 		correct_map = [0,1.,1.]
 
-		map_file_handle = StringIO.StringIO(map_file_string)
-		parsed_map = fizzy.parse_map_file(map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
+		parsed_map = fizzy.parse_map_file(self.map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
 
 		self.assertEqual(parsed_map, correct_map)
 
