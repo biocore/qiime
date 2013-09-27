@@ -70,10 +70,10 @@ def parse_map_file(fname, column_name, observation_names):
 		if(id_set not in obj):
 			raise ValueError("Unknown observation name supplied. Make sure that the observation name is in map file you specified")
 		if(column_name not in obj[id_set]):
-			raise ValueError("Unknown observation name supplied. Make sure that the observation name is in map file you specified")
+			raise ValueError("Unknown class name supplied. Make sure that the column name is in map file you specified")
 		label_full.append(obj[id_set][column_name])
-
-	# now that we have the full class labels we need to determine
+	
+  # now that we have the full class labels we need to determine
 	# the number of unique classes in the the data. if the number of
 	# classes is equal to the number of obervations, throw an error. 
 	# its likely the user does not know what they are doing. 
