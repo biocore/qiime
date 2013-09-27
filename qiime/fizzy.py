@@ -54,8 +54,8 @@ def parse_map_file(fname, column_name, observation_names):
 		@fname - file handle
 		@column_name - name of the column that contains the class 
 			labels
-		@observation_names - names of the obervatiosn in the order
-			of which the samples appear in the data set. 
+		@observation_names - names of the observations in the order
+			of which they appear in the data set. 
 		@labels - numpy array of class labels
 	"""
 	from qiime.parse import parse_mapping_file_to_dict
