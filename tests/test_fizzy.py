@@ -32,6 +32,29 @@ class FizzyTests(TestCase):
 		self.biom_file_handle = StringIO.StringIO(biom_file_string)
 		self.map_file_handle = StringIO.StringIO(map_file_string)
 
+
+	def uniform_data(self, n_observations, n_features, n_select):
+		""" Generate some uniform data to use for test_pyfeast_run """
+		import numpy as np
+		xmax = 10
+		xmin = 1
+
+		data = 1.0*np.random.randint(xmax + 1, size = (n_features, n_observations))
+		labels = np.zeros(n_observations)
+		delta = n_select * (xmax - xmin) / 2.0
+
+		for m in range(n_observations):
+			zz = 0.0
+			for k in range(n_select):
+				zz += data[k, m]
+				if zz > delta:
+					labels[m] = 1
+				else:
+					labels[m] = 2
+		data = data.transpose()
+		return data, labels
+
+
 	def test_get_fs_methods(self):
 		"""
 			this test is going to make sure that we are only 
@@ -61,27 +84,6 @@ class FizzyTests(TestCase):
 
 		self.assertEqual(parsed_map, correct_map)
 
-	def uniform_data(self, n_observations, n_features, n_select):
-		""" Generate some uniform data to use for test_pyfeast_run """
-
-		import numpy as np
-		xmax = 10
-		xmin = 1
-
-		data = 1.0*np.random.randint(xmax + 1, size = (n_features, n_observations))
-		labels = np.zeros(n_observations)
-		delta = n_select * (xmax - xmin) / 2.0
-
-		for m in range(n_observations):
-			zz = 0.0
-			for k in range(n_select):
-				zz += data[k, m]
-				if zz > delta:
-					labels[m] = 1
-				else:
-					labels[m] = 2
-		data = data.transpose()
-		return data, labels
 
 	def test_run_pyfeast(self):
 		"""
