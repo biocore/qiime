@@ -12,8 +12,6 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os.path import join
-from matplotlib import use
-use('Agg', warn=False)
 from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
 from numpy import linspace
 from cogent.util.misc import create_dir
