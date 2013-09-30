@@ -19,8 +19,6 @@ from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat, parse_mapping_file
 from qiime.filter import (filter_samples_from_distance_matrix,
     sample_ids_from_metadata_description)
-from matplotlib import use
-use('Agg', warn=False)
 from pylab import (plot, xlabel, ylabel, title, savefig, ylim, xlim, legend,
     show, figure)
 from numpy import asarray
