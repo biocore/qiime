@@ -1,0 +1,17 @@
+Parallel merge output
+
+Dependency tree:
+                    /-
+          /0-------|
+         |          \-
+-2-------|
+         |          /-
+          \1-------|
+                    \-
+
+python /Users/mcdonadt/ResearchWork/software/qiime/scripts/merge_otu_tables.py -i ../t3.biom,../t4.biom -o merged/MOTU_BxH1_/1.biom; echo $? > merged/MOTU_BxH1_/1.biom.poll
+python /Users/mcdonadt/ResearchWork/software/qiime/scripts/merge_otu_tables.py -i ../t1.biom,../t2.biom -o merged/MOTU_BxH1_/0.biom; echo $? > merged/MOTU_BxH1_/0.biom.poll
+Node 1 completed in 0.387909 seconds
+Node 0 completed in 0.000117 seconds
+python /Users/mcdonadt/ResearchWork/software/qiime/scripts/merge_otu_tables.py -i merged/MOTU_BxH1_/0.biom,merged/MOTU_BxH1_/1.biom -o merged/MOTU_BxH1_/2.biom; echo $? > merged/MOTU_BxH1_/2.biom.poll
+Node 2 completed in 0.000058 seconds
