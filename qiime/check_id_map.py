@@ -93,7 +93,7 @@ def check_mapping_file(mapping_fp,
     header, mapping_data, run_description, errors, warnings =\
      process_id_map(open(mapping_fp, 'U'), disable_primer_check,
      has_barcodes, char_replace, variable_len_barcodes,
-     added_demultiplex_field)
+     added_demultiplex_field, strip_quotes=False, suppress_stripping=True)
 
     if not suppress_html:
         formatted_html = format_mapping_html_data(header, mapping_data,
@@ -140,7 +140,9 @@ def process_id_map(mapping_f,
                    has_barcodes=True,
                    char_replace="_",
                    variable_len_barcodes=False,
-                   added_demultiplex_field=None):
+                   added_demultiplex_field=None,
+                   strip_quotes=True,
+                   suppress_stripping=False):
     """ Reads mapping file, returns data, warnings, and errors
     
     mapping_f:  list of lines (open metadata mapping file object)
@@ -155,14 +157,16 @@ def process_id_map(mapping_f,
      file to use for demultiplexing.  These are to be read from fasta labels
      during the actual demultiplexing step.  All combinations of barcodes,
      primers, and the added_demultiplex_field must be unique.
+    strip_quotes: Sets stripping of quote characters from the mapping file.
+    suppress_stripping: suppresses stripping of white space from mapping file.
     
     """
     
     errors = []
     warnings = []
     
-    mapping_data, header, comments = parse_mapping_file(mapping_f,
-     suppress_stripping=False)
+    mapping_data, header, comments = parse_mapping_file(mapping_f, strip_quotes,
+     suppress_stripping)
     
     sample_id_ix = 0
     # Get index of last field of header
@@ -390,7 +394,7 @@ def check_dna_chars_primers(header,
     # Check for non-DNA characters     
     for curr_data in range(len(mapping_data)):
         for curr_ix in check_indices:
-            for curr_nt in mapping_data[curr_data][curr_ix].strip():
+            for curr_nt in mapping_data[curr_data][curr_ix]:
                 if curr_nt not in valid_dna_chars:
                     errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
                      (mapping_data[curr_data][curr_ix],
@@ -438,7 +442,7 @@ def check_dna_chars_bcs(header,
                 errors.append("Missing expected DNA sequence\t%d,%d" %\
                  (curr_data + correction_ix, curr_ix))
                 continue
-            for curr_nt in mapping_data[curr_data][curr_ix].strip():
+            for curr_nt in mapping_data[curr_data][curr_ix]:
                 if curr_nt not in valid_dna_chars:
                     errors.append("Invalid DNA sequence detected: %s\t%d,%d" %\
                      (mapping_data[curr_data][curr_ix],
@@ -483,6 +487,7 @@ def check_bcs_lengths(header,
             warnings.append('Barcode %s differs than length %d\t%d,%d' %\
              (mapping_data[curr_data][check_ix], expected_bc_len,
              curr_data + correction_ix, check_ix))
+
     
     return warnings
     
