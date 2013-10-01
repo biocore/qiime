@@ -8,11 +8,11 @@
     # read the header
     f <- file(filepath,'r')
     header <- scan(filepath, what='character', sep='\t',comment='',skip=header.index-1,quote='"',
-                    nlines=1,quiet=TRUE)
+                    nlines=1,quiet=TRUE,strip.white=TRUE)
     close(f)
     # read the rest of the table
     datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',quote='"',
-                        head=F,row.names=1,check=FALSE)
+                        head=F,row.names=1,check=FALSE,strip.white=TRUE)
     
     # set column names using header
     colnames(datatable) <- header[-1]
@@ -68,7 +68,7 @@
         linecount <- linecount + 1
         f <- file(filepath,'r') # open file in read mode
         line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t',
-                     quote='"', quiet=TRUE)
+                     quote='"', quiet=TRUE, strip.white=TRUE)
         close(f)
         # ncolumns is the number of entries in this line
         # not including trailing empties
@@ -98,12 +98,12 @@
 }
 
 "load.qiime.taxon.table" <- function(filepath){
-    taxa <- as.matrix(t(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"')))
+    taxa <- as.matrix(t(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"',strip.white=TRUE)))
     return(taxa)
 }
 
 "load.qiime.distance.matrix" <- function(filepath){
-    d <- as.matrix(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"'))
+    d <- as.matrix(read.table(filepath,sep='\t',head=T,row.names=1,check=FALSE,quote='"',strip.white=TRUE))
     return(d)
 }
 
