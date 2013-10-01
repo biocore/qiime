@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # interactive commands are commented out
 #print_qiime_config.py
 
