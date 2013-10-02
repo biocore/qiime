@@ -30,15 +30,16 @@ What is Required
 * a biom file containing the abundance profiles
 * a mapping file containing the meta-data
 * the column in the mapping file that contains the class information (e.g., unhealthy or control).
+* output file location containing the results from feature selection
 
 
 Using Feature Selection on Your Data
 ------------------
-Fizzy requires three inputs to be specified: a biom-format file, mapping file, and a file to save the results. The biom-file must be in the standard biom format. The mapping file must be tab-delimited and contain the class labels in one of the columns. The labels need not be specified with integer, rather a labeling scheme like 'healthy' or 'unhealthy' will work just fine. Given that you have these files properly formatted you can call the Fizzy module from the commandline as follows: ::
+Fizzy requires four flags to be specified: a biom-format file, mapping file, a column specifying the labels in the map file, and a file to save the results. The biom-file must be in the standard biom format. The map file must be tab-delimited and contain the class labels in one of the columns. The labels need not be specified with integer, rather a labeling scheme like 'healthy' or 'unhealthy' will work just fine. Given that you have these files properly formatted you can call the Fizzy module from the commandline as follows: ::
 
 	fizzy.py -i data.biom -m map.txt -c Class -o output.txt
 
-Given this call, Fizzy will fix the number of features being selected to 15 and the mutual information maximization algorithm will be used. The class labels are determined by the column 'Class' in the mapping file `map.txt`. The results will be written to `output.txt` in the directory from which `fizzy.py` was called. The user has control over the number of features being selected and the feature selection algorithm by setting the `-k` and `-f` flags, respectively. As an example, ::
+Given this expression, Fizzy will fix the number of features being selected to 15 and the mutual information maximization algorithm will be used. The class labels are determined by the column 'Class' in the mapping file `map.txt`. The results will be written to `output.txt` in the directory from which `fizzy.py` was called. The user has control over the number of features being selected and the feature selection algorithm by setting the `-k` and `-f` flags, respectively. As an example, ::
 
 	fizzy.py -i data.biom -m map.txt -c Class -k 15 -f JMI -o ~/results/output.txt
 
