@@ -17,7 +17,7 @@ from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
         median as _median, zeros, ones, unique, copy, searchsorted, var, 
-        argsort, hstack, arange, empty)
+        argsort, hstack, arange, empty, e)
         #, std - currently incorrect
 from numpy.random import permutation, randint, shuffle
 #from cogent.maths.stats.util import Numbers
@@ -582,7 +582,7 @@ def t_one_sample(a,popmean=0, tails=None):
     a should support Mean, StandardDeviation, and Count.
     popmean should be the expected mean; 0 by default.
     tails should be None (default), 'high', or 'low'.
-"""
+    """
     try:
         n = len(a)
         t = (mean(a) - popmean)/(std(a)/sqrt(n))
@@ -1084,17 +1084,17 @@ def regress_major(x, y):
 def z_test(a, popmean=0, popstdev=1, tails=None):
     """Returns z and probability score for a single sample of items.
 
-Calculates the z-score on ONE sample of items with mean x, given a population 
-mean and standard deviation (parametric).
+    Calculates the z-score on ONE sample of items with mean x, given a 
+    population mean and standard deviation (parametric).
 
-Usage:   z, prob = z_test(a, popmean, popstdev, tails)
+    Usage:   z, prob = z_test(a, popmean, popstdev, tails)
 
-z is a float; prob is a probability.
-a is a sample with Mean and Count.
-popmean should be the parametric population mean; 0 by default.
-popstdev should be the parametric population standard deviation, 1 by default.
-tails should be None (default), 'high', or 'low'.
-""" 
+    z is a float; prob is a probability.
+    a is a sample with Mean and Count.
+    popmean should be the parametric population mean; 0 by default.
+    popstdev should be the parametric population standard deviation, default=1.
+    tails should be None (default), 'high', or 'low'.
+    """ 
     try:
         z = (mean(a) - popmean)/popstdev*sqrt(len(a))
         return z, z_tailed_prob(z, tails)
@@ -1766,13 +1766,17 @@ def fisher_z_transform(r):
     """Calculate the Fisher Z transform of a correlation coefficient.
     Relies on formulation in Sokal and Rohlf Biometry pg 575.
     """
+    if abs(r)==1: # fisher z transform is undefined, have to return nan
+        return nan
     return .5*log((1.+r)/(1.-r))
 
 def z_transform_pval(z, n):
     '''Calculate two tailed probability of value more extreme than z given n.
     Relies on formulation in Sokal and Rohlf Biometry pg 576.
     '''
-    assert n > 3, 'z_transform_pval: sample size must be greater than 3.'
+    if n <= 3: #sample size must be greater than 3 otherwise this transform 
+        # isn't supported.
+        return nan
     return zprob(z*((n-3)**.5))
 
 def inverse_fisher_z_transform(z):
@@ -1785,22 +1789,22 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
     """Calculate population rho, homogeneity from corrcoefs using Z transform.
     Exclude pvals of nan. 
     """
-    rs = array(corrcoefs)
-    ns = array(sample_sizes)
+    tmp_rs = array(corrcoefs)
+    tmp_ns = array(sample_sizes)
     # make checks for nans and exclude them as they will cause things to break
-    rs = rs[~isnan(rs)]
-    ns = ns[~isnan(rs)]
+    rs = tmp_rs[~isnan(tmp_rs)]
+    ns = tmp_ns[~isnan(tmp_rs)]
     if not (ns > 3).all():
-        print 'fisher_population_correlation: not all samples '+\
-            'have size > 3 which causes 0 varaince estimation. returning nan.'
+        # not all samples have size > 3 which causes 0 varaince estimation. 
+        # thus we must return nan for pval and h_val
         return nan, nan
     # calculate zs
-    zs = fisher_z_transform(rs)
+    zs = array([fisher_z_transform(i) for i in rs])
     # calculate variance weighted z average = z_bar
     z_bar = (zs*(ns-3)).sum()/float((ns-3).sum())
     rho = inverse_fisher_z_transform(z_bar)
     # calculate homogeneity
-    x_2 = ((ns-3)*(zs-z_bar)).sum()
+    x_2 = ((ns-3)*(zs-z_bar)**2).sum()
     h_val = chisqprob(x_2, len(ns)-1)
     return rho, h_val
 
@@ -1822,93 +1826,44 @@ def assign_correlation_pval(corr, n, method, permutations=None,
      Pearson. 
      n - length of the vectors that were correlated. 
      method - str in ['parametric_t_distribution', 'fisher_z_transform', 
-        'bootstrapped.'].
+     'bootstrapped', 'kendall'].
      permutations - int, number of permutations to use if bootstrapped selected.
+     perm_test_fn - function, to use to calculate correlation if permuation test
+     desired. 
+     v1, v2 = 1D vectors of numerics, passed if method='bootstrapped'
     '''
-
     if method == 'parametric_t_distribution':
         df = n-2
         assert df>1, "Must have more than 1 degree of freedom. Can't Continue."
-        ts = corr*(df-df*corr**2)**.5
         try:
+            ts = corr*((df/(1.-corr**2))**.5)
             return tprob(ts, df) #two tailed test because H0 is corr=0
         except (ValueError, FloatingPointError, ZeroDivisionError):
             # something unpleasant happened, most likely r or rho where +- 1 
             # which means the parametric p val should be 1 or 0 or nan
             return nan
     elif method=='fisher_z_transform':
-        if n<50:
-            print 'Warning: Sokal and Rohlf indicate that for n<50, the '+\
-                'Fisher Z transform for assigning correlation probabilities '+\
-                'is not accurate.'
+        # Sokal and Rohlf indicate that for n<50, the Fisher Z transform for 
+        # assigning correlation probabilities is not accurate. Currently no 
+        # check is in place
         z = fisher_z_transform(corr)
         # the z transform pval compares against a t distribution with inf 
-        # degrees of freedom which is equal to a t distribution. 
+        # degrees of freedom which is equal to a z distribution. 
         return z_transform_pval(z, n)
     elif method=='bootstrapped':
-        if not all([v1, v2, permutations, perm_test_fn]):
+        if any([v1==None, v2==None, permutations==None, perm_test_fn==None]):
             raise ValueError('You must specify vectors, permutation '+\
                 'function, and number of permutations to calculate '+\
                 'bootstrapped pvalues. Cant continue.')
-        r = empty(len(permutation))
+        r = empty(permutations)
         for i in range(permutations):
-            r[i] == perm_test_fn(v1,permutation(v2))
+            r[i] = perm_test_fn(v1,permutation(v2))
         return (abs(r)>=abs(corr)).sum()/float(permutations)
+    elif method == 'kendall':
+        return kendall_pval(corr, n)
+
     else:
         raise ValueError("'%s' method is unknown." % method)
-
-# def parametric_correlation_significance(test_stat, n):
-#     """Calc significance of a correlation coefficient with parametric method.
-
-#     Note, we are using a two tailed t_test since our alternate hypothesis is 
-#     that uncorrelated bivariate data could generate a test statistic value as 
-#     extreme or more extreme in either direction, thus we have two tails 
-#     (-inf,-x) and (x, inf). For more information look at Sokal and Rohlf, 
-#     Biometry, pg 574. This is a parametric test and makes many assumptions about
-#     the data from which the test_stat was calculated. 
-
-#     Inputs:
-#      test_stat - numeric, the correlation coefficient whose significance we are 
-#       to test.
-#      n - int, length of vectors that were correlated. 
-#     """
-#     df = n-2 #degrees of freedom
-#     if n<3: #need at least 3 samples for students t parametric p value calc
-#         p_pval = 1.0 #p_pval = parametric p value
-#     else: 
-#         try:
-#             t_stat = test_stat/sqrt((1.-test_stat**2)/float(df))
-#             p_pval = tprob(t_stat, df) #we force it to be two tailed
-#         except (ZeroDivisionError, FloatingPointError):
-#             # something unpleasant happened, most likely r or rho where +- 1 
-#             # which means the parametric p val should be 1 or 0 or nan
-#             p_pval = nan
-#     return p_pval 
-
-# def nonparametric_correlation_significance(test_stat, test, v1, v2,
-#     permutations=1000):
-#     """Calc significance of a correlation coefficient with nonparametric method.
-
-#     This function permutes v2 and calculates the correlation coefficient with 
-#     the selected test permutations number of times. The reported value is the 
-#     number of times the calculated test statistic is more extreme than the 
-#     passed test_stat (as a fraction of the number of permutations).
-
-#     Inputs:
-#      test_stat - numeric, the correlation coefficient whose significance we are 
-#       to test.
-#      test - function, the test we are to use to calculate the correlations in 
-#       the bootstrapped data. must return only correlation value (not a p val).
-#      v1,v2 - 1D array of floats, values to be correlated.
-#      permutations - int, number of bootstrapped correlation coefficients to 
-#       calculate.
-#     """
-#     perm_corr_vals = []
-#     for i in range(permutations):
-#         perm_corr_vals.append(test(v1, permutation(v2)))
-#     # calculate number of bootstrapped statistics which were greater than or 
-#     # equal to passed test_stat
-#     return (abs(array(perm_corr_vals)) >= abs(test_stat)).sum()/float(permutations)
 
 def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
     """Calc confidence interval of test_stat using Fishers Z transform.
@@ -1934,3 +1889,15 @@ def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
             # the calculation
             ci_low, ci_high = test_stat, test_stat
     return ci_low, ci_high
+
+def cscore(v1, v2):
+    '''Calculate C-score between v1 and v2 according to Stone and Roberts 1990. 
+
+    This function calculates the C-score between equal length vectors v1 and v2 
+    according to the formulation given in Stone and Roberts 1990, Oecologia 
+    85: 74-79.
+    v1, v2 - 1d arrays of equal length.
+    '''
+    sij = (v1.astype(bool)*v2.astype(bool)).sum()
+    return (v1.astype(bool).sum()-sij)*(v2.astype(bool).sum()-sij)
+

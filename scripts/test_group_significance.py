@@ -163,7 +163,7 @@ script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=GROUP_TEST_CHOICES.keys(),
         default='kruskal_wallis', help='Test to use. Choices are:\n%s' % \
          (', '.join(GROUP_TEST_CHOICES.keys()))+'\n\t' + '[default: %default]'),
-    make_option('--verbose', action='store_true', default='False', 
+    make_option('--verbose_o', action='store_true', default='False', 
         help='Print info about samples or OTUs excluded because they are not '+\
             'found in the mapping file and biom file (samples), or have some '+\
             'feature which makes them unsuitable for analysis (OTUs) like '+\

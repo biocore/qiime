@@ -15,7 +15,8 @@ from qiime.pycogent_backports.test import (tail, likelihoods,
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
     ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
 from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
-    ones, testing, tril, cov, sqrt)
+    ones, testing, tril, cov, sqrt, nan, corrcoef, e, log)
+from numpy.random import seed
 import math
 # G Test related imports
 from qiime.pycogent_backports.test import (williams_correction, G_stat, G_fit)
@@ -23,12 +24,19 @@ from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
 # Kruskal Wallis related imports
 from qiime.pycogent_backports.test import (_corr_kw, ssl_ssr_sx, tie_correction,
     kruskal_wallis)
-# fdr/bonferroni imports
+# p value calculation tests
 from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
-    fdr_correction, bonferroni_correction)
+    fdr_correction, bonferroni_correction, kendall_pval, fisher_z_transform,
+    z_transform_pval, inverse_fisher_z_transform, fisher_population_correlation, 
+    assign_correlation_pval)
 # kendalls tau import
 from qiime.pycogent_backports.test import (rank_with_ties, count_occurrences, 
-    kendalls_tau, kendall_pval)
+    kendalls_tau)
+# cscore imports
+from qiime.pycogent_backports.test import (cscore)
+# cogent imports
+from cogent.maths.stats import chisqprob
+from cogent.maths.stats.distribution import zprob, tprob
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
@@ -1567,6 +1575,17 @@ class TestDistMatrixPermutationTest(TestCase):
         # self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
         self.assertFloatEqual(pval, 0.00015486238993089464)
 
+class PvalueTests(TestCase):
+    '''Test that the methods for handling Pvalues return the results we expect.
+    
+    Note: eps is being set lower on some of these because Sokal and Rohlf 
+    provide only ~5 sig figs and our integrals diverge by that much or more. 
+    '''
+
+    def setUp(self):
+        '''Nothing needed for all tests.'''
+        pass
+
     def test_fdr_correction(self):
         """Test that the fdr_correction works as anticipated."""
         pvals = array([.1, .7, .5, .3, .9])
@@ -1603,6 +1622,120 @@ class TestDistMatrixPermutationTest(TestCase):
         exp = pvals*5.
         obs = bonferroni_correction(pvals)
         self.assertFloatEqual(obs, exp)
+
+    def test_fisher_z_transform(self):
+        '''Test Fisher Z transform is correct.'''
+        r = .657
+        exp = .5*log(1.657/.343)
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(exp, obs)
+        r = 1
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(obs, nan)
+        r = -1
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(obs, nan)
+        # from sokal and rohlf pg 575
+        r = .972
+        obs = fisher_z_transform(r)
+        exp = 2.12730
+        self.assertFloatEqual(exp, obs)
+
+    def test_z_transform_pval(self):
+        '''Test that pval associated with Fisher Z is correct.'''
+        r = .6
+        n = 100
+        obs = z_transform_pval(r,n)
+        exp = 3.4353390341723208e-09
+        self.assertFloatEqual(exp, obs)
+        r = .5
+        n = 3
+        obs = z_transform_pval(r,n)
+        self.assertFloatEqual(obs, nan)
+
+    def test_inverse_fisher_z_transform(self):
+        '''Test that Fisher's Z transform is computed correctly.'''
+        z = .65
+        exp = 0.5716699660851171
+        obs = inverse_fisher_z_transform(z)
+        self.assertFloatEqual(exp, obs)
+
+    def test_fisher_population_correlation(self):
+        '''Test that the population rho and homogeneity coeff are correct.'''
+        # example from Sokal and Rohlf Biometry pg. 580 - 582
+        rs = array([.29, .7, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 28, 74, 33, 27, 52, 26, 20, 17])
+        zbar = .615268
+        X2 = 15.26352
+        pop_r = .547825
+        hval = chisqprob(X2, len(ns)-1)
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, pop_r)
+        self.assertFloatEqual(obs_hval, hval)
+        # test with nans
+        rs = array([.29, .7, nan, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 400, 28, 74, 33, 27, 52, 26, 20, 17])
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, pop_r)
+        self.assertFloatEqual(obs_hval, hval)
+        # test with short vectors
+        rs = [.6, .5, .4, .6, .7]
+        ns = [10, 12, 42, 11, 3]
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, nan)
+        self.assertFloatEqual(obs_hval, nan)
+
+    def test_assign_correlation_pval(self):
+        '''Test that correlation pvalues are assigned correctly with each meth.
+        '''
+        # test with parametric t distribution, use example from Sokal and Rohlf
+        # Biometry pg 576.
+        r = .86519
+        n = 12
+        ts = 5.45618 # only 5 sig figs in sokal and rohlf
+        exp = tprob(ts, n-2)
+        obs = assign_correlation_pval(r, n, 'parametric_t_distribution')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        # test with too few samples
+        n = 3
+        self.assertRaises(AssertionError, assign_correlation_pval, r, n, 
+            'parametric_t_distribution')
+        # test with fisher_z_transform
+        r = .29
+        n = 100
+        z = 0.29856626366017841 #.2981 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        r = .61
+        n = 26
+        z = 0.70892135942740819 #.7089 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        # prove that we can have specify the other options, and as long as we 
+        # dont have bootstrapped selected we are fine. 
+        v1 = array([10,11,12])
+        v2 = array([10,14,15])
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform', 
+            permutations=1000, perm_test_fn=pearson, v1=v1, v2=v2)
+        self.assertFloatEqual(exp, obs)
+        # test with bootstrapping, seed for reproducibility. 
+        seed(0)
+        v1 = array([54, 71, 60, 54, 42, 64, 43, 89, 96, 38])
+        v2 = array([79, 52, 56, 92,  7,  8,  2, 83, 77, 87])
+        #c = corrcoef(v1,v2)[0][1]
+        exp = .357
+        obs = assign_correlation_pval(0.33112494, 20000, 'bootstrapped', 
+            permutations=1000, perm_test_fn=pearson, v1=v1, v2=v2)
+        self.assertFloatEqual(exp, obs)
+        # make sure it throws an error
+        self.assertRaises(ValueError, assign_correlation_pval, 7, 20000, 
+            'bootstrapped', perm_test_fn=pearson, v1=None, v2=v2)
+        # test that it does properly with kendall
+        exp = kendall_pval(r, n)
+        obs = assign_correlation_pval(r, n, 'kendall')
+        self.assertFloatEqual(exp, obs)
 
 class Test_Kendalls_Tau(TestCase):
     """Tests for functions calculating Kendall tau"""
@@ -1694,8 +1827,31 @@ class Test_Kendalls_Tau(TestCase):
         self.assertFloatEqual(obs_prob, exp_prob)
 
 
+class TestCScore(TestCase):
+    """Tests functions calculating cscore"""
+    def setUp(self):
+        '''Set up things needed for all cscore tests.'''
+        pass
 
-
+    def test_cscore(self):
+        '''Test cscore is calculated correctly.'''
+        # test using example from Stone and Roberts pg 75
+        v1 = array([1,0,0,0,1,1,0,1,0,1])
+        v2 = array([1,1,1,0,1,0,1,1,1,0])
+        obs = cscore(v1,v2)
+        exp = 8
+        self.assertEqual(obs, exp)
+        # test using examples verified in ecosim
+        v1 = array([4,6,12,13,14,0,0,0,14,11,9,6,0,1,1,0,0,4])
+        v2 = array([4,0,0,113,1,2,20,0,1,0,19,16,0,13,6,0,5,4])
+        # from R
+        # library(vegan)
+        # library(bipartite)
+        # m = matrix(c(4,6,12,13,14,0,0,0,14,11,9,6,0,1,1,0,0,4,4,0,0,113,1,2,20,0,1,0,19,16,0,13,6,0,5,4), 18,2)
+        # C.score(m, normalise=FALSE)
+        exp = 9
+        obs = cscore(v1,v2)
+        self.assertEqual(obs, exp)
 
 #execute tests if called from command line
 if __name__ == '__main__':

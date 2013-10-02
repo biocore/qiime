@@ -22,8 +22,8 @@ from qiime.otu_significance import (sort_by_pval, run_correlation_test,
     CORRELATION_TEST_CHOICES, paired_t_generator, run_paired_t, 
     paired_t_output_formatter, longitudinal_row_generator,
     run_longitudinal_correlation_test, longitudinal_correlation_formatter, 
-    CORRELATION_TEST_CHOICES, get_sample_cats, get_cat_sample_groups, 
-    get_sample_indices)
+    get_sample_cats, get_cat_sample_groups, get_sample_indices, 
+    CORRELATION_PVALUE_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
 from numpy import array, where
@@ -34,15 +34,15 @@ script_info['brief_description'] = """
 This script calculates the correlation between OTU values and a gradient of 
 sample data. Several methods are provided to allow the user to correlate OTUs to
 sample metadata values. Longitudinal correlations are also supported, where a 
-single sample represents a reference point. Finally, the script allows one to 
-conduct a paired t test.
+where a given sample (one per individual) represents a reference point. Finally,
+the script allows one to conduct a paired t test.
 """
 script_info['script_description'] = """
 This script calculates the correlation between OTU values and a gradient of 
 sample data. Several methods are provided to allow the user to correlate OTUs to
 sample metadata values. Longitudinal correlations are also supported, where a 
-single sample represents a reference point. Finally, the script allows one to 
-conduct a paired t test.
+where a given sample (one per individual) represents a reference point. Finally,
+the script allows one to conduct a paired t test.
 The tests of OTU correlation to a metadata field are accomplished by passing a 
 mapping file and a category from which to pull the data. If the data are not 
 convertable to floats, the script will abort. 
@@ -55,7 +55,8 @@ and you have sampes from an individual at a host of time points.
 The paired t test is accomplished by passing a paired mapping file which is just
 a two column (tab separation) table with the samples that should be paired in 
 each row. It should not have headers.
-The available tests are Kendall's Tau, Spearmans rank correlation, and Pearson. 
+The available tests are Kendall's Tau, Spearmans rank correlation, Pearsons 
+product moment correlation, and the C-score (or checkerboard score). 
 This script generates a tab separated output file which differs based on which 
 test you have chosen. If you have chosen simple correlation or paired_t (i.e. 
 you have not passed the --individual_column option ) then you will see
@@ -75,6 +76,13 @@ OTU
 Individual:X stat - correlation statistics from the given test. There will be as
  many of these headers as there are individuals in the individual column.
 Taxonomy
+
+Warnings:
+The only supported metric for P-value assignment with the C-score is 
+bootstrapping. For more information on the C-score, read Stone and Roberts 1990
+Oecologea paper 85: 74-79. If you fail to pass 
+pval_assignmnet_method='bootstrapped' while you have -s cscore, the script will 
+error. 
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:", "", "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
@@ -116,8 +124,13 @@ script_info['optional_options']=[
         help='name of the category over which to run the analysis'),
     make_option('-s', '--test', type="choice", 
         choices=CORRELATION_TEST_CHOICES.keys(),
-        default='kendall', help='Test to use. Choices are:\n%s' % \
+        default='spearman', help='Test to use. Choices are:\n%s' % \
             (', '.join(CORRELATION_TEST_CHOICES.keys()))+'\n\t' + \
+            '[default: %default]'),
+    make_option('--pval_assignmnet_method', type="choice", 
+        choices=CORRELATION_PVALUE_CHOICES,
+        default='fisher_z_transform', help='Test to use. Choices are:\n%s' % \
+            (', '.join(CORRELATION_PVALUE_CHOICES))+'\n\t' + \
             '[default: %default]'),
     make_option('--individual_column', type='string', default=None, 
         help='Column header in mapping file that designates which sample '+\
@@ -185,24 +198,19 @@ def main():
     else: #simple correlation analysis requested
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
         pmf, bt = sync_biom_and_mf(pmf, bt)
-        data_feed = correlation_row_generator(bt, pmf, opts.category, 
-            opts.individual_column)
-        corr_coefs, p_pvals, np_pvals, ci_highs, ci_lows = \
-            run_correlation_test(data_feed, opts.test, CORRELATION_TEST_CHOICES)
+        data_feed = correlation_row_generator(bt, pmf, opts.category)
+        corr_coefs, pvals = run_correlation_test(data_feed, opts.test, 
+            CORRELATION_TEST_CHOICES, opts.pval_assignmnet_method, 
+            permutations=opts.permutations)
         # calculate corrected pvals for both parametric and non-parametric 
-        p_pvals_fdr = array(benjamini_hochberg_step_down(p_pvals))
-        p_pvals_bon = bonferroni_correction(p_pvals)
-        np_pvals_fdr = array(benjamini_hochberg_step_down(np_pvals))
-        np_pvals_bon = bonferroni_correction(np_pvals)
+        pvals_fdr = array(benjamini_hochberg_step_down(pvals))
+        pvals_bon = bonferroni_correction(pvals)
         # correct for cases where values above 1.0 due to correction
-        p_pvals_fdr = where(p_pvals_fdr>1.0, 1.0, p_pvals_fdr)
-        p_pvals_bon = where(p_pvals_bon>1.0, 1.0, p_pvals_bon)
-        np_pvals_fdr = where(np_pvals_fdr>1.0, 1.0, np_pvals_fdr)
-        np_pvals_bon = where(np_pvals_bon>1.0, 1.0, np_pvals_bon)
+        pvals_fdr = where(pvals_fdr>1.0, 1.0, pvals_fdr)
+        pvals_bon = where(pvals_bon>1.0, 1.0, pvals_bon)
         # write output results after sorting
-        lines = correlation_output_formatter(bt, corr_coefs, p_pvals,
-            p_pvals_fdr, p_pvals_bon, np_pvals, np_pvals_fdr, np_pvals_bon, 
-            ci_highs, ci_lows)
+        lines = correlation_output_formatter(bt, corr_coefs, pvals,
+            pvals_fdr, pvals_bon)
         lines = sort_by_pval(lines, ind=2)
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
