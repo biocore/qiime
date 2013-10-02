@@ -32,40 +32,9 @@ class FizzyTests(TestCase):
 		self.biom_file_handle = StringIO.StringIO(biom_file_string)
 		self.map_file_handle = StringIO.StringIO(map_file_string)
 
-	def test_get_fs_methods(self):
-		"""
-			this test is going to make sure that we are only 
-			implementing feature selection methods that are in 
-			a predefined list. 
-		"""
-		self.assertEqual(fizzy.get_fs_methods(), information_theoretic_methods)
-
-	def test_parse_biom(self):
-		"""
-      this test is going to ensure that we can properly parse our biom file
-		"""
-
-		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
-
-		parsed_biom = fizzy.parse_biom(self.biom_file_handle)
-		self.assertEqual(correct_biom, parsed_biom)
-			
-	
-	def test_parse_map_file(self):
-		"""
-			this test ensures that the map file is proerply parsed
-		"""
-
-		correct_map = [0,1.,1.]
-
-		map_file_handle = StringIO.StringIO(map_file_string)
-		parsed_map = fizzy.parse_map_file(map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
-
-		self.assertEqual(parsed_map, correct_map)
 
 	def uniform_data(self, n_observations, n_features, n_select):
 		""" Generate some uniform data to use for test_pyfeast_run """
-
 		import numpy as np
 		xmax = 10
 		xmin = 1
@@ -84,6 +53,37 @@ class FizzyTests(TestCase):
 					labels[m] = 2
 		data = data.transpose()
 		return data, labels
+
+
+	def test_get_fs_methods(self):
+		"""
+			this test is going to make sure that we are only 
+			implementing feature selection methods that are in 
+			a predefined list. 
+		"""
+		self.assertEqual(fizzy.get_fs_methods(), information_theoretic_methods)
+
+	def test_parse_biom(self):
+		"""
+      this test is going to ensure that we can properly parse our biom file
+		"""
+		correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
+
+		parsed_biom = fizzy.parse_biom(self.biom_file_handle)
+		self.assertEqual(parsed_biom, correct_biom)
+			
+	
+	def test_parse_map_file(self):
+		"""
+			this test ensures that the map file is proerply parsed
+		"""
+
+		correct_map = [0,1.,1.]
+
+		parsed_map = fizzy.parse_map_file(self.map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
+
+		self.assertEqual(parsed_map, correct_map)
+
 
 	def test_run_pyfeast(self):
 		"""

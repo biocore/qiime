@@ -23,20 +23,17 @@ script_info['script_description'] ="""This script will run a
 	search algorithm to select the features. The objective functions 
 	are based on information theory. At the moment, users are limited 
 	to the objective functions implemented in the PyFeast feature 
-	selection module. """
+	selection module. You can find a tutorial of fizzy at 
+  http://qiime.org/tutorials/feature_selection.html """
 script_info['script_usage'] = [(
 	"""Run JMI feature selection on a BIOM file:""",
 	"""To perform feature selection the BIOM file, mapping file must 
 	be specified in advance, and the label column in the mapping file. 
 	Here we use JMI and select 15 features. """,
-	"""%prog -i data.biom -m map.txt -c Class -f JMI -k 15""")]
+	"""%prog -i data.biom -m map.txt -c Class -o result.txt -f JMI -k 15""")]
 script_info['output_description']= """Text file containing the top features 
 	selected by the algorithm. """
 
-# set the required options. for fizzy we need to have an exisiting input 
-# file, mapping file, and label column in the mapping file specified. other than
-# that we can set some default parameters to run a feature selection 
-# algorithm.
 script_info['required_options'] = [
 	make_option('-c',
 		'--column_label',
