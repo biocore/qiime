@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # File created on 02 May 2013
-import numpy 
 from __future__ import division
 from cogent.app.util import ApplicationNotFoundError
 from biom.parse import parse_biom_table
+import numpy 
 
 
 __author__ = "Gregory Ditzler"
