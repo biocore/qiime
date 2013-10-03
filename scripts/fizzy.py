@@ -38,7 +38,7 @@ script_info['required_options'] = [
 	make_option('-c',
 		'--column_label',
 		type="string",
-		help='column indicating the labels in the mapping file.'),
+		help='column indicating the labels in the map file.'),
 	make_option('-i', 
 		'--input_path',
 		type="existing_filepath",
