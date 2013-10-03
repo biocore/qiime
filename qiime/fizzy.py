@@ -16,8 +16,6 @@ __email__ = "gregory.ditzler@gmail.com"
 __status__ = "Development"
 
 
-
-
 def get_fs_methods():
 	"""
 		get_fs_methods()
@@ -79,7 +77,7 @@ def parse_map_file(fname, column_name, observation_names):
 	# its likely the user does not know what they are doing. 
 	unique_classes = numpy.unique(label_full)
 	if len(unique_classes) == len(observation_names):
-		raise ValueError("Number of classes is the number of observations.  The number of classes must be less than the number of observations in map file that was specified.")
+		raise ValueError("Number of classes is equal to the number of observations.  The number of classes must be less than the number of observations in map file that was specified.")
 
 	for str_lab in label_full:
 		for n,uclass in enumerate(unique_classes):

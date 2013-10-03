@@ -1,6 +1,6 @@
+from __future__ import division
 #!/usr/bin/env python
 # File created on 02 May 2013
-from __future__ import division
 
 __author__ = "Gregory Ditzler"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -85,6 +85,18 @@ class FizzyTests(TestCase):
 		self.assertEqual(parsed_map, correct_map)
 
 
+	def test_parse_map_invalid_column_name(self):
+
+ 		self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Unknown", [u'ID0',u'ID1',u'ID2'])
+
+	def test_parse_map_invalid_sample_name(self):
+
+ 		self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID99',u'ID1',u'ID2'])
+
+	def test_parse_map_invalid_equal_num_sample_classes(self):
+
+	 		self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
+			
 	def test_run_pyfeast(self):
 		"""
 			test the run_pyfeast function by creating some uniform data, and running
