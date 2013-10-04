@@ -528,13 +528,13 @@ class MothurTaxonAssignerTests(TestCase):
                 result_constructor=str,
                 )
         
-        tax_fp = tfp('.txt')
-        f = open(tax_fp, "w")
+        self.tax_fp = tfp('.txt')
+        f = open(self.tax_fp, "w")
         f.write(rdp_id_to_taxonomy)
         f.close()
 
-        ref_fp = tfp('.fna')
-        g = open(ref_fp, "w")
+        self.ref_fp = tfp('.fna')
+        g = open(self.ref_fp, "w")
         g.write(rdp_reference_seqs)
         g.close()
 
@@ -544,12 +544,12 @@ class MothurTaxonAssignerTests(TestCase):
         h.close()
 
         self.params = {
-            'id_to_taxonomy_fp': tax_fp,
-            'reference_sequences_fp': ref_fp,
+            'id_to_taxonomy_fp': self.tax_fp,
+            'reference_sequences_fp': self.ref_fp,
             }
         
         self._paths_to_clean_up = [
-            tax_fp, ref_fp, self.seq_fp1,
+            self.tax_fp, self.ref_fp, self.seq_fp1,
             ]
 
     def tearDown(self):
@@ -572,7 +572,7 @@ class MothurTaxonAssignerTests(TestCase):
             'Bacteria', 'Proteobacteria', 'Gammaproteobacteria',
             'Vibrionales', 'Vibrionaceae', 'Vibrio'
             ])
-        self.assertTrue(e_conf < 0.5)
+        self.assertTrue(e_conf < 0.7)
 
     def test_assignment_maximum_conf(self):
         self.params["Confidence"] = 0.95
@@ -600,6 +600,36 @@ class MothurTaxonAssignerTests(TestCase):
         assigner = MothurTaxonAssigner(self.params)
         result = assigner(self.seq_fp1)
         self.assertEqual(result, {"MostlyTs": (["Unknown"], 0.0)})
+
+    def test_taxonomy_with_spaces(self):
+        f = open(self.tax_fp, "w")
+        f.write(rdp_id_to_taxonomy_spaces)
+        f.close()
+
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        x_lineage, x_conf = result['X67228']
+        self.assertEqual(x_lineage, [
+            'Bacteria', 'Proteobacteria', 'Alphaproteobacteria',
+            'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
+            ])
+        self.assertTrue(x_conf > 0.94)
+
+    def test_taxonomy_with_special_chars(self):
+        f = open(self.tax_fp, "w")
+        f.write(rdp_id_to_taxonomy_special_chars)
+        f.close()
+
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        x_lineage, x_conf = result['X67228']
+        self.assertEqual(x_lineage, [
+            'Bacteria', 'Proteobacteria', 'Alphaproteobacteria',
+            'Rhizobiales<What', 'Rhizobiaceae&Huh?', 'Rhizobium',
+            ])
+        self.assertTrue(x_conf > 0.94)
 
 
 class RdpTaxonAssignerTests(TestCase):
@@ -1086,6 +1116,16 @@ xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria2;Pseudomonadales;Pseudomonada
 AB004748	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
 AB000278	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Photobacterium
 AB000390	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Vibrio
+"""
+
+rdp_id_to_taxonomy_spaces = \
+"""X67228	Bacteria; Proteobacteria; Alphaproteobacteria; Rhizobiales; Rhizobiaceae; Rhizobium
+X73443	Bacteria; Firmicutes; Clostridia; Clostridiales; Clostridiaceae; Clostridium
+AB004750	Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacteriales; Enterobacteriaceae; Enterobacter
+xxxxxx	Bacteria; Proteobacteria; Gammaproteobacteria; Pseudo monadales; Pseudo monadaceae; Pseudo monas
+AB004748	Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacteriales; Enterobacteriaceae; Enterobacter
+AB000278	Bacteria; Proteobacteria; Gammaproteobacteria; Vibrionales; Vibrionaceae; Photobacterium
+AB000390	Bacteria; Proteobacteria; Gammaproteobacteria; Vibrionales; Vibrionaceae; Vibrio
 """
 
 rdp_reference_seqs = \
