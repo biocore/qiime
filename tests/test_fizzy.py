@@ -95,7 +95,7 @@ class FizzyTests(TestCase):
 
     def test_parse_map_invalid_equal_num_sample_classes(self):
 
-            self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
+        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
             
     def test_run_pyfeast(self):
         """
