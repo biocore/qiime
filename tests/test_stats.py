@@ -1076,8 +1076,20 @@ class BestTests(TestHelper):
                        'CMIN_RATE = 9', 'LONGITUDE = 10',
                        'LATITUDE = 11']}
 
+        # the difference caused by the new spearmans_rho function is in the 
+        # final decimal place of the rho_vals. its not a significant difference, 
+        # but the test is failing because we are doing a dict comparison for 
+        # float values. 
         obs = self.best()
-        self.assertTrue(exp == obs)
+        self.assertTrue(exp['method_name'] == obs['method_name'])
+        self.assertTrue(exp['num_vars'] == obs['num_vars'])
+        self.assertTrue(exp['vars'] == obs['vars'])
+        for i,j in zip(exp['rho_vals'], obs['rho_vals']):
+            self.assertFloatEqual(i[0], j[0])
+            self.assertEqual(i[1], j[1])
+        # check that the keys are the same since we have checked all the values
+        # we expect to be there are the same
+        self.assertTrue(set(exp.keys())==set(obs.keys()))
 
 
 class MantelCorrelogramTests(TestHelper):
