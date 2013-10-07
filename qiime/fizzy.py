@@ -72,8 +72,8 @@ def parse_map_file(fname, column_name, sample_names):
         label_full.append(obj[id_set][column_name])
     
     # now that we have the full class labels we need to determine
-    # the number of unique classes in the the data. if the number of
-    # classes is equal to the number of obervations, throw an error. 
+    # the number of unique classes in the data. if the number of
+    # classes is equal to the number of observations, throw an error. 
     # its likely the user does not know what they are doing. 
     unique_classes = numpy.unique(label_full)
     if len(unique_classes) == len(sample_names):
