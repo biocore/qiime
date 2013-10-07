@@ -866,6 +866,27 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         result_path: path to file of results. If specified, dumps the
             result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
+        
+        
+        ## Currently can be run as follows. Currently --allhits isn't 
+        ## available in the Uclust application controller, so will need to 
+        ## move over to pycogent_backports and add it. Will then need to 
+        ## hook up the consensus generation code and tests from 
+        ## https://gist.github.com/gregcaporaso/6083538.
+        
+        import qiime.assign_taxonomy as at
+        r = at.UclustConsensusTaxonAssigner(
+         {'id_to_taxonomy_fp':
+           '/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/id_to_taxonomy.txt',
+          'refseq_fp':
+           '/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/ref_seq_set.fna'})
+        r = t('/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/repr_set_seqs.fasta',
+              'x.txt',
+              'x.uc',
+              'x.log')
+        for line in r['ClusterFile']:
+            print line
+        
         """
         if self.Params['id_to_taxonomy_fp'] is None:
             raise ValueError, 'id_to_taxonomy_fp must be set.'
@@ -889,7 +910,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         app.Parameters['--rev'].on()
         app.Parameters['--lib'].on(self.Params['refseq_fp'])
         app.Parameters['--libonly'].on()
-        #app.Parameters['--allhits'].on()
+        app.Parameters['--allhits'].on()
     
         app_result = app({'--input':seq_path,'--uc':uc_filepath})
         return app_result
