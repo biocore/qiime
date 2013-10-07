@@ -32,27 +32,27 @@ def parse_biom(fname):
             data, features = parse_biom(open('file.biom','U'))
         @data_matrix (return) - dense matrix for feature selection
         @variable_names (return) - feature names in a list
-        @observation_names (return) - names of the samples in the 
+        @sample_names (return) - names of the samples in the 
             database found in fname. 
     """
     biom_table = parse_biom_table(fname)
-    observation_names = list(biom_table.SampleIds)
+    sample_names = list(biom_table.SampleIds)
     variable_names = list(biom_table.ObservationIds)
     data_matrix = []
     for data in biom_table.iterObservationData():
         data_matrix.append(data)
     data_matrix = numpy.array(data_matrix)
 
-    return data_matrix.transpose(), variable_names, observation_names
+    return data_matrix.transpose(), variable_names, sample_names
 
 
-def parse_map_file(fname, column_name, observation_names):
+def parse_map_file(fname, column_name, sample_names):
     """
         parse_map_file(fname)
         @fname - file handle
         @column_name - name of the column that contains the class 
             labels
-        @observation_names - names of the observations in the order
+        @sample_names - names of the samples in the order
             of which they appear in the data set. 
         @labels - numpy array of class labels
     """
@@ -64,9 +64,9 @@ def parse_map_file(fname, column_name, observation_names):
     # grab the class labels which are likely to be in string 
     # format. 
 
-    for id_set in observation_names:
+    for id_set in sample_names:
         if(id_set not in obj):
-            raise ValueError("Unknown observation name supplied. Make sure that the observation name is in map file you specified")
+            raise ValueError("Unknown sample name supplied. Make sure that the observation name is in map file you specified")
         if(column_name not in obj[id_set]):
             raise ValueError("Unknown class name supplied. Make sure that the column name is in map file you specified")
         label_full.append(obj[id_set][column_name])
@@ -76,7 +76,7 @@ def parse_map_file(fname, column_name, observation_names):
     # classes is equal to the number of obervations, throw an error. 
     # its likely the user does not know what they are doing. 
     unique_classes = numpy.unique(label_full)
-    if len(unique_classes) == len(observation_names):
+    if len(unique_classes) == len(sample_names):
         raise ValueError("Number of classes is equal to the number of observations.  The number of classes must be less than the number of observations in map file that was specified.")
 
     for str_lab in label_full:
@@ -130,9 +130,9 @@ def run_feature_selection(file_biom, file_map, column_name, method='MIM', n_sele
         @column_name - column name containing the class labels found 
             in the map file. 
         @method - feature selection method [see PyFeast docs]
-        @n_select - number of features to selectio (integer)
+        @n_select - number of features to selection (integer)
     """
-    data_matrix, variable_names, observation_names = parse_biom(file_biom)
-    label_vector = parse_map_file(file_map, column_name, observation_names)
+    data_matrix, variable_names, sample_names = parse_biom(file_biom)
+    label_vector = parse_map_file(file_map, column_name, sample_names)
     reduced_set = run_pyfeast(data_matrix, label_vector, variable_names, method, n_select)
     return reduced_set 
