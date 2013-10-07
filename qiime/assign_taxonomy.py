@@ -20,14 +20,17 @@ from string import strip
 from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
+
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from qiime.pycogent_backports import rdp_classifier
+from cogent.app.uclust import Uclust
 from cogent.app import rtax
-from qiime.pycogent_backports import mothur
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
+
+from qiime.pycogent_backports import rdp_classifier
+from qiime.pycogent_backports import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
@@ -818,3 +821,88 @@ class Tax2TreeTaxonAssigner(TaxonAssigner):
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
         return logger
+
+class UclustConsensusTaxonAssigner(TaxonAssigner):
+    """Assign taxonomy using uclust
+    """
+    Name = "UclustConsensusTaxonAssigner"
+    Application = "uclust"
+    Citation = """uclust citation: Search and clustering orders of magnitude faster than BLAST. Edgar RC. Bioinformatics. 2010 Oct 1;26(19):2460-1.
+
+uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allows analysis of high-throughput community sequencing data. Caporaso JG, Kuczynski J, Stombaugh J, Bittinger K, Bushman FD, Costello EK, Fierer N, Pena AG, Goodrich JK, Gordon JI, Huttley GA, Kelley ST, Knights D, Koenig JE, Ley RE, Lozupone CA, McDonald D, Muegge BD, Pirrung M, Reeder J, Sevinsky JR, Turnbaugh PJ, Walters WA, Widmann J, Yatsunenko T, Zaneveld J, Knight R. Nat Methods. 2010 May;7(5):335-6.
+"""
+    
+    def __init__(self, params):
+        """Returns a new UclustAssigner object with specified params
+        """
+        _params = {
+            # Required, mapping of reference sequence to taxonomy
+            'id_to_taxonomy_fp': None,
+            # Required, reference sequence fasta file
+            'refseq_fp': None,
+            # max-accepts parameter, as passed to uclust
+            'max_accepts': 3,
+            # Fraction of sequence hits that a taxonomy assignment 
+            # must show up in to be considered the consensus assignment
+            'confidence':0.51,
+            # minimum identity to consider a hit (passed to uclust as --id)
+            'similarity':0.97,
+            }
+        _params.update(params)
+        TaxonAssigner.__init__(self, _params)
+        
+    def __call__(self,
+                 seq_path,
+                 result_path,
+                 uc_filepath,
+                 log_path=None,
+                 HALT_EXEC=False):
+        """Returns a dict mapping {seq_id:(taxonomy, n)} for each seq
+
+        n is the number of hits containing a taxonomy assignment
+
+        Parameters:
+        seq_path: path to file of sequences. 
+        result_path: path to file of results. If specified, dumps the
+            result to the desired path instead of returning it.
+        log_path: path to log, which should include dump of params.
+        """
+        if self.Params['id_to_taxonomy_fp'] is None:
+            raise ValueError, 'id_to_taxonomy_fp must be set.'
+        if self.Params['refseq_fp'] is None:
+            raise ValueError, 'refseq_fp must be set.'
+        
+        # initialize the logger
+        logger = self._get_logger(log_path)
+        logger.info(str(self))
+        
+        # uclust_cmd = "uclust --input %s --lib %s --uc %s --id %1.2f --maxaccepts %d --libonly --allhits --rev"
+        
+        # set the user-defined parameters
+        params = {'--id':self.Params['similarity'],
+                  '--maxaccepts':self.Params['max_accepts']}
+        
+        # initialize the application controller object
+        app = Uclust(params,HALT_EXEC=HALT_EXEC)
+    
+        # Configure for use consensus taxonomy assignment
+        app.Parameters['--rev'].on()
+        app.Parameters['--lib'].on(self.Params['refseq_fp'])
+        app.Parameters['--libonly'].on()
+        #app.Parameters['--allhits'].on()
+    
+        app_result = app({'--input':seq_path,'--uc':uc_filepath})
+        return app_result
+
+    def _get_logger(self, log_path=None):
+        if log_path is not None:
+            handler = logging.FileHandler(log_path, mode='w')
+        else:
+            class NullHandler(logging.Handler):
+                def emit(self, record): pass
+            handler = NullHandler()
+        logger = logging.getLogger("UclustConsensusTaxonAssigner logger")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        return logger
+        
