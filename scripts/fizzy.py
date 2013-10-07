@@ -15,7 +15,7 @@ __status__ = "Development"
  
 
 script_info = {}
-script_info['brief_description'] = """Run feature selection on aubundance data 
+script_info['brief_description'] = """Run feature selection on abundance data 
     contained in a BIOM file."""
 script_info['script_description'] ="""This script will run a 
     feature selection algorithm on abundance data contained in a 
