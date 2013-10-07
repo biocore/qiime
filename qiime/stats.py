@@ -4,7 +4,8 @@ from __future__ import division
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
-               "Damien Coy", "Levi McCracken", "Andrew Cochran"]
+               "Damien Coy", "Levi McCracken", "Andrew Cochran",
+               "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -21,18 +22,24 @@ provides a hierarchy of statistical classes that can be inherited from to
 create new statistical method implementations.
 """
 
+from os.path import join
 from types import ListType
 from copy import deepcopy
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
-        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor)
-from numpy import argsort, min as np_min, max as np_max
+        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median)
+from numpy import argsort, min as np_min, max as np_max, log10
 from numpy.random import permutation
-from cogent.util.misc import combinate
+from cogent.util.misc import combinate, create_dir
+from cogent.maths.stats.test import t_one_sample
+
+from biom.table import table_factory, DenseOTUTable
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
+                                           pearson, permute_2d, spearman)
+from qiime.format import format_p_value_for_num_iters, format_biom_table
                                            pearson, permute_2d, spearmans_rho)
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
@@ -1691,3 +1698,188 @@ class PartialMantel(CorrelationStats):
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (num_perms + 1)
         return res
+
+def paired_difference_analyses(personal_ids_to_state_values,
+                               analysis_categories,
+                               state_values,
+                               output_dir,
+                               ymin=None,
+                               ymax=None):
+    """run paired difference analysis one sample t-tests and generate plots
+    
+       Apply one-sample t-tests and generate plots to test for changes in
+       certain values with a state change. A state change here refers to a 
+       pre/post-type experimental design, such as pre-treatment to 
+       post-treatment, and the values that are being tested for change can
+       be things like alpha diversity, abundance of specific taxa, a principal 
+       coordinate value (e.g., PC1 value before and after treatment), and so 
+       on. 
+       
+       The one-sample t-test is applied on each pair of differences. So, if 
+       experiment was based on looking for changes in proteobacteria abundance
+       with treatment, you would have pre- and post-treatment proteobacteria 
+       abundances for a number of individuals. The difference would be computed
+       between those, and the null hypothesis is that the mean of those differences
+       is equal to zero (i.e., no change with treatment).
+       
+       Line plots are also generated to show the change on a per-individual basis.
+    
+     personal_ids_to_state_values: a 2d dictionary mapping personal ids to potential 
+      analysis categories, which each contain a pre/post value. this might look like
+      the following:
+       {'firmicutes-abundance':
+            {'subject1':[0.45,0.55],
+             'subject2':[0.11,0.52]},
+           'bacteroidetes-abundace':
+             {'subject1':[0.28,0.21],
+              'subject2':[0.11,0.01]}
+        }
+       examples of functions that can be useful for generating these data are
+        qiime.parse.extract_per_individual_state_metadata_from_sample_metadata and
+        qiime.parse.extract_per_individual_state_metadata_from_sample_metadata_and_biom
+      
+     analysis_categories: a list of categories to include in analyses (e.g, 
+       ['firmicutes-abundance', 'bacteroidetes-abundace'])
+      
+     state_values: an ordered list describing each of the states being compared (these
+       are the x labels in the resulting plots)
+       
+     output_dir: directory where output should be written (will be created if 
+       it doesn't exist)
+       
+     ymin: minimum y-value in plots (if it should be consistent across 
+       plots - by default will be chosen on a per-plot basis)
+       
+     ymax: maximum y-value in plots (if it should be consistent across 
+       plots - by default will be chosen on a per-plot basis)
+    """
+                                   
+    if len(state_values) != 2:
+        raise ValueError, ("Only two state values can be provided. "
+        "Support currently exists only for pre/post experimental design.")
+    
+    # create the output directory if it doesn't already exist
+    create_dir(output_dir)
+    
+    num_analysis_categories = len(analysis_categories)
+    x_values = range(len(state_values))
+    
+    paired_difference_output_fp = \
+     join(output_dir,'paired_difference_comparisons.txt')
+    paired_difference_output_f = open(paired_difference_output_fp,'w')
+    # write header line to output file
+    paired_difference_output_f.write(
+     "#Metadata category\tNum differences (i.e., n)\tMean difference\t"
+     "Median difference\tt one sample\tt one sample parametric p-value\t"
+     "t one sample parametric p-value (Bonferroni-corrected)\n")
+    
+    paired_difference_t_test_results = {}
+    
+    biom_table_fp = join(output_dir,'differences.biom')
+    biom_sids_fp = join(output_dir,'differences_sids.txt')
+    biom_observation_ids = []
+    biom_data = []
+    # need a list of personal_ids to build the biom table - 
+    # ugly, but get it working first
+    personal_ids = []
+    for c in personal_ids_to_state_values.values():
+        personal_ids.extend(c.keys())
+    personal_ids = list(set(personal_ids))
+    
+    # initiate list of output file paths to return 
+    output_fps = [paired_difference_output_fp,
+                  biom_table_fp,
+                  biom_sids_fp]
+    
+    num_successful_tests = 0
+    for category_number, analysis_category in enumerate(analysis_categories):
+        personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]
+        analysis_category_fn_label = analysis_category.replace(' ','-')
+        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category_fn_label)
+        fig = figure()
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        
+        # initialize a list to store the distribution of changes 
+        # with state change
+        differences = []
+        store_biom_datum = True
+        
+        for personal_id in personal_ids:
+            data = personal_ids_to_state_metadatum[personal_id]
+            if None in data:
+                # if any of the data points are missing, don't store 
+                # a difference for this individual, and don't store
+                # the category in the BIOM table
+                store_biom_datum = False
+            else:
+                # otherwise compute the difference between the ending
+                # and starting state
+                difference = data[1] - data[0]
+                differences.append(difference)
+                # and plot the start and stop values as a line
+                axes.plot(x_values,data,"black",linewidth=0.5)
+                
+        if store_biom_datum:
+            biom_observation_ids.append(analysis_category)
+            biom_data.append(differences)
+        
+        # run stats for current analysis category
+        n = len(differences)
+        mean_differences = mean(differences)
+        median_differences = median(differences)
+        t_one_sample_results = t_one_sample(differences)
+        t = t_one_sample_results[0]
+        p_value = t_one_sample_results[1]
+        if p_value is not None:
+            num_successful_tests += 1
+        # analysis_category gets stored as the key and the first entry 
+        # in the value to faciliate sorting the values and writing to 
+        # file
+        paired_difference_t_test_results[analysis_category] = \
+                                       [analysis_category,
+                                        n,
+                                        mean_differences,
+                                        median_differences,
+                                        t,
+                                        p_value]
+        
+        # Finalize plot for current analysis category
+        axes.set_ylabel(analysis_category)
+        axes.set_xticks(range(len(state_values)))
+        axes.set_xticklabels(state_values)
+        axes.set_ylim(ymin=ymin,ymax=ymax)
+        fig.savefig(plot_output_fp)
+        output_fps.append(plot_output_fp)
+    
+    # write a biom table based on differences and 
+    # a list of the sample ids that could be converted 
+    # to a mapping file for working with this biom table
+    
+    biom_table = table_factory(biom_data,
+                               personal_ids,
+                               biom_observation_ids,
+                               constructor=DenseOTUTable)
+    biom_table_f = open(biom_table_fp,'w')
+    biom_table_f.write(format_biom_table(biom_table))
+    biom_table_f.close()
+    biom_sids_f = open(biom_sids_fp,'w')
+    biom_sids_f.write('#SampleID\n')
+    biom_sids_f.write('\n'.join(personal_ids))
+    biom_sids_f.close()
+    
+    # sort stats output by uncorrected p-value, compute corrected p-value,
+    # and write results to file
+    paired_difference_t_test_lines = \
+     paired_difference_t_test_results.values()
+    paired_difference_t_test_lines.sort(key=lambda x: x[5])
+    for r in paired_difference_t_test_lines:
+        p_value = r[5]
+        if p_value is None:
+            bonferroni_p_value = None
+        else:
+            bonferroni_p_value = min([p_value * num_successful_tests,1.0])
+        paired_difference_output_f.write('\t'.join(map(str,r + [bonferroni_p_value])))
+        paired_difference_output_f.write('\n')
+    paired_difference_output_f.close()
+    
+    return output_fps, paired_difference_t_test_results
