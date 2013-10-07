@@ -36,9 +36,6 @@ from cogent.util.misc import combinate, create_dir
 from cogent.maths.stats.test import t_one_sample
 
 from biom.table import table_factory, DenseOTUTable
-
-from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
-                                           pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
                                            pearson, permute_2d, spearmans_rho)
 from qiime.format import format_p_value_for_num_iters
