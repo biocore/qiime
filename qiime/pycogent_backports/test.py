@@ -773,8 +773,7 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
             better = (array(perm_t_stats) <= obs_t).sum()
         elif tails == 'high':
             better = (array(perm_t_stats) >= obs_t).sum()
-        nonparam_p_val = (better + 1) / (permutations + 1)
-
+        nonparam_p_val = better/permutations
     return obs_t, param_p_val, perm_t_stats, nonparam_p_val
 
 def _permute_observations(x, y, num_perms):

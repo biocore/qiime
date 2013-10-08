@@ -199,9 +199,10 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
  information. It will contain the taxonomy of the given OTU. 
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:", "", "%prog -i otu_table.biom -m map.txt -c diet -s g_test -o gtest_ocs.txt"))
-script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups 'before_after' using a Mann Whitney U test:", "", "%prog -i otu_table.biom -m map.txt -c before_after -s mann_whitney_u -o mwu_ocs.txt"))
-script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from printing error messages about samples and OTUs that are excluded from the analysis:", "", "%prog -i otu_table.biom -m map.txt -c diet -s kruskal_wallis -o kw_ocs.txt --verbose_off"))
+script_info['script_usage'].append(("Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:", "", "%prog -i otu_table.biom -m map_overlapping.txt -c diet -s g_test -o gtest_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in two sample groups 'before_after' using a T-test:", "", "%prog -i otu_table.biom -m map_overlapping.txt -c before_after -s parametric_t_test -o tt_ocs.txt"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:", "", "%prog -i otu_table.biom -m map.txt -c diet -s kruskal_wallis -o kw_ocs.txt --biom_samples_are_superset --print_non_overlap"))
+script_info['script_usage'].append(("Find which OTUs are differentially represented in the sample groups formed by 'before_after' based on bootstrapped T-testing with 100 permutations:", "", "%prog -i otu_table.biom -m map_overlapping.txt -c before_after -s nonparametric_t_test --permutations 100 -o btt_ocs.txt"))
 
 script_info['output_description']= """
 This script generates a tab separated output file with the following headers.
@@ -237,32 +238,30 @@ script_info['optional_options']=[
     make_option('--permutations', default=1000, type=int, 
         help='Number of permutations to use for bootstrapped tests.'),
     make_option('--biom_samples_are_superset', action='store_true', 
-        default='False', 
+        default=False, 
         help='If this flag is passed you will be able to use a biom table '+\
             'that contains all the samples listed in the mapping file '+\
             'as well as additional samples not listed in the mapping file. '+\
             'Only their intersecting samples will be used for calculations.'),
-    make_option('--print_non_overlap', action='store_true', default='False', 
+    make_option('--print_non_overlap', action='store_true', default=False, 
         help='If this flag is passed the script will display the samples that'+\
             ' do not overlap between the mapping file and the biom file.')]
 
 script_info['version'] = __version__
 
 def main():
-
-
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     # sync the mapping file and the biom file
-    bt = parse_biom_table(open(opts.otu_table_fp))
-    pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
-    pmf, bt, nonshared_samples = sync_biom_and_mf(pmf, bt)
+    tmp_bt = parse_biom_table(open(opts.otu_table_fp))
+    tmp_pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
+    pmf, bt, nonshared_samples = sync_biom_and_mf(tmp_pmf, tmp_bt)
     if not opts.biom_samples_are_superset: 
         # user indicates biom sample should be subset of mapping file samples
-        if nonshared_samples != set():
+        if any([i in nonshared_samples for i in tmp_bt.SampleIds]):
             raise ValueError('The samples in the biom table are a superset of'+\
                 ' the samples in the mapping file. The script will abort in'+\
                 ' this case even though the calculations wouldn\'t be'+\
-                ' affected to ensure consistency within QIIME. Pass the'+\
+                ' affected, to ensure consistency within QIIME. Pass the'+\
                 ' --biom_samples_are_superset option to disable this behavior.')
     if opts.print_non_overlap: #user wants non-overlapping samples printed out
         print 'The following samples were not shared between the mapping file'+\
@@ -288,8 +287,6 @@ def main():
             raise ValueError('The number of samples is too small to use the '+\
                 'Mann-Whitney-U normal approximation. Review the script '+\
                 'documentation.')
-    #if opts.test == '
-
     data_feed = group_significance_row_generator(bt, cat_sam_indices)
     test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
         GROUP_TEST_CHOICES, int(opts.permutations))

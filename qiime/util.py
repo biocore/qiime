@@ -2096,7 +2096,7 @@ def sync_biom_and_mf(pmf, bt):
     bt_samples = set(bt.SampleIds)
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
-        return pmf, bt
+        return pmf, bt, set()
     else: 
         shared_samples = mf_samples.intersection(bt_samples)
         # check that we shared something

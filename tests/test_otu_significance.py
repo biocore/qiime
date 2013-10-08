@@ -144,8 +144,7 @@ class TestGroupSignificanceFunctions(TestCase):
         exp_test_stats = [0.17503798979747345, 0.20029818620053824,
             -1.5065313062753816, -0.043884559904114794, -1.0631239617935129,
             -1.2878361428003895]
-        exp_pvals = [0.88700000000000001, 0.89400000000000002,
-            0.29499999999999998, 1.0, 0.52300000000000002, 0.30299999999999999]
+        exp_pvals = [0.887, 0.898, .278, 1.0, .488, .298]
         exp_means = [[52.333333333333336, 48.333333333333336],
             [34.0, 30.333333333333332],
             [20.0, 49.333333333333336],
@@ -155,7 +154,7 @@ class TestGroupSignificanceFunctions(TestCase):
         seed(0) # seed prng for reproducibility
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test', 
-                GROUP_TEST_CHOICES, reps=999)
+                GROUP_TEST_CHOICES, reps=1000)
         self.assertFloatEqual(exp_test_stats, obs_test_stats)
         self.assertFloatEqual(exp_pvals, obs_pvals)
         self.assertFloatEqual(exp_means, obs_means)
@@ -165,7 +164,7 @@ class TestGroupSignificanceFunctions(TestCase):
         seed(0) # seed prng for reproducibility
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test', 
-                GROUP_TEST_CHOICES, reps=999)
+                GROUP_TEST_CHOICES, reps=1000)
         self.assertFloatEqual(exp_test_stats, obs_test_stats)
         self.assertFloatEqual(exp_pvals, obs_pvals)
         self.assertFloatEqual(exp_means, obs_means)
@@ -175,9 +174,7 @@ class TestGroupSignificanceFunctions(TestCase):
         exp_test_stats = [-0.38741397129147953, -0.38334158591463874,
             0.077468274988510541, -0.2322539745918096, 0.16469600468808282,
             -0.49589486133213057]
-        exp_pvals = [0.81999999999999995, 0.72499999999999998,
-            0.91300000000000003, 0.93300000000000005, 0.93799999999999994,
-            0.60199999999999998]
+        exp_pvals = [.82,.718,.915,.934,.937,.603]
         exp_means = [[43.5, 51.75],
             [29.75, 34.75],
             [41.5, 40.0],
@@ -187,7 +184,7 @@ class TestGroupSignificanceFunctions(TestCase):
         seed(0)
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test', 
-                GROUP_TEST_CHOICES, reps=999)
+                GROUP_TEST_CHOICES, reps=1000)
         self.assertFloatEqual(exp_test_stats, obs_test_stats)
         self.assertFloatEqual(exp_pvals, obs_pvals)
         self.assertFloatEqual(exp_means, obs_means)
