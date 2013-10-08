@@ -2084,7 +2084,7 @@ def add_filename_suffix(filepath, suffix):
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
 
-def sync_biom_and_mf(pmf, bt, verbose=True):
+def sync_biom_and_mf(pmf, bt):
     """Reduce mapping file dict and biom table to shared samples.
 
     Inputs: 
@@ -2102,17 +2102,14 @@ def sync_biom_and_mf(pmf, bt, verbose=True):
         # check that we shared something
         assert len(shared_samples)!=0, \
             "sync_biom_and_mf: No shared samples, no point in continuing."
-        if verbose:
-            print "The following samples were not shared, and will not be "+\
-                "considered in the analysis:\n" + \
-                ', '.join(mf_samples.union(bt_samples)-shared_samples)
+        nonshared_samples = mf_samples.union(bt_samples)-shared_samples
         # remove samples that were in the mapping file but not biom file
         npmf = {k:v for k,v in pmf.items() if k in shared_samples}
         # remove samples in the biom table that were not in the mapping file
         def _f(sv, sid, smd):
             return sid in shared_samples
         nbt = bt.filterSamples(_f)
-    return npmf, nbt
+    return npmf, nbt, nonshared_samples
 
 def biom_taxonomy_formatter(data):
     """Figure out type of metadata biom table has, create string. 

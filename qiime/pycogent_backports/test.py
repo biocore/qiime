@@ -293,7 +293,7 @@ def G_fit(data, williams=True):
     """Calculate G statistic and compare to one tailed chi-squared distribution.
 
     For discussion read Sokal and Rohlf Biometry pg. 695-699. This function 
-    compares teh calculated G statistic (with Williams correction by default) to 
+    compares the calculated G statistic (with Williams correction by default) to 
     the chi-squared distribution with the appropriate number of degrees of 
     freedom. 
 
@@ -306,14 +306,14 @@ def G_fit(data, williams=True):
     """
     # sanity checks on the data to return nans if conditions are not met
     if not all([(i>=0).all() for i in data]):
-        print 'G_fit: data contains negative values. G test would be '+\
-            'undefined. Ignoring this OTU.\n'
+        # G_fit: data contains negative values. G test would be 
+        # undefined. Ignoring this OTU.
         return nan, nan
     if not all([i.sum()>0 for i in data]):
-        print 'G_fit: data contains sample group with zero only values. This '+\
-            'means that the given OTU was never observed in this sample class'+\
-            '. The G test fails in this case because we would be forced to ' +\
-            'take log(0). Ignoring this OTU.\n'
+        # G_fit: data contains sample group with zero only values. This 
+        # means that the given OTU was never observed in this sample class
+        # The G test fails in this case because we would be forced to 
+        # take log(0). Ignoring this OTU.
         return nan, nan
    
     G = G_stat(data)
@@ -1480,8 +1480,8 @@ def mw_test(n1, n2):
     denominator = sqrt(((ln1*ln2)/float((ln1+ln2)*(ln1+ln2-1)))*(((ln1+ln2)**3 \
         - (ln1+ln2) - T)/12.))
     if denominator == 0:
-        print "Warning: probability of U can't be calculated by mw_test "+\
-            "because all ranks of data were tied. Returning nan as pvalue."
+        # Warning: probability of U can't be calculated by mw_test
+        # because all ranks of data were tied. Returning nan as pvalue.
         return U, nan
     else:
         pval = zprob(numerator/float(denominator))

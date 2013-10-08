@@ -32,9 +32,13 @@ This script is used to compare OTU frequencies in sample groups and to ascertain
 whether or not there are statistically significant differences between the OTU
 abundance in the different sample groups."""
 script_info['script_description'] = """
+***Please read all starred documentation below before using this script***
+
 This script is used to compare OTU frequencies in sample groups and to ascertain 
 whether or not there are statistically significant differences between the OTU
-abundance in the different sample groups. The script will compare each OTU based
+abundance in the different sample groups. 
+
+The script will compare each OTU based
 on the passed sample groupings to see if it is differentially represented. The 
 sample groupings are determined by the -c option. The script will group together
 samples which have the same value in the mapping file under the header passed 
@@ -42,24 +46,27 @@ with the -c option. Any samples that do not contain a value under the given
 header will not be included in the comparison.
 At a basic level, the script is constructing a OTUxSample
 (rowXcolumn) contingency table, and testing whether or not each OTU is 
-differentially represented in certain groups of columns (determined by the 
+differentially represented in cerstain groups of columns (determined by the 
 metadata category passed). 
 
-There are several important considerations with this script:
-* The script will silenty ignore samples in the mapping file for which there are
-* no values for the given category. This would cause the mapping file to fail 
-* validate_mapping.py, but we check here regardless. 
+There are several important considerations with this script
 
-* The script will only consider samples that are found in both the mapping file
-* and the biom table.
+Errors and behind-the-scenes processing:
+* This script will ignore samples that are found in the mapping file but do not
+* contain information for the passed category. This would cause the mapping file
+* to fail validate_mapping.py, but will not cause a failure here.
+* This script will silenty ignore situations where the set of samples in the 
+* mapping file is a superset of the samples in the biom file. If the reverse is 
+* true, the script will error unless --biom_samples_are_superset is passed.
+* This script will round P-values greater than 1 (after correcting for multiple
+* comparisons) to 1.0.
+* If your results file contains nans for p values its because one or more of the 
+* assumptions the selected test makes about the data was not met by the given 
+* OTU. The inverse of this statement is not guaranteed; just because the test
+* worked on the data doesn't mean all its assumptions are met, just that enough
+* assumptions are met so it doesn't fail (see below).
 
-* The null hypothesis for the g_test (aka goodness of fit, log-likelihood ratio
-* test) is that the frequency of any given OTU is equal across all sample 
-* groups.
-
-* P-values greater than one after correcting for multiple comparisons will
-* be rounded to 1.
-
+Filtering your OTU table prior to this script is important:
 * Filtering out OTUs which are found in a low percentage of samples is a good 
 * idea before using this script. The old otu_category_significance.py removed 
 * OTUs that were not found in at least 25 percent of samples. This prevents 
@@ -67,12 +74,74 @@ There are several important considerations with this script:
 * focuses the hypothesis discovery process on the abundant OTUs which are likely 
 * playing a larger role. 
 
-* If your results file contains nans for p values its because one or more of the 
-* assumptions the selected test makes about the data was not met by the given 
-* OTU. The inverse of this statement is not guaranteed; just because the test
-* worked on the data doesn't mean all its assumptions are met, just that enough
-* assumptions are met so it doesn't fail. 
+Test assumptions:
+* This script tests that some basic assumptions of the given statistical test 
+* are met by the passed data. These 'assumption tests' are *necessary* not 
+* *sufficient* to ensure that the given statistical test you are applying is 
+* appropriate for the data. For instance, the script will error if you use the 
+* Mann-Whitney-U test and one of your group sizes is smaller than 20. It is 
+* likely that assumptions about the distribution of the data, the distribution 
+* of the variance, etc. are not robustly met. IT IS YOUR REPSONSIBILTY TO CHECK 
+* THAT YOU ARE USING AN APPROPRIATE TEST. For more information on assumptions
+* made by the tests, please look at the following resources:
+* Biometry by Sokal and Rolhf 
+* Nonparamteric Statistical Methods by Hollander and Wolfe
+* Documentation in R and Scipy packages
+* Handbook of Biological Statistics by McDonald (available at 
+* http://udel.edu/~mcdonald/statintro.html)
 
+The assumptions we check for:
+* Kruskal-Wallis: No assumptions are checked for Kruskal-Wallis. 
+* G-test: We check that all the values in the table are non-negative and we 
+* check that each sample grouping contains at least one non 0 value. If either 
+* condition is not met we return G-stat, pval = (nan, nan) but don't error. 
+* Mann-Whitney-U: The number of data points in the combined samples is >= 20. If 
+* there are fewer than 21 data points the script will error. Although R gives 
+* exact values for less than 50 data points,  its definition of 'exact' is 
+* unclear since a conditional permutation calculation with ~ 10^14 calculations 
+* would be required. The normal approximation is suggested for more than 16 data
+* points by Mann and Whitney 1947, and more than 20 in the Scipy documentation. 
+* The bootstrapped version of the test does not require >20 data points. If all 
+* the data ranks are tied for one of the groups, the function will return U,nan.
+* ANOVA: No assumptions are checked for ANOVA. However, if the within group 
+* variance is 0, we return nan,nan.
+* T-test: No assumptions are checked for the T-test. If no variance groups are 
+* detected None or nan will be returned. 
+
+The assumptions we do not check for are:
+* Kruskal-Wallis: The scipy documentation indicates that each group must have 
+* at least 5 samples to make the Chi Squared approximation for the distribution 
+* of the H statistic be appropriate. R has no such requirement, and we do not 
+# implement the requirement here. The KW test does assume that the distributions
+* from which the samples come are the same (although they may be non-normal) 
+* except for their location parameter, and we do not check this. 
+* G-test: 
+* Mann-Whitney-U: Equality of variance between groups. Sample 1 is IID, Sample 2
+* is IID. Sample 1 and Sample 2 are mutually independent. 
+* ANOVA: ANOVA assumes equality of variance between groups (homoscedasticity), 
+* normality of the residuals, and independence of the individual observations in 
+* the samples. None of these conditions are checked by this script.
+* T-test: the t-test assumes that the samples come from populations which are 
+* normally distributed. that the variances of the sampled groups are ~ equal and
+* that the individual observations are independent. None of these conditions are 
+* checked by this script. 
+
+Null and alternate hypothesis:
+* G-test: The null hypothesis for the g_test (aka goodness of fit, 
+* log-likelihood ratio test) is that the frequency of any given OTU is equal 
+* across all sample groups. The alternate hypothesis is that the frequency of 
+* the OTU is not the same across all sample groups. 
+* Kruskal-Wallis: The null hypothesis is that the location paramater of the 
+* groups of abundances for a given OTU is the same. The alternate hypothesis is 
+* that at least one of the location parameters is different.  
+* ANOVA: the null hypothesis is that the means of the observations in the groups
+* are the same, the alternate is that at least one is not. 
+* Mann-Whitney-U: the null hypothesis is that the distributions of the groups 
+* are equal, such that there is a 50 percent chance that a value from group1 is 
+* greater than a value from group2. The alternate is that the distributions are 
+* not the same. 
+* T-test: the null hypothesis is that the means of the two groups are the same
+* versus the alternate that they are unequal. 
 
 The available tests are:
 ANOVA - one way analysis of variance. This test compares the within-group 
@@ -82,8 +151,9 @@ more than two groups. This is a parametric test whose assumptions are likely
 violated by data found in most gene surveys. 
 
 kruskal_wallis - nonparametric ANOVA. This test is functionally an expansion of
-ANOVA to cases where the sample means are not equal (although other assumptions
-like equal skewness remain). This is a nonparametric test. 
+ANOVA to cases where the sample means are unequal and the distribution is not 
+normal. The assumption that the distribution from which each group (within a 
+single OTU) came is the same remains. This is a nonparametric test. 
 
 g_test - goodness of fit or log-likelihood ratio test. This test compares the 
 ratio of the OTU frequencies in the sample groups to an 'extrinsic hypothesis' 
@@ -105,9 +175,10 @@ permuted. The fraction of the time that a t-statistic greater than or equal to
 the observed t-statistic is found is the basis of the nonparametric p-value. 
 This is a nonparametric test.
 
-mann_whitney_u - aka wilcoxon rank sum test is a nonparametric test where the
+mann_whitney_u - aka Wilcoxon rank sum test is a nonparametric test where the
 null hypothesis is that the populations from which the two samples come have
-equal means. It is basically an extension of the t-test. This is a nonparametric test.
+equal means. It is basically an extension of the t-test. This is a nonparametric
+test.
 
 bootstrap_mann_whitney_u - the bootstrapped version of the mann_whitney_u test. 
 Identical behavior to the nonparametric_t_test. This is a nonparametric_t_test.
@@ -163,22 +234,40 @@ script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=GROUP_TEST_CHOICES.keys(),
         default='kruskal_wallis', help='Test to use. Choices are:\n%s' % \
          (', '.join(GROUP_TEST_CHOICES.keys()))+'\n\t' + '[default: %default]'),
-    make_option('--verbose_o', action='store_true', default='False', 
-        help='Print info about samples or OTUs excluded because they are not '+\
-            'found in the mapping file and biom file (samples), or have some '+\
-            'feature which makes them unsuitable for analysis (OTUs) like '+\
-            'no variance, or never observed.'),
     make_option('--permutations', default=1000, type=int, 
-        help='Number of permutations to use for bootstrapped tests.')]
+        help='Number of permutations to use for bootstrapped tests.'),
+    make_option('--biom_samples_are_superset', action='store_true', 
+        default='False', 
+        help='If this flag is passed you will be able to use a biom table '+\
+            'that contains all the samples listed in the mapping file '+\
+            'as well as additional samples not listed in the mapping file. '+\
+            'Only their intersecting samples will be used for calculations.'),
+    make_option('--print_non_overlap', action='store_true', default='False', 
+        help='If this flag is passed the script will display the samples that'+\
+            ' do not overlap between the mapping file and the biom file.')]
 
 script_info['version'] = __version__
 
 def main():
+
+
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     # sync the mapping file and the biom file
     bt = parse_biom_table(open(opts.otu_table_fp))
     pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
-    pmf, bt = sync_biom_and_mf(pmf, bt)
+    pmf, bt, nonshared_samples = sync_biom_and_mf(pmf, bt)
+    if not opts.biom_samples_are_superset: 
+        # user indicates biom sample should be subset of mapping file samples
+        if nonshared_samples != set():
+            raise ValueError('The samples in the biom table are a superset of'+\
+                ' the samples in the mapping file. The script will abort in'+\
+                ' this case even though the calculations wouldn\'t be'+\
+                ' affected to ensure consistency within QIIME. Pass the'+\
+                ' --biom_samples_are_superset option to disable this behavior.')
+    if opts.print_non_overlap: #user wants non-overlapping samples printed out
+        print 'The following samples were not shared between the mapping file'+\
+            ' and the biom file and will not be included in the analysis:\n'+\
+            ' '.join(nonshared_samples)
     # find group indices
     sam_cats = get_sample_cats(pmf, opts.category)
     cat_sam_groups = get_cat_sample_groups(sam_cats)
@@ -192,6 +281,15 @@ def main():
         option_parser.error('The t-test and mann_whitney_u test may '+\
             'only be used when there are two sample groups. Choose another '+\
             'test or another metadata category.')
+    # check that assumptions are met for a given test:
+    if opts.test == 'mann_whitney_u':
+        sams = reduce(lambda x,y: len(x)+len(y), cat_sam_indices.values())
+        if sams <= 20:
+            raise ValueError('The number of samples is too small to use the '+\
+                'Mann-Whitney-U normal approximation. Review the script '+\
+                'documentation.')
+    #if opts.test == '
+
     data_feed = group_significance_row_generator(bt, cat_sam_indices)
     test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
         GROUP_TEST_CHOICES, int(opts.permutations))
