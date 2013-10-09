@@ -906,6 +906,9 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                                     suffix='.uc', 
                                     dir=get_qiime_temp_dir())
             uc_path = uc.name
+            store_uc_in_log = True
+        else:
+            store_uc_in_log = False
         
         app_result = app({'--input':seq_path,
                           '--uc':uc_path})
@@ -928,6 +931,17 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         
             # if no result_path was provided, return the data as a dict
             logger.info('Result path: None, returned as dict.')
+        
+        if store_uc_in_log:
+            # This is a little hackish, but we don't have a good way
+            # to pass the uc_path value right now through the 
+            # assign_taxonomy.py script, so writing the contents to the
+            # user-specified log file (since this is being stored for logging
+            # purposes).
+            app_result['ClusterFile'].seek(0)
+            logger.info('\n.uc file contents:\n')
+            for line in app_result['ClusterFile']:
+                logger.info(line.strip())
 
         return result
 
