@@ -171,6 +171,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                    log_path=self.output_log_fp)
                    
         self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+        self.assertEqual(result['q2'],(['A','H','I','J'],1.0,1))
     
     def test_get_consensus_assignment(self):
         """_get_consensus_assignment fuctions as expected """
