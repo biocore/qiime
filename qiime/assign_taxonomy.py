@@ -1002,9 +1002,9 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 fields = line.split('\t')
                 query_id = fields[8].split()[0]
                 try:
-                    results[query_id].append(["None"])
+                    results[query_id].append([None])
                 except KeyError:
-                    results[query_id] = [["None"]]
+                    results[query_id] = [[None]]
         return results
 
     def _uc_to_assignment(self, uc):
