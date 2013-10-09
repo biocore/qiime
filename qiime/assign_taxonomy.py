@@ -849,7 +849,9 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # must show up in to be considered the consensus assignment
             'confidence':0.51,
             # minimum identity to consider a hit (passed to uclust as --id)
-            'similarity':0.97
+            'similarity':0.97,
+            # label to apply for queries that cannot be assigned
+            'unassignable_label':'Unassigned'
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
@@ -976,9 +978,16 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             results.append((max_tax,max_frac))
         
         assignment = [a[0] for a in results if a[0] is not None]
-        # Get the confidence associated the with most specific 
-        # taxonomic assignment
-        confidence = results[len(assignment)-1][1]
+        assignment_depth = len(assignment)
+        if assignment_depth > 0:
+            # Get the confidence associated the with most specific 
+            # taxonomic assignment
+            confidence = results[assignment_depth-1][1]
+        else:
+            assignment = [self.Params['unassignable_label']]
+            confidence = 1.0
+            num_assignments = 0
+            
         return assignment, confidence, num_assignments
 
     def _uc_to_assignments(self, uc):

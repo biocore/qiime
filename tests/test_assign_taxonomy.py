@@ -247,6 +247,34 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         t = UclustConsensusTaxonAssigner(params)
         actual = t._uc_to_assignments(self.uc1_lines)
         self.assertEqual(actual,expected)
+
+    def test_uc_to_assignment(self):
+        """_uc_to_assignment functions as expected"""
+        expected = {'q1':(['A','B','C'],1.0,2),
+                    'q2':(['A','H','I','J'],2./3.,3),
+                    'q3':(['Unassigned'],1.0,0),
+                    'q4':(['Unassigned'],1.0,0),
+                    'q5':(['Unassigned'],1.0,0)
+                    }
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp}
+        t = UclustConsensusTaxonAssigner(params)
+        actual = t._uc_to_assignment(self.uc1_lines)
+        self.assertEqual(actual,expected)
+        
+        # change label for unassignable
+        expected = {'q1':(['A','B','C'],1.0,2),
+                    'q2':(['A','H','I','J'],2./3.,3),
+                    'q3':(['x'],1.0,0),
+                    'q4':(['x'],1.0,0),
+                    'q5':(['x'],1.0,0)
+                    }
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp,
+                  'unassignable_label':'x'}
+        t = UclustConsensusTaxonAssigner(params)
+        actual = t._uc_to_assignment(self.uc1_lines)
+        self.assertEqual(actual,expected)
         
 
 uc1 = """# uclust --input /Users/caporaso/Dropbox/code/short-read-tax-assignment/data/qiime-mock-community/Broad-1/rep_set.fna --lib /Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta --uc /Users/caporaso/outbox/uclust_tax_parameter_sweep/Broad-1/gg_13_5_otus/uclust/id1.000000_ma3.uc --id 1.00 --maxaccepts 3 --libonly --allhits
