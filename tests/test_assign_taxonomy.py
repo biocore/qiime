@@ -169,6 +169,46 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                    log_path=self.output_log_fp)
                    
         self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+    
+    def test_get_consensus_assignment(self):
+        """_get_consensus_assignment fuctions as expected """
+        in1 = [['Ab','Bc','De'],
+               ['Ab','Bc','Fg','Hi'],
+               ['Ab','Bc','Fg','Jk']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc','Fg'],2./3.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+        
+        # increased confidence yields decreased specificity
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp,
+                  'confidence':0.99}
+        expected = (['Ab','Bc'],1.0,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+    
+    def test_get_consensus_assignment_adjusts_resolution(self):
+        """_get_consensus_assignment returns max depth of shallowest assignment
+        """
+        in1 = [['Ab','Bc','Fg'],
+               ['Ab','Bc','Fg','Hi'],
+               ['Ab','Bc','Fg','Hi']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc','Fg'],1.0,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+        
+        
 
 
 

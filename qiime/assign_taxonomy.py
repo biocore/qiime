@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
@@ -852,6 +854,13 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
         
+        if self.Params['id_to_taxonomy_fp'] is None:
+            raise ValueError, \
+             "id_to_taxonomy_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
+        if self.Params['refseq_fp'] is None:
+            raise ValueError, \
+             "refseq_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
+        
         id_to_taxonomy_f = open(self.Params['id_to_taxonomy_fp'],'U')
         self.id_to_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
         
@@ -957,7 +966,8 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                     pass
                 else:
                     current_level_assignments[e[level]] += count
-            counts = [(v,k) for k, v in current_level_assignments.items() if v > self.Params['confidence']]
+            counts = [(v,k) for k, v in current_level_assignments.items()
+                            if v > self.Params['confidence']]
             counts.sort()
             try:
                 max_frac, max_tax = counts[-1]
@@ -965,7 +975,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 max_frac, max_tax = 0.0, None
             results.append((max_tax,max_frac))
         
-        assignment = [a[0] for a in results if a is not None]
+        assignment = [a[0] for a in results if a[0] is not None]
         # Get the confidence associated the with most specific 
         # taxonomic assignment
         confidence = results[len(assignment)-1][1]
