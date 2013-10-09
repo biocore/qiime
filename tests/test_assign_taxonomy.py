@@ -197,10 +197,10 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         self.assertEqual(t._get_consensus_assignment(in1),
                          expected)
         
-        # increased confidence yields decreased specificity
+        # increased min_consensus_fraction yields decreased specificity
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp,
-                  'confidence':0.99}
+                  'min_consensus_fraction':0.99}
         expected = (['Ab','Bc'],1.0,3)
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in1),
@@ -209,19 +209,19 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         ## if only a single input assignment, it is returned as consensus
         in2 = [['Ab','Bc','De']]
         
-        # increased confidence
+        # increased min_consensus_fraction
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp,
-                  'confidence':1.0}
+                  'min_consensus_fraction':1.0}
         expected = (['Ab','Bc','De'],1.0,1)
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in2),
                          expected)
                          
-        # decreased confidence
+        # decreased min_consensus_fraction
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp,
-                  'confidence':0.0}
+                  'min_consensus_fraction':0.0}
         expected = (['Ab','Bc','De'],1.0,1)
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in2),

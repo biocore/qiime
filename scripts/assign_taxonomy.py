@@ -269,7 +269,7 @@ def main():
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
     elif assignment_method == 'uclust':
-        params['confidence'] = opts.min_consensus_fraction
+        params['min_consensus_fraction'] = opts.min_consensus_fraction
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 

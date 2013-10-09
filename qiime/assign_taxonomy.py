@@ -847,7 +847,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             'max_accepts': 3,
             # Fraction of sequence hits that a taxonomy assignment 
             # must show up in to be considered the consensus assignment
-            'confidence':0.51,
+            'min_consensus_fraction':0.51,
             # minimum identity to consider a hit (passed to uclust as --id)
             'similarity':0.97,
             # label to apply for queries that cannot be assigned
@@ -914,10 +914,10 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # if the user provided a result_path, write the
             # results to file
             of = open(result_path,'w')
-            for seq_id, (assignment, confidence, n) in result.items():
+            for seq_id, (assignment, consensus_fraction, n) in result.items():
                 assignment_str = ';'.join(assignment)
                 of.write('%s\t%s\t%1.2f\t%s\n' %
-                 (seq_id, assignment_str, confidence, n))
+                 (seq_id, assignment_str, consensus_fraction, n))
             of.close()
             result = None
             logger.info('Result path: %s' % result_path)
@@ -971,7 +971,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 else:
                     current_level_assignments[e[level]] += count
             counts = [(v,k) for k, v in current_level_assignments.items()
-                            if v >= self.Params['confidence']]
+                            if v >= self.Params['min_consensus_fraction']]
             counts.sort()
             try:
                 max_frac, max_tax = counts[-1]
@@ -982,15 +982,15 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         assignment = [a[0] for a in results if a[0] is not None]
         assignment_depth = len(assignment)
         if assignment_depth > 0:
-            # Get the confidence associated the with most specific 
+            # Get the consensus_fraction associated the with most specific 
             # taxonomic assignment
-            confidence = results[assignment_depth-1][1]
+            consensus_fraction = results[assignment_depth-1][1]
         else:
             assignment = [self.Params['unassignable_label']]
-            confidence = 1.0
+            consensus_fraction = 1.0
             num_assignments = 0
             
-        return assignment, confidence, num_assignments
+        return assignment, consensus_fraction, num_assignments
 
     def _uc_to_assignments(self, uc):
         """ return dict mapping query id to all taxonomy assignments
