@@ -868,14 +868,12 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         log_path: path to log, which should include dump of params.
         
         
-        ## Currently can be run as follows. Currently --allhits isn't 
-        ## available in the Uclust application controller, so will need to 
-        ## move over to pycogent_backports and add it. Will then need to 
+        ## Need to 
         ## hook up the consensus generation code and tests from 
         ## https://gist.github.com/gregcaporaso/6083538.
         
         import qiime.assign_taxonomy as at
-        r = at.UclustConsensusTaxonAssigner(
+        t = at.UclustConsensusTaxonAssigner(
          {'id_to_taxonomy_fp':
            '/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/id_to_taxonomy.txt',
           'refseq_fp':
