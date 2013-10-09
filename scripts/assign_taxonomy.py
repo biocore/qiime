@@ -24,17 +24,18 @@ from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
     RtaxTaxonAssigner, Tax2TreeTaxonAssigner, validate_rdp_version,
-    )
+    UclustConsensusTaxonAssigner)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
-    'tax2tree': Tax2TreeTaxonAssigner
+    'tax2tree': Tax2TreeTaxonAssigner,
+    'uclust': UclustConsensusTaxonAssigner
 }
 
-assignment_method_choices = ['rdp','blast','rtax','mothur', 'tax2tree']
+assignment_method_choices = ['rdp','blast','rtax','mothur', 'tax2tree','uclust']
 
 options_lookup = get_options_lookup()
 
@@ -142,6 +143,10 @@ script_info['optional_options']=[\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
+ make_option('--min_consensus_fraction', type='float',
+        help=('Minimum fraction of hits that must have an taxonomic assignment '
+              'to make that taxonomic assignment, only used for uclust method '
+              '[default: %default]'), default=0.51),
  make_option('--rdp_max_memory', default=1500, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
@@ -189,6 +194,14 @@ def main():
                     'sequences fp to train the Rdp Classifier.')
         else:
             pass
+
+    if assignment_method == 'uclust':
+        if opts.id_to_taxonomy_fp is None:
+            option_parser.error('Option --id_to_taxonomy_fp is required when '
+                         'assigning with uclust.')
+        if opts.reference_seqs_fp is None:
+            option_parser.error('Option --reference_seqs_fp is required when '
+                         'assigning with uclust.')
 
     if assignment_method == 'rtax':
         if opts.id_to_taxonomy_fp is None or opts.reference_seqs_fp is None:
@@ -255,6 +268,11 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
+    elif assignment_method == 'uclust':
+        params['confidence'] = opts.min_consensus_fraction
+        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+        params['reference_sequences_fp'] = opts.reference_seqs_fp
+
     elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
@@ -283,8 +301,9 @@ def main():
         exit(1)
     temp_result_path = get_tmp_filename(prefix='assign-tax')
     taxon_assigner = taxon_assigner_constructor(params)
-    taxon_assigner(input_sequences_filepath,\
-     result_path=temp_result_path,log_path=log_path)
+    taxon_assigner(input_sequences_filepath,
+                   result_path=temp_result_path,
+                   log_path=log_path)
     
     ## This is an ugly hack, and needs to be pushed upstream to
     ## the taxon assigners. The output taxonomy maps that are returned by the 
