@@ -139,7 +139,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         """UclustConsensusTaxonAssigner returns without error, writing results
         """
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         
         t = UclustConsensusTaxonAssigner(params)
         result = t(seq_path=self.inseqs1_fp,
@@ -162,13 +162,23 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         """UclustConsensusTaxonAssigner returns without error, returning dict
         """
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         
         t = UclustConsensusTaxonAssigner(params)
         result = t(seq_path=self.inseqs1_fp,
                    result_path=None,
                    uc_path=self.output_uc_fp,
                    log_path=self.output_log_fp)
+                   
+        self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+        self.assertEqual(result['q2'],(['A','H','I','J'],1.0,1))
+
+        # no result paths provided
+        t = UclustConsensusTaxonAssigner(params)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=None,
+                   uc_path=None,
+                   log_path=None)
                    
         self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
         self.assertEqual(result['q2'],(['A','H','I','J'],1.0,1))
@@ -181,7 +191,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         
         # defaults 
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         expected = (['Ab','Bc','Fg'],2./3.,3)
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in1),
@@ -189,7 +199,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         
         # increased confidence yields decreased specificity
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
                   'confidence':0.99}
         expected = (['Ab','Bc'],1.0,3)
         t = UclustConsensusTaxonAssigner(params)
@@ -201,7 +211,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         
         # increased confidence
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
                   'confidence':1.0}
         expected = (['Ab','Bc','De'],1.0,1)
         t = UclustConsensusTaxonAssigner(params)
@@ -210,7 +220,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                          
         # decreased confidence
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
                   'confidence':0.0}
         expected = (['Ab','Bc','De'],1.0,1)
         t = UclustConsensusTaxonAssigner(params)
@@ -226,7 +236,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         
         # defaults 
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         expected = (['Ab','Bc','Fg'],1.0,3)
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in1),
@@ -244,7 +254,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                     'q5':[[None]]
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         t = UclustConsensusTaxonAssigner(params)
         actual = t._uc_to_assignments(self.uc1_lines)
         self.assertEqual(actual,expected)
@@ -258,7 +268,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                     'q5':(['Unassigned'],1.0,0)
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp}
+                  'reference_sequences_fp':self.refseqs1_fp}
         t = UclustConsensusTaxonAssigner(params)
         actual = t._uc_to_assignment(self.uc1_lines)
         self.assertEqual(actual,expected)
@@ -271,7 +281,7 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                     'q5':(['x'],1.0,0)
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
-                  'refseq_fp':self.refseqs1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
                   'unassignable_label':'x'}
         t = UclustConsensusTaxonAssigner(params)
         actual = t._uc_to_assignment(self.uc1_lines)

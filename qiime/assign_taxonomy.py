@@ -842,7 +842,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # Required, mapping of reference sequence to taxonomy
             'id_to_taxonomy_fp': None,
             # Required, reference sequence fasta file
-            'refseq_fp': None,
+            'reference_sequences_fp': None,
             # max-accepts parameter, as passed to uclust
             'max_accepts': 3,
             # Fraction of sequence hits that a taxonomy assignment 
@@ -859,9 +859,9 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         if self.Params['id_to_taxonomy_fp'] is None:
             raise ValueError, \
              "id_to_taxonomy_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
-        if self.Params['refseq_fp'] is None:
+        if self.Params['reference_sequences_fp'] is None:
             raise ValueError, \
-             "refseq_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
+             "reference_sequences_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
         
         id_to_taxonomy_f = open(self.Params['id_to_taxonomy_fp'],'U')
         self.id_to_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
@@ -869,7 +869,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
     def __call__(self,
                  seq_path,
                  result_path,
-                 uc_path,
+                 uc_path=None,
                  log_path=None,
                  HALT_EXEC=False):
         """Returns a dict mapping {seq_id:(taxonomy, n)} for each seq
@@ -882,10 +882,6 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
         """
-        if self.Params['id_to_taxonomy_fp'] is None:
-            raise ValueError, 'id_to_taxonomy_fp must be set.'
-        if self.Params['refseq_fp'] is None:
-            raise ValueError, 'refseq_fp must be set.'
         
         # initialize the logger
         logger = self._get_logger(log_path)
@@ -901,10 +897,16 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
     
         # Configure for consensus taxonomy assignment
         app.Parameters['--rev'].on()
-        app.Parameters['--lib'].on(self.Params['refseq_fp'])
+        app.Parameters['--lib'].on(self.Params['reference_sequences_fp'])
         app.Parameters['--libonly'].on()
         app.Parameters['--allhits'].on()
-    
+        
+        if uc_path is None:
+            uc = NamedTemporaryFile(prefix='UclustConsensusTaxonAssigner_', 
+                                    suffix='.uc', 
+                                    dir=get_qiime_temp_dir())
+            uc_path = uc.name
+        
         app_result = app({'--input':seq_path,
                           '--uc':uc_path})
         result = self._uc_to_assignment(app_result['ClusterFile'])
