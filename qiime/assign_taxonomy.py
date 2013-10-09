@@ -20,6 +20,7 @@ from string import strip
 from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
+from collections import Counter
 
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -847,9 +848,17 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             'confidence':0.51,
             # minimum identity to consider a hit (passed to uclust as --id)
             'similarity':0.97,
+            # number of taxonomic levels to consider in assignment
+            'num_levels':7
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
+        
+        assert self.Params['num_levels'] > 0,\
+                "num_levels must be greater than zero"
+        
+        id_to_taxonomy_f = open(self.Params['id_to_taxonomy_fp'],'U')
+        self.id_to_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
         
     def __call__(self,
                  seq_path,
@@ -895,23 +904,48 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         logger = self._get_logger(log_path)
         logger.info(str(self))
         
-        # uclust_cmd = "uclust --input %s --lib %s --uc %s --id %1.2f --maxaccepts %d --libonly --allhits --rev"
-        
         # set the user-defined parameters
         params = {'--id':self.Params['similarity'],
                   '--maxaccepts':self.Params['max_accepts']}
         
         # initialize the application controller object
-        app = Uclust(params,HALT_EXEC=HALT_EXEC)
+        app = Uclust(params,
+                     HALT_EXEC=HALT_EXEC)
     
-        # Configure for use consensus taxonomy assignment
+        # Configure for consensus taxonomy assignment
         app.Parameters['--rev'].on()
         app.Parameters['--lib'].on(self.Params['refseq_fp'])
         app.Parameters['--libonly'].on()
         app.Parameters['--allhits'].on()
     
-        app_result = app({'--input':seq_path,'--uc':uc_filepath})
-        return app_result
+        app_result = app({'--input':seq_path,
+                          '--uc':uc_filepath})
+        result = self._uc_to_assignment(app_result['ClusterFile'])
+
+        if result_path:
+            # if the user provided a result_path, write the
+            # results to file
+            of = open(result_path,'w')
+            for seq_id, (assignment, n) in result.items():
+                assignment_levels = [e[0] for e in assignment if e[0] is not None]
+                # Get the confidence associated the with most specific 
+                # taxonomic assignment
+                confidence = assignment[len(assignment_levels)][1]
+                assignment_str = ';'.join(assignment_levels)
+                of.write('%s\t%s\t%s\t%s\n' %
+                 (seq_id, assignment_str, confidence, n))
+            of.close()
+            result = None
+            logger.info('Result path: %s' % result_path)
+        else:
+            # Returning the data as a dict, so no modification to result
+            # is necessary.
+            pass
+        
+            # if no result_path was provided, return the data as a dict
+            logger.info('Result path: None, returned as dict.')
+
+        return result
 
     def _get_logger(self, log_path=None):
         if log_path is not None:
@@ -924,4 +958,64 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
         return logger
-        
+
+    def _get_consensus_assignment(self, assignments):
+        """ compute the consensus from a list of assignments
+        """
+        num_assignments = len(assignments)
+        count = 1 / num_assignments
+        results = []
+        for level in range(self.Params['num_levels']):
+            current_level_assignments = Counter()
+            for e in assignments:
+                try:
+                    current_level_assignment = e[level]
+                except IndexError:
+                    pass
+                else:
+                    current_level_assignments[e[level]] += count
+            counts = [(v,k) for k, v in current_level_assignments.items() if v > self.Params['confidence']]
+            counts.sort()
+            try:
+                max_frac, max_tax = counts[-1]
+            except IndexError:
+                max_frac, max_tax = 0.0, None
+            results.append((max_tax,max_frac))
+        return results
+
+    def _uc_to_assignments(self, uc):
+        """ return dict mapping query id to all taxonomy assignments
+        """
+        results = {}
+        for line in uc:
+            line = line.strip()
+            if line.startswith('#') or line == "":
+                continue
+            elif line.startswith('H'):
+                fields = line.split('\t')
+                query_id = fields[8].split()[0]
+                subject_id = fields[9].split()[0]
+                tax = self.id_to_taxonomy[subject_id]
+                try:
+                    results[query_id].append(tax)
+                except KeyError:
+                    results[query_id] = [tax]
+            elif line.startswith('N'):
+                fields = line.split('\t')
+                query_id = fields[8].split()[0]
+                try:
+                    results[query_id].append(["None"])
+                except KeyError:
+                    results[query_id] = [["None"]]
+        return results
+
+    def _uc_to_assignment(self, uc):
+        """ return dict mapping query id to consensus assignment
+        """
+        # get map of query id to all assignments
+        results = self._uc_to_assignments(uc)
+        # for each query id, compute the consensus taxonomy assignment
+        for query_id, all_assignments in results.items():
+            consensus_assignment = self._get_consensus_assignment(all_assignments)
+            results[query_id] = consensus_assignment, len(all_assignments)
+        return results
