@@ -27,11 +27,11 @@ from collections import Counter
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from qiime.pycogent_backports.uclust import Uclust
 from cogent.app import rtax
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
 
+from qiime.pycogent_backports.uclust import Uclust
 from qiime.pycogent_backports import rdp_classifier
 from qiime.pycogent_backports import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
