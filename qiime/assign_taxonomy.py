@@ -967,7 +967,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 else:
                     current_level_assignments[e[level]] += count
             counts = [(v,k) for k, v in current_level_assignments.items()
-                            if v > self.Params['confidence']]
+                            if v >= self.Params['confidence']]
             counts.sort()
             try:
                 max_frac, max_tax = counts[-1]

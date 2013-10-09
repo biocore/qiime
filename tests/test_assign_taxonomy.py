@@ -192,9 +192,30 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in1),
                          expected)
+        
+        ## if only a single input assignment, it is returned as consensus
+        in2 = [['Ab','Bc','De']]
+        
+        # increased confidence
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp,
+                  'confidence':1.0}
+        expected = (['Ab','Bc','De'],1.0,1)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+                         
+        # decreased confidence
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp,
+                  'confidence':0.0}
+        expected = (['Ab','Bc','De'],1.0,1)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
     
     def test_get_consensus_assignment_adjusts_resolution(self):
-        """_get_consensus_assignment returns max depth of shallowest assignment
+        """_get_consensus_assignment max result depth is that of shallowest assignment
         """
         in1 = [['Ab','Bc','Fg'],
                ['Ab','Bc','Fg','Hi'],
