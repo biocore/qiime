@@ -847,15 +847,10 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # must show up in to be considered the consensus assignment
             'confidence':0.51,
             # minimum identity to consider a hit (passed to uclust as --id)
-            'similarity':0.97,
-            # number of taxonomic levels to consider in assignment
-            'num_levels':7
+            'similarity':0.97
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
-        
-        assert self.Params['num_levels'] > 0,\
-                "num_levels must be greater than zero"
         
         id_to_taxonomy_f = open(self.Params['id_to_taxonomy_fp'],'U')
         self.id_to_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
@@ -863,7 +858,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
     def __call__(self,
                  seq_path,
                  result_path,
-                 uc_filepath,
+                 uc_path,
                  log_path=None,
                  HALT_EXEC=False):
         """Returns a dict mapping {seq_id:(taxonomy, n)} for each seq
@@ -900,20 +895,15 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         app.Parameters['--allhits'].on()
     
         app_result = app({'--input':seq_path,
-                          '--uc':uc_filepath})
+                          '--uc':uc_path})
         result = self._uc_to_assignment(app_result['ClusterFile'])
-
         if result_path:
             # if the user provided a result_path, write the
             # results to file
             of = open(result_path,'w')
-            for seq_id, (assignment, n) in result.items():
-                assignment_levels = [e[0] for e in assignment if e[0] is not None]
-                # Get the confidence associated the with most specific 
-                # taxonomic assignment
-                confidence = assignment[len(assignment_levels)][1]
-                assignment_str = ';'.join(assignment_levels)
-                of.write('%s\t%s\t%s\t%s\n' %
+            for seq_id, (assignment, confidence, n) in result.items():
+                assignment_str = ';'.join(assignment)
+                of.write('%s\t%s\t%1.2f\t%s\n' %
                  (seq_id, assignment_str, confidence, n))
             of.close()
             result = None
@@ -946,7 +936,19 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         num_assignments = len(assignments)
         count = 1 / num_assignments
         results = []
-        for level in range(self.Params['num_levels']):
+        
+        # if the assignments don't all have the same number
+        # of levels, the resulting assignment will have a max number 
+        # of levels equal to the number of levels in the assignment
+        # with the fewest number of levels. this is to avoid 
+        # a case where, for example, there are n assignments, one of
+        # which has 7 levels, and the other n-1 assignments have 6 levels.
+        # A 7th level in the result would be misleading because it
+        # would appear to the user as though it was the consensus 
+        # across all n assignments.
+        num_levels = min([len(a) for a in assignments])
+        
+        for level in range(num_levels):
             current_level_assignments = Counter()
             for e in assignments:
                 try:
@@ -962,7 +964,12 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             except IndexError:
                 max_frac, max_tax = 0.0, None
             results.append((max_tax,max_frac))
-        return results
+        
+        assignment = [a[0] for a in results if a is not None]
+        # Get the confidence associated the with most specific 
+        # taxonomic assignment
+        confidence = results[len(assignment)-1][1]
+        return assignment, confidence, num_assignments
 
     def _uc_to_assignments(self, uc):
         """ return dict mapping query id to all taxonomy assignments
@@ -976,7 +983,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 fields = line.split('\t')
                 query_id = fields[8].split()[0]
                 subject_id = fields[9].split()[0]
-                tax = self.id_to_taxonomy[subject_id]
+                tax = self.id_to_taxonomy[subject_id].split(';')
                 try:
                     results[query_id].append(tax)
                 except KeyError:
@@ -997,6 +1004,5 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         results = self._uc_to_assignments(uc)
         # for each query id, compute the consensus taxonomy assignment
         for query_id, all_assignments in results.items():
-            consensus_assignment = self._get_consensus_assignment(all_assignments)
-            results[query_id] = consensus_assignment, len(all_assignments)
+            results[query_id] = self._get_consensus_assignment(all_assignments)
         return results

@@ -133,23 +133,44 @@ class UclustConsensusTaxonAssignerTests(TestCase):
             if exists(d):
                 rmtree(d)
     
-    def test_uclust_assigner(self):
-        """UclustConsensusTaxonAssigner returns without error
+    def test_uclust_assigner_write_to_file(self):
+        """UclustConsensusTaxonAssigner returns without error, writing results
         """
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'refseq_fp':self.refseqs1_fp}
         
         t = UclustConsensusTaxonAssigner(params)
-        result = t(self.inseqs1_fp,
-                   self.output_txt_fp,
-                   self.output_uc_fp,
-                   self.output_log_fp)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=self.output_txt_fp,
+                   uc_path=self.output_uc_fp,
+                   log_path=self.output_log_fp)
         del t
-        # result files exist after UclustConsensusTaxonAssigner
+        # result files exist after the UclustConsensusTaxonAssigner
         # no longer exists
         self.assertTrue(exists(self.output_txt_fp))
         self.assertTrue(exists(self.output_uc_fp))
         self.assertTrue(exists(self.output_log_fp))
+        
+        # check that result has the expected lines
+        output_lines = list(open(self.output_txt_fp,'U'))
+        self.assertTrue('q1\tA;F;G\t1.00\t1\n' in output_lines)
+        self.assertTrue('q2\tA;H;I;J\t1.00\t1\n' in output_lines)
+
+    def test_uclust_assigner(self):
+        """UclustConsensusTaxonAssigner returns without error, returning dict
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'refseq_fp':self.refseqs1_fp}
+        
+        t = UclustConsensusTaxonAssigner(params)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=None,
+                   uc_path=self.output_uc_fp,
+                   log_path=self.output_log_fp)
+                   
+        self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+
+
 
 uclust_id_to_tax1 = """r1	A;F;G
 r2	A;B;C;D
