@@ -9,6 +9,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Added a parallel merge OTUs method that will combine OTU tables in parallel where possible.
 * Added identify_paired_differences.py to support paired difference (i.e., Pre/Post) testing as discussed in issue #1040.
 * Required biom-format version is now 1.2.0.
+* Added new taxonomic assignment method, ``qiime.assign_taxonomy.UclustConsensusTaxonAssigner``. This is accessible through ``assign_taxonomy.py -m uclust``, ``parallel_assign_taxonomy_uclust.py``, ``pick_de_novo_otus.py`` and ``pick_open_reference_otus.py``. This is being tested as an alternative to QIIME's existing taxonomic assignment methods.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
