@@ -143,10 +143,16 @@ script_info['optional_options']=[\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
- make_option('--min_consensus_fraction', type='float',
+ make_option('--uclust_min_consensus_fraction', type='float',
         help=('Minimum fraction of hits that must have an taxonomic assignment '
               'to make that taxonomic assignment, only used for uclust method '
               '[default: %default]'), default=0.51),
+ make_option('--uclust_similarity', type='float',
+        help=('Minimum percent similarity for taxonomic assignment, '
+              'only used for uclust method [default: %default]'), default=0.97),
+ make_option('--uclust_max_accepts', type='int',
+        help=('Number of hits to consider when making an assignment, '
+              'only used for uclust method [default: %default]'), default=3),
  make_option('--rdp_max_memory', default=1500, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
@@ -269,9 +275,11 @@ def main():
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
     elif assignment_method == 'uclust':
-        params['min_consensus_fraction'] = opts.min_consensus_fraction
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
+        params['min_consensus_fraction'] = opts.uclust_min_consensus_fraction
+        params['similarity'] = opts.uclust_similarity
+        params['max_accepts'] = opts.uclust_max_accepts
 
     elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
