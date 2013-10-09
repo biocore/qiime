@@ -834,7 +834,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
 """
     
     def __init__(self, params):
-        """Returns a new UclustAssigner object with specified params
+        """Returns a new UclustConsensusTaxonAssigner object with specified params
         """
         _params = {
             # Required, mapping of reference sequence to taxonomy
@@ -875,25 +875,6 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         result_path: path to file of results. If specified, dumps the
             result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
-        
-        
-        ## Need to 
-        ## hook up the consensus generation code and tests from 
-        ## https://gist.github.com/gregcaporaso/6083538.
-        
-        import qiime.assign_taxonomy as at
-        t = at.UclustConsensusTaxonAssigner(
-         {'id_to_taxonomy_fp':
-           '/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/id_to_taxonomy.txt',
-          'refseq_fp':
-           '/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/ref_seq_set.fna'})
-        r = t('/Users/caporaso/code/qiime/qiime_test_data/assign_taxonomy/repr_set_seqs.fasta',
-              'x.txt',
-              'x.uc',
-              'x.log')
-        for line in r['ClusterFile']:
-            print line
-        
         """
         if self.Params['id_to_taxonomy_fp'] is None:
             raise ValueError, 'id_to_taxonomy_fp must be set.'
