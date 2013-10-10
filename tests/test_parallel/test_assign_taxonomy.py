@@ -21,7 +21,8 @@ from cogent.app.util import ApplicationError
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.parallel.assign_taxonomy import (ParallelBlastTaxonomyAssigner,
-                                ParallelRdpTaxonomyAssigner)
+                                            ParallelRdpTaxonomyAssigner, 
+                                            ParallelUclustConsensusTaxonomyAssigner)
 from qiime.util import (get_qiime_temp_dir,
                         get_tmp_filename)
 from qiime.test import initiate_timeout, disable_timeout
@@ -180,6 +181,81 @@ class ParallelBlastTaxonomyAssignerTests(TestCase):
         self.assertEqual(len(results), 6)
         self.assertEqual(len(results['s1']), 3)
         self.assertEqual(len(results['s6']), 3)
+
+class ParallelUclustConsensusTaxonomyAssignerTests(TestCase):
+
+    def setUp(self):
+        """ """
+        self.files_to_remove = []
+        self.dirs_to_remove = []
+
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='qiime_parallel_taxonomy_assigner_tests_',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
+
+        self.tmp_seq_filepath = get_tmp_filename(tmp_dir=self.test_out,
+            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+            suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath, 'w')
+        seq_file.write(blast_test_seqs.toFasta())
+        seq_file.close()
+        self.files_to_remove.append(self.tmp_seq_filepath)
+
+        self.id_to_taxonomy_file = NamedTemporaryFile(
+            prefix='qiime_parallel_taxonomy_assigner_tests_id_to_taxonomy',
+            suffix='.txt',dir=tmp_dir)
+        self.id_to_taxonomy_file.write(blast_id_to_taxonomy)
+        self.id_to_taxonomy_file.seek(0)
+
+        self.reference_seqs_file = NamedTemporaryFile(
+            prefix='qiime_parallel_taxonomy_assigner_tests_ref_seqs',
+            suffix='.fasta',dir=tmp_dir)
+        self.reference_seqs_file.write(blast_reference_seqs.toFasta())
+        self.reference_seqs_file.seek(0)
+
+        initiate_timeout(60)
+
+    def tearDown(self):
+        """ """
+        disable_timeout()
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+
+    def test_parallel_uclust_taxonomy_assigner(self):
+        """ parallel_uclust_taxonomy_assigner functions as expected """
+        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_file.name,
+          'reference_seqs_fp':self.reference_seqs_file.name,
+          'uclust_min_consensus_fraction':0.51,
+          'uclust_similarity':0.97,
+          'uclust_max_accepts':3
+        }
+        
+        app = ParallelUclustConsensusTaxonomyAssigner()
+        r = app(self.tmp_seq_filepath,
+                self.test_out,
+                params,
+                job_prefix='UTATEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        results = fields_to_dict(open(glob(join(
+                self.test_out, '*_tax_assignments.txt'))[0], 'U'))
+        # some basic sanity checks: we should get the same number of sequences
+        # as our input with the same seq IDs. We should have a taxonomy string
+        # and a confidence value for each seq as well.
+        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results['s1']), 3)
+        self.assertEqual(len(results['s6']), 3)
+
+
+
 
 
 rdp_test_seqs = \
