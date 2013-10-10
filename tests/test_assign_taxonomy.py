@@ -226,6 +226,19 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in2),
                          expected)
+        
+        # no consensus
+        in2 = [['Ab','Bc','De'],
+               ['Cd','Bc','Fg','Hi'],
+               ['Ef','Bc','Fg','Jk']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Unassigned'],1.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
 
     def test_get_consensus_assignment_overlapping_names(self):
         """_get_consensus_assignment handles strange taxonomy issues"""
@@ -268,9 +281,9 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                     'q2':[['A','H','I','J'],
                           ['A','H','K','L','M'],
                           ['A','H','I','J']],
-                    'q3':[[None]],
-                    'q4':[[None]],
-                    'q5':[[None]]
+                    'q3':[[]],
+                    'q4':[[]],
+                    'q5':[[]]
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp}
@@ -282,9 +295,9 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         """_uc_to_assignment functions as expected"""
         expected = {'q1':(['A','B','C'],1.0,2),
                     'q2':(['A','H','I','J'],2./3.,3),
-                    'q3':(['Unassigned'],1.0,0),
-                    'q4':(['Unassigned'],1.0,0),
-                    'q5':(['Unassigned'],1.0,0)
+                    'q3':(['Unassigned'],1.0,1),
+                    'q4':(['Unassigned'],1.0,1),
+                    'q5':(['Unassigned'],1.0,1)
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp}
@@ -295,9 +308,9 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         # change label for unassignable
         expected = {'q1':(['A','B','C'],1.0,2),
                     'q2':(['A','H','I','J'],2./3.,3),
-                    'q3':(['x'],1.0,0),
-                    'q4':(['x'],1.0,0),
-                    'q5':(['x'],1.0,0)
+                    'q3':(['x'],1.0,1),
+                    'q4':(['x'],1.0,1),
+                    'q5':(['x'],1.0,1)
                     }
         params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
                   'reference_sequences_fp':self.refseqs1_fp,
