@@ -868,19 +868,41 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         
     def __call__(self,
                  seq_path,
-                 result_path,
+                 result_path=None,
                  uc_path=None,
                  log_path=None,
                  HALT_EXEC=False):
-        """Returns a dict mapping {seq_id:(taxonomy, n)} for each seq
+        """Returns mapping of each seq to (tax, consensus fraction, n)
 
-        n is the number of hits containing a taxonomy assignment
-
+        Results:
+        If result_path is specified, the results will be written to file
+         as tab-separated lines of: 
+          query_id <tab> tax <tab> consensus fraction <tab> n
+        If result_path is None (default), the results will be returned 
+         as a dict of:
+          {'query_id': (tax, consensus fraction, n)}
+        In both cases, the values are:
+         tax: the consensus taxonomy assignment
+         consensus fraction: the fraction of the assignments for the 
+          query that contained the lowest level tax assignment that is 
+          included in tax (e.g., if the assignment goes to genus level,
+          this will be the fraction of assignments that had the consensus
+          genus assignment)
+         n: the number of assignments that were considered when constructing 
+          the consensus
+        
         Parameters:
-        seq_path: path to file of sequences. 
-        result_path: path to file of results. If specified, dumps the
-            result to the desired path instead of returning it.
-        log_path: path to log, which should include dump of params.
+        seq_path: path to file of query sequences
+        result_path: path where results should be written. If None (default), 
+         returns results as a dict
+        uc_path: path where .uc file should be saved. If None (default), and 
+         log_path is specified, the .uc contents will be written to appended to
+         the log file.
+        log_path: path where run log should be written. If None (default), no
+         log file is written.
+        HALT_EXEC: debugging paramter. If pass, will exit just before the 
+         uclust command is issued, and will print the command that would have
+         been called to stdout.
         """
         
         # initialize the logger
@@ -913,7 +935,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         app_result = app({'--input':seq_path,
                           '--uc':uc_path})
         result = self._uc_to_assignment(app_result['ClusterFile'])
-        if result_path:
+        if result_path is not None:
             # if the user provided a result_path, write the
             # results to file
             of = open(result_path,'w')
