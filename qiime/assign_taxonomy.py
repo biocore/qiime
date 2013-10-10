@@ -941,7 +941,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             of = open(result_path,'w')
             for seq_id, (assignment, consensus_fraction, n) in result.items():
                 assignment_str = ';'.join(assignment)
-                of.write('%s\t%s\t%1.2f\t%s\n' %
+                of.write('%s\t%s\t%1.2f\t%d\n' %
                  (seq_id, assignment_str, consensus_fraction, n))
             of.close()
             result = None
