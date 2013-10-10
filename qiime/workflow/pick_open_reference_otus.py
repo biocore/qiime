@@ -177,8 +177,8 @@ def assign_tax(repset_fasta_fp,
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
-    if parallel and (assignment_method == 'rdp' or\
-                     assignment_method == 'blast' or\
+    if parallel and (assignment_method == 'rdp' or
+                     assignment_method == 'blast' or
                      assignment_method == 'uclust'):
         # Grab the parallel-specific parameters
         try:
