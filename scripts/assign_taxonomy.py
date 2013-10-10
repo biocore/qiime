@@ -78,11 +78,12 @@ script_info['script_usage'].append(("""Sample Assignment with Mothur:""", """The
 
 To make taxonomic classifications of the representative sequences, where the results are output to default directory \"mothur_assigned_taxonomy\", you can run the following command:""", "%prog -i mothur_repr_set_seqs.fasta -m mothur -r mothur_ref_seq_set.fna -t mothur_id_to_taxonomy.txt"))
 
-script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
-
 script_info['script_usage'].append(("Assign taxonomy with the uclust consensus taxonomy assigner:",
                                     "Perform database search with uclust to retrive up to uclust_max_accepts hits for each query sequence. Then assign the most specific taxonomic label that is associated with at least uclust_min_consensus_fraction of the hits.",
                                     "%prog -i repr_set_seqs.fasta -m uclust"))
+
+script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
+
 
 script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']\
