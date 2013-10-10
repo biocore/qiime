@@ -226,6 +226,25 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in2),
                          expected)
+
+    def test_get_consensus_assignment_overlapping_names(self):
+        """_get_consensus_assignment handles strange taxonomy issues"""
+        # here the 3rd level is different, but the 4th level is the same
+        # across the three assignments. this can happen in practice if 
+        # three different genera are assigned, and under each there is 
+        # an unnamed species 
+        # (e.g., f__x;g__A;s__, f__x;g__B;s__, f__x;g__B;s__)
+        # in this case, the assignment should be f__x. 
+        in1 = [['Ab','Bc','De','Jk'],
+               ['Ab','Bc','Fg','Jk'],
+               ['Ab','Bc','Hi','Jk']]
+        
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc'],1.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
     
     def test_get_consensus_assignment_adjusts_resolution(self):
         """_get_consensus_assignment max result depth is that of shallowest assignment
