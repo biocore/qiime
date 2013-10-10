@@ -44,18 +44,20 @@ script_info['optional_options'] = [
            'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
            default=default_id_to_taxonomy_fp),
  make_option('-r','--reference_seqs_fp',action='store',
-           help='Ref seqs to rdp against. [default: %s]' % default_reference_seqs_fp,
+           help='Ref seqs to search against. [default: %s]' % default_reference_seqs_fp,
            default=default_reference_seqs_fp,type='existing_filepath'),
  make_option('--uclust_min_consensus_fraction', type='float',
-        help=('Minimum fraction of hits that must have an taxonomic assignment '
-              'to make that taxonomic assignment, only used for uclust method '
+        help=('Minimum fraction of database hits that must have a '
+              'specific taxonomic assignment to assign that taxonomy '
+              'to a query, only used for uclust method '
               '[default: %default]'), default=0.51),
  make_option('--uclust_similarity', type='float',
-        help=('Minimum percent similarity for taxonomic assignment, '
+        help=('Minimum percent similarity to consider a database match a hit, '
               'only used for uclust method [default: %default]'), default=0.97),
  make_option('--uclust_max_accepts', type='int',
-        help=('Number of hits to consider when making an assignment, '
-              'only used for uclust method [default: %default]'), default=3),
+        help=('Number of database hits to consider when making '
+              'an assignment, only used for uclust method '
+              '[default: %default]'), default=3),
  options_lookup['jobs_to_start'],
  options_lookup['retain_temp_files'],
  options_lookup['suppress_submit_jobs'],

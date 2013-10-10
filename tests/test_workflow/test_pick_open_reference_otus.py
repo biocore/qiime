@@ -179,7 +179,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
 
     def test_pick_subsampled_open_reference_otus_uclust_tax_assign(self):
-        """pick_subsampled_open_reference_otus functions as expected
+        """pick_subsampled_open_reference_otus fns when assigning tax with uclust
         """
         self.params.update(
          parse_qiime_parameters(['assign_taxonomy:assignment_method uclust',

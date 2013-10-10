@@ -155,15 +155,17 @@ script_info['optional_options']=[\
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
  make_option('--uclust_min_consensus_fraction', type='float',
-        help=('Minimum fraction of hits that must have an taxonomic assignment '
-              'to make that taxonomic assignment, only used for uclust method '
+        help=('Minimum fraction of database hits that must have a '
+              'specific taxonomic assignment to assign that taxonomy '
+              'to a query, only used for uclust method '
               '[default: %default]'), default=0.51),
  make_option('--uclust_similarity', type='float',
-        help=('Minimum percent similarity for taxonomic assignment, '
+        help=('Minimum percent similarity to consider a database match a hit, '
               'only used for uclust method [default: %default]'), default=0.97),
  make_option('--uclust_max_accepts', type='int',
-        help=('Number of hits to consider when making an assignment, '
-              'only used for uclust method [default: %default]'), default=3),
+        help=('Number of database hits to consider when making '
+              'an assignment, only used for uclust method '
+              '[default: %default]'), default=3),
  make_option('--rdp_max_memory', default=1500, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
