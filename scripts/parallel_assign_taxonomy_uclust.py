@@ -30,7 +30,7 @@ script_info['output_description']="""Mapping of sequence identifiers to taxonomy
 script_info['required_options'] = [
  make_option('-i','--input_fasta_fp',action='store',
            type='existing_filepath',
-           help='full path to input_fasta_fp [REQUIRED]'),
+           help='full path to fasta file containing query sequences [REQUIRED]'),
  make_option('-o','--output_dir',action='store',
            type='new_dirpath',help='path to store output files [REQUIRED]'),
 ]
