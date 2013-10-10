@@ -22,7 +22,7 @@ from string import strip
 from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
-from collections import Counter
+from collections import Counter, defaultdict
 
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -1039,7 +1039,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
     def _uc_to_assignments(self, uc):
         """ return dict mapping query id to all taxonomy assignments
         """
-        results = {}
+        results = defaultdict(list)
         for line in uc:
             line = line.strip()
             if line.startswith('#') or line == "":
@@ -1049,17 +1049,11 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 query_id = fields[8].split()[0]
                 subject_id = fields[9].split()[0]
                 tax = self.id_to_taxonomy[subject_id].split(';')
-                try:
-                    results[query_id].append(tax)
-                except KeyError:
-                    results[query_id] = [tax]
+                results[query_id].append(tax)
             elif line.startswith('N'):
                 fields = line.split('\t')
                 query_id = fields[8].split()[0]
-                try:
-                    results[query_id].append([])
-                except KeyError:
-                    results[query_id] = [[]]
+                results[query_id].append([])
         return results
 
     def _uc_to_assignment(self, uc):
