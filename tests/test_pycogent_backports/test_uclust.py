@@ -207,6 +207,8 @@ class UclustConvenienceWrappers(TestCase):
         self.ref_test_new_seeds2 = ref_test_new_seeds2
         self.uc_dna_clusters = uc_dna_clusters
         self.uc_lines1 = uc_lines1
+        self.uc_lines_w_multiple_hits_per_query = \
+         uc_lines_w_multiple_hits_per_query
         self.uc_lines_overlapping_lib_input_seq_ids = \
          uc_lines_overlapping_lib_input_seq_ids
         
@@ -238,8 +240,30 @@ class UclustConvenienceWrappers(TestCase):
         self.assertEqual(clusters_from_uc_file(self.uc_lines1),
          (expected_clusters,expected_failures,expected_new_seeds))
     
+    def test_clusters_from_uc_file_multiple_hits(self):
+        """ clusters_from_uc_file handles error_on_multiple_hits correctly
+        """
+        # when a query hits multiple hits and error_on_multiple_hits=True
+        # an error should be raised
+        self.assertRaises(UclustParseError,
+                          clusters_from_uc_file,
+                          self.uc_lines_w_multiple_hits_per_query,
+                          error_on_multiple_hits=True)
+        
+        # when a query hits multiple hits and error_on_multiple_hits=False
+        # the query should show up in multiple clusters
+        actual = clusters_from_uc_file(self.uc_lines_w_multiple_hits_per_query,
+                                       error_on_multiple_hits=False)
+        expected_clusters = {'s2':['s2','s3'],
+                             's4':['s4','s3']}
+        expected_failures = ['s1']
+        expected_new_seeds = ['s2','s4']
+        self.assertEqual(actual,
+         (expected_clusters,expected_failures,expected_new_seeds))
+
     def test_clusters_from_uc_file_error(self):
-        """ clusters_from_uc_file raises error when lib/input seq ids overlap"""
+        """ clusters_from_uc_file raises error when lib/input seq ids overlap
+        """
         self.assertRaises(UclustParseError,
                           clusters_from_uc_file,
                           self.uc_lines_overlapping_lib_input_seq_ids)
@@ -675,6 +699,21 @@ uc_lines1 = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 
 N	*	80	*	*	*	*	*	s1 some comment	*
 S	4	80	*	*	*	*	*	s2 some other comment	*
 H	2	78	100.0	+	0	0	5I78M10I	s3 yet another comment	s2""".split('\n')
+
+uc_lines_w_multiple_hits_per_query = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 --libonly --rev
+# version=1.1.579
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+N	*	80	*	*	*	*	*	s1 some comment	*
+S	4	80	*	*	*	*	*	s2 some other comment	*
+S	4	80	*	*	*	*	*	s4	*
+H	2	78	100.0	+	0	0	5I78M10I	s3 yet another comment	s2
+H	2	78	98.0	+	0	0	5I78M10I	s3 yet another comment	s4
+""".split('\n')
 
 uc_lines_overlapping_lib_input_seq_ids = """# uclust --maxrejects 32 --input /tmp/OtuPickerbb092OWRWLWqlBR2BmTZ.fasta --id 0.97 --uc /tmp/uclust_clustersLf5Oqv0SvGTZo1mVWBqK.uc --rev --usersort --maxaccepts 8 --lib r.fasta
 # version=1.1.16
