@@ -947,11 +947,8 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             result = None
             logger.info('Result path: %s' % result_path)
         else:
-            # Returning the data as a dict, so no modification to result
-            # is necessary.
-            pass
-        
-            # if no result_path was provided, return the data as a dict
+            # If no result_path was provided, the result dict is 
+            # returned as-is.
             logger.info('Result path: None, returned as dict.')
         
         if store_uc_in_log:
