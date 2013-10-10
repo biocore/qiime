@@ -182,7 +182,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         """pick_subsampled_open_reference_otus functions as expected
         """
         self.params.update(
-         parse_qiime_parameters(['assign_taxonomy:assignment_method uclust']))
+         parse_qiime_parameters(['assign_taxonomy:assignment_method uclust',
+          'assign_taxonomy:reference_seqs_fp %s' %  self.test_data['refseqs'][0],
+          'assign_taxonomy:id_to_taxonomy_fp %s' %  self.test_data['refseqs_tax'][0]]))
         pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
                                   refseqs_fp=self.test_data['refseqs'][0],
                                   output_dir=self.wf_out,
@@ -278,7 +280,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata
         for o in otu_table.iterObservations():
-            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_pick_subsampled_open_reference_otus_usearch(self):
