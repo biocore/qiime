@@ -977,7 +977,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         return logger
 
     def _get_consensus_assignment(self, assignments):
-        """ compute the consensus from a list of assignments
+        """ compute the consensus assignment from a list of assignments
         """
         num_input_assignments = len(assignments)
         consensus_assignment = []
@@ -995,8 +995,13 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         
         # iterate over the assignment levels
         for level in range(num_levels):
-            # count the different taxonomic assignments at the current level
-            current_level_assignments = Counter([e[level] for e in assignments])
+            # count the different taxonomic assignments at the current level.
+            # the counts are computed based on the current level and all higher
+            # levels to reflect that, for example, 'p__A; c__B; o__C' and 
+            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
+            # they are different at the p__ and c__ levels). 
+            current_level_assignments = \
+             Counter([tuple(e[:level+1]) for e in assignments])
             # identify the most common taxonomic assignment, and compute the 
             # fraction of assignments that contained it. it's safe to compute the 
             # fraction using num_assignments because the deepest level we'll 
@@ -1007,11 +1012,12 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # check whether the most common taxonomic assignment is observed 
             # in at least min_consensus_fraction of the sequences
             if max_consensus_fraction >= self.Params['min_consensus_fraction']:
-                # if so, append it and move on to the next level
-                consensus_assignment.append((tax, max_consensus_fraction))
+                # if so, append the current level only (e.g., 'o__C' if tax is 
+                # 'p__A; c__B; o__C', and continue on to the next level
+                consensus_assignment.append((tax[-1], max_consensus_fraction))
             else:
                 # if not, there is no assignment at this level, and we're
-                # done iterating over level
+                # done iterating over levels
                 break
         
         ## construct the results
