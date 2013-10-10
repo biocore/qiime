@@ -40,24 +40,22 @@ default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
 
 script_info['optional_options'] = [
  make_option('-t','--id_to_taxonomy_fp',action='store',
-           type='existing_filepath',help='full path to '+\
-           'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
+           type='existing_filepath',help='full path to '
+           'id_to_taxonomy mapping file [default: %default]',
            default=default_id_to_taxonomy_fp),
  make_option('-r','--reference_seqs_fp',action='store',
-           help='Ref seqs to search against. [default: %s]' % default_reference_seqs_fp,
+           help='Ref seqs to search against. [default: %default]',
            default=default_reference_seqs_fp,type='existing_filepath'),
  make_option('--uclust_min_consensus_fraction', type='float',
         help=('Minimum fraction of database hits that must have a '
               'specific taxonomic assignment to assign that taxonomy '
-              'to a query, only used for uclust method '
-              '[default: %default]'), default=0.51),
+              'to a query [default: %default]'), default=0.51),
  make_option('--uclust_similarity', type='float',
-        help=('Minimum percent similarity to consider a database match a hit, '
-              'only used for uclust method [default: %default]'), default=0.97),
+        help=('Minimum percent similarity to consider a database match a hit '
+              '[default: %default]'), default=0.97),
  make_option('--uclust_max_accepts', type='int',
         help=('Number of database hits to consider when making '
-              'an assignment, only used for uclust method '
-              '[default: %default]'), default=3),
+              'an assignment [default: %default]'), default=3),
  options_lookup['jobs_to_start'],
  options_lookup['retain_temp_files'],
  options_lookup['suppress_submit_jobs'],
@@ -87,7 +85,7 @@ def main():
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    suppress_submit_jobs=opts.suppress_submit_jobs)
 
 
 if __name__ == "__main__":
