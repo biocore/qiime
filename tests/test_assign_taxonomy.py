@@ -16,23 +16,26 @@ __status__ = "Development"
 
 from cStringIO import StringIO
 from os import remove, system, path, getenv
+from os.path import exists
 from glob import glob
 from tempfile import NamedTemporaryFile, mkdtemp
-from shutil import copy as copy_file
+from shutil import copy as copy_file, rmtree
+
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from qiime.util import get_tmp_filename
-
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.rdp_classifier import train_rdp_classifier
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, create_dir
 from cogent.parse.fasta import MinimalFastaParser
+
+from qiime.util import get_tmp_filename, get_qiime_temp_dir
+from qiime.test import initiate_timeout, disable_timeout
+
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
     RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, validate_rdp_version,
-    MothurTaxonAssigner,
-    )
+    MothurTaxonAssigner, UclustConsensusTaxonAssigner)
 from sys import stderr
 
 
@@ -63,6 +66,323 @@ class TaxonAssignerTests(TestCase):
         """Abstract TaxonAssigner __call__ should raise NotImplementedError"""
         p = TaxonAssigner({})
         self.assertRaises(NotImplementedError, p, '/path/to/seqs')
+
+class UclustConsensusTaxonAssignerTests(TestCase):
+    
+    def setUp(self):
+        
+        self.files_to_remove = []
+        self.dirs_to_remove = []
+        
+        # Create test output directory
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+                                         prefix='qiime_uclust_tax_tests',
+                                         suffix='',
+                                         result_constructor=str)
+        self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
+        
+        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='in',
+                                            suffix='.fasta')
+        self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                            prefix='in',
+                                            suffix='.fasta')
+        self.id_to_tax1_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                              prefix='id-to-tax',
+                                              suffix='.txt')
+        
+        self.output_log_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                              prefix='out',
+                                              suffix='.log')
+        self.output_uc_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                              prefix='out',
+                                              suffix='.uc')
+        self.output_txt_fp = get_tmp_filename(tmp_dir=self.test_out,
+                                              prefix='out',
+                                              suffix='.txt')
+        
+        inseqs1_f = open(self.inseqs1_fp,'w')
+        inseqs1_f.write(uclust_inseqs1)
+        inseqs1_f.close()
+        self.files_to_remove.append(self.inseqs1_fp)
+
+        refseqs1_f = open(self.refseqs1_fp,'w')
+        refseqs1_f.write(uclust_refseqs1)
+        refseqs1_f.close()
+        self.files_to_remove.append(self.refseqs1_fp)
+
+        id_to_tax1_f = open(self.id_to_tax1_fp,'w')
+        id_to_tax1_f.write(uclust_id_to_tax1)
+        id_to_tax1_f.close()
+        self.files_to_remove.append(self.id_to_tax1_fp)
+        
+        self.uc1_lines = uc1.split('\n')
+        
+        # Define number of seconds a test can run for before timing out 
+        # and failing
+        initiate_timeout(60)
+
+    
+    def tearDown(self):
+        
+        disable_timeout()
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+    
+    def test_uclust_assigner_write_to_file(self):
+        """UclustConsensusTaxonAssigner returns without error, writing results
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        
+        t = UclustConsensusTaxonAssigner(params)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=self.output_txt_fp,
+                   uc_path=self.output_uc_fp,
+                   log_path=self.output_log_fp)
+        del t
+        # result files exist after the UclustConsensusTaxonAssigner
+        # no longer exists
+        self.assertTrue(exists(self.output_txt_fp))
+        self.assertTrue(exists(self.output_uc_fp))
+        self.assertTrue(exists(self.output_log_fp))
+        
+        # check that result has the expected lines
+        output_lines = list(open(self.output_txt_fp,'U'))
+        self.assertTrue('q1\tA;F;G\t1.00\t1\n' in output_lines)
+        self.assertTrue('q2\tA;H;I;J\t1.00\t1\n' in output_lines)
+
+    def test_uclust_assigner(self):
+        """UclustConsensusTaxonAssigner returns without error, returning dict
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        
+        t = UclustConsensusTaxonAssigner(params)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=None,
+                   uc_path=self.output_uc_fp,
+                   log_path=self.output_log_fp)
+                   
+        self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+        self.assertEqual(result['q2'],(['A','H','I','J'],1.0,1))
+
+        # no result paths provided
+        t = UclustConsensusTaxonAssigner(params)
+        result = t(seq_path=self.inseqs1_fp,
+                   result_path=None,
+                   uc_path=None,
+                   log_path=None)
+                   
+        self.assertEqual(result['q1'],(['A','F','G'],1.0,1))
+        self.assertEqual(result['q2'],(['A','H','I','J'],1.0,1))
+    
+    def test_get_consensus_assignment(self):
+        """_get_consensus_assignment fuctions as expected """
+        in1 = [['Ab','Bc','De'],
+               ['Ab','Bc','Fg','Hi'],
+               ['Ab','Bc','Fg','Jk']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc','Fg'],2./3.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+        
+        # increased min_consensus_fraction yields decreased specificity
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
+                  'min_consensus_fraction':0.99}
+        expected = (['Ab','Bc'],1.0,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+        
+        ## if only a single input assignment, it is returned as consensus
+        in2 = [['Ab','Bc','De']]
+        
+        # increased min_consensus_fraction
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
+                  'min_consensus_fraction':1.0}
+        expected = (['Ab','Bc','De'],1.0,1)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+                         
+        # decreased min_consensus_fraction
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
+                  'min_consensus_fraction':0.0}
+        expected = (['Ab','Bc','De'],1.0,1)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+        
+        # no consensus
+        in2 = [['Ab','Bc','De'],
+               ['Cd','Bc','Fg','Hi'],
+               ['Ef','Bc','Fg','Jk']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Unassigned'],1.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+
+    def test_get_consensus_assignment_overlapping_names(self):
+        """_get_consensus_assignment handles strange taxonomy issues"""
+        # here the 3rd level is different, but the 4th level is the same
+        # across the three assignments. this can happen in practice if 
+        # three different genera are assigned, and under each there is 
+        # an unnamed species 
+        # (e.g., f__x;g__A;s__, f__x;g__B;s__, f__x;g__B;s__)
+        # in this case, the assignment should be f__x. 
+        in1 = [['Ab','Bc','De','Jk'],
+               ['Ab','Bc','Fg','Jk'],
+               ['Ab','Bc','Hi','Jk']]
+        
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc'],1.,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+        
+        # here the third level is the same in 4/5 of the 
+        # assignments, but one of them (z, y, c) refers to a 
+        # different taxa since the higher levels are different.
+        # the consensus value should be 3/5, not 4/5, to 
+        # reflect that. 
+        in2 = [['a','b','c'],
+               ['a','d','e'],
+               ['a','b','c'],
+               ['a','b','c'],
+               ['z','y','c']]
+        expected = (['a','b','c'],0.6,5)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+        
+    
+    def test_get_consensus_assignment_adjusts_resolution(self):
+        """_get_consensus_assignment max result depth is that of shallowest assignment
+        """
+        in1 = [['Ab','Bc','Fg'],
+               ['Ab','Bc','Fg','Hi'],
+               ['Ab','Bc','Fg','Hi']]
+        
+        # defaults 
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        expected = (['Ab','Bc','Fg'],1.0,3)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in1),
+                         expected)
+    
+    def test_uc_to_assignments(self):
+        """_uc_to_assignments functions as expected"""
+        expected = {'q1':[['A','B','C','D'],
+                          ['A','B','C','E']],
+                    'q2':[['A','H','I','J'],
+                          ['A','H','K','L','M'],
+                          ['A','H','I','J']],
+                    'q3':[[]],
+                    'q4':[[]],
+                    'q5':[[]]
+                    }
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        t = UclustConsensusTaxonAssigner(params)
+        actual = t._uc_to_assignments(self.uc1_lines)
+        self.assertEqual(actual,expected)
+
+    def test_uc_to_assignment(self):
+        """_uc_to_assignment functions as expected"""
+        expected = {'q1':(['A','B','C'],1.0,2),
+                    'q2':(['A','H','I','J'],2./3.,3),
+                    'q3':(['Unassigned'],1.0,1),
+                    'q4':(['Unassigned'],1.0,1),
+                    'q5':(['Unassigned'],1.0,1)
+                    }
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp}
+        t = UclustConsensusTaxonAssigner(params)
+        actual = t._uc_to_assignment(self.uc1_lines)
+        self.assertEqual(actual,expected)
+        
+        # change label for unassignable
+        expected = {'q1':(['A','B','C'],1.0,2),
+                    'q2':(['A','H','I','J'],2./3.,3),
+                    'q3':(['x'],1.0,1),
+                    'q4':(['x'],1.0,1),
+                    'q5':(['x'],1.0,1)
+                    }
+        params = {'id_to_taxonomy_fp':self.id_to_tax1_fp,
+                  'reference_sequences_fp':self.refseqs1_fp,
+                  'unassignable_label':'x'}
+        t = UclustConsensusTaxonAssigner(params)
+        actual = t._uc_to_assignment(self.uc1_lines)
+        self.assertEqual(actual,expected)
+        
+
+uc1 = """# uclust --input /Users/caporaso/Dropbox/code/short-read-tax-assignment/data/qiime-mock-community/Broad-1/rep_set.fna --lib /Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta --uc /Users/caporaso/outbox/uclust_tax_parameter_sweep/Broad-1/gg_13_5_otus/uclust/id1.000000_ma3.uc --id 1.00 --maxaccepts 3 --libonly --allhits
+# version=1.2.22
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+N	*	195	*	*	*	*	*	q3	*
+N	*	191	*	*	*	*	*	q4	*
+N	*	192	*	*	*	*	*	q5	*
+L	748	1374	*	*	*	*	*	1081058	*
+H	r3	193	100.0	+	0	0	534I193M787I	q2	r3
+H	r5	193	97.0	+	0	0	534I193M787I	q2	r5
+H	r6	193	97.0	+	0	0	534I193M787I	q2	r6
+L	92734	1541	*	*	*	*	*	4440404	*
+H	r2	189	99.0	+	0	0	531I189M821I	q1	r2
+H	r4	189	100.0	+	0	0	531I189M821I	q1	r4
+"""
+
+uclust_id_to_tax1 = """r1	A;F;G
+r2	A;B;C;D
+r3	A;H;I;J
+r4	A;B;C;E
+r5	A;H;K;L;M
+r6	A;H;I;J
+"""
+
+uclust_inseqs1 = """>q1 equal to r1
+GAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCATGCTTAACACATGCAAGTCGAACGGCAGCATGACTTAGCTTGCTAAGTTGATGGCGAGTGGCGAACGGGTGAGTAACGCGTAGGAATATGCCTTAAAGAGGGGGACAACTTGGGGAAACTCAAGCTAATACCGCATAAACTCTTCGGAGAAAAGCTGGGGACTTTCGAGCCTGGCGCTTTAAGATTAGCCTGCGTCCGATTAGCTAGTTGGTAGGGTAAAGGCCTACCAAGGCGACGATCAGTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGGACAATGGGGGCAACCCTGATCCAGCAATGCCGCGTGTGTGAAGAAGGCCTGAGGGTTGTAAAGCACTTTCAGTGGGGAGGAGGGTTTCCCGGTTAAGAGCTAGGGGCATTGGACGTTACCCACAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCCGCGGTAATACGGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCCGTTAAAANGGTGCCTAAGGTGGTTTGGATNAGTTATGTGTTAAATTCCCTGGCGCCTCCACCCTGGNGCCAGGTCCATANTAAAAACTGTTAAACTCCGAAGTATGGGCACAAGGTAANTTGGAAANTTCCGGTGGTNANCCGNTGAAAATGCGCTTAGAGATNCGGGAAGGGACCACCCCAGTGGGGAAGGCGGCTACCTGGCCTAATAACTGACATTGAGGCACGAAAAGCGTGGGGAGCAACCAGGATTAGATACCCTGGTAGTCCACGCTGTAAACGATGTCAACTAGCTGTNGGTTATATGAATATAATTAGTGGCGAAGCTAACGCGATAAGTTGACCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATNGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTACCCTTGACATACAGTAAATCTTTCAGAGATGAGAGAGTGCCTTCGGGAATACTGATACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGTAACGAGCGCAACCCTTATCTCTAGTTGCCAGCGAGTAATGTCGGGAACTCTAAAGAGACTGCCGGTGACAAACCGGAGGAAGGCGGGGACGACGTCAAGTCATCATGGCCCTTACGGGTAGGGCTACACACGTGCTACAATGGCCGATACAGAGGGGCGCGAAGGAGCGATCTGGAGCAAATCTTATAAAGTCGGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGCGAATCAGCATGTCGCGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGCTGCACCAGAAGTAGATAGTCTAACCGCAAGGGGGACGTTTACCACGGTGTGGTTCATGACTGGGGTGAAGTCGTAACAAGGTAGCCG
+>q2 equal to r3
+AGAGTTTGATCATGGCTCAGGATGAACGTTGGTAGTATGCCTAACACATGCAAGTCGAGCGGAAAGTAGTAGCAATATTACCTTTAGCGGCGAACGGGTGAGTAATACTTATCTTACCTGCCATTTAGTGGGGGATAAAATTCCGCATATTATGAGTAATCATGAAAGGGCTTTCGGGCTCGCTAATTGATGGGGATAAGTCGTATTAGTTAGTTGGTGGGGTAATGGCCTACCAAGACAATGATGCGTAGCCAGTCTGAGAGGATGAATGGCCACAAAGGAACTGAGACACGGTCCTTACTCCTATTGAGGAGGCAGCAGTGGGGAATATTCTGCAATGGGGGAAACCCTGACAGAGCAATACTACGTGAAGGAGGAAGGTCTACGGATTGTAAACTTCTTTACTTAAATGTACTAACCGCAAGGTTTTGCATTTGAGCAAAAAGCGACGACTAACTATGTGCCAGCAGTCGCGGTAAGACATAGGTCGCGAACGTTATCCGGAATTATTGGGCGTAAAGGATGCGTAGATGGTTCAGTAAGTTACTGGTGGGAAATCGAGGCCTAACCTCGTGGAAGTCAGTAATACTGTTGAACTTGAGTGCAGGAGAGGTTAACGGAACTTCATGTGGAGCGGTAAAATGCGTAGATATATGAAAGAACATCAATATAGCGAAGGCAGTTAACTATTCTGCTACTGACATTGAGGCATGAAAGCGTGGGGAGCAAAACGGATTAGATACCCGTGTAGTCCACGCCCTAAACGATGAGTGCTAGATATTGGGAACTTGATTCTCAGTGTCGCTAGGTAACCCGGTAAGCACTCCGCCTGGGGAGTACGCTCGCAAGAGTGAAACTTAAAGGAATTGACGGGGACTCGCACAAGCAGTGGAGCATGTGGTTTAATCCGATACAACGCGTAGAACCTTACCAAGGCTTGACATGTAAGGTAGCAATACTAAATTAGGGAAACCTAGTTGAATTACACAGGTGCTGCATGGCCGTCGTCAGTTCGTGCCGTGAGGTGTATGGTTAAGTCCTATAACGAACGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGGACTCTAAGGAGACTGCAAGGCATGTTTATGCATGTCTGAACTGAGTAATCAGGAGGAAGGAAAGGATGACGCCTGGTCGTCATGGCCCTTATGCCTTGGGCGACACACGTGCTACAATGGTTAGTACAAAGGGTCGCCAACCCGCGAGGGGGAGCTAATCTCAAAAAACTAACCGCAGTTCAGATTGGAGGCTGCAACTCGCCTCCATGAAGGTGGAATTGCTAGTAATCGTAAATCAGCCATGTTACGGTGAATACGTTCTCGAGTCTTGTACACACCGCCCGTCAAATCACGAAAGTCGGTAATGCCTAAAACCAGTTGATTAACCCGCAAGGGATACAGCTGACAAGGGTAGGATTGGCAATTGGGGTTAAGTCGTAACAAGGTAGCCGTAG
+"""
+
+uclust_refseqs1 = """>r1 229854
+GAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCATGCTTAACACATGCAAGTCGAACGGCAGCATGACTTAGCTTGCTAAGTTGATGGCGAGTGGCGAACGGGTGAGTAACGCGTAGGAATATGCCTTAAAGAGGGGGACAACTTGGGGAAACTCAAGCTAATACCGCATAAACTCTTCGGAGAAAAGCTGGGGACTTTCGAGCCTGGCGCTTTAAGATTAGCCTGCGTCCGATTAGCTAGTTGGTAGGGTAAAGGCCTACCAAGGCGACGATCAGTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGGACAATGGGGGCAACCCTGATCCAGCAATGCCGCGTGTGTGAAGAAGGCCTGAGGGTTGTAAAGCACTTTCAGTGGGGAGGAGGGTTTCCCGGTTAAGAGCTAGGGGCATTGGACGTTACCCACAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCCGCGGTAATACGGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCCGTTAAAANGGTGCCTAAGGTGGTTTGGATNAGTTATGTGTTAAATTCCCTGGCGCCTCCACCCTGGNGCCAGGTCCATANTAAAAACTGTTAAACTCCGAAGTATGGGCACAAGGTAANTTGGAAANTTCCGGTGGTNANCCGNTGAAAATGCGCTTAGAGATNCGGGAAGGGACCACCCCAGTGGGGAAGGCGGCTACCTGGCCTAATAACTGACATTGAGGCACGAAAAGCGTGGGGAGCAACCAGGATTAGATACCCTGGTAGTCCACGCTGTAAACGATGTCAACTAGCTGTNGGTTATATGAATATAATTAGTGGCGAAGCTAACGCGATAAGTTGACCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATNGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTACCCTTGACATACAGTAAATCTTTCAGAGATGAGAGAGTGCCTTCGGGAATACTGATACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGTAACGAGCGCAACCCTTATCTCTAGTTGCCAGCGAGTAATGTCGGGAACTCTAAAGAGACTGCCGGTGACAAACCGGAGGAAGGCGGGGACGACGTCAAGTCATCATGGCCCTTACGGGTAGGGCTACACACGTGCTACAATGGCCGATACAGAGGGGCGCGAAGGAGCGATCTGGAGCAAATCTTATAAAGTCGGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGCGAATCAGCATGTCGCGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGCTGCACCAGAAGTAGATAGTCTAACCGCAAGGGGGACGTTTACCACGGTGTGGTTCATGACTGGGGTGAAGTCGTAACAAGGTAGCCG
+>r2 107103
+TTTTCTTGGATTTGATTCTGGTCCAGAGTAAACGCTTGAGATATGTTGATACATGTTAGTTAAACGTGAATATTTGGTTTTTATGCCAACTTTATTTAAGTAGCGTATAGGTGAGTAATATGCAAGAATCCTACCTTTTAGTTTATGTAGCTCGTAAATTTATAAAAGATTTTTTCGCTAAAAGATGGGCTTGCACAAGATTAGGTTTTTGGTTTGCTAAAAACGTTCCAAGCCTAAGATCTTTAGCCGGCTTTCGTGAGTGACCGGCCACATAGGGACTGAGACAATGCCCTAGCTCCTTTTCTGGAGGCATCAGTACAAAGCATTGGACAATGAACGAAAGTTTGATCCAGTAATATCTCGTGAATGATGAAGGGTTTTTGCTCGTAAATTTCTTTTAGTTGAAAGAAAAAAGATATATTTCAACAGAAAAAATCCTGGCAAATCCTCGTGCCAGCAGCCGCGGTAATACGAGAAGGGTTAGCGTTACTCGAAATTATTGGGCGTAAAGTGCGTGAACAGCTGCTTTTTAAGCTATAGGCAGAAAAATCAAGGGTTAATCTTGTTTTTGTCATAGTTCTGATAAGCTTGAGTTTGGAAGAAGATAATAGAACATTTTATGGAGCGATGAAATGCTATGATATAAAAGAGAATACCAAAAGCGAAGGCAGTTATCTAGTACAAAACTGACGCCTATACGCGAAGGCTTAGGTAGCAAAAAGGATTAGGGACCCTTGTAGTCTAAGCTGTCAACGATGAACACTCGTTTTTGGATCACTTTTTTTCAGAAACTAAGCTAACGCGTTAAGTGTTTCGCCTGGGTACTACGGTCGCAAGACTAAAACTTAAAGAAATTGGCGGGAGTAAAAACAAGCAGTGGAGCGTGTGGTTTAATTCGATAGTACACGCAAATCTTACCATTACTTGACTCAAACATTGAAATGCACTATGTTTATGGTGTTGTTTAAGTATTATTTTACTTATAGATGTGCAGGCGCTGCATGGTTGTCGTCAGTTCGTGTCGTGAGATGTTTGGTTAATTCCCTTAACGAACGTAACCCTCAAAGCATATTCAAAACATTTTGTTTTTTTGTTAAACAGTCGGGGAAACCTGAATGTAGAGGGGTAGACGTCTAAATCTTTATGGCCCTTATGTATTTGGGCTACTCATGCGCTACAATGGGTGTATTCTACAAAAAGACGCAAAAACTCTTCAGTTTGAGCAAAACTTGAAAAGCACCCTCTAGTTCGGATTGAACTCTGGAACTCGAGTTCATAAAGTTGGAATTGCTAGTAATCGTGAGTTAGCGTATCGCGGTGAATCGAAAATTTACTTTGTACATACCGCCCGTCAAGTACTGAAAATTTGTATTGCAAGAAATTTTTGGAGAATTTACTTAACTCTTTTTTTTTTTAAGTTGGCTGTATCAGTCTTTTAAAAACTTTGAGTTAGGTTTTAAGCATCCGAGGGTAAAAGCAACATTTTTTATTGGTATTAAGTCGTAACAAGGTAGCCCTACGGG
+>r3 696036
+AGAGTTTGATCATGGCTCAGGATGAACGTTGGTAGTATGCCTAACACATGCAAGTCGAGCGGAAAGTAGTAGCAATATTACCTTTAGCGGCGAACGGGTGAGTAATACTTATCTTACCTGCCATTTAGTGGGGGATAAAATTCCGCATATTATGAGTAATCATGAAAGGGCTTTCGGGCTCGCTAATTGATGGGGATAAGTCGTATTAGTTAGTTGGTGGGGTAATGGCCTACCAAGACAATGATGCGTAGCCAGTCTGAGAGGATGAATGGCCACAAAGGAACTGAGACACGGTCCTTACTCCTATTGAGGAGGCAGCAGTGGGGAATATTCTGCAATGGGGGAAACCCTGACAGAGCAATACTACGTGAAGGAGGAAGGTCTACGGATTGTAAACTTCTTTACTTAAATGTACTAACCGCAAGGTTTTGCATTTGAGCAAAAAGCGACGACTAACTATGTGCCAGCAGTCGCGGTAAGACATAGGTCGCGAACGTTATCCGGAATTATTGGGCGTAAAGGATGCGTAGATGGTTCAGTAAGTTACTGGTGGGAAATCGAGGCCTAACCTCGTGGAAGTCAGTAATACTGTTGAACTTGAGTGCAGGAGAGGTTAACGGAACTTCATGTGGAGCGGTAAAATGCGTAGATATATGAAAGAACATCAATATAGCGAAGGCAGTTAACTATTCTGCTACTGACATTGAGGCATGAAAGCGTGGGGAGCAAAACGGATTAGATACCCGTGTAGTCCACGCCCTAAACGATGAGTGCTAGATATTGGGAACTTGATTCTCAGTGTCGCTAGGTAACCCGGTAAGCACTCCGCCTGGGGAGTACGCTCGCAAGAGTGAAACTTAAAGGAATTGACGGGGACTCGCACAAGCAGTGGAGCATGTGGTTTAATCCGATACAACGCGTAGAACCTTACCAAGGCTTGACATGTAAGGTAGCAATACTAAATTAGGGAAACCTAGTTGAATTACACAGGTGCTGCATGGCCGTCGTCAGTTCGTGCCGTGAGGTGTATGGTTAAGTCCTATAACGAACGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGGACTCTAAGGAGACTGCAAGGCATGTTTATGCATGTCTGAACTGAGTAATCAGGAGGAAGGAAAGGATGACGCCTGGTCGTCATGGCCCTTATGCCTTGGGCGACACACGTGCTACAATGGTTAGTACAAAGGGTCGCCAACCCGCGAGGGGGAGCTAATCTCAAAAAACTAACCGCAGTTCAGATTGGAGGCTGCAACTCGCCTCCATGAAGGTGGAATTGCTAGTAATCGTAAATCAGCCATGTTACGGTGAATACGTTCTCGAGTCTTGTACACACCGCCCGTCAAATCACGAAAGTCGGTAATGCCTAAAACCAGTTGATTAACCCGCAAGGGATACAGCTGACAAGGGTAGGATTGGCAATTGGGGTTAAGTCGTAACAAGGTAGCCGTAG
+>r4 3190878
+TTAATACATGCGAGTTGAACGTGAATTTTTTAATTAAAATGAAAGTAGCGTACTGGTGAGTAACACGTGAGAATCTACCTTTCAAATCAACATAAAATGTTGAATAAAAGCTTCTAAAGCTATAAAGATATGTTTTCGTTGAAAGATGAGCTTGCGCAAGATTAGGTAGTTGGTAAGGTAACGGCTTACCAAGCCAAAGATCTTTAGCTGGTTTGAGAAAATGATCAGCCACATTGGAACTGAAACACAGTCCAAACGTAATATAACGGCAGCAGTAGGGAATTTTGAACACTGAGCGAAAGCTTGATTCAGCCAAGTATCGTGGATGAAGAAGGCTGTCTTTTGGTCGTAAAATCCATTTATATAGTCACATGAAATGTGTCTTTTATTTCGATAAAAGGAAAGATTATGACTTTCTATTGAAAAGTCCCGGCTAATCTCGTGCCAGCAGCCGCGGTAATACGAGAGGGGCAAACGATGTTTAGCATGATTGGGCGTAAAGAGCTTGTAGATGGTTTCTTTTAATTTTATATAAAAGCTCTAAGCTTAACTTTGATTATATATAAAGGAAAGATAACTTGAGTTATGGAAAGGAAAGTAGAATTCTTGGAGGAGAGGTAGAATTTGGTGATATCAAGAGGAATTCCAAAAGCGAAGGCAGCTTTCTTGCCATATACTGACATTGAAGGGCGAAAGCGTGGGTAGCGACAGGGATTAGATACCCCATTAGTCCACGCCGTCAACGATGACCTTTATTTATTGGTTTCTCTTAAAATAAATAAATTATTTTTTAGTTTGATCAGTGAAACAGTTAACGCGTTAAAAGGTCCGCCTGAGGAGTACGATCGCAAGATTAAAACTCAAAAGAATAGACGGGAGCGTTCACAAGTGGTGGAGCATGAAGTTTAATGCGATACAACACGCAAAACCTTACCATTTTTTGATATTTTACTTATCAGTTATTTCTCATGAAATAATGTTTTTTACTAAAGTAAAAATTTGTTTGTATAACAGGCGTTGCATGGCTGTCGTAAGTTCGTACTGTGAAGTGTTGGATTAATTTCCTTAACGAACGTAACCCCTTGGTTTTGTTAAAACTAAAATCTACCGCTAGTCATAAACTAGAGGAAGGGAGGGATCACGTCAAGTCCTCATGACCCTTATAAAATGGGCTACGCTTTTCGTGCTACAATGATAAATACAATAAGAAGCAATAACGAAAGTTGGAGCAAATCTATAAAATTTATCTCAGTTCAGATTGTTCTCTGCAATTCGAGAACATGAAGATGGAATCACTAGTAATCGTAGATCAGCATGCTACGGTGAATATGTAATTACGCTCTGTACTCACAGCCCGTCACACAATGGAAGTAAAATGTATCGGAAATTTGTCAAATATTGTTAGATTTTCTTTTTTAAATTTATTGAATAAATTATTTTAATTAATATCTTTCAACTAAATGGGAACTGATGATATGTTTCATGACTGTTGTGAAGTCGTAACAAGGTAGCGCTAGCGGAAGCTGGTGCTGGAT
+>r5 3761685
+GATGAACGCTCGCGGCGTGCCTAAGGTATGCAAGTCGAACGCCGACCTTCGGGTCGTGCGTGGCGAACGGGTGAGTAACGCGTGGGAACGTACCGCCGAGATGGGGACAACTCCGCGAAAGCGGAGCTAATACCCAATGGTCCCGGGTCGTACCTCACTGCGTTCGGTACGGATACGATGGACATTCGTATTCCCGCGCCGAGCGTAGCGAGGTGCGACTTGGGTAAAGGAGCAATCCGCTCGGTGAGCGGCCCGCGTCCTATCAGCTTGTTGGTGGGGTAATGGCCTACCAAGGCGATGACGGGTAGGGGGTGTGAGAGCATGATCCCCCACAATGGCACTGAGACAAGGGCCATACACCTACGGGTGGCAGCAATCAGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCGACGCCGCGTGGAGGATGAAGGTCGAGAGATTGTAAACTCCTAGCCTTGTGCGTAGCACAAGGGGTTCGTATATCGTTAGTCGGTTACGAAGCCCGTATCGTAAGGCGGTTACGGTTACGTGNAAAAACACGTAACCCAATCACGTGACCGAAACGGGCATCGTTACCGTAACCGGCAGACGTTTCACGAATCTCTCGTGTTACGCGCGAGGGGATAAAGTCCCGGCTAACTACGTGCCAGCAGCAGCGGTAAAACGTANGGGGCGAGCGCTATCCGGATTTATTGGGCGTAAAGAGTGNNCAGGCNGCCAGNNNNGTTTTTCGTTAAAGCCCCCCGCTCAACGGGGGAACTGCGGAGAATACTGTTTGGCTGGAGGAAGGTAGAGGCTGTCGGAACTCGGGGAGGAGGGGTGAAATCCTATGATCCCCCAAGGAACACCAAAGGCGAAGGCAGACAGCTGGGCCTTTCCTGACGCTGAGGCACGAAAGCTAGGGGAGCGAAACGGATTAGATACCCGTGTAGTCCTAGCCGTAAACGATCCCCGCTAGATTTTGGCATCTGTCAGAGTCGAAGCTAACGCATTAAGCGGGGCGCCTGGGAAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGAGCGCCTGGTTTAATTCGATGATAACCGAAGAACCTTACCAGGGCTTGACATCCCGACAGAAATCCCGACGAAAGTTGGGCCCCCCGCAAGGGCTGTCGGGACAGGTGTTGCATGGCTGTCGTCAGCTCGTGCCGTGAGGTGTATGCTTAAGTGCCGAAACGAGCGCAACCCCTACCCCATGTTAGAAATGTCGTGGGGGACTGCCTCCGTAAGGGGGAGGAAGGTGGGGACGACGTCAAGTCAGTATGGCCCTTATGCCCTGGGCAACACAGACGCTACAATGGCGGCTACAACGGGTTGCAATGTCGTAAGGCGGAGCTAATCCTAAAAAGCCGTCTCAGTTCGGATTGGGGGCTGAAACCCGCCCCCATGAAGTTGGAATCGCTAGTAATGGCCGGTCAGCTATACGGCCGTGAATACGTTCTCGGGTCTTGTACACACCGCCCGTCA
+>r6 4251079
+AGTGGCGAACGGGTGCGTAACGCGTGGGAATCTGCCGAACAGTTCGGGCCAAATCCTGAATCAAGCTAAAAAGCGCTGTTTGATGAGCCTGCGTAGTATTAGGTAGTTGGTCAGGTAAAGGCTGACCAAGCCAATGATGCTTAGCTGGTCTTTTCGGATGATCAGCCACACTGGGACTGAGACACGGCCCGGACTCCCACGGGGGGCAGCAGTGGGGAATCTTGGACAATGGGCGAAAGCCCGATCCAGCAATATCGCGTGAGTGAAGAAGGGCAATGCCGCTTGTAAAGCTCTTTCGTCGAGTGCGCGATCATGACAGGACTCGAGGAAGAAGCCCCGGCTAACTCCGTGCCAGCAGCCGCGGTAAGACGGGGGGGGCAAGTGTTCTTCGGAATGACTGGGCGTAAAGGGCACGTAGGCGGTGAATCGGGTTGAAAGTTCAAGTCGCCAAAAACTGGCTCCATGCTCTCGAAACCAATTCACTTGAGTGAGACAGAGGAGAGTGGAATTTCGTGTGGAGGGGTGAAATCCGGAGATCTACGAAGGAACGCCAAAAGCGAAGGCAGCTCTCTGGGTCCCTACCGACGCTGGGGTGCGAAAGCATGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCATGCCGTAAACGATGAGTGTTCGCCCTTGGTCTACGCGGATCAGGGGCCCAGCTAACGCGTGAAACACTCCGCCTGGGGAGTACGGTCGCAAGACCGAAACTCAAAGGAATTGACGGGGGCCTGCACAAGCGGTGGAGCATGTGGTTTAATTCGATACAACGCGCAAAACCTTACCAGCCCTTGACATATGAACAAAAAAACCTGTCCTTAACGGGATGGTACTGACTTTCATACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTTGGTCAAGTCCTATAACGAGCGAAACCCTCGTTTTGTGTTGCTGAGACATGCGCCTAAGGAAAAAGTCTTTGCAACCGAAGTGAGCCGAGGAGCCGAGTGACGTGCCAGCGCTACTAATTGAGTGCCAGCACGTAGCTGTGCTGTCAGTAAGAAGGGAGCCGGCGCCTTTCGAAGCACTTTCTAGTGTGAACCGAACGTCCCGCGTTCCGGCTTGTTCGAATCGCGTCACGAGTCTACAAGCCCCACTGATACCTACCTATAGTGACGTCAAAGTACCAGTGACGGTGACTTGGTTGCGTAACGTAATATGGATTCAGTCAGCGAAACTCCCTCCAACTCAATCAATATCAACAACATGTCGTGACGAGCCTGACTACACTCCACCTGACGGTACTACACTATCTATCAGTAGAGCGCCTTGCGCGATACGGCTTTTTGGCCGTATCTTGCAGGTGACGACGACGTCGAGTTGGCGGCGGAGGAAGACTCGGCATTCAGGCGAGCCGCCCGGTGGTGTGGTACGTAGTGGTAATAGTACGCCCCGCCCGTCACACCCTTCAAGCTCCGAAACAAACAAAAAGGTGCGTGCCGCACTCACGAGGGACTTGCCAGTGATATACTGAAGGAAGGTGGGGATGACGTCAAGTCCGCATGGCCCTTATGGGCTGGGCCACACACGTGCTACAATGGCAATTACAATGGGAAGCAAGGCTGTAAGGCGGAGCGAATCCGGAAAGATTGCCTCAGTTCGGATTGTTCTCTGCAACTCGGGAACATGAAGTTGGAATCGCTAGTAATCGCGGATCAGCATGCCGCGGTGAATATGTACCCGGGCCCTGTACACACCGCCCGTCACACCCTGGGAATTGGTTTCGCCCGAAGCATCGGACCAATGATCACCCATTCCTTGTGTGTACCACTAGTGCCACAAAGGCTTTTGGTGGTCTTATTGGCGCATACCACGGTGGGGTCTTCGACTGGGGTGAAGTCGTAACAAGGTAGCCGTAGGGGAACCTGTG
+"""
 
 
 class BlastTaxonAssignerTests(TestCase):
