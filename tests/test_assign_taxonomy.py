@@ -258,6 +258,22 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         t = UclustConsensusTaxonAssigner(params)
         self.assertEqual(t._get_consensus_assignment(in1),
                          expected)
+        
+        # here the third level is the same in 4/5 of the 
+        # assignments, but one of them (z, y, c) refers to a 
+        # different taxa since the higher levels are different.
+        # the consensus value should be 3/5, not 4/5, to 
+        # reflect that. 
+        in2 = [['a','b','c'],
+               ['a','d','e'],
+               ['a','b','c'],
+               ['a','b','c'],
+               ['z','y','c']]
+        expected = (['a','b','c'],0.6,5)
+        t = UclustConsensusTaxonAssigner(params)
+        self.assertEqual(t._get_consensus_assignment(in2),
+                         expected)
+        
     
     def test_get_consensus_assignment_adjusts_resolution(self):
         """_get_consensus_assignment max result depth is that of shallowest assignment
