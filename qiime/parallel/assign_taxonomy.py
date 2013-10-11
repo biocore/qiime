@@ -101,6 +101,31 @@ class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
                 params, job_prefix, working_dir, command_prefix,
                 command_suffix)
 
+class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
+    _job_prefix = 'UCTA'
+
+    def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
+                          working_dir, command_prefix=None,
+                          command_suffix='; exit'):
+        command_prefix = command_prefix or ''
+
+        uclust_params = ' '.join(
+         ['-m uclust',
+          '--uclust_min_consensus_fraction %f' % params['uclust_min_consensus_fraction'],
+          '--uclust_similarity %f' % params['uclust_similarity'],
+          '--uclust_max_accepts %d' % params['uclust_max_accepts'],
+          '-t %s' % params['id_to_taxonomy_fp'],
+          '-r %s' % params['reference_seqs_fp']])
+
+        return self._build_job_commands(uclust_params,
+                                        fasta_fps,
+                                        output_dir,
+                                        params,
+                                        job_prefix,
+                                        working_dir,
+                                        command_prefix,
+                                        command_suffix)
+
 
 class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
     _job_prefix = 'BTA'

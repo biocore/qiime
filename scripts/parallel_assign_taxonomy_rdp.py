@@ -89,7 +89,7 @@ def main():
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    suppress_submit_jobs=opts.suppress_submit_jobs)
 
 
 if __name__ == "__main__":
