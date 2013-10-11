@@ -96,7 +96,10 @@ def main():
           f = open(opts.output_path, 'w')
           f.close()
       except IOError:
-          option_parser.error("ioerror, couldn't create output file")
+          if os.path.isdir(opts.output_path):
+              option_parser.error("ioerror, couldn't create output file. The output path is a direcotry, which should be a single file")      
+          else:
+              option_parser.error("ioerror, couldn't create output file")
       single_file_alpha(opts.input_path, opts.metrics, 
           opts.output_path, opts.tree_path)
     else:
