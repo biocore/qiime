@@ -97,7 +97,7 @@ def main():
           f.close()
       except IOError:
           if os.path.isdir(opts.output_path):
-              option_parser.error("ioerror, couldn't create output file. The output path is a direcotry, which should be a single file")      
+              option_parser.error("ioerror, couldn't create output file. The output path is a directory, which should be a single file")      
           else:
               option_parser.error("ioerror, couldn't create output file")
       single_file_alpha(opts.input_path, opts.metrics, 
