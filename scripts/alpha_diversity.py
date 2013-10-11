@@ -56,8 +56,8 @@ script_info['optional_options']=[\
      ' tables for batch processing. [default: %default]',
      type='existing_path'),
  make_option('-o', '--output_path',
-     help='Output distance matrix filepath or output directory to store' +\
-     ' distance matrices when batch processing. [default: %default]',
+     help='Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format' +\
+     '(or output directory when batch processing). [default: %default]',
      type='new_path'),
  make_option('-m', '--metrics', type='multiple_choice',
      mchoices=list_known_metrics(),
@@ -102,8 +102,7 @@ def main():
               option_parser.error("ioerror, couldn't create output file")
       single_file_alpha(opts.input_path, opts.metrics, 
           opts.output_path, opts.tree_path)
-    else:
-      option_parser.error("io error, input path not valid. does it exist?")
+
 
 if __name__ == "__main__":
     main()
