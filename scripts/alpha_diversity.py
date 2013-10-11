@@ -96,13 +96,11 @@ def main():
           f = open(opts.output_path, 'w')
           f.close()
       except IOError:
-          print("ioerror, couldn't create output file")
-          exit(1)
+          option_parser.error("ioerror, couldn't create output file")
       single_file_alpha(opts.input_path, opts.metrics, 
           opts.output_path, opts.tree_path)
     else:
-      print("io error, input path not valid. does it exist?")
-      exit(1)
+      option_parser.error("io error, input path not valid. does it exist?")
 
 if __name__ == "__main__":
     main()
