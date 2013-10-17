@@ -1,5 +1,5 @@
-# QIIME: Quantitative Insights Into Microbial Ecology
-
+QIIME: Quantitative Insights Into Microbial Ecology
+===================================================
 
 [![Build Status](http://ci.qiime.org/job/QIIME/badge/icon)](http://ci.qiime.org/job/QIIME/)
 
