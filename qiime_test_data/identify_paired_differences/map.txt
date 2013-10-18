@@ -1,0 +1,11 @@
+#SampleID	PersonalID	TreatmentResponse	TreatmentState	Streptococcus Abundance	Veillonella Abundance	Phylogenetic Diversity	Observed OTUs
+001A	001	Improved	Pre	57.4	6.9	67.99	1001
+001B	001	Improved	Post	26	9.3	72.0	1005
+006A	006	Improved	Pre	19	4.2	45.22	965
+006B	006	Improved	Post	15.2	5.1	68.55	1065
+007A	007	Worsened	Pre	33.2	12	101.1	888
+007B	007	Worsened	Post	50	1.8	154.9	999
+008A	008	Worsened	Pre	3.2	10	68.22	777
+008B	008	Worsened	Post	20	n/a	78.33	888
+post.only	009	Worsened	Post	22	42.0	85.0	609
+pre.only	010	Worsened	Pre	21	41.0	90.1	609

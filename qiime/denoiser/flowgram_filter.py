@@ -15,35 +15,14 @@ from re import compile, search
 from itertools import imap
 from collections import defaultdict
 
-from qiime.util import get_tmp_filename
+from qiime.util import get_tmp_filename, FileFormatError
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram
 
-from qiime.util import FileFormatError
+from qiime.denoiser.utils import cat_sff_files, write_sff_header
 
 #The default key sequence of the 454 machine
 DEFAULT_KEYSEQ = "TCAG"
-
-def write_sff_header(header, fh, num=None):
-    """writes the Common header of a sff.txt file.
-
-    header: the header of an sff file as returned by the sff parser.
-    
-    fh: output file handle
-    
-    num: number of flowgrams to be written in the header.
-          Note that his number should match the final number, if 
-          the resulting sff.txt should be consistent.
-          """
-
-    lines = ["Common Header:"]
-    if (num !=None):
-        header["# of Flows"] = num
-
-    lines.extend(["  %s:\t%s" % (param, header[param]) \
-                      for param in header])
-    fh.write("\n".join(lines)+"\n\n")
 
 def filter_sff_file(flowgrams, header, filter_list, out_fh):
     """Filters all flowgrams in handle with filter.
@@ -190,11 +169,11 @@ def cleanup_sff(flowgrams, header, outhandle=None, outdir = "/tmp",
     return (clean_filename,l)
 
 
-def split_sff(sff_file_handle, map_file_handle, outdir="/tmp/"):
+def split_sff(sff_file_handles, map_file_handle, outdir="/tmp/"):
     """Splits a sff.txt file on barcode/mapping file."""
     
     try:
-        (flowgrams, header) = lazy_parse_sff_handle(sff_file_handle)
+        (flowgrams, header) = cat_sff_files(sff_file_handles)
     except ValueError:
         #reading in the binary sff usually shows up as ValueError
         raise FileFormatError, 'Wrong flogram file format. Make sure you pass the sff.txt format '+\

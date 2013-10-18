@@ -1,0 +1,10 @@
+11469739	k__Bacteria; p__OP9; c__JS1; o__SB-45; f__; g__; s__	1.00	1
+11480235	k__Bacteria; p__OD1; c__; o__; f__; g__; s__	1.00	1
+11460543	Unassigned	1.00	0
+11460523	Unassigned	1.00	0
+11472286	k__Bacteria; p__WS5; c__; o__; f__; g__; s__	1.00	1
+11458037	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Peptococcaceae; g__Desulfosporosinus; s__meridiei	1.00	1
+11472384	k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Burkholderiaceae; g__Burkholderia; s__	1.00	1
+11469752	Unassigned	1.00	0
+11480408	k__Bacteria; p__Firmicutes; c__Clostridia; o__Coriobacteriales; f__; g__; s__	1.00	1
+11468680	k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Burkholderiaceae; g__Burkholderia; s__	1.00	3

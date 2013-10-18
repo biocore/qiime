@@ -24,17 +24,18 @@ from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
     RtaxTaxonAssigner, Tax2TreeTaxonAssigner, validate_rdp_version,
-    )
+    UclustConsensusTaxonAssigner)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
-    'tax2tree': Tax2TreeTaxonAssigner
+    'tax2tree': Tax2TreeTaxonAssigner,
+    'uclust': UclustConsensusTaxonAssigner
 }
 
-assignment_method_choices = ['rdp','blast','rtax','mothur', 'tax2tree']
+assignment_method_choices = ['rdp','blast','rtax','mothur', 'tax2tree','uclust']
 
 options_lookup = get_options_lookup()
 
@@ -57,21 +58,33 @@ script_info['script_usage'].append(("""Sample Assignment with BLAST:""","""
 Taxonomy assignments are made by searching input sequences against a blast database of pre-assigned reference sequences. If a satisfactory match is found, the reference assignment is given to the input sequence. This method does not take the hierarchical structure of the taxonomy into account, but it is very fast and flexible. If a file of reference sequences is provided, a temporary blast database is built on-the-fly. The quality scores assigned by the BLAST taxonomy assigner are e-values.
 
 To assign the sequences to the representative sequence set, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "blast_assigned_taxonomy", you can run the following command:""","""%prog -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt"""))
+
 script_info['script_usage'].append(("""""","""Optionally, the user could changed the E-value ("-e"), using the following command:""","""%prog -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt -e 0.01"""))
+
 script_info['script_usage'].append(("""Assignment with the RDP Classifier:""","""The RDP Classifier program (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies by matching sequence segments of length 8 to a database of previously assigned sequences. It uses a naive bayesian algorithm, which means that for each potential assignment, it attempts to calculate the probability of the observed matches, assuming that the assignment is correct and that the sequence segments are completely independent. The RDP Classifier is distributed with a pre-built database of assigned sequence, which is used by default. The quality scores provided by the RDP classifier are confidence values.
 
 Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier's implementation, all lineages in the training dataset must contain the same number of ranks.
 
 To assign the representative sequence set, where the output directory is "rdp_assigned_taxonomy", you can run the following command:""","""%prog -i repr_set_seqs.fasta -m rdp"""))
+
 script_info['script_usage'].append(("""""","""Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""","""%prog -i repr_set_seqs.fasta -m rdp -c 0.85"""))
+
 script_info['script_usage'].append(("""Sample Assignment with RTAX:""","""
 Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
 
 To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:""","""%prog -i rtax_repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r rtax_ref_seq_set.fna -t rtax_id_to_taxonomy.txt"""))
+
 script_info['script_usage'].append(("""Sample Assignment with Mothur:""", """The Mothur software provides a naive bayes classifier similar to the RDP Classifier.  A set of training sequences and id-to-taxonomy assignments must be provided.  Unlike the RDP Classifier, sequences in the training set may be assigned at any level of the taxonomy.
 
 To make taxonomic classifications of the representative sequences, where the results are output to default directory \"mothur_assigned_taxonomy\", you can run the following command:""", "%prog -i mothur_repr_set_seqs.fasta -m mothur -r mothur_ref_seq_set.fna -t mothur_id_to_taxonomy.txt"))
+
+script_info['script_usage'].append(("Assign taxonomy with the uclust consensus taxonomy assigner:",
+                                    "Perform database search with uclust to retrive up to uclust_max_accepts hits for each query sequence. Then assign the most specific taxonomic label that is associated with at least uclust_min_consensus_fraction of the hits.",
+                                    "%prog -i repr_set_seqs.fasta -m uclust"))
+
 script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
+
+
 script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']\
 ]
@@ -116,7 +129,8 @@ script_info['optional_options']=[\
         '[default: %default]',default=False),\
  make_option('--read_id_regex',type="string",
         help='Used to parse the result of OTU clustering, to get the read_1_id '
-        'for each clusterID.  (used for RTAX only). '
+        'for each clusterID.  The clusterID itself is assumed to be the first field, '
+        'and is not captured by the regex.  (used for RTAX only). '
         '[default: %default]',default="\\S+\\s+(\\S+)"),\
  make_option('--amplicon_id_regex',type="string",
         help='Used to parse the result of split_libraries, to get the ampliconID '
@@ -124,10 +138,11 @@ script_info['optional_options']=[\
         'respectively.  (used for RTAX only). '
         '[default: %default]',default="(\\S+)\\s+(\\S+?)\/"),\
  make_option('--header_id_regex',type="string",
-        help='Used to choose the part of the header in the OTU clustering file '
-        'that Rtax reports back as the ID.  The default uses the amplicon ID, '
-        'not including /1 or /3, as the primary key for the query sequences. '
-        '(used for RTAX only). '
+        help='Used to parse the result of split_libraries, to get the portion '
+        'of the header that RTAX uses to match mate pairs.  The default uses '
+        'the amplicon ID, not including /1 or /3, as the primary key for the '
+        'query sequences.  Typically this regex will be the same as amplicon_id_regex, '
+        'except that only the second group is captured.  (used for RTAX only). '
         '[default: %default]',default="\\S+\\s+(\\S+?)\/"),\
  make_option('-m', '--assignment_method', type='choice',
         help='Taxon assignment method, must be one of ' +
@@ -140,6 +155,18 @@ script_info['optional_options']=[\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'and mothur methods [default: %default]', default=0.80),\
+ make_option('--uclust_min_consensus_fraction', type='float',
+        help=('Minimum fraction of database hits that must have a '
+              'specific taxonomic assignment to assign that taxonomy '
+              'to a query, only used for uclust method '
+              '[default: %default]'), default=0.51),
+ make_option('--uclust_similarity', type='float',
+        help=('Minimum percent similarity to consider a database match a hit, '
+              'only used for uclust method [default: %default]'), default=0.97),
+ make_option('--uclust_max_accepts', type='int',
+        help=('Number of database hits to consider when making '
+              'an assignment, only used for uclust method '
+              '[default: %default]'), default=3),
  make_option('--rdp_max_memory', default=1500, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
@@ -187,6 +214,14 @@ def main():
                     'sequences fp to train the Rdp Classifier.')
         else:
             pass
+
+    if assignment_method == 'uclust':
+        if opts.id_to_taxonomy_fp is None:
+            option_parser.error('Option --id_to_taxonomy_fp is required when '
+                         'assigning with uclust.')
+        if opts.reference_seqs_fp is None:
+            option_parser.error('Option --reference_seqs_fp is required when '
+                         'assigning with uclust.')
 
     if assignment_method == 'rtax':
         if opts.id_to_taxonomy_fp is None or opts.reference_seqs_fp is None:
@@ -253,6 +288,13 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
 
+    elif assignment_method == 'uclust':
+        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+        params['reference_sequences_fp'] = opts.reference_seqs_fp
+        params['min_consensus_fraction'] = opts.uclust_min_consensus_fraction
+        params['similarity'] = opts.uclust_similarity
+        params['max_accepts'] = opts.uclust_max_accepts
+
     elif assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
@@ -281,8 +323,9 @@ def main():
         exit(1)
     temp_result_path = get_tmp_filename(prefix='assign-tax')
     taxon_assigner = taxon_assigner_constructor(params)
-    taxon_assigner(input_sequences_filepath,\
-     result_path=temp_result_path,log_path=log_path)
+    taxon_assigner(input_sequences_filepath,
+                   result_path=temp_result_path,
+                   log_path=log_path)
     
     ## This is an ugly hack, and needs to be pushed upstream to
     ## the taxon assigners. The output taxonomy maps that are returned by the 

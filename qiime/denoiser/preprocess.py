@@ -25,11 +25,11 @@ from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
 from qiime.util import load_qiime_config, get_qiime_scripts_dir
 from qiime.denoiser.cluster_utils import submit_jobs
-from qiime.denoiser.flowgram_filter import cleanup_sff, write_sff_header,\
-    split_sff, truncate_flowgrams_in_SFF, extract_barcodes_from_mapping
+from qiime.denoiser.flowgram_filter import cleanup_sff,\
+     truncate_flowgrams_in_SFF, extract_barcodes_from_mapping
 from qiime.denoiser.utils import squeeze_seq, make_stats, get_representatives,\
      wait_for_file, store_mapping, invert_mapping, cat_sff_files, files_exist,\
-     read_denoiser_mapping, get_denoiser_data_dir
+     read_denoiser_mapping, get_denoiser_data_dir, write_sff_header
 
 STANDARD_BACTERIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT"
 
@@ -170,18 +170,18 @@ def print_rep_seqs(mapping, seqs, out_fp):
         out_fh.write(s.toFasta()+"\n")
     out_fh.close()
 
-def preprocess(sff_fp, log_fh, fasta_fp=None, out_fp="/tmp/",
+def preprocess(sff_fps, log_fh, fasta_fp=None, out_fp="/tmp/",
                verbose=False, squeeze=False, 
                primer=STANDARD_BACTERIAL_PRIMER):
     """Quality filtering and truncation of flowgrams, followed by denoiser phase I.
     
-    sff_fp: path to flowgram file. Can be comma separated list of flowgrams
+    sff_fps: List of paths to flowgram files
     
     log_fh: log messages are written to log_fh if it is set to something else than None
     
     fasta_fp: Path to fasta file, formatted as from split_libraries.py.
-              This files is used to filter the flowgrams in sff_fp. Only reads in 
-              fasta_fp are pulled from sff_fp.
+              This files is used to filter the flowgrams in sff_fps. Only reads in 
+              fasta_fp are pulled from sff_fps.
               
     out_fp: path to output directory
     
@@ -193,8 +193,7 @@ def preprocess(sff_fp, log_fh, fasta_fp=None, out_fp="/tmp/",
     primer: The primer sequences of the amplification process. This seq will be
             removed from all reads during the preprocessing
     """
-    
-    flowgrams, header = cat_sff_files(map(open, sff_fp.split(',')))
+    flowgrams, header = cat_sff_files(map(open, sff_fps))
     
     if(fasta_fp):
         #remove barcodes and sequences tossed by split_libraries, i.e. not in fasta_fp
@@ -248,18 +247,18 @@ def preprocess(sff_fp, log_fh, fasta_fp=None, out_fp="/tmp/",
     store_mapping(mapping, out_fp, "prefix")
     return (averaged_sff_fp, l, mapping, seqs)
 
-def preprocess_on_cluster(sff_fp, log_fp, fasta_fp=None, out_fp="/tmp/",
+def preprocess_on_cluster(sff_fps, log_fp, fasta_fp=None, out_fp="/tmp/",
                           squeeze=False, verbose=False,
                           primer=STANDARD_BACTERIAL_PRIMER):
     """Call preprocess via cluster_jobs_script on the cluster.
 
-    sff_fp: path to flowgram file. Can be comma separated list of flowgrams
+    sff_fps: List of paths to flowgram files.
     
     log_fp: path to log file
     
     fasta_fp: Path to fasta file, formatted as from split_libraries.py.
-              This files is used to filter the flowgrams in sff_fp. Only reads in 
-              fasta_fp are pulled from sff_fp.
+              This files is used to filter the flowgrams in sff_fps. Only reads in 
+              fasta_fp are pulled from sff_fps.
               
     out_fp: path to output directory
     
@@ -276,7 +275,7 @@ def preprocess_on_cluster(sff_fp, log_fp, fasta_fp=None, out_fp="/tmp/",
     python_bin =  qiime_config['python_exe_fp']
     
     cmd = "%s %s/denoiser_preprocess.py -i %s -l %s -o %s" %\
-        (python_bin, get_qiime_scripts_dir(), sff_fp, log_fp, out_fp)
+        (python_bin, get_qiime_scripts_dir(), ",".join(sff_fps), log_fp, out_fp)
     if (fasta_fp):
         cmd += " -f %s" % fasta_fp
     if(squeeze):

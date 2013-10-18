@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
@@ -20,14 +22,18 @@ from string import strip
 from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
+from collections import Counter, defaultdict
+
 from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from qiime.pycogent_backports import rdp_classifier
 from cogent.app import rtax
-from qiime.pycogent_backports import mothur
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
+
+from qiime.pycogent_backports.uclust import Uclust
+from qiime.pycogent_backports import rdp_classifier
+from qiime.pycogent_backports import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
@@ -818,3 +824,250 @@ class Tax2TreeTaxonAssigner(TaxonAssigner):
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
         return logger
+
+class UclustConsensusTaxonAssigner(TaxonAssigner):
+    """Assign taxonomy using uclust
+    """
+    Name = "UclustConsensusTaxonAssigner"
+    Application = "uclust"
+    Citation = """uclust citation: Search and clustering orders of magnitude faster than BLAST. Edgar RC. Bioinformatics. 2010 Oct 1;26(19):2460-1.
+
+uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allows analysis of high-throughput community sequencing data. Caporaso JG, Kuczynski J, Stombaugh J, Bittinger K, Bushman FD, Costello EK, Fierer N, Pena AG, Goodrich JK, Gordon JI, Huttley GA, Kelley ST, Knights D, Koenig JE, Ley RE, Lozupone CA, McDonald D, Muegge BD, Pirrung M, Reeder J, Sevinsky JR, Turnbaugh PJ, Walters WA, Widmann J, Yatsunenko T, Zaneveld J, Knight R. Nat Methods. 2010 May;7(5):335-6.
+"""
+    
+    def __init__(self, params):
+        """Returns a new UclustConsensusTaxonAssigner object with specified params
+        """
+        _params = {
+            # Required, mapping of reference sequence to taxonomy
+            'id_to_taxonomy_fp': None,
+            # Required, reference sequence fasta file
+            'reference_sequences_fp': None,
+            # max-accepts parameter, as passed to uclust
+            'max_accepts': 3,
+            # Fraction of sequence hits that a taxonomy assignment 
+            # must show up in to be considered the consensus assignment
+            'min_consensus_fraction':0.51,
+            # minimum identity to consider a hit (passed to uclust as --id)
+            'similarity':0.97,
+            # label to apply for queries that cannot be assigned
+            'unassignable_label':'Unassigned'
+            }
+        _params.update(params)
+        TaxonAssigner.__init__(self, _params)
+        
+        if self.Params['id_to_taxonomy_fp'] is None:
+            raise ValueError, \
+             "id_to_taxonomy_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
+        if self.Params['reference_sequences_fp'] is None:
+            raise ValueError, \
+             "reference_sequences_fp must be provided when instantiating a UclustConsensusTaxonAssigner"
+        
+        id_to_taxonomy_f = open(self.Params['id_to_taxonomy_fp'],'U')
+        self.id_to_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
+        
+    def __call__(self,
+                 seq_path,
+                 result_path=None,
+                 uc_path=None,
+                 log_path=None,
+                 HALT_EXEC=False):
+        """Returns mapping of each seq to (tax, consensus fraction, n)
+
+        Results:
+        If result_path is specified, the results will be written to file
+         as tab-separated lines of: 
+          query_id <tab> tax <tab> consensus fraction <tab> n
+        If result_path is None (default), the results will be returned 
+         as a dict of:
+          {'query_id': (tax, consensus fraction, n)}
+        In both cases, the values are:
+         tax: the consensus taxonomy assignment
+         consensus fraction: the fraction of the assignments for the 
+          query that contained the lowest level tax assignment that is 
+          included in tax (e.g., if the assignment goes to genus level,
+          this will be the fraction of assignments that had the consensus
+          genus assignment)
+         n: the number of assignments that were considered when constructing 
+          the consensus
+        
+        Parameters:
+        seq_path: path to file of query sequences
+        result_path: path where results should be written. If None (default), 
+         returns results as a dict
+        uc_path: path where .uc file should be saved. If None (default), and 
+         log_path is specified, the .uc contents will be written to appended to
+         the log file.
+        log_path: path where run log should be written. If None (default), no
+         log file is written.
+        HALT_EXEC: debugging paramter. If pass, will exit just before the 
+         uclust command is issued, and will print the command that would have
+         been called to stdout.
+        """
+        
+        # initialize the logger
+        logger = self._get_logger(log_path)
+        logger.info(str(self))
+        
+        # set the user-defined parameters
+        params = {'--id':self.Params['similarity'],
+                  '--maxaccepts':self.Params['max_accepts']}
+        
+        # initialize the application controller object
+        app = Uclust(params,
+                     HALT_EXEC=HALT_EXEC)
+    
+        # Configure for consensus taxonomy assignment
+        app.Parameters['--rev'].on()
+        app.Parameters['--lib'].on(self.Params['reference_sequences_fp'])
+        app.Parameters['--libonly'].on()
+        app.Parameters['--allhits'].on()
+        
+        if uc_path is None:
+            uc = NamedTemporaryFile(prefix='UclustConsensusTaxonAssigner_', 
+                                    suffix='.uc', 
+                                    dir=get_qiime_temp_dir())
+            uc_path = uc.name
+            store_uc_in_log = True
+        else:
+            store_uc_in_log = False
+        
+        app_result = app({'--input':seq_path,
+                          '--uc':uc_path})
+        result = self._uc_to_assignment(app_result['ClusterFile'])
+        if result_path is not None:
+            # if the user provided a result_path, write the
+            # results to file
+            of = open(result_path,'w')
+            for seq_id, (assignment, consensus_fraction, n) in result.items():
+                assignment_str = ';'.join(assignment)
+                of.write('%s\t%s\t%1.2f\t%d\n' %
+                 (seq_id, assignment_str, consensus_fraction, n))
+            of.close()
+            result = None
+            logger.info('Result path: %s' % result_path)
+        else:
+            # If no result_path was provided, the result dict is 
+            # returned as-is.
+            logger.info('Result path: None, returned as dict.')
+        
+        if store_uc_in_log:
+            # This is a little hackish, but we don't have a good way
+            # to pass the uc_path value right now through the 
+            # assign_taxonomy.py script, so writing the contents to the
+            # user-specified log file (since this is being stored for logging
+            # purposes).
+            app_result['ClusterFile'].seek(0)
+            logger.info('\n.uc file contents:\n')
+            for line in app_result['ClusterFile']:
+                logger.info(line.strip())
+
+        return result
+
+    def _get_logger(self, log_path=None):
+        if log_path is not None:
+            handler = logging.FileHandler(log_path, mode='w')
+        else:
+            class NullHandler(logging.Handler):
+                def emit(self, record): pass
+            handler = NullHandler()
+        logger = logging.getLogger("UclustConsensusTaxonAssigner logger")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        return logger
+
+    def _get_consensus_assignment(self, assignments):
+        """ compute the consensus assignment from a list of assignments
+        """
+        num_input_assignments = len(assignments)
+        consensus_assignment = []
+        
+        # if the assignments don't all have the same number
+        # of levels, the resulting assignment will have a max number 
+        # of levels equal to the number of levels in the assignment
+        # with the fewest number of levels. this is to avoid 
+        # a case where, for example, there are n assignments, one of
+        # which has 7 levels, and the other n-1 assignments have 6 levels.
+        # A 7th level in the result would be misleading because it
+        # would appear to the user as though it was the consensus 
+        # across all n assignments.
+        num_levels = min([len(a) for a in assignments])
+        
+        # iterate over the assignment levels
+        for level in range(num_levels):
+            # count the different taxonomic assignments at the current level.
+            # the counts are computed based on the current level and all higher
+            # levels to reflect that, for example, 'p__A; c__B; o__C' and 
+            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
+            # they are different at the p__ and c__ levels). 
+            current_level_assignments = \
+             Counter([tuple(e[:level+1]) for e in assignments])
+            # identify the most common taxonomic assignment, and compute the 
+            # fraction of assignments that contained it. it's safe to compute the 
+            # fraction using num_assignments because the deepest level we'll 
+            # ever look at here is num_levels (see above comment on how that
+            # is decided).
+            tax, max_count = current_level_assignments.most_common(1)[0]
+            max_consensus_fraction = max_count / num_input_assignments
+            # check whether the most common taxonomic assignment is observed 
+            # in at least min_consensus_fraction of the sequences
+            if max_consensus_fraction >= self.Params['min_consensus_fraction']:
+                # if so, append the current level only (e.g., 'o__C' if tax is 
+                # 'p__A; c__B; o__C', and continue on to the next level
+                consensus_assignment.append((tax[-1], max_consensus_fraction))
+            else:
+                # if not, there is no assignment at this level, and we're
+                # done iterating over levels
+                break
+        
+        ## construct the results
+        # determine the number of levels in the consensus assignment
+        consensus_assignment_depth = len(consensus_assignment)
+        if consensus_assignment_depth > 0:
+            # if it's greater than 0, generate a list of the 
+            # taxa assignments at each level
+            assignment_result = [a[0] for a in consensus_assignment]
+            # and assign the consensus_fraction_result as the 
+            # consensus fraction at the deepest level
+            consensus_fraction_result = \
+             consensus_assignment[consensus_assignment_depth-1][1]
+        else:
+            # if there are zero assignments, indicate that the taxa is 
+            # unknown
+            assignment_result = [self.Params['unassignable_label']]
+            # and assign the consensus_fraction_result to 1.0 (this is 
+            # somewhat arbitrary, but could be interpreted as all of the
+            # assignments suggest an unknown taxonomy)
+            consensus_fraction_result = 1.0
+            
+        return assignment_result, consensus_fraction_result, num_input_assignments
+
+    def _uc_to_assignments(self, uc):
+        """ return dict mapping query id to all taxonomy assignments
+        """
+        results = defaultdict(list)
+        for line in uc:
+            line = line.strip()
+            if line.startswith('#') or line == "":
+                continue
+            elif line.startswith('H'):
+                fields = line.split('\t')
+                query_id = fields[8].split()[0]
+                subject_id = fields[9].split()[0]
+                tax = self.id_to_taxonomy[subject_id].split(';')
+                results[query_id].append(tax)
+            elif line.startswith('N'):
+                fields = line.split('\t')
+                query_id = fields[8].split()[0]
+                results[query_id].append([])
+        return results
+
+    def _uc_to_assignment(self, uc):
+        """ return dict mapping query id to consensus assignment
+        """
+        # get map of query id to all assignments
+        results = self._uc_to_assignments(uc)
+        # for each query id, compute the consensus taxonomy assignment
+        for query_id, all_assignments in results.items():
+            results[query_id] = self._get_consensus_assignment(all_assignments)
+        return results

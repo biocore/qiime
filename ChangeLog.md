@@ -2,6 +2,17 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
 * Added a feature (e.g., OTU) selection script, fizzy.py.
 * [PyFeast](https://github.com/EESI/PyFeast/releases/v1.0/) v1.0 is now an (optional) QIIME dependency.
+* core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
+* Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
+* QIIME now depends on [qcli 0.1.0](ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz), a stand-alone package which performs command line interface parsing and testing.
+* make_qiime_rst_file.py has been removed in favor of qcli_make_rst.
+* transform_coordinate_matrices.py can now take more than two input coordinate matrices. When used this way, the first coordinate matrix will be treated as the reference, and the 2nd through nth will be compared against that reference. The output file names, which were all previously hard-coded, are now generated on the fly for clarity of the results.
+* split_libraries_fastq.py can now handle per-sample, non-barcoded fastq files. Some sequencing centers are now providing data in this way - if this becomes more common, we'll want to make this more convenient, but for now it's possible.
+* Added a parallel merge OTUs method that will combine OTU tables in parallel where possible.
+* Added identify_paired_differences.py to support paired difference (i.e., Pre/Post) testing as discussed in issue #1040.
+* Required biom-format version is now 1.2.0.
+* Added new taxonomic assignment method, ``qiime.assign_taxonomy.UclustConsensusTaxonAssigner``. This is accessible through ``assign_taxonomy.py -m uclust``, ``parallel_assign_taxonomy_uclust.py``, ``pick_de_novo_otus.py`` and ``pick_open_reference_otus.py``. This is being tested as an alternative to QIIME's existing taxonomic assignment methods.
+>>>>>>> 72519dd1e95b54e9d8cb8f0420a920b7503869bd
 
 QIIME 1.7.0 (14 May 2013)
 =========================

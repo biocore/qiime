@@ -12,7 +12,7 @@
     close(f)
     # read the rest of the table
     datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',quote='"',
-                        head=F,row.names=1,check=FALSE)
+                        head=F,row.names=1,check=FALSE,strip.white=TRUE)
     
     # set column names using header
     colnames(datatable) <- header[-1]
@@ -67,7 +67,8 @@
     while(start.character == '#'){
         linecount <- linecount + 1
         f <- file(filepath,'r') # open file in read mode
-        line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t', quiet=TRUE)
+        line <- scan(f,what='character',skip=linecount-1,nlines=1, sep='\t',
+                     quote='"', quiet=TRUE)
         close(f)
         # ncolumns is the number of entries in this line
         # not including trailing empties

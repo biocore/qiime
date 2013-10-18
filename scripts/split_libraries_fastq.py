@@ -34,15 +34,17 @@ script_info['script_description'] = ""
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q 20"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q 20"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q 20"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
+
+script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
 
 script_info['output_description']= ""
 script_info['required_options'] = [\
@@ -71,9 +73,10 @@ script_info['optional_options'] = [
         default=False,
         action='store_true',
         help='store qual strings in .qual files [default: %default]'),
-     make_option("--sample_id",
+     make_option("--sample_ids",
         default=None,
-        help='single sample id to be applied to all sequences (used when '
+        help='comma-separated list of samples id to be applied to all '
+             'sequences, must be one per input file path (used when '
              'data is not multiplexed) [default: %default]'),
      make_option("--store_demultiplexed_fastq",
         default=False,
@@ -145,7 +148,9 @@ def main():
     
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps
-    sample_id = opts.sample_id
+    sample_ids = None
+    if opts.sample_ids is not None:
+        sample_ids = opts.sample_ids.split(',')
     mapping_fps = opts.mapping_fps
     phred_quality_threshold = opts.phred_quality_threshold
     retain_unassigned_reads = opts.retain_unassigned_reads
@@ -165,9 +170,13 @@ def main():
     
     # if this is not a demultiplexed run, 
     if barcode_type == 'not-barcoded':
-        if sample_id == None:
+        if sample_ids is None:
             option_parser.error("If not providing barcode reads (because "
-            "your data is not multiplexed), must provide a --sample_id.")
+            "your data is not multiplexed), must provide --sample_ids.")
+        if len(sample_ids) != len(sequence_read_fps):
+            option_parser.error("If providing --sample_ids (because "
+            "your data is not multiplexed), must provide the same number "
+            "of sample ids as sequence read filepaths.")
         barcode_read_fps = [None] * len(sequence_read_fps)
     elif barcode_read_fps == None:
         option_parser.error("Must provide --barcode_fps if "
@@ -247,13 +256,14 @@ def main():
     histogram_fp = '%s/histograms.txt' % output_dir
     histogram_f = open(histogram_fp,'w')
     
-    for sequence_read_fp, barcode_read_fp, mapping_fp in\
-      zip(sequence_read_fps, barcode_read_fps, mapping_fps):
+    for i in range(len(sequence_read_fps)):
+        sequence_read_fp = sequence_read_fps[i]
+        barcode_read_fp = barcode_read_fps[i]
+        mapping_fp = mapping_fps[i]
         mapping_f = open(mapping_fp, 'U')
-        h, i, barcode_to_sample_id, warnings, errors, p, a =\
-           check_map(mapping_f, 
-                     disable_primer_check=True, 
-                     has_barcodes=barcode_read_fp != None)
+        _, _, barcode_to_sample_id, _, _, _, _ = check_map(mapping_f,
+                  disable_primer_check=True, 
+                  has_barcodes=barcode_read_fp is not None)
         
         if rev_comp_mapping_barcodes:
             barcode_to_sample_id = \
@@ -316,7 +326,7 @@ def main():
         else:
             seq_generator = process_fastq_single_end_read_file_no_barcode(
                sequence_read_f,
-               sample_id,
+               sample_ids[i],
                store_unassigned=retain_unassigned_reads,
                max_bad_run_length=max_bad_run_length,
                phred_quality_threshold=phred_quality_threshold,

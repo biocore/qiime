@@ -40,6 +40,10 @@ Note that when specifying parameters, you must specify their `long form` name, n
 
 You would pass this as ``pick_otus:similarity``, NOT as ``pick_otus:s``. The latter will not work!
 
+Some workflow scripts, such as `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_, run commands found in the `biom-format <http://biom-format.org>`_ package as part of their workflow. These commands are a bit different than QIIME scripts because they are of the form ``biom <subcommand>`` (e.g., ``biom summarize-table``). In order to control these biom-format commands using a QIIME parameters file, you must reference the command name and the subcommand name, **separated by a dash**. For example, to control the behavior of ``biom summarize-table``, your QIIME parameters file might look like::
+	
+	biom-summarize-table:qualitative	True
+
 Examples
 ========
 

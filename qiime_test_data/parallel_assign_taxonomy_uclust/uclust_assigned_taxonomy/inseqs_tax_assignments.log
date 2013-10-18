@@ -1,0 +1,68 @@
+UclustConsensusTaxonAssigner parameters:
+id_to_taxonomy_filepath:/Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt
+id_to_taxonomy_fp:/Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt
+max_accepts:3
+min_consensus_fraction:0.51
+reference_sequences_fp:/Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta
+similarity:0.97
+unassignable_label:Unassigned
+Result path: "/Users/caporaso/temp/assign-taxfKF5ILmO79InfNED0zI4.txt"
+
+.uc file contents:
+
+# uclust --input /Users/caporaso/code/qiime/qiime_test_data/parallel_assign_taxonomy_uclust/uclust_assigned_taxonomy/UCTA_O3TZ_/UCTA_O3TZ_.0.fasta --id 0.97 --rev --maxaccepts 3 --allhits --libonly --lib /Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta --uc /Users/caporaso/temp/UclustConsensusTaxonAssigner_MjT7BP.uc
+# version=1.2.22
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+L	19906	1769	*	*	*	*	*	2751331	*
+H	19906	1769	100.0	+	0	0	1769M	11472286	2751331
+L	877	1535	*	*	*	*	*	281438	*
+H	877	1684	98.4	+	0	0	9I1526M158D	11472384	281438
+L	33363	1486	*	*	*	*	*	791677	*
+H	33363	1682	97.1	+	0	0	46D36M2D119MI1330M149D	11468680	791677
+L	24367	1472	*	*	*	*	*	2147040	*
+H	24367	1682	97.6	+	0	0	28D513MI22MI6MI6MI13M2I10MI58MI69M2I13M2I24MI599MI15MI92MD17M196D	11468680	2147040
+L	65849	1490	*	*	*	*	*	830205	*
+H	65849	1682	98.1	+	0	0	9D1490M183D	11468680	830205
+L	36123	1457	*	*	*	*	*	13872	*
+H	36123	1633	100.0	+	0	0	1457M176D	11458037	13872
+L	9599	1552	*	*	*	*	*	574183	*
+H	9599	1607	97.2	+	0	0	146M2I51MI306MD557M3I421M59D65MD	11469739	574183
+D	877	2	*	*	*	*	98.4	281438	*
+D	9599	2	*	*	*	*	97.2	574183	*
+D	19906	2	*	*	*	*	100.0	2751331	*
+D	36123	2	*	*	*	*	100.0	13872	*
+D	65849	2	*	*	*	*	98.1	830205	*
+UclustConsensusTaxonAssigner parameters:
+id_to_taxonomy_filepath:/Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt
+id_to_taxonomy_fp:/Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt
+max_accepts:3
+min_consensus_fraction:0.51
+reference_sequences_fp:/Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta
+similarity:0.97
+unassignable_label:Unassigned
+Result path: "/Users/caporaso/temp/assign-taxgSWsyo2i3RB4elovG7aS.txt"
+
+.uc file contents:
+
+# uclust --input /Users/caporaso/code/qiime/qiime_test_data/parallel_assign_taxonomy_uclust/uclust_assigned_taxonomy/UCTA_O3TZ_/UCTA_O3TZ_.1.fasta --id 0.97 --rev --maxaccepts 3 --allhits --libonly --lib /Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta --uc /Users/caporaso/temp/UclustConsensusTaxonAssigner_D4PRqi.uc
+# version=1.2.22
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+N	*	1606	*	*	*	*	*	11469752	*
+N	*	1600	*	*	*	*	*	11460523	*
+N	*	1599	*	*	*	*	*	11460543	*
+L	22087	1354	*	*	*	*	*	202949	*
+H	22087	1593	100.0	+	0	0	239D1354M	11480235	202949
+L	11727	1529	*	*	*	*	*	111293	*
+H	11727	1587	100.0	+	0	0	26D1529M32D	11480408	111293
+D	11727	2	*	*	*	*	100.0	111293	*
+D	22087	2	*	*	*	*	100.0	202949	*

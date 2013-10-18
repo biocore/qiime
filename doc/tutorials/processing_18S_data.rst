@@ -38,7 +38,7 @@ The result of this step is :file:`otu_table_uclust_ref.biom`. For more informati
 
 To convert the table to a tab separated file containing taxonomic information, use this command: ::
 
-    convert_biom.py -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header_key taxonomy
+    biom convert -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header-key taxonomy
 
 which will generate a tab separate OTU table, with an example generated from the Silva 108 release shown below:
 
