@@ -1,0 +1,146 @@
+Logging started at 15:04:01 on 21 Oct 2013
+QIIME version: 1.7.0-dev
+
+qiime_config values:
+blastmat_dir	/Applications/blast-2.2.22/data/
+sc_queue	all.q
+topiaryexplorer_project_dir	/Users/caporaso/code/TopiaryExplorer-0.9.1/
+pynast_template_alignment_fp	/Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
+cluster_jobs_fp	start_parallel_jobs.py
+assign_taxonomy_reference_seqs_fp	/Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta
+torque_queue	friendlyq
+template_alignment_lanemask_fp	/Users/caporaso/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
+jobs_to_start	2
+cloud_environment	False
+qiime_scripts_dir	/Users/caporaso/code/Qiime/scripts
+denoiser_min_per_core	50
+python_exe_fp	python
+temp_dir	/Users/caporaso/temp
+blastall_fp	blastall
+seconds_to_sleep	1
+assign_taxonomy_id_to_taxonomy_fp	/Users/caporaso/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
+
+parameter file values:
+parallel:jobs_to_start	2
+
+Input file md5 sums:
+otu_table.biom: dda91090fbdc0f69056852247bcd924f
+Fasting_Map.txt: e16159d7122035797076d66b1a287962
+rep_set.tre: fdd11da9dcf4b2d55187c6021bd0d181
+
+Executing commands.
+
+# Beta Diversity (weighted_unifrac, unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/beta_diversity.py -i otu_table.biom -o bdiv_jk100  -t rep_set.tre
+
+Stdout:
+
+Stderr:
+
+# Rarefaction command 
+python /Users/caporaso/code/Qiime/scripts/multiple_rarefactions_even_depth.py -i otu_table.biom -d 100 -o bdiv_jk100/rarefaction/ 
+
+Stdout:
+
+Stderr:
+
+# UPGMA on full distance matrix: weighted_unifrac command 
+python /Users/caporaso/code/Qiime/scripts/upgma_cluster.py -i bdiv_jk100/weighted_unifrac_otu_table.txt -o bdiv_jk100/weighted_unifrac//otu_table_upgma.tre 
+
+Stdout:
+
+Stderr:
+
+# Beta diversity on rarefied OTU tables (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/beta_diversity.py -i bdiv_jk100/rarefaction/ -o bdiv_jk100/weighted_unifrac//rare_dm/  -m weighted_unifrac  -t rep_set.tre
+
+Stdout:
+
+Stderr:
+
+# UPGMA on rarefied distance matrix (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/upgma_cluster.py -i bdiv_jk100/weighted_unifrac//rare_dm/ -o bdiv_jk100/weighted_unifrac//rare_upgma/ 
+
+Stdout:
+
+Stderr:
+
+# consensus on rarefied distance matrices (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/consensus_tree.py -i bdiv_jk100/weighted_unifrac//rare_upgma/ -o bdiv_jk100/weighted_unifrac//rare_upgma_consensus.tre 
+
+Stdout:
+
+Stderr:
+
+# Tree compare (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/tree_compare.py -s bdiv_jk100/weighted_unifrac//rare_upgma/ -m bdiv_jk100/weighted_unifrac//rare_upgma_consensus.tre -o bdiv_jk100/weighted_unifrac//upgma_cmp/ 
+
+Stdout:
+
+Stderr:
+
+# Principal coordinates (weighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/principal_coordinates.py -i bdiv_jk100/weighted_unifrac//rare_dm/ -o bdiv_jk100/weighted_unifrac//pcoa/ 
+
+Stdout:
+
+Stderr:
+
+# emperor plots (weighted_unifrac) command 
+make_emperor.py -i bdiv_jk100/weighted_unifrac//pcoa/ -o bdiv_jk100/weighted_unifrac//emperor_pcoa_plots/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+# UPGMA on full distance matrix: unweighted_unifrac command 
+python /Users/caporaso/code/Qiime/scripts/upgma_cluster.py -i bdiv_jk100/unweighted_unifrac_otu_table.txt -o bdiv_jk100/unweighted_unifrac//otu_table_upgma.tre 
+
+Stdout:
+
+Stderr:
+
+# Beta diversity on rarefied OTU tables (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/beta_diversity.py -i bdiv_jk100/rarefaction/ -o bdiv_jk100/unweighted_unifrac//rare_dm/  -m unweighted_unifrac  -t rep_set.tre
+
+Stdout:
+
+Stderr:
+
+# UPGMA on rarefied distance matrix (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/upgma_cluster.py -i bdiv_jk100/unweighted_unifrac//rare_dm/ -o bdiv_jk100/unweighted_unifrac//rare_upgma/ 
+
+Stdout:
+
+Stderr:
+
+# consensus on rarefied distance matrices (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/consensus_tree.py -i bdiv_jk100/unweighted_unifrac//rare_upgma/ -o bdiv_jk100/unweighted_unifrac//rare_upgma_consensus.tre 
+
+Stdout:
+
+Stderr:
+
+# Tree compare (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/tree_compare.py -s bdiv_jk100/unweighted_unifrac//rare_upgma/ -m bdiv_jk100/unweighted_unifrac//rare_upgma_consensus.tre -o bdiv_jk100/unweighted_unifrac//upgma_cmp/ 
+
+Stdout:
+
+Stderr:
+
+# Principal coordinates (unweighted_unifrac) command 
+python /Users/caporaso/code/Qiime/scripts/principal_coordinates.py -i bdiv_jk100/unweighted_unifrac//rare_dm/ -o bdiv_jk100/unweighted_unifrac//pcoa/ 
+
+Stdout:
+
+Stderr:
+
+# emperor plots (unweighted_unifrac) command 
+make_emperor.py -i bdiv_jk100/unweighted_unifrac//pcoa/ -o bdiv_jk100/unweighted_unifrac//emperor_pcoa_plots/ -m Fasting_Map.txt 
+
+Stdout:
+
+Stderr:
+
+
+Logging stopped at 15:04:06 on 21 Oct 2013

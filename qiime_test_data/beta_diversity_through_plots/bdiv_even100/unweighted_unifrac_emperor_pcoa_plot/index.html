@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Emperor</title>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="emperor_required_resources/img/favicon.ico" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/emperor/css/emperor.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/jquery-ui2.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/colorPicker.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/d3.parcoords.css">
+    <table id="logotable" style="vertical-align:middle;text-align:center;height:100%;width:100%;margin:0;padding:0;border:0;">
+        <tr><td><img src="emperor_required_resources/img/emperor.png" alt="Emperor" id="logo"/></td></tr>
+    </table>
+    <script type="text/javascript" src="emperor_required_resources/js/d3.v3.min.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/d3.parcoords.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/jquery-ui-1.8.17.custom.min.js"></script>
+    <script src="emperor_required_resources/js/jquery.colorPicker.js"></script>
+    <script src="emperor_required_resources/js/spectrum.js"></script>
+
+    <script src="emperor_required_resources/js/Three.js"></script>
+    <script src="emperor_required_resources/js/js/Detector.js"></script>
+    <script src="emperor_required_resources/js/js/RequestAnimationFrame.js"></script>
+    <script src="emperor_required_resources/emperor/js/emperor.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/THREEx.screenshot.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/FileSaver.min.js"></script>
+    
+    <script type="text/javascript">
+    
+var g_mappingFileHeaders = ['SampleID','LinkerPrimerSequence','Treatment','DOB'];
+var g_mappingFileData = { 'PC.481': ['PC.481','YATGCTGCCTCCCGTAGGAGT','Control','20070314'],'PC.607': ['PC.607','YATGCTGCCTCCCGTAGGAGT','Fast','20071112'],'PC.634': ['PC.634','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.635': ['PC.635','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.593': ['PC.593','YATGCTGCCTCCCGTAGGAGT','Control','20071210'],'PC.636': ['PC.636','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.355': ['PC.355','YATGCTGCCTCCCGTAGGAGT','Control','20061218'],'PC.354': ['PC.354','YATGCTGCCTCCCGTAGGAGT','Control','20061218'],'PC.356': ['PC.356','YATGCTGCCTCCCGTAGGAGT','Control','20061126'] };
+
+var g_spherePositions = new Array();
+g_spherePositions['PC.636'] = { 'name': 'PC.636', 'color': 0, 'x': -0.287761, 'y': 0.061531, 'z': -0.012245, 'P1': -0.287761, 'P2': 0.061531, 'P3': -0.012245, 'P4': -0.170101, 'P5': 0.078474, 'P6': -0.099232, 'P7': -0.238698, 'P8': 0.102513 };
+g_spherePositions['PC.635'] = { 'name': 'PC.635', 'color': 0, 'x': -0.289466, 'y': 0.111996, 'z': -0.073891, 'P1': -0.289466, 'P2': 0.111996, 'P3': -0.073891, 'P4': 0.119269, 'P5': 0.056853, 'P6': -0.135031, 'P7': 0.236999, 'P8': 0.099288 };
+g_spherePositions['PC.356'] = { 'name': 'PC.356', 'color': 0, 'x': 0.265154, 'y': 0.203937, 'z': -0.257002, 'P1': 0.265154, 'P2': 0.203937, 'P3': -0.257002, 'P4': -0.008446, 'P5': 0.109200, 'P6': 0.216073, 'P7': -0.004610, 'P8': 0.056494 };
+g_spherePositions['PC.481'] = { 'name': 'PC.481', 'color': 0, 'x': 0.036357, 'y': -0.058797, 'z': 0.286200, 'P1': 0.036357, 'P2': -0.058797, 'P3': 0.286200, 'P4': 0.235961, 'P5': -0.064695, 'P6': 0.122006, 'P7': -0.075099, 'P8': 0.124561 };
+g_spherePositions['PC.354'] = { 'name': 'PC.354', 'color': 0, 'x': 0.271867, 'y': 0.030598, 'z': 0.035466, 'P1': 0.271867, 'P2': 0.030598, 'P3': 0.035466, 'P4': 0.150365, 'P5': 0.169601, 'P6': -0.182169, 'P7': -0.073567, 'P8': -0.160895 };
+g_spherePositions['PC.593'] = { 'name': 'PC.593', 'color': 0, 'x': 0.190889, 'y': -0.279417, 'z': 0.153736, 'P1': 0.190889, 'P2': -0.279417, 'P3': 0.153736, 'P4': -0.234194, 'P5': 0.121570, 'P6': 0.017989, 'P7': 0.134798, 'P8': 0.033330 };
+g_spherePositions['PC.355'] = { 'name': 'PC.355', 'color': 0, 'x': 0.251038, 'y': 0.189082, 'z': 0.032262, 'P1': 0.251038, 'P2': 0.189082, 'P3': 0.032262, 'P4': -0.116500, 'P5': -0.307578, 'P6': -0.106658, 'P7': 0.026923, 'P8': -0.002707 };
+g_spherePositions['PC.607'] = { 'name': 'PC.607', 'color': 0, 'x': -0.090450, 'y': -0.366560, 'z': -0.277837, 'P1': -0.090450, 'P2': -0.366560, 'P3': -0.277837, 'P4': 0.079822, 'P5': -0.141834, 'P6': 0.006057, 'P7': -0.042642, 'P8': -0.042828 };
+g_spherePositions['PC.634'] = { 'name': 'PC.634', 'color': 0, 'x': -0.347627, 'y': 0.107630, 'z': 0.113313, 'P1': -0.347627, 'P2': 0.107630, 'P3': 0.113313, 'P4': -0.056175, 'P5': -0.021590, 'P6': 0.160965, 'P7': 0.035896, 'P8': -0.209757 };
+
+var g_ellipsesDimensions = new Array();
+var g_segments = 8, g_rings = 8, g_radius = 0.007434;
+var g_xAxisLength = 0.619494;
+var g_yAxisLength = 0.570497;
+var g_zAxisLength = 0.564037;
+var g_xMaximumValue = 0.271867;
+var g_yMaximumValue = 0.203937;
+var g_zMaximumValue = 0.286200;
+var g_xMinimumValue = -0.347627;
+var g_yMinimumValue = -0.366560;
+var g_zMinimumValue = -0.277837;
+var g_maximum = 0.366560;
+var g_pc1Label = "PC1 (28 %)";
+var g_pc2Label = "PC2 (17 %)";
+var g_pc3Label = "PC3 (14 %)";
+var g_number_of_custom_axes = 0;
+var g_fractionExplained = [0.279455, 0.166492, 0.139327, 0.103106, 0.095232, 0.082957, 0.075583, 0.057849];
+var g_fractionExplainedRounded = [28, 17, 14, 10, 10, 8, 8, 6];
+
+var g_taxaPositions = new Array();
+
+
+var g_vectorPositions = new Array();
+
+var g_comparisonPositions = new Array();
+document.getElementById("logo").style.display = 'none';
+document.getElementById("logotable").style.display = 'none';
+
+ </script>
+</head>
+
+<body>    
+
+<div id="plotToggle">
+    <form>
+      <div id="plottype">
+        <input id="pcoa" type="radio" id="pcoa" name="plottype" checked="checked" /><label for="pcoa">PCoA</label>
+        <input id="parallel" type="radio" id="parallel" name="plottype" /><label for="parallel">Parallel</label>
+      </div>
+    </form>
+</div>
+<div id="pcoaPlotWrapper" class="plotWrapper">
+    <label id="pointCount" class="ontop">
+    </label>
+
+    <div id="finder" class="arrow-right">
+    </div>
+
+    <div id="labels" class="unselectable">
+    </div>
+
+    <div id="taxalabels" class="unselectable">
+    </div>
+
+    <div id="axislabels" class="axislabels">
+    </div>
+
+    <div id="main_plot">
+    </div>
+</div>
+
+<div id="parallelPlotWrapper" class="plotWrapper">
+</div>
+
+<div id="menu">
+    <div id="menutabs">
+        <ul>
+            <li><a href="#keytab">Key</a></li>
+            <li><a href="#colorby">Colors</a></li>
+            <li><a href="#showby">Visibility</a></li>
+            <li><a href="#scalingby">Scaling</a></li>
+            <li><a href="#labelby">Labels</a></li>
+            <li><a href="#axes">Axes</a></li>
+            <li><a href="#view">View</a></li>
+            <li><a href="#settings">Options</a></li>
+        </ul>
+        <div id="keytab">
+            <form name="keyFilter">
+            <label>Filter  </label><input name="filterBox" type="text" onkeyup="filterKey()"></input>
+            </form>
+            <div id="key">
+            </div>
+        </div>
+        <div id="colorby">
+            <br>
+            <select id="colorbycombo" onchange="colorByMenuChanged()" size="3">
+            </select>
+            <div class="list" id="colorbylist">
+            </div>
+        </div>
+        <div id="showby">
+            <select id="showbycombo" onchange="showByMenuChanged()">
+            </select>
+            <div class="list" id="showbylist">
+            </div>
+        </div>
+        <div id="scalingby">
+            <select id="scalingbycombo" onchange="scalingByMenuChanged()">
+            </select>
+            <div class="list" id="scalingbylist">
+            </div>
+        </div>
+        <div id="labelby">
+        <div id="labelsTop">
+            <form name="plotoptions">
+            <input type="checkbox" onClick="toggleLabels()">Samples Label Visibility</input>
+            </form>
+            <br>
+            <label for="labelopacity" class="text">Label Opacity</label>
+            <label id="labelopacity" class="slidervalue"></label>
+            <div id="lopacityslider" class="slider-range-max"></div>
+            <div id="labelColorHolder clearfix">
+            <table><tr>
+            <td><div id="labelColor" class="colorbox">
+            </div></td><td><label>Master Label Color</label></td>
+            </tr></table></div>
+        </div>
+            <br>
+            <select id="labelcombo" onchange="labelMenuChanged()">
+            </select>
+            <div class="list" id="labellist">
+            </div>
+        </div>
+        <div id="axes">
+            <div id="pcoaaxes">
+                <div class="list" id="axeslist">
+                </div>
+            </div>
+        </div>
+        <div id="view">
+            <table>
+                <tr><td><div id="axeslabelscolor" class="colorbox" name="axeslabelscolor"></div></td><td title="Axes Labels Color">Axes Labels Color</td></tr>
+                <tr><td><div id="axescolor" class="colorbox" name="axescolor"></div></td><td title="Axes Color Title">Axes Color</td></tr>
+                <tr><td><div id="rendererbackgroundcolor" class="colorbox" name="rendererbackgroundcolor"></div></td><td title="Background Color Title">Background Color</td></tr>
+            </table>
+            <br>
+            <form name="settingsoptionscolor">
+            <input type="checkbox" onchange="toggleContinuousAndDiscreteColors(this)" id="discreteorcontinuouscolors" name="discreteorcontinuouscolors">  Use gradient colors</input>
+            </form>
+            <div id="pcoaviewoptions" class="">
+                <br>
+                <input id="reset" class="button" type="submit" value="Recenter Camera" style="" onClick="resetCamera()">
+                <br>
+                <br>
+                <label for="sphereopacity" class="text">Sphere Opacity</label>
+                <label id="sphereopacity" class="slidervalue"></label>
+                <div id="sopacityslider" class="slider-range-max"></div>
+                <br>
+                <label for="sphereradius" class="text">Sphere Scale</label>
+                <label id="sphereradius" class="slidervalue"></label>
+                <div id="sradiusslider" class="slider-range-max"></div>
+                <br>
+            </div>
+            <br>
+        </div>
+        <div id="settings">
+            <br>
+            Filename <small>(only letters, numbers, ., - and _)</small>:
+            <br>
+            <input name="saveas_name" id="saveas_name" value="screenshot" type="text"/>
+            <input id="saveas" class="button" type="submit" value="Save as SVG" style="" onClick="saveSVG()"/>
+            <br>
+            Create labels? <input id="saveas_legends" class="checkbox" type="checkbox" style="">
+            <br><br>
+            For a PNG, simply press 'ctrl+p'.
+            <br><br>
+            <div id="pcoaoptions" class="">
+                <form name="settingsoptions">
+                    <input type="checkbox" onchange="toggleScaleCoordinates(this)" id="scale_checkbox" name="scale_checkbox">Scale coords by percent explained</input>
+                </form>
+            </div>
+            <br>
+            <div id="paralleloptions" class="">
+            </div>
+        </div>
+    </div>  
+</div>
+</body>
+
+</html>
