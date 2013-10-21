@@ -1,0 +1,40 @@
+# PD_whole_tree.txt
+# SampleID
+xaxis: 10.0	11.0	12.0	13.0	14.0	15.0	16.0	17.0	18.0	19.0	20.0	
+xmax: 21.0
+>> p2
+color #7cecf4
+series 1.10863	1.165152	1.271461	1.249691	1.254801	1.256508	1.284853	1.289305	1.340607	1.367559	1.384871	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f1
+color #ff0000
+series 0.47803	0.47803	0.458818	0.468424	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f2
+color #0000ff
+series 0.504414	0.51881	0.478004	0.54043	0.521218	0.600448	0.552444	0.617252	0.576446	0.59325	0.600448	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f3
+color #f27304
+series 0.47803	0.468424	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	0.47803	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> f4
+color #008000
+series 0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	0.38197	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t2
+color #5da09e
+series 0.656622	0.6574	0.656622	0.655844	0.6574	0.6574	0.6574	0.656622	0.6574	0.6574	0.6574	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> not16S.1
+color #91278d
+series 0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> t1
+color #f49ac2
+series 0.599947	0.559167	0.615064	0.626388	0.647322	0.595686	0.651583	0.641505	0.647322	0.6574	0.631427	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> p1
+color #ffff00
+series 0.55235	0.519354	0.611181	0.604216	0.637016	0.658499	0.611377	0.625111	0.658499	0.665464	0.644373	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	

@@ -1,0 +1,24 @@
+Num samples: 9
+Num observations: 14
+Total count: 200
+Table density (fraction of non-zero values): 0.238
+
+Counts/sample summary:
+ Min: 22.0
+ Max: 23.0
+ Median: 22.000
+ Mean: 22.222
+ Std. dev.: 0.416
+ Sample Metadata Categories: None provided
+ Observation Metadata Categories: taxonomy
+
+Counts/sample detail:
+ f1: 22.0
+ f2: 22.0
+ f3: 22.0
+ f4: 22.0
+ not16S.1: 22.0
+ p2: 22.0
+ t2: 22.0
+ p1: 23.0
+ t1: 23.0

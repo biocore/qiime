@@ -1,0 +1,40 @@
+# observed_species.txt
+# Description
+xaxis: 10.0	11.0	12.0	13.0	14.0	15.0	16.0	17.0	18.0	19.0	20.0	
+xmax: 21.0
+>> tongue2
+color #5da09e
+series 2.9	3.0	2.9	2.8	3.0	3.0	3.0	2.9	3.0	3.0	3.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> palm2
+color #ffff00
+series 5.7	5.4	6.5	6.4	6.7	7.0	7.5	7.2	8.0	8.4	8.4	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> fecal1
+color #0000ff
+series 2.0	2.0	1.8	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> fecal2
+color #f27304
+series 1.9	1.9	1.7	2.2	2.0	2.6	2.4	2.7	2.5	2.6	2.6	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> randomly generated sequence plus some variants, these should not map to 16S
+color #7cecf4
+series 1.6	1.5	1.9	1.8	2.0	1.9	1.9	1.8	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> tongue1, contains one randomly generated sequence
+color #f49ac2
+series 2.7	2.6	2.8	3.0	3.4	2.8	3.5	3.4	3.7	3.5	3.3	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> identical sequences to fecal2
+color #008000
+series 2.0	1.9	2.0	2.0	2.0	2.0	2.0	2.0	2.0	2.0	2.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> all sequences identical, map to GG 295053 at 97 percent id
+color #ff0000
+series 1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
+>> palm1, contains one randomly generated sequence
+color #91278d
+series 2.3	2.4	2.9	2.8	3.0	3.2	3.2	3.0	3.7	3.7	3.5	
+error nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	nan	
