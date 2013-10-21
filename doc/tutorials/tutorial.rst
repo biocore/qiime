@@ -465,12 +465,9 @@ Compute Beta Diversity and Generate Beta Diversity Plots
 Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found here `beta diversity metrics <../scripts/beta_diversity_metrics.html>`_. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow script. This script performs the following steps:
 
 1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
-2. Make preferences file (for more information, refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_)
-3. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
-4. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-5. Generate 3D PCoA plots (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_)
-6. Generate 2D PCoA plots (for more information, refer to `make_2d_plots.py <../scripts/make_2d_plots.html>`_)
-7. Make Distance Histograms (for more information, refer to `make_distance_histograms.py <../scripts/make_distance_histograms.html>`_)
+2. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
+3. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
+4. Generate Emperor PCoA plots (for more information, refer to `make_emperor.py <http://qiime.org/emperor/>`_)
 
 To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
 
@@ -571,7 +568,7 @@ This workflow uses jackknife replicates to estimate the uncertainty in PCoA plot
   5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
   6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
   7) Compute principal coordinates on each rarefied distance matrix (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_ and `make_2d_plots.py <../scripts/make_2d_plots.html>`_)
+  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_emperor.py <http://qiime.org/emperor/>`
 
 
 To run the analysis, type the following:
@@ -656,9 +653,9 @@ The resulting pdf shows the tree with internal nodes colored, red for 75-100% su
 
 Generate 3D Bi-Plots
 ^^^^^^^^^^^^^^^^^^^^
-One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using QIIME's `make_3d_plots.py <../scripts/make_3d_plots.html>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
+One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using QIIME's `make_emperor.py <http://qiime.org/emperor/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
 
-    make_3d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_keep 5 -o 3d_biplot
+    make_emperor.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o 3d_biplot
 
 The resulting html file :file:`3d_biplot/unweighted_unifrac_pc_3D_PCoA_plots.html` shows a biplot like this:
 
