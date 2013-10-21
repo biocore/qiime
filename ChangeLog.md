@@ -10,7 +10,8 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Added identify_paired_differences.py to support paired difference (i.e., Pre/Post) testing as discussed in issue #1040.
 * Required biom-format version is now 1.2.0.
 * Added new taxonomic assignment method, ``qiime.assign_taxonomy.UclustConsensusTaxonAssigner``. This is accessible through ``assign_taxonomy.py -m uclust``, ``parallel_assign_taxonomy_uclust.py``, ``pick_de_novo_otus.py`` and ``pick_open_reference_otus.py``. This is being tested as an alternative to QIIME's existing taxonomic assignment methods.
-* Updated workflows to generate emperor PCoA plots instead of KiNG PCoA plots. QIIME now depends on Emperor 0.9.1.
+* Updated workflows to generate emperor PCoA plots instead of KiNG PCoA plots. QIIME now depends on Emperor 0.9.1. This involves several script interface changes: 
+ * beta_diversity_through_plots.py no longer generates 2d plots (interested users can call make_2d_plots.py directly - these won't be needed as often, since we no longer have a Java dependency) or distance histograms (this functionality is now better accesses through make_distance_boxplots.py). As a result, it no longer takes the --suppress_2d_plots, --suppress_3d_plots, or --histogram_categories parameters, and now takes a new --suppress_emperor_plots parameter to disable PCoA plotting.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
