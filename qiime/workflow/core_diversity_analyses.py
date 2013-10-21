@@ -205,9 +205,6 @@ def run_core_diversity_analyses(
              params=params,
              qiime_config=qiime_config,
              sampling_depth=sampling_depth,
-             # force suppression of distance histograms - boxplots work better
-             # in this context, and are created below.
-             histogram_categories=[],
              tree_fp=tree_fp,
              parallel=parallel,
              logger=logger,
@@ -245,21 +242,9 @@ def run_core_diversity_analyses(
                                     stats_output_fp,
                                     _index_headers['beta_diversity_even'] % sampling_depth))
             
-            index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+            index_links.append(('PCoA plot (%s)' % bdiv_metric,
+                                '%s/%s_emperor_pcoa_plot/index.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
                                 _index_headers['beta_diversity_even'] % sampling_depth))
             index_links.append(('Distance matrix (%s)' % bdiv_metric,
                                 '%s/%s_dm.txt' % \
