@@ -36,26 +36,18 @@ def run_beta_diversity_through_plots(otu_table_fp,
                                      qiime_config,
                                      color_by_interesting_fields_only=True,
                                      sampling_depth=None,
-                                     histogram_categories=None,
                                      tree_fp=None,
                                      parallel=False,
                                      logger=None,
-                                     suppress_3d_plots=False,
-                                     suppress_2d_plots=False,
+                                     suppress_emperor_plots=False,
                                      suppress_md5=False,
                                      status_update_callback=print_to_stdout):
-    """ Run the data preparation steps of Qiime 
+    """ Compute beta diversity distance matrices, run PCoA, and generate emperor plots
     
         The steps performed by this function are:
-         1) Compute a beta diversity distance matrix;
-         2) Peform a principal coordinates analysis on the result of
-          Step 1;
-         3) Generate a 3D prefs file for optimized coloring of continuous
-          variables;
-         4) Generate a 3D plot for all mapping fields with colors
-          optimized for continuous data;
-         5) Generate a 3D plot for all mapping fields with colors
-          optimized for discrete data.
+         1) Compute a beta diversity distance matrix for each metric
+         2) Peform a principal coordinates analysis on the result of step 1
+         3) Generate an emperor plot for each result of step 2
     
     """  
     # Prepare some variables for the later steps
@@ -78,12 +70,7 @@ def run_beta_diversity_through_plots(otu_table_fp,
     
     mapping_data, mapping_header, mapping_comments =\
      parse_mapping_file(open(mapping_fp,'U'))
-    if histogram_categories:
-        invalid_categories = set(histogram_categories) - set(mapping_header)
-        if invalid_categories:
-            raise ValueError,\
-             "Invalid histogram categories - these must exactly match "+\
-             "mapping file column headers: %s" % (' '.join(invalid_categories))
+
     # Get the interesting mapping fields to color by -- if none are
     # interesting, take all of them. Interesting is defined as those
     # which have greater than one value and fewer values than the number 
@@ -115,22 +102,7 @@ def run_beta_diversity_through_plots(otu_table_fp,
         beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     except KeyError:
         beta_diversity_metrics = ['weighted_unifrac','unweighted_unifrac']
-    
-    # Prep the 3d prefs file generator command
-    prefs_fp = '%s/prefs.txt' % output_dir
-    try:
-        params_str = get_params_str(params['make_prefs_file'])
-    except KeyError:
-        params_str = ''
-    if not 'mapping_headers_to_use' in params['make_prefs_file']:
-        params_str = '%s --mapping_headers_to_use %s' \
-         % (params_str,mapping_fields)
-    # Build the 3d prefs file generator command
-    prefs_cmd = \
-     '%s %s/make_prefs_file.py -m %s -o %s %s' %\
-     (python_exe_fp, script_dir, mapping_fp, prefs_fp, params_str)
-    commands.append([('Build prefs file', prefs_cmd)])
-    
+
     dm_fps = []
     for beta_diversity_metric in beta_diversity_metrics:
         
@@ -189,97 +161,24 @@ def run_beta_diversity_through_plots(otu_table_fp,
         commands.append(\
          [('Principal coordinates (%s)' % beta_diversity_metric, pc_cmd)])
         
-        # Generate 3d plots
-        if not suppress_3d_plots:
-            # Prep the continuous-coloring 3d plots command
-            continuous_3d_dir = '%s/%s_3d_continuous/' %\
-             (output_dir, beta_diversity_metric)
-            create_dir(continuous_3d_dir)
+        # Generate emperor plots
+        if not suppress_emperor_plots:
+            # Prep the emperor plots command
+            emperor_dir = '%s/%s_emperor_pcoa_plot/' % (output_dir, beta_diversity_metric)
+            create_dir(emperor_dir)
             try:
-                params_str = get_params_str(params['make_3d_plots'])
+                params_str = get_params_str(params['make_emperor'])
             except KeyError:
                 params_str = ''
             # Build the continuous-coloring 3d plots command
-            continuous_3d_command = \
-             '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,
-               mapping_fp, params_str)
-    
-            # Prep the discrete-coloring 3d plots command
-            discrete_3d_dir = '%s/%s_3d_discrete/' %\
-             (output_dir, beta_diversity_metric)
-            create_dir(discrete_3d_dir)
-            try:
-                params_str = get_params_str(params['make_3d_plots'])
-            except KeyError:
-                params_str = ''
-            # Build the discrete-coloring 3d plots command
-            discrete_3d_command = \
-             '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,
-               mapping_fp, params_str)
+            emperor_command = \
+             'make_emperor.py -i %s -o %s -m %s %s' % (pc_fp,
+                                                       emperor_dir,
+                                                       mapping_fp,
+                                                       params_str)
        
-            commands.append([\
-              ('Make 3D plots (continuous coloring, %s)' %\
-                beta_diversity_metric,continuous_3d_command),\
-              ('Make 3D plots (discrete coloring, %s)' %\
-                beta_diversity_metric,discrete_3d_command,)])
-    
-        # Generate 3d plots
-        if not suppress_2d_plots:
-            # Prep the continuous-coloring 3d plots command
-            continuous_2d_dir = '%s/%s_2d_continuous/' %\
-             (output_dir, beta_diversity_metric)
-            create_dir(continuous_2d_dir)
-            try:
-                params_str = get_params_str(params['make_2d_plots'])
-            except KeyError:
-                params_str = ''
-            # Build the continuous-coloring 3d plots command
-            continuous_2d_command = \
-             '%s %s/make_2d_plots.py -p %s -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_2d_dir,
-               mapping_fp, params_str)
-               
-            # Prep the discrete-coloring 3d plots command
-            discrete_2d_dir = '%s/%s_2d_discrete/' %\
-             (output_dir, beta_diversity_metric)
-            create_dir(discrete_2d_dir)
-            try:
-                params_str = get_params_str(params['make_2d_plots'])
-            except KeyError:
-                params_str = ''
-            # Build the discrete-coloring 2d plots command
-            discrete_2d_command = \
-             '%s %s/make_2d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_2d_dir,
-               mapping_fp, params_str)
-       
-            commands.append([\
-              ('Make 2D plots (continuous coloring, %s)' %\
-                beta_diversity_metric,continuous_2d_command),\
-              ('Make 2D plots (discrete coloring, %s)' %\
-                beta_diversity_metric,discrete_2d_command,)])
-                
-        if histogram_categories:
-            # Prep the discrete-coloring 3d plots command
-            histograms_dir = '%s/%s_histograms/' %\
-             (output_dir, beta_diversity_metric)
-            create_dir(histograms_dir)
-            try:
-                params_str = get_params_str(params['make_distance_histograms'])
-            except KeyError:
-                params_str = ''
-            # Build the make_distance_histograms command
-            distance_histograms_command = \
-             '%s %s/make_distance_histograms.py -d %s -o %s -m %s -f "%s" %s' %\
-              (python_exe_fp, script_dir, beta_div_fp, 
-               histograms_dir, mapping_fp, 
-               ','.join(histogram_categories), params_str)
-       
-            commands.append([\
-              ('Make Distance Histograms (%s)' %\
-                beta_diversity_metric,distance_histograms_command)])
+            commands.append([('Make emperor plots, %s)' % beta_diversity_metric,
+                              emperor_command)])
 
     # Call the command handler on the list of commands
     command_handler(commands,
@@ -639,36 +538,18 @@ def run_jackknifed_beta_diversity(otu_table_fp,
          (python_exe_fp, script_dir, dm_dir, pcoa_dir, params_str)
         commands.append(\
          [('Principal coordinates (%s)' % beta_diversity_metric, pcoa_cmd)])
-           
-        # Prep the 2D plots command
-        plots_2d_dir = '%s/2d_plots/' % metric_output_dir
-        create_dir(plots_2d_dir)
-        try:
-            params_str = get_params_str(params['make_2d_plots'])
-        except KeyError:
-            params_str = ''
-        # Build the 2d plots command
-        plots_2d_cmd = '%s %s/make_2d_plots.py -i %s -o %s -m %s %s' %\
-         (python_exe_fp, script_dir, pcoa_dir, plots_2d_dir, 
-          mapping_fp, params_str)
-        commands.append(\
-         [('2d plots (%s)' % beta_diversity_metric, plots_2d_cmd)])
          
-        # Prep the 3D plots command
-        plots_3d_dir = '%s/3d_plots/' % metric_output_dir
-        create_dir(plots_3d_dir)
+        # Prep the emperor plots command
+        emperor_dir = '%s/emperor_pcoa_plots/' % metric_output_dir
+        create_dir(emperor_dir)
         try:
-            params_str = get_params_str(params['make_3d_plots'])
+            params_str = get_params_str(params['make_emperor'])
         except KeyError:
             params_str = ''
-        # Build the 2d plots command
-        plots_3d_cmd = '%s %s/make_3d_plots.py -i %s -o %s -m %s %s' %\
-         (python_exe_fp, script_dir, pcoa_dir, plots_3d_dir, 
-          mapping_fp, params_str)
+        emperor_cmd = 'make_emperor.py -i %s -o %s -m %s %s' %\
+         (pcoa_dir, emperor_dir, mapping_fp, params_str)
         commands.append(\
-         [('3d plots (%s)' % beta_diversity_metric, plots_3d_cmd)])
-           
-           
+         [('emperor plots (%s)' % beta_diversity_metric, emperor_cmd)])
 
     # Call the command handler on the list of commands
     command_handler(commands,
