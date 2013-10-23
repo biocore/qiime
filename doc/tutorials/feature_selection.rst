@@ -1,8 +1,8 @@
 .. _feature_selection:
 
-========================
+==============================================
 Selecting Differentiating Features Using Fizzy
-========================
+=============================================
 
 
 
@@ -25,7 +25,7 @@ References
 
 
 What is Required
-------------------
+----------------
 
 * a biom file containing the abundance profiles
 * a mapping file containing the meta-data
@@ -34,7 +34,7 @@ What is Required
 
 
 Using Feature Selection on Your Data
-------------------
+-----------------------------------
 Fizzy requires four flags to be specified: a biom-format file, mapping file, a column specifying the labels in the map file, and a file to save the results. The biom-file must be in the standard biom format. The map file must be tab-delimited and contain the class labels in one of the columns. The labels need not be specified with integer, rather a labeling scheme like 'healthy' or 'unhealthy' will work just fine. Given that you have these files properly formatted you can call the Fizzy module from the command line as follows: ::
 
 	fizzy.py -i data.biom -m map.txt -c Class -o output.txt
