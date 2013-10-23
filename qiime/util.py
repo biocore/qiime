@@ -2090,7 +2090,9 @@ def sync_biom_and_mf(pmf, bt):
     Inputs: 
      pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
      bt - parse biom table from parse_biom_table (biom table object).
-    Outputs are a bt and pmf that contain only shared samples.
+    Outputs are a bt and pmf that contain only shared samples and a set of 
+    samples that are not shared. If no samples are unshared this final output
+    will be an empty set. 
     """
     mf_samples = set(pmf.keys())
     bt_samples = set(bt.SampleIds)
