@@ -63,7 +63,7 @@ def parse_map_file(map_f, column_name, sample_ids):
     # grab the class labels which are likely to be in string 
     # format. 
 
-    for id_set insample_ids:
+    for id_set in sample_ids:
         if(id_set not in obj):
             raise ValueError("Unknown sample ID supplied (" + str(id_set) + "). Make sure that the ID is in map file you specified")
         if(column_name not in obj[id_set]):
@@ -75,7 +75,7 @@ def parse_map_file(map_f, column_name, sample_ids):
     # classes is equal to the number of observations, throw an error. 
     # its likely the user does not know what they are doing. 
     unique_classes = numpy.unique(label_full)
-    if len(unique_classes) == lensample_ids):
+    if len(unique_classes) == len(sample_ids):
         raise ValueError("Number of classes is equal to the number of IDs.  The number of classes must be less than the number of IDs in map file that was specified.")
     if len(unique_classes) == 1: 
         raise ValueError("There must be multiple classes specified. Only one unique class was detected.")

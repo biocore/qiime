@@ -63,11 +63,11 @@ class FizzyTests(TestCase):
 
 
     def test_parse_map_invalid_column_name(self):
-			  """test the functionality of the map parser."""
+        """test the functionality of the map parser."""
         self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Unknown", [u'ID0',u'ID1',u'ID2'])
 
     def test_parse_map_invalid_sample_name(self):
-			  """test with invalid sample names"""
+        """test with invalid sample names"""
         self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID99',u'ID1',u'ID2'])
 
     def test_parse_map_invalid_equal_num_sample_classes(self):
@@ -93,7 +93,7 @@ class FizzyTests(TestCase):
         self.assertRaises(AttributeError, fizzy.run_pyfeast, None, None, None, "An Invalid Name", None)
 
     def test_run_feature_selection(self):
-			  """test the feature selection on a toy problem"""
+        """test the feature selection on a toy problem"""
         column_name = "Class"
 
         selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=3)

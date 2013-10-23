@@ -77,7 +77,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # run the fizzy feature selection routine
-    fizzy.run_feature_selection( 
+    selected_features = fizzy.run_feature_selection( 
         open(opts.input_path,'U'), 
         open(opts.map_path,'U'), 
         opts.column_label, 
