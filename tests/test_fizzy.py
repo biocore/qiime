@@ -73,7 +73,7 @@ class FizzyTests(TestCase):
     def test_parse_map_invalid_equal_num_sample_classes(self):
         """test with an invalid number of samples"""
         self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
-            
+
     def test_run_pyfeast(self):
         """assert that each of the selected features are in the appropriate range"""
         n_select = 5
