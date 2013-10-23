@@ -1,9 +1,9 @@
 .. _feature_selection:
 
 
-===============
+==============================================
 Selecting Differentiating Features Using Fizzy
-===============
+==============================================
 
 Extremely high dimensional data sets are quite common in metagenomic data sets. The biologists collecting and analyzing data need efficient methods to determine relationships between classes in a data set and the variables that are capable of differentiating between multiple groups in a study. Feature selection is one such method to reduce the dimensionality of a data set, such that the remaining features provide the highest level of differentiation between the multiple groups in the study. 
 
@@ -23,7 +23,7 @@ References
 
 
 What is Required
---------------------
+----------------
 
 
 * a biom file containing the abundance profiles
@@ -33,7 +33,7 @@ What is Required
 
 
 Using Feature Selection on Your Data
----------------------
+------------------------------------
 
 Fizzy requires four flags to be specified: a biom-format file, mapping file, a column specifying the labels in the map file, and a file to save the results. The biom-file must be in the standard biom format. The map file must be tab-delimited and contain the class labels in one of the columns. The labels need not be specified with integer, rather a labeling scheme like 'healthy' or 'unhealthy' will work just fine. Given that you have these files properly formatted you can call the Fizzy module from the command line as follows: ::
 
