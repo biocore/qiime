@@ -849,7 +849,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
             # must show up in to be considered the consensus assignment
             'min_consensus_fraction':0.51,
             # minimum identity to consider a hit (passed to uclust as --id)
-            'similarity':0.97,
+            'similarity':0.90,
             # label to apply for queries that cannot be assigned
             'unassignable_label':'Unassigned'
             }

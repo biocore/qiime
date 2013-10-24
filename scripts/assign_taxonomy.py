@@ -162,7 +162,7 @@ script_info['optional_options']=[\
               '[default: %default]'), default=0.51),
  make_option('--uclust_similarity', type='float',
         help=('Minimum percent similarity to consider a database match a hit, '
-              'only used for uclust method [default: %default]'), default=0.97),
+              'only used for uclust method [default: %default]'), default=0.90),
  make_option('--uclust_max_accepts', type='int',
         help=('Number of database hits to consider when making '
               'an assignment, only used for uclust method '
