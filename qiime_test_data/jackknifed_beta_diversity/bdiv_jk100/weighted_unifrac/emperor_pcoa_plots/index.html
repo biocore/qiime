@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Emperor</title>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="emperor_required_resources/img/favicon.ico" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/emperor/css/emperor.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/jquery-ui2.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/colorPicker.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="emperor_required_resources/css/d3.parcoords.css">
+    <table id="logotable" style="vertical-align:middle;text-align:center;height:100%;width:100%;margin:0;padding:0;border:0;">
+        <tr><td><img src="emperor_required_resources/img/emperor.png" alt="Emperor" id="logo"/></td></tr>
+    </table>
+    <script type="text/javascript" src="emperor_required_resources/js/d3.v3.min.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/d3.parcoords.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/jquery-ui-1.8.17.custom.min.js"></script>
+    <script src="emperor_required_resources/js/jquery.colorPicker.js"></script>
+    <script src="emperor_required_resources/js/spectrum.js"></script>
+
+    <script src="emperor_required_resources/js/Three.js"></script>
+    <script src="emperor_required_resources/js/js/Detector.js"></script>
+    <script src="emperor_required_resources/js/js/RequestAnimationFrame.js"></script>
+    <script src="emperor_required_resources/emperor/js/emperor.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/THREEx.screenshot.js"></script>
+    <script type="text/javascript" src="emperor_required_resources/js/FileSaver.min.js"></script>
+    
+    <script type="text/javascript">
+    
+var g_mappingFileHeaders = ['SampleID','LinkerPrimerSequence','Treatment','DOB'];
+var g_mappingFileData = { 'PC.481': ['PC.481','YATGCTGCCTCCCGTAGGAGT','Control','20070314'],'PC.607': ['PC.607','YATGCTGCCTCCCGTAGGAGT','Fast','20071112'],'PC.634': ['PC.634','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.635': ['PC.635','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.593': ['PC.593','YATGCTGCCTCCCGTAGGAGT','Control','20071210'],'PC.636': ['PC.636','YATGCTGCCTCCCGTAGGAGT','Fast','20080116'],'PC.355': ['PC.355','YATGCTGCCTCCCGTAGGAGT','Control','20061218'],'PC.354': ['PC.354','YATGCTGCCTCCCGTAGGAGT','Control','20061218'],'PC.356': ['PC.356','YATGCTGCCTCCCGTAGGAGT','Control','20061126'] };
+
+var g_spherePositions = new Array();
+g_spherePositions['PC.636'] = { 'name': 'PC.636', 'color': 0, 'x': -0.246814, 'y': 0.086607, 'z': 0.091611, 'P1': -0.246814, 'P2': 0.086607, 'P3': 0.091611, 'P4': -0.040755, 'P5': -0.001895, 'P6': 0.015747, 'P7': 0.010421, 'P8': 0.008178 };
+g_spherePositions['PC.635'] = { 'name': 'PC.635', 'color': 0, 'x': -0.128144, 'y': -0.034575, 'z': -0.095079, 'P1': -0.128144, 'P2': -0.034575, 'P3': -0.095079, 'P4': -0.030559, 'P5': 0.049435, 'P6': -0.023211, 'P7': -0.009949, 'P8': 0.010325 };
+g_spherePositions['PC.356'] = { 'name': 'PC.356', 'color': 0, 'x': 0.178157, 'y': 0.014677, 'z': 0.010440, 'P1': 0.178157, 'P2': 0.014677, 'P3': 0.010440, 'P4': -0.029040, 'P5': 0.022900, 'P6': 0.018548, 'P7': -0.036165, 'P8': -0.026258 };
+g_spherePositions['PC.481'] = { 'name': 'PC.481', 'color': 0, 'x': 0.176302, 'y': 0.005865, 'z': -0.020074, 'P1': 0.176302, 'P2': 0.005865, 'P3': -0.020074, 'P4': 0.039794, 'P5': -0.035010, 'P6': 0.011080, 'P7': -0.006829, 'P8': 0.011512 };
+g_spherePositions['PC.354'] = { 'name': 'PC.354', 'color': 0, 'x': 0.262402, 'y': 0.036110, 'z': 0.008255, 'P1': 0.262402, 'P2': 0.036110, 'P3': 0.008255, 'P4': 0.009266, 'P5': 0.045434, 'P6': 0.002510, 'P7': 0.038418, 'P8': 0.010734 };
+g_spherePositions['PC.593'] = { 'name': 'PC.593', 'color': 0, 'x': -0.075590, 'y': -0.130469, 'z': 0.113473, 'P1': -0.075590, 'P2': -0.130469, 'P3': 0.113473, 'P4': 0.047061, 'P5': 0.010438, 'P6': -0.010675, 'P7': -0.010809, 'P8': -0.004596 };
+g_spherePositions['PC.355'] = { 'name': 'PC.355', 'color': 0, 'x': 0.098930, 'y': 0.096514, 'z': 0.012686, 'P1': 0.098930, 'P2': 0.096514, 'P3': 0.012686, 'P4': -0.027689, 'P5': -0.052449, 'P6': -0.035219, 'P7': -0.004855, 'P8': 0.001383 };
+g_spherePositions['PC.607'] = { 'name': 'PC.607', 'color': 0, 'x': -0.041432, 'y': -0.178514, 'z': -0.051810, 'P1': -0.041432, 'P2': -0.178514, 'P3': -0.051810, 'P4': -0.027737, 'P5': -0.034950, 'P6': 0.010483, 'P7': 0.018149, 'P8': 0.000562 };
+g_spherePositions['PC.634'] = { 'name': 'PC.634', 'color': 0, 'x': -0.223810, 'y': 0.103786, 'z': -0.069502, 'P1': -0.223810, 'P2': 0.103786, 'P3': -0.069502, 'P4': 0.059658, 'P5': -0.003904, 'P6': 0.010738, 'P7': 0.001619, 'P8': -0.011841 };
+
+var g_ellipsesDimensions = new Array();
+g_ellipsesDimensions['PC.636'] = { 'name': 'PC.636', 'color': 0, 'width': 0.014019, 'height': 0.019224, 'length': 0.012452 , 'x': -0.246814, 'y': 0.086607, 'z': 0.091611, 'P1': -0.246814, 'P2': 0.086607, 'P3': 0.091611, 'P4': -0.040755, 'P5': -0.001895, 'P6': 0.015747, 'P7': 0.010421, 'P8': 0.008178 }
+g_ellipsesDimensions['PC.635'] = { 'name': 'PC.635', 'color': 0, 'width': 0.013657, 'height': 0.008763, 'length': 0.025891 , 'x': -0.128144, 'y': -0.034575, 'z': -0.095079, 'P1': -0.128144, 'P2': -0.034575, 'P3': -0.095079, 'P4': -0.030559, 'P5': 0.049435, 'P6': -0.023211, 'P7': -0.009949, 'P8': 0.010325 }
+g_ellipsesDimensions['PC.356'] = { 'name': 'PC.356', 'color': 0, 'width': 0.012935, 'height': 0.012144, 'length': 0.014437 , 'x': 0.178157, 'y': 0.014677, 'z': 0.010440, 'P1': 0.178157, 'P2': 0.014677, 'P3': 0.010440, 'P4': -0.029040, 'P5': 0.022900, 'P6': 0.018548, 'P7': -0.036165, 'P8': -0.026258 }
+g_ellipsesDimensions['PC.481'] = { 'name': 'PC.481', 'color': 0, 'width': 0.006667, 'height': 0.029561, 'length': 0.009769 , 'x': 0.176302, 'y': 0.005865, 'z': -0.020074, 'P1': 0.176302, 'P2': 0.005865, 'P3': -0.020074, 'P4': 0.039794, 'P5': -0.035010, 'P6': 0.011080, 'P7': -0.006829, 'P8': 0.011512 }
+g_ellipsesDimensions['PC.354'] = { 'name': 'PC.354', 'color': 0, 'width': 0.012098, 'height': 0.016761, 'length': 0.018619 , 'x': 0.262402, 'y': 0.036110, 'z': 0.008255, 'P1': 0.262402, 'P2': 0.036110, 'P3': 0.008255, 'P4': 0.009266, 'P5': 0.045434, 'P6': 0.002510, 'P7': 0.038418, 'P8': 0.010734 }
+g_ellipsesDimensions['PC.593'] = { 'name': 'PC.593', 'color': 0, 'width': 0.049953, 'height': 0.026075, 'length': 0.017469 , 'x': -0.075590, 'y': -0.130469, 'z': 0.113473, 'P1': -0.075590, 'P2': -0.130469, 'P3': 0.113473, 'P4': 0.047061, 'P5': 0.010438, 'P6': -0.010675, 'P7': -0.010809, 'P8': -0.004596 }
+g_ellipsesDimensions['PC.355'] = { 'name': 'PC.355', 'color': 0, 'width': 0.012745, 'height': 0.020875, 'length': 0.015376 , 'x': 0.098930, 'y': 0.096514, 'z': 0.012686, 'P1': 0.098930, 'P2': 0.096514, 'P3': 0.012686, 'P4': -0.027689, 'P5': -0.052449, 'P6': -0.035219, 'P7': -0.004855, 'P8': 0.001383 }
+g_ellipsesDimensions['PC.607'] = { 'name': 'PC.607', 'color': 0, 'width': 0.027837, 'height': 0.020266, 'length': 0.017005 , 'x': -0.041432, 'y': -0.178514, 'z': -0.051810, 'P1': -0.041432, 'P2': -0.178514, 'P3': -0.051810, 'P4': -0.027737, 'P5': -0.034950, 'P6': 0.010483, 'P7': 0.018149, 'P8': 0.000562 }
+g_ellipsesDimensions['PC.634'] = { 'name': 'PC.634', 'color': 0, 'width': 0.025079, 'height': 0.018554, 'length': 0.030800 , 'x': -0.223810, 'y': 0.103786, 'z': -0.069502, 'P1': -0.223810, 'P2': 0.103786, 'P3': -0.069502, 'P4': 0.059658, 'P5': -0.003904, 'P6': 0.010738, 'P7': 0.001619, 'P8': -0.011841 }
+var g_segments = 8, g_rings = 8, g_radius = 0.006111;
+var g_xAxisLength = 0.509216;
+var g_yAxisLength = 0.282300;
+var g_zAxisLength = 0.208552;
+var g_xMaximumValue = 0.262402;
+var g_yMaximumValue = 0.103786;
+var g_zMaximumValue = 0.113473;
+var g_xMinimumValue = -0.246814;
+var g_yMinimumValue = -0.178514;
+var g_zMinimumValue = -0.095079;
+var g_maximum = 0.262402;
+var g_pc1Label = "PC1 (60 %)";
+var g_pc2Label = "PC2 (18 %)";
+var g_pc3Label = "PC3 (9 %)";
+var g_number_of_custom_axes = 0;
+var g_fractionExplained = [0.603979, 0.178755, 0.091936, 0.043727, 0.038607, 0.017810, 0.015660, 0.009526];
+var g_fractionExplainedRounded = [60, 18, 9, 4, 4, 2, 2, 1];
+
+var g_taxaPositions = new Array();
+
+
+var g_vectorPositions = new Array();
+
+var g_comparisonPositions = new Array();
+document.getElementById("logo").style.display = 'none';
+document.getElementById("logotable").style.display = 'none';
+
+ </script>
+</head>
+
+<body>    
+
+<div id="plotToggle">
+    <form>
+      <div id="plottype">
+        <input id="pcoa" type="radio" id="pcoa" name="plottype" checked="checked" /><label for="pcoa">PCoA</label>
+        <input id="parallel" type="radio" id="parallel" name="plottype" /><label for="parallel">Parallel</label>
+      </div>
+    </form>
+</div>
+<div id="pcoaPlotWrapper" class="plotWrapper">
+    <label id="pointCount" class="ontop">
+    </label>
+
+    <div id="finder" class="arrow-right">
+    </div>
+
+    <div id="labels" class="unselectable">
+    </div>
+
+    <div id="taxalabels" class="unselectable">
+    </div>
+
+    <div id="axislabels" class="axislabels">
+    </div>
+
+    <div id="main_plot">
+    </div>
+</div>
+
+<div id="parallelPlotWrapper" class="plotWrapper">
+</div>
+
+<div id="menu">
+    <div id="menutabs">
+        <ul>
+            <li><a href="#keytab">Key</a></li>
+            <li><a href="#colorby">Colors</a></li>
+            <li><a href="#showby">Visibility</a></li>
+            <li><a href="#scalingby">Scaling</a></li>
+            <li><a href="#labelby">Labels</a></li>
+            <li><a href="#axes">Axes</a></li>
+            <li><a href="#view">View</a></li>
+            <li><a href="#settings">Options</a></li>
+        </ul>
+        <div id="keytab">
+            <form name="keyFilter">
+            <label>Filter  </label><input name="filterBox" type="text" onkeyup="filterKey()"></input>
+            </form>
+            <div id="key">
+            </div>
+        </div>
+        <div id="colorby">
+            <br>
+            <select id="colorbycombo" onchange="colorByMenuChanged()" size="3">
+            </select>
+            <div class="list" id="colorbylist">
+            </div>
+        </div>
+        <div id="showby">
+            <select id="showbycombo" onchange="showByMenuChanged()">
+            </select>
+            <div class="list" id="showbylist">
+            </div>
+        </div>
+        <div id="scalingby">
+            <select id="scalingbycombo" onchange="scalingByMenuChanged()">
+            </select>
+            <div class="list" id="scalingbylist">
+            </div>
+        </div>
+        <div id="labelby">
+        <div id="labelsTop">
+            <form name="plotoptions">
+            <input type="checkbox" onClick="toggleLabels()">Samples Label Visibility</input>
+            </form>
+            <br>
+            <label for="labelopacity" class="text">Label Opacity</label>
+            <label id="labelopacity" class="slidervalue"></label>
+            <div id="lopacityslider" class="slider-range-max"></div>
+            <div id="labelColorHolder clearfix">
+            <table><tr>
+            <td><div id="labelColor" class="colorbox">
+            </div></td><td><label>Master Label Color</label></td>
+            </tr></table></div>
+        </div>
+            <br>
+            <select id="labelcombo" onchange="labelMenuChanged()">
+            </select>
+            <div class="list" id="labellist">
+            </div>
+        </div>
+        <div id="axes">
+            <div id="pcoaaxes">
+                <div class="list" id="axeslist">
+                </div>
+            </div>
+        </div>
+        <div id="view">
+            <table>
+                <tr><td><div id="axeslabelscolor" class="colorbox" name="axeslabelscolor"></div></td><td title="Axes Labels Color">Axes Labels Color</td></tr>
+                <tr><td><div id="axescolor" class="colorbox" name="axescolor"></div></td><td title="Axes Color Title">Axes Color</td></tr>
+                <tr><td><div id="rendererbackgroundcolor" class="colorbox" name="rendererbackgroundcolor"></div></td><td title="Background Color Title">Background Color</td></tr>
+            </table>
+            <br>
+            <form name="settingsoptionscolor">
+            <input type="checkbox" onchange="toggleContinuousAndDiscreteColors(this)" id="discreteorcontinuouscolors" name="discreteorcontinuouscolors">  Use gradient colors</input>
+            </form>
+            <div id="pcoaviewoptions" class="">
+                <br>
+                <input id="reset" class="button" type="submit" value="Recenter Camera" style="" onClick="resetCamera()">
+                <br>
+            <br>
+            <label for="ellipseopacity" class="text">Ellipse Opacity</label>
+            <label id="ellipseopacity" class="slidervalue"></label>
+            <div id="eopacityslider" class="slider-range-max"></div>
+                <br>
+                <label for="sphereopacity" class="text">Sphere Opacity</label>
+                <label id="sphereopacity" class="slidervalue"></label>
+                <div id="sopacityslider" class="slider-range-max"></div>
+                <br>
+                <label for="sphereradius" class="text">Sphere Scale</label>
+                <label id="sphereradius" class="slidervalue"></label>
+                <div id="sradiusslider" class="slider-range-max"></div>
+                <br>
+            </div>
+            <br>
+        </div>
+        <div id="settings">
+            <br>
+            Filename <small>(only letters, numbers, ., - and _)</small>:
+            <br>
+            <input name="saveas_name" id="saveas_name" value="screenshot" type="text"/>
+            <input id="saveas" class="button" type="submit" value="Save as SVG" style="" onClick="saveSVG()"/>
+            <br>
+            Create labels? <input id="saveas_legends" class="checkbox" type="checkbox" style="">
+            <br><br>
+            For a PNG, simply press 'ctrl+p'.
+            <br><br>
+            <div id="pcoaoptions" class="">
+                <form name="settingsoptions">
+                    <input type="checkbox" onchange="toggleScaleCoordinates(this)" id="scale_checkbox" name="scale_checkbox">Scale coords by percent explained</input>
+                </form>
+            </div>
+            <br>
+            <div id="paralleloptions" class="">
+            </div>
+        </div>
+    </div>  
+</div>
+</body>
+
+</html>

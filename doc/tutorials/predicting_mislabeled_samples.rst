@@ -27,14 +27,10 @@ One of the output files from :file:`supervised_learning.py` is the file :file:`m
 Visualizing mislabeled samples
 -------------------------------------------------------------------
 
-You can also visualize the predicted mislabels using :file:`make_3d_plots.py`. Assuming that you have run :file:`beta_diversity.py` and :file:`principal_coordinates.py` to obtain a principal coordinates table :file:`pcoa.txt` for your samples, you can use the following command to obtain a plot where samples are colored by their mislabeling status at a 90% threshold (i.e. 90% estimated probability of being mislabeled)::
+You can also visualize the predicted mislabels using `make_emperor.py <http://qiime.org/emperor/>`_. Assuming that you have run :file:`beta_diversity.py` and :file:`principal_coordinates.py` to obtain a principal coordinates table :file:`pcoa.txt` for your samples, you can use the following command to obtain a plot where samples are colored by their mislabeling status::
 
-    make_3d_plots.py -i pcoa.txt -m ml/mislabeling.txt -o color_by_mislabeling -b mislabeled_probability_above_0.90
-
-The following command will make separate plots for all mislabeling thresholds::
-
-    make_3d_plots.py -i pcoa.txt -m mislabeling.txt -o color_by_mislabeling -b mislabeled_probability_above_0.05,mislabeled_probability_above_0.10,mislabeled_probability_above_0.15,mislabeled_probability_above_0.20,mislabeled_probability_above_0.25,mislabeled_probability_above_0.30,mislabeled_probability_above_0.35,mislabeled_probability_above_0.40,mislabeled_probability_above_0.45,mislabeled_probability_above_0.50,mislabeled_probability_above_0.55,mislabeled_probability_above_0.60,mislabeled_probability_above_0.65,mislabeled_probability_above_0.70,mislabeled_probability_above_0.75,mislabeled_probability_above_0.80,mislabeled_probability_above_0.85,mislabeled_probability_above_0.90,mislabeled_probability_above_0.95,mislabeled_probability_above_0.99
-
+    make_emperor.py -i pcoa.txt -m ml/mislabeling.txt -o color_by_mislabeling
+    
 Cautions
 ---------
 Predicting mislabeled samples is challenging because (a) we don't know the proportion of mislabeled samples ahead of time (in fact it is often zero); (b) we have to be able to distinguish the different types of labels with high accuracy; and (c) we have train a model to do (b) even when some of the training samples may be mislabeled. Therefore we recommend applying this approach only to data sets with a small number of well-characterized and distinguishable classes. We have found the Random Forests classifier to be robust to noisy (i.e. mislabeled) training data in several data sets (1_), but we still recommend that you exercise caution when applying this technique. Here are some important steps that you can take to decrease the likelihood that you will be discarding correctly labeled samples:

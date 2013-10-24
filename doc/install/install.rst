@@ -77,6 +77,7 @@ Denoising 454 data:
 Visualization and plotting steps:
 
 * MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+* Emperor 0.9.2 (`src_emperor <ftp://thebeast.colorado.edu/pub/emperor-releases/emperor-0.9.2.tar.gz>`_) (license: BSD)
 * cytoscape v2.7.0 (`src_cytoscape <http://www.cytoscape.org/>`_) (license: LGPL)
 
 Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
