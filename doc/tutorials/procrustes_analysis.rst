@@ -54,13 +54,13 @@ Determine the number of sequences per sample and related statistics. You'll want
 
 Compute UniFrac distances between samples, run principal coordinates analysis, and build 3D PCoA plots::
 	
-	beta_diversity_through_plots.py -i ./illumina_ucrC/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t $reference_tree -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./illumina_ucrC/otu_table.biom -e 239 -o ./illumina_ucrC/bdiv_even239/ -t $reference_tree -m ./illumina_map.txt -aO8 -p ./bdiv_params.txt
 
 Repeat the above steps on the 454 data::
 
 	pick_closed_reference_otus.py -i ./subsampled_454_seqs.fna -o ./454_ucrC/ -r $reference_seqs -t $reference_tax -aO8 -p ./otu_params.txt
 	biom summarize-table -i ./454_ucrC/otu_table.biom -o ./454_ucrC/otu_table_summary.txt
-	beta_diversity_through_plots.py -i ./454_ucrC/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt --suppress_2d_plots
+	beta_diversity_through_plots.py -i ./454_ucrC/otu_table.biom -e 135 -o ./454_ucrC/bdiv_even135/ -t $reference_tree -m ./454_map.txt -aO8 -p ./bdiv_params.txt
 
 Perform Procrustes analysis::
 	
@@ -68,9 +68,9 @@ Perform Procrustes analysis::
 
 Generate Procrustes plot, including an explicit time axis::
 	
-	make_emperor.py -c -i ./454_v_illumina/unweighted_unifrac_pc_transformed_reference.txt,./454_v_illumina/unweighted_unifrac_pc_transformed_q1.txt -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
-
-There will now be several results of interest. For the Procrustes analysis you can find the statistical results in ``./454_v_illumina/unweighted_unifrac_pc_unweighted_unifrac_pc_procrustes_results.txt`` and you can view the Procrustes plot by opening ``./454_v_illumina/plots/pc1_transformed_3D_PCoA_plots.html`` in a web browser.
+	make_emperor.py -c -i ./454_v_illumina/ -o ./454_v_illumina/plots/ -m ./procrustes_metadata_map.txt --custom_axes days_since_epoch
+	
+There will now be several results of interest. For the Procrustes analysis you can find the statistical results in ``./454_v_illumina/procrustes_results.txt`` and you can view the Procrustes plot by opening ``./454_v_illumina/plots/index.html`` in a web browser.
 
 
 Comparing data sets with different sample ids
