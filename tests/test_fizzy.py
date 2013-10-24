@@ -77,15 +77,12 @@ class FizzyTests(TestCase):
     def test_run_pyfeast(self):
         """assert that each of the selected features are in the appropriate range"""
         n_select = 5
-        (data, labels)  = self.uniform_data(100, 50, n_select)
-        variable_names = labels # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
-        
-        selected_features = fizzy.run_pyfeast(data, labels, variable_names, "MIM", n_select)
-        selected_features = sorted(selected_features)
+        (data, labels)  = self.uniform_data(500, 50, n_select)
+        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
 
-        for k in range(n_select):
-            if k != selected_features[k]:
-                self.assertTrue(k in range(n_select))
+        selected_features = fizzy.run_pyfeast(data, labels, variable_names, "MIM", n_select)
+        for k in selected_features:
+          self.assertTrue(k in range(n_select))
 
     def test_run_pyfeast_invalid(self):
         """test the run_pyfeast function with an invalid algorithm name"""
@@ -100,7 +97,7 @@ class FizzyTests(TestCase):
         self.assertEqual(selected_features, ['OTU0', "OTU1", "OTU3"])
 
 
-        
+
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 map_file_string = """#SampleID\tClass\nID0\tS1\nID1\tS2\nID2\tS2\n"""
 biom_file_string = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date":"2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type":"float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows":[{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "ID0", "metadata": null},{"id": "ID1", "metadata": null},{"id": "ID2", "metadata": null}]}"""
