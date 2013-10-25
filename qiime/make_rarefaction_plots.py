@@ -788,7 +788,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
     if output_type=="file_creation":
         #insert the formatted rows into the html string at the bottom of this file 
         if generate_per_sample_plots:
-            html_output=HTML_full % ('',
+            html_output=HTML % ('',
                             "img.setAttribute('src',\"./html_plots/\"+SelObject.value+array[i]+'_ave'+imagetype)",
                             "img.setAttribute('src',\"./html_plots/\"+metric+array[i]+'_ave'+imagetype)",
                             "img.setAttribute('src',\"./html_plots/\"+arguments[0]+'_raw'+imagetype)",
@@ -798,7 +798,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                             plot_html, \
                             '\n'.join(data_table_html))
         else:
-            html_output=HTML_no_per_sample % ('',
+            html_output=HTML % ('',
                             "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+imagetype)",
                             "img.setAttribute('src',\"./average_plots/\"+metric+array[0]+imagetype)",
                             "",
@@ -817,7 +817,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                    
         #insert the formatted rows into the html string at the bottom of this file 
         if generate_per_sample_plots:
-            html_output=HTML_full % ('\n'.join(plots_html),
+            html_output=HTML % ('\n'.join(plots_html),
                             "img.setAttribute('src',all_plots[\"plot/html_plots/\"+Sel	Object.value+array[i]+'_ave'+imagetype])",
                             "img.setAttribute('src',all_plots[\"plot/html_plots/\"+metric+array[i]+'_ave'+imagetype])",
                             "img.setAttribute('src',all_plots[\"plot/html_plots/\"+arguments[0]+'_raw'+imagetype])",
@@ -827,7 +827,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                             plot_html, \
                             '\n'.join(data_table_html))
         else:
-            html_output=HTML_no_per_sample % ('',
+            html_output=HTML % ('',
                             "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+imagetype)",
                             "img.setAttribute('src',\"./average_plots/\"+metric+array[0]+imagetype)",
                             "",
@@ -942,7 +942,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
         return rarefaction_data_mat, rarefaction_legend_mat, all_plots_single, all_plots_ave
 
 
-HTML_no_per_sample='''
+HTML='''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -1202,265 +1202,3 @@ function show_hide_categories(SelObject){
 </body>
 </html>
 '''
-
-HTML_full='''
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta http-equiv="content-type" content="text/html;">
-  <title>Rarefaction Curves</title>
-<style type="text/css">
-td.data{font-size:10px;border-spacing:0px 10px;text-align:center;}
-td.headers{font-size:12px;font-weight:bold;text-align:center;}
-table{border-spacing:0px;}
-.removed{display:none;}
-.expands{cursor:pointer; cursor:hand;}
-.child1 td:first-child{padding-left: 3px;}
-</style>
-<script language="javascript" type="text/javascript">
-%s
-function show_hide_category(checkobject){
-    var imagetype=document.getElementById('imagetype').value;
-    img=document.getElementById(checkobject.name.replace('_raw'+imagetype,'_ave'+imagetype))
-    if (checkobject.checked==false){
-        img.style.display='none';
-    }else{
-        img.style.display='';
-    }
-}
-
-function reset_tree(){
-    var category=document.getElementById('category').value;
-    var metric=document.getElementById('metric').value;
-    var old_all_categories=document.getElementById('all_categories');
-    var imagetype=document.getElementById('imagetype').value;
-    cat_list=old_all_categories.value.split('$#!')
-    if (metric!='' && category != ''){
-    for (var i=1, il=cat_list.length; i<il; i++){
-        group=metric+category+cat_list[i]
-        main_class=metric+category
-        var exp_item=document.getElementById(group);
-        if (exp_item!=null){
-            if (exp_item.innerHTML=='\u25BC'){
-                exp_item.innerHTML='\u25B6'
-                var rows=document.getElementsByName(group);
-                for (var j=0, jl=rows.length; j<jl; j++){
-                    rows[j].style.display="none";
-                }
-            }
-            var rows=document.getElementsByName(group+'_raw'+imagetype);
-            for (var j=0, jl=rows.length; j<jl; j++){
-                if (rows[j].checked==false){
-                    rows[j].checked=true;
-                }
-            }
-        }
-    }
-}
-}
-
-function changeMetric(SelObject){
-    var category=document.getElementById('category');
-    var old_metric=document.getElementById('metric');
-    var imagetype=document.getElementById('imagetype').value;
-    var legend=document.getElementById('legend');
-    var array=document.getElementById('all_categories').value.split('$#!')
-    var plots=document.getElementById('plots');
-    plots.style.display='none'
-    reset_tree();
-    if (category.value != ''){
-        legend.style.display="";
-        cat=SelObject.value+category.value
-        data_display=document.getElementsByName(cat)
-        for (var i=0, il=data_display.length; i<il; i++){
-            data_display[i].style.display="";
-        }
-        cat=old_metric.value+category.value
-        data_hide=document.getElementsByName(cat)
-        for (var i=0, il=data_hide.length; i<il; i++){
-            data_hide[i].style.display="none";
-        }
-        data_display=document.getElementsByName(category.value)
-        for (var i=0, il=data_display.length; i<il; i++){
-            data_display[i].style.display="";
-        }
-        new_cat=SelObject.value+category.value
-        plots.innerHTML=''
-        for (var i=1, il=array.length; i<il; i++){
-            img=document.createElement('img')
-            img.setAttribute('width',"600px") 
-            img.setAttribute('id',array[i]+'_ave'+imagetype)
-            img.setAttribute('style','position:absolute;z-index:0')
-            %s
-            plots.appendChild(img)
-        }
-        plots.style.display=''
-    }
-    
-old_metric.value=SelObject.value;
-}
-
-function changeCategory(SelObject){
-    var old_category=document.getElementById('category');
-    var metric=document.getElementById('metric').value;
-    var imagetype=document.getElementById('imagetype').value;
-    var legend=document.getElementById('legend');
-    var plots=document.getElementById('plots');
-    var array=SelObject.value.split('$#!')
-    var old_all_categories=document.getElementById('all_categories')
-    category=array[0]
-    plots.style.display='none'
-    reset_tree();
-
-    if (metric != ''){
-        legend.style.display="";
-
-        data_display=document.getElementsByName(category)
-        for (var i=0, il=data_display.length; i<il; i++){
-            data_display[i].style.display="";
-        }
-        data_hide=document.getElementsByName(old_category.value)
-        for (var i=0, il=data_hide.length; i<il; i++){
-            data_hide[i].style.display="none";
-        }
-        cat=metric+category
-        data_display=document.getElementsByName(cat)
-        for (var i=0, il=data_display.length; i<il; i++){
-            data_display[i].style.display="";
-        }
-        cat=metric+old_category.value
-        data_hide=document.getElementsByName(cat)
-        for (var i=0, il=data_hide.length; i<il; i++){
-            data_hide[i].style.display="none";
-        }
-        cat=metric+category
-        plots.innerHTML=''
-        for (var i=1, il=array.length; i<il; i++){
-            img=document.createElement('img')
-            img.setAttribute('width',"600px") 
-            img.setAttribute('id',metric+array[i]+'_ave'+imagetype)
-            img.setAttribute('style','position:absolute;z-index:0')
-            %s
-            plots.appendChild(img)
-        }
-        plots.style.display=''
-    }
-old_all_categories.value=SelObject.value;
-old_category.value=category;
-}
-function toggle(){
-    var plots=document.getElementById('plots');
-    var imagetype=document.getElementById('imagetype').value;
-    var plot_str='';
-    var category=document.getElementById('category');
-    var metric=document.getElementById('metric');
-    expansion_element=document.getElementById(arguments[0]);
-    rows=document.getElementsByName(arguments[0]);
-    if (expansion_element.innerHTML=='\u25B6'){
-        expansion_element.innerHTML='\u25BC'
-        show_row=arguments[0]+'_raw'+imagetype
-        
-        if (document.getElementById(show_row)==null){
-            img=document.createElement('img')
-            img.setAttribute('width',"600px") 
-            img.setAttribute('id',arguments[0]+'_raw'+imagetype)
-            img.setAttribute('style','position:absolute;z-index:0')
-            %s
-            plots.appendChild(img)
-        }else{
-            document.getElementById(arguments[0]+'_raw'+imagetype).style.display=''
-        }
-        for (var i=0, il=rows.length;i<il;i++){
-            rows[i].style.display='';
-        }
-    }else{
-        expansion_element.innerHTML='\u25B6'
-        document.getElementById(arguments[0]+'_raw'+imagetype).style.display='none'
-        for (var i=0, il=rows.length;i<il;i++){
-            rows[i].style.display='none';
-        }
-    }
-}
-
-function show_hide_categories(SelObject){
-    var all_categories=document.getElementById('all_categories').value.split('$#!')
-    var category=document.getElementById('category').value;
-    var imagetype=document.getElementById('imagetype').value;
-    var metric=document.getElementById('metric').value;
-    for (var i=1, il=all_categories.length; i<il; i++){
-        basename=metric+category+all_categories[i]
-        raw_image=basename+'_raw'+imagetype
-        ave_image=basename+'_ave'+imagetype
-        checkbox=document.getElementsByName(raw_image)
-        if (SelObject.value=='All'){
-            if (checkbox[0].checked==false){
-                checkbox[0].checked=true
-                document.getElementById(ave_image).style.display=''
-            }
-        }else if (SelObject.value=='None'){
-            if (checkbox[0].checked==true){
-                checkbox[0].checked=false
-                document.getElementById(ave_image).style.display='none'
-            }
-        }else if (SelObject.value=='Invert'){
-            if (checkbox[0].checked==true){
-                checkbox[0].checked=false
-                document.getElementById(ave_image).style.display='none'
-            }else if (checkbox[0].checked==false){
-                checkbox[0].checked=true
-                document.getElementById(ave_image).style.display=''
-            }
-        }
-    }
-    document.getElementById('show_category').selectedIndex=0;
-}
-</script>
-
-</head>
-<body>
-<form action=''>
-<input id="metric" type="hidden">
-<input id="category" type="hidden">
-<input id="imagetype" type="hidden" value="%s">
-<input id="all_categories" type="hidden">
-</form>
-<table><tr>
-<td><b>Select a Metric:</b></td>
-<td>
-<select onchange="javascript:changeMetric(this)">
-<option>&nbsp;</option>
-%s
-</select>
-</td>
-<td><b>&nbsp;&nbsp;Select a Category:</b></td>
-<td>
-<select onchange="javascript:changeCategory(this)">
-<option>&nbsp;</option>
-%s
-</select>
-</td>
-</table>
-<br>
-<div style="width:950px">
-<div id="plots" style="width:650px;height:550px;float:left;"></div>
-
-<div id="legend" style="width:300px;height:550px;float:right;display:none;">
-    <p><b>Show Categories: 
-    <select id="show_category" onchange="show_hide_categories(this);">
-        <option value="">&nbsp;</option>
-        <option value="All">All</option>
-        <option value="None">None</option>
-        <option value="Invert">Invert</option>
-    </select>
-    </b></p>
-%s
-<div style="position:relative;clear:both;">
-<table id="rare_data" border="1px">
-%s
-</table>
-</div>
-</div>
-</body>
-</html>
-'''
-    
