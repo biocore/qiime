@@ -11,12 +11,16 @@ __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
-from numpy import array, isnan, min as np_min
-from qiime.format import format_p_value_for_num_iters
-from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
-from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
 from itertools import combinations
 from collections import defaultdict
+from numpy import array, isnan, min as np_min
+from cogent.draw.distribution_plots import generate_box_plots
+from qiime.format import format_p_value_for_num_iters
+from qiime.parse import (parse_mapping_file_to_dict, 
+                         parse_rarefaction,
+                         group_by_field,
+                         parse_mapping_file)
+from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
 from qiime.otu_category_significance import fdr_correction
 
 test_types = ['parametric', 'nonparametric']
@@ -111,6 +115,61 @@ def _correct_compare_alpha_results(result, method):
         corrected_result = result
     return corrected_result
 
+def get_per_sample_average_diversities(rarefaction_lines,
+                                       category,
+                                       depth=None):
+    # extract only rows of the rarefaction data that are at the given depth
+    # if depth is not given default to the deepest rarefaction available
+    # rarefaction file is not guaranteed to be in order of rarefaction depth
+    if depth == None:
+        depth = array(rarefaction_data[3])[:,0].max()
+        
+    rarefaction_data = parse_rarefaction(rarefaction_lines)
+    rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
+    # Average each col of the rarefaction mtx. Computing t test on averages over
+    # all iterations. Avoids more comps which kills signifigance. 
+    rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
+    sids = rarefaction_data[0][3:] # 0-2 are header strings
+    return dict(zip(sids, rare_mat))
+
+def get_category_value_to_sample_ids(mapping_lines,category):
+    mapping_data, headers, _ = parse_mapping_file(mapping_lines)
+    return group_by_field([headers] + mapping_data,category)
+
+def collapse_sample_diversities_by_category(category_value_to_sample_ids,
+                                             per_sample_average_diversities):
+    result = defaultdict(list)
+    for cat, sids in category_value_to_sample_ids.items():
+         result[cat] = [per_sample_average_diversities[sid] for sid in sids]
+    return result
+
+def generate_alpha_diversity_boxplots(rarefaction_lines,
+                                      mapping_lines,
+                                      category,
+                                      depth=None):
+    category_value_to_sample_ids = \
+     get_category_value_to_sample_ids(mapping_lines,
+                                      category)
+    
+    per_sample_average_diversities = \
+     get_per_sample_average_diversities(rarefaction_lines,
+                                        category,
+                                        depth)
+    
+    per_category_value_average_diversities = \
+     collapse_sample_diversities_by_category(category_value_to_sample_ids,
+                                             per_sample_average_diversities)
+    
+    x_tick_labels = []
+    distributions = []
+    for cat, avg_diversities in per_category_value_average_diversities.items():
+        x_tick_labels.append("%s (n=%d)" % (cat, len(avg_diversities)))
+        distributions.append(avg_diversities)
+    
+    return generate_box_plots(distributions,
+                              x_tick_labels=x_tick_labels)
+    
+
 def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, 
     depth=None, test_type='nonparametric', num_permutations=999):
     """Compares alpha diversity values for differences per category treatment.
@@ -151,6 +210,7 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
     # all iterations. Avoids more comps which kills signifigance. 
     rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
     sids = rarefaction_data[0][3:] # 0-2 are header strings
+    
     ttest_results = {}
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
         # if there is only 1 sample for each treatment in a comparison, and mc
