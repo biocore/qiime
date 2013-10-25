@@ -323,10 +323,10 @@ def run_core_diversity_analyses(
                 else:
                     logger.write("Skipping compare_alpha_diversity.py"
                                  " for %s as %s exists.\n\n" \
-                                 % (alpha_metric, alpha_comparison_output_fp))
-            else:
-                logger.write("Skipping compare_alpha_diversity.py as"
-                             " no categories were provided.\n\n")
+                                 % (alpha_metric, compare_alpha_output_dir))
+        else:
+            logger.write("Skipping compare_alpha_diversity.py as"
+                         " no categories were provided.\n\n")
     
     if not suppress_taxa_summary:
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
