@@ -291,34 +291,42 @@ def run_core_diversity_analyses(
             params_str = get_params_str(params['compare_alpha_diversity'])
         except KeyError:
             params_str = ''
-            
-        for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
-            alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
-            compare_alpha_output_dir = '%s/compare_%s' % \
-             (arare_full_output_dir,alpha_metric)
-            if not exists(compare_alpha_output_dir):
-                compare_alpha_cmd = \
-                 'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
-                 (collated_alpha_diversity_fp, mapping_fp, comma_separated_categories, 
-                  compare_alpha_output_dir, params_str)
-                commands.append([('Compare alpha diversity (%s)' % alpha_metric,
-                                  compare_alpha_cmd)])
-                for category in categories:
-                    alpha_comparison_stat_fp = '%s/%s_stats.txt' % \
-                     (compare_alpha_output_dir,category)
-                    alpha_comparison_boxplot_fp = '%s/%s_boxplots.pdf' % \
-                     (compare_alpha_output_dir,category)
-                    index_links.append(
-                     ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
-                      alpha_comparison_stat_fp,
-                      _index_headers['alpha_diversity']))
-                    index_links.append(
-                     ('Alpha diversity boxplots (%s, %s)' % (category,alpha_metric),
-                      alpha_comparison_boxplot_fp,
-                      _index_headers['alpha_diversity']))
+        
+        if len(categories) > 0:
+            for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
+                alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
+                compare_alpha_output_dir = '%s/compare_%s' % \
+                 (arare_full_output_dir,alpha_metric)
+                if not exists(compare_alpha_output_dir):
+                    compare_alpha_cmd = \
+                     'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
+                     (collated_alpha_diversity_fp,
+                      mapping_fp,
+                      comma_separated_categories,
+                      compare_alpha_output_dir,
+                      params_str)
+                    commands.append([('Compare alpha diversity (%s)' % alpha_metric,
+                                      compare_alpha_cmd)])
+                    for category in categories:
+                        alpha_comparison_stat_fp = '%s/%s_stats.txt' % \
+                         (compare_alpha_output_dir,category)
+                        alpha_comparison_boxplot_fp = '%s/%s_boxplots.pdf' % \
+                         (compare_alpha_output_dir,category)
+                        index_links.append(
+                         ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
+                          alpha_comparison_stat_fp,
+                          _index_headers['alpha_diversity']))
+                        index_links.append(
+                         ('Alpha diversity boxplots (%s, %s)' % (category,alpha_metric),
+                          alpha_comparison_boxplot_fp,
+                          _index_headers['alpha_diversity']))
+                else:
+                    logger.write("Skipping compare_alpha_diversity.py"
+                                 " for %s as %s exists.\n\n" \
+                                 % (alpha_metric, alpha_comparison_output_fp))
             else:
-                logger.write("Skipping compare_alpha_diversity.py for %s as %s exists.\n\n" \
-                             % (category, alpha_comparison_output_fp))
+                logger.write("Skipping compare_alpha_diversity.py as"
+                             " no categories were provided.\n\n")
     
     if not suppress_taxa_summary:
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
