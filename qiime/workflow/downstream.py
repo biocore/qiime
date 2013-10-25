@@ -26,7 +26,7 @@ from qiime.workflow.util import (print_to_stdout,
                                  WorkflowLogger,
                                  log_input_md5s,
                                  get_params_str)
-
+from shutil import rmtree
 
 def run_beta_diversity_through_plots(otu_table_fp, 
                                      mapping_fp,
@@ -202,7 +202,8 @@ def run_alpha_rarefaction(otu_table_fp,
                           max_rare_depth=None,
                           suppress_md5=False,
                           status_update_callback=print_to_stdout,
-                          plot_stderr_and_stddev=False):
+                          plot_stderr_and_stddev=False,
+                          retain_intermediate_files=False):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -296,6 +297,12 @@ def run_alpha_rarefaction(otu_table_fp,
      (python_exe_fp, script_dir, alpha_diversity_dir, \
       alpha_collated_dir, params_str)
     commands.append([('Collate alpha',alpha_collated_cmd)])
+    
+    if not retain_intermediate_files:
+        commands.append([('Removing intermediate files',
+                          'rm -r %s %s' % (rarefaction_dir,alpha_diversity_dir))])
+    else:
+        commands.append([('Ignoring removal of intermediate files','')])
 
     # Prep the make rarefaction plot command(s)
     try:
