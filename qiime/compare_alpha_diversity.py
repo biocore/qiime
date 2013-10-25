@@ -115,6 +115,17 @@ def _correct_compare_alpha_results(result, method):
         corrected_result = result
     return corrected_result
 
+def get_category_value_to_sample_ids(mapping_lines,category):
+    mapping_data, headers, _ = parse_mapping_file(mapping_lines)
+    return group_by_field([headers] + mapping_data,category)
+
+def collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
+                                                  per_sample_average_diversities):
+    result = defaultdict(list)
+    for cat, sids in category_value_to_sample_ids.items():
+         result[cat] = [per_sample_average_diversities[sid] for sid in sids]
+    return result
+
 def get_per_sample_average_diversities(rarefaction_lines,
                                        category,
                                        depth=None):
@@ -132,17 +143,6 @@ def get_per_sample_average_diversities(rarefaction_lines,
     sids = rarefaction_data[0][3:] # 0-2 are header strings
     return dict(zip(sids, rare_mat))
 
-def get_category_value_to_sample_ids(mapping_lines,category):
-    mapping_data, headers, _ = parse_mapping_file(mapping_lines)
-    return group_by_field([headers] + mapping_data,category)
-
-def collapse_sample_diversities_by_category(category_value_to_sample_ids,
-                                             per_sample_average_diversities):
-    result = defaultdict(list)
-    for cat, sids in category_value_to_sample_ids.items():
-         result[cat] = [per_sample_average_diversities[sid] for sid in sids]
-    return result
-
 def generate_alpha_diversity_boxplots(rarefaction_lines,
                                       mapping_lines,
                                       category,
@@ -157,8 +157,8 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
                                         depth)
     
     per_category_value_average_diversities = \
-     collapse_sample_diversities_by_category(category_value_to_sample_ids,
-                                             per_sample_average_diversities)
+     collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
+                                                   per_sample_average_diversities)
     
     x_tick_labels = []
     distributions = []
