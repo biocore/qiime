@@ -1,12 +1,12 @@
 /*
  * __author__ = "Meg Pirrung"
  * __copyright__ = "Copyright 2013, Emperor"
- * __credits__ = ["Meg Pirrung","Antonio Gonzalez Pena","Yoshiki Vazquez Baeza"]
- * __license__ = "GPL"
- * __version__ = "0.9.0-dev"
+ * __credits__ = ["Meg Pirrung","Antonio Gonzalez Pena","Yoshiki Vazquez Baeza","Jackson Chen"]
+ * __license__ = "BSD"
+ * __version__ = "0.9.1"
  * __maintainer__ = "Meg Pirrung"
  * __email__ = "meganap@gmail.com"
- * __status__ = "Development"
+ * __status__ = "Release"
  */
 
 // spheres and ellipses that are being displayed on screen
@@ -45,6 +45,8 @@ var g_sphereScaler = 1.0;
 var g_keyBuilt = false;
 var g_useDiscreteColors = true;
 var g_screenshotBind;
+var g_separator_left;
+var g_separator_history;
 
 // valid ascii codes for filename
 var g_validAsciiCodes = new Array();
@@ -58,7 +60,7 @@ g_validAsciiCodes = g_validAsciiCodes.concat([65,66,67,68,68,70,71,72,73,74,75,7
 g_validAsciiCodes = g_validAsciiCodes.concat([97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122]);
 
 // taken from the qiime/colors.py module; a total of 29 colors
-k_QIIME_COLORS = [
+var k_QIIME_COLORS = [
 "0xFF0000", // red1
 "0x0000FF", // blue1
 "0xF27304", // orange1
@@ -130,6 +132,9 @@ function toggleScaleCoordinates(element) {
 	var axesLen;
 	var operation;
 
+	// used only for vector and edges re-drawing
+	var currentPosition = [], currentColor = 0x000000;
+
 	if (!isNumeric(g_fractionExplained[g_viewingAxes[0]])) {
 		alert("PC" + (g_viewingAxes[0]+1) + " is too small for this feature, change your selection.");
 		return;
@@ -140,9 +145,6 @@ function toggleScaleCoordinates(element) {
 		alert("PC" + (g_viewingAxes[2]+1) + " is too small for this feature, change your selection.");
 		return;
 	}
-	
-	// used only for the vector re-drawing
-	var currentPosition = [], currentColor;
 
 	// XOR operation for the checkbox widget, this will select an operation
 	// to perform over various properties, either a multiplication or a division
@@ -223,14 +225,14 @@ function toggleScaleCoordinates(element) {
 	for (sample_id in g_plotVectors){
 
 		// the color has to be formatted as an hex number for makeLine to work
-		currentColor = "0x"+g_plotVectors[sample_id].material.color.getHexString();
+		currentColor = g_plotVectors[sample_id].material.color.getHex();
 
 		// updating the position of a vertex in a line is a really expensive
 		// operation, hence we just remove it from the group and create it again
 		g_elementsGroup.remove(g_plotVectors[sample_id]);
 
 		for (vertex in g_plotVectors[sample_id].geometry.vertices){
-			currentPosition[vertex] = g_plotVectors[sample_id].geometry.vertices[vertex].position;
+			currentPosition[vertex] = g_plotVectors[sample_id].geometry.vertices[vertex];
 
 			// scale the position of each of the vertices
 			currentPosition[vertex].x = operation(currentPosition[vertex].x,
@@ -249,6 +251,45 @@ function toggleScaleCoordinates(element) {
 		g_plotVectors[sample_id] = makeLine(currentPosition[0],
 			currentPosition[1], currentColor, 2);
 		g_elementsGroup.add(g_plotVectors[sample_id]);
+	}
+
+	// support scaling of edges in plot comparisons
+	for(var sample_id in g_plotEdges){
+		// each edge is composed of two separate lines
+		for(var section in g_plotEdges[sample_id]){
+
+			// the color has to be formatted as an hex number for makeLine to work
+			currentColor = g_plotEdges[sample_id][section].material.color.getHex();
+
+			// remove them completely from the group and scene we no longer need
+			// these objects as re-creating them is as expensive as modifying
+			// most of their features
+			g_elementsGroup.remove(g_plotEdges[sample_id][section])
+			g_mainScene.remove(g_plotEdges[sample_id][section])
+
+			for (vertex in g_plotEdges[sample_id][section].geometry.vertices){
+				currentPosition[vertex] = g_plotEdges[sample_id][section].geometry.vertices[vertex];
+
+				// scale the position of each of the vertices
+				currentPosition[vertex].x = operation(currentPosition[vertex].x,
+					g_fractionExplained[g_viewingAxes[0]])
+				currentPosition[vertex].y = operation(currentPosition[vertex].y,
+					g_fractionExplained[g_viewingAxes[1]])
+				currentPosition[vertex].z = operation(currentPosition[vertex].z,
+					g_fractionExplained[g_viewingAxes[2]])
+
+				// create an array we can pass to makeLine
+				currentPosition[vertex] = [currentPosition[vertex].x,
+					currentPosition[vertex].y, currentPosition[vertex].z]
+			}
+
+			// add the element to the main vector array and to the group
+			g_plotEdges[sample_id][section] = makeLine(currentPosition[0],
+				currentPosition[1], currentColor, 2);
+			g_elementsGroup.add(g_plotEdges[sample_id][section]);
+			g_mainScene.add(g_plotEdges[sample_id][section]);
+
+		}
 	}
 }
 
@@ -753,6 +794,17 @@ function colorChangedForTaxaSpheres(color){
 	}
 }
 
+/* This function is called when a new color is selected for the edges
+
+ The two input parameters are a hexadecimal formatted color and an index, the
+ index indicates which side of the edges are going to be re-colored.
+*/
+function colorChangedForEdges(color, index){
+	for(var sample_id in g_plotEdges){
+		currentColor = g_plotEdges[sample_id][index].material.color.setHex(color);
+	}
+}
+
 /*This function is called when a new value is selected in the label menu*/
 function labelMenuChanged() {
 	if(document.getElementById('labelcombo').selectedIndex == 0){
@@ -898,12 +950,12 @@ function toggleBiplotVisibility(){
 	// if the element is supposed to be present; 0.5 is the default value
 	if(!document.biplotsvisibility.elements[0].checked){
 		for (index in g_plotTaxa){
-			g_plotTaxa[index].material.opacity = 0;
+			g_mainScene.remove(g_plotTaxa[index]);
 		}
 	}
 	else{
 		for (index in g_plotTaxa){
-			g_plotTaxa[index].material.opacity = 0.5;
+			g_mainScene.add(g_plotTaxa[index])
 		}
 	}
 }
@@ -913,16 +965,16 @@ function toggleEdgesVisibility(){
 
 	// each edge is really composed of two lines and those elements are stored
 	// in each of the keys that are stored for each sample comparison
-	if(document.edgesvisibility.elements[0].checked){
+	if(!document.edgesvisibility.elements[0].checked){
 		for (index in g_plotEdges){
-			g_plotEdges[index][0].material.opacity = 0;
-			g_plotEdges[index][1].material.opacity = 0;
+			g_mainScene.remove(g_plotEdges[index][0]);
+			g_mainScene.remove(g_plotEdges[index][1]);
 		}
 	}
 	else{
 		for (index in g_plotEdges){
-			g_plotEdges[index][0].material.opacity = 1;
-			g_plotEdges[index][1].material.opacity = 1;
+			g_mainScene.add(g_plotEdges[index][0]);
+			g_mainScene.add(g_plotEdges[index][1]);
 		}
 	}
 }
@@ -1164,6 +1216,68 @@ function setJqueryUi() {
 				}
 		});
 	}
+	// set up the color selector for the taxa labels
+	if(document.getElementById('taxalabelcolor')){
+		$('#taxalabelcolor').css('backgroundColor',"#FFFFFF");
+		$("#taxalabelcolor").spectrum({
+			localStorageKey: 'key',
+			color: "#FFFFFF",
+			preferredFormat: "hex6",
+			showInitial: true,
+			showInput: true,
+			change:
+				function(color) {
+				// pass a boolean flag to convert to hex6 string
+				var c = color.toHexString(true);
+
+				// set the color for the box and for the renderer
+				$(this).css('backgroundColor', c);
+
+				// get the taxonomic assignments and append '_taxalabel' to
+				// retrieve all the labels belonging to a sphere in the plot
+				for(var key in g_taxaPositions) {
+					$('#'+key+"_taxalabel").css('color', c);
+				}
+			}// on-change callback
+		});
+	}
+
+	// check if the plot is a comparison plot if so, setup the elements that
+	// will allow the user to change the color of the two sides of the edges
+	if(document.getElementById('edgecolorselector_a')){
+		$('#edgecolorselector_a').css('backgroundColor',"#FFFFFF");
+		$("#edgecolorselector_a").spectrum({
+			localStorageKey: 'key',
+			color: "#FFFFFF",
+			preferredFormat: "hex6",
+			showInitial: true,
+			showInput: true,
+			change:
+				function(color) {
+					// pass a boolean flag to convert to hex6 string
+					var c = color.toHexString(true);
+					$(this).css('backgroundColor', c);
+					colorChangedForEdges(c.replace('#', '0x'), 0);
+				}
+		});
+	}
+	if(document.getElementById('edgecolorselector_b')){
+		$('#edgecolorselector_b').css('backgroundColor',"#FF0000");
+		$("#edgecolorselector_b").spectrum({
+			localStorageKey: 'key',
+			color: "#FF0000",
+			preferredFormat: "hex6",
+			showInitial: true,
+			showInput: true,
+			change:
+				function(color) {
+					// pass a boolean flag to convert to hex6 string
+					var c = color.toHexString(true);
+					$(this).css('backgroundColor', c);
+					colorChangedForEdges(c.replace('#', '0x'), 1);
+				}
+		});
+	}
 
 	$("#sopacityslider").slider({
 		range: "max",
@@ -1207,7 +1321,6 @@ function setJqueryUi() {
 	});
 	document.getElementById('labelopacity').innerHTML = $( "#lopacityslider" ).slider( "value")+"%"
 
-	
 	//default color for axes labels is white
 	$('#axeslabelscolor').css('backgroundColor',"#FFFFFF");
 	$("#axeslabelscolor").spectrum({
@@ -1222,7 +1335,6 @@ function setJqueryUi() {
 			function(color) {
 				// pass a boolean flag to convert to hex6 string
 				var c = color.toHexString(true);
-
 				// set the color for the box and for the renderer
 				$(this).css('backgroundColor', c);
 
@@ -1251,7 +1363,6 @@ function setJqueryUi() {
 			function(color) {
 				// pass a boolean flag to convert to hex6 string
 				var c = color.toHexString(true);
-
 				// create a new three.color from the string
 				var axesColor = new THREE.Color();
 				axesColor.setHex(c.replace('#','0x'));
@@ -1375,6 +1486,7 @@ function drawTaxa(){
 		mesh.matrixAutoUpdate = true;
 
 		// add the element to the scene and to the g_plotTaxa dictionary
+		g_elementsGroup.add(mesh)
 		g_mainScene.add(mesh);
 		g_plotTaxa[key] = mesh;
 	}
@@ -1418,53 +1530,111 @@ function drawVectors(){
 	}
 }
 
-
 /*Draw the lines that connect samples being compared (see g_comparePositiosn)
 
   This will draw two lines between each compared sample, one with color red and
-  the other one with color white, the that must be noted here is that, these two
+  the other one with color white, what must be noted here is that, these two
   lines visually compose a single line and are both stored in the g_plotEdges
   array in arrays of two elements where the first element is the red line and
   the second element is the white line.
+  
+  A dynamic value that contains the coordinates of the spheres is passed in, that way 
+  to allow the negating of the values.
+
+  In the case of a non-serial comparison plot, all edges will originate in the
+  same point.
 */
-function drawEdges(){
-	var current_vector, previous = null, middle_point, index=0, line_a, line_b;
+function drawEdges(spherepositions){
+	var previous = null, origin = null, current, middle_point, index=0, line_a, line_b;
+					
+	// note that this function is composed of an if-else statement with a loop
+	// that's almost identical under each case. This approach was taken as
+	// otherwise the comparison would need to happen N times instead of 1 time
+	// (N is the number of edges*2).
 
-	for (var sampleKey in g_comparisonPositions){
-		for (var edgePosition in g_comparisonPositions[sampleKey]){
+	// if the comparison is serial draw one edge after the other
+	if (g_isSerialComparisonPlot == true){
+		for (var sampleKey in spherepositions){
+			for (var edgePosition in spherepositions[sampleKey]){
+			
+				// if we don't have a start point store it and move along
+				if (previous == null) {
+					previous = spherepositions[sampleKey][edgePosition];
+				}
+				// if we already have a start point then draw the edge
+				else{
+					current = spherepositions[sampleKey][edgePosition];
+					
+					// the edge is composed by two lines so calculate the middle
+					// point between these two lines and end the first line in this
+					// point and start the second line in this point
+					middle_point = [(previous[0]+current[0])/2,
+						(previous[1]+current[1])/2, (previous[2]+current[2])/2];
 
-			// if we don't have a start point store it and move along
-			if (previous == null) {
-				previous = g_comparisonPositions[sampleKey][edgePosition];
+					currentColorA_hex = $("#edgecolorselector_a").spectrum("get").toHexString(true);
+					currentColorB_hex = $("#edgecolorselector_b").spectrum("get").toHexString(true);
+					line_a = makeLine(previous, middle_point, currentColorA_hex, 2);
+					line_b = makeLine(middle_point, current, currentColorB_hex, 2);
+					line_a.transparent = false;
+					line_b.transparent = false;
+
+					// index the two lines by the name of the sample plus a suffix
+					g_plotEdges[sampleKey+'_'+index.toString()] = [line_a, line_b];
+
+					g_elementsGroup.add(line_a);
+					g_elementsGroup.add(line_b);
+					g_mainScene.add(line_a);
+					g_mainScene.add(line_b);
+
+					// the current line becomes the previous line for the next
+					// iteration as all samples must be connected
+					previous = spherepositions[sampleKey][edgePosition];
+				}
+				index = index+1;
 			}
-			// if we already have a start point then draw the edge
-			else{
-				current = g_comparisonPositions[sampleKey][edgePosition];
 
-				// the edge is composed by two lines so calculate the middle
-				// point between these two lines and end the first line in this
-				// point and start the second line in this point
-				middle_point = [(previous[0]+current[0])/2,
-					(previous[1]+current[1])/2, (previous[2]+current[2])/2]
-
-				line_a = makeLine(previous, middle_point, 0xFF0000, 2)
-				line_b = makeLine(middle_point, current, 0xFFFFFF, 2)
-
-				// index the two lines by the name of the sample plus a suffix
-				g_plotEdges[sampleKey+'_'+toString(index)] = [line_a, line_b]
-
-				g_elementsGroup.add(line_a)
-				g_elementsGroup.add(line_b)
-
-				// the current line becomes the previous line for the next
-				// iteration as all samples must be conected
-				previous = g_comparisonPositions[sampleKey][edgePosition];
-			}
-			index = index+1;
+			// if we've finished with the connecting lines let a new line start
+			previous = null;
 		}
+	}
+	// if the comparison is not serial, originate all edges in the same coords
+	else{
+		for (var sampleKey in spherepositions){
+			for (var edgePosition in spherepositions[sampleKey]){
+				if (origin == null) {
+					origin = spherepositions[sampleKey][edgePosition];
+				}
+				else{
+					current = spherepositions[sampleKey][edgePosition];
 
-		// if we've finished with the connecting lines let a new line start
-		previous = null;
+					// edges are composed of two lines so use the start and
+					// the end point to calculate the position of the vertices
+					middle_point = [(origin[0]+current[0])/2,
+						(origin[1]+current[1])/2, (origin[2]+current[2])/2];
+
+					// in the case of centered comparisons the origins are
+					// painted in color white one one side and red on the other
+					currentColorA_hex = $("#edgecolorselector_a").spectrum("get").toHexString(true);
+					currentColorB_hex = $("#edgecolorselector_b").spectrum("get").toHexString(true);
+					line_a = makeLine(origin, middle_point, currentColorA_hex, 2);
+					line_b = makeLine(middle_point, current, currentColorB_hex, 2);
+					line_a.transparent = false;
+					line_b.transparent = false;
+
+					// given that these are just sample repetitions just
+					// just add a suffix at the end of the sample id
+					g_plotEdges[sampleKey+'_'+index.toString()] = [line_a, line_b];
+
+					g_elementsGroup.add(line_a);
+					g_elementsGroup.add(line_b);
+					g_mainScene.add(line_a);
+					g_mainScene.add(line_b);
+
+				}
+				index = index + 1;
+			}
+			origin = null;
+		}
 	}
 }
 
@@ -1481,6 +1651,7 @@ function saveSVG(button){
             "implementation. Do you want to continue?");
         if (res==false) return;
     }
+ 
     $('body').css('cursor','progress');
     
     var width = document.getElementById('pcoaPlotWrapper').offsetWidth;
@@ -1541,7 +1712,7 @@ function saveSVG(button){
     $('body').css('cursor','default');
 }
 
-/*Utility function to draw two vertices lines at a time
+/*Utility function to draw two-vertices lines at a time
 
   This function allows you to create a line with only two vertices i. e. the
   start point and the end point, plus the color and width of the line. The
@@ -1564,7 +1735,7 @@ function makeLine(coords_a, coords_b, color, width){
 	geometry.vertices.push(new THREE.Vector3(coords_a[0], coords_a[1], coords_a[2]));
 	geometry.vertices.push(new THREE.Vector3(coords_b[0], coords_b[1], coords_b[2]));
 
-	// the line will contain the two vertices and the describecd material
+	// the line will contain the two vertices and the described material
 	line = new THREE.Line(geometry, material);
 
 	return line;
@@ -1576,18 +1747,30 @@ function makeLine(coords_a, coords_b, color, width){
   displayed uses.
 */
 function drawAxisLines() {
+	var axesColorFromColorPicker;
+
 	// removing axes, if they do not exist the scene doesn't complain
 	g_mainScene.remove(g_xAxisLine);
 	g_mainScene.remove(g_yAxisLine);
 	g_mainScene.remove(g_zAxisLine);
-	
+
+	// value should be retrieved from the picker every time the axes are drawn
+	axesColorFromColorPicker = $("#axescolor").spectrum("get").toHexString(true);
+	axesColorFromColorPicker = axesColorFromColorPicker.replace('#','0x')
+	axesColorFromColorPicker = parseInt(axesColorFromColorPicker, 16)
+
 	// one line for each of the axes
 	g_xAxisLine = makeLine([g_xMinimumValue, g_yMinimumValue, g_zMinimumValue],
-		[g_xMaximumValue, g_yMinimumValue, g_zMinimumValue], 0xFFFFFF, 3);
+		[g_xMaximumValue, g_yMinimumValue, g_zMinimumValue], axesColorFromColorPicker, 3);
 	g_yAxisLine = makeLine([g_xMinimumValue, g_yMinimumValue, g_zMinimumValue],
-		[g_xMinimumValue, g_yMaximumValue, g_zMinimumValue], 0xFFFFFF, 3);
+		[g_xMinimumValue, g_yMaximumValue, g_zMinimumValue], axesColorFromColorPicker, 3);
 	g_zAxisLine = makeLine([g_xMinimumValue, g_yMinimumValue, g_zMinimumValue],
-		[g_xMinimumValue, g_yMinimumValue, g_zMaximumValue], 0xFFFFFF, 3);
+		[g_xMinimumValue, g_yMinimumValue, g_zMaximumValue], axesColorFromColorPicker, 3);
+
+	// axes shouldn't be transparent
+	g_xAxisLine.material.transparent = false;
+	g_yAxisLine.material.transparent = false;
+	g_zAxisLine.material.transparent = false;
 
 	g_mainScene.add(g_xAxisLine)
 	g_mainScene.add(g_yAxisLine)
@@ -1599,7 +1782,7 @@ function changePointCount() {
 	document.getElementById('pointCount').innerHTML = g_visiblePoints+'/'+g_plotIds.length+' points'
 }
 
-/* Validating and modifying the view axes */	
+/* Validating and modifying the view axes */
 function changeAxesDisplayed() {
 	if (!jQuery.isEmptyObject(g_vectorPositions) || !jQuery.isEmptyObject(g_taxaPositions) ||
 			!jQuery.isEmptyObject(g_ellipsesDimensions) || g_number_of_custom_axes!=0) {
@@ -1626,31 +1809,66 @@ function changeAxesDisplayed() {
 		return;
 	}
 
-	// Setting up new possitions
-	var max_x = Number.NEGATIVE_INFINITY, max_y = Number.NEGATIVE_INFINITY,
-		max_z = Number.NEGATIVE_INFINITY, min_x = Number.POSITIVE_INFINITY,
-		min_y = Number.POSITIVE_INFINITY, min_z = Number.POSITIVE_INFINITY;
 	for (var sid in g_spherePositions) {
 		g_spherePositions[sid]['x'] = g_spherePositions[sid][pc1_axis];
 		g_spherePositions[sid]['y'] = g_spherePositions[sid][pc2_axis];
 		g_spherePositions[sid]['z'] = g_spherePositions[sid][pc3_axis];
-
-		if (g_spherePositions[sid][pc1_axis]>max_x)
-			max_x=g_spherePositions[sid][pc1_axis];
-		if (g_spherePositions[sid][pc2_axis]>max_y)
-			max_y=g_spherePositions[sid][pc2_axis];
-		if (g_spherePositions[sid][pc3_axis]>max_z)
-			max_z=g_spherePositions[sid][pc3_axis];
-		if (g_spherePositions[sid][pc1_axis]<min_x)
-			min_x=g_spherePositions[sid][pc1_axis];
-		if (g_spherePositions[sid][pc2_axis]<min_y)
-			min_y=g_spherePositions[sid][pc2_axis];
-		if (g_spherePositions[sid][pc3_axis]<min_z)
-			min_z=g_spherePositions[sid][pc3_axis];
 	}
+	
+	comparisonPositionlength = Object.keys(g_comparisonPositions).length
+	spherePositionslength = Object.keys(g_spherePositions).length/comparisonPositionlength
+	for (var sampleKey in g_comparisonPositions) {
+		for (var j=0;j<spherePositionslength;j++) {
+			var sid = sampleKey + "_" + j
+				g_comparisonPositions[sampleKey][j][0] = g_spherePositions[sid]['x']
+				g_comparisonPositions[sampleKey][j][1] = g_spherePositions[sid]['y']
+				g_comparisonPositions[sampleKey][j][2] = g_spherePositions[sid]['z']
+ 		}
+	}
+	
+	checkedboxes = []
+    if ($('#flip_axes_1').is(':checked')) {
+		for(var sid in g_spherePositions){
+			g_spherePositions[sid]['x'] = g_spherePositions[sid][pc1_axis]*(-1);
+		}
+ 		checkedboxes.push(0);
+	}
+    if ($('#flip_axes_2').is(':checked')) {
+		for(var sid in g_spherePositions){
+			g_spherePositions[sid]['y'] = g_spherePositions[sid][pc2_axis]*(-1);
+		}		
+ 		checkedboxes.push(1);
+	}
+    if ($('#flip_axes_3').is(':checked')) {
+		for(var sid in g_spherePositions){
+			g_spherePositions[sid]['z'] = g_spherePositions[sid][pc3_axis]*(-1);
+		}		
+ 		checkedboxes.push(2);
+	}
+	flipEdges(checkedboxes);
+	
+	// Setting up new positions
+	var max_x = Number.NEGATIVE_INFINITY, max_y = Number.NEGATIVE_INFINITY,
+		max_z = Number.NEGATIVE_INFINITY, min_x = Number.POSITIVE_INFINITY,
+		min_y = Number.POSITIVE_INFINITY, min_z = Number.POSITIVE_INFINITY;
+	for (var sid in g_spherePositions) {
+		if (g_spherePositions[sid]['x']>max_x)
+			max_x=g_spherePositions[sid]['x'];
+		if (g_spherePositions[sid]['y']>max_y)
+			max_y=g_spherePositions[sid]['y'];
+		if (g_spherePositions[sid]['z']>max_z)
+			max_z=g_spherePositions[sid]['z'];
+		if (g_spherePositions[sid]['x']<min_x)
+			min_x=g_spherePositions[sid]['x'];
+		if (g_spherePositions[sid]['y']<min_y)
+			min_y=g_spherePositions[sid]['y'];
+		if (g_spherePositions[sid]['z']<min_z)
+			min_z=g_spherePositions[sid]['z'];
+	}
+		
 	for (var sample_id in g_plotSpheres){
-		g_plotSpheres[sample_id].position.set(g_spherePositions[sample_id][pc1_axis],
-			g_spherePositions[sample_id][pc2_axis], g_spherePositions[sample_id][pc3_axis]);
+		g_plotSpheres[sample_id].position.set(g_spherePositions[sample_id]['x'],
+			g_spherePositions[sample_id]['y'], g_spherePositions[sample_id]['z']);
 	}
 
 	// Setting up new axes for axes by coords explained
@@ -1658,7 +1876,7 @@ function changeAxesDisplayed() {
 	g_pc1Label = "PC" + (g_viewingAxes[0]+1) + " (" + g_fractionExplainedRounded[g_viewingAxes[0]] + " %)";
 	g_pc2Label = "PC" + (g_viewingAxes[1]+1) + " (" + g_fractionExplainedRounded[g_viewingAxes[1]] + " %)";
 	g_pc3Label = "PC" + (g_viewingAxes[2]+1) + " (" + g_fractionExplainedRounded[g_viewingAxes[2]] + " %)";
-		
+			
 	g_xMaximumValue = max_x + (max_x>=0 ? 6*g_radius : -6*g_radius);
 	g_yMaximumValue = max_y + (max_y>=0 ? 6*g_radius : -6*g_radius);
 	g_zMaximumValue = max_z + (max_z>=0 ? 6*g_radius : -6*g_radius);
@@ -1666,11 +1884,48 @@ function changeAxesDisplayed() {
 	g_yMinimumValue = min_y + (min_y>=0 ? 6*g_radius : -6*g_radius);
 	g_zMinimumValue = min_z + (min_z>=0 ? 6*g_radius : -6*g_radius);
 	drawAxisLines();
+	buildAxisLabels();
 
 	// HACK: this is a work around for cases when the scale is on
 	if ($('#scale_checkbox').is(':checked')) toggleScaleCoordinates({'checked': true});
 	
+	// Change the css color of the 3d plot labels, set colors here because buildAxesLabels reverts color to default
+	axeslabelscolor = $('#axeslabelscolor').css( "background-color" );
+	axeslabelscolor_hex = $("#axeslabelscolor").spectrum("get").toHexString(true);
+	$("#pc1_label").css('color', axeslabelscolor);
+	$("#pc2_label").css('color', axeslabelscolor);
+	$("#pc3_label").css('color', axeslabelscolor);
+
 	resetCamera();
+}
+
+/*This function flips the lines in comparison plots when the user selects the option to negate the axes.*/
+function flipEdges(axis) {
+		var flippedPositions2d = new Array();
+		for (var sampleKey in g_comparisonPositions){
+			flippedPositions1d = []
+			for (var edgePosition in g_comparisonPositions[sampleKey]){
+				flippedPositions = [g_comparisonPositions[sampleKey][edgePosition][0], 
+									g_comparisonPositions[sampleKey][edgePosition][1],
+									g_comparisonPositions[sampleKey][edgePosition][2]]
+				for (var i=0;i<axis.length;i++) {
+					flippedPositions[axis[i]] *= (-1);
+				}
+				flippedPositions1d.push(flippedPositions);
+			}
+			flippedPositions2d[sampleKey] = flippedPositions1d;
+		}
+		removeEdges();
+		drawEdges(flippedPositions2d);
+}
+
+/*Removes the lines in comparison plots so the negated lines can be drawn*/
+function removeEdges() {
+	for(var sample_id in g_plotEdges){
+		for(var section in g_plotEdges[sample_id]){
+			g_mainScene.remove(g_plotEdges[sample_id][section]);
+		}
+	}
 }
 
 function clean_label_refresh_axes() {
@@ -1682,10 +1937,10 @@ function togglePlots() {
 	// set some interface changes for 3D visualizations
 	if(document.getElementById('pcoa').checked)
 	{
-		document.getElementById('pcoaPlotWrapper').className = document.getElementById('pcoaPlotWrapper').className.replace(/(?:^|\s)invisible(?!\S)/ , '');
-		document.getElementById('pcoaoptions').className = document.getElementById('pcoaoptions').className.replace(/(?:^|\s)invisible(?!\S)/ , '');
-		document.getElementById('pcoaviewoptions').className = document.getElementById('pcoaviewoptions').className.replace(/(?:^|\s)invisible(?!\S)/ , '');
-		document.getElementById('pcoaaxes').className = document.getElementById('pcoaaxes').className.replace(/(?:^|\s)invisible(?!\S)/ , '');
+		document.getElementById('pcoaPlotWrapper').className = 'plotWrapper';
+		document.getElementById('pcoaoptions').className = '';
+		document.getElementById('pcoaviewoptions').className = '';
+		document.getElementById('pcoaaxes').className = '';
 		document.getElementById('parallelPlotWrapper').className += ' invisible'
 		document.getElementById('paralleloptions').className += ' invisible'
 
@@ -1744,6 +1999,102 @@ function setParallelPlots() {
 	document.getElementById('parallelPlotWrapper').innerHTML = '<div id="parallelPlot" class="parcoords" style="width:'+pwidth+'px;height:'+pheight+'px"></div>'
 }
 
+// Resets the aspect ratio after dragging and window resize
+function aspectReset() {
+	winWidth = Math.min(document.getElementById('pcoaPlotWrapper').offsetWidth,document.getElementById('pcoaPlotWrapper').offsetHeight);
+	winAspect = document.getElementById('pcoaPlotWrapper').offsetWidth/document.getElementById('pcoaPlotWrapper').offsetHeight;                               
+	resetDivSizes(g_separator_left*$(window).width());
+	containmentLeft = $(window).width()*0.5;
+	containmentRight = $(window).width()*0.99;
+	g_sceneCamera.aspect = winAspect;
+	g_sceneCamera.updateProjectionMatrix();		
+
+}
+
+// Makes separator draggable and implements drag function
+function separator_draggable() {
+	$('.separator').draggable({
+		axis: 'x',
+		containment: [containmentLeft, 0, containmentRight, $(window).height()],
+		helper: 'clone',
+		drag: function (event, ui) {
+			offset = ui.offset.left;
+			if (offset > $(window).width()) {
+				offset = $(window).width()*0.99;
+			}
+			aspectReset();
+			resetDivSizes(offset);
+			if (offset < $(window).width()*0.93) {
+				g_separator_history = offset;
+			} 
+		}
+	});
+}
+         
+// Resizes plot and menu widths            
+function resetDivSizes(width_left) {
+	$('#plotToggle').width(width_left);
+	$('#parallelPlotWrapper').width(width_left);
+	$('#pcoaPlotWrapper').width(width_left);
+	if(document.getElementById('parallel').checked) {
+		togglePlots();
+	}
+	var width_right = $(window).width() - width_left - $('.separator').width()-1;                       
+	$('#menu').width(width_right);
+	g_separator_left = width_left/$(window).width();               
+	if (g_separator_left > 1) {
+		g_separator_left = 1;
+	}
+}
+
+/*Builds the axes labels from ground up after changing the axes*/
+function buildAxisLabels() {
+	//build axis labels
+	var axislabelhtml = "";
+	var xcoords = toScreenXY(new THREE.Vector3(g_xMaximumValue, g_yMinimumValue, g_zMinimumValue),g_sceneCamera,$('#main_plot'));
+	axislabelhtml += "<label id=\"pc1_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(xcoords['x'])+"px; top:"+parseInt(xcoords['y'])+"px;\">";
+	axislabelhtml += g_pc1Label;
+	axislabelhtml += "</label>";
+	var ycoords = toScreenXY(new THREE.Vector3(g_xMinimumValue, g_yMaximumValue, g_zMinimumValue),g_sceneCamera,$('#main_plot'));
+	axislabelhtml += "<label id=\"pc2_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(ycoords['x'])+"px; top:"+parseInt(ycoords['y'])+"px;\">";
+	axislabelhtml += g_pc2Label;
+	axislabelhtml += "</label>";
+	var zcoords = toScreenXY(new THREE.Vector3(g_xMinimumValue, g_yMinimumValue, g_zMaximumValue),g_sceneCamera,$('#main_plot'));
+	axislabelhtml += "<label id=\"pc3_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(zcoords['x'])+"px; top:"+parseInt(zcoords['y'])+"px;\">";
+	axislabelhtml += g_pc3Label;
+	axislabelhtml += "</label>";
+	document.getElementById("axislabels").innerHTML = axislabelhtml;
+}
+
+//Unhides the info box if WebGL is disabled
+function overlay() {
+	overlay = document.getElementById("overlay");
+	overlay.style.visibility = (overlay.style.visibility == "visible") ? "hidden" : "visible";
+	parallel = document.getElementById("menu");
+	parallel.style.visibility = (parallel.style.visibility == "invisible") ? "visible" : "hidden";
+	separator = document.getElementById("separator");
+	separator.style.visibility = (separator.style.visibility == "invisible") ? "visible" : "hidden";
+	plotToggle = document.getElementById("plotToggle");
+	plotToggle.style.visibility = (plotToggle.style.visibility == "invisible") ? "visible" : "hidden";
+}
+
+//Toggles fullscreen when double-clicking the separator
+function separatorDoubleClick() {
+	if (g_separator_left > 0.98) {
+		if (g_separator_history/$(window).width() < .5) {
+			g_separator_history = $(window).width()*.5;
+			resetDivSizes(g_separator_history);
+		}
+		else {
+			resetDivSizes(g_separator_history);
+		}
+	}
+	else {
+		resetDivSizes($(window).width()*0.99);
+	}
+	aspectReset();	
+}
+
 /*Setup and initialization function for the whole system
 
   This function will set all of the WebGL elements that are required to exist
@@ -1753,10 +2104,15 @@ function setParallelPlots() {
 $(document).ready(function() {
 	setJqueryUi()
 	
-	
+	// Default sizes: g_separator_left is in percent and the others are in decimal
+	g_separator_left = 0.73;
+	g_separator_history = $(window).width()*0.73;
+	containmentLeft = $(window).width()*0.5;
+	containmentRight = $(window).width()*0.99;
 	// Detecting that webgl is activated
-	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
+	if ( ! Detector.webgl ) {
+		overlay();
+	}
 	var main_plot = $('#main_plot');
 	var particles, geometry, parameters, i, h, color;
 	var mouseX = 0, mouseY = 0;
@@ -1764,12 +2120,12 @@ $(document).ready(function() {
 	var winWidth = Math.min(document.getElementById('pcoaPlotWrapper').offsetWidth,document.getElementById('pcoaPlotWrapper').offsetHeight), view_angle = 35, view_near = 0.0000001, view_far = 10000;
 	var winAspect = document.getElementById('pcoaPlotWrapper').offsetWidth/document.getElementById('pcoaPlotWrapper').offsetHeight;
 
-	$(window).resize(function() {
-		winWidth = Math.min(document.getElementById('pcoaPlotWrapper').offsetWidth,document.getElementById('pcoaPlotWrapper').offsetHeight);
-		winAspect = document.getElementById('pcoaPlotWrapper').offsetWidth/document.getElementById('pcoaPlotWrapper').offsetHeight;
-		g_sceneCamera.aspect = winAspect;
-		g_sceneCamera.updateProjectionMatrix();
+	$(window).resize(function() {	
+		aspectReset();
+		separator_draggable();
 	});
+	
+	separator_draggable();
 	
 	// Validating the string for the saveas filename = taken from http://stackoverflow.com/questions/6741175/trim-input-field-value-to-only-alphanumeric-characters-separate-spaces-with-wi
     $('#saveas_name').keypress(function(event) {
@@ -1777,6 +2133,13 @@ $(document).ready(function() {
         if (g_validAsciiCodes.indexOf(code)==-1)
             event.preventDefault();
     });
+    
+    // Disables the enter key in the search bar
+    $('#searchBox').keypress(function(event) {
+    	if (event.keyCode == 13) {
+        	event.preventDefault();
+    	}
+	});
 
 	init();
 	animate();
@@ -1802,7 +2165,7 @@ $(document).ready(function() {
 		drawEllipses();
 		drawTaxa();
 		drawVectors();
-		drawEdges();
+		drawEdges(g_comparisonPositions);
 
 		// set some of the scene properties
 		g_plotIds = g_plotIds.sort();
@@ -1938,7 +2301,9 @@ $(document).ready(function() {
 				text += '<option value="P' + i + '">P' + i + " (" + g_fractionExplainedRounded[i-1] + "%)" + '</option>';
 			}
 		}
-		text += '</select></td></tr>'
+		text += '</select></td>'
+		text += '<td>Negate values:<input id="flip_axes_1" class="checkbox" type="checkbox" style=""></td>';
+		text += '</tr>';
 
 		// Adding 2nd axis
 		text += '<tr>'
@@ -1951,7 +2316,9 @@ $(document).ready(function() {
 				text += '<option value="P' + i + '">P' + i + " (" + g_fractionExplainedRounded[i-1] + "%)" + '</option>';
 			}
 		}
-		text += '</select></td></tr>'
+		text += '</select></td>'
+		text += '<td>Negate values:<input id="flip_axes_2" class="checkbox" type="checkbox" style=""></td>';
+		text += '</tr>';
 
 		// Adding 3rd axis
 		text += '<tr>'
@@ -1964,8 +2331,9 @@ $(document).ready(function() {
 				text += '<option value="P' + i + '">P' + i + " (" + g_fractionExplainedRounded[i-1] + "%)" + '</option>';
 			}
 		}
-		text += '</select></td></tr>';
-
+		text += '</select></td>'
+		text += '<td>Negate values:<input id="flip_axes_3" class="checkbox" type="checkbox" style=""></td>';
+		text += '</tr>';
 		text += '</table>';
 
 		// Adding button
@@ -1976,24 +2344,6 @@ $(document).ready(function() {
 		document.getElementById("axeslist").innerHTML = text;
 	}
 
-	function buildAxisLabels() {
-		//build axis labels
-		var axislabelhtml = "";
-		var xcoords = toScreenXY(new THREE.Vector3(g_xMaximumValue, g_yMinimumValue, g_zMinimumValue),g_sceneCamera,$('#main_plot'));
-		axislabelhtml += "<label id=\"pc1_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(xcoords['x'])+"px; top:"+parseInt(xcoords['y'])+"px;\">";
-		axislabelhtml += g_pc1Label;
-		axislabelhtml += "</label>";
-		var ycoords = toScreenXY(new THREE.Vector3(g_xMinimumValue, g_yMaximumValue, g_zMinimumValue),g_sceneCamera,$('#main_plot'));
-		axislabelhtml += "<label id=\"pc2_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(ycoords['x'])+"px; top:"+parseInt(ycoords['y'])+"px;\">";
-		axislabelhtml += g_pc2Label;
-		axislabelhtml += "</label>";
-		var zcoords = toScreenXY(new THREE.Vector3(g_xMinimumValue, g_yMinimumValue, g_zMaximumValue),g_sceneCamera,$('#main_plot'));
-		axislabelhtml += "<label id=\"pc3_label\" class=\"unselectable labels\" style=\"position:absolute; left:"+parseInt(zcoords['x'])+"px; top:"+parseInt(zcoords['y'])+"px;\">";
-		axislabelhtml += g_pc3Label;
-		axislabelhtml += "</label>";
-		document.getElementById("axislabels").innerHTML = axislabelhtml;
-	}
-
 	function animate() {
 		requestAnimationFrame( animate );
 
@@ -2001,7 +2351,7 @@ $(document).ready(function() {
 
 		var labelCoordinates;
 
-		// reposistion the labels for the axes in the 3D plot
+		// reposition the labels for the axes in the 3D plot
 		labelCoordinates = toScreenXY(new THREE.Vector3(g_xMaximumValue, g_yMinimumValue, g_zMinimumValue), g_sceneCamera,$('#main_plot'));
 		$("#pc1_label").css('left', labelCoordinates['x'])
 		$("#pc1_label").css('top', labelCoordinates['y'])
@@ -2051,4 +2401,5 @@ $(document).ready(function() {
 		g_mainRenderer.setSize( document.getElementById('pcoaPlotWrapper').offsetWidth, document.getElementById('pcoaPlotWrapper').offsetHeight );
 		g_mainRenderer.render( g_mainScene, g_sceneCamera);
 	}
+	
 });
