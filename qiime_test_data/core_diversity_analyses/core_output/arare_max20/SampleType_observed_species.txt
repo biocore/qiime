@@ -1,7 +1,0 @@
-Group1	Group2	Group1 mean	Group1 std	Group2 mean	Group2 std	t stat	p-value
-Tongue	L_palm	3.15	0.15	5.95	2.45	-1.14072118122	1.0
-feces	Other	1.9	0.574456264654	2.0	0.0	-0.134839972493	1.0
-Tongue	feces	3.15	0.15	1.9	0.574456264654	2.47083105554	0.36
-feces	L_palm	1.9	0.574456264654	5.95	2.45	-2.56224573168	0.366
-Tongue	Other	3.15	0.15	2.0	0.0	4.42635206379	1.0
-Other	L_palm	2.0	0.0	5.95	2.45	-0.930830025836	1.0
