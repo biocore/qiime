@@ -178,13 +178,17 @@ def main():
         stat_output_fp = join(output_dir,'%s_stats.txt' % category)
         boxplot_output_fp = join(output_dir,'%s_boxplots.pdf' % category)
 
+        alpha_diversity_f = open(alpha_diversity_fp, 'U')
+        mapping_f = open(mapping_fp, 'U')
         ttest_result, alphadiv_avgs = \
-         compare_alpha_diversities(open(alpha_diversity_fp, 'U'),
-                                   open(mapping_fp, 'U'),
+         compare_alpha_diversities(alpha_diversity_f,
+                                   mapping_f,
                                    category,
                                    depth,
                                    test_type,
                                    num_permutations)
+        alpha_diversity_f.close()
+        mapping_f.close()
 
         corrected_result = _correct_compare_alpha_results(ttest_result,
                                                           correction_method)
@@ -206,10 +210,14 @@ def main():
         stat_output_f.write('\n'.join(lines) + '\n')
         stat_output_f.close()
     
-        boxplot = generate_alpha_diversity_boxplots(open(alpha_diversity_fp, 'U'),
-                                                    open(mapping_fp, 'U'), 
-                                                    category, 
+        alpha_diversity_f = open(alpha_diversity_fp, 'U')
+        mapping_f = open(mapping_fp, 'U')
+        boxplot = generate_alpha_diversity_boxplots(alpha_diversity_f,
+                                                    mapping_f,
+                                                    category,
                                                     depth)
+        alpha_diversity_f.close()
+        mapping_f.close()
         boxplot.savefig(boxplot_output_fp)
 
 if __name__ == "__main__":
