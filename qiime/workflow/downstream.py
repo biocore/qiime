@@ -302,7 +302,7 @@ def run_alpha_rarefaction(otu_table_fp,
         commands.append([('Removing intermediate files',
                           'rm -r %s %s' % (rarefaction_dir,alpha_diversity_dir))])
     else:
-        commands.append([('Ignoring removal of intermediate files','')])
+        commands.append([('Skipping removal of intermediate files.','')])
 
     # Prep the make rarefaction plot command(s)
     try:
