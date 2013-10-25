@@ -275,7 +275,8 @@ def run_core_diversity_analyses(
              min_rare_depth=arare_min_rare_depth,
              max_rare_depth=sampling_depth,
              suppress_md5=True,
-             status_update_callback=status_update_callback)
+             status_update_callback=status_update_callback,
+             retain_intermediate_files=False)
         else:
             logger.write("Skipping alpha_rarefaction.py as %s exists.\n\n" \
                          % rarefaction_plots_output_fp)
