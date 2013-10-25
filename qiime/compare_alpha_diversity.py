@@ -147,6 +147,8 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
                                       mapping_lines,
                                       category,
                                       depth=None):
+    rarefaction_data = parse_rarefaction(rarefaction_lines)
+    
     category_value_to_sample_ids = \
      get_category_value_to_sample_ids(mapping_lines,
                                       category)
