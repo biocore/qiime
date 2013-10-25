@@ -12,12 +12,18 @@ __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
+from numpy.random import seed
+from numpy import nan, isnan
 from cogent.util.unit_test import TestCase,main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
-    compare_alpha_diversities, _correct_compare_alpha_results)
-from numpy.random import seed
-from numpy import nan, isnan
+                                           compare_alpha_diversities,
+                                           _correct_compare_alpha_results,
+                                           get_category_value_to_sample_ids,
+                                           collapse_sample_diversities_by_category,
+                                           get_per_sample_average_diversities)
+from qiime.test import get_test_data
+                                           
 
 class TopLevelTests(TestCase):
     """Tests of top level functions"""
@@ -328,6 +334,15 @@ class TopLevelTests(TestCase):
         for k in exp_ad_avgs:
             self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
+    def test_get_category_value_to_sample_ids(self):
+        test_data = get_test_data()
+        actual = get_category_value_to_sample_ids(test_data['map'],'SampleType')
+        expected = {'feces':['f1','f2','f3','f4','f5','f6'],
+                    'L_palm':['p1','p2'],
+                    'Tongue':['t1','t2'],
+                    'Other':['not16S.1']}
+        self.assertEqual(actual,expected)
+        
 
 
 if __name__ == "__main__":
