@@ -343,6 +343,11 @@ class TopLevelTests(TestCase):
                     'Other':['not16S.1']}
         self.assertEqual(actual,expected)
         
+        actual = get_category_value_to_sample_ids(test_data['map'],'year')
+        expected = {'2008':['f1','f2','f3','f4','f5','f6',
+                             'p1','p2','t1','t2','not16S.1']}
+        self.assertEqual(actual,expected)
+        
 
 
 if __name__ == "__main__":
