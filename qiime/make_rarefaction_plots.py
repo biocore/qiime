@@ -97,63 +97,61 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
                         os.path.join('html_plots', \
                         metric_name+mapping_lookup[mapping_category+'-'+o] + '_ave.'+imagetype)
     
-        if not generate_average_tables:
-            continue
-            
-        #Create the plot image
-        plt.clf()
-        plt.title(metric_name + ": " + mapping_category,weight='regular')
+        if generate_average_tables:
+            #Create the plot image
+            plt.clf()
+            plt.title(metric_name + ": " + mapping_category,weight='regular')
         
-        fig  = plt.gcf()
+            fig  = plt.gcf()
         
-        l = o
-        plt.errorbar(xaxis[:len(yvals[o])], yvals[o], \
-                     yerr=err[o][:len(yvals[o])], label = l, color = \
-                     data_colors[colors[o]].toHex(),elinewidth=1,lw=2,capsize=4
-                     )
-        plt.alpha=(0)
+            l = o
+            plt.errorbar(xaxis[:len(yvals[o])], yvals[o], \
+                         yerr=err[o][:len(yvals[o])], label = l, color = \
+                         data_colors[colors[o]].toHex(),elinewidth=1,lw=2,capsize=4
+                         )
+            plt.alpha=(0)
     
-        #get the plot axis
-        ax = plt.gca()
+            #get the plot axis
+            ax = plt.gca()
         
-        #set tick colors and width
-        for line in ax.yaxis.get_ticklines():
-            # line is a matplotlib.lines.Line2D instance
-            line.set_color('black')
-            line.set_markeredgewidth(1)
+            #set tick colors and width
+            for line in ax.yaxis.get_ticklines():
+                # line is a matplotlib.lines.Line2D instance
+                line.set_color('black')
+                line.set_markeredgewidth(1)
 
-        for line in ax.xaxis.get_ticklines():
-            # line is a matplotlib.lines.Line2D instance
-            line.set_color('black')
-            line.set_markeredgewidth(1)
+            for line in ax.xaxis.get_ticklines():
+                # line is a matplotlib.lines.Line2D instance
+                line.set_color('black')
+                line.set_markeredgewidth(1)
         
-        #set x/y limits and labels for plot
-        ax.set_axisbelow(True)
-        ax.set_xlim((0,xmax))
-        ax.set_ylim((0,ymax))
-        ax.set_xlabel('Sequences Per Sample')
-        ax.set_ylabel("Rarefaction Measure: " + metric_name)
+            #set x/y limits and labels for plot
+            ax.set_axisbelow(True)
+            ax.set_xlim((0,xmax))
+            ax.set_ylim((0,ymax))
+            ax.set_xlabel('Sequences Per Sample')
+            ax.set_ylabel("Rarefaction Measure: " + metric_name)
     
-        x=ax.xaxis.get_label()
-        x.set_weight('regular')
-        #x.set_name('Arial')
-        y=ax.yaxis.get_label()
-        y.set_weight('regular')
-        #y.set_name('Arial')
+            x=ax.xaxis.get_label()
+            x.set_weight('regular')
+            #x.set_name('Arial')
+            y=ax.yaxis.get_label()
+            y.set_weight('regular')
+            #y.set_name('Arial')
         
-        imgpath = fpath+mapping_lookup[mapping_category+'-'+o]+ '_ave.'+imagetype
-        if output_type=="file_creation":
-            #Save the image
-            plt.savefig(imgpath, format=imagetype, dpi=res,transparent=True)
-            #Get the image name for the saved image relative to the main directory
-            image_loc = imgpath
-            plt.close()
-        elif (output_type=="memory"):
-            imgdata = StringIO()
-            plt.savefig(imgdata, format='png', dpi=res, transparent=True)
-            imgdata.seek(0)
-            avg_plots[imgpath] = imgdata
-            plt.close()
+            imgpath = fpath+mapping_lookup[mapping_category+'-'+o]+ '_ave.'+imagetype
+            if output_type=="file_creation":
+                #Save the image
+                plt.savefig(imgpath, format=imagetype, dpi=res,transparent=True)
+                #Get the image name for the saved image relative to the main directory
+                image_loc = imgpath
+                plt.close()
+            elif (output_type=="memory"):
+                imgdata = StringIO()
+                plt.savefig(imgdata, format='png', dpi=res, transparent=True)
+                imgdata.seek(0)
+                avg_plots[imgpath] = imgdata
+                plt.close()
         
     if output_type=="file_creation":
         return rarefaction_legend_mat
