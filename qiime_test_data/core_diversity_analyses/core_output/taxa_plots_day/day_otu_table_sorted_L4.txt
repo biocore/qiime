@@ -1,0 +1,4 @@
+Taxon	21	22	23
+Unclassified;Other;Other;Other	0.5	0.465909090909	0.0151515151515
+k__Bacteria;Other;Other;Other	0.5	0.522727272727	0.984848484848
+k__Bacteria;p__Proteobacteria;Other;Other	0.0	0.0113636363636	0.0

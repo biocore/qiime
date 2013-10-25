@@ -1,0 +1,36 @@
+# The tests of significance were performed using a two-sided Student's two-sample t-test.
+# Alternative hypothesis: Group 1 mean != Group 2 mean
+# The nonparametric p-values were calculated using 999 Monte Carlo permutations.
+# The nonparametric p-values contain the correct number of significant digits.
+# Entries marked with "N/A" could not be calculated because at least one of the groups
+# of distances was empty, both groups each contained only a single distance, or
+# the test could not be performed (e.g. no variance in groups with the same mean).
+Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-corrected)	Nonparametric p-value	Nonparametric p-value (Bonferroni-corrected)
+All within day	All between day	-0.155873441477	0.877054584243	1	0.868	1.000
+All within day	21 vs. 21	-0.227803339858	0.824890214249	1	0.878	1.000
+All within day	22 vs. 22	-1.03270757709	0.319251692627	1	0.302	1.000
+All within day	23 vs. 23	1.84284778687	0.0924418610024	1	0.087	1.000
+All within day	21 vs. 22	-0.270623219305	0.790140790988	1	0.782	1.000
+All within day	21 vs. 23	-0.192266031504	0.850294793493	1	0.840	1.000
+All within day	22 vs. 23	0.0367266324316	0.97106708164	1	0.976	1.000
+All between day	21 vs. 21	-0.247361970902	0.806648317634	1	0.877	1.000
+All between day	22 vs. 22	-1.31086077889	0.199851199478	1	0.203	1.000
+All between day	23 vs. 23	2.57849003304	0.0156958730742	0.439484446077	0.015	0.420
+All between day	21 vs. 22	-0.224975981982	0.823428470998	1	0.830	1.000
+All between day	21 vs. 23	-0.104886195739	0.917164246444	1	0.908	1.000
+All between day	22 vs. 23	0.222868907125	0.824897266984	1	0.824	1.000
+21 vs. 21	22 vs. 22	-0.288456435142	0.784573121726	1	1.000	1.000
+21 vs. 21	23 vs. 23	16.1565869237	0.00380902541559	0.106652711637	0.250	1.000
+21 vs. 21	21 vs. 22	0.14297816899	0.890336062286	1	0.996	1.000
+21 vs. 21	21 vs. 23	0.518711609262	0.62609321105	1	0.952	1.000
+21 vs. 21	22 vs. 23	0.26429828533	0.79643645834	1	0.792	1.000
+22 vs. 22	23 vs. 23	3.09639727225	0.0174100288573	0.487480808005	0.020	0.560
+22 vs. 22	21 vs. 22	0.875141403484	0.398674971964	1	0.394	1.000
+22 vs. 22	21 vs. 23	1.14932541443	0.277168074497	1	0.253	1.000
+22 vs. 22	22 vs. 23	1.15697818383	0.264263325755	1	0.240	1.000
+23 vs. 23	21 vs. 22	-2.54581827553	0.0314095058546	0.879466163929	0.028	0.784
+23 vs. 23	21 vs. 23	-6.92636834648	0.000225920183558	0.00632576513961	0.012	0.336
+23 vs. 23	22 vs. 23	-1.97405996897	0.0700122390206	1	0.071	1.000
+21 vs. 22	21 vs. 23	0.105977304672	0.917351344842	1	0.894	1.000
+21 vs. 22	22 vs. 23	0.331859431856	0.743828332971	1	0.763	1.000
+21 vs. 23	22 vs. 23	0.246714138166	0.808266972193	1	0.799	1.000
