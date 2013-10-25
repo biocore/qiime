@@ -430,8 +430,8 @@ mapping_category, colors, rare_type, data_colors, groups,std_type):
 def make_averages(color_prefs, data, background_color, label_color, rares,
                     output_dir,resolution,imagetype,ymax,suppress_webpage,
                     std_type, output_type="file_creation",
-                    generate_per_sample_plots=False,
-                    generate_average_tables=False):
+                    generate_per_sample_plots=True,
+                    generate_average_tables=True):
     '''This is the main function, which takes the rarefaction files, calls the
         functions to make plots and formatting the output html.''' 
     rarelines = []
@@ -713,7 +713,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares,
 
 def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                 imagetype,mapping_lookup, output_type="file_creation", all_plots=None,
-                generate_per_sample_plots=False):
+                generate_per_sample_plots=True):
     rarefaction_legend_mat
     legend_td=['<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 200px; font-size: 12px; overflow: auto;"><table>']
     summarized_table=[]
@@ -843,7 +843,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                 metric_name,labelname,rarefaction_data_mat,\
                 rarefaction_legend_mat,sample_dict,sample_data_colors,
                 sample_colors,mapping_lookup, output_type="file_creation",
-                generate_average_tables=False):   
+                generate_average_tables=True):   
     '''This is the main function for generating the rarefaction plots and html
         file.''' 
     #Get the alpha rare data
@@ -1201,13 +1201,6 @@ function show_hide_categories(SelObject){
 </body>
 </html>
 '''
-
-
-
-
-
-
-
 
 HTML_full='''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
