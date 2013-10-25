@@ -332,7 +332,8 @@ def run_core_diversity_analyses(
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
         # need to check for existence of any html files, since the user can 
         # select only certain ones to be generated
-        existing_taxa_plot_html_fps = glob(join(output_dir,'taxa_summary_plots','*.html'))
+        existing_taxa_plot_html_fps = glob(join(taxa_plots_output_dir,
+                                                'taxa_summary_plots','*.html'))
         if len(existing_taxa_plot_html_fps) == 0:
             run_summarize_taxa_through_plots(
              otu_table_fp=biom_fp,
