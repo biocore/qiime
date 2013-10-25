@@ -89,25 +89,29 @@ script_info['script_usage'].append(("Comparing alpha diversities",
 "compare to each other), and output filepath (a path to the output file to be created). A "
 "nonparametric two sample t-test is run to compare the alpha diversities "
 "using the default number of Monte Carlo permutations (999).",
-"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100.txt"))
+"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o Treatment_PD100"))
+
+script_info['script_usage'].append(("Comparing alpha diversities",
+"Similar to above, but performs comparisons for two categories.",
+"%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment,DOB -d 100 -o Treatment_DOB_PD100"))
 
 script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
 "t-distribution instead of Monte Carlo permutations at rarefaction depth 100.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o "
-"PD_d100_parametric.txt -t parametric"))
+"PD_d100_parametric -t parametric"))
 
 script_info['script_usage'].append(("Parametric t-test",
 "The following command runs a parametric two sample t-test using the "
 "t-distribution instead of Monte Carlo permutations at the greatest depth available.",
 "%prog -i PD_whole_tree.txt -m mapping.txt -c Treatment -o "
-"PD_dmax_parametric.txt -t parametric"))
+"PD_dmax_parametric -t parametric"))
 
 script_info['output_description']= """
-The script generates an output file that is a TSV table. Each row corresponds
-to a comparison between two groups of treatment values, and includes the means
-and standard deviations of the two groups' alpha diversities, along with the
-results of the two-sample t-test.
+Generates a tsv stats file and pdf of boxplots for each input category. 
+Each row in the tsv file corresponds to a comparison between two groups of treatment values, 
+and includes the means and standard deviations of the two groups' alpha diversities, 
+along with the results of the two-sample t-test.
 """
 
 script_info['script_usage_output_to_remove'] = ['$PWD/PD_dmax_parametric.txt','$PWD/PD_d100_parametric.txt', '$PWD/PD_d100.txt']
