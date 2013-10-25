@@ -455,6 +455,8 @@ def make_averages(color_prefs, data, background_color, label_color, rares,
         ave_output_dir = 'plot/average_plots'
         if generate_per_sample_plots:
             all_output_dir = 'plot/html_plots'
+        else:
+            all_output_dir = ""
 
     ave_data_file_path=os.path.join(output_dir,'average_tables')
     if output_type=="file_creation":
