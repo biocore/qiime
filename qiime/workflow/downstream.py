@@ -203,7 +203,7 @@ def run_alpha_rarefaction(otu_table_fp,
                           suppress_md5=False,
                           status_update_callback=print_to_stdout,
                           plot_stderr_and_stddev=False,
-                          retain_intermediate_files=False):
+                          retain_intermediate_files=True):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:

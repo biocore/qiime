@@ -87,14 +87,20 @@ def save_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
 def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             mapping_category, imagetype, res, data_colors, colors, fpath,\
             background_color,label_color,rarefaction_legend_mat,metric_name,
-            mapping_lookup, output_type="file_creation"):
+            mapping_lookup, output_type="file_creation", generate_average_tables=True):
     '''This function creates the images, using matplotlib.'''
     
     avg_plots = {}
     #Add the lines to the plot
     for o in ops:
+        rarefaction_legend_mat[metric_name]['groups'][mapping_category][o]['ave_link']= \
+                        os.path.join('html_plots', \
+                        metric_name+mapping_lookup[mapping_category+'-'+o] + '_ave.'+imagetype)
+    
+        if not generate_average_tables:
+            continue
+            
         #Create the plot image
-        
         plt.clf()
         plt.title(metric_name + ": " + mapping_category,weight='regular')
         
@@ -109,7 +115,6 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
     
         #get the plot axis
         ax = plt.gca()
-        #ax.set_axis_bgcolor(background_color)
         
         #set tick colors and width
         for line in ax.yaxis.get_ticklines():
@@ -123,7 +128,6 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             line.set_markeredgewidth(1)
         
         #set x/y limits and labels for plot
-        
         ax.set_axisbelow(True)
         ax.set_xlim((0,xmax))
         ax.set_ylim((0,ymax))
@@ -151,10 +155,6 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             avg_plots[imgpath] = imgdata
             plt.close()
         
-        rarefaction_legend_mat[metric_name]['groups'][mapping_category][o]['ave_link']= \
-                        os.path.join('html_plots', \
-                        metric_name+mapping_lookup[mapping_category+'-'+o] + '_ave.'+imagetype)
-    
     if output_type=="file_creation":
         return rarefaction_legend_mat
     elif output_type=="memory":
@@ -799,7 +799,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                             '\n'.join(data_table_html))
         else:
             html_output=HTML_no_per_sample % ('',
-                            "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+'_ave'+imagetype)",
+                            "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+imagetype)",
                             "img.setAttribute('src',\"./average_plots/\"+metric+array[0]+imagetype)",
                             "",
                             '.'+imagetype,
@@ -828,7 +828,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                             '\n'.join(data_table_html))
         else:
             html_output=HTML_no_per_sample % ('',
-                            "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+'_ave'+imagetype)",
+                            "img.setAttribute('src',\"./average_plots/\"+SelObject.value+array[0]+imagetype)",
                             "img.setAttribute('src',\"./average_plots/\"+metric+array[0]+imagetype)",
                             "",
                             '.'+imagetype,
@@ -922,13 +922,13 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
     categories = [k for k in groups]
                                 
     #Create the rarefaction average plot and get updated legend information
-    #
     if output_type=="file_creation":
         rarefaction_legend_mat = save_single_ave_rarefaction_plots(raredata['xaxis'], \
                            raredata['series'], raredata['error'], xmax, ymax, categories, \
                            labelname, imagetype, resolution, data_colors, \
                            colors, file_path, background_color, label_color, \
-                           rarefaction_legend_mat, metric_name,mapping_lookup, output_type)
+                           rarefaction_legend_mat, metric_name,mapping_lookup, output_type,
+                           generate_average_tables)
                            
         return rarefaction_data_mat, rarefaction_legend_mat
     elif output_type == "memory":
@@ -936,7 +936,8 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                            raredata['series'], raredata['error'], xmax, ymax, categories, \
                            labelname, imagetype, resolution, data_colors, \
                            colors, file_path, background_color, label_color, \
-                           rarefaction_legend_mat, metric_name,mapping_lookup, output_type)
+                           rarefaction_legend_mat, metric_name,mapping_lookup, output_type,
+                           generate_average_tables)
                            
         return rarefaction_data_mat, rarefaction_legend_mat, all_plots_single, all_plots_ave
 
