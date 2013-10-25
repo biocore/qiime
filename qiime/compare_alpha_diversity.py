@@ -126,17 +126,17 @@ def collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
          result[cat] = [per_sample_average_diversities[sid] for sid in sids]
     return result
 
-def get_per_sample_average_diversities(rarefaction_lines,
+def get_per_sample_average_diversities(rarefaction_data,
                                        category,
                                        depth=None):
-    rarefaction_data = parse_rarefaction(rarefaction_lines)
     # extract only rows of the rarefaction data that are at the given depth
     # if depth is not given default to the deepest rarefaction available
     # rarefaction file is not guaranteed to be in order of rarefaction depth
     if depth == None:
         depth = array(rarefaction_data[3])[:,0].max()
-        
+    
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
+    
     # Average each col of the rarefaction mtx. Computing t test on averages over
     # all iterations. Avoids more comps which kills signifigance. 
     rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
@@ -154,7 +154,7 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
                                       category)
     
     per_sample_average_diversities = \
-     get_per_sample_average_diversities(rarefaction_lines,
+     get_per_sample_average_diversities(rarefaction_data,
                                         category,
                                         depth)
     
@@ -193,7 +193,7 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
     if test_type == 'nonparametric' and num_permutations < 1:
         raise ValueError("Invalid number of permutations: %d. Must be greater "
                          "than zero." % num_permutations)
-     
+    
     rarefaction_data = parse_rarefaction(rarefaction_lines)
     mapping_data = parse_mapping_file_to_dict(mapping_lines)[0]
     # samid_pairs, treatment_pairs are in the same order

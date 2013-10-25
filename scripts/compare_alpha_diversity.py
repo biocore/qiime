@@ -209,7 +209,8 @@ def main():
                                             v[1]])))
         stat_output_f.write('\n'.join(lines) + '\n')
         stat_output_f.close()
-    
+        
+        # write box plots
         alpha_diversity_f = open(alpha_diversity_fp, 'U')
         mapping_f = open(mapping_fp, 'U')
         boxplot = generate_alpha_diversity_boxplots(alpha_diversity_f,
