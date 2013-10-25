@@ -358,9 +358,18 @@ class TopLevelTests(TestCase):
     def test_collapse_sample_diversities_by_category_value(self):
          """collapse_sample_diversities_by_category_value functions as expected
          """
-         test_data = get_test_data()
          actual = collapse_sample_diversities_by_category_value(
           {'feces':['f1','f2','f3'],'L_palm':['p1','p2'],'otro':['o1'],'x':[]},
+          {'f1':4.2,'f2':4.3,'f3':4.4,'p1':4.5,'p2':4.3,'o1':4.6})
+         expected = {'feces':[4.2,4.3,4.4],
+                     'L_palm':[4.5,4.3],
+                     'otro':[4.6],
+                     'x':[]}
+         self.assertEqual(actual,expected)
+         
+         # sample in category to sid map but not diversity data is ignored
+         actual = collapse_sample_diversities_by_category_value(
+          {'feces':['f1','f2','f3','f4'],'L_palm':['p1','p2'],'otro':['o1'],'x':[]},
           {'f1':4.2,'f2':4.3,'f3':4.4,'p1':4.5,'p2':4.3,'o1':4.6})
          expected = {'feces':[4.2,4.3,4.4],
                      'L_palm':[4.5,4.3],
