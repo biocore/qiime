@@ -20,7 +20,7 @@ from qiime.compare_alpha_diversity import (sampleId_pairs,
                                            compare_alpha_diversities,
                                            _correct_compare_alpha_results,
                                            get_category_value_to_sample_ids,
-                                           collapse_sample_diversities_by_category,
+                                           collapse_sample_diversities_by_category_value,
                                            get_per_sample_average_diversities)
 from qiime.test import get_test_data
                                            
@@ -335,6 +335,8 @@ class TopLevelTests(TestCase):
             self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
     def test_get_category_value_to_sample_ids(self):
+        """get_category_value_to_sample_ids functions as expected
+        """
         test_data = get_test_data()
         actual = get_category_value_to_sample_ids(test_data['map'],'SampleType')
         expected = {'feces':['f1','f2','f3','f4','f5','f6'],
@@ -347,6 +349,15 @@ class TopLevelTests(TestCase):
         expected = {'2008':['f1','f2','f3','f4','f5','f6',
                              'p1','p2','t1','t2','not16S.1']}
         self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,
+                          get_category_value_to_sample_ids,
+                          test_data['map'],
+                          'not.a.real.category')
+    
+    # def test_collapse_sample_diversities_by_category_value(self):
+    #     """
+    #     """
         
 
 
