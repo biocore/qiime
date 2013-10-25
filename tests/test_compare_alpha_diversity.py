@@ -363,8 +363,7 @@ class TopLevelTests(TestCase):
           {'f1':4.2,'f2':4.3,'f3':4.4,'p1':4.5,'p2':4.3,'o1':4.6})
          expected = {'feces':[4.2,4.3,4.4],
                      'L_palm':[4.5,4.3],
-                     'otro':[4.6],
-                     'x':[]}
+                     'otro':[4.6]}
          self.assertEqual(actual,expected)
          
          # sample in category to sid map but not diversity data is ignored
@@ -373,8 +372,7 @@ class TopLevelTests(TestCase):
           {'f1':4.2,'f2':4.3,'f3':4.4,'p1':4.5,'p2':4.3,'o1':4.6})
          expected = {'feces':[4.2,4.3,4.4],
                      'L_palm':[4.5,4.3],
-                     'otro':[4.6],
-                     'x':[]}
+                     'otro':[4.6]}
          self.assertEqual(actual,expected)
         
 

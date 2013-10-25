@@ -123,7 +123,13 @@ def collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
                                                   per_sample_average_diversities):
     result = defaultdict(list)
     for cat, sids in category_value_to_sample_ids.items():
-         result[cat] = [per_sample_average_diversities[sid] for sid in sids]
+        for sid in sids:
+            try:
+                sid_average_diversity = per_sample_average_diversities[sid]
+            except KeyError:
+                pass
+            else:
+                result[cat].append(sid_average_diversity)
     return result
 
 def get_per_sample_average_diversities(rarefaction_data,
