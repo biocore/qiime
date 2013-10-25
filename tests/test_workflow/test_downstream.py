@@ -256,7 +256,6 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
-        self.assertTrue(getsize(pd_averages_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -307,9 +306,7 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
-        self.assertTrue(getsize(pd_averages_fp_stderr) > 0)
         self.assertTrue(getsize(html_fp_stddev) > 0)
-        self.assertTrue(getsize(pd_averages_fp_stddev) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -355,7 +352,6 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
-        self.assertTrue(getsize(pd_averages_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
