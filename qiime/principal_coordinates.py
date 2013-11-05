@@ -10,7 +10,7 @@ from qiime.parse import parse_distmat
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena", \
-    "Catherine Lozupone"]
+    "Catherine Lozupone", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -37,7 +37,8 @@ def multiple_file_pcoa(input_dir, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     file_names = os.listdir(input_dir)
-    file_names = [fname for fname in file_names if not fname.startswith('.')]
+    file_names = [fname for fname in file_names if not (fname.startswith('.')\
+        or os.path.isdir(fname))]
 
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
