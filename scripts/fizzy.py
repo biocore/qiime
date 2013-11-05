@@ -40,15 +40,15 @@ script_info['required_options'] = [
         type="string",
         help='column indicating the labels in the map file.'),
     make_option('-i', 
-        '--input_path',
+        '--input_fp',
         type="existing_filepath",
         help='input biom file'),
     make_option('-m',
-        '--map_path',
+        '--mapping_fp',
         type="existing_filepath",
         help='mapping file with labeling scheme'),
     make_option('-o',
-        '--output_path',
+        '--output_fp',
         type="new_filepath",
         help='the output file')
 ]
