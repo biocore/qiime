@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -95,9 +95,8 @@ def main():
         try:
             metric_f = get_phylogenetic_metric(metric)
             if tree_fp == None:
-                stderr.write("metric %s requires a tree, but none found\n"\
-                    % (metric,))
-                exit(1)
+                option_parser.error("metric %s requires a tree, but "\
+                    "none found" % (metric,))
         except AttributeError:
             pass        
     if isfile(input_path):
