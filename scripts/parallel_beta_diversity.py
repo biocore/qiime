@@ -95,8 +95,8 @@ def main():
         try:
             metric_f = get_phylogenetic_metric(metric)
             if tree_fp == None:
-                option_parser.error("metric %s requires a tree, but "\
-                    "none found" % (metric,))
+                option_parser.error("metric %s requires a tree, but "
+                    "none found" % metric)
         except AttributeError:
             pass        
     if isfile(input_path):
