@@ -1617,11 +1617,6 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 """
 
 
-# todo: confirm that rtax 0.984 still produces these expected outputs.  
-# It is within the realm of possibility that the new NOMATEPAIR reporting will (correctly) add lines to the output, 
-# in which case the expected result should include them.  If you see the tests pass, please delete this comment.
-
-
 rtax_expected_result_paired = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
