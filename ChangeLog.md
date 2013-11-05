@@ -14,6 +14,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Modified compare_alpha_diversity.py to generate box plots in addition to statistics, and added the ability to pass multiple categories (instead of just a single category) on the command line. Also fixed issue where options contain ``dest`` parameter, and therefore could have a different name then their longform parameter name. This involves several script interface changes: the --category option is now called --categories; script now takes --output_dir instead of --output_fp (because multiple files can be created, instead of just a single file); --alpha_diversity_filepath is now --alpha_diversity_fp; and --mapping_filepath is now --mapping_fp.
 * Refactored make_rarefaction_plots.py to add options --generate_per_sample_plots  and --generate_average_tables. These are now suppressed by default to reduce run time and size of output.
 * Refactored alpha_rarefaction.py to add option --retain_intermediate_files. Rarefied BIOM tables and alpha diversity results for each rarefied BIOM table are now removed by default to reduce size of output. 
+* Update to rtax 0.984.
 
 QIIME 1.7.0 (14 May 2013)
 =========================

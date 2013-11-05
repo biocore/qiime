@@ -1496,7 +1496,6 @@ test_refseq_coll = LoadSeqs(data=[\
 
 # sample data copied from GreenGenes
 
-
 rtax_reference_taxonomy = """508720	99.0	k__Bacteria	 p__Actinobacteria	 c__Actinobacteria	 o__Actinomycetales	 f__Propionibacteriaceae	 g__Propionibacterium	 s__Propionibacterium acnes
 508050	99.0	k__Bacteria	 p__Proteobacteria	 c__Betaproteobacteria	 o__Burkholderiales	 f__Comamonadaceae	 g__Diaphorobacter	 s__
 502492	99.0	k__Bacteria	 p__Proteobacteria	 c__Betaproteobacteria	 o__Burkholderiales	 f__	 g__Aquabacterium	 s__
@@ -1616,6 +1615,11 @@ TGTCGTGAGATGTTGGGTTAAAAAAAAAAAAAAACGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
 >splitRead2IdG ampliconId_78907890/3
 TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 """
+
+
+# todo: confirm that rtax 0.984 still produces these expected outputs.  
+# It is within the realm of possibility that the new NOMATEPAIR reporting will (correctly) add lines to the output, 
+# in which case the expected result should include them.  If you see the tests pass, please delete this comment.
 
 
 rtax_expected_result_paired = {
