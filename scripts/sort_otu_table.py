@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -25,7 +25,11 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "Script for sorting the sample IDs in an OTU table based on a specified value in a mapping file."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("",
+script_info['script_usage'] = [("Default",
+                                "case insensitive natural sorting"
+                                " i.e. SAMP0, samp1, SAMP2, samp10, samp12",
+                                "%prog -i otu_table.biom -o sorted_otu_table.biom"),
+                                ("",
                                 "sort samples by the age field in the mapping file",
                                 "%prog -i otu_table.biom -o dob_sorted_otu_table.biom -m Fasting_Map.txt -s DOB"),
                                 ("",
