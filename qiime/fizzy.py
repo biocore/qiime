@@ -119,7 +119,7 @@ def run_pyfeast(data, labels, features, method='MIM', n_select=15):
         raise AttributeError("Unknown feature selection method is being specified for PyFeast. Make sure the feature selection method being selected is a valid one. ")
 
     if len(data.transpose()) < n_select:
-      raise ValueError("n_select must be less than the number of observations.")
+        raise ValueError("n_select must be less than the number of observations.")
 
     sf = fs_method(data, labels, n_select)
     reduced_set = []
