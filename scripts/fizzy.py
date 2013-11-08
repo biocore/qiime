@@ -68,7 +68,7 @@ def main():
     # run the fizzy feature selection routine
     selected_features = fizzy.run_feature_selection( 
         open(opts.input_fp,'U'), 
-        open(opts.map_fp,'U'), 
+        open(opts.mapping_fp,'U'), 
         opts.column_label, 
         opts.fs_method, 
         opts.n_select)
