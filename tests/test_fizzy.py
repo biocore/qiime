@@ -112,7 +112,7 @@ class FizzyTests(TestCase):
         """assert that fizzy throws an error for requesting more features than exist."""
         (data, labels)  = self.uniform_data(500, 50, 10)
         variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
-        slef.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 10000)
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 10000)
      
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 map_file_string = """#SampleID\tClass\nID0\tS1\nID1\tS2\nID2\tS2\n"""
