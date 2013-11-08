@@ -15,24 +15,13 @@ __status__ = "Development"
  
 
 script_info = {}
-script_info['brief_description'] = """Run feature selection on abundance data 
-    contained in a BIOM file."""
-script_info['script_description'] ="""This script will run a 
-    feature selection algorithm on abundance data contained in a 
-    BIOM file given a mapping file. The current feature selection methods uses a forward 
-    search algorithm to select the features. The objective functions 
-    are based on information theory. At the moment, users are limited 
-    to the objective functions implemented in the PyFeast feature 
-    selection module. You can find a tutorial of fizzy at 
-  http://qiime.org/tutorials/feature_selection.html """
+script_info['brief_description'] = """Run feature selection on abundance data contained in a BIOM file."""
+script_info['script_description'] ="""This script will run a feature selection algorithm on abundance data contained in a BIOM file given a mapping file. The current feature selection methods uses a forward search algorithm to select the features. The objective functions are based on information theory. At the moment, users are limited to the objective functions implemented in the PyFeast feature selection module. You can find a tutorial of fizzy at http://qiime.org/tutorials/feature_selection.html """
 script_info['script_usage'] = [(
     """Run JMI feature selection on a BIOM file:""",
-    """To perform feature selection the BIOM file, mapping file must 
-    be specified in advance, and the label column in the mapping file. 
-    Here we use JMI and select 15 features. """,
+    """To perform feature selection the BIOM file, mapping file must be specified in advance, and the label column in the mapping file. Here we use JMI and select 15 features. """,
     """%prog -i data.biom -m map.txt -c Class -o result.txt -f JMI -k 15""")]
-script_info['output_description']= """Text file containing the top features 
-    selected by the algorithm. """
+script_info['output_description']= """Text file containing the top features selected by the algorithm. """
 
 script_info['required_options'] = [
     make_option('-c',
@@ -78,8 +67,8 @@ def main():
 
     # run the fizzy feature selection routine
     selected_features = fizzy.run_feature_selection( 
-        open(opts.input_path,'U'), 
-        open(opts.map_path,'U'), 
+        open(opts.input_fp,'U'), 
+        open(opts.map_fp,'U'), 
         opts.column_label, 
         opts.fs_method, 
         opts.n_select)
