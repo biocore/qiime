@@ -120,6 +120,8 @@ def run_pyfeast(data, labels, features, method='MIM', n_select=15):
 
     if len(data.transpose()) < n_select:
         raise ValueError("n_select must be less than the number of observations.")
+    if n_select <= 0:
+        raise ValueError("n_select cannot be less than or equal to zero.")
 
     sf = fs_method(data, labels, n_select)
     reduced_set = []
