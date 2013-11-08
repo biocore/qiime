@@ -12,8 +12,8 @@ The Fizzy tool (available via fizzy.py) provides access to several information t
 
 References
 
-- G. Brown, A. Pocock, M.-J. Zhao, and M. Lujan, "Conditional likelihood maximization: A unifying framework for information theoretic feature selection," Journal of Machine Learning Research, vol. 13, pp. 27–66, 2012.
-- G. Ditzler, R. Polikar, and G. Rosen, "Information theoretic feature selection for high dimensional metagenomic data," in International Workshop on Genomic Signal Processing and Statistics, Washington, DC, 2012, pp. 143--146.
+- G Brown, A Pocock, M-J Zhao, and M Lujan, "Conditional likelihood maximization: A unifying framework for information theoretic feature selection," Journal of Machine Learning Research, vol. 13, pp. 27–66, 2012.
+- G Ditzler, R Polikar, and G Rosen, "Information theoretic feature selection for high dimensional metagenomic data," in International Workshop on Genomic Signal Processing and Statistics, Washington, DC, 2012, pp. 143--146.
 
 
 
