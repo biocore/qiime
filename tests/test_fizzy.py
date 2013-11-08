@@ -69,7 +69,7 @@ class FizzyTests(TestCase):
     def test_parse_map_invalid_sample_name(self):
         """test with invalid sample names"""
         self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID99',u'ID1',u'ID2'])
-
+    
     def test_parse_map_invalid_equal_num_sample_classes(self):
         """test with an invalid number of samples"""
         self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
@@ -96,8 +96,24 @@ class FizzyTests(TestCase):
         selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=3)
         self.assertEqual(selected_features, ['OTU0', "OTU1", "OTU3"])
 
-
-
+    def test_zero_selection(self):
+        """assert that fizzy throws an error for zero features being selected"""
+        (data, labels)  = self.uniform_data(500, 50, n_select)
+        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 0)
+     
+     def test_negative_selection(self):
+        """assert that fizzy throws an error for negative features being selected"""
+        (data, labels)  = self.uniform_data(500, 50, n_select)
+        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", -1)
+     
+     def test_too_large_selection(self):
+        """assert that fizzy throws an error for requesting more features than exist."""
+        (data, labels)  = self.uniform_data(500, 50, n_select)
+        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
+        slef.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 10000)
+     
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 map_file_string = """#SampleID\tClass\nID0\tS1\nID1\tS2\nID2\tS2\n"""
 biom_file_string = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date":"2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type":"float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows":[{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "ID0", "metadata": null},{"id": "ID1", "metadata": null},{"id": "ID2", "metadata": null}]}"""
