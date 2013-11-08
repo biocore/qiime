@@ -74,7 +74,7 @@ def main():
         opts.n_select)
 
 
-    f = open(opts.output_path, 'w')
+    f = open(opts.output_fp, 'w')
     for sf in selected_features:
         f.write(sf + '\n')
     f.close()
