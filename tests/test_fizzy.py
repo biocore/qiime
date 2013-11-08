@@ -102,13 +102,13 @@ class FizzyTests(TestCase):
         variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
         self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 0)
 
-     def test_negative_selection(self):
+    def test_negative_selection(self):
         """assert that fizzy throws an error for negative features being selected"""
         (data, labels)  = self.uniform_data(500, 50, n_select)
         variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
         self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", -1)
      
-     def test_too_large_selection(self):
+    def test_too_large_selection(self):
         """assert that fizzy throws an error for requesting more features than exist."""
         (data, labels)  = self.uniform_data(500, 50, n_select)
         variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
