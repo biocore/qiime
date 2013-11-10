@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -56,7 +57,7 @@ script_info['optional_options']=[\
      ' tables for batch processing. [default: %default]',
      type='existing_path'),
  make_option('-o', '--output_path',
-     help='Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format' +\
+     help='Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format '
      'or output directory when batch processing. [default: %default]',
      type='new_path'),
  make_option('-m', '--metrics', type='multiple_choice',
