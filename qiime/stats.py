@@ -1856,7 +1856,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
         axes.set_xticks(range(len(state_values)))
         axes.set_xticklabels(state_values)
         axes.set_ylim(ymin=ymin,ymax=ymax)
-        fig.savefig(plot_output_fp)
+        fig.savefig(plot_output_fp,transparent=True)
         output_fps.append(plot_output_fp)
     
     # write a biom table based on differences and 
