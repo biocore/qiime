@@ -150,7 +150,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
         log_data = truncate_rev_primers(open(self.fasta_fp, "U"),
          out_f, rev_primers)
 
-        expected_log_data = {'seqs_written': 5, 'total_seqs': 5,
+        expected_log_data = {'seqs_written': 5, 'total_seqs': 6,
         'sample_id_not_found': 0, 'reverse_primer_not_found': 0}
         
         self.assertEqual(log_data, expected_log_data)
@@ -166,7 +166,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
         log_data = truncate_rev_primers(open(self.fasta_fp, "U"),
          out_f, rev_primers, primer_mismatches=0)
 
-        expected_log_data = {'seqs_written': 5, 'total_seqs': 5,
+        expected_log_data = {'seqs_written': 5, 'total_seqs': 6,
         'sample_id_not_found': 0, 'reverse_primer_not_found': 2}
         
         self.assertEqual(log_data, expected_log_data)
@@ -182,7 +182,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
          out_f, rev_primers, truncate_option="truncate_remove",
          primer_mismatches=0)
 
-        expected_log_data = {'seqs_written': 3, 'total_seqs': 5,
+        expected_log_data = {'seqs_written': 3, 'total_seqs': 6,
         'sample_id_not_found': 0, 'reverse_primer_not_found': 2}
         
         self.assertEqual(log_data, expected_log_data)
@@ -225,7 +225,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
         # Because filepaths used are recorded, need the tmp filepaths
         expected_log_lines = ['Details for removal of reverse primers',
         'Original fasta filepath: %s' % self.fasta_fp,
-        'Total seqs in fasta: 5',
+        'Total seqs in fasta: 6',
         'Mapping filepath: %s' % self.mapping_fp,
         'Truncation option: truncate_only',
         'Mismatches allowed: 2',
@@ -257,6 +257,8 @@ TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTAT
 CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTAC
 >PC.634_5 FLP3FBN01DGFYQ orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
 TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTAC
+>PC.634_6 RevPrimerAtStart FLP3FBN01DGFYQ orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
+CTCTCAGCACCGTTTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACC
 """
 
 sample_fasta_file_bad_labels = """>CaptHammer_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
