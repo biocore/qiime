@@ -179,7 +179,7 @@ def main():
             "of sample ids as sequence read filepaths.")
         barcode_read_fps = [None] * len(sequence_read_fps)
     elif barcode_read_fps == None:
-        option_parser.error("Must provide --barcode_fps if "
+        option_parser.error("Must provide --barcode_read_fps if "
                             "--barcode_type is not 'not-barcoded'")
     else:
         pass
