@@ -32,7 +32,9 @@ from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 import cogent.app.clustalw
 import cogent.app.mafft
 
-from qiime.util import get_tmp_filename, FunctionWithParams
+from qiime.util import (get_tmp_filename,
+                        FunctionWithParams,
+                        get_qiime_temp_dir)
 import cogent.app.muscle_v38
 
 
@@ -256,7 +258,8 @@ class PyNastAligner(Aligner):
             min_pct=self.Params['min_pct'],
             min_len=self.Params['min_len'],
             align_unaligned_seqs_f=pairwise_alignment_f,
-            logger=logger)
+            logger=logger,
+            temp_dir=get_qiime_temp_dir())
 
         logger.record(str(self))
 
