@@ -2139,6 +2139,31 @@ class MetadataMapTests(TestCase):
         obs = self.empty_map.CategoryNames
         self.assertEqual(obs, [])
 
+    def test_filterSamples(self):
+        """Test filtering out samples from metadata map."""
+        exp = ['PC.356', 'PC.593']
+        self.overview_map.filterSamples(['PC.593', 'PC.356'])
+        obs = self.overview_map.SampleIds
+        self.assertEqual(obs, exp)
+
+        self.overview_map.filterSamples([])
+        self.assertEqual(self.overview_map.SampleIds, [])
+
+    def test_filterSamples_strict(self):
+        """Test strict checking of sample prescence when filtering."""
+        with self.assertRaises(ValueError):
+            self.overview_map.filterSamples(['PC.356', 'abc123'])
+
+        with self.assertRaises(ValueError):
+            self.empty_map.filterSamples(['foo'])
+
+    def test_filterSamples_no_strict(self):
+        """Test missing samples does not raise error."""
+        self.overview_map.filterSamples(['PC.356', 'abc123'], strict=False)
+        self.assertEqual(self.overview_map.SampleIds, ['PC.356'])
+
+        self.empty_map.filterSamples(['foo'], strict=False)
+        self.assertEqual(self.empty_map.SampleIds, [])
 
 class RExecutorTests(TestCase):
     """Tests of the RExecutor class."""
