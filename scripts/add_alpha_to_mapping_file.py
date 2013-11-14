@@ -40,7 +40,7 @@ script_info['script_usage'].append(("Adding alpha diversity data with the "
     "mapping_quantile.txt --binning_method=quantile"))
 script_info['script_usage'].append(("Adding collated alpha diversity data",
     "Add the mean of the alpha diversity values at a specified rarefaction"
-    " depth, this case is for use with the output of collated_alpha.py. It is "
+    " depth, this case is for use with the output of collate_alpha.py. It is "
     "recommended that the filenames are the name of the metric used in each "
     "file.", "%prog -i 'shannon.txt,chao1.txt' -m mapping.txt -b 4 -o collated_"
     "alpha_mapping.txt --depth=49 --collated_input"))
