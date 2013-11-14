@@ -71,8 +71,8 @@ script_info['optional_options'] = [\
                       'result file [default: <JOINED_METHOD>_joined]'),
      make_option('-t', '--threads', action='store', type='new_dirpath',\
                 help='Number of cpus to use. '+\
-                      'Only applicable when the method used is'+\
-                      'FLASh\' or \'PandaSeq\' ')]
+                      'Only applicable when the method used is '+\
+                      '\'FLASh\' or \'PandaSeq\' ')]
 script_info['version'] = __version__
 
 
