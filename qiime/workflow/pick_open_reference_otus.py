@@ -172,7 +172,7 @@ def assign_tax(repset_fasta_fp,
     try:
         assignment_method = params['assign_taxonomy']['assignment_method']
     except KeyError:
-        assignment_method = 'rdp'
+        assignment_method = 'uclust'
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_tax_assignments.txt' % \
