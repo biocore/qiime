@@ -1,2 +1,0 @@
-New.ReferenceOTU0	f2_10228
-New.ReferenceOTU1	t1_56713	t1_57060	t1_55836	t2_56059	t2_52739
