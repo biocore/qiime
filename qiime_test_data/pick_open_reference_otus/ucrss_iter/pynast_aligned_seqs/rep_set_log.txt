@@ -1,0 +1,17 @@
+candidate sequence ID	candidate nucleotide count	errors	template ID	BLAST percent identity to template	candidate nucleotide count post-NAST
+295053 f2_1539	133		171306	100.00	133
+879972 p1_27798	128		221080	98.40	128
+New.0.ReferenceOTU0 t2_52630	137		190336	100.00	137
+New.0.ReferenceOTU1 f1_8307	152		167734	87.50	152
+New.0.CleanUp.ReferenceOTU2 p2_33176	126		108139	94.40	126
+New.0.CleanUp.ReferenceOTU3 p1_38017	152		70198	96.10	152
+New.0.CleanUp.ReferenceOTU4 p1_36300	119		196518	99.20	119
+New.1.ReferenceOTU0 f5_1330	133		171306	96.20	133
+PyNastAligner parameters:
+Algorithm:NAST
+Application:PyNAST
+blast_db:None
+min_len:75
+min_pct:75.0
+pairwise_alignment_method:uclust
+template_filepath:/Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots

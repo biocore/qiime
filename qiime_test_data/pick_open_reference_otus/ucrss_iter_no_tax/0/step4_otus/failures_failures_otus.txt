@@ -1,0 +1,2 @@
+New.0.CleanUp.ReferenceOTU0	p1_38017	p2_36441
+New.0.CleanUp.ReferenceOTU1	f1_4866	f1_8746	f1_19304	f3_136	f3_141	f3_150	f1_8307	f3_140	f2_10228

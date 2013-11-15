@@ -1,0 +1,4 @@
+New.CleanUp.ReferenceOTU2	f2_4913	p2_32628	p1_36300
+New.CleanUp.ReferenceOTU3	p1_38017	p2_36441
+New.CleanUp.ReferenceOTU0	p2_35810	t1_53038	t2_52630	t2_53531	t2_53750	t1_57105
+New.CleanUp.ReferenceOTU1	p2_33268

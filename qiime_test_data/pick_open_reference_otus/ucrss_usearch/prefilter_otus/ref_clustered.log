@@ -1,0 +1,49 @@
+usearch_i86osx32 v6.1.544, 4.0Gb RAM (17.2Gb total), 8 cores
+usearch61 --usearch_global /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.fna --maxaccepts 1 --id 0.6 --minseqlength 64 --wordlength 8 --uc /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/ref_clustered.uc --maxrejects 32 --strand both --db /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna --log /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/ref_clustered.log 
+Started Fri Nov 15 02:18:03 2013
+
+            Type        Busy        Free         Mem   MaxRefCnt        Gets      Allocs       Frees
+----------------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
+         SeqInfo           8          32     9068.0b           1
+        PathInfo           0          16        0.0b           0
+     AlignResult           0           8        0.0b           0
+
+              Id      Allocs       Frees     Pct         Bytes
+----------------  ----------  ----------  ------  ------------
+          mx_hdr           9           0   45.4%         9.2Mb
+      gobuff_hdr          50           0   41.4%         8.4Mb
+         udbdata        4670           0    4.0%       813.6kb
+          hitmgr          40           0    2.7%       557.1kb
+     udbsearcher           8           0    2.6%       524.3kb
+       hspfinder        1596           4    2.0%       410.5kb
+         myutils           5           0    0.7%       135.3kb
+      xdpmem_hdr          32           0    0.4%        76.5kb
+       udbparams           1           0    0.3%        65.5kb
+         seqinfo          68           0    0.2%        43.1kb
+          scorer          32           0    0.2%        32.8kb
+    pathinfo_hdr          19           3    0.1%        27.6kb
+            Sort          80          16    0.0%       1280.0b
+         chainer          36          12    0.0%       1152.0b
+           Other           1           0    0.0%        128.0b
+          Search           4           0    0.0%        104.0b
+           seqdb           4           1    0.0%         60.0b
+             udb           1           0    0.0%          4.0b
+----------------  ----------  ----------  ------  ------------
+           Total        6656          36  100.0%          20Mb
+
+       5.5Mb  Curr mem
+       5.5Mb  Peak mem
+        37Mb  Total alloc
+        17Mb  Total free
+        20Mb  Net
+        15Mb  -Excess
+
+            Type        Busy        Free         Mem   MaxRefCnt        Gets      Allocs       Frees
+----------------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
+         SeqInfo           8          32     9068.0b           1
+        PathInfo           0          16        0.0b           0
+     AlignResult           0           8        0.0b           0
+
+Finished Fri Nov 15 02:18:03 2013
+Elapsed time 00:00
+Max memory 5.5Mb
