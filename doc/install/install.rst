@@ -40,7 +40,7 @@ Dependencies required for a subset of QIIME's features
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required in default pipeline):
 
 * uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
-* PyNAST 1.2 (`src_pynast  <https://github.com/downloads/qiime/pynast/PyNAST-1.2.tar.gz>`_) (license: GPL)
+* PyNAST 1.2.1 (`src_pynast <ftp://thebeast.colorado.edu/pub/pynast-releases/pynast-1.2.1.tar.gz>`_) (license: BSD)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)

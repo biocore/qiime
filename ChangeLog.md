@@ -15,6 +15,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Refactored make_rarefaction_plots.py to add options --generate_per_sample_plots  and --generate_average_tables. These are now suppressed by default to reduce run time and size of output.
 * Refactored alpha_rarefaction.py to add option --retain_intermediate_files. Rarefied BIOM tables and alpha diversity results for each rarefied BIOM table are now removed by default to reduce size of output. 
 * Update to rtax 0.984.
+* Required PyNAST version is now 1.2.1.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
