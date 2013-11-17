@@ -96,7 +96,7 @@ Post-OTU processing (parallel and serial, depending on step)
 
 #. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differs from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
 
-#. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
+#. Taxonomy will be assigned to all OTUs (using the uclust consensus taxonomy assigner by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
 
 To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. Your parameters file should contain the following::
 
