@@ -70,7 +70,7 @@ Before beginning with QIIME, you should ensure that your mapping file is formatt
 
 This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
 
-Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignments with RDP.
+Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignment.
 
 An example mapping file with faux reverse primers specified, using the ReversePrimer field, is available here:  `reverse primer mapping file <../_static/Examples/File_Formats/Fasting_Map_reverse_primers.txt>`_.
 
@@ -203,16 +203,16 @@ In the :file:`otus/rep_set/` directory, QIIME has created two new files - the lo
 
 Step 3. Assign Taxonomy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A primary goal of the QIIME pipeline is to assign high-throughput sequencing reads to taxonomic identities using established databases. This provides information on the microbial lineages found in microbial samples. By default, QIIME uses the RDP classifier to assign taxonomic data to each representative sequence from step 2, above.
+A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from from step 2.
 
-In the directory :file:`otus/rdp_assigned_taxonomy/`, there will be a log file and a text file. The text file contains a line for each OTU considered, with the RDP taxonomy assignment and a numerical confidence of that assignment (1 is the highest possible confidence). For some OTUs, the assignment will be as specific as a bacterial species, while others may be assignable to nothing more specific than the bacterial domain. Below are the first few lines of the text file and the user should note that the taxonomic assignment and confidence numbers from their run may not coincide with the output shown below, due to the RDP classification algorithm:
+In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU considered, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as *Unassigned*). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment. ::
 
-.. note::
 
-    * 41    PC.356_347  Root;Bacteria                                                                   0.980
-    * 63    PC.635_130  Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"           0.960
-    * 353   PC.634_150  Root;Bacteria;Proteobacteria;Deltaproteobacteria                                0.880
-    * 18    PC.355_1011 Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes 0.990
+	denovo367	k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__S24-7; g__; s__	1.00	3
+	denovo366	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__; g__; s__	1.00	3
+	denovo365	k__Bacteria; p__Firmicutes; c__Erysipelotrichi; o__Erysipelotrichales; f__Erysipelotrichaceae; g__Allobaculum; s__	1.00	3
+	denovo364	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae	0.67	3
+	denovo281	Unassigned	1.00	1
 
 .. _alignotuseq:
 
