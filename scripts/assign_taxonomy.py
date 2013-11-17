@@ -47,7 +47,7 @@ script_info['script_description']="""Contains code for assigning taxonomy, using
 
 Given a set of sequences, %prog attempts to assign the taxonomy of each sequence. Currently the methods implemented are assignment with BLAST, the RDP classifier, RTAX, tax2tree, mothur, and uclust. The output of this step is an observation metadata mapping file of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). There may be method-specific information in subsequent columns.
 
-Reference data sets and id-to-taxonomy maps for 16S rRNA sequences can be found in the Greengenes reference OTU builds. To get the latest build of the Greengenes OTUs (and other marker gene OTU collections), follow the "Resources" link from http://qiime.org. After downloading and unzipping you can use the following following files as -r and -t, where <otus_dir> is the name of the new directory after unzipping the reference OTUs tgz file.
+Reference data sets and id-to-taxonomy maps for 16S rRNA sequences can be found in the Greengenes reference OTU builds. To get the latest build of the Greengenes OTUs (and other marker gene OTU collections), follow the "Resources" link from http://qiime.org. After downloading and unzipping you can use the following files as -r and -t, where <otus_dir> is the name of the new directory after unzipping the reference OTUs tgz file.
 
 -r <otus_dir>/rep_set/97_otus.fasta
 -t <otus_dir>/taxonomy/97_otu_taxonomy.txt
