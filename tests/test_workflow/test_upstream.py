@@ -348,7 +348,7 @@ class UpstreamWorkflowTests(TestCase):
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
         taxonomy_assignments_fp = join(self.test_out,
-         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         'uclust_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
         otu_table_fp = join(self.test_out,'otu_table.biom')
         tree_fp = join(self.test_out,'rep_set.tre')
@@ -425,7 +425,7 @@ class UpstreamWorkflowTests(TestCase):
          'muscle_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
         taxonomy_assignments_fp = join(self.test_out,
-         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         'uclust_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
         otu_table_fp = join(self.test_out,'otu_table.biom')
         tree_fp = join(self.test_out,'rep_set.tre')

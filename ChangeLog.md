@@ -16,6 +16,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Refactored alpha_rarefaction.py to add option --retain_intermediate_files. Rarefied BIOM tables and alpha diversity results for each rarefied BIOM table are now removed by default to reduce size of output. 
 * Update to rtax 0.984.
 * Required PyNAST version is now 1.2.1.
+* Updated default taxonomy assigner to be the new uclust-based consensus taxonomy assigner. This was shown to be more accurate and faster than the existing methods in Bokulich, Rideout et al. (submitted).
 
 QIIME 1.7.0 (14 May 2013)
 =========================
