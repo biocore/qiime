@@ -203,7 +203,7 @@ In the :file:`otus/rep_set/` directory, QIIME has created two new files - the lo
 
 Step 3. Assign Taxonomy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from from step 2.
+A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from step 2.
 
 In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU considered, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as *Unassigned*). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment. ::
 
