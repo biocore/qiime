@@ -1850,7 +1850,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
         axes.plot(x_values,
                   [median(pre_values), median(post_values)], 
                   line_color, 
-                  linewidth=1.0,
+                  linewidth=3,
                   ls='--')
         axes.set_ylabel(analysis_category)
         axes.set_xticks(range(len(state_values)))
