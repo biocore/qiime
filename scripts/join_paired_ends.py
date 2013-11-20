@@ -16,6 +16,7 @@ from qiime.join_paired_ends import (join_method_names,
                                     join_method_constructors)
 from qiime.util import (parse_command_line_parameters, get_options_lookup, 
                         make_option, load_qiime_config, create_dir)
+from os.path import abspath, dirname
 import gzip
 
 options_lookup = get_options_lookup()
@@ -57,9 +58,6 @@ script_info['required_options'] = [\
     make_option('-r','--reverse_reads_fp',type="existing_filepath",
                  dest='reverse_reads_fp',
                  help='Path to read input reverse reads in FASTQ format.')]
-    #make_option('-b','--index_reads_fp',type="existing_filepath",
-    #            help='Path to read the barcode / index reads in FASTQ format.'+\
-    #                ' Will be filtered based on surviving joined pairs.')
 script_info['optional_options'] = [\
     make_option('-m', '--pe_join_method', action='store', type='choice',
                 choices=list(join_method_names.keys()),
@@ -73,13 +71,16 @@ script_info['optional_options'] = [\
                 help='Number of cpus to use. '+\
                       'Only applicable when the method used is '+\
                       '\'FLASh\' or \'PandaSeq\' ')]
+    #make_option('-b','--index_reads_fp',type="existing_filepath",
+    #            help='Path to read the barcode / index reads in FASTQ format.'+\
+    #            ' Will be filtered based on surviving joined pairs.')]
 script_info['version'] = __version__
 
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    if not (opts.join_method in join_method_constructors or 
-            opts.join_method in join_method_names):
+    if not (opts.pe_join_method in join_method_constructors or 
+            opts.pe_join_method in join_method_names):
        option_parser.error(\
         'Invalid paired-end join method: %s. \nValid choces are: %s'\
         %opts.pe_join_method,' '.join(join_method_constructors.keys() +
@@ -88,16 +89,15 @@ def main():
     forward_reads_fp = opts.forward_reads_fp 
     reverse_reads_fp = opts.reverse_reads_fp
     pe_join_method = opts.pe_join_method
+   
+    if opts.output_dir: # user specified output directory
+        output_dir = abspath(opts.output_dir)
+    else: # default output dir to location of infile
+        output_dir = dirname(abspath(forward_reads_fp))
     
-    if opt.output_dir:
-        output_dir = opt.output_dir
-    else:
-        fpath,ext = splitext(forward_reads_fp)[0]
-        output_dir = fpath + pe_join_method + '_joined'
-    
-    create_dir(output_dir, fail_on_exists=False)
+    create_dir(output_dir, fail_on_exist=False)
 
-    join_func = join_method_names(pe_join_method)
+    join_func = join_method_names[pe_join_method]
 
     paths = join_func(forward_reads_fp, reverse_reads_fp, working_dir=output_dir)
 
