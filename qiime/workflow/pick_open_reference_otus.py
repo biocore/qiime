@@ -670,8 +670,8 @@ def pick_subsampled_open_reference_otus(input_fp,
                     percent_subsample)
 
     logger.write('# Subsample the failures fasta file using API \n' + 
-          'subsample_fasta(%s, %s, %s)\n\n' % (step1_failures_fasta_fp,
-              step2_input_fasta_fp, percent_subsample))
+        'qiime.util.subsample_fasta(%s, %s, %s)\n\n' % (step1_failures_fasta_fp,
+            step2_input_fasta_fp, percent_subsample))
     
     ## Prep the OTU picking command for the subsampled failures
     step2_dir = '%s/step2_otus/' % output_dir
@@ -755,7 +755,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     otus_to_keep = filter_otus_from_otu_map(otu_fp,otu_no_singletons_fp,min_otu_size)
 
     logger.write('# Filter singletons from the otu map using API \n' + 
-          'filter_otus_from_otu_map(%s, %s, %s)\n\n' % (otu_fp,
+          'qiime.filter.filter_otus_from_otu_map(%s, %s, %s)\n\n' % (otu_fp,
               otu_no_singletons_fp, min_otu_size))
     
     ## make the final representative seqs file and a new refseqs file that 
@@ -800,7 +800,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     final_repset_f.close()
     logger.write('# Write non-singleton otus representative sequences from ' +
       'step 2 and step 4 to the final representative set and the new reference'+
-      ' set (%s and %s respectivelly)\n\n' % (final_repset_fp, new_refseqs_fp))
+      ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))
     
     # Prep the make_otu_table.py command
     otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir,min_otu_size)
