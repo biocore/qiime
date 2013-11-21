@@ -10,12 +10,11 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-
-from os.path import exists
+from os.path import exists, join
 from shutil import rmtree
 
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.util import get_tmp_filename, create_dir
 from qiime.parse import parse_qual_score
@@ -25,7 +24,7 @@ from qiime.demultiplex_fasta import (
     get_added_demultiplex_field, get_exact_bc_matches, attempt_bc_correction,
     get_curr_bc_added_field, get_demultiplex_data, write_qual_line,
     write_fasta_line, get_label_line, initialize_log_data,
-    get_output_ids, assign_seqs, demultiplex_sequences
+    get_output_ids, assign_seqs, process_files_and_demultiplex_sequences
 )
 
 class FakeOutFile(object):
@@ -74,7 +73,129 @@ class TopLevelTests(TestCase):
         self.valid_fasta_file_no_errors = valid_fasta_file_no_errors
         self.valid_qual_file_no_errors = valid_qual_file_no_errors
         self.valid_fasta_file_with_bc_errors = valid_fasta_file_with_bc_errors
+        self.sample_correct_mapping_data = sample_correct_mapping_data
+        self.sample_fasta_file = sample_fasta_file
+        self.sample_qual_file = sample_qual_file
+        
+        self.output_dir = get_random_directory_name(prefix = '/tmp/')
+        self.output_dir += '/'
+        create_dir(self.output_dir)
+        
+        self.correct_mapping_fp = get_tmp_filename(\
+         prefix = 'correct_mapping_',
+         suffix = '.txt')
+        map_file = open(self.correct_mapping_fp, 'w')
+        map_file.write(self.sample_correct_mapping_data)
+        map_file.close()
+        
+        self.sample_fasta_fp = get_tmp_filename(\
+         prefix = 'sample_fasta_',
+         suffix = '.fna')
+        sample_fasta = open(self.sample_fasta_fp, 'w')
+        sample_fasta.write(self.sample_fasta_file)
+        sample_fasta.close()
+        
+        self.sample_qual_fp = get_tmp_filename(\
+         prefix = 'sample_qual_',
+         suffix = '.qual')
+        sample_qual = open(self.sample_qual_fp, 'w')
+        sample_qual.write(self.sample_qual_file)
+        sample_qual.close()
+        
+        self._files_to_remove =\
+         [self.correct_mapping_fp, self.sample_fasta_fp,
+          self.sample_qual_fp]
+        
+    def tearDown(self):
+        if self._files_to_remove:
+            remove_files(self._files_to_remove)
+        if exists(self.output_dir):
+            rmtree(self.output_dir)
             
+    def test_process_files_and_demultiplex_sequences(self):
+        """ Overall IO/functionality test """
+        
+        process_files_and_demultiplex_sequences(self.correct_mapping_fp,
+         [self.sample_fasta_fp], [self.sample_qual_fp],
+          output_dir=self.output_dir, write_unassigned_reads=True,
+          save_barcode_frequencies=True)
+         
+        log_file = open(join(self.output_dir, "demultiplex_fasta.log"), "U")
+        log_lines = [line for line in log_file]
+        log_file.close()
+        
+        bc_freqs_f = open(join(self.output_dir, "barcode_freqs.txt"), "U")
+        bc_freqs = set([line for line in bc_freqs_f])
+        bc_freqs_f.close()
+        
+        fasta_seqs_f = open(join(self.output_dir, "demultiplexed_seqs.fna"),
+         "U")
+        fasta_lines = [line for line in fasta_seqs_f]
+        fasta_seqs_f.close()
+        
+        qual_seqs_f = open(join(self.output_dir, "demultiplexed_seqs.qual"),
+         "U")
+        qual_lines = [line for line in qual_seqs_f]
+        qual_seqs_f.close()
+        
+        unassigned_fna_f = open(join(self.output_dir, "unassigned_seqs.fna"),
+         "U")
+        unassigned_fna_lines = [line for line in unassigned_fna_f]
+        unassigned_fna_f.close()
+        
+        unassigned_qual_f = open(join(self.output_dir, "unassigned_seqs.qual"),
+         "U") 
+        unassigned_qual_line = [line for line in unassigned_qual_f]
+        unassigned_qual_f.close()
+        
+        expected_log_lines = [
+         'Total sequences in input files:\t4\n', 'Retain barcode:\tFalse\n',
+         'Barcode type:\tgolay_12\n',
+         'Max barcode error/mismatches allowed:\t0.5\n',
+         'Starting sequence identifier:\t1\n',
+         'Write unassigned reads:\tTrue\n',
+         'Disable barcode correction:\tFalse\n',
+         'Added demultiplex field:\tNone\n',
+         'Save barcode frequencies:\tFalse\n', '\n',
+         'Barcodes corrected/not corrected:\t0/1\n',
+         'Number of samples in mapping file:\t3\n',
+         'Sample count min/max/mean:\t1 / 1 / 1.00\n',
+         'Sample\tSequence Count\tBarcode/Added Demultiplex\n',
+         'PC.354\t1\tAGCACGAGCCTA\n', 'PC.356\t1\tACAGACCACTCA\n',
+         'PC.355\t1\tAACTCGTCGATG\n', 'Seqs written\t3\n',
+         'Percent of input seqs written\t0.75']
+        
+        # Use set() to avoid order issues with unit tests. 
+        expected_bc_freqs = set(['Barcode frequencies\n',
+         'ACCCCCCACTCA\t1\n', 'AACTCGTCGATG\t1\n',
+         'AGCACGAGCCTA\t1\n', 'ACAGACCACTCA\t1'])
+         
+        expected_fasta_lines = ['>PC.354_1 ABCD0001 orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0\n',
+         'CAGGACGAGACGAGGTT\n', '>PC.355_2 EFGH0002 orig_bc=AACTCGTCGATG new_bc=AACTCGTCGATG bc_diffs=0\n',
+         'CCAGATTACGAGATTA\n', '>PC.356_3 IJKL0003 orig_bc=ACAGACCACTCA new_bc=ACAGACCACTCA bc_diffs=0\n',
+         'GACCGATTACGATAACG\n']
+        
+        expected_qual_lines = ['>PC.354_1 ABCD0001 orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0\n',
+         '30 26 11 11 29 20 19 16 24 17 29 28 11 27 14 24 24\n',
+         '>PC.355_2 EFGH0002 orig_bc=AACTCGTCGATG new_bc=AACTCGTCGATG bc_diffs=0\n',
+         '12 14 27 23 22 19 24 18 19 20 28 10 17 14 17 13\n',
+         '>PC.356_3 IJKL0003 orig_bc=ACAGACCACTCA new_bc=ACAGACCACTCA bc_diffs=0\n',
+         '10 20 16 20 25 27 22 28 16 22 16 18 12 13 16 25 17\n']
+         
+        expected_unassigned_fna_lines = ['>Unassigned_4 nomatchingBC orig_bc=ACCCCCCACTCA new_bc=GTCCCCCACTGA bc_diffs=3\n',
+         'ACCCCCCACTCAGACCGATTACGATAACG\n']
+         
+        expected_unassigned_qual_line = ['>Unassigned_4 nomatchingBC orig_bc=ACCCCCCACTCA new_bc=GTCCCCCACTGA bc_diffs=3\n',
+         '30 27 11 16 30 19 13 19 16 15 24 12 10 20 16 20 25 27 22 28 16 22 16 18 12 13 16 25 17\n']
+        
+        # Skips first few lines that point to tmp filepaths
+        self.assertEqual(log_lines[5:], expected_log_lines)
+        self.assertEqual(bc_freqs, expected_bc_freqs)
+        self.assertEqual(fasta_lines, expected_fasta_lines)
+        self.assertEqual(qual_lines, expected_qual_lines)
+        self.assertEqual(unassigned_fna_lines, expected_unassigned_fna_lines)
+        self.assertEqual(unassigned_qual_line, expected_unassigned_qual_line)
+         
     def test_check_map(self):
         """ Properly returns data with valid input """
         
@@ -1672,12 +1793,13 @@ expected_formatted_log_data_no_qual = ['demultiplex_fasta.py log data\n',
  'Write unassigned reads:\tFalse',
  'Disable barcode correction:\tFalse',
  'Added demultiplex field:\tNone',
- 'Save barcode frequences:\tFalse\n',
+ 'Save barcode frequencies:\tFalse\n',
  'Barcodes corrected/not corrected:\t7/15',
  'Number of samples in mapping file:\t3',\
  'Sample count min/max/mean:\t0 / 20 / 10.00',
  'Sample\tSequence Count\tBarcode/Added Demultiplex',
- 'TTTT\t20\t', 'AAAA\t10\t', 'CCCC\t0\t', 'Total number seqs written\t30']
+ 'TTTT\t20\t', 'AAAA\t10\t', 'CCCC\t0\t', 'Seqs written\t30',
+ 'Percent of input seqs written\t0.94']
  
 expected_formatted_log_data_with_qual = ['demultiplex_fasta.py log data\n',
 'Metadata mapping file:\ttest_mapping.txt',
@@ -1688,11 +1810,12 @@ expected_formatted_log_data_with_qual = ['demultiplex_fasta.py log data\n',
 'Max barcode error/mismatches allowed:\t0',
 'Starting sequence identifier:\t1000', 'Write unassigned reads:\tTrue',
 'Disable barcode correction:\tTrue', 'Added demultiplex field:\trun_prefix',
-'Save barcode frequences:\tTrue\n', 'Barcodes corrected/not corrected:\t7/15',
+'Save barcode frequencies:\tTrue\n', 'Barcodes corrected/not corrected:\t7/15',
 'Number of samples in mapping file:\t3',
 'Sample count min/max/mean:\t0 / 20 / 10.00', 
 'Sample\tSequence Count\tBarcode/Added Demultiplex', 'TTTT\t20\t', 
-'AAAA\t10\t', 'CCCC\t0\t', 'Total number seqs written\t30']
+'AAAA\t10\t', 'CCCC\t0\t', 'Seqs written\t30',
+'Percent of input seqs written\t0.94']
 
 
 valid_fasta_file_no_errors = ['>ABCD0001 Added_Demultiplex=1 length=254',
@@ -1715,6 +1838,30 @@ valid_fasta_file_with_bc_errors = ['>ABCD0001 Added_Demultiplex=1 length=254',
 'GCCGCAGAGTCACCAGATTACGAGATTA',
 '>IJKL0003 Added_Demultiplex=3 length=255',
 'AGCAGCACTTGTGACCGATTACGATAACG']
+
+sample_correct_mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	ReversePrimer	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	ATGACCGATTRGACCAG	Control_mouse_I.D._356"""
+
+sample_fasta_file = """>ABCD0001 Added_Demultiplex=1 length=254
+AGCACGAGCCTACAGGACGAGACGAGGTT
+>EFGH0002 Added_Demultiplex=2 length=254
+AACTCGTCGATGCCAGATTACGAGATTA
+>IJKL0003 Added_Demultiplex=3 length=255
+ACAGACCACTCAGACCGATTACGATAACG
+>nomatchingBC Added_Demultiplex=3 length=255
+ACCCCCCACTCAGACCGATTACGATAACG"""
+
+sample_qual_file = """>ABCD0001 Added_Demultiplex=1 length=254
+29 13 24 14 10 14 16 13 30 10 13 11 30 26 11 11 29 20 19 16 24 17 29 28 11 27 14 24 24
+>EFGH0002 Added_Demultiplex=2 length=254
+13 22 15 12 10 14 23 13 25 22 15 20 12 14 27 23 22 19 24 18 19 20 28 10 17 14 17 13
+>IJKL0003 Added_Demultiplex=3 length=255
+30 27 11 16 30 19 13 19 16 15 24 12 10 20 16 20 25 27 22 28 16 22 16 18 12 13 16 25 17
+>nomatchingBC Added_Demultiplex=3 length=255
+30 27 11 16 30 19 13 19 16 15 24 12 10 20 16 20 25 27 22 28 16 22 16 18 12 13 16 25 17"""
 
 if __name__ =='__main__':
     main()

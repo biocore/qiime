@@ -158,11 +158,13 @@ class UpstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_pick_de_novo_otus(self):
-        """run_pick_de_novo_otus generates expected results"""
+    def test_run_pick_de_novo_otus_rdp_tax_assign(self):
+        """run_pick_de_novo_otus generates expected results with rdp tax assignment
+        """
         self.params['assign_taxonomy'] = \
          {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
-          'reference_seqs_fp':self.test_data['refseqs'][0]}
+          'reference_seqs_fp':self.test_data['refseqs'][0],
+          'assignment_method':'rdp'}
         self.params['align_seqs'] = \
          {'template_fp':self.test_data['refseqs_aligned'][0]}
         self.params['filter_alignment'] = \
@@ -236,6 +238,87 @@ class UpstreamWorkflowTests(TestCase):
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
+    def test_run_pick_de_novo_otus_uclust_tax_assign(self):
+        """run_pick_de_novo_otus generates expected results with uclust tax assignment
+        """
+        self.params['assign_taxonomy'] = \
+         {'id_to_taxonomy_fp':self.test_data['refseqs_tax'][0],
+          'reference_seqs_fp':self.test_data['refseqs'][0],
+          'assignment_method':'uclust'}
+        self.params['align_seqs'] = \
+         {'template_fp':self.test_data['refseqs_aligned'][0]}
+        self.params['filter_alignment'] = \
+         {'lane_mask_fp':self.test_data['refseqs_aligned_lanemask'][0]}
+        actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
+         self.test_data['seqs'][0], 
+         self.test_out, 
+         call_commands_serially,
+         self.params, 
+         self.qiime_config, 
+         parallel=False,
+         status_update_callback=no_status_updates)
+         
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out,'uclust_picked_otus',
+         '%s_otus.txt' % input_file_basename)
+        alignment_fp = join(self.test_out,
+         'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
+          input_file_basename)
+        failures_fp = join(self.test_out,
+         'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
+          input_file_basename)
+        taxonomy_assignments_fp = join(self.test_out,
+         'uclust_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         input_file_basename)
+        otu_table_fp = join(self.test_out,'otu_table.biom')
+        tree_fp = join(self.test_out,'rep_set.tre')
+        
+        self.assertEqual(actual_tree_fp,tree_fp)
+        self.assertEqual(actual_otu_table_fp,otu_table_fp)
+        
+        input_seqs = LoadSeqs(self.test_data['seqs'][0],
+                              format='fasta',
+                              aligned=False)
+        
+        # Number of OTUs falls within a range that was manually 
+        # confirmed
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertEqual(num_otus,14)
+        
+        # all otus get taxonomy assignments
+        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
+        self.assertEqual(len(taxonomy_assignment_lines),num_otus)
+        
+        # number of seqs which aligned + num of seqs which failed to
+        # align sum to the number of OTUs
+        aln = LoadSeqs(alignment_fp)
+        failures = LoadSeqs(failures_fp,aligned=False)
+        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(),num_otus)
+         
+        # number of tips in the tree equals the number of sequences that
+        # aligned
+        tree = LoadTree(tree_fp)
+        self.assertEqual(len(tree.tips()),aln.getNumSeqs())
+        
+        # parse the otu table
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        expected_sample_ids = ['f1','f2','f3','f4','p1','p2','t1','t2','not16S.1']
+        # sample IDs are as expected
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
+        # otu ids are as expected
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
+        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.test_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+
     def test_run_pick_de_novo_otus_parallel(self):
         """run_pick_de_novo_otus generates expected results in parallel
         """
@@ -265,7 +348,7 @@ class UpstreamWorkflowTests(TestCase):
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
         taxonomy_assignments_fp = join(self.test_out,
-         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         'uclust_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
         otu_table_fp = join(self.test_out,'otu_table.biom')
         tree_fp = join(self.test_out,'rep_set.tre')
@@ -342,7 +425,7 @@ class UpstreamWorkflowTests(TestCase):
          'muscle_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
         taxonomy_assignments_fp = join(self.test_out,
-         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         'uclust_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
         otu_table_fp = join(self.test_out,'otu_table.biom')
         tree_fp = join(self.test_out,'rep_set.tre')

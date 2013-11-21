@@ -1,1 +1,1 @@
-New.1.ReferenceOTU0	f6_00	f6_20
+New.1.ReferenceOTU0	f5_1330	f5_1350

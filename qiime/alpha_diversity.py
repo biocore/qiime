@@ -3,7 +3,8 @@
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
-    "William Van Treuren", "Jose Antonio Navas Molina"]
+               "William Van Treuren", "Jose Antonio Navas Molina",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -327,7 +328,6 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     write to file, each command is independant
 
     """
-    #alpha_script = qiime.alpha_diversity.__file__ #removed below
     file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(output_path):
@@ -361,9 +361,11 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     for fname in file_names:
         # future: try to make sure fname is a valid otu file
 
-        single_file_alpha(os.path.join(input_path, fname), 
-            metrics_list, os.path.join(output_path,'alpha_'+fname),
-            tree_path)
+        output_fname = 'alpha_' + os.path.splitext(fname)[0] + '.txt'
+        output_fp = os.path.join(output_path, output_fname)
+
+        single_file_alpha(os.path.join(input_path, fname), metrics_list,
+                          output_fp, tree_path)
 
 
 def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):

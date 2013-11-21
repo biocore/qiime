@@ -14,11 +14,19 @@ __email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from numpy import array, matrix
+from biom.parse import parse_biom_table
+from biom.exception import UnknownID
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import parse_mapping_file, parse_distmat, group_by_field, parse_coords
+
+from qiime.parse import (parse_mapping_file, parse_distmat, 
+                         group_by_field, parse_coords, 
+                         parse_mapping_file_to_dict)
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
     get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
-    get_adjacent_distances, get_ordered_coordinates)
+    get_adjacent_distances, get_ordered_coordinates,
+    extract_per_individual_states_from_sample_metadata,
+    extract_per_individual_state_metadatum_from_sample_metadata,
+    extract_per_individual_state_metadata_from_sample_metadata_and_biom)
 
 class GroupTests(TestCase):
     """Tests of the group module."""
@@ -104,6 +112,14 @@ class GroupTests(TestCase):
 
         self.small_dist_matrix_header, self.small_dist_matrix = parse_distmat(
                 self.small_dist_matrix_string)
+        
+        # extract_per_individual* input data
+        self.individual_states_and_responses_map_f1 = \
+         parse_mapping_file_to_dict(individual_states_and_responses_map_f1.split('\n'))[0]
+        self.individual_states_and_responses_map_f2 = \
+         parse_mapping_file_to_dict(individual_states_and_responses_map_f2.split('\n'))[0]
+        self.paired_difference_biom1 = \
+         parse_biom_table(paired_difference_biom_f1.split('\n'))
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
@@ -477,6 +493,233 @@ class GroupTests(TestCase):
         _get_groupings(['foo', 'bar'], matrix([[0.0, 0.7], [0.7, 0.01]]),
                        self.tiny_groups,
                        suppress_symmetry_and_hollowness_check=True)
+
+    
+    def test_extract_per_individual_states_from_sample_metadata(self):
+        """extract_per_individual_states_from_sample_metadata functions as expected
+        """
+        expected = {'001':['001A','001B'],
+                    '006':['006A','006B'],
+                    '007':['007A','007B'],
+                    '008':['008A','008B']}
+        actual = extract_per_individual_states_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+        
+        # change to state_values order is reflected in order 
+        # of output sample ids
+        expected = {'001':['001B','001A'],
+                    '006':['006B','006A'],
+                    '007':['007B','007A'],
+                    '008':['008B','008A']}
+        actual = extract_per_individual_states_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Post","Pre"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+        
+        # don't filter missing data
+        expected = {'001':['001A','001B'],
+                    '006':['006A','006B'],
+                    '007':['007A','007B'],
+                    '008':['008A','008B'],
+                    '009':[None,'post.only'],
+                    '010':['pre.only',None]}
+        actual = extract_per_individual_states_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   filter_missing_data=False)
+        self.assertEqual(actual,expected)
+        
+        ## alt input file with more states
+        expected = {'001':['001A','001B','001C']}
+        actual = extract_per_individual_states_from_sample_metadata(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post","PostPost"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+
+        # unlisted states are ignored
+        expected = {'001':['001A','001B']}
+        actual = extract_per_individual_states_from_sample_metadata(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
+        self.assertEqual(actual,expected)
+
+    def test_extract_per_individual_states_from_sample_metadata_invalid(self):
+        """extract_per_individual_states_from_sample_metadata handles invalid input
+        """
+        self.assertRaises(KeyError,
+                   extract_per_individual_states_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="some-invalid-category",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID")
+        self.assertRaises(KeyError,
+                   extract_per_individual_states_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="some-other-invalid-category")
+
+    def test_extract_per_individual_state_metadatum_from_sample_metadata(self):
+        """extract_per_individual_state_metadatum_from_sample_metadata functions as expected
+        """
+        veil_expected = {'001':[6.9,9.3],
+                    '006':[4.2,5.1],
+                    '007':[12.0,1.8],
+                    '008':[10.0,None]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,veil_expected)
+        
+        # different metadata_category yields different result
+        strep_expected = {'001':[57.4,26],
+                    '006':[19,15.2],
+                    '007':[33.2,50],
+                    '008':[3.2,20]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="StreptococcusAbundance",
+                   process_f=float)
+        self.assertEqual(actual,strep_expected)
+        
+        # different metadata_category yields different result
+        response_expected = {'001':["Improved","Improved"],
+                    '006':["Improved","Improved"],
+                    '007':["Worsened","Worsened"],
+                    '008':["Worsened","Worsened"]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="Response",
+                   process_f=str)
+        self.assertEqual(actual,response_expected)
+
+        ## alt input file with more states
+        expected = {'001':[6.9,9.3,10.1]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post","PostPost"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,expected)
+
+        # unlisted states are ignored
+        expected = {'001':[6.9,9.3]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+                   self.individual_states_and_responses_map_f2,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="VeillonellaAbundance",
+                   process_f=float)
+        self.assertEqual(actual,expected)
+
+    def test_extract_per_individual_state_metadatum_from_sample_metadata_invalid(self):
+        """extract_per_individual_state_metadatum_from_sample_metadata handles invalid column header
+        """
+        self.assertRaises(KeyError,
+                   extract_per_individual_state_metadatum_from_sample_metadata,
+                   self.individual_states_and_responses_map_f1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   metadata_category="some-non-existant-category",
+                   process_f=float)
+
+    def test_extract_per_individual_state_metadata_from_sample_metadata_and_biom(self):
+        """extract_per_individual_state_metadata_from_sample_metadata_and_biom functions as expected
+        """
+        # single observations
+        o1_expected = {'o1':{'001':[22,10],
+                             '006':[25,4],
+                             '007':[33,26],
+                             '008':[99,75]}}
+        actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=['o1'])
+        self.assertEqual(actual,o1_expected)
+        
+        # all observations
+        all_expected = {'o1':{'001':[22,10],
+                              '006':[25,4],
+                              '007':[33,26],
+                              '008':[99,75]},
+                        'o2':{'001':[10,44],
+                              '006':[3,99],
+                              '007':[8,18],
+                              '008':[64,164]},
+                        'o3':{'001':[10,50],
+                              '006':[50,10],
+                              '007':[10,50],
+                              '008':[50,10]}}
+        actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=None)
+        self.assertEqual(actual,all_expected)
+        
+        # invalid observation id
+        self.assertRaises(
+                   UnknownID,
+                   extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+                   self.individual_states_and_responses_map_f1,
+                   self.paired_difference_biom1,
+                   state_category="TreatmentState",
+                   state_values=["Pre","Post"],
+                   individual_identifier_category="PersonalID",
+                   observation_ids=['o1','bad.obs.id'])
+
+individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+001A	001	Improved	Pre	57.4	6.9
+001B	001	Improved	Post	26	9.3
+006A	006	Improved	Pre	19	4.2
+006B	006	Improved	Post	15.2	5.1
+007A	007	Worsened	Pre	33.2	12
+007B	007	Worsened	Post	50	1.8
+008A	008	Worsened	Pre	3.2	10
+008B	008	Worsened	Post	20	n/a
+post.only	009	Worsened	Post	22	42.0
+pre.only	010	Worsened	Pre	21	41.0
+"""
+
+paired_difference_biom_f1 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-07-10T09:22:39.602392","matrix_type": "sparse","matrix_element_type": "float","shape": [3, 10],"data": [[0,0,22.0],[0,1,10.0],[0,2,25.0],[0,3,4.0],[0,4,33.0],[0,5,26.0],[0,6,99.0],[0,7,75.0],[0,8,66.0],[0,9,67.0],[1,0,10.0],[1,1,44.0],[1,2,3.0],[1,3,99.0],[1,4,8.0],[1,5,18.0],[1,6,64.0],[1,7,164.0],[1,8,22.0],[1,9,22.0],[2,0,10.0],[2,1,50.0],[2,2,50.0],[2,3,10.0],[2,4,10.0],[2,5,50.0],[2,6,50.0],[2,7,10.0],[2,8,10.0],[2,9,50.0]],"rows": [{"id": "o1", "metadata": null},{"id": "o2", "metadata": null},{"id": "o3", "metadata": null}],"columns": [{"id": "001A", "metadata": null},{"id": "001B", "metadata": null},{"id": "006A", "metadata": null},{"id": "006B", "metadata": null},{"id": "007A", "metadata": null},{"id": "007B", "metadata": null},{"id": "008A", "metadata": null},{"id": "008B", "metadata": null},{"id": "post.only", "metadata": null},{"id": "pre.only", "metadata": null}]}"""
+
+individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
+001A	001	Improved	Pre	57.4	6.9
+001B	001	Improved	Post	26	9.3
+001C	001	Improved	PostPost	22	10.1
+"""
+
 
 
 if __name__ == '__main__':

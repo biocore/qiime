@@ -176,7 +176,112 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
+
+    def test_pick_subsampled_open_reference_otus_rdp_tax_assign(self):
+        """pick_subsampled_open_reference_otus fns when assigning tax with rdp
+        """
+        self.params.update(
+         parse_qiime_parameters(['assign_taxonomy:assignment_method rdp',
+          'assign_taxonomy:reference_seqs_fp %s' %  self.test_data['refseqs'][0],
+          'assign_taxonomy:id_to_taxonomy_fp %s' %  self.test_data['refseqs_tax'][0]]))
+        pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
+                                  refseqs_fp=self.test_data['refseqs'][0],
+                                  output_dir=self.wf_out,
+                                  percent_subsample=0.5,
+                                  new_ref_set_id='wf.test.otu',
+                                  command_handler=call_commands_serially,
+                                  params=self.params,
+                                  prefilter_refseqs_fp=None,
+                                  qiime_config=self.qiime_config,
+                                  step1_otu_map_fp=None,
+                                  step1_failures_fasta_fp=None,
+                                  parallel=False,
+                                  suppress_step4=False,
+                                  logger=None,
+                                  status_update_callback=no_status_updates)
+        otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
+        final_failure_fp = '%s/final_failures.txt' % self.wf_out
+        final_repset_fp = '%s/rep_set.fna' % self.wf_out
+        new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
+        prefilter_failures_fp = glob('%s/prefilter_otus/*_failures.txt' % self.wf_out)[0]
+        tree_fp = '%s/rep_set.tre' % self.wf_out
+        aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
+        otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
+        pynast_failures_fp = '%s/pynast_aligned_seqs/rep_set_failures.fasta' % self.wf_out
+        rdp_tax_fp = '%s/rdp_assigned_taxonomy/rep_set_tax_assignments.txt' % self.wf_out
+
+        self.assertTrue(exists(otu_map_w_singletons_fp),"OTU map doesn't exist")
+        self.assertFalse(exists(final_failure_fp),\
+                         "Final failures file shouldn't exist, but it does")
+        self.assertTrue(exists(final_repset_fp),"Final representative set doesn't exist")
+        self.assertTrue(exists(new_refseqs_fp),"New refseqs file doesn't exist")
+        self.assertTrue(exists(prefilter_failures_fp),"Prefilter failures file doesn't exist")
+        self.assertTrue(exists(tree_fp),"Final tree doesn't exist")
+        self.assertTrue(exists(aln_fp),"Final alignment doesn't exist")
+        self.assertTrue(exists(otu_table_fp),"Final BIOM table doesn't exist")
+        self.assertTrue(exists(pynast_failures_fp),"PyNAST failures file doesn't exist")
+        self.assertTrue(exists(rdp_tax_fp),"rdp taxonomy assignment result doesn't exist")
+        
+        # all OTUs in final OTU table occur more than once
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        for row in otu_table.iterObservationData():
+            self.assertTrue(sum(row) >= 2,"Singleton OTU detected in OTU table.")
+        # number of OTUs in final OTU table equals the number of seequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ObservationIds),count_seqs(aln_fp)[0])
+        # ... and that number is 6
+        self.assertEqual(len(otu_table.ObservationIds),6)
+        
+        # the correct sequences failed the prefilter
+        prefilter_failure_ids = [s.strip() for s in open(prefilter_failures_fp,'U')]
+        self.assertEqual(len(prefilter_failure_ids),24)
+        self.assertTrue('t1_1' in prefilter_failure_ids)
+        self.assertTrue('p1_2' in prefilter_failure_ids)
+        self.assertTrue('not16S.1_130' in prefilter_failure_ids)
+        self.assertTrue('not16S.1_151' in prefilter_failure_ids)
+        
+        # confirm that the new reference sequences is the same length as the
+        # input reference sequences plus the number of new non-singleton otus
+        # 
+        self.assertEqual(count_seqs(new_refseqs_fp)[0],
+                         count_seqs(self.test_data['refseqs'][0])[0] +
+                         len([o for o in otu_table.ObservationIds 
+                              if o.startswith('wf.test.otu')]) +
+                         count_seqs(pynast_failures_fp)[0])
+        
+        # spot check a few of the otus to confirm that we're getting reference and new
+        # otus in the final otu map. This is done on the OTU map singletons get filtered
+        # before building the otu table
+        otu_map = fields_to_dict(open(otu_map_w_singletons_fp))
+        self.assertTrue('295053' in otu_map,\
+         "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in otu_map,\
+         "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.ReferenceOTU0' in otu_map,\
+         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
+
+        # confirm that number of tips in the tree is the same as the number of sequences
+        # in the alignment
+        num_tree_tips = len(LoadTree(tree_fp).tips())
+        num_align_seqs = LoadSeqs(aln_fp).getNumSeqs()
+        self.assertEqual(num_tree_tips,num_align_seqs)
+        self.assertEqual(num_tree_tips,6)
+        
+        # OTU table without singletons or pynast failures has same number of 
+        # otus as there are aligned sequences
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        self.assertEqual(len(otu_table.ObservationIds),num_align_seqs)
+        
+        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        obs_idx = otu_table.getObservationIndex('295053')
+        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+         ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", 
+          "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
+        # All observations have 'taxonomy' metadata
+        for o in otu_table.iterObservations():
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
+
 
     def test_pick_subsampled_open_reference_otus_usearch(self):
         """pick_subsampled_open_reference_otus functions as expected with usearch
@@ -277,7 +382,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_pick_subsampled_open_reference_otus_suppress_assign_tax(self):
         """pick_subsampled_open_reference_otus functions without assign tax step
@@ -439,7 +544,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_pick_subsampled_open_reference_otus_parallel(self):
@@ -539,7 +644,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_pick_subsampled_open_reference_otus_suppress_step4(self):
@@ -646,7 +751,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_pick_subsampled_open_reference_otus_invalid_input(self):
         """pick_subsampled_open_reference_otus raises error on refseqs in params file
@@ -791,7 +896,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
         
     def test_iterative_pick_subsampled_open_reference_otus(self):
         """pick_subsampled_open_reference_otus functions as expected with prefilter
@@ -913,7 +1018,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_iterative_pick_subsampled_open_reference_otus_parallel(self):
@@ -1036,7 +1141,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_final_repset_from_iteration_repsets(self):
         """ final_repset_from_iteration_repsets functions as expected """

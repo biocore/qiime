@@ -46,9 +46,9 @@ You'll notice that depending on your version of QIIME, the extension on your OTU
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	print_biom_table_summary.py -i $PWD/ucr97/otu_table_mc2.biom
+	biom summarize-table -i $PWD/ucr97/otu_table_mc2.biom -o $PWD/ucr97/otu_table_mc2_summary.txt
 
-This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
+This will create an output file with information on the number of reads per sample. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
 After choosing an even sampling depth you can use the ``beta_diversity_through_plots.py`` script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample)::
 	
@@ -96,7 +96,7 @@ Post-OTU processing (parallel and serial, depending on step)
 
 #. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differs from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
 
-#. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
+#. Taxonomy will be assigned to all OTUs (using the uclust consensus taxonomy assigner by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
 
 To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. Your parameters file should contain the following::
 
@@ -113,9 +113,9 @@ This command should be run in parallel. Each job will need approximately 4GB of 
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
-	print_biom_table_summary.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
+	biom summarize-table -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom -o $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures_summary.txt
 
-This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
+This will create an output file with information on the number of reads per sample. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
 
 After choosing an even sampling depth you can use the ``beta_diversity_through_plots.py`` script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample)::
 	

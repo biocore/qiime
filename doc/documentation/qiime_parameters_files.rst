@@ -14,7 +14,7 @@ The QIIME workflow scripts plug together two or more QIIME commands to facilitat
 Format
 ======
 
-The parameters file is a text file with one parameter setting per line. Blank lines or lines beginning with a ``#`` are ignored. A parameter setting is defined as ``script_name:parameter_name``, followed by a tab, and then the value. For example::
+The parameters file is a text file with one parameter setting per line. Blank lines or lines beginning with a ``#`` are ignored. A parameter setting is defined as ``script_name:parameter_name``, followed by whitespace (space or tab), and then the value. For example::
 	
 	pick_otus:otu_picking_method	uclust
 
@@ -22,7 +22,7 @@ This indicates that the ``--otu_picking_method`` will be set to ``uclust`` when 
 	
 	pick_otus.py -h
 
-Flag options (i.e., those that don't take a value, like the ``--enable_rev_strand_match`` option to ``pick_otus.py``) are specified by passing ``True`` or ``False`` after the tab. For example::
+Flag options (i.e., those that don't take a value, like the ``--enable_rev_strand_match`` option to ``pick_otus.py``) are specified by passing ``True`` or ``False`` after the whitespace. For example::
 	
 	pick_otus:enable_rev_strand_match	True
 	
@@ -39,6 +39,10 @@ Note that when specifying parameters, you must specify their `long form` name, n
 	                      uclust, uclust_ref, or usearch) [default: 0.97]
 
 You would pass this as ``pick_otus:similarity``, NOT as ``pick_otus:s``. The latter will not work!
+
+Some workflow scripts, such as `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_, run commands found in the `biom-format <http://biom-format.org>`_ package as part of their workflow. These commands are a bit different than QIIME scripts because they are of the form ``biom <subcommand>`` (e.g., ``biom summarize-table``). In order to control these biom-format commands using a QIIME parameters file, you must reference the command name and the subcommand name, **separated by a dash**. For example, to control the behavior of ``biom summarize-table``, your QIIME parameters file might look like::
+	
+	biom-summarize-table:qualitative	True
 
 Examples
 ========

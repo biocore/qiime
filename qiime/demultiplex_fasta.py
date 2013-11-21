@@ -766,7 +766,7 @@ def process_log_data(log_data,
      disable_bc_correction)
     final_log_data.append("Added demultiplex field:\t%s" %\
      added_demultiplex_field)
-    final_log_data.append("Save barcode frequences:\t%s\n" %\
+    final_log_data.append("Save barcode frequencies:\t%s\n" %\
      save_barcode_frequencies)
      
     final_log_data.append("Barcodes corrected/not corrected:\t%d/%d" %\
@@ -794,7 +794,9 @@ def process_log_data(log_data,
         final_log_data.append("%s\t%s\t%s" %\
          (curr_id[0], curr_id[1], curr_id[2]))
      
-    final_log_data.append("Total number seqs written\t%d" % counts_col.sum())
+    final_log_data.append("Seqs written\t%d" % counts_col.sum())
+    final_log_data.append("Percent of input seqs written\t%3.2f" %\
+     (counts_col.sum()/seq_counts))
     
     return final_log_data
     

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -172,12 +172,14 @@ def assign_tax(repset_fasta_fp,
     try:
         assignment_method = params['assign_taxonomy']['assignment_method']
     except KeyError:
-        assignment_method = 'rdp'
+        assignment_method = 'uclust'
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
-    if parallel and (assignment_method == 'rdp' or assignment_method == 'blast'):
+    if parallel and (assignment_method == 'rdp' or
+                     assignment_method == 'blast' or
+                     assignment_method == 'uclust'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -198,7 +200,7 @@ def assign_tax(repset_fasta_fp,
         # Build the parallel taxonomy assignment command
         assign_taxonomy_cmd = \
          'parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
-         (assignment_method, repset_fasta_fp,assign_taxonomy_dir, params_str)
+         (assignment_method, repset_fasta_fp, assign_taxonomy_dir, params_str)
     else:
         try:
             params_str = get_params_str(params['assign_taxonomy'])
@@ -475,7 +477,7 @@ def iterative_pick_subsampled_open_reference_otus(
                        status_update_callback=status_update_callback)
         
             # Add taxa to otu table
-            add_metadata_cmd = 'add_metadata.py -i %s --observation_mapping_fp %s -o %s --sc_separated taxonomy --observation_header OTUID,taxonomy' %\
+            add_metadata_cmd = 'biom add-metadata -i %s --observation-metadata-fp %s -o %s --sc-separated taxonomy --observation-header OTUID,taxonomy' %\
              (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
             commands.append([("Add taxa to OTU table",add_metadata_cmd)])
         
@@ -851,8 +853,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                        status_update_callback=status_update_callback)
         
             # Add taxa to otu table
-            # Add taxa to otu table
-            add_metadata_cmd = 'add_metadata.py -i %s --observation_mapping_fp %s -o %s --sc_separated taxonomy --observation_header OTUID,taxonomy' %\
+            add_metadata_cmd = 'biom add-metadata -i %s --observation-metadata-fp %s -o %s --sc-separated taxonomy --observation-header OTUID,taxonomy' %\
              (tax_input_otu_table_fp,taxonomy_fp,otu_table_w_tax_fp)
             commands.append([("Add taxa to OTU table",add_metadata_cmd)])
         

@@ -98,7 +98,7 @@ class DownstreamWorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.test_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.test_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.test_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+        'weighted_unifrac_emperor_pcoa_plot','index.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix
@@ -146,7 +146,7 @@ class DownstreamWorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.test_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.test_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.test_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+        'weighted_unifrac_emperor_pcoa_plot','index.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix
@@ -191,7 +191,7 @@ class DownstreamWorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.test_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.test_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.test_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
+        'weighted_unifrac_emperor_pcoa_plot','index.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix
@@ -256,7 +256,6 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
-        self.assertTrue(getsize(pd_averages_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -307,9 +306,7 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp_stderr) > 0)
-        self.assertTrue(getsize(pd_averages_fp_stderr) > 0)
         self.assertTrue(getsize(html_fp_stddev) > 0)
-        self.assertTrue(getsize(pd_averages_fp_stddev) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -355,7 +352,6 @@ class DownstreamWorkflowTests(TestCase):
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(html_fp) > 0)
-        self.assertTrue(getsize(pd_averages_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -382,6 +378,12 @@ class DownstreamWorkflowTests(TestCase):
         unweighted_unifrac_upgma_tree_fp = join(
          self.test_out,'unweighted_unifrac','upgma_cmp',
          'jackknife_named_nodes.tre')
+        weighted_unifrac_emperor_index_fp = join(
+         self.test_out,'weighted_unifrac','emperor_pcoa_plots',
+         'index.html')
+        unweighted_unifrac_emperor_index_fp = join(
+         self.test_out,'unweighted_unifrac','emperor_pcoa_plots',
+         'index.html')
         
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
         unweighted_unifrac_dm_fp = join(self.test_out,
@@ -407,6 +409,8 @@ class DownstreamWorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_emperor_index_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_emperor_index_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]
@@ -433,6 +437,12 @@ class DownstreamWorkflowTests(TestCase):
         unweighted_unifrac_upgma_tree_fp = join(
          self.test_out,'unweighted_unifrac','upgma_cmp',
          'jackknife_named_nodes.tre')
+        weighted_unifrac_emperor_index_fp = join(
+         self.test_out,'weighted_unifrac','emperor_pcoa_plots',
+         'index.html')
+        unweighted_unifrac_emperor_index_fp = join(
+         self.test_out,'unweighted_unifrac','emperor_pcoa_plots',
+         'index.html')
         
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
         unweighted_unifrac_dm_fp = join(self.test_out,
@@ -458,6 +468,8 @@ class DownstreamWorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_emperor_index_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_emperor_index_fp) > 0)
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out,'log*.txt'))[0]

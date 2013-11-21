@@ -73,7 +73,12 @@ script_info['optional_options']=[\
  make_option('-e','--max_rare_depth',type='int',\
             help='the upper limit of rarefaction depths '+\
             '[default: median sequence/sample count]'),
- options_lookup['jobs_to_start_workflow']]
+ options_lookup['jobs_to_start_workflow'],
+ make_option('--retain_intermediate_files',action='store_true', help='retain '
+             'intermediate files: rarefied OTU tables (rarefaction) and alpha diversity '
+             'results (alpha_div). By default these will be erased [default: %default]',
+             default=False),
+]
 script_info['version'] = __version__
 
 def main():
@@ -90,7 +95,7 @@ def main():
     parallel = opts.parallel
     min_rare_depth = opts.min_rare_depth
     max_rare_depth = opts.max_rare_depth
-    
+    retain_intermediate_files = opts.retain_intermediate_files
     
     if opts.parameter_fp:
         try:
@@ -145,7 +150,8 @@ def main():
      parallel=parallel,\
      min_rare_depth=min_rare_depth,
      max_rare_depth=max_rare_depth,
-     status_update_callback=status_update_callback)
+     status_update_callback=status_update_callback,
+     retain_intermediate_files=retain_intermediate_files)
 
 if __name__ == "__main__":
     main()

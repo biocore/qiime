@@ -110,7 +110,14 @@ script_info['optional_options']=[\
          help='Write the HTML output as one file, images embedded, or several. Options'+\
          ' are file_creation, multiple files, and memory. [default: %default]',
          choices=['file_creation','memory']),
-    
+    make_option('--generate_per_sample_plots',action='store_true', help='generate per '
+             'sample plots for each of the metadata categories. This will allow you to '
+             'show/hide samples from the plots but will required a larger processing '
+             'time. In general, this practice is useful only for small datasets. '
+             '[default: %default]',default=False),
+    make_option('--generate_average_tables',action='store_true', help='generate average '
+             'tables of results. A summary of the metrics and alpha diversity '
+             'measurements. [default: %default]',default=False),
 ]
 script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
                              'map_fname':'QIIME-formatted mapping filepath',
@@ -122,16 +129,29 @@ script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
                              'ymax': 'Y-axis height',
                              'webpage':'Suppress HTML (Deprecated)',
                              'suppress_html_output':'Suppress HTML',
-                             'output_type': 'HTML file with embedded images'}
+                             'output_type': 'HTML file with embedded images',
+                             'generate_per_sample_plots': 'add per sample plots'}
                              
 script_info['version'] = __version__
 
 def main():
-    option_parser, options, args = parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
-    ops = {}
-    input_dir = options.input_dir
-
+    input_dir = opts.input_dir
+    imagetype = opts.imagetype
+    resolution = opts.resolution
+    output_dir = opts.output_dir
+    ymax = opts.ymax
+    std_type = opts.std_type
+    suppress_webpage = opts.suppress_html_output
+    output_type = opts.output_type
+    generate_per_sample_plots = opts.generate_per_sample_plots
+    generate_average_tables = opts.generate_average_tables
+    
+    #Get the command-line options.
+    prefs, data, background_color, label_color, ball_scale, arrow_colors = \
+                    sample_color_prefs_and_map_data_from_options(opts)
+    
     rares = {}
     if isdir(input_dir):
         rarenames = listdir(input_dir)
@@ -155,30 +175,24 @@ def main():
             option_parser.error('Problem with rarefaction file. %s'%\
             exc_info()[1])
             exit(0)
-    if options.imagetype not in ['png','svg','pdf']:
+    if imagetype not in ['png','svg','pdf']:
         option_parser.error('Supplied extension not supported.')
         exit(0)
-    else:
-        imagetype = options.imagetype
         
     try:
-        resolution = int(options.resolution)
+        resolution = int(resolution)
     except(ValueError):
         option_parser.error('Inavlid resolution.')
         exit(0)
     
-    #Get the command-line options.
-    prefs, data, background_color, label_color, ball_scale, arrow_colors = \
-                    sample_color_prefs_and_map_data_from_options(options)
-    
     #output directory check
-    if isinstance(options.output_dir, str) and options.output_dir != '.':
-        if exists(options.output_dir):
-            output_dir = options.output_dir
+    if isinstance(output_dir, str) and output_dir != '.':
+        if exists(output_dir):
+            output_dir = output_dir
         else:
             try:
-                create_dir(options.output_dir,False)
-                output_dir = options.output_dir
+                create_dir(output_dir,False)
+                output_dir = output_dir
             except(ValueError):
                 option_parser.error('Could not create output directory.')
                 exit(0)
@@ -186,13 +200,11 @@ def main():
         output_dir = get_random_directory_name()
     
     #Generate the plots and html text
-    ymax=options.ymax
-    std_type=options.std_type
-    suppress_webpage=options.suppress_html_output
-    output_type=options.output_type
-    html_output = make_averages(prefs, data, background_color, label_color, \
-                                rares, output_dir,resolution,imagetype,ymax, \
-                                suppress_webpage,std_type,output_type)
+    html_output = make_averages(prefs, data, background_color, label_color,
+                                rares, output_dir, resolution, imagetype, ymax,
+                                suppress_webpage, std_type, output_type,
+                                generate_per_sample_plots = generate_per_sample_plots,
+                                generate_average_tables = generate_average_tables)
                                 
     if html_output:
         #Write the html file.

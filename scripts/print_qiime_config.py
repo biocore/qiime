@@ -51,6 +51,12 @@ try:
 except ImportError:
     matplotlib_lib_version = "Not installed."
 
+try:
+    from emperor import __version__ as emperor_lib_version
+except ImportError:
+    emperor_lib_version = "Not installed."
+
+
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version == None:
     pynast_lib_version = "Not installed."
@@ -363,7 +369,7 @@ class Qiime_config(TestCase):
             version_string))
 
     def test_matplotlib_suported_version(self):
-        """maptplotlib version is supported """
+        """matplotlib version is supported """
         #min_acceptable_version = (1,1,0)
         #min_unacceptable_version = (1,1,0)
         matplotlib_acceptable_version = (1,1,0)
@@ -795,7 +801,8 @@ def main():
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
      ("RDP Classifier version (if installed)", rdp_version),
-     ("Java version (if installed)", java_version)]
+     ("Java version (if installed)", java_version),
+     ("Emperor version", emperor_lib_version)]
 
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"

@@ -1,34 +1,34 @@
 usearch_i86osx32 v6.1.544, 4.0Gb RAM (17.2Gb total), 8 cores
-usearch61 --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/ref_clustered.uc --db /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna --log /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/ref_clustered.log --usearch_global /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/abundance_sorted.fna --strand both --maxaccepts 1 --wordlength 8 --maxrejects 32 --minseqlength 64 --id 0.97 
-Started Tue Apr  9 15:35:47 2013
+usearch61 --usearch_global /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/abundance_sorted.fna --maxaccepts 1 --id 0.97 --minseqlength 64 --wordlength 8 --uc /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/ref_clustered.uc --maxrejects 32 --strand both --db /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna --log /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step1_otus/ref_clustered.log 
+Started Fri Nov 15 02:18:04 2013
 
             Type        Busy        Free         Mem   MaxRefCnt        Gets      Allocs       Frees
 ----------------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-         SeqInfo           8          29     7790.0b           1
-        PathInfo           0          16        0.0b           0
-     AlignResult           0           8        0.0b           0
+         SeqInfo           8          27     9102.0b           1
+        PathInfo           0          15        0.0b           0
+     AlignResult           0           7        0.0b           0
 
               Id      Allocs       Frees     Pct         Bytes
 ----------------  ----------  ----------  ------  ------------
-      gobuff_hdr          50           0   74.3%         8.4Mb
+      gobuff_hdr          50           0   74.7%         8.4Mb
          udbdata        4670           0    7.2%       813.6kb
-          hitmgr          40           0    4.9%       557.1kb
-     udbsearcher           8           0    4.6%       524.3kb
+     udbsearcher           8           0    4.7%       524.3kb
+          hitmgr          36           0    4.5%       503.8kb
        hspfinder        1597           5    3.6%       410.4kb
           mx_hdr           1           0    2.6%       297.0kb
          myutils           5           0    1.2%       135.3kb
        udbparams           1           0    0.6%        65.5kb
-         seqinfo          58           0    0.3%        36.6kb
-          scorer          32           0    0.3%        32.8kb
-    pathinfo_hdr          18           2    0.2%        27.0kb
+         seqinfo          62           0    0.3%        39.2kb
+          scorer          28           0    0.3%        28.7kb
+    pathinfo_hdr          16           1    0.2%        25.2kb
             Sort          88          24    0.0%       1280.0b
-         chainer          45          21    0.0%       1216.0b
+         chainer          48          24    0.0%       1248.0b
            Other           1           0    0.0%        128.0b
           Search           4           0    0.0%        104.0b
            seqdb           4           1    0.0%         60.0b
              udb           1           0    0.0%          4.0b
 ----------------  ----------  ----------  ------  ------------
-           Total        6623          53  100.0%          11Mb
+           Total        6620          55  100.0%          11Mb
 
        4.6Mb  Curr mem
        4.6Mb  Peak mem
@@ -39,10 +39,10 @@ Started Tue Apr  9 15:35:47 2013
 
             Type        Busy        Free         Mem   MaxRefCnt        Gets      Allocs       Frees
 ----------------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-         SeqInfo           8          29     7790.0b           1
-        PathInfo           0          16        0.0b           0
-     AlignResult           0           8        0.0b           0
+         SeqInfo           8          27     9102.0b           1
+        PathInfo           0          15        0.0b           0
+     AlignResult           0           7        0.0b           0
 
-Finished Tue Apr  9 15:35:47 2013
+Finished Fri Nov 15 02:18:04 2013
 Elapsed time 00:00
 Max memory 4.6Mb

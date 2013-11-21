@@ -22,7 +22,7 @@ script_info = {}
 script_info['brief_description'] = "Add alpha diversity data to a metadata "+\
     "mapping file"
 script_info['script_description'] = "Add alpha diversity data to a mapping "+\
-    "file for use with other QIIME scripts, i. e. make_3d_plots.py. The "+\
+    "file for use with other QIIME scripts, i. e. make_emperor.py. The "+\
     "resulting mapping file will contain three new columns per metric in the "+\
     "alpha diversity data; the first column being the raw value, the second "+\
     "being a normalized raw value and the third one a label classifying "+\
@@ -40,7 +40,7 @@ script_info['script_usage'].append(("Adding alpha diversity data with the "
     "mapping_quantile.txt --binning_method=quantile"))
 script_info['script_usage'].append(("Adding collated alpha diversity data",
     "Add the mean of the alpha diversity values at a specified rarefaction"
-    " depth, this case is for use with the output of collated_alpha.py. It is "
+    " depth, this case is for use with the output of collate_alpha.py. It is "
     "recommended that the filenames are the name of the metric used in each "
     "file.", "%prog -i 'shannon.txt,chao1.txt' -m mapping.txt -b 4 -o collated_"
     "alpha_mapping.txt --depth=49 --collated_input"))

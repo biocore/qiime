@@ -176,12 +176,14 @@ def run_pick_de_novo_otus(input_fp,
     try:
         assignment_method = params['assign_taxonomy']['assignment_method']
     except KeyError:
-        assignment_method = 'rdp'
+        assignment_method = 'uclust'
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
-    if parallel and (assignment_method == 'rdp' or assignment_method == 'blast'):
+    if parallel and (assignment_method == 'rdp' or
+                     assignment_method == 'blast' or
+                     assignment_method == 'uclust'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])

@@ -89,6 +89,8 @@ flag is ignored if the user specifies an edges file.'),
 script_info['version'] = __version__
 
 def main():
+    print "\nWarning: compare_3d_plots.py is being deprecated in favor of make_emperor.py, and will no longer be available in QIIME 1.8.0-dev.\n"
+
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     prefs, data, background_color, label_color, ball_scale, arrow_colors = \
