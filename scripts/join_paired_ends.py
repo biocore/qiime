@@ -13,10 +13,12 @@ __status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,
-                                    join_method_constructors)
+                                    join_method_constructors,
+                                    read_bc_to_dict,
+                                    remove_unused_barcodes)
 from qiime.util import (parse_command_line_parameters, get_options_lookup, 
                         make_option, load_qiime_config, create_dir)
-from os.path import abspath, dirname
+from os.path import abspath, dirname, splitext
 import gzip
 
 options_lookup = get_options_lookup()
@@ -70,15 +72,18 @@ script_info['optional_options'] = [\
      make_option('-t', '--threads', action='store', type='new_dirpath',\
                 help='Number of cpus to use. '+\
                       'Only applicable when the method used is '+\
-                      '\'FLASh\' or \'PandaSeq\' ')]
-    #make_option('-b','--index_reads_fp',type="existing_filepath",
-    #            help='Path to read the barcode / index reads in FASTQ format.'+\
-    #            ' Will be filtered based on surviving joined pairs.')]
+                      '\'FLASh\' or \'PandaSeq\' '),
+    make_option('-b','--index_reads_fp',type='existing_filepath',
+                dest='index_reads_fp',
+                help='Path to read the barcode / index reads in FASTQ format.'+\
+                'Will be filtered based on surviving joined pairs.')]
+
 script_info['version'] = __version__
 
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    
     if not (opts.pe_join_method in join_method_constructors or 
             opts.pe_join_method in join_method_names):
        option_parser.error(\
@@ -99,7 +104,21 @@ def main():
 
     join_func = join_method_names[pe_join_method]
 
+    # set params dict. see pick_otus.py for example.
     paths = join_func(forward_reads_fp, reverse_reads_fp, working_dir=output_dir)
+    
+    if opts.index_reads_fp:
+        # put in library code:
+        bd_fp = open(opts.index_reads_fp)
+        bcd = read_bc_to_dict(bd_fp)
+        assembly_fp = paths['Assembled']
+        bc_outfile_base_name,ext = splitext(assembly_fp)
+        filtered_bc_outfile_path = bc_outfile_base_name + '_barcodes.fastq'
+        assembly_fh = open(assembly_fp, 'U')
+        out_fh = open(filtered_bc_outfile_path, 'w')
+        remove_unused_barcodes(assembly_fh, bcd, out_fh)
+        assembly_fh.close()
+        out_fh.close()
 
 if __name__ == "__main__":
     main()
