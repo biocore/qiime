@@ -11,16 +11,16 @@ __email__ = "robesonms@ornl.gov"
 __status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
-from cogent.app.fastq_join import run_fastqjoin
-from cogent.app.seqprep import run_seqprep
-from cogent.app.flash import run_flash
-from cogent.app.pandaseq import run_pandaseq
+from cogent.app.fastq_join import join_paired_end_reads_fastqjoin
+from cogent.app.seqprep import join_paired_end_reads_seqprep
+from cogent.app.flash import join_paired_end_reads_flash
+from cogent.app.pandaseq import join_paired_end_reads_pandaseq
 
 join_method_constructors = {}
-join_method_names = {'fastq-join':run_fastqjoin,
-                     'SeqPrep':run_seqprep,
-                     'flash':run_flash,
-                     'pandaseq':run_pandaseq}
+join_method_names = {'fastq-join':join_paired_end_reads_fastqjoin,
+                     'SeqPrep':join_paired_end_reads_seqprep,
+                     'flash':join_paired_end_reads_flash,
+                     'pandaseq':join_paired_end_reads_pandaseq}
 
 def read_bc_to_dict(barcodes):
     """Returns {fastq.header:fastq_data}.
