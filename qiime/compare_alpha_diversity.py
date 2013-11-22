@@ -168,9 +168,14 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
      collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
                                                    per_sample_average_diversities)
     
+    # sort the data alphabetically
+    sorted_per_category_value_average_diversities = \
+     per_category_value_average_diversities.items()
+    sorted_per_category_value_average_diversities.sort()
+    
     x_tick_labels = []
     distributions = []
-    for cat, avg_diversities in per_category_value_average_diversities.items():
+    for cat, avg_diversities in sorted_per_category_value_average_diversities:
         x_tick_labels.append("%s (n=%d)" % (cat, len(avg_diversities)))
         distributions.append(avg_diversities)
     
