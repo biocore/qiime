@@ -10,9 +10,8 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option, create_dir
-
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+ make_option, create_dir)
 from qiime.demultiplex_fasta import process_files_and_demultiplex_sequences
 
 options_lookup = get_options_lookup()

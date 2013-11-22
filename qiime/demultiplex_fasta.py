@@ -11,6 +11,7 @@ __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
 from string import upper
+from StringIO import StringIO
 from itertools import izip
 from os.path import join
 from os import rename
@@ -18,7 +19,7 @@ from collections import defaultdict
 from operator import itemgetter
 from gzip import GzipFile
 
-from numpy import array
+from numpy import array, savetxt
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from cogent.core.moltype import IUPAC_DNA_ambiguities
@@ -219,7 +220,7 @@ def assign_seqs(file_data,
         for curr_fasta, curr_qual in zip(file_data['fasta_files'],
          file_data['qual_files']):
             for fasta_data, qual_data in izip(MinimalFastaParser(curr_fasta),
-             MinimalQualParser(curr_qual, full_header=True)):
+             MinimalQualParser(curr_qual, value_cast_f=str, full_header=True)):
 
                 seq_counts += 1
                 fasta_label, fasta_seq = fasta_data
@@ -249,12 +250,12 @@ def assign_seqs(file_data,
                     write_fasta_line(file_data['unassigned_seqs_f'],
                      fasta_seq, label_line, True, len(bc))
                     write_qual_line(file_data['unassigned_qual_f'],
-                     list(qual_seq), label_line, True, len(bc))
+                     qual_seq, label_line, True, len(bc))
                 elif not sample_id.startswith("Unassigned"):
                     write_fasta_line(file_data['demultiplexed_seqs_f'],
                      fasta_seq, label_line, keep_barcode, len(bc))
                     write_qual_line(file_data['demultiplexed_qual_f'],
-                     list(qual_seq), label_line, keep_barcode, len(bc))
+                     qual_seq, label_line, keep_barcode, len(bc))
                 
                 if log_id:
                     log_data[log_id] += 1
@@ -450,8 +451,8 @@ def write_qual_line(demultiplexed_qual_f,
     for slice in range(0, len(final_seq), qual_line_size):
 
         current_segment = final_seq[slice:slice + qual_line_size]
-        current_qual_scores_lines.append(" ".join(map(str, current_segment)))
-    
+        current_qual_scores_lines.append(" ".join(current_segment))
+        
     demultiplexed_qual_f.write(">%s\n" % label_line)
     demultiplexed_qual_f.write('\n'.join(current_qual_scores_lines))
     demultiplexed_qual_f.write('\n')
