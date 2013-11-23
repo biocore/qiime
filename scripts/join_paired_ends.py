@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # file: join_paired_ends.py
-# Using make_phylogeny as a guide.
 
 __author__ = "Mike Robeson"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -14,43 +13,49 @@ __status__ = "Development"
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,
                                     join_method_constructors,
-                                    read_bc_to_dict,
-                                    remove_unused_barcodes)
+                                    write_synced_barcodes_fastq)
 from qiime.util import (parse_command_line_parameters, get_options_lookup, 
                         make_option, load_qiime_config, create_dir)
 from os.path import abspath, dirname, splitext
 import gzip
+
+# TODO:
+# add method specific options
+# rename output files to something more consistent between methods
 
 options_lookup = get_options_lookup()
 qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description']= """Joins paired-end Illumina reads."""
-script_info['script_description'] = """This script take forward and reverse Illumina reads and joins them based on the method chosen. Currently, there are four methods that can be selected by the user:
+script_info['script_description'] = """This script take forward and reverse Illumina reads and joins them based on the method chosen. Will optionally, create an updated index reads file to match the surviving joined paired-ends. Currently, there are two methods that can be selected by the user:
 
 1. fastq-join - Erik Aronesty, 2011. ea-utils : "Command-line tools for processing biological sequencing data" (http://code.google.com/p/ea-utils)
 
 2. SeqPrep - (https://github.com/jstjohn/SeqPrep)
-
-3. FLASh - Magoc & Salzberg (2011) Bioinformatics (http://ccb.jhu.edu/software/FLASH/)
-
-4. PandaSeq - Masella et al. (2012) PANDAseq: paired-end assembler for illumina sequences. BMC Bioinformatics 13:31. (https://github.com/neufeld/pandaseq)
-
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""","""%prog -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""","""%prog -m SeqPrep -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Join paired-ends with \'FLASh\':""","""This method is multi-thread capable but should only be used if the paired-ends have already been quality trimmed, or are not highly overlapping.""","""%prog -m flash -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Join paired-ends with \'PandaSeq\':""","""This method is also multi-thread capable. Unlike the previous methods, the output from \'PandaSeq\' can not be used for downstream quality filtering. \'PandaSeq\' changes the meaning of the quality scores in regions of overlap. This may cause unexcpected behaviour with downstream quality filters.""","""%prog -m pandaseq -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
+script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
+script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
+script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r reverse_reads.fastq -b index.reads.fastq"""))
 script_info['output_description'] = """All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory. 
 
-The following will always be returned:
-\"..._joined.fastq\" - This is a FASTQ file containing the joined paired-end sequences.
 
-Additional output given the method chosen via this script:
-1. fastq-join, SeqPrep, & FLASh will output: 
-   \"..._un1.fastq\" - unassembled / unjoined reads1 output
-   \"..._un2.fastq\" - unassembled / unjoined reads2 output
+1. fastq-join will output fastq-formatted files as:
+   \"..._join\" - assembled / joined reads output
+   \"..._un1\" - unassembled / unjoined reads1 output
+   \"..._un2\" - unassembled / unjoined reads2 output
+
+2. SeqPrep will output fastq-formatted gzipped files as: 
+   \"..._assembled.gz\" - unassembled / unjoined reads1 output
+   \"..._unassembled_R1.gz\" - unassembled / unjoined reads1 output
+   \"..._unassembled_R2.gz\" - unassembled / unjoined reads2 output
+
+3. If a barcode / index file is provided via the \'-b\' option, an updated
+   barcodes file will be output as:
+   \"..._barcodes.fastq\"
+    This barcode / index file must be used in conjunction with the joined
+    paired-ends file as input to \'split_libraries_fastq.py\'.
 
 """
 script_info['required_options'] = [\
@@ -69,10 +74,6 @@ script_info['optional_options'] = [\
     make_option('-o', '--output_dir', action='store', type='new_dirpath',\
                 help='Path to store '+\
                       'result file [default: <JOINED_METHOD>_joined]'),
-    #make_option('-t', '--threads', action='store', type='new_dirpath',\
-    #            help='Number of cpus to use. '+\
-    #                  'Only applicable when the method used is '+\
-    #                  '\'FLASh\' or \'PandaSeq\' '),
     make_option('-b','--index_reads_fp',type='existing_filepath',
                 dest='index_reads_fp',
                 help='Path to read the barcode / index reads in FASTQ format.'+\
@@ -104,26 +105,14 @@ def main():
 
     join_func = join_method_names[pe_join_method]
 
-    # set params dict? see pick_otus.py for examples.
-    # need to override defaults in function, so may not
-    # need to abstract so much here
     paths = join_func(forward_reads_fp, reverse_reads_fp, working_dir=output_dir)
    
-    #if opts.threads and opts.pe_join_method in ['flash','pandaseq']:
-        
-    # I will move code below into the library code in the qiime folder
-    # just prototyping for now.
     if opts.index_reads_fp:
-        bd_fp = open(opts.index_reads_fp)
-        bcd = read_bc_to_dict(bd_fp)
+        index_reads = opts.index_reads_fp
         assembly_fp = paths['Assembled']
-        bc_outfile_base_name,ext = splitext(assembly_fp)
-        filtered_bc_outfile_path = bc_outfile_base_name + '_barcodes.fastq'
-        assembly_fh = open(assembly_fp, 'U')
-        out_fh = open(filtered_bc_outfile_path, 'w')
-        remove_unused_barcodes(assembly_fh, bcd, out_fh)
-        assembly_fh.close()
-        out_fh.close()
+        
+        write_synced_barcodes_fastq(assembly_fp,index_reads)
+
 
 if __name__ == "__main__":
     main()
