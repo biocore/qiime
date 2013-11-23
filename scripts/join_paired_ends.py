@@ -76,8 +76,35 @@ script_info['optional_options'] = [\
                       'result file [default: <JOINED_METHOD>_joined]'),
     make_option('-b','--index_reads_fp',type='existing_filepath',
                 dest='index_reads_fp',
-                help='Path to read the barcode / index reads in FASTQ format.'+\
-                ' Will be filtered based on surviving joined pairs.')]
+                help='Path to read the barcode / index reads in FASTQ format.'
+                ' Will be filtered based on surviving joined pairs.'),
+    make_option('-p', '--perc_max_diff', action='store', type='int',
+                help='fastq-join option:'+\
+                     ' Maximum allowed % differences within region of overlap'+\
+                      ',  [default: %default]', default=8),
+    make_option('-j', '--min_overlap', action='store', type='int',
+                help='fastq-join and SeqPrep option:'+\
+                      ' Minimum allowed overlap in base-pairs required to join pairs.'+\
+                      ' Recomended default settings are: fastq-join (6), SeqPrep (15) '+\
+                      ', [default: %default]', default=6),
+    make_option('-y', '--max_ascii_score', action='store', type='string',
+                help='SeqPrep option:'+\
+                      ' Maximum quality score / ascii code allowed to appear within'+\
+                      ' joined pairs output.' 
+                      ' [default: %default]', default='J'),
+    make_option('-n', '--min_frac_match', action='store', type='float',
+                help='SeqPrep option:'+\
+                      ' Minimum allowed fraction of matching bases required to join reads'+\
+                      ',  [default: %default]', default=0.9),
+    make_option('-g', '--max_good_mismatch', action='store', type='float',
+                help='SeqPrep option:'+\
+                      ' Maximum allowed mis-matched but high quality bases allowed'+\
+                      ' to join reads. ' + '[default: %default]', default=0.2),
+    make_option('-6', '--phred_64', action='store_true',
+                help='SeqPrep option:'+\
+                      ' If input reads are in phred+64 format. Output will '\
+                      'always be phred+33. [default: %default]',
+                        default=False)]
 
 script_info['version'] = __version__
 
