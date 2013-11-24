@@ -33,6 +33,7 @@ from cogent.core.moltype import IUPAC_DNA_ambiguities
 from qiime.parse import QiimeParseError, MinimalQualParser
 from qiime.check_id_map import process_id_map
 from qiime.format import format_histograms_two_categories
+from qiime.util import qiime_open
 
 def quality_filter_sequences(mapping_file,
                              fasta_files,
@@ -246,8 +247,8 @@ def process_seqs(fasta_files,
     # empty qual seq for case of no qual file use
     qual_seq=""
     
-    fasta_f = [get_infile(fasta_f) for fasta_f in fasta_files]
-    qual_f = [get_infile(qual_f) for qual_f in qual_files]
+    fasta_f = [qiime_open(fasta_f) for fasta_f in fasta_files]
+    qual_f = [qiime_open(qual_f) for qual_f in qual_files]
     
     quality_filtered_seqs_f = open(join(output_dir,
      "quality_filtered_seqs.fna.incomplete"), "w")
@@ -275,7 +276,7 @@ def process_seqs(fasta_files,
                      qual_label))
                 if len(fasta_seq) != len(qual_seq):
                     raise ValueError,("Found fasta and qual seqs that do "
-                     "not having matching length: fasta label "
+                     "not have matching lengths: fasta label "
                      "%s, qual label %s" % (fasta_label, qual_label))
                 final_fasta, final_qual, final_log_data, detailed_quality_data=\
                  quality_filter_seq(fasta_label, fasta_seq.upper(), qual_seq,
@@ -1013,41 +1014,43 @@ def get_ids_primers(header,
     
     ids_primers = {}
     ids_rev_primers = {}
-    all_primers = []
-    all_rev_primers = []
+    all_primers = set([])
+    all_rev_primers = set([])
        
     for line in mapping_data:
-        all_forward_primers = []
-        all_reverse_primers = []
+        all_forward_primers = set([])
+        all_reverse_primers = set([])
         if suppress_sampleid_check:
-            all_primers +=\
-             [upper(primer).strip() for primer in (line[primer_ix].split(','))]
+            all_primers.update(
+             [upper(primer).strip() for primer in (line[primer_ix].split(','))])
             if reverse_primers != "disable":
-                all_rev_primers +=\
-                 [DNA.rc(upper(primer)).strip() for primer in (line[rev_primer_ix].split(','))]
+                all_rev_primers.update(
+                 [DNA.rc(upper(primer)).strip()
+                 for primer in (line[rev_primer_ix].split(','))])
             continue
         if reverse_primers != "disable":
-            all_raw_reverse_primers =\
-             [DNA.rc(upper(primer)).strip() for primer in line[rev_primer_ix].split(',')]
+            all_raw_reverse_primers = set(
+             [DNA.rc(upper(primer)).strip() for 
+             primer in line[rev_primer_ix].split(',')])
             for curr_primer in all_raw_reverse_primers:
-                all_reverse_primers += expand_degeneracies([curr_primer])
-            ids_rev_primers[line[sample_id_ix]] = set(all_reverse_primers)
+                all_reverse_primers.update(expand_degeneracies([curr_primer]))
+            ids_rev_primers[line[sample_id_ix]] = all_reverse_primers
         
         all_raw_forward_primers =\
-         [upper(primer).strip() for primer in line[primer_ix].split(',')]
+         set([upper(primer).strip() for primer in line[primer_ix].split(',')])
         for curr_primer in all_raw_forward_primers:
-            all_forward_primers += expand_degeneracies([curr_primer])
-        ids_primers[line[sample_id_ix]] = set(all_forward_primers)
+            all_forward_primers.update(expand_degeneracies([curr_primer]))
+        ids_primers[line[sample_id_ix]] = all_forward_primers
     
     if suppress_sampleid_check:
-        final_all_primers = []
-        final_all_rev_primers = []
+        final_all_primers = set([])
+        final_all_rev_primers = set([])
         for curr_primer in set(all_primers):
-            final_all_primers += expand_degeneracies([curr_primer])
+            final_all_primers.update(expand_degeneracies([curr_primer]))
         for curr_primer in set(all_rev_primers):
-            final_all_rev_primers += expand_degeneracies([curr_primer])
-        ids_primers["all_primers"] = set(final_all_primers)
-        ids_rev_primers["rev_primers"] = set(final_all_rev_primers)
+            final_all_rev_primers.update(expand_degeneracies([curr_primer]))
+        ids_primers["all_primers"] = final_all_primers
+        ids_rev_primers["rev_primers"] = final_all_rev_primers
         
     return ids_primers, ids_rev_primers
     
@@ -1149,123 +1152,117 @@ def format_log_data(final_log_data,
      failures.
     """
     
-    formatted_log_data = "# Log details for quality filtering\n\n"
+    formatted_log_data = ["# Log details for quality filtering\n\n"]
     
     fastas = ",".join(list(final_log_data['fasta_files']))
-    formatted_log_data += "Input fasta file(s):\t%s\n" % (fastas)
+    formatted_log_data.append("Input fasta file(s):\t%s\n" % (fastas))
 
     if final_log_data['qual_files']:
         quals = ",".join(list(final_log_data['qual_files']))
     else:
         quals = "NA"
-    formatted_log_data += "Input qual file(s):\t%s\n" % (quals)
+    formatted_log_data.append("Input qual file(s):\t%s\n" % (quals))
     
-    formatted_log_data += "Output directory:\t%s\n\n" % output_dir
+    formatted_log_data.append("Output directory:\t%s\n\n" % output_dir)
 
-    formatted_log_data += "Parameter Settings\n\n"
-    formatted_log_data += "Minimum sequence lengths:\t%d\n" % min_seq_len
-    formatted_log_data += "Maximum sequence lengths:\t%d\n" % max_seq_len
-    formatted_log_data += "Minimum quality score:\t%d\n" % min_qual_score
-    formatted_log_data += "Retain primer sequence:\t%s\n" % retain_primer
-    formatted_log_data += "Maximum ambiguous bases allowed:\t%d\n" % max_ambig
-    formatted_log_data += "Suppress ambiguous base check:\t%s\n" %\
-     suppress_ambig_check
-    formatted_log_data += "Truncate at first ambiguous base:\t%s\n" %\
-     truncate_ambi_bases
-    formatted_log_data += "Maximum homopolymer length allowed:\t%d\n" %\
-     max_homopolymer
-    formatted_log_data += "Suppress homopolymer check:\t%s\n" %\
-     suppress_homopolymer_check
-    formatted_log_data += "Suppress primer check:\t%s\n" %\
-     suppress_primer_check
-    formatted_log_data += "Maximum allowed primer mismatches:\t%d\n" %\
-     max_primer_mismatch
-    formatted_log_data += "Sliding quality window check setting:\t%d\n" %\
-     qual_score_window
-    formatted_log_data += "Discard sequences with low quality windows:\t%s\n" %\
-     discard_bad_windows
-    formatted_log_data += "Reverse primer settings:\t%s\n" %\
-     reverse_primers
-    formatted_log_data += "Reverse primer maximum mismatches:\t%d\n" %\
-     reverse_primer_mismatches
-    formatted_log_data += "Suppress SampleID matching:\t%s\n" %\
-     suppress_sampleid_check
-    formatted_log_data += "Enabled detailed logging of all filters:\t%s\n" %\
-     enable_all_checks
-    formatted_log_data += "Record matching quality scores:\t%s\n\n" %\
-     record_qual_scores
+    formatted_log_data.append("Parameter Settings\n\n")
+    formatted_log_data.append("Minimum sequence lengths:\t%d\n" % min_seq_len)
+    formatted_log_data.append("Maximum sequence lengths:\t%d\n" % max_seq_len)
+    formatted_log_data.append("Minimum quality score:\t%d\n" % min_qual_score)
+    formatted_log_data.append("Retain primer sequence:\t%s\n" % retain_primer)
+    formatted_log_data.append("Maximum ambiguous bases allowed:\t%d\n"
+     % max_ambig)
+    formatted_log_data.append("Suppress ambiguous base check:\t%s\n" %\
+     suppress_ambig_check)
+    formatted_log_data.append("Truncate at first ambiguous base:\t%s\n" %\
+     truncate_ambi_bases)
+    formatted_log_data.append("Maximum homopolymer length allowed:\t%d\n" %\
+     max_homopolymer)
+    formatted_log_data.append("Suppress homopolymer check:\t%s\n" %\
+     suppress_homopolymer_check)
+    formatted_log_data.append("Suppress primer check:\t%s\n" %\
+     suppress_primer_check)
+    formatted_log_data.append("Maximum allowed primer mismatches:\t%d\n" %\
+     max_primer_mismatch)
+    formatted_log_data.append("Sliding quality window check setting:\t%d\n" %\
+     qual_score_window)
+    formatted_log_data.append("Discard sequences with low quality windows:\t%s\n" %\
+     discard_bad_windows)
+    formatted_log_data.append("Reverse primer settings:\t%s\n" %\
+     reverse_primers)
+    formatted_log_data.append("Reverse primer maximum mismatches:\t%d\n" %\
+     reverse_primer_mismatches)
+    formatted_log_data.append("Suppress SampleID matching:\t%s\n" %\
+     suppress_sampleid_check)
+    formatted_log_data.append("Enabled detailed logging of all filters:\t%s\n" %\
+     enable_all_checks)
+    formatted_log_data.append("Record matching quality scores:\t%s\n\n" %\
+     record_qual_scores)
      
-    formatted_log_data += "Input sequence count:\t%d\n" %\
-     final_log_data['seq_counts']
-    formatted_log_data += "Seqs written:\t%d\n" %\
-     final_log_data['seqs_written']
-    formatted_log_data += "Percent of seqs written\t%3.2f\n" %\
-     (int(final_log_data['seqs_written'])/int(final_log_data['seq_counts']))
+    formatted_log_data.append("Input sequence count:\t%d\n" %\
+     final_log_data['seq_counts'])
+    formatted_log_data.append("Seqs written:\t%d\n" %\
+     final_log_data['seqs_written'])
+    formatted_log_data.append("Percent of seqs written\t%3.2f\n" %\
+     (int(final_log_data['seqs_written'])/int(final_log_data['seq_counts'])))
     # Handle case of no sequence data
     try:
-        formatted_log_data += "Raw min/max/mean sequence lengths:"+\
+        formatted_log_data.append("Raw min/max/mean sequence lengths:"+\
          "\t%3.2f/%3.2f/%3.2f\n" % (min(seq_length_data['raw']),
-         max(seq_length_data['raw']), mean(seq_length_data['raw']))
+         max(seq_length_data['raw']), mean(seq_length_data['raw'])))
     except ValueError:
-        formatted_log_data += "Raw min/max/mean sequence lengths: NA\n"
+        formatted_log_data.append("Raw min/max/mean sequence lengths: NA\n")
     try:
-        formatted_log_data += "Processed min/max/mean sequence lengths:"+\
+        formatted_log_data.append("Processed min/max/mean sequence lengths:"+\
          "\t%3.2f/%3.2f/%3.2f\n\n" % (min(seq_length_data['processed']),
-         max(seq_length_data['processed']), mean(seq_length_data['processed']))
+         max(seq_length_data['processed']), mean(seq_length_data['processed'])))
     except ValueError:
-        formatted_log_data += "Processed min/max/mean sequence lengths: NA\n"
+        formatted_log_data.append("Processed min/max/mean sequence lengths: NA\n")
      
-    formatted_log_data += "Filters that resulted in discarded reads\n"
-    formatted_log_data += "Sequences below minimum length %d:\t%d\n" %\
-     (min_seq_len, final_log_data['below_min_seq_len'])
-    formatted_log_data += "Sequences above maximum length %d:\t%d\n" %\
-     (max_seq_len, final_log_data['max_seq_len'])
-    formatted_log_data += "Sequences below minimum average quality score %d:\t%d\n" %\
-     (min_qual_score, final_log_data['min_ave_qual_score'])
-    formatted_log_data += "Sequences with homopolymers longer than %d:\t%d\n" %\
-     (max_homopolymer, final_log_data['max_homopolymer'])
-    formatted_log_data += "Sequences exceeding %d ambiguous bases:\t%d\n" %\
-     (max_ambig, final_log_data['max_ambig'])
-    formatted_log_data += "Exceeded maximum primer mismatch of %d:\t%d\n" %\
-     (max_primer_mismatch, final_log_data['max_primer_mismatch'])
-    formatted_log_data += "Sequences too short after reverse primer truncation:\t%d\n" %\
-     final_log_data['too_short_after_revprimer_truncation']
-    formatted_log_data += "Sequences too short after sliding quality window truncation:\t%d\n" %\
-     final_log_data['too_short_after_window_truncation']
-    formatted_log_data += "Sequences too short after ambiguous base truncation:\t%d\n" %\
-     final_log_data['too_short_after_ambig_truncation']
-    formatted_log_data += "Sequences discarded for low quality window detection:\t%d\n" %\
-     final_log_data['low_qual_window_discarded']
-    formatted_log_data += "Sequences discarded for failing to detect reverse primer:\t%d\n\n" %\
-     final_log_data['seqs_discarded_no_rev_primer']
+    formatted_log_data.append("Filters that resulted in discarded reads\n")
+    formatted_log_data.append("Sequences below minimum length %d:\t%d\n" %\
+     (min_seq_len, final_log_data['below_min_seq_len']))
+    formatted_log_data.append("Sequences above maximum length %d:\t%d\n" %\
+     (max_seq_len, final_log_data['max_seq_len']))
+    formatted_log_data.append("Sequences below minimum average quality score %d:\t%d\n" %\
+     (min_qual_score, final_log_data['min_ave_qual_score']))
+    formatted_log_data.append("Sequences with homopolymers longer than %d:\t%d\n" %\
+     (max_homopolymer, final_log_data['max_homopolymer']))
+    formatted_log_data.append("Sequences exceeding %d ambiguous bases:\t%d\n" %\
+     (max_ambig, final_log_data['max_ambig']))
+    formatted_log_data.append("Exceeded maximum primer mismatch of %d:\t%d\n" %\
+     (max_primer_mismatch, final_log_data['max_primer_mismatch']))
+    formatted_log_data.append("Sequences too short after reverse primer truncation:\t%d\n" %\
+     final_log_data['too_short_after_revprimer_truncation'])
+    formatted_log_data.append("Sequences too short after sliding quality window truncation:\t%d\n" %\
+     final_log_data['too_short_after_window_truncation'])
+    formatted_log_data.append("Sequences too short after ambiguous base truncation:\t%d\n" %\
+     final_log_data['too_short_after_ambig_truncation'])
+    formatted_log_data.append("Sequences discarded for low quality window detection:\t%d\n" %\
+     final_log_data['low_qual_window_discarded'])
+    formatted_log_data.append("Sequences discarded for failing to detect reverse primer:\t%d\n\n" %\
+     final_log_data['seqs_discarded_no_rev_primer'])
       
-    formatted_log_data += "Other sequence details:\n\n"
-    formatted_log_data += "Sequences with detected reverse primer:\t%d\n" %\
-     final_log_data['rev_primers_found']
-    formatted_log_data += "Sequences with detected low quality window:\t%d\n" %\
-     final_log_data['low_qual_window_found']
-    formatted_log_data += "Sequences with detected ambiguous base:\t%d\n\n" %\
-     final_log_data['ambig_base_truncation']
+    formatted_log_data.append("Other sequence details:\n\n")
+    formatted_log_data.append("Sequences with detected reverse primer:\t%d\n" %\
+     final_log_data['rev_primers_found'])
+    formatted_log_data.append("Sequences with detected low quality window:\t%d\n" %\
+     final_log_data['low_qual_window_found'])
+    formatted_log_data.append("Sequences with detected ambiguous base:\t%d\n\n" %\
+     final_log_data['ambig_base_truncation'])
       
     if final_log_data['seq_ids_not_in_mapping']:
-        formatted_log_data += "Fasta labels not matching SampleIDs in mapping file:\n"
+        formatted_log_data.append("Fasta labels not matching SampleIDs in mapping file:\n")
         for curr_id in final_log_data['seq_ids_not_in_mapping']:
-            formatted_log_data += "%s\n" % curr_id
+            formatted_log_data.append("%s\n" % curr_id)
 
+    combined_log_data = "".join(formatted_log_data)
     
-    return formatted_log_data
+    return combined_log_data
 # End log formatting functions *******
     
     
 # File IO functions *****************
-
-def get_infile(filename):
-    """Returns filehandle, allowing gzip input."""
-    if filename.endswith(".gz"):
-        fin = GzipFile(filename, "rb")     
-    else:
-        fin = open(filename, "U") 
-    return fin
 
 
 def write_qual_line(demultiplexed_qual_f,
@@ -1330,9 +1327,9 @@ def make_histograms(raw_lengths, post_lengths, binwidth=10):
     else:
         min_len = min(raw_lengths)
     max_len = max(raw_lengths)
-    floor = int((min_len/binwidth)*binwidth)
+    hist_floor = int((min_len/binwidth)*binwidth)
     ceil = int(((max_len/binwidth)+2)*binwidth)
-    bins = arange(floor, ceil, binwidth)
+    bins = arange(hist_floor, ceil, binwidth)
     raw_hist = histogram(raw_lengths,bins)[0]
     post_hist, bin_edges = histogram(post_lengths,bins)
     return raw_hist, post_hist, bin_edges

@@ -148,7 +148,8 @@ script_info['optional_options']=[
         action='store_true', help='Disable forward primer mismatch test '
         'and primer removal. [default: %default]'),
         
-    make_option('-z', '--reverse_primers', default="disable", type='string', 
+    make_option('-z', '--reverse_primers', default="disable", type='choice', 
+        choices = ['disable', 'truncate_only', 'truncate_remove'],
         action='store', help='Enable removal of the reverse primer and '
         'any subsequence sequence from the end of each read.  To enable '
         'this, there has to be a "ReversePrimer" column in the mapping file. '
@@ -209,36 +210,11 @@ def main():
          'scores, one must supply quality score files.')
 
     mapping_file = opts.map_fname
-    try:
-        m = open(mapping_file, "U")
-        m.close()
-    except IOError:
-        raise IOError,('Unable to open mapping file %s ' % mapping_file +\
-         'Please check filepath and read permissions.')
-    
     fasta_files = set(opts.fasta_fnames)
-
     if opts.qual_fnames:
         qual_files = set(opts.qual_fnames)
     else:
         qual_files = set()
-
-
-    for q in qual_files:
-        try:
-            test_qual_file = open(q, "U")
-            test_qual_file.close()
-        except IOError:
-            raise IOError,('Unable to open file %s ' % q +' please check '
-             'filepath and read permissions.')
-
-    for f in fasta_files:
-        try:
-            test_fasta_file = open(f, "U")
-            test_fasta_file.close()
-        except IOError:
-            raise IOError,('Unable to open file %s ' % f +' please check '
-             'filepath and read permissions.')
              
     create_dir(opts.output_dir)
     
