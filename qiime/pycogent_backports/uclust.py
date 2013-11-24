@@ -12,7 +12,7 @@ Modified from cogent.app.cd_hit.py on 1-21-10, written by Daniel McDonald.
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
-__credits__ = ["William Walters","Greg Caporaso"]
+__credits__ = ["William Walters","Greg Caporaso","Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "William Walters"
@@ -20,7 +20,7 @@ __email__ = "william.a.walters@colorado.edu"
 __status__ = "Production"
 
 from os import remove, makedirs
-from os.path import split, splitext, basename, isdir, abspath, isfile
+from os.path import split, splitext, basename, isdir, abspath, isfile, join
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
@@ -455,21 +455,10 @@ def uclust_cluster_from_sorted_fasta_filepath(
     app_result = app({'--input':fasta_filepath,'--uc':output_filepath})
     return app_result
 
-
 def get_output_filepaths(output_dir, fasta_filepath):
     """ Returns filepaths for intermediate file to be kept """
-    
-    if not output_dir.endswith('/'):
-        output_dir += '/'
-        
-    output_file_basename = "".join(basename(fasta_filepath).split('.')[0:-1])
-    uc_save_filepath = '%s%s_clusters.uc' % \
-     (output_dir, output_file_basename)
-
-    return uc_save_filepath
-
-
-
+    return join(output_dir,
+                splitext(basename(fasta_filepath))[0] + '_clusters.uc')
 
 def get_clusters_from_fasta_filepath(
     fasta_filepath,

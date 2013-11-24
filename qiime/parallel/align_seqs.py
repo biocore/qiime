@@ -14,6 +14,7 @@ __status__ = "Development"
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.util import ParallelWrapper
+from qiime.util import get_qiime_temp_dir
 
 class ParallelAlignSeqsPyNast(ParallelWrapper):
     _script_name = "align_seqs.py"
@@ -25,7 +26,8 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
             # Build the blast database from the reference_seqs_fp -- all procs
             # will then access one db rather than create one per proc
             blast_db, db_files_to_remove = \
-                 build_blast_db_from_fasta_path(params['template_fp'])
+             build_blast_db_from_fasta_path(params['template_fp'],
+                                            output_dir=get_qiime_temp_dir())
             self.files_to_remove += db_files_to_remove
             params['blast_db'] = blast_db
         

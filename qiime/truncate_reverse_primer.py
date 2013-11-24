@@ -139,8 +139,10 @@ def truncate_rev_primers(fasta_f,
                 log_data['seqs_written'] += 1
                 output_fp.write('>%s\n%s\n' % (label, seq))
         else:
-            log_data['seqs_written'] += 1
-            output_fp.write('>%s\n%s\n' % (label, seq[0:rev_primer_index]))
+            # Check for zero seq length after truncation, will not write seq
+            if rev_primer_index > 0:
+                log_data['seqs_written'] += 1
+                output_fp.write('>%s\n%s\n' % (label, seq[0:rev_primer_index]))
             
     return log_data
     

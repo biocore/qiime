@@ -1,6 +1,6 @@
 usearch_i86osx32 v6.1.544, 4.0Gb RAM (17.2Gb total), 8 cores
-usearch61 --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/denovo_smallmem_clustered.uc --log /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/smallmem_clustered.log --strand both --cluster_smallmem /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/denovo_abundance_sorted.fna --usersort --maxaccepts 1 --wordlength 8 --maxrejects 32 --minseqlength 64 --id 0.97 
-Started Tue Apr  9 15:35:48 2013
+usearch61 --usersort --maxaccepts 1 --id 0.97 --minseqlength 64 --wordlength 8 --uc /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/denovo_smallmem_clustered.uc --cluster_smallmem /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/denovo_abundance_sorted.fna --maxrejects 32 --strand both --log /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/step4_otus/smallmem_clustered.log 
+Started Fri Nov 15 02:18:05 2013
 
       Alphabet  nt
     Word width  8
@@ -12,46 +12,46 @@ Started Tue Apr  9 15:35:48 2013
          Slots  65536 (65.5k)
        DBAccel  100%
 
-1 secs (00:00) 2.6Mb Result: 5 clusters, max size 3, avg 2.2
+1 secs (00:00) 2.5Mb Result: 4 clusters, max size 3, avg 2.0
 
-      Seqs  11
-  Clusters  5
+      Seqs  8
+  Clusters  4
   Max size  3
-  Avg size  2.2
+  Avg size  2.0
   Min size  1
-Singletons  1, 9.1% of seqs, 20.0% of clusters
-   Max mem  2.6Mb
+Singletons  1, 12.5% of seqs, 25.0% of clusters
+   Max mem  2.5Mb
       Time  1.00s
-Throughput  11.0 seqs/sec.
+Throughput  8.0 seqs/sec.
 
 
               Id      Allocs       Frees     Pct         Bytes
 ----------------  ----------  ----------  ------  ------------
   fastaseqsource           1           0   74.7%          17Mb
-           seqdb          13           0   14.0%         3.1Mb
+           seqdb          11           0   14.0%         3.1Mb
       gobuff_hdr           8           0    4.7%         1.1Mb
            udbio           3           0    3.5%       786.4kb
           mx_hdr           2           0    1.4%       319.2kb
-         myutils           8           0    0.4%        96.1kb
+         myutils           7           0    0.4%        96.1kb
           hitmgr           5           0    0.3%        69.6kb
        udbparams           1           0    0.3%        65.5kb
      udbsearcher           1           0    0.3%        65.5kb
-       hspfinder         199           0    0.2%        46.0kb
-         udbdata         508           0    0.1%        32.5kb
+       hspfinder         199           0    0.2%        45.9kb
+         udbdata         418           0    0.1%        26.8kb
           scorer           4           0    0.0%       4096.0b
-         seqinfo           6           0    0.0%       3779.0b
+         seqinfo           6           0    0.0%       3761.0b
       xdpmem_hdr           4           0    0.0%       1324.0b
-    pathinfo_hdr           2           0    0.0%        851.0b
-            Sort          40          32    0.0%        160.0b
+    pathinfo_hdr           2           0    0.0%        798.0b
            Other           1           0    0.0%        128.0b
-         chainer           6           3    0.0%         64.0b
+            Sort          32          24    0.0%        128.0b
+         chainer           3           0    0.0%         32.0b
 ----------------  ----------  ----------  ------  ------------
-           Total         812          35  100.0%          22Mb
+           Total         708          24  100.0%          22Mb
 
-       2.6Mb  Curr mem
-       2.6Mb  Peak mem
+       2.5Mb  Curr mem
+       2.5Mb  Peak mem
         22Mb  Total alloc
-      352.0b  Total free
+      192.0b  Total free
         22Mb  Net
         20Mb  -Excess
 
@@ -61,6 +61,6 @@ Throughput  11.0 seqs/sec.
         PathInfo           0           0        0.0b           0
      AlignResult           0           0        0.0b           0
 
-Finished Tue Apr  9 15:35:48 2013
+Finished Fri Nov 15 02:18:05 2013
 Elapsed time 00:00
-Max memory 2.6Mb
+Max memory 2.5Mb

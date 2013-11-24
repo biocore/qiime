@@ -23,7 +23,8 @@ from qiime.pycogent_backports.uclust import (Uclust,
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
-__credits__ = ["Daniel McDonald","William Walters","Greg Caporaso"]
+__credits__ = ["Daniel McDonald","William Walters","Greg Caporaso",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "William Walters"
@@ -296,9 +297,11 @@ class UclustConvenienceWrappers(TestCase):
         
         self.assertEqual(uc_res, "/tmp/test_seqs_clusters.uc")
 
-        
+    def test_get_output_filepaths_multiple_dots(self):
+        """Generates filepath names from names with more than one dot"""
+        obs = get_output_filepaths("/tmp", "test_seqs.filtered.fasta")
+        self.assertEqual(obs, "/tmp/test_seqs.filtered_clusters.uc")
 
-        
     def test_get_clusters_from_fasta_filepath(self):
         """ Tests for return of lists of OTUs from given fasta filepath """
         

@@ -6,10 +6,10 @@ enable_rev_strand_matching:True
 exact:False
 max_accepts:20
 max_rejects:500
-new_cluster_identifier:None
+new_cluster_identifier:denovo
 next_new_cluster_number:1
 optimal:False
-output_dir:/Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter//1//step3_otus/
+output_dir:/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter//1//step3_otus/
 prefilter_identical_sequences:True
 presort_by_abundance:True
 save_uc_files:True
@@ -18,8 +18,8 @@ stepwords:20
 suppress_new_clusters:True
 suppress_sort:True
 word_length:12
-Reference seqs:/Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter/1/step2_otus/step2_rep_set.fna
+Reference seqs:/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter/1/step2_otus/step2_rep_set.fna
 Num OTUs:1
 Num new OTUs:0
 Num failures:0
-Result path: /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter//1//step3_otus//failures_otus.txt
+Result path: /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter//1//step3_otus//failures_otus.txt

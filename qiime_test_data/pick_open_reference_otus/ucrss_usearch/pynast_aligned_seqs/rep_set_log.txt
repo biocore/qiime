@@ -1,11 +1,11 @@
 candidate sequence ID	candidate nucleotide count	errors	template ID	BLAST percent identity to template	candidate nucleotide count post-NAST
 295053 f2_1539	133		171306	100.00	133
 879972 p1_27798	128		221080	98.40	128
-New.ReferenceOTU0 t1_53176	120		68416	95.80	120
-New.CleanUp.ReferenceOTU0 f1_4866	152		167734	86.20	152
-New.CleanUp.ReferenceOTU1 p2_35810	137		190336	100.00	137
-New.CleanUp.ReferenceOTU3 f2_4913	152		186883	98.70	152
-New.CleanUp.ReferenceOTU4 p1_38017	152		70198	96.10	152
+New.ReferenceOTU0 f3_141	152		167734	86.20	152
+New.ReferenceOTU1 t2_53290	128		108139	94.50	128
+New.CleanUp.ReferenceOTU0 p2_35810	137		190336	100.00	137
+New.CleanUp.ReferenceOTU2 f2_4913	152		186883	98.70	152
+New.CleanUp.ReferenceOTU3 p1_38017	152		70198	96.10	152
 PyNastAligner parameters:
 Algorithm:NAST
 Application:PyNAST

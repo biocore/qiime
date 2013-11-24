@@ -5,9 +5,9 @@ enable_rev_strand_matching:False
 exact:False
 max_accepts:20
 max_rejects:500
-new_cluster_identifier:None
+new_cluster_identifier:denovo
 optimal:False
-output_dir:/Users/caporaso/data/qiime_test_data/pick_otus_through_otu_table/otus//uclust_picked_otus
+output_dir:/Users/caporaso/code/qiime/qiime_test_data/pick_de_novo_otus/otus//uclust_picked_otus
 prefilter_identical_sequences:True
 presort_by_abundance:True
 save_uc_files:True
@@ -16,4 +16,4 @@ stepwords:20
 suppress_sort:True
 word_length:12
 Num OTUs:418
-Result path: /Users/caporaso/data/qiime_test_data/pick_otus_through_otu_table/otus//uclust_picked_otus/seqs_otus.txt
+Result path: /Users/caporaso/code/qiime/qiime_test_data/pick_de_novo_otus/otus//uclust_picked_otus/seqs_otus.txt

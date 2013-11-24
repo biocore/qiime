@@ -65,6 +65,13 @@ class CompareCategoriesTests(TestCase):
         map2_f.close()
         self.files_to_remove.append(self.map2_fp)
 
+        self.missing_sample_map_fp = join(self.test_dir,
+                                          'missing_sample_map_fp.txt')
+        missing_sample_map_f = open(self.missing_sample_map_fp, 'w')
+        missing_sample_map_f.write('\n'.join(map1_str.split('\n')[:-3]))
+        missing_sample_map_f.close()
+        self.files_to_remove.append(self.missing_sample_map_fp)
+
         self.cat_methods = ['adonis', 'anosim', 'mrpp', 'permanova',
                             'permdisp', 'dbrda']
         self.num_methods = ['best', 'morans_i']
@@ -191,6 +198,18 @@ class CompareCategoriesTests(TestCase):
                           self.map1_fp, 'foo', self.cat_categories,
                           self.num_perms, self.test_dir)
 
+        # Samples in dm not found in map.
+        for method in self.num_methods:
+            with self.assertRaises(ValueError):
+                compare_categories(self.dm1_fp, self.missing_sample_map_fp,
+                                   method, self.num_categories, self.num_perms,
+                                   self.test_dir)
+        for method in self.cat_methods:
+            with self.assertRaises(ValueError):
+                compare_categories(self.dm1_fp, self.missing_sample_map_fp,
+                                   method, self.cat_categories, self.num_perms,
+                                   self.test_dir)
+
 
 dm1_str = """\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\tPC.607\tPC.634\tPC.635\tPC.636
 PC.354\t0.0\t0.595483768391\t0.618074717633\t0.582763100909\t0.566949022108\t0.714717232268\t0.772001731764\t0.690237118413\t0.740681707488
@@ -235,6 +254,7 @@ PC.607\tAACTGTGCGTAC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20071112\t6\t2\tFasting_mouse
 PC.634\tACAGAGTCGGCT\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t7\t2\tFasting_mouse_I.D._634
 PC.635\tACCGCAGAGTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t8\t2\tFasting_mouse_I.D._635
 PC.636\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\t2\tFasting_mouse_I.D._636
+random.sample\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\t3\trandom.sample
 """
 
 map2_str = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tNumCat\tDescription

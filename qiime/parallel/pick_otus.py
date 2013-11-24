@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -152,7 +152,7 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
             
         if params['save_uc_files']:
             save_uc_files_str = ''
-            out_filenames += [job_prefix + '%d_clusters.uc']
+            out_filenames += [job_prefix + '.%d_clusters.uc']
         else:
             save_uc_files_str = '-d'
         

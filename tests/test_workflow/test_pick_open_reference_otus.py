@@ -176,13 +176,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
-    def test_pick_subsampled_open_reference_otus_uclust_tax_assign(self):
-        """pick_subsampled_open_reference_otus fns when assigning tax with uclust
+    def test_pick_subsampled_open_reference_otus_rdp_tax_assign(self):
+        """pick_subsampled_open_reference_otus fns when assigning tax with rdp
         """
         self.params.update(
-         parse_qiime_parameters(['assign_taxonomy:assignment_method uclust',
+         parse_qiime_parameters(['assign_taxonomy:assignment_method rdp',
           'assign_taxonomy:reference_seqs_fp %s' %  self.test_data['refseqs'][0],
           'assign_taxonomy:id_to_taxonomy_fp %s' %  self.test_data['refseqs_tax'][0]]))
         pick_subsampled_open_reference_otus(input_fp=self.test_data['seqs'][0], 
@@ -209,7 +209,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
         otu_table_fp = '%s/otu_table_mc2_w_tax_no_pynast_failures.biom' % self.wf_out
         pynast_failures_fp = '%s/pynast_aligned_seqs/rep_set_failures.fasta' % self.wf_out
-        uclust_tax_fp = '%s/uclust_assigned_taxonomy/rep_set_tax_assignments.txt' % self.wf_out
+        rdp_tax_fp = '%s/rdp_assigned_taxonomy/rep_set_tax_assignments.txt' % self.wf_out
 
         self.assertTrue(exists(otu_map_w_singletons_fp),"OTU map doesn't exist")
         self.assertFalse(exists(final_failure_fp),\
@@ -221,7 +221,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertTrue(exists(aln_fp),"Final alignment doesn't exist")
         self.assertTrue(exists(otu_table_fp),"Final BIOM table doesn't exist")
         self.assertTrue(exists(pynast_failures_fp),"PyNAST failures file doesn't exist")
-        self.assertTrue(exists(uclust_tax_fp),"uclust taxonomy assignment result doesn't exist")
+        self.assertTrue(exists(rdp_tax_fp),"rdp taxonomy assignment result doesn't exist")
         
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
@@ -382,7 +382,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_pick_subsampled_open_reference_otus_suppress_assign_tax(self):
         """pick_subsampled_open_reference_otus functions without assign tax step
@@ -544,7 +544,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_pick_subsampled_open_reference_otus_parallel(self):
@@ -644,7 +644,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_pick_subsampled_open_reference_otus_suppress_step4(self):
@@ -751,7 +751,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_pick_subsampled_open_reference_otus_invalid_input(self):
         """pick_subsampled_open_reference_otus raises error on refseqs in params file
@@ -896,7 +896,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
         
     def test_iterative_pick_subsampled_open_reference_otus(self):
         """pick_subsampled_open_reference_otus functions as expected with prefilter
@@ -1018,7 +1018,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
 
     def test_iterative_pick_subsampled_open_reference_otus_parallel(self):
@@ -1141,7 +1141,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
         for o in otu_table.iterObservations():
-            self.assertEqual(o[2]['taxonomy'][0], 'k__Bacteria')
+            self.assertTrue(o[2]['taxonomy'][0] in ['k__Bacteria','Unassigned'])
 
     def test_final_repset_from_iteration_repsets(self):
         """ final_repset_from_iteration_repsets functions as expected """
