@@ -82,11 +82,11 @@ script_info['optional_options'] = [\
                 help='fastq-join option:'+\
                      ' Maximum allowed % differences within region of overlap'+\
                       ',  [default: %default]', default=8),
-    make_option('-j', '--min_overlap', action='store', type='int',
+    make_option('-j', '--min_overlap', 
                 help='fastq-join and SeqPrep option:'+\
                       ' Minimum allowed overlap in base-pairs required to join pairs.'+\
-                      ' Recomended default settings are: fastq-join (6), SeqPrep (15) '+\
-                      ', [default: %default]', default=6),
+                      ' Defaults to recomended settings: fastq-join (6), SeqPrep (15) '+\
+                      ', [default: %default]', default='default'),
     make_option('-y', '--max_ascii_score', action='store', type='string',
                 help='SeqPrep option:'+\
                       ' Maximum quality score / ascii code allowed to appear within'+\
@@ -98,7 +98,7 @@ script_info['optional_options'] = [\
                       ',  [default: %default]', default=0.9),
     make_option('-g', '--max_good_mismatch', action='store', type='float',
                 help='SeqPrep option:'+\
-                      ' Maximum allowed mis-matched but high quality bases allowed'+\
+                      ' Maximum mis-matched high quality bases allowed'+\
                       ' to join reads. ' + '[default: %default]', default=0.2),
     make_option('-6', '--phred_64', action='store_true',
                 help='SeqPrep option:'+\
@@ -110,19 +110,46 @@ script_info['version'] = __version__
 
 
 def main():
+    # parse command line parameters
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
-    if not (opts.pe_join_method in join_method_constructors or 
-            opts.pe_join_method in join_method_names):
+    # Create local copy of options
+    forward_reads_fp = opts.forward_reads_fp 
+    reverse_reads_fp = opts.reverse_reads_fp
+    pe_join_method = opts.pe_join_method
+    # fastq-join only values:
+    perc_max_diff = opts.perc_max_diff
+    # SeqPrep only values:
+    max_ascii_score = opts.max_ascii_score
+    min_frac_match = opts.min_frac_match
+    max_good_mismatch = opts.max_good_mismatch
+    phred_64 = opts.phred_64
+    # both fastq-join & SeqPrep
+    min_overlap = opts.min_overlap
+
+
+    # check for valid paired-end join method:
+    if not (pe_join_method in join_method_constructors or 
+            pe_join_method in join_method_names):
        option_parser.error(\
         'Invalid paired-end join method: %s. \nValid choces are: %s'\
         %opts.pe_join_method,' '.join(join_method_constructors.keys() +
                              join_method_names.keys()))
 
-    forward_reads_fp = opts.forward_reads_fp 
-    reverse_reads_fp = opts.reverse_reads_fp
-    pe_join_method = opts.pe_join_method
-   
+    # set default min_overlap values according to join method
+    if min_overlap != "default":
+        try:
+            min_overlap = int(min_overlap)
+        except ValueError:
+            raise ValueError, ("--min_overlap must either be 'default'", 
+               "or an int value")
+    if min_overlap == "default":
+        if pe_join_method == "fastq-join":
+            min_overlap = 6
+        elif pe_join_method == "SeqPrep":
+            min_overlap = 15
+
+    # determine output directory:   
     if opts.output_dir: # user specified output directory
         output_dir = abspath(opts.output_dir)
     else: # default output dir to location of infile
@@ -130,14 +157,37 @@ def main():
     
     create_dir(output_dir, fail_on_exist=False)
 
-    join_func = join_method_names[pe_join_method]
+    # TODO: check for valid combination of options
 
-    paths = join_func(forward_reads_fp, reverse_reads_fp, working_dir=output_dir)
+    # send parameters to appropriate join method
+    # currently only two join methods exist:
+    # 'fastq-join' and 'SeqPrep'
+    if pe_join_method == "fastq-join":
+        join_func = join_method_names["fastq-join"]
+        paths = join_func(forward_reads_fp,
+                          reverse_reads_fp,
+                          perc_max_diff = perc_max_diff,
+                          min_overlap = min_overlap,
+                          working_dir = output_dir)
+
+    if pe_join_method == "SeqPrep":
+        join_func = join_method_names["SeqPrep"]
+        paths = join_func(forward_reads_fp,
+                          reverse_reads_fp,
+                          max_overlap_ascii_q_score = max_ascii_score,
+                          min_overlap = min_overlap,
+                          max_mismatch_good_frac = max_good_mismatch,
+                          min_frac_matching = min_frac_match,
+                          phred_64 = phred_64,
+                          working_dir = output_dir)
+
    
+    # If index / barcode file is supplied, filter unused barcode reads
+    # and write them to a new file. Name based on joined-pairs / assembled
+    # outfile 
     if opts.index_reads_fp:
         index_reads = opts.index_reads_fp
-        assembly_fp = paths['Assembled']
-        
+        assembly_fp = paths['Assembled'] # grab joined-pairs output path
         write_synced_barcodes_fastq(assembly_fp,index_reads)
 
 

@@ -20,9 +20,6 @@ join_method_constructors = {}
 join_method_names = {'fastq-join':join_paired_end_reads_fastqjoin,
                      'SeqPrep':join_paired_end_reads_seqprep}
 
-# TODO:
-#  write wrapper function to choose selected method 
-#  within 'join_method_names' and use method specific params.
 
 def write_synced_barcodes_fastq(joined_fp, index_fp):
     """Writes new index file based on surviving assembled paired-ends."""
