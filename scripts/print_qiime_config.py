@@ -5,7 +5,8 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
+               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
+               "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -353,7 +354,7 @@ class Qiime_config(TestCase):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,5,1)
+        min_unacceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
@@ -617,7 +618,7 @@ class Qiime_config(TestCase):
         
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
-        acceptable_version = [(0,982),(0,983)]
+        acceptable_version = [(0,984)]
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
