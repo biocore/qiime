@@ -30,7 +30,7 @@ The following are required by QIIME:
 
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
-* Numpy 1.5.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
+* Numpy 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
 * biom-format 1.2.0 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.2.0.tar.gz>`_) (license: GPL)
 * qcli 0.1.0 (`src_qcli <ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz>`_) (license: GPL)
 
@@ -82,7 +82,7 @@ Visualization and plotting steps:
 
 Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
 
-* R 2.12.0 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
+* R 3.0.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
 Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97% identity:
 
