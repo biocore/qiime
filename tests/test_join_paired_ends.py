@@ -105,6 +105,10 @@ class JoinPairedEndsTests(TestCase):
         self.assertEqual(fj_default, obs_min_overlap_fj_int)
         self.assertEqual(sp_default, obs_min_overlap_sp_int)
 
+        # test that a value other than int or 'default' 
+        self.assertRaises(ValueError, set_min_overlap, 'six', 'fastq-join')
+        self.assertRaises(ValueError, set_min_overlap, 'fifteen', 'SeqPrep')
+
 
 
 
