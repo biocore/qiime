@@ -1,6 +1,6 @@
 usearch_i86osx32 v6.1.544, 4.0Gb RAM (17.2Gb total), 8 cores
-usearch61 --output /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.fna --uc /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.uc --log /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.log --strand both --sizeout --derep_fulllength /Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/seqs1.fna --minseqlength 64 
-Started Tue Apr  9 15:35:46 2013
+usearch61 --sizeout --derep_fulllength /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs1.fna --minseqlength 64 --uc /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.uc --output /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.fna --strand both --log /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch/prefilter_otus/abundance_sorted.log 
+Started Fri Nov 15 02:18:03 2013
 Merge thread data 0 secs
 
 Seqs         200
@@ -17,8 +17,8 @@ Max cluster  67
 ----------------  ----------  ----------  ------  ------------
            Total          55          39  100.0%       173.6kb
 
-       1.2Mb  Curr mem
-       1.2Mb  Peak mem
+       1.3Mb  Curr mem
+       1.3Mb  Peak mem
      202.5kb  Total alloc
       28.9kb  Total free
      173.6kb  Net
@@ -30,6 +30,6 @@ Max cluster  67
         PathInfo           0           0        0.0b           0
      AlignResult           0           0        0.0b           0
 
-Finished Tue Apr  9 15:35:46 2013
+Finished Fri Nov 15 02:18:03 2013
 Elapsed time 00:00
-Max memory 1.2Mb
+Max memory 1.3Mb

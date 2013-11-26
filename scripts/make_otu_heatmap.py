@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Dan Knights", "Jose Carlos Clemente Litran"]
+__credits__ = ["Dan Knights", "Jose Carlos Clemente Litran", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Dan Knights"
@@ -122,7 +122,8 @@ def main():
 
     # Re-order samples by tree if provided
     if not opts.sample_tree is None:
-        sample_order = get_order_from_tree(otu_table.SampleIds, opts.sample_tree)
+        sample_order = get_order_from_tree(otu_table.SampleIds,
+            open(opts.sample_tree, 'U'))
 
     # if there's no sample tree, sort samples by mapping file
     elif not opts.map_fname is None:

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -102,14 +102,14 @@ script_info['optional_options'] = [
         help='start seq_ids as ascending integers beginning with start_seq_id '+\
         '[default: %default]',default=0),\
      make_option('--rev_comp_barcode',action='store_true',\
-        help='reverse compliment barcode reads before lookup '+\
+        help='reverse complement barcode reads before lookup '+\
         '[default: %default]',default=False),\
      make_option('--rev_comp_mapping_barcodes',action='store_true',\
-        help='reverse compliment barcode in mapping before lookup (useful if barcodes '+\
-        'in mapping file are reverse compliments of golay codes)'+\
+        help='reverse complement barcode in mapping before lookup (useful if barcodes '+\
+        'in mapping file are reverse complements of golay codes)'+\
         '[default: %default]',default=False),\
      make_option('--rev_comp',action='store_true',\
-        help='reverse compliment sequence before writing to output file '+\
+        help='reverse complement sequence before writing to output file '+\
         '(useful for reverse-orientation reads) [default: %default]',
         default=False),\
      make_option('-q','--phred_quality_threshold',type='int',
@@ -179,7 +179,7 @@ def main():
             "of sample ids as sequence read filepaths.")
         barcode_read_fps = [None] * len(sequence_read_fps)
     elif barcode_read_fps == None:
-        option_parser.error("Must provide --barcode_fps if "
+        option_parser.error("Must provide --barcode_read_fps if "
                             "--barcode_type is not 'not-barcoded'")
     else:
         pass
@@ -274,7 +274,7 @@ def main():
              get_invalid_golay_barcodes(barcode_to_sample_id.keys())
             if len(invalid_golay_barcodes) > 0:
                 option_parser.error("Some or all barcodes are not valid golay codes. "+\
-                "Do they need to be reverse complimented? If these are not "+\
+                "Do they need to be reverse complemented? If these are not "+\
                 "golay barcodes pass --barcode_type 12 to disable barcode "+\
                 "error correction, or pass --barcode_type # if the barcodes "+\
                 "are not 12 base pairs, where # is the size of the barcodes. "+

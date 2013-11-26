@@ -55,12 +55,12 @@ Miscellaneous
 Summarizing
 -----------
 
-To summarize the information in a BIOM file, you can call `print_biom_table_summary.py <http://biom-format.org/documentation/summarizing_biom_tables.html>`_. This will provide you with information including the number of samples in the BIOM table, the number of observations/OTUs in the BIOM table, and a summary of the total counts observed in each sample.
+To summarize the information in a BIOM file, you can call `biom summarize-table <http://biom-format.org/documentation/summarizing_biom_tables.html>`_. This will provide you with information including the number of samples in the BIOM table, the number of observations/OTUs in the BIOM table, and a summary of the total counts observed in each sample.
 
 Adding metadata
 ---------------
 
-To add either sample or observation metadata to a BIOM file, you can call `add_metadata.py <http://biom-format.org/documentation/adding_metadata.html>`_. Sample metadata would be the information that is stored in your mapping file. It's useful to write this information to the BIOM file so all data and metadata can be stored in the same location for archiving or publication. In QIIME, observation metadata will often be the taxonomy associated with each OTU. 
+To add either sample or observation metadata to a BIOM file, you can call `biom add-metadata <http://biom-format.org/documentation/adding_metadata.html>`_. Sample metadata would be the information that is stored in your mapping file. It's useful to write this information to the BIOM file so all data and metadata can be stored in the same location for archiving or publication. In QIIME, observation metadata will often be the taxonomy associated with each OTU. 
 
 Sorting samples
 ---------------

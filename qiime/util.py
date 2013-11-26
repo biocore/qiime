@@ -1887,6 +1887,24 @@ class MetadataMap():
         return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
             if len(self.SampleIds) > 0 else []
 
+    def filterSamples(self, sample_ids_to_keep, strict=True):
+        """Remove samples that are not in ``sample_ids_to_keep``.
+
+        If ``strict=True``, a ``ValueError`` will be raised if any of the
+        sample IDs in ``sample_ids_to_keep`` cannot be found in the metadata
+        map.
+        """
+        for sid in self.SampleIds:
+            if sid not in sample_ids_to_keep:
+                del self._metadata[sid]
+
+        if strict:
+            extra_samples = set(sample_ids_to_keep) - set(self.SampleIds)
+
+            if extra_samples:
+                raise ValueError("Could not find the following sample IDs in "
+                                 "metadata map: %s" % ', '.join(extra_samples))
+
 
 class RExecutor(CommandLineApplication):
     """RExecutor application controller

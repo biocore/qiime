@@ -38,7 +38,7 @@ The result of this step is :file:`otu_table_uclust_ref.biom`. For more informati
 
 To convert the table to a tab separated file containing taxonomic information, use this command: ::
 
-    convert_biom.py -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header_key taxonomy
+    biom convert -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header-key taxonomy
 
 which will generate a tab separate OTU table, with an example generated from the Silva 108 release shown below:
 
@@ -68,18 +68,18 @@ This will create a `18S_tutorial_sample_seqs_otus.txt` file in the uclust_picked
 
 	pick_rep_set.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -f 18S_tutorial_sample_seqs.fna -o rep_set.fna
 
-To assign taxonomies to the *de novo* OTUs that were just generated, use the following command (note that memory usage specified by ---rdp_max_memory is higher for certain retraining taxonomy mapping files, see the notes.txt file associated with the Silva 108 release): ::
+To assign taxonomies to the *de novo* OTUs that were just generated, use the following command. Taxonomic assignment will be performed using the uclust consensus taxonomy assigner. ::
 
-	assign_taxonomy.py -i rep_set.fna -o rdp_assigned_taxonomy/ -t QIIME_files/taxonomy_mapping/Silva_RDP_taxa_mapping.txt -r QIIME_files/rep_set/silva_104_rep_set.fasta --rdp_max_memory 2000
+	assign_taxonomy.py -i rep_set.fna -o uclust_assigned_taxonomy/ -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -r QIIME_files/rep_set/silva_104_rep_set.fasta
 
 
 If BLAST is the preferred method of assignment, the generic taxonomic mapping file can be used instead: ::
 
 	assign_taxonomy.py -i rep_set.fna -o blast_assigned_taxonomy/ -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -r QIIME_files/rep_set/silva_104_rep_set.fasta -m blast
 
-Finally, an OTU table can be built which includes the taxonomic assignments (in this case we will use the RDP assignments): ::
+Finally, an OTU table can be built which includes the taxonomic assignments (in this case we will use the uclust assignments): ::
 
-	make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t rdp_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.biom
+	make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t uclust_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.biom
 
 Separating OTU Tables According to Domain
 =========================================

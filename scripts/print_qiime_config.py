@@ -5,7 +5,8 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
+               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
+               "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -50,6 +51,12 @@ try:
     from matplotlib import __version__ as matplotlib_lib_version
 except ImportError:
     matplotlib_lib_version = "Not installed."
+
+try:
+    from emperor import __version__ as emperor_lib_version
+except ImportError:
+    emperor_lib_version = "Not installed."
+
 
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version == None:
@@ -347,7 +354,7 @@ class Qiime_config(TestCase):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,5,1)
+        min_unacceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
@@ -363,7 +370,7 @@ class Qiime_config(TestCase):
             version_string))
 
     def test_matplotlib_suported_version(self):
-        """maptplotlib version is supported """
+        """matplotlib version is supported """
         #min_acceptable_version = (1,1,0)
         #min_unacceptable_version = (1,1,0)
         matplotlib_acceptable_version = (1,1,0)
@@ -611,7 +618,7 @@ class Qiime_config(TestCase):
         
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
-        acceptable_version = [(0,982),(0,983)]
+        acceptable_version = [(0,984)]
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -795,7 +802,8 @@ def main():
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
      ("RDP Classifier version (if installed)", rdp_version),
-     ("Java version (if installed)", java_version)]
+     ("Java version (if installed)", java_version),
+     ("Emperor version", emperor_lib_version)]
 
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"

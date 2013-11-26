@@ -1,0 +1,4 @@
+#Metadata category	Num differences (i.e., n)	Mean difference	Median difference	t one sample	t one sample parametric p-value	t one sample parametric p-value (Bonferroni-corrected)
+o1	4	-16.0	-16.5	-4.06400406401	0.0268664114073	0.0805992342219
+o2	4	60.0	65.0	2.66732534685	0.0758631167542	0.227589350263
+o3	4	0.0	0.0	0.0	1.0	1.0
