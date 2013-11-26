@@ -119,6 +119,7 @@ def main():
     forward_reads_fp = opts.forward_reads_fp 
     reverse_reads_fp = opts.reverse_reads_fp
     pe_join_method = opts.pe_join_method
+    output_dir = opts.output_dir
     # fastq-join only options:
     perc_max_diff = opts.perc_max_diff
     # SeqPrep only options:
@@ -152,10 +153,12 @@ def main():
             min_overlap = 15
 
     # determine output directory:   
-    if opts.output_dir: # user specified output directory
+    if output_dir: # user specified output directory
         output_dir = os.path.abspath(opts.output_dir)
     else: # default output dir to location of infile
-        output_dir = os.path.dirname(os.path.abspath(forward_reads_fp))
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(
+                                  forward_reads_fp)),
+                                  pe_join_method + '_joined')
     
     create_dir(output_dir, fail_on_exist=False)
 

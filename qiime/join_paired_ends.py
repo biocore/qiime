@@ -87,7 +87,7 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     jh.close()
     fbc_fh.close()
 
-
+    return filtered_bc_outfile_path
 
         
         
