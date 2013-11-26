@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# file: join_paired_ends.py
 
 __author__ = "Mike Robeson"
-__copyright__ = "Copyright 2011, The QIIME Project"
+__copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -13,6 +12,7 @@ __status__ = "Development"
 from cogent.parse.fastq import MinimalFastqParser
 from cogent.app.fastq_join import join_paired_end_reads_fastqjoin
 from cogent.app.seqprep import join_paired_end_reads_seqprep
+from qiime.util import qiime_open
 import os
 import gzip
 
@@ -38,24 +38,12 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
 
     """
 
-    j_path, j_ext = os.path.splitext(joined_fp)
-    i_path, i_ext = os.path.splitext(index_fp)
+    # open files (handles normal / gzipped data)
+    jh = qiime_open(joined_fp)
+    ih = qiime_open(index_fp)
 
-    # check if joined pairs file is gzipped
-    # if not, read normally
-    if j_ext == '.gz':
-        jh = gzip.open(joined_fp,'r')
-    else:
-        jh = open(joined_fp,'U')
-    
-    # check if index / barcode file is gzipped
-    # if not, read normally
-    if i_ext == '.gz':
-        ih = gzip.open(index_fp,'r')
-    else:
-        ih = open(index_fp,'U')
-    
     # base new index file name on joined paired-end file name:
+    j_path,ext = os.path.splitext(joined_fp)
     filtered_bc_outfile_path = j_path + '_barcodes.fastq'
     fbc_fh = open(filtered_bc_outfile_path, 'w')
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# file: join_paired_ends.py
 
 __author__ = "Mike Robeson"
-__copyright__ = "Copyright 2011, The QIIME Project"
+__copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -26,7 +25,7 @@ qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description']= """Joins paired-end Illumina reads."""
-script_info['script_description'] = """This script take forward and reverse Illumina reads and joins them based on the method chosen. Will optionally, create an updated index reads file to match the surviving joined paired-ends. If the option to write an updated index file is chosen, be sure to check for the following: a) that the order of the index-reads file is in the same order as the reads files you plan to join, b) the headers in your index-reads and paired-reads files have identical headers.
+script_info['script_description'] = """This script takes forward and reverse Illumina reads and joins them using the method chosen. Will optionally create an updated index reads file containing index reads for the surviving joined paired end reads. If the option to write an updated index file is chosen, be sure that the order and header format of the index reads is the same as the order and header format of reads in the files that will be joined (this is the default for reads generated on the Illumina instruments).
 
 Currently, there are two methods that can be selected by the user to join paired-end data:
 
@@ -35,9 +34,9 @@ Currently, there are two methods that can be selected by the user to join paired
 2. SeqPrep - (https://github.com/jstjohn/SeqPrep)
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r reverse_reads.fastq -b index.reads.fastq"""))
+script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq"""))
+script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq"""))
+script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/index.reads.fastq"""))
 script_info['output_description'] = """All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory. 
 
 
@@ -62,48 +61,44 @@ script_info['output_description'] = """All paired-end joining software will retu
 """
 script_info['required_options'] = [\
     make_option('-f','--forward_reads_fp',type="existing_filepath",
-                 dest='forward_reads_fp',
-                 help='Path to read input forward reads in FASTQ format.'),
+                 help='Path to input forward reads in FASTQ format.'),
     make_option('-r','--reverse_reads_fp',type="existing_filepath",
-                 dest='reverse_reads_fp',
-                 help='Path to read input reverse reads in FASTQ format.')]
+                 help='Path to input reverse reads in FASTQ format.'),
+    make_option('-o', '--output_dir', type='new_dirpath',
+                help='Directory to store result files')]
 script_info['optional_options'] = [\
-    make_option('-m', '--pe_join_method', action='store', type='choice',
+    make_option('-m', '--pe_join_method', type='choice',
                 choices=list(join_method_names.keys()),
                 help='Method to use for joining paired-ends. Valid choices'+\
                       ' are: ' + ', '.join(join_method_names.keys())+\
                       ' [default: %default]', default='fastq-join'),
-    make_option('-o', '--output_dir', action='store', type='new_dirpath',\
-                help='Path to store '+\
-                      'result file [default: <PE_JOIN_METHOD>_joined]'),
-    make_option('-b','--index_reads_fp',type='existing_filepath',
-                dest='index_reads_fp',
-                help='Path to read the barcode / index reads in FASTQ format.'
+   make_option('-b','--index_reads_fp',type='existing_filepath',
+                help='Path to the barcode / index reads in FASTQ format.'
                 ' Will be filtered based on surviving joined pairs.'),
     make_option('-j', '--min_overlap', 
                 help='Applies to both fastq-join and SeqPrep methods.'+\
                       ' Minimum allowed overlap in base-pairs required to join pairs.'+\
                       ' Defaults to recomended settings: fastq-join (6), SeqPrep (15) '+\
                       ', [default: %default]', default='default'),
-    make_option('-p', '--perc_max_diff', action='store', type='int',
+    make_option('-p', '--perc_max_diff', type='int',
                 help='Only applies to fastq-join method, otherwise ignored.'+\
                      ' Maximum allowed % differences within region of overlap'+\
                       ',  [default: %default]', default=8),
-    make_option('-y', '--max_ascii_score', action='store', type='string',
+    make_option('-y', '--max_ascii_score', type='string',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum quality score / ascii code allowed to appear within'+\
                       ' joined pairs output. For more information see:'+\
                       ' http://en.wikipedia.org/wiki/FASTQ_format ' 
                       ' [default: %default]', default='J'),
-    make_option('-n', '--min_frac_match', action='store', type='float',
+    make_option('-n', '--min_frac_match', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Minimum allowed fraction of matching bases required to join reads'+\
                       ',  [default: %default]', default=0.9),
-    make_option('-g', '--max_good_mismatch', action='store', type='float',
+    make_option('-g', '--max_good_mismatch', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum mis-matched high quality bases allowed'+\
                       ' to join reads. ' + '[default: %default]', default=0.2),
-    make_option('-6', '--phred_64', action='store_true',
+    make_option('-6', '--phred_64', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Set if input reads are in phred+64 format. Output will '\
                       'always be phred+33. [default: %default]',
@@ -131,25 +126,8 @@ def main():
     # both fastq-join & SeqPrep options
     min_overlap = opts.min_overlap
 
-
-    # check for valid paired-end join method:
-    if not (pe_join_method in join_method_constructors or 
-            pe_join_method in join_method_names):
-       option_parser.error(\
-        'Invalid paired-end join method: %s. \nValid choces are: %s'\
-        %pe_join_method,' '.join(join_method_constructors.keys() +
-                             join_method_names.keys()))
-
     # set default min_overlap values according to join method
     min_overlap = set_min_overlap(min_overlap, pe_join_method)
-    
-    # determine output directory:   
-    if output_dir: # user specified output directory
-        output_dir = os.path.abspath(output_dir)
-    else: # default output dir to location of infile
-        output_dir = os.path.join(os.path.dirname(os.path.abspath(
-                                  forward_reads_fp)),
-                                  pe_join_method + '_joined')
     
     create_dir(output_dir, fail_on_exist=False)
 

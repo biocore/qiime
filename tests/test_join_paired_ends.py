@@ -3,7 +3,7 @@
 """Tests of code for joining paired-end reads"""
 
 __author__ = "Mike Robeson"
-__copyright__ = "Copyright 2011, The QIIME Project"
+__copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -14,23 +14,62 @@ __status__ = "Development"
 
 import os
 import shutil
-import tempfile
+from tempfile import mkdtemp, NamedTemporaryFile
 
 from cogent.util.unit_test import TestCase, main
 from qiime.join_paired_ends import (write_synced_barcodes_fastq,
                                     set_min_overlap)
-from qiime.util import get_tmp_filename
 
 class JoinPairedEndsTests(TestCase):
     """Tests for join_paired_ends."""
 
-    def writeTmpFile(self, dir_path, data_string):
-        """Writes data_string to specified temp dir"""
-        fp = get_tmp_filename(tmp_dir=dir_path)
-        fh = open(fp,'w')
-        fh.write(data_string)
-        fh.close()
-        return fp
+    def setUp(self):
+        """set up files to be used in all tests"""
+        
+        # set up temp directory that all temp files will
+        # be written to:
+        self.temp_dir_path = mkdtemp()
+        
+        # store files:
+        # joined_pairs
+        self.joined_pe = NamedTemporaryFile(prefix='joined_',
+                                            suffix='.fastq',
+                                            dir=self.temp_dir_path,
+                                            delete=False)
+        self.jpe_fp = self.joined_pe.name
+        self.joined_pe.write(joined_reads)
+        self.joined_pe.close()
+
+        # all barcodes
+        self.all_barcodes = NamedTemporaryFile(prefix='all_bc_',
+                                            suffix='.fastq',
+                                            dir=self.temp_dir_path,
+                                            delete=False)
+        self.all_bc_fp = self.all_barcodes.name
+        self.all_barcodes.write(all_barcodes)
+        self.all_barcodes.close()
+
+        # out of order barcodes
+        self.ooo_barcodes = NamedTemporaryFile(prefix='ooo_bc_',
+                                            suffix='.fastq',
+                                            dir=self.temp_dir_path,
+                                            delete=False)
+        self.ooo_bc_fp = self.ooo_barcodes.name
+        self.ooo_barcodes.write(all_barcodes_out_of_order)
+        self.ooo_barcodes.close()
+
+        # missing barcodes
+        self.missing_barcodes = NamedTemporaryFile(prefix='missing_bc_',
+                                            suffix='.fastq',
+                                            dir=self.temp_dir_path,
+                                            delete=False)
+        self.missing_bc_fp = self.missing_barcodes.name
+        self.missing_barcodes.write(missing_barcodes)
+        self.missing_barcodes.close()
+
+    def tearDown(self):
+        """Remove all temp files"""
+        shutil.rmtree(self.temp_dir_path)
 
     def test_write_synced_barcodes_fastq(self):
         """write_synced_barcodes_fastq: should work properly.
@@ -39,17 +78,14 @@ class JoinPairedEndsTests(TestCase):
            that could not be joined. That is, not all paired-ends will
            assemble.
         """
-        tmp_dir_path = tempfile.mkdtemp()
-        joined_reads_fp = self.writeTmpFile(tmp_dir_path, joined_reads)
-        all_barcodes_fp = self.writeTmpFile(tmp_dir_path, all_barcodes)
-        
         filtered_bc_path = write_synced_barcodes_fastq(
-                               joined_reads_fp,
-                               all_barcodes_fp)
+                               self.jpe_fp,
+                               self.all_bc_fp)
+        
         observed_barcodes = open(filtered_bc_path, 'U').read()
         self.assertEqual(observed_barcodes, synced_barcodes)
 
-        shutil.rmtree(tmp_dir_path)
+        os.remove(filtered_bc_path)
 
 
     def test_out_of_order_barcodes(self):
@@ -58,30 +94,15 @@ class JoinPairedEndsTests(TestCase):
            are not in the same order as the data within the joined paired-ends
            file.
         """
-        tmp_dir_path = tempfile.mkdtemp()
-        joined_reads_fp = self.writeTmpFile(tmp_dir_path, joined_reads)
-        all_barcodes_out_of_order_fp = self.writeTmpFile(tmp_dir_path,
-                                       all_barcodes_out_of_order)
-
         self.assertRaises(StopIteration, write_synced_barcodes_fastq,
-                               joined_reads_fp,
-                               all_barcodes_out_of_order_fp)
-
-        shutil.rmtree(tmp_dir_path)
+                               self.jpe_fp,
+                               self.ooo_bc_fp)
 
     def test_missing_barcodes(self):
         """"write_synced_barcodes_fastq: should fail if barcodes are missing."""
-        tmp_dir_path = tempfile.mkdtemp()
-
-        joined_reads_fp = self.writeTmpFile(tmp_dir_path, joined_reads)
-        missing_barcodes_fp = self.writeTmpFile(tmp_dir_path,
-                                  missing_barcodes)
-        
         self.assertRaises(StopIteration, write_synced_barcodes_fastq,
-                               joined_reads_fp,
-                               missing_barcodes_fp)
-
-        shutil.rmtree(tmp_dir_path)
+                               self.jpe_fp,
+                               self.missing_bc_fp)
 
 
     def test_set_min_overlap(self):
