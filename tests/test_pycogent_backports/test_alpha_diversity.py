@@ -206,6 +206,12 @@ class diversity_tests(TestCase):
         exp = 1./(D*4)
         obs = simpson_e(c)
         self.assertEqual(obs, exp)
+        # example3 - from https://groups.nceas.ucsb.edu/sun/meetings/calculating-evenness-of-habitat-distributions
+        c = array([500, 400, 600, 500])
+        freq_c = array([.25, .2, .3, .25])
+        D = .0625+.04+.09+.0625
+        exp = 1./(D*4)
+        self.assertEqual(simpson_e(c), exp)
 
     def test_robbins(self):
         """robbins metric should match hand-calculated value"""
