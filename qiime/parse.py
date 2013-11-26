@@ -358,21 +358,20 @@ def parse_coords(lines):
 
     # make sure these and the other checks below are true as they are what
     # differentiate coordinates files from distance matrix files
-    if lines[0].startswith('pc vector number') == False:
-        raise QiimeParseError, "The line with the vector number was not found"+\
-            ", this information is required in coordinates files"
+    if not lines[0].startswith('pc vector number'):
+        raise QiimeParseError("The line with the vector number was not found"
+            ", this information is required in coordinates files")
 
     lines = map(strip, lines[1:])   #discard first line, which is a label
     lines = filter(None, lines) #remove any blank lines
 
     # check on this information post removal of blank lines
-    if lines[-2].startswith('eigvals') == False:
-        raise QiimeParseError, "The line containing the eigenvalues was not "+\
-            "found, this information is required in coordinates files"
-    if lines[-1].startswith('% variation') == False:
-        raise QiimeParseError, "The line with the percent of variation "+\
-            "explained was not found, this information is required in "+\
-            "coordinates files"
+    if not lines[-2].startswith('eigvals'):
+        raise QiimeParseError("The line containing the eigenvalues was not "
+            "found, this information is required in coordinates files")
+    if not lines[-1].startswith('% variation'):
+        raise QiimeParseError("The line with the percent of variation explained"
+            " was not found, this information is required in coordinates files")
 
     #now last 2 lines are eigvals and % variation, so read them
     eigvals = asarray(lines[-2].split('\t')[1:], dtype=float)
