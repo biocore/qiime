@@ -13,7 +13,8 @@ __status__ = "Development"
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,
                                     join_method_constructors,
-                                    write_synced_barcodes_fastq)
+                                    write_synced_barcodes_fastq,
+                                    set_min_overlap)
 from qiime.util import (parse_command_line_parameters, get_options_lookup, 
                         make_option, load_qiime_config, create_dir)
 import os
@@ -25,7 +26,7 @@ qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description']= """Joins paired-end Illumina reads."""
-script_info['script_description'] = """This script take forward and reverse Illumina reads and joins them based on the method chosen. Will optionally, create an updated index reads file to match the surviving joined paired-ends. If the option to write an updated index file is chosen, be sure that the order of the index-reads file is in the same order as the reads files you plan to join.
+script_info['script_description'] = """This script take forward and reverse Illumina reads and joins them based on the method chosen. Will optionally, create an updated index reads file to match the surviving joined paired-ends. If the option to write an updated index file is chosen, be sure to check for the following: a) that the order of the index-reads file is in the same order as the reads files you plan to join, b) the headers in your index-reads and paired-reads files have identical headers.
 
 Currently, there are two methods that can be selected by the user to join paired-end data:
 
@@ -136,25 +137,15 @@ def main():
             pe_join_method in join_method_names):
        option_parser.error(\
         'Invalid paired-end join method: %s. \nValid choces are: %s'\
-        %opts.pe_join_method,' '.join(join_method_constructors.keys() +
+        %pe_join_method,' '.join(join_method_constructors.keys() +
                              join_method_names.keys()))
 
     # set default min_overlap values according to join method
-    if min_overlap != "default":
-        try:
-            min_overlap = int(min_overlap)
-        except ValueError:
-            raise ValueError, ("--min_overlap must either be 'default'", 
-               "or an int value")
-    if min_overlap == "default":
-        if pe_join_method == "fastq-join":
-            min_overlap = 6
-        elif pe_join_method == "SeqPrep":
-            min_overlap = 15
-
+    min_overlap = set_min_overlap(min_overlap, pe_join_method)
+    
     # determine output directory:   
     if output_dir: # user specified output directory
-        output_dir = os.path.abspath(opts.output_dir)
+        output_dir = os.path.abspath(output_dir)
     else: # default output dir to location of infile
         output_dir = os.path.join(os.path.dirname(os.path.abspath(
                                   forward_reads_fp)),

@@ -16,10 +16,9 @@ import os
 import shutil
 import tempfile
 
-#from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
-
-from qiime.join_paired_ends import write_synced_barcodes_fastq
+from qiime.join_paired_ends import (write_synced_barcodes_fastq,
+                                    set_min_overlap)
 from qiime.util import get_tmp_filename
 
 class JoinPairedEndsTests(TestCase):
@@ -83,6 +82,29 @@ class JoinPairedEndsTests(TestCase):
                                missing_barcodes_fp)
 
         shutil.rmtree(tmp_dir_path)
+
+
+    def test_set_min_overlap(self):
+        """set_min_overlap: should work properly."""
+        # setting min_overlap int should return same value
+        # regardless of set pe_join_method 
+        min_overlap = 11
+        obs_min_overlap_fj = set_min_overlap(11,'fastq-join')
+        obs_min_overlap_sp = set_min_overlap(11,'SeqPrep')
+
+        self.assertEqual(min_overlap, obs_min_overlap_fj)
+        self.assertEqual(min_overlap, obs_min_overlap_sp)
+
+        # correct default settings should be returned 
+        # for the pe_join_method chosen
+        fj_default = 6
+        sp_default = 15
+        obs_min_overlap_fj_int = set_min_overlap('default','fastq-join')
+        obs_min_overlap_sp_int = set_min_overlap('default','SeqPrep')
+
+        self.assertEqual(fj_default, obs_min_overlap_fj_int)
+        self.assertEqual(sp_default, obs_min_overlap_sp_int)
+
 
 
 
@@ -384,7 +406,7 @@ FFFFFFFFFFF
 
 
 
-
+# For reference. Data used to make the 'joined_reads' reference string.
 forward_reads = """@MISEQ03:64:000000000-A2H3D:1:1101:14358:1530 1:N:0:TCCACAGGAGT
 TNCAGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCGCGTAGGTGGTTTGTTAAGTTGGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATTCAAAACTGACAAGCTAGAGTATGGTAGAGGGTGGTGGAATTTCCTGTGTAGCGGTGAAATGCGTAGATATAGGAAGGAACACCAGTGGCGAAGGCGACCACCTGGACTGAAACTGACACTGAGGGGCGAAAGCGGGGGGGGCAAACG
 +
@@ -487,6 +509,7 @@ TACAGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCGCGTAGGTGGTTTGTTAAGTTGGATGTGAAATCCC
 ????9BB?BBBBBBBBEEECFAFHHHHHHHFHHHHHHCCEFF/CDCCE>DCH5AECFHHHFHHHHHHHHHHHGFHHCFHHHHHEEEDEDEED@EEEEEEEEEEEEEEEEE;;BEEE?EEEEEE?*?CA?EE::?8'.''..?CEE*::/:?A:C?E??82?CCEEEE))4?EEEEA:?*80?AEEC#################################################################
 """
 
+# For reference. Data used to make the 'joined_reads' reference string.
 reverse_reads = """@MISEQ03:64:000000000-A2H3D:1:1101:14358:1530 2:N:0:TCCACAGGAGT
 ACGGACTACAAGGGTTTCTAATCCTGTTTGCTCCCCACGCTTTCGCACCTCAGTGTCAGTATCAGTCCAGGTGGTCGCCTTCGCCACTGGTGTTCCTTCCTATATCTACGCATTTCACCGCTACACAGGAAATTCCACCACCCTCTACCATACTCTAGCTTGTCAGTTTTGAATGCAGTTCCCAGGTTGAGCCCGGGGATTTCACATCCAACTTAACAACCCACATACCCGCCTTTTCGCCCAGGTAATCC
 +

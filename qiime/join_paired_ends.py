@@ -76,8 +76,9 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
                  " before iterating through joined paired-end-reads file!"+\
                  " Except for missing paired-end reads that did not survive"+\
                  " assembly, your index and paired-end reads files must be in"+\
-                 " the same order! Last ID processed was:\n"+ \
-                 " \'%s\'\n" %(joined_label)
+                 " the same order! Also, check that the index-reads and"+\
+                 " paired-end reads have identical headers. The last joined"+\
+                 " paired-end ID processed was:\n\'%s\'\n" %(joined_label)
         else:
             fastq_string = '@%s\n%s\n+\n%s\n'\
                             %(index_label,index_seq,index_qual)
@@ -89,5 +90,23 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
 
     return filtered_bc_outfile_path
 
-        
+def set_min_overlap(min_overlap, pe_join_method):
+    """Check that min_overlap is properly set.
+        min_overlap : 'default' or int value
+        pe_join_method : fastq-join or SeqPrep 
+    """
+    if min_overlap != "default":
+        try:
+            min_overlap = int(min_overlap)
+        except ValueError:
+            raise ValueError, ("--min_overlap must either be 'default'",
+               "or an int value")
+    if min_overlap == "default":
+        if pe_join_method == "fastq-join":
+            min_overlap = 6
+        elif pe_join_method == "SeqPrep":
+            min_overlap = 15
+    return min_overlap
+
+
         
