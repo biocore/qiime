@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran", "Adam Robbins-Pianka"]
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder",
+                "William Walters", "Jose Carlos Clemente Litran",
+                "Adam Robbins-Pianka", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -1601,7 +1603,7 @@ class MothurOtuPicker(OtuPicker):
         dump the result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
         """
-        app = Mothur(InputHandler='_input_as_path')
+        app = Mothur(InputHandler='_input_as_path', TmpDir=get_qiime_temp_dir())
         app.Parameters['method'].on(self.Params['Algorithm'])
         results = app(seq_path)
         parsed_otus = mothur_parse(results['otu list'])
