@@ -5,7 +5,8 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
+               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
+               "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
-from os.path import isdir, exists, split
+from os.path import isdir, exists, split, join
 from sys import platform, version as python_version, executable
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
@@ -21,7 +22,7 @@ from subprocess import Popen, PIPE, STDOUT
 from numpy import __version__ as numpy_lib_version
 
 from cogent.util.unit_test import TestCase, main as test_main
-from cogent.util.misc import app_path, get_random_directory_name
+from cogent.util.misc import app_path, get_random_directory_name, remove_files
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent import __version__ as pycogent_lib_version
 
@@ -33,7 +34,9 @@ from qiime.util import (load_qiime_config,
                         get_rdp_jarpath,
                         get_java_version,
                         get_pynast_version,
-                        make_option)
+                        make_option, 
+                        qiime_system_call,
+                        get_qiime_temp_dir)
 from qiime.denoiser.utils import check_flowgram_ali_exe
 
 try:
@@ -520,13 +523,12 @@ class Qiime_config(TestCase):
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
-        command = "mothur \"#set.logfile(name=mothur.log)\" | grep '^mothur v'"
-        proc = Popen(command,shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=STDOUT)
-        stdout, stderr = proc.communicate()
+        log_file = join(get_qiime_temp_dir(), 'mothur.log')
+        command = "mothur \"#set.logfile(name=%s)\" | grep '^mothur v'" % log_file
+        stdout,stderr, exit_Status = qiime_system_call(command)
         
         # remove log file
-        remove('mothur.log')
+        remove_files([log_file], error_on_missing = False)
         
         version_string = stdout.strip().split(' ')[1].strip('v.')
         try:
@@ -669,7 +671,7 @@ class Qiime_config(TestCase):
         stdout = proc.stdout.read()
         
         # remove log file generated
-        remove('ParsInsert.log')
+        remove_files(['ParsInsert.log'], error_on_missing=False)
 
         version_string = stdout.strip()
         try:
