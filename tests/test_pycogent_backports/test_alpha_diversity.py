@@ -196,9 +196,16 @@ class diversity_tests(TestCase):
 
     def test_simpson_e(self):
         """simpson e should match hand-calculated value"""
-        c = array([1,2,3,1])
-        s = simpson(c)
-        self.assertEqual((1/s)/4, simpson_e(c))
+        # example1 - a totally even community should have simpson_e=1
+        c = array([1,1,1,1,1,1,1])
+        self.assertEqual(simpson_e(c), 1)
+        # example2
+        c = array([0,30,25,40,0,0,5]).astype(float)
+        freq_c = c/c.sum()
+        D = (freq_c**2).sum()
+        exp = 1./(D*4)
+        obs = simpson_e(c)
+        self.assertEqual(obs, exp)
 
     def test_robbins(self):
         """robbins metric should match hand-calculated value"""
