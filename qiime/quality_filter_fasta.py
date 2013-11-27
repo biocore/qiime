@@ -256,8 +256,6 @@ def process_seqs(fasta_files,
         quality_filtered_seqs_q = open(join(output_dir,
          "quality_filtered_seqs.qual.incomplete"), "w")
          
-    # Possibly use empty array and avoid second for loop for fasta only situation
-         
     if qual_files:
         for curr_fasta, curr_qual in zip(fasta_f, qual_f):
             for fasta_data, qual_data in izip(MinimalFastaParser(curr_fasta),
@@ -551,7 +549,7 @@ def check_primer_mismatch(fasta_label,
     # and log the sequence label
     if not suppress_sampleid_check:
         seq_label = fasta_label.split('_')[0]
-        if seq_label not in ids_primers.keys():
+        if seq_label not in ids_primers:
             final_log_data['seq_ids_not_in_mapping'].append(fasta_label)
             if enable_all_checks:
                 detailed_quality_data['seq_id_not_in_mapping'] = 1
@@ -632,7 +630,7 @@ def check_rev_primer_mismatch(fasta_label,
     if not suppress_sampleid_check:
         curr_ids_not_found = set(final_log_data['seq_ids_not_in_mapping'])
         seq_label = fasta_label.split('_')[0]
-        if seq_label not in ids_rev_primers.keys():
+        if seq_label not in ids_rev_primers:
             # Doing this check to avoid double logging for both forward and
             # reverse primer checks
             if fasta_label not in curr_ids_not_found:
@@ -977,9 +975,9 @@ def check_map(mapping_data,
         if "Found header field" in curr_error:
             halt_for_errors = True
         
-    """This should only halt for duplicate SampleIDs (unless check suppressed),
-    missing primers, invalid characters in primers, or errors in mapping
-    header."""
+    #This should only halt for duplicate SampleIDs (unless check suppressed),
+    #missing primers, invalid characters in primers, or errors in mapping
+    #header.
     if halt_for_errors:
         raise ValueError,("Errors found in mapping file, please check "+\
          "mapping file with check_id_map.py. See suppress_primer_check and "+\
@@ -1345,33 +1343,25 @@ def count_ambig(curr_seq, ambig_chars="RYMKWSBDHVN"):
     return total
 
     
-def pair_hmm_align_unaligned_seqs(seqs,moltype=DNA,params={}):
+def pair_hmm_align_unaligned_seqs(seqs,moltype=DNA,params=None):
     """
         Checks parameters for pairwise alignment, returns alignment.
         
         Code from Greg Caporaso.
     """
     
+    if params is None:
+        params = {}
     seqs = LoadSeqs(data=seqs,moltype=moltype,aligned=False)
     try:
         s1, s2 = seqs.values()
     except ValueError:
         raise ValueError,\
          "Pairwise aligning of seqs requires exactly two seqs."
-    
-    try:
-        gap_open = params['gap_open']
-    except KeyError:
-        gap_open = 5
-    try:
-        gap_extend = params['gap_extend']
-    except KeyError:
-        gap_extend = 2
-    try:
-        score_matrix = params['score_matrix']
-    except KeyError:
-        score_matrix = make_dna_scoring_dict(\
-         match=1,transition=-1,transversion=-1)
+    gap_open = params.get('gap_open', 5)
+    gap_extend = params.get('gap_extend', 2)
+    score_matrix = params.get('score_matrix', make_dna_scoring_dict(\
+     match=1,transition=-1,transversion=-1))
     
     return local_pairwise(s1,s2,score_matrix,gap_open,gap_extend)
     
@@ -1386,14 +1376,9 @@ def local_align_primer_seq(primer,sequence):
          
         Modified from code written by Greg Caporaso.
     """
-    # The scoring function which can be passed to cogent.alignment.algorithms.sw_align
-    
-    query_primer = primer
-
-    query_sequence = str(sequence)
      
     # Get alignment object from primer, target sequence
-    alignment = pair_hmm_align_unaligned_seqs([query_primer,query_sequence])
+    alignment = pair_hmm_align_unaligned_seqs([primer,sequence])
     
     # Extract sequence of primer, target site, may have gaps in insertions
     # or deletions have occurred.
@@ -1410,10 +1395,10 @@ def local_align_primer_seq(primer,sequence):
          target_hit[i] != '-' and primer_hit[i] != '-': 
             mismatches += 1
     try:
-        hit_start = query_sequence.index(target_hit.replace('-',''))
+        hit_start = sequence.index(target_hit.replace('-',''))
     except ValueError:
         raise ValueError,('substring not found, query string '
-         '%s, target_hit %s' % (query_sequence, target_hit))
+         '%s, target_hit %s' % (sequence, target_hit))
     
     # sum total mismatches
     mismatch_count = insertions + deletions + mismatches
