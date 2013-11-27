@@ -143,8 +143,8 @@ class FastqJoin(CommandLineApplication):
 def join_paired_end_reads_fastqjoin(
     reads1_infile_path,
     reads2_infile_path,
-    perc_max_diff=8,
-    min_overlap=6,
+    perc_max_diff=None, # typical default is 8
+    min_overlap=None, # typical default is 6
     outfile_label = 'fastqjoin',
     params={},    
     working_dir=tempfile.gettempdir(),
@@ -172,17 +172,37 @@ def join_paired_end_reads_fastqjoin(
         if not os.path.exists(p):
             raise IOError, 'File not found at: %s' % p
   
-    # set params
-    params['-p'] = perc_max_diff
-    params['-m'] = min_overlap
-    params['-o'] = outfile_label + '.'
-
     fastq_join_app = FastqJoin(params=params,
                                WorkingDir=working_dir,
                                SuppressStderr=SuppressStderr,
                                SuppressStdout=SuppressStdout,
                                HALT_EXEC=HALT_EXEC)
-    
+  
+    # set param. Helps with QIIME integration to have these values
+    # set to None by default. This way we do not have to worry
+    # about changes in default behaviour of the wrapped
+    # application
+    if perc_max_diff is not None:
+        if isinstance(perc_max_diff, int) and 0 <= perc_max_diff <= 100: 
+            fastq_join_app.Parameters['-p'].on(perc_max_diff)
+        else:
+            raise ValueError, "perc_max_diff must be int between 0-100!"
+
+    if min_overlap is not None:
+        if isinstance(min_overlap, int) and 0 < min_overlap: 
+            fastq_join_app.Parameters['-m'].on(min_overlap)
+        else:
+            raise ValueError, "min_overlap must be an int >= 0!"
+
+    if outfile_label is not None:
+        if isinstance(outfile_label, str): 
+            fastq_join_app.Parameters['-o'].on(outfile_label +'.')
+        else:
+            raise ValueError, "outfile_label must be a string!"
+    else:
+        pass
+
+  
     # run assembler
     result = fastq_join_app(infile_paths)
     

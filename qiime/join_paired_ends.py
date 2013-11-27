@@ -10,8 +10,8 @@ __email__ = "robesonms@ornl.gov"
 __status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
-from qiime.pycogent_backports.fastq_join import join_paired_end_reads_fastqjoin
-from qiime.pycogent_backports.seqprep import join_paired_end_reads_seqprep
+from qiime.pycogent_backports.fastq_join import FastqJoin,join_paired_end_reads_fastqjoin
+from qiime.pycogent_backports.seqprep import SeqPrep,join_paired_end_reads_seqprep
 from qiime.util import qiime_open
 import os
 import gzip
@@ -77,24 +77,6 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     fbc_fh.close()
 
     return filtered_bc_outfile_path
-
-def set_min_overlap(min_overlap, pe_join_method):
-    """Check that min_overlap is properly set.
-        min_overlap : 'default' or int value
-        pe_join_method : fastq-join or SeqPrep 
-    """
-    if min_overlap != "default":
-        try:
-            min_overlap = int(min_overlap)
-        except ValueError:
-            raise ValueError, ("--min_overlap must either be 'default'",
-               "or an int value")
-    if min_overlap == "default":
-        if pe_join_method == "fastq-join":
-            min_overlap = 6
-        elif pe_join_method == "SeqPrep":
-            min_overlap = 15
-    return min_overlap
 
 
         

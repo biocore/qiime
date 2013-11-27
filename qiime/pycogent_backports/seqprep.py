@@ -236,9 +236,9 @@ def join_paired_end_reads_seqprep(
     reads2_infile_path,
     outfile_label='seqprep',
     max_overlap_ascii_q_score='J',
-    min_overlap=15,
-    max_mismatch_good_frac=0.02,
-    min_frac_matching=0.9,
+    min_overlap=None, # typical default vs 15
+    max_mismatch_good_frac=None, # typical default is 0.02,
+    min_frac_matching= None,# typical default is 0.9,
     phred_64='False',
     params={},
     working_dir=tempfile.gettempdir(),
@@ -272,19 +272,6 @@ def join_paired_end_reads_seqprep(
         if not os.path.exists(p):
             raise IOError, 'Infile not found at: %s' % p
 
-
-    # required by SeqPrep to assemble:
-    params['-f'] = abs_r1_path
-    params['-r'] = abs_r2_path
-    params['-s'] = outfile_label + '_assembled.gz'
-    params['-1'] = outfile_label + '_unassembled_R1.gz' 
-    params['-2'] = outfile_label + '_unassembled_R2.gz'
-    params['-o'] = min_overlap
-    params['-m'] = max_mismatch_good_frac
-    params['-n'] = min_frac_matching
-    params['-y'] = max_overlap_ascii_q_score
-
-
     # set up controller
     seqprep_app=SeqPrep(params = params,
                         WorkingDir=working_dir,
@@ -292,7 +279,48 @@ def join_paired_end_reads_seqprep(
                         SuppressStdout=SuppressStdout,
                         HALT_EXEC=HALT_EXEC)
     
-    # if input is phred+64
+    
+    # required by SeqPrep to assemble:
+    seqprep_app.Parameters['-f'].on(abs_r1_path)
+    seqprep_app.Parameters['-r'].on(abs_r2_path)
+
+    if outfile_label is not None:
+        seqprep_app.Parameters['-s'].on(outfile_label + '_assembled.gz')
+        seqprep_app.Parameters['-1'].on(outfile_label + '_unassembled_R1.gz')
+        seqprep_app.Parameters['-2'].on(outfile_label + '_unassembled_R2.gz')
+    else:
+        raise ValueError, "Must set an outfile_label in order to set"+\
+                          " the -s, -1, & -2 options!"
+
+    if min_overlap is not None:
+        if isinstance(min_overlapi, int) and min_overlap > 0:
+                seqprep_app.Parameters['-o'].on(min_overlap)
+        else:        
+            raise ValueError, "min_overlap must be an int >= 0!"
+ 
+    if max_mismatch_good_frac is not None:
+        if isinstance(max_mismatch_good_frac, float) and 0.0 < max_mismatch_good_frac <= 1.0:
+            seqprep_app.Parameters['-m'].on(max_mismatch_good_frac)
+        else:
+            raise ValueError, "max_mismatch_good_frac must be a float between 0.0-1.0!"
+
+    if min_frac_matching is not None:
+        if isinstance(min_frac_matching, float) and 0.0 < min_frac_matching <= 1.0:
+            seqprep_app.Parameters['-n'].on(min_frac_matching)
+        else:
+            raise ValueError, "min_frac_matching must be a float between 0.0-1.0!"
+
+ 
+    if max_overlap_ascii_q_score is not None:
+        if isinstance(max_overlap_ascii_q_score, str) \
+                and len(max_overlap_ascii_q_score) == 1:
+            seqprep_app.Parameters['-y'].on(max_overlap_ascii_q_score)
+        else:
+            raise ValueError, "max_overlap_ascii_q_score must be single"+\
+                              " ASCII string. e.g. \'J\'!"
+ 
+
+   # if input is phred+64
     if phred_64 == 'True':
         seqprep_app.Parameters['-6'].on()
 

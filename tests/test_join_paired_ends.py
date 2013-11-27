@@ -17,8 +17,7 @@ import shutil
 from tempfile import mkdtemp, NamedTemporaryFile
 
 from cogent.util.unit_test import TestCase, main
-from qiime.join_paired_ends import (write_synced_barcodes_fastq,
-                                    set_min_overlap)
+from qiime.join_paired_ends import write_synced_barcodes_fastq
 
 class JoinPairedEndsTests(TestCase):
     """Tests for join_paired_ends."""
@@ -103,34 +102,6 @@ class JoinPairedEndsTests(TestCase):
         self.assertRaises(StopIteration, write_synced_barcodes_fastq,
                                self.jpe_fp,
                                self.missing_bc_fp)
-
-
-    def test_set_min_overlap(self):
-        """set_min_overlap: should work properly."""
-        # setting min_overlap int should return same value
-        # regardless of set pe_join_method 
-        min_overlap = 11
-        obs_min_overlap_fj = set_min_overlap(11,'fastq-join')
-        obs_min_overlap_sp = set_min_overlap(11,'SeqPrep')
-
-        self.assertEqual(min_overlap, obs_min_overlap_fj)
-        self.assertEqual(min_overlap, obs_min_overlap_sp)
-
-        # correct default settings should be returned 
-        # for the pe_join_method chosen
-        fj_default = 6
-        sp_default = 15
-        obs_min_overlap_fj_int = set_min_overlap('default','fastq-join')
-        obs_min_overlap_sp_int = set_min_overlap('default','SeqPrep')
-
-        self.assertEqual(fj_default, obs_min_overlap_fj_int)
-        self.assertEqual(sp_default, obs_min_overlap_sp_int)
-
-        # test that a value other than int or 'default' 
-        self.assertRaises(ValueError, set_min_overlap, 'six', 'fastq-join')
-        self.assertRaises(ValueError, set_min_overlap, 'fifteen', 'SeqPrep')
-
-
 
 
 

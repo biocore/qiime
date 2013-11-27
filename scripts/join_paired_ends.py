@@ -12,8 +12,7 @@ __status__ = "Development"
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,
                                     join_method_constructors,
-                                    write_synced_barcodes_fastq,
-                                    set_min_overlap)
+                                    write_synced_barcodes_fastq)
 from qiime.util import (parse_command_line_parameters, get_options_lookup, 
                         make_option, load_qiime_config, create_dir)
 import os
@@ -75,16 +74,15 @@ script_info['optional_options'] = [\
     make_option('-b','--index_reads_fp',type='existing_filepath',
                 help='Path to the barcode / index reads in FASTQ format.'
                 ' Will be filtered based on surviving joined pairs.'),
-    make_option('-j', '--min_overlap', 
+    make_option('-j', '--min_overlap', type='int', 
                 help='Applies to both fastq-join and SeqPrep methods.'+\
                       ' Minimum allowed overlap in base-pairs required to join pairs.'+\
-                      ' Defaults to recomended settings: fastq-join (6), SeqPrep (15) '+\
-                      ', [default: %default]', default='default'),
+                      ', [default: %default]', default=None),
     make_option('-p', '--perc_max_diff', type='int',
                 help='Only applies to fastq-join method, otherwise ignored.'+\
                      ' Maximum allowed % differences within region of overlap'+\
-                      ',  [default: %default]', default=8),
-    make_option('-y', '--max_ascii_score', type='string',
+                      ',  [default: %default]', default=None),
+    make_option('-y', '--max_ascii_score', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum quality score / ascii code allowed to appear within'+\
                       ' joined pairs output. For more information see:'+\
@@ -93,11 +91,11 @@ script_info['optional_options'] = [\
     make_option('-n', '--min_frac_match', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Minimum allowed fraction of matching bases required to join reads'+\
-                      ',  [default: %default]', default=0.9),
+                      ',  [default: %default]', default=None),
     make_option('-g', '--max_good_mismatch', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum mis-matched high quality bases allowed'+\
-                      ' to join reads. ' + '[default: %default]', default=0.02),
+                      ' to join reads. ' + '[default: %default]', default=None),
     make_option('-6', '--phred_64', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Set if input reads are in phred+64 format. Output will '\
@@ -126,9 +124,6 @@ def main():
     # both fastq-join & SeqPrep options
     min_overlap = opts.min_overlap
 
-    # set default min_overlap values according to join method
-    min_overlap = set_min_overlap(min_overlap, pe_join_method)
-    
     create_dir(output_dir, fail_on_exist=False)
 
     # send parameters to appropriate join method
