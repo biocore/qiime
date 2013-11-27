@@ -35,7 +35,7 @@ Currently, there are two methods that can be selected by the user to join paired
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/fastq-join_joined"""))
-script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o SeqPrep_joined"""))
+script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/SeqPrep_joined"""))
 script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/barcodes.fastq -o $PWD/fastq-join_joined"""))
 script_info['output_description'] = """All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory. 
 
@@ -97,7 +97,7 @@ script_info['optional_options'] = [\
     make_option('-g', '--max_good_mismatch', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum mis-matched high quality bases allowed'+\
-                      ' to join reads. ' + '[default: %default]', default=0.2),
+                      ' to join reads. ' + '[default: %default]', default=0.02),
     make_option('-6', '--phred_64', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Set if input reads are in phred+64 format. Output will '\
