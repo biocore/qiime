@@ -10,8 +10,8 @@ __email__ = "robesonms@ornl.gov"
 __status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
-from cogent.app.fastq_join import join_paired_end_reads_fastqjoin
-from cogent.app.seqprep import join_paired_end_reads_seqprep
+from qiime.pycogent_backports.fastq_join import join_paired_end_reads_fastqjoin
+from qiime.pycogent_backports.seqprep import join_paired_end_reads_seqprep
 from qiime.util import qiime_open
 import os
 import gzip

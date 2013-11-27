@@ -34,9 +34,9 @@ Currently, there are two methods that can be selected by the user to join paired
 2. SeqPrep - (https://github.com/jstjohn/SeqPrep)
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq"""))
-script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/index.reads.fastq"""))
+script_info['script_usage'].append(("""Join paired-ends with \'fastq-join\':""","""This is the default method to join paired-end Illumina data:""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/fastq-join_joined"""))
+script_info['script_usage'].append(("""Join paired-ends with \'SeqPrep\':""","""Produces similar output to the \'fastq-join\' but returns data in gzipped format.""",""" %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o SeqPrep_joined"""))
+script_info['script_usage'].append(("""Update the index / barcode reads file to match the surviving joined pairs.""","""This is required if you will be using \'split_libraries_fastq.py\'.""",""" %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/barcodes.fastq -o $PWD/fastq-join_joined"""))
 script_info['output_description'] = """All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory. 
 
 
@@ -72,7 +72,7 @@ script_info['optional_options'] = [\
                 help='Method to use for joining paired-ends. Valid choices'+\
                       ' are: ' + ', '.join(join_method_names.keys())+\
                       ' [default: %default]', default='fastq-join'),
-   make_option('-b','--index_reads_fp',type='existing_filepath',
+    make_option('-b','--index_reads_fp',type='existing_filepath',
                 help='Path to the barcode / index reads in FASTQ format.'
                 ' Will be filtered based on surviving joined pairs.'),
     make_option('-j', '--min_overlap', 
