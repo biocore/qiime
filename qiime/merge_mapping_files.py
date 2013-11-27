@@ -80,4 +80,5 @@ def write_mapping_file(mapping_data,output_fp):
     """ Write list of mapping_data to output_fp """
     f = open(output_fp,'w')
     f.write('\n'.join(mapping_data))
+    f.write('\n')
     f.close()
