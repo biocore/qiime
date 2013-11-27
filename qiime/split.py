@@ -115,6 +115,9 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         if seq_counter == seqs_per_file:
             current_out_file.close()
             seq_counter = 0
-            
+    
+    if seq_counter:
+        current_out_file.close()
+
     return out_files
     
