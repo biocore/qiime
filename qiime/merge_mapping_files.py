@@ -23,7 +23,6 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
     """
     mapping_data = defaultdict(dict)
     all_headers = set([])
-    result = []
     
     # iterate over mapping files, parsing each
     for mapping_file in mapping_files:
@@ -69,7 +68,7 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
     ordered_headers = ordered_beginning + list(all_headers) + ordered_end
     
     # generate the mapping file lines containing all fields
-    result.append('#' + '\t'.join(ordered_headers))
+    result = ['#' + '\t'.join(ordered_headers)]
     for sample_id, data in mapping_data.items():
         values = [data.get(k, no_data_value) for k in ordered_headers]
         result.append('\t'.join(values))
