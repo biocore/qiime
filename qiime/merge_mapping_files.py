@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -67,7 +67,6 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
         except KeyError:
             pass
     ordered_headers = ordered_beginning  + list(all_headers) + ordered_end
-    
     
     # generate the mapping file lines containing all fields
     result.append('#' + '\t'.join(ordered_headers))
