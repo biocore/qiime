@@ -97,6 +97,9 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         List of output filepaths is returned.
     
     """
+    if seqs_per_file <= 0:
+        raise ValueError("seqs_per_file must be > 0!")
+
     seq_counter = 0
     out_files = []
     if working_dir and not working_dir.endswith('/'):
@@ -116,7 +119,7 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
             current_out_file.close()
             seq_counter = 0
     
-    if seq_counter:
+    if not current_out_file.closed:
         current_out_file.close()
 
     return out_files
