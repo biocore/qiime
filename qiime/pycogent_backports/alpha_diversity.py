@@ -873,65 +873,53 @@ def ul_confidence_bounds(f, r, alpha):
              [c_1/T_r, c_1*f/T_r] for conservative lower bound intervals and
              [c_2/T_r, c_2*f/T_r] for conservative upper bound intervals
     """
-    
     alpha = round(alpha,2)
-    # Hack in some special values we used for the paper.
-    # Since Manuel needs to compute those semi-automatically
-    # using Maple, we pre-calculate only a few common ones
+    a = None
+    b = None
 
-    if f==2 and r==50 and alpha==0.95:
-        return (31.13026306, 38.94718565)
-    elif f==2 and r==33 and alpha==0.95:
-        return (22.3203508, 23.4487304)
-    elif f==1.5 and r==100 and alpha==0.95:
-        return (79.0424349, 83.22790086)
-    elif f==1.5 and r==94 and alpha==0.95:
-        return (75.9077267, 76.5492088)
-    elif f==2.5 and r==19 and alpha==0.95:
-        return (11.26109001, 11.96814857)
-
-    #In the next block for each f, we report the smallest possible value of r
-    #from table 4 in the paper
-    if f==80 and r==2 and alpha==0.95:
-        return(0.0598276655, 0.355361510)
-    elif f==48 and r==2 and alpha==0.95:
-        return(0.1013728884, 0.355358676)
-    elif f==40 and r==2 and alpha==0.95:
-        return(0.1231379857, 0.355320458)
-    elif f==24 and r== 2 and alpha==0.95:
-        return( 0.226833483, 0.346045204)
-    elif f==20 and r==3 and alpha==0.95:
-        return(0.320984257, 0.817610455)
-    elif f==12 and r==3 and alpha==0.95:
-        return(0.590243030, 0.787721610)
-    elif f==10 and r==4 and alpha==0.95:
-        return(0.806026244, 1.360288674)
-    elif f==6 and r==6 and alpha==0.95:
-        return(1.8207383, 2.58658608)
-    elif f==5 and r==7 and alpha==0.95:
-        return(2.48303930, 3.22806682)
-    elif f==3 and r==14 and alpha==0.95:
-        return(7.17185045, 8.27008349)
-    elif f==2.5 and r==19 and alpha==0.95:
-        return(11.26109001, 11.96814857)
-    elif f==1.5 and r==94 and alpha==0.95:
-        return(75.9077267, 76.5492088)
-    elif f==1.25 and r==309 and alpha==0.95:
-        return(275.661191, 275.949782)
+    if (f, r, alpha) in precomputed_table:
+        return precomputed_table[(f, r, alpha)]
 
     # all others combination are only computed for f=10
     # and alpha = 0.90, 0.95 and 0.99
-    elif f==10 and r<=50:
-        try:
-            (a,b) = cbs[round(alpha,2)][r]
-        except KeyError:
-            raise ValueError, "No constants are precomputed for the combination of " \
-                + "f:%f, r:%d, and alpha:%.2f"% (f,r,alpha)
-        if (a!=None and b!=None):
-           return(a,b) 
+    if f==10 and r<=50:
+        if alpha in cbs and r < len(cbs[alpha]):
+            (a, b) = cbs[alpha][r]
+
+    if a is None or b is None:
+        raise ValueError("No constants are precomputed for the combination of "
+                         "f:%f, r:%d, and alpha:%.2f"% (f,r,alpha))
     
-    raise ValueError, "No constants are precomputed for the combination of " \
-         + "f:%f, r:%d, and alpha:%.2f"% (f,r,alpha)
+    return (a, b)
+
+# Hack in some special values we used for the paper.
+# Since Manuel needs to compute those semi-automatically
+# using Maple, we pre-calculate only a few common ones
+
+# precomputed table is {(f, r, alpha):(c_1, c_2)}
+precomputed_table = {
+        (2,    50, 0.95):( 31.13026306,   38.94718565),
+        (2,    33, 0.95):( 22.3203508,    23.4487304),
+        (1.5, 100, 0.95):( 79.0424349,    83.22790086),
+        (1.5,  94, 0.95):( 75.9077267,    76.5492088),
+        (2.5,  19, 0.95):( 11.26109001,   11.96814857),
+
+        # In the next block for each f, we report the smallest possible value 
+        # of r from table 4 in the paper
+        (80,     2, 0.95):(  0.0598276655, 0.355361510),
+        (48,     2, 0.95):(  0.1013728884, 0.355358676),
+        (40,     2, 0.95):(  0.1231379857, 0.355320458),
+        (24,     2, 0.95):(  0.226833483,  0.346045204),
+        (20,     3, 0.95):(  0.320984257,  0.817610455),
+        (12,     3, 0.95):(  0.590243030,  0.787721610),
+        (10,     4, 0.95):(  0.806026244,  1.360288674),
+        (6,      6, 0.95):(  1.8207383,    2.58658608),
+        (5,      7, 0.95):(  2.48303930,   3.22806682),
+        (3,     14, 0.95):(  7.17185045,   8.27008349),
+        (2.5,   19, 0.95):( 11.26109001,  11.96814857),
+        (1.5,   94, 0.95):( 75.9077267,   76.5492088),
+        (1.25, 309, 0.95):(275.661191,   275.949782)
+}
 
 ###### 
 # Below are the values used for Theorem 3 iii
