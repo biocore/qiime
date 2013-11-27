@@ -12,7 +12,8 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.parse import parse_mapping_file
-    
+from collections import defaultdict
+
 def merge_mapping_files(mapping_files,no_data_value='no_data'):
     """ Merge list of mapping files into a single mapping file 
     
@@ -20,7 +21,7 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
         no_data_value: value to be used in cases where there is no
          mapping field associated with a sample ID (default: 'no_data')
     """
-    mapping_data = {}
+    mapping_data = defaultdict(dict)
     all_headers = []
     result = []
     
@@ -31,27 +32,27 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
         all_headers += current_headers
 
         for entry in current_data:
-            sample_id = entry[0]
-            current_values = {}
-        
-            for header,value in zip(current_headers[1:],entry[1:]):
-                current_values[header] = value
-            
+            current_values = {k:v for k,v in zip(current_headers, entry)}
+            sample_id = current_values.pop('SampleID') 
+
             if sample_id in mapping_data:
                 # if the sample id has already been seen, confirm that
                 # there is no conflicting values across the different 
                 # mapping files (e.g., pH=5.0 and pH=6.0)- if there is, 
                 # raise a ValueError
                 previous_data = mapping_data[sample_id]
-            
-                for header,value in current_values.items():
-                    if header in previous_data and value != previous_data[header]:
-                        raise ValueError,\
-                         "Different values provided for %s for sample %s in different mapping files."\
-                          % (header,sample_id)
-                mapping_data[sample_id].update(current_values)
-            else:
-                mapping_data[sample_id] = current_values
+                
+                for key in current_values:
+                    if key not in previous_data:
+                        continue
+
+                    if current_values[key] != previous_data[key]:
+                        raise ValueError("Different values provided for %s for"
+                                      "sample %s in different mapping files."\
+                                      % (key, sample_id))
+
+            mapping_data[sample_id].update(current_values)
+    
     all_headers = {}.fromkeys(all_headers)
     
     # remove and place the fields whose order is important
