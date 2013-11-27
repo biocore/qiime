@@ -60,13 +60,10 @@ def apply_gap_filter(fastalines, allowed_gap_frac=1-eps, verbose=False):
 
 def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
     allowed_gap_frac=1-eps, verbose=False, entropy_threshold=None):
-    """Applies lanemask and gap filter to fasta file, yielding filtered seqs.
-    """
-
-    if entropy_threshold:
-        if entropy_threshold < 0 or entropy_threshold > 1:
-            raise ValueError,('Entropy threshold parameter (-e) needs to be '+\
-             'between 0 and 1')
+    """Applies a mask and gap filter to fasta file, yielding filtered seqs."""
+    if entropy_threshold is not None and not (0 < entropy_threshold < 1):
+        raise ValueError('Entropy threshold parameter (-e) needs to be '
+                         'between 0 and 1')
     
     if lane_mask:
         # convert lane_mask to a numpy index array
