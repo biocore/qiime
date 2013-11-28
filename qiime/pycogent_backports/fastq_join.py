@@ -201,7 +201,6 @@ def join_paired_end_reads_fastqjoin(
             raise ValueError, "outfile_label must be a string!"
     else:
         pass
-
   
     # run assembler
     result = fastq_join_app(infile_paths)

@@ -239,7 +239,7 @@ def join_paired_end_reads_seqprep(
     min_overlap=None, # typical default vs 15
     max_mismatch_good_frac=None, # typical default is 0.02,
     min_frac_matching= None,# typical default is 0.9,
-    phred_64='False',
+    phred_64=False,
     params={},
     working_dir=tempfile.gettempdir(),
     SuppressStderr=True,
@@ -293,7 +293,7 @@ def join_paired_end_reads_seqprep(
                           " the -s, -1, & -2 options!"
 
     if min_overlap is not None:
-        if isinstance(min_overlapi, int) and min_overlap > 0:
+        if isinstance(min_overlap, int) and min_overlap > 0:
                 seqprep_app.Parameters['-o'].on(min_overlap)
         else:        
             raise ValueError, "min_overlap must be an int >= 0!"
@@ -316,12 +316,12 @@ def join_paired_end_reads_seqprep(
                 and len(max_overlap_ascii_q_score) == 1:
             seqprep_app.Parameters['-y'].on(max_overlap_ascii_q_score)
         else:
-            raise ValueError, "max_overlap_ascii_q_score must be single"+\
-                              " ASCII string. e.g. \'J\'!"
+            raise ValueError, "max_overlap_ascii_q_score must be a single"+\
+                              " ASCII character string. e.g. \'J\'!"
  
 
    # if input is phred+64
-    if phred_64 == 'True':
+    if phred_64 is True:
         seqprep_app.Parameters['-6'].on()
 
     # run assembler 
