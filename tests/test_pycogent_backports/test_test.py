@@ -538,8 +538,8 @@ class StatTests(TestsHelper):
         """t_paired should return None if lists are invariant"""
         x = [1, 1, 1]
         y = [0, 0, 0]
-        self.assertEqual(t_paired(x,x), (None, None))
-        self.assertEqual(t_paired(x,y), (None, None))
+        self.assertEqual(t_paired(x,x), (nan, nan))
+        self.assertEqual(t_paired(x,y), (nan, nan))
         
     def test_t_paired_1tailed(self):
         """t_paired should match pre-calculated 1-tailed values"""

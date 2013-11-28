@@ -570,7 +570,7 @@ def t_paired(a,b, tails=None, exp_diff=0):
         return t_one_sample(diffs, popmean=exp_diff, tails=tails)
     except (ZeroDivisionError, ValueError, AttributeError, TypeError, \
         FloatingPointError):
-        return (None, None)
+        return (nan, nan)
     
 
 def t_one_sample(a,popmean=0, tails=None):
@@ -588,9 +588,9 @@ def t_one_sample(a,popmean=0, tails=None):
         t = (mean(a) - popmean)/(std(a)/sqrt(n))
     except (ZeroDivisionError, ValueError, AttributeError, TypeError, \
         FloatingPointError):
-        return None, None
+        return nan, nan
     if isnan(t) or isinf(t):
-        return None, None
+        return nan, nan
 
     prob = t_tailed_prob(t, n-1, tails)
     return t, prob

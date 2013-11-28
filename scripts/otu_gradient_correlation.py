@@ -51,10 +51,10 @@ are accomplished by passing the --individual_column which tells the script which
 samples are from which individual, along with the -c option which tells the 
 script which metadata field/column to use as the gradient for the longitudinal 
 correlation. This will most frequently be useful when there is time series data
-and you have sampes from an individual at a host of time points.  
+and you have samples from an individual at a number of time points.  
 The paired t test is accomplished by passing a paired mapping file which is just
 a two column (tab separation) table with the samples that should be paired in 
-each row. It should not have headers.
+each row. It should not have a header.
 The available tests are Kendall's Tau, Spearmans rank correlation, Pearsons 
 product moment correlation, and the C-score (or checkerboard score). 
 This script generates a tab separated output file which differs based on which 
@@ -141,7 +141,17 @@ script_info['optional_options']=[
             'paired sample map must be two columns without header that are '+\
             'tab separated. Each row contains samples which should be paired.'),
     make_option('--permutations', default=1000, type=int, 
-        help='Number of permutations to use for bootstrapped tests.')]
+        help='Number of permutations to use for bootstrapped tests.'+\
+            '[default: %default]'),
+    make_option('--biom_samples_are_superset', action='store_true', 
+        default=False, 
+        help='If this flag is passed you will be able to use a biom table '+\
+            'that contains all the samples listed in the mapping file '+\
+            'as well as additional samples not listed in the mapping file. '+\
+            'Only their intersecting samples will be used for calculations.'),
+    make_option('--print_non_overlap', action='store_true', default=False, 
+        help='If this flag is passed the script will display the samples that'+\
+            ' do not overlap between the mapping file and the biom file.')]
 
 script_info['version'] = __version__
 
@@ -197,7 +207,7 @@ def main():
         o.close()
     else: #simple correlation analysis requested
         pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
-        pmf, bt = sync_biom_and_mf(pmf, bt)
+        pmf, bt, nss = sync_biom_and_mf(pmf, bt)
         data_feed = correlation_row_generator(bt, pmf, opts.category)
         corr_coefs, pvals = run_correlation_test(data_feed, opts.test, 
             CORRELATION_TEST_CHOICES, opts.pval_assignmnet_method, 

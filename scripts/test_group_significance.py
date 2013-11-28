@@ -24,7 +24,12 @@ from qiime.otu_significance import (get_sample_cats, get_sample_indices,
     TWO_GROUP_TESTS, GROUP_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
-from numpy import array, where
+from numpy import array, where, seterr
+
+# set invalid comparisons error level to ignore. when nans are compared they 
+# frequently trigger this error. its not informative from the user perspective 
+# and likely will trigger a bunch of forum posts.
+seterr(invalid='ignore')
 
 script_info = {}
 script_info['brief_description'] = """
@@ -235,8 +240,11 @@ script_info['optional_options']=[
     make_option('-s', '--test', type="choice", choices=GROUP_TEST_CHOICES.keys(),
         default='kruskal_wallis', help='Test to use. Choices are:\n%s' % \
          (', '.join(GROUP_TEST_CHOICES.keys()))+'\n\t' + '[default: %default]'),
+    make_option('--metadata_key', default='taxonomy', type=str, 
+        help='Key to extract metadata from biom table. default: %default]'),
     make_option('--permutations', default=1000, type=int, 
-        help='Number of permutations to use for bootstrapped tests.'),
+        help='Number of permutations to use for bootstrapped tests.'+\
+            '[default: %default]'),
     make_option('--biom_samples_are_superset', action='store_true', 
         default=False, 
         help='If this flag is passed you will be able to use a biom table '+\
@@ -298,7 +306,7 @@ def main():
     bon_pvals = where(bon_pvals>1.0, 1.0, bon_pvals)
     # write output results after sorting
     lines = group_significance_output_formatter(bt, test_stats, pvals, 
-        fdr_pvals, bon_pvals, means, cat_sam_indices)
+        fdr_pvals, bon_pvals, means, cat_sam_indices, md_key=opts.metadata_key)
     lines = sort_by_pval(lines, ind=2)
     o = open(opts.output_fp, 'w')
     o.writelines('\n'.join(lines))
