@@ -38,7 +38,7 @@ from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
-    pearson, permute_2d, spearmans_rho)
+    pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
@@ -1058,7 +1058,7 @@ class Best(CategoryStats):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
                 cat_dm_flat = cat_dm.flatten()
-                r = spearmans_rho(dm_flat, cat_dm_flat)
+                r = spearman(dm_flat, cat_dm_flat)
                 if r > stats[i-1][0]:
                     stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
 

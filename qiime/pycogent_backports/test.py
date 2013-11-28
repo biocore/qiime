@@ -10,14 +10,14 @@ from cogent.maths.stats.special import (lgam, log_one_minus, one_minus_exp,
     MACHEP)
 from cogent.maths.stats import chisqprob
 from cogent.maths.stats.ks import psmirnov2x, pkstwo
-from cogent.maths.stats.kendall import pkendall, kendalls_tau
+# from cogent.maths.stats.kendall import pkendall, kendalls_tau
 from cogent.maths.stats.special import Gamma
 
 from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
         ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
         reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
         median as _median, zeros, ones, unique, copy, searchsorted, var, 
-        argsort, hstack, arange, empty, e)
+        argsort, hstack, arange, empty, e, where)
         #, std - currently incorrect
 from numpy.random import permutation, randint, shuffle
 #from cogent.maths.stats.util import Numbers
@@ -419,7 +419,7 @@ def count_occurrences(x):
     ux = unique(x)
     return searchsorted(tmp_x, ux, 'right') - searchsorted(tmp_x, ux, 'left')
 
-def kendalls_tau(v1, v2):
+def kendall(v1, v2):
     '''Compute Kendalls Tau correlation between v1 and v2.
 
     This function calculates tie adjusted Kendalls Tau statistic according to 
@@ -473,7 +473,7 @@ def pearson(v1, v2):
         'long enough to correlate or they have unequal lengths. Can't continue."
     return corrcoef(v1,v2)[0][1] # 2x2 symmetric unit matrix
 
-def spearmans_rho(v1, v2):
+def spearman(v1, v2):
     '''Calculate Spearmans rho.'''
     return pearson(rank_with_ties(v1), rank_with_ties(v2))
 
@@ -660,7 +660,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
         if var1 == 0 and var2 == 0:
             # Both lists do not vary.
             if x1 == x2 or none_on_zero_variance:
-                result = (None, None)
+                result = (nan, nan)
             else:
                 result = _t_test_no_variance(x1, x2, tails)
         else:
@@ -670,7 +670,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
             t = (x1-x2-exp_diff)/sqrt(svar*(1/n1 + 1/n2))
 
             if isnan(t) or isinf(t):
-                result = (None, None)
+                result = (nan, nan)
             else:
                 prob = t_tailed_prob(t, df, tails)
                 result = (t, prob)
@@ -678,7 +678,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
             FloatingPointError), e:
         #invalidate if the sample sizes are wrong, the values aren't numeric or
         #aren't present, etc.
-        result = (None, None)
+        result = (nan, nan)
 
     return result
 
@@ -752,9 +752,9 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
 
     # Only perform the Monte Carlo test if we got a sane answer back from the
     # initial t-test and we have been specified permutations.
-    nonparam_p_val = None
+    nonparam_p_val = nan
     perm_t_stats = []
-    if permutations > 0 and obs_t is not None and param_p_val is not None:
+    if permutations > 0 and not (isnan(obs_t) or isnan(param_p_val)):
         # Permute observations between x_items and y_items the specified number
         # of times.
         # perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
@@ -871,7 +871,7 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     Arguments:
         x_items - the first list of observations
         y_items - the second list of observations
-        method - 'pearson' or 'spearmans_rho'
+        method - 'pearson' or 'spearman'
         tails - if None (the default), a two-sided test is performed. 'high'
             for a one-tailed test for positive association, or 'low' for a
             one-tailed test for negative association. This parameter affects
@@ -888,11 +888,11 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     # Perform some initial error checking.
     if method == 'pearson':
         corr_fn = pearson
-    elif method == 'spearmans_rho':
-        corr_fn = spearmans_rho
+    elif method == 'spearman':
+        corr_fn = spearman
     else:
         raise ValueError("Invalid method '%s'. Must be either 'pearson' or "
-                         "'spearmans_rho'." % method)
+                         "'spearman'." % method)
     if tails is not None and tails != 'high' and tails != 'low':
         raise ValueError("Invalid tail type '%s'. Must be either None, "
                          "'high', or 'low'." % tails)
@@ -1732,7 +1732,7 @@ def fdr_correction(pvals):
 
     Does *not* assume pvals is sorted.
     """
-    tmp = array(pvals)
+    tmp = array(pvals).astype(float) #this converts Nones to nans
     return tmp*tmp.size/(1.+argsort(argsort(tmp)).astype(float))
     
 def benjamini_hochberg_step_down(pvals):
@@ -1759,7 +1759,7 @@ def bonferroni_correction(pvals):
     """Adjust pvalues for multiple tests using the Bonferroni method.
 
     In short: multiply all pvals by the number of comparisons."""
-    return array(pvals)*len(pvals)
+    return array(pvals).astype(float)*len(pvals) #float conversion: Nones->nans
 
 def fisher_z_transform(r):
     """Calculate the Fisher Z transform of a correlation coefficient.

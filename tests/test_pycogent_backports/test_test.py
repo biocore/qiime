@@ -11,7 +11,7 @@ from qiime.pycogent_backports.test import (tail, likelihoods,
     regress_major, f_value, f_two_sample, MonteCarloP, 
     regress_residuals, safe_sum_p_log_p, regress_origin, stdev_from_mean, 
     regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, 
-    pearson, spearmans_rho, std, median, 
+    pearson, spearman, std, median, 
     get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
     ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
 from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
@@ -31,7 +31,7 @@ from qiime.pycogent_backports.test import (benjamini_hochberg_step_down,
     assign_correlation_pval)
 # kendalls tau import
 from qiime.pycogent_backports.test import (rank_with_ties, count_occurrences, 
-    kendalls_tau)
+    kendall)
 # cscore imports
 from qiime.pycogent_backports.test import (cscore)
 # cogent imports
@@ -581,8 +581,8 @@ class StatTests(TestsHelper):
         # By default should return (None, None) to mimic R's t.test.
         x = array([1, 1., 1])
         y = array([0, 0, 0.0])
-        self.assertEqual(t_two_sample(x,x), (None, None))
-        self.assertEqual(t_two_sample(x,y), (None, None))
+        self.assertEqual(t_two_sample(x,x), (nan, nan))
+        self.assertEqual(t_two_sample(x,y), (nan, nan))
 
         # Test none_on_zero_variance=False on various tail types. We use
         # self.assertEqual instead of self.assertFloatEqual because the latter
@@ -616,12 +616,12 @@ class StatTests(TestsHelper):
                               none_on_zero_variance=False),
                               (float('inf'), 1.0))
 
-        # Should still receive (None, None) if the lists have no variance and
+        # Should still receive (nan, nan) if the lists have no variance and
         # have the same single value.
         self.assertEqual(t_two_sample(x, x, none_on_zero_variance=False),
-                         (None, None))
+                         (nan, nan))
         self.assertEqual(t_two_sample(x, [1, 1], none_on_zero_variance=False),
-                         (None, None))
+                         (nan, nan))
 
     def test_t_two_sample_invalid_input(self):
         """t_two_sample should raise an error on invalid input."""
@@ -762,7 +762,7 @@ class StatTests(TestsHelper):
 
     def test_mc_t_two_sample_no_perms(self):
         """Test gives empty permutation results if no perms are given."""
-        exp = (-0.11858541225631833, 0.90756579317867436, [], None)
+        exp = (-0.11858541225631833, 0.90756579317867436, [], nan)
         I =  array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
         II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
         obs = mc_t_two_sample(I, II, permutations=0)
@@ -772,7 +772,7 @@ class StatTests(TestsHelper):
         """Test no MC stats if initial t-test is bad."""
         x = array([1, 1, 1])
         y = array([0, 0, 0])
-        self.assertEqual(mc_t_two_sample(x,x), (None, None, [], None))
+        self.assertEqual(mc_t_two_sample(x,x), (nan, nan, [], nan))
 
     def test_mc_t_two_sample_no_variance(self):
         """Test input with no variance. Should match Deducer::perm.t.test."""
@@ -887,7 +887,7 @@ class CorrelationTests(TestsHelper):
         """Sets up variables used in the tests."""
         super(CorrelationTests, self).setUp()
 
-        # For testing spearman and correlation_test using method='spearmans_rho'.
+        # For testing spearman and correlation_test using method='spearman'.
         # Taken from the Spearman wikipedia article. Also used for testing
         # Pearson (verified with R).
         self.data1 = [106, 86, 100, 101, 99, 103, 97, 113, 112, 110]
@@ -1045,33 +1045,33 @@ class CorrelationTests(TestsHelper):
         """Test the spearman function with valid input."""
         # One vector has no ties.
         exp = 0.3719581
-        obs = spearmans_rho(self.a, self.b)
+        obs = spearman(self.a, self.b)
         self.assertFloatEqual(obs, exp)
 
         # Both vectors have no ties.
         exp = 0.2969697
-        obs = spearmans_rho(self.b, self.c)
+        obs = spearman(self.b, self.c)
         self.assertFloatEqual(obs, exp)
 
         # Both vectors have ties.
         exp = 0.388381
-        obs = spearmans_rho(self.a, self.r)
+        obs = spearman(self.a, self.r)
         self.assertFloatEqual(obs, exp)
 
         exp = -0.17575757575757578
-        obs = spearmans_rho(self.data1, self.data2)
+        obs = spearman(self.data1, self.data2)
         self.assertFloatEqual(obs, exp)
 
     def test_spearman_no_variation(self):
         """Test the spearman function with a vector having no variation."""
         exp = 0.0
-        obs = spearmans_rho([1, 1, 1], [1, 2, 3])
+        obs = spearman([1, 1, 1], [1, 2, 3])
         self.assertFloatEqual(obs, exp)
 
     def test_spearman_ranked(self):
         """Test the spearman function with a vector that is already ranked."""
         exp = 0.2969697
-        obs = spearmans_rho(self.b_ranked, self.c_ranked)
+        obs = spearman(self.b_ranked, self.c_ranked)
         self.assertFloatEqual(obs, exp)
 
     def test_correlation(self):
@@ -1128,7 +1128,7 @@ class CorrelationTests(TestsHelper):
         """Test correlation_test using spearman on valid input."""
         # This example taken from Wikipedia page:
         # http://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient
-        obs = correlation_test(self.data1, self.data2, method='spearmans_rho',
+        obs = correlation_test(self.data1, self.data2, method='spearman',
                                tails='high')
         self.assertFloatEqual(obs[:2], (-0.17575757575757578, 0.686405827612))
         self.assertEqual(len(obs[2]), 999)
@@ -1136,7 +1136,7 @@ class CorrelationTests(TestsHelper):
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
         self.assertCorrectPValue(0.67, 0.7, correlation_test,
                 (self.data1, self.data2),
-                {'method':'spearmans_rho', 'tails':'high'}, p_val_idx=3)
+                {'method':'spearman', 'tails':'high'}, p_val_idx=3)
         self.assertFloatEqual(obs[4],
                               (-0.7251388558041697, 0.51034422964834503))
 
@@ -1145,7 +1145,7 @@ class CorrelationTests(TestsHelper):
         # here for a two-tailed test:
         # http://stats.stackexchange.com/questions/22816/calculating-p-value-
         #     for-spearmans-rank-correlation-coefficient-example-on-wikip
-        obs = correlation_test(self.data1, self.data2, method='spearmans_rho',
+        obs = correlation_test(self.data1, self.data2, method='spearman',
                                tails=None)
         self.assertFloatEqual(obs[:2],
                 (-0.17575757575757578, 0.62718834477648433))
@@ -1154,7 +1154,7 @@ class CorrelationTests(TestsHelper):
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
         self.assertCorrectPValue(0.60, 0.64, correlation_test,
                 (self.data1, self.data2),
-                {'method':'spearmans_rho', 'tails':None}, p_val_idx=3)
+                {'method':'spearman', 'tails':None}, p_val_idx=3)
         self.assertFloatEqual(obs[4],
                               (-0.7251388558041697, 0.51034422964834503))
 
@@ -1212,13 +1212,13 @@ class CorrelationTests(TestsHelper):
                 ([1, 2, 3], [1, 2, 3]), p_val_idx=3)
         self.assertFloatEqual(obs[4], (None, None))
 
-        obs = correlation_test([1, 2, 3], [1, 2, 3], method='spearmans_rho')
+        obs = correlation_test([1, 2, 3], [1, 2, 3], method='spearman')
         self.assertFloatEqual(obs[:2], (1.0, 0))
         self.assertEqual(len(obs[2]), 999)
         for r in obs[2]:
             self.assertTrue(r >= -1.0 and r <= 1.0)
         self.assertCorrectPValue(0.3, 0.4, correlation_test,
-                ([1, 2, 3], [1, 2, 3]), {'method':'spearmans_rho'}, p_val_idx=3)
+                ([1, 2, 3], [1, 2, 3]), {'method':'spearman'}, p_val_idx=3)
         self.assertFloatEqual(obs[4], (None, None))
 
     def test_correlation_matrix(self):
@@ -1405,6 +1405,14 @@ class KruskalWallisTests(TestCase):
         kw_stat, pval = kruskal_wallis(data)
         self.assertFloatEqual(kw_stat, 38.436807439)
         self.assertFloatEqual(pval, 9.105424085598766e-08)
+        # test using a random data set against scipy
+        x_0 = array([0,0,0,31,12,0,25,26,775,13])
+        x_1 = array([14,15,0,15,12,13])
+        x_2 = array([0,0,0,55,92,11,11,11,555])
+        # kruskal(x_0, x_1, x_2) = (0.10761259465923653, 0.94761564440615031)
+        exp = (0.10761259465923653, 0.94761564440615031)
+        obs = kruskal_wallis([x_0, x_1, x_2])
+        self.assertFloatEqual(obs, exp)
 
 class TestDistMatrixPermutationTest(TestCase):
     """Tests of distance_matrix_permutation_test"""
@@ -1737,7 +1745,7 @@ class PvalueTests(TestCase):
         obs = assign_correlation_pval(r, n, 'kendall')
         self.assertFloatEqual(exp, obs)
 
-class Test_Kendalls_Tau(TestCase):
+class Test_kendall(TestCase):
     """Tests for functions calculating Kendall tau"""
     def setUp(self):
         '''Set up things needed for all Kendall's tau tests.'''
@@ -1786,13 +1794,13 @@ class Test_Kendalls_Tau(TestCase):
         obs = count_occurrences(v1)
         self.assertFloatEqual(obs, exp)
 
-    def test_kendalls_tau(self):
+    def test_kendall(self):
         """tests new kendall tau implamentation, returns tau, prob"""
         #test from pg. 594 Sokal and Rohlf, Box 15.7
         v1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
         v2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,
             6.13,6.30,6.03]
-        obs_tau = kendalls_tau(v1, v2)
+        obs_tau = kendall(v1, v2)
         obs_prob = kendall_pval(obs_tau, len(v1))
         exp_tau = 0.49761335152811925
         exp_prob = 0.0097188572446995618
@@ -1821,7 +1829,7 @@ class Test_Kendalls_Tau(TestCase):
          7.9,   6.5,   7. ,   4.2,   1.8,   1.6,   1.9,   5.5,   0. ,
          1.4,   2.2,   7.2,   8.2,   1.1,   2.5,   5.3,   0.2,   9. ,   0.2])
         exp_tau, exp_prob = (0.024867511238807951, 0.71392573687923555)
-        obs_tau = kendalls_tau(v1, v2)
+        obs_tau = kendall(v1, v2)
         obs_prob = kendall_pval(obs_tau, len(v1))
         self.assertFloatEqual(obs_tau, exp_tau)
         self.assertFloatEqual(obs_prob, exp_prob)

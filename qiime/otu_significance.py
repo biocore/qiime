@@ -15,9 +15,9 @@ from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import array, argsort, vstack, isnan, inf, nan
 from qiime.pycogent_backports.test import (fisher_confidence_intervals,
-    pearson, spearmans_rho, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
+    pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
     mw_boot, t_paired, mc_t_two_sample, t_two_sample,
-    fisher, kendalls_tau, assign_correlation_pval, cscore)
+    fisher, kendall, assign_correlation_pval, cscore)
 from qiime.util import biom_taxonomy_formatter
 
 '''
@@ -46,8 +46,8 @@ row - row is used in several places (eg. row_generator). The 'row' being
 
 # Pursuant to cogent/qiime coding guidelines, globals are uppercase. These dicts
 # map the script interface names to the actual functions running these tests.
-CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearmans_rho,
-    'kendall': kendalls_tau, 'cscore': cscore}
+CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearman,
+    'kendall': kendall, 'cscore': cscore}
 
 GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': G_fit, 
     'kruskal_wallis': kruskal_wallis, 'parametric_t_test': t_two_sample,
@@ -58,7 +58,7 @@ TWO_GROUP_TESTS = ['parametric_t_test', 'nonparametric_t_test',
     'mann_whitney_u', 'bootstrap_mann_whitney_u']
 
 # these are the available correlation pvalue calculation methods. kendall is 
-# appropriate only for kendalls_tau, while the other methods are appropriate for
+# appropriate only for kendall, while the other methods are appropriate for
 # any metric.
 CORRELATION_PVALUE_CHOICES = ['parametric_t_distribution', 'fisher_z_transform',
     'bootstrapped', 'kendall']
