@@ -2212,26 +2212,36 @@ class MetadataMapTests(TestCase):
         self.assertEqual(nonshared_samples, set(['Sample4','NotInOtuTable2',
             'NotInOtuTable1']))
         
-
-
     def test_biom_taxonomy_formatter(self):
         """Test that different metadata types have taxonomy returned."""
         # biom tables with different types of taxonomy metadata
         bt_list_taxonomy = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One","p__testCode"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
         bt_str_taxonomy =  '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
-        bt_dict_taxonomy = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": {"k":"k__One"}}},{"id": "OTU2", "metadata": {"taxonomy": {"k":"k__Two"}}},{"id": "OTU3", "metadata": {"taxonomy": {"k":"k__Three"}}},{"id": "OTU4", "metadata": {"taxonomy": {"k":"k__Four"}}},{"id": "OTU5", "metadata": {"taxonomy": {"k":"k__Five"}}},{"id": "OTU6", "metadata": {"taxonomy": {"k":"k__Six"}}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+        bt_dict_taxonomy = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": {"k":"k__One"}}},{"id": "OTU2", "metadata": {"taxonomy": {"k":"k__Two"}}},{"id": "OTU3", "metadata": {"taxonomy": {"k":"k__Three"}}},{"id": "OTU4", "metadata": {"taxonomy": {"k":"k__Four"}}},{"id": "OTU5", "metadata": {"taxonomy": {"k":"k__Five"}}},{"id": "OTU6", "metadata": {"taxonomy": {"kingdom":"k__Six", "phylum":"TM7"}}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
         bt = parse_biom_table(bt_list_taxonomy)
-        obs = biom_taxonomy_formatter(bt.ObservationMetadata[0])
-        exp = "k__One;p__testCode"
+        obs = biom_taxonomy_formatter(bt, 'taxonomy')
+        exp = ['k__One;p__testCode',
+               'k__Two',
+               'k__Three',
+               'k__Four',
+               'k__Five',
+               'k__Six']
         self.assertEqual(obs, exp)
         bt = parse_biom_table(bt_str_taxonomy)
-        obs = biom_taxonomy_formatter(bt.ObservationMetadata[0])
-        exp = "k__One"
+        obs = biom_taxonomy_formatter(bt, 'taxonomy')
+        exp = ['k__One', 'k__Two', 'k__Three', 'k__Four', 'k__Five', 'k__Six']
         self.assertEqual(obs, exp)
         bt = parse_biom_table(bt_dict_taxonomy)
-        obs = biom_taxonomy_formatter(bt.ObservationMetadata[0])
-        exp = "k_k__One"
+        obs = biom_taxonomy_formatter(bt, 'taxonomy')
+        exp = ['k_k__One',
+               'k_k__Two',
+               'k_k__Three',
+               'k_k__Four',
+               'k_k__Five',
+               'kingdom_k__Six phylum_TM7']
         self.assertEqual(obs, exp)
+        # test that returns none when the taxonomy key is incorrect
+        self.assertEqual(None, biom_taxonomy_formatter(bt, 'Nonexistent_MD'))
 
 class RExecutorTests(TestCase):
     """Tests of the RExecutor class."""

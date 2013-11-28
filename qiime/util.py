@@ -2113,25 +2113,37 @@ def sync_biom_and_mf(pmf, bt):
         nbt = bt.filterSamples(_f)
     return npmf, nbt, nonshared_samples
 
-def biom_taxonomy_formatter(data):
-    """Figure out type of metadata biom table has, create string. 
+def biom_taxonomy_formatter(bt, md_key):
+    """Return md strings from bt using md_key in order of bt.ObservationMetadata
+    
+    There are multiple legacy formats for metadata encoding in biom formats 
+    including as lists, dicts, and strings. This function attempts to figure out
+    what form the metadata is in and convert it into a single string. This 
+    function assumes that the metadata is encoded as a single format. It will 
+    break if some of the metadata is e.g., encoded as a dict and some as a list.
 
-    Note: Daniel suggests inclusion of this function is a bad idea because 
-    biom table metadata should only ever be in one format. I have included it 
-    because there are multiple legacy formats that we have run in to on the 
-    forum. Data is an entry in bt.ObservationMetadata"""
+    Inputs:
+     bt - biom table object
+     md_key - string, the key to return the metadata from the biom table. 
+    Outputs a list of strings (in order of bt.ObservationMetadata entries) of 
+    metadata. If no metadata could be found using the given key the function 
+    will print a warning and return None. 
+    """
+    # assume all metadata encoded like 0th entry <- suffices to test 0th entry
     try:
-        keys = data.keys()
-        if len(keys) > 1:
-            raise ValueError("1<num metadata keys. Can't decide which to use.")
-        else: 
-            md_data = data[keys[0]]
-        if type(md_data) == dict:
-            return ''.join(['%s_%s' % (k,v) for k,v in md_data.items()])
-        elif type(md_data) == list:
-            return ';'.join(md_data)
-        elif type(md_data) in [str, unicode]:
-            return md_data
+        dtype = bt.ObservationMetadata[0][md_key]
     except AttributeError:
-        raise ValueError('metadata not formatted in a dictionary.')
-
+        print 'Metadata not formatted in a dictionary, will not be returned.'
+        return None
+    if type(dtype) == dict:
+        data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
+            md in bt.ObservationMetadata]
+        return map(str, data)
+    elif type(dtype) == list:
+        return map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+    elif type(dtype) in [str, unicode]:
+        return map(str, [md[md_key] for md in bt.ObservationMetadata])
+    else:
+        print ('Metadata format could not be determined or metadata key (%s) '+\
+            'was incorrect. Metadata will not be returned.') % md_key
+        return None

@@ -136,29 +136,26 @@ def run_group_significance_test(data_generator, test, test_choices, reps=1000):
     return test_stats, pvals, means
 
 def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals, 
-    bon_pvals, means, cat_sample_indices):
+    bon_pvals, means, cat_sample_indices, md_key):
     '''Format the output for gradient tests so it can be easily written.
 
     Inputs are lists of test statistics, pvalues, fdr corrected pvalues, 
     bonferonni corrected pvalues, group means, and the dict of
     {category:sample_index}.
     '''
-    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P']
-    header += ['%s_mean' % i for i in cat_sample_indices.keys()]
-    # find out if bt came with taxonomy. this could be improved
-    if bt.ObservationMetadata is None:
-        include_taxonomy = False
-    else:
-        include_taxonomy = True
-        header += ['Taxonomy']
+    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P'] + \
+        ['%s_mean' % i for i in cat_sample_indices.keys()] + [md_key]
     num_lines = len(pvals)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
         tmp = [bt.ObservationIds[i], test_stats[i], pvals[i], fdr_pvals[i], 
             bon_pvals[i]] + means[i] 
-        if include_taxonomy:
-            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
+    # attempt to add metadata
+    taxonomy_md = biom_taxonomy_formatter(bt, md_key)
+    if taxonomy_md is not None:
+        for i in range(num_lines):
+            lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
     return lines
 
 # Functions for gradient correlation testing
@@ -220,28 +217,25 @@ def run_longitudinal_correlation_test(data_generator, test, test_choices,
     return rs, combo_pvals, combo_rhos, homogenous
 
 def longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, fdr_ps, 
-    bon_ps, corrcoefs):
+    bon_ps, corrcoefs, md_key):
     '''Format output from longitudinal tests to be written.
 
     Inputs are biom table, list of test statistics.
     '''
-    header = ['OTU', 'population corr coef', 
-        'Fisher Combined P', 'FDR P', 'Bonferroni P', 
-        'homogenous p']
+    header = ['OTU', 'population corr coef', 'Fisher Combined P', 'FDR P', 
+        'Bonferroni P', 'homogenous p', md_key]
     # find out if bt came with taxonomy. this could be improved
-    if bt.ObservationMetadata is None:
-        include_taxonomy = False
-    else:
-        include_taxonomy = True
-        header += ['Taxonomy']
     num_lines = len(combo_rhos)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
         tmp = [bt.ObservationIds[i], combo_rhos[i], combo_pvals[i], fdr_ps[i], 
             bon_ps[i], homogenous[i]]
-        if include_taxonomy:
-            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
+    # attempt to add metadata
+    taxonomy_md = biom_taxonomy_formatter(bt, md_key)
+    if taxonomy_md is not None:
+        for i in range(num_lines):
+            lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
     return lines
 
 def correlation_row_generator(bt, pmf, category):
@@ -279,25 +273,23 @@ def run_correlation_test(data_generator, test, test_choices,
         pvals.append(pval)
     return corr_coefs, pvals
 
-def correlation_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals):
+def correlation_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals, 
+    md_key):
     '''Format the output of the correlations for easy writing.
 
     '''
-    header = ['OTU', 'Correlation Coef', 'pval', 'pval_fdr', 'pval_bon']
-    # find out if bt came with taxonomy. this could be improved
-    if bt.ObservationMetadata is None:
-        include_taxonomy = False
-    else:
-        include_taxonomy = True
-        header += ['Taxonomy']
+    header = ['OTU', 'Correlation Coef', 'pval', 'pval_fdr', 'pval_bon', md_key]
     num_lines = len(corr_coefs)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
         tmp = [bt.ObservationIds[i], corr_coefs[i], pvals[i], fdr_pvals[i], 
             bon_pvals[i]]
-        if include_taxonomy:
-            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
+        # attempt to add metadata
+    taxonomy_md = biom_taxonomy_formatter(bt, md_key)
+    if taxonomy_md is not None:
+        for i in range(num_lines):
+            lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
     return lines
 
 def paired_t_generator(bt, s_before, s_after):
@@ -315,23 +307,21 @@ def run_paired_t(data_generator):
         pvals.append(pval)
     return test_stats, pvals
 
-def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals):
+def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals,
+    md_key):
     '''Format the output for all tests so it can be easily written.'''
-    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P']
-    # find out if bt came with taxonomy. this could be improved
-    if bt.ObservationMetadata is None:
-        include_taxonomy = False
-    else:
-        include_taxonomy = True
-        header += ['Taxonomy']
+    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P', md_key]
     num_lines = len(pvals)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
         tmp = [bt.ObservationIds[i], test_stats[i], pvals[i], fdr_pvals[i], 
             bon_pvals[i]]
-        if include_taxonomy:
-            tmp.append(biom_taxonomy_formatter(bt.ObservationMetadata[i]))
         lines.append('\t'.join(map(str, tmp)))
+    # attempt to add metadata
+    taxonomy_md = biom_taxonomy_formatter(bt, md_key)
+    if taxonomy_md is not None:
+        for i in range(num_lines):
+            lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
     return lines
 
 # Functions used by both scripts
