@@ -77,25 +77,28 @@ script_info['optional_options'] = [\
     make_option('-j', '--min_overlap', type='int', 
                 help='Applies to both fastq-join and SeqPrep methods.'+\
                       ' Minimum allowed overlap in base-pairs required to join pairs.'+\
-                      ', [default: %default]', default=None),
+                      ', Must be an integer. [default: %default]', default=None),
     make_option('-p', '--perc_max_diff', type='int',
                 help='Only applies to fastq-join method, otherwise ignored.'+\
                      ' Maximum allowed % differences within region of overlap'+\
-                      ',  [default: %default]', default=None),
+                      ', Must be an integer between 1-100 [default: %default]',
+                       default=None),
     make_option('-y', '--max_ascii_score', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum quality score / ascii code allowed to appear within'+\
                       ' joined pairs output. For more information see:'+\
-                      ' http://en.wikipedia.org/wiki/FASTQ_format ' 
+                      ' http://en.wikipedia.org/wiki/FASTQ_format' 
                       ' [default: %default]', default='J'),
     make_option('-n', '--min_frac_match', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
-                      ' Minimum allowed fraction of matching bases required to join reads'+\
-                      ',  [default: %default]', default=None),
+                      ' Minimum allowed fraction of matching bases required'+\
+                      ' to join reads. Must be a float between 0-1.'+\
+                      ' [default: %default]', default=None),
     make_option('-g', '--max_good_mismatch', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum mis-matched high quality bases allowed'+\
-                      ' to join reads. ' + '[default: %default]', default=None),
+                      ' to join reads. Must be a float between 0-1.'+\
+                      ' [default: %default]', default=None),
     make_option('-6', '--phred_64', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Set if input reads are in phred+64 format. Output will '\
