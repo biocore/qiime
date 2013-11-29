@@ -180,7 +180,6 @@ def simpson_e(counts):
     """Simpson's evenness.
     Previous formula updated based on discussion at 
     https://groups.google.com/forum/#!searchin/qiime-forum/simpsons%2420e/qiime-forum/F7GvTT2Elgw/rU8fnNfLoNMJ"""
-    #return reciprocal_simpson(counts)/(counts!=0).sum()
     return (1./dominance(counts))/(counts!=0).sum()
 
 def robbins(counts):
