@@ -765,7 +765,7 @@ Notes for interpreting this report:
     <li>Errors will be listed in red, warnings in yellow.  
     <li>Mouse over an error or warning in a cell for more details.
     <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>validate_mapping_file.py</tt> until no errors (nor warnings, ideally) are found.
 </ul>
 <p>
 Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
@@ -801,7 +801,7 @@ Notes for interpreting this report:
     <li>Errors will be listed in red, warnings in yellow.  
     <li>Mouse over an error or warning in a cell for more details.
     <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>validate_mapping_file.py</tt> until no errors (nor warnings, ideally) are found.
 </ul>
 <p>
 Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
@@ -837,7 +837,7 @@ Notes for interpreting this report:
     <li>Errors will be listed in red, warnings in yellow.  
     <li>Mouse over an error or warning in a cell for more details.
     <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>validate_mapping_file.py</tt> until no errors (nor warnings, ideally) are found.
 </ul>
 <p>
 Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
@@ -873,7 +873,7 @@ Notes for interpreting this report:
     <li>Errors will be listed in red, warnings in yellow.  
     <li>Mouse over an error or warning in a cell for more details.
     <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>validate_mapping_file.py</tt> until no errors (nor warnings, ideally) are found.
 </ul>
 <p>
 Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):
