@@ -285,9 +285,9 @@ def join_paired_end_reads_seqprep(
     seqprep_app.Parameters['-r'].on(abs_r2_path)
 
     if outfile_label is not None:
-        seqprep_app.Parameters['-s'].on(outfile_label + '_assembled.gz')
-        seqprep_app.Parameters['-1'].on(outfile_label + '_unassembled_R1.gz')
-        seqprep_app.Parameters['-2'].on(outfile_label + '_unassembled_R2.gz')
+        seqprep_app.Parameters['-s'].on(outfile_label + '_assembled.fastq.gz')
+        seqprep_app.Parameters['-1'].on(outfile_label + '_unassembled_R1.fastq.gz')
+        seqprep_app.Parameters['-2'].on(outfile_label + '_unassembled_R2.fastq.gz')
     else:
         raise ValueError, "Must set an outfile_label in order to set"+\
                           " the -s, -1, & -2 options!"

@@ -11,6 +11,7 @@ from cogent.app.util import CommandLineApplication, ResultPath, \
     ApplicationError
 import os 
 import tempfile
+import shutil
 
 __author__ = "Michael Robeson"
 __copyright__ = "Copyright 2007-2013, The Cogent Project"
@@ -211,6 +212,20 @@ def join_paired_end_reads_fastqjoin(
     path_dict['UnassembledReads1'] = result['UnassembledReads1'].name
     path_dict['UnassembledReads2'] = result['UnassembledReads2'].name
    
+    # sanity check that files actually exist in path lcoations
+    for path in path_dict.values():
+        if not os.path.exists(path):
+            raise IOError, 'Output file not found at: %s' % path
+
+    # fastq-join automatically appends: 'join', 'un1', or 'un2'
+    # to the end of the file names. But we want to rename them so
+    # they end in '.fastq'. So, we iterate through path_dict to
+    # rename the files and overwrite the dict values.
+    for key,file_path in path_dict.items():
+        new_file_path = file_path + '.fastq'
+        shutil.move(file_path, new_file_path)
+        path_dict[key] = new_file_path
+
     # sanity check that files actually exist in path lcoations
     for path in path_dict.values():
         if not os.path.exists(path):
