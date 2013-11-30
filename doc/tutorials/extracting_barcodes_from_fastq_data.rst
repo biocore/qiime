@@ -7,9 +7,9 @@ Extracting Barcodes from fastq data for compatibility with `split_libraries_fast
 Introduction
 ------------
 
-To use barcoded demultiplexing with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_, one must supply a fastq file with the barcodes, and another fastq file with the reads (the labels must match between these files). Please see `this <./processing_illumina_data.html#fastq-format>`_ for more details.
+To use barcode demultiplexing with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_, one must supply a fastq file with the barcodes, and another fastq file with the reads (the labels must match between these files). Please see `this <./processing_illumina_data.html#fastq-format>`_ for more details.
 
-In some cases, alternative data formats are generated due to how primer constructs are designed, or reads are processed before using them in QIIME. If one's data matches the examples below, `extract_barcodes.py <../scripts/extract_barcodes.html>`_ can be used to parse out the barcodes and reads into a format compatible with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_.
+In some cases, alternative data formats are generated due to how primer constructs are designed, or reads are processed before using them in QIIME. If one's data matches the examples below, `extract_barcodes.py <../scripts/extract_barcodes.html>`_ can be used to reformat the barcode and read file(s) into a format compatible with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_.
 
 Processing a single fastq file that starts with the barcode sequence
 --------------------------------------------------------------------
@@ -46,17 +46,17 @@ Processing two fastq files that each start with part of a barcode
 
 In this example, there are two reads, reads1.fastq and reads2.fastq. reads1.fastq starts with 6 bases of a barcode, and reads2.fastq has the remaining 8 bases of this barcode, which need to be pulled from the sequences and combined in an output ``barcodes.fastq`` file::
 
-	extract_barcodes.py --input_type barcode_paired_end -f reads1.fastq -F reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/
+	extract_barcodes.py --input_type barcode_paired_end -f reads1.fastq -r reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/
 	
-To change the order of the barcodes written, simply change the values/files of the ``-f``, ``-F``, ``--bc1_len``, and ``--bc2_len`` parameters::
+To change the order of the barcodes written, simply change the values/files of the ``-f``, ``-r``, ``--bc1_len``, and ``--bc2_len`` parameters::
 
-	extract_barcodes.py --input_type barcode_paired_end -f reads2.fastq -F reads1.fastq --bc1_len 8 --bc2_len 6 -o parsed_barcodes/
+	extract_barcodes.py --input_type barcode_paired_end -f reads2.fastq -r reads1.fastq --bc1_len 8 --bc2_len 6 -o parsed_barcodes/
 
 The barcodes can each be reverse complemented before writing via the ``--rev_comp_bc1`` and ``--rev_comp_bc2`` parameters.
 
 In some sequencing reactions, the orientation of the reads is random, so in the reads1.fastq and reads2.fastq example above, there would be a mixture of amplicons in different orientations. One solution is to attempt to orient the reads by looking for the forward and reverse primers in the sequences, and selectively writing out reads that match the orientation of the forward primer to reads1 and reads that match the reverse primer to reads2. One must supply a metadata mapping file that contains the LinkerPrimerSequence and ReversePrimer fields (all primers should be written in 5'->3' orientation). See `metadata mapping file format <../documentation/file_formats.html#metadata-mapping-files>`_ for more information. An example command to attempt read orientation::
 
-	extract_barcodes.py --input_type barcode_paired_end -m mapping_file.txt -a -f reads1.fastq -F reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/
+	extract_barcodes.py --input_type barcode_paired_end -m mapping_file.txt -a -f reads1.fastq -r reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/
 
 In addition to the normal ``barcodes.fastq``, ``reads1.fastq``, and ``reads2.fastq`` files, there will be additional files labeled as ``_not_oriented.fastq`` where the primers could not be found. These are all written and have the barcodes processed in the order that the files were supplied in.
 
@@ -67,7 +67,7 @@ Two index/barcode reads and two fastq reads
 
 This situation can be treated as a special case of paired-end reads. One could supply the index files (labeled as index1.fastq, index2.fastq) and use the ``--input_type barcode_paired_end``::
 
-	extract_barcodes.py --input_type barcode_paired_end -f index1.fastq -F index2.fastq --bc1_len 6 --bc2_len 6 -o parsed_barcodes/
+	extract_barcodes.py --input_type barcode_paired_end -f index1.fastq -r index2.fastq --bc1_len 6 --bc2_len 6 -o parsed_barcodes/
 
 The output ``barcodes.fastq`` file would be used for downstream processing, and the reads1 and reads2 files could be ignored.
 
@@ -94,7 +94,7 @@ In this case, the "#" character is before the barcode, and the barcodes are 6 ba
 
 	extract_barcodes.py --input_type barcode_in_label --char_delineator "#" -f in_seqs.fastq --bc1_len 6 -o parsed_barcodes/
 	
-A second fastq file could be passed (``-F``) if one had paired files with barcodes in the labels, and the parameters for changing barcode lengths or reverse complementing barcodes all apply.
+A second fastq file could be passed (``-r``) if one had paired files with barcodes in the labels, and the parameters for changing barcode lengths or reverse complementing barcodes all apply.
 
 Notes for post-demultiplexing
 -----------------------------

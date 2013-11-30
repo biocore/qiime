@@ -23,6 +23,7 @@ from qiime.check_id_map import process_id_map
 from qiime.split_libraries_fastq import (check_header_match_pre180,
  check_header_match_180_or_later)
 from qiime.parse import is_casava_v180_or_later
+from qiime.format import format_fastq_record
 
 class FastqParseError(Exception):
     pass
@@ -208,9 +209,9 @@ def process_barcode_single_end_data(read1_data,
         bc_read = DNA.rc(bc_read)
         bc_qual = bc_qual[::-1]
     
-    bc_lines = "@%s\n%s\n+\n%s\n" % (read1_data[header_index], bc_read, bc_qual)
+    bc_lines = format_fastq_record(read1_data[header_index], bc_read, bc_qual)
     output_bc_fastq.write(bc_lines)
-    seq_lines = "@%s\n%s\n+\n%s\n" % (read1_data[header_index],
+    seq_lines = format_fastq_record(read1_data[header_index],
      read1_data[sequence_index][bc1_len:], read1_data[quality_index][bc1_len:])
     output_fastq1.write(seq_lines)
     
@@ -315,13 +316,13 @@ def process_barcode_paired_end_data(read1_data,
         bc_read2 = DNA.rc(bc_read2)
         bc_qual2 = bc_qual2[::-1]
     
-    bc_lines = "@%s\n%s\n+\n%s\n" % (read1[header_index],
+    bc_lines = format_fastq_record(read1[header_index],
      bc_read1 + bc_read2, bc_qual1 + bc_qual2)
     output_bc.write(bc_lines)
-    seq1_lines = "@%s\n%s\n+\n%s\n" % (read1[header_index],
+    seq1_lines = format_fastq_record(read1[header_index],
      read1[sequence_index][bc1_len:], read1[quality_index][bc1_len:])
     output_read1.write(seq1_lines)
-    seq2_lines = "@%s\n%s\n+\n%s\n" % (read2[header_index],
+    seq2_lines = format_fastq_record(read2[header_index],
      read2[sequence_index][bc2_len:], read2[quality_index][bc2_len:])
     output_read2.write(seq2_lines)
     
@@ -414,10 +415,10 @@ def process_barcode_paired_stitched(read_data,
         bc_read1, bc_read2 = bc_read2, bc_read1
         bc_qual1, bc_qual2 = bc_qual2, bc_qual1
     
-    bc_lines = "@%s\n%s\n+\n%s\n" % (read_data[header_index],
+    bc_lines = format_fastq_record(read_data[header_index],
      bc_read1 + bc_read2, bc_qual1 + bc_qual2)
     output_bc.write(bc_lines)
-    seq_lines = "@%s\n%s\n+\n%s\n" % (read_data[header_index],
+    seq_lines = format_fastq_record(read_data[header_index],
      read_seq[bc1_len:-bc2_len], read_qual[bc1_len:-bc2_len])
     output_read.write(seq_lines)
     
@@ -476,7 +477,7 @@ def process_barcode_in_label(read1_data,
          "character delineator with -s, and fastq label "
          "%s" % read1_data[header_index])
     
-    bc_lines = "@%s\n%s\n+\n%s\n" % (read1_data[header_index],
+    bc_lines = format_fastq_record(read1_data[header_index],
      bc1_read + bc2_read, bc1_qual + bc2_qual)
     
     output_bc_fastq.write(bc_lines)

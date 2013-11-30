@@ -963,6 +963,19 @@ def format_best_results(best_results):
                                     ', '.join(best_results['vars']),
                                     ', '.join(rho_vals))
     return result
+    
+def format_fastq_record(label,
+                        seq,
+                        qual):
+    """ Formats a line of fastq data to be written
+    
+    label: fastq label
+    seq: nucleotide sequence
+    qual: quality scores
+    """
+    
+    return "@%s\n%s\n+\n%s\n" % (label, seq, qual)
+    
 
 
 HTML_LINES_INIT = """<html>
