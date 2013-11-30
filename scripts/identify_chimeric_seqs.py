@@ -147,9 +147,9 @@ script_info['optional_options']=[\
               "chimeras from both detection methods. [default: %default]"),
               type='string'),
               
-    make_option('--usearch61_minh', default=0.28, help=("Minimum score (h) to "
-              "be classified as chimera. Increasing this value tends to the "
-              "number of false positives (and also sensitivity)."
+    make_option('--usearch61_minh', default=0.28, help=("Minimum score (h). "
+              "Increasing this value tends to reduce the number of false "
+              "positives and decrease sensitivity."
               "[default: %default]"), type='float'),
               
     make_option('--usearch61_xn', default=8.0, help=("Weight of 'no' vote. "
