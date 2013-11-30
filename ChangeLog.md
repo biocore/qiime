@@ -1,5 +1,6 @@
 QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 ===================================================
+* extract_barcodes.py script added-this script is intended to help process fastq data that is not in a compatible format with split_libraries_fastq.py.
 * core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 * QIIME now depends on [qcli 0.1.0](ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz), a stand-alone package which performs command line interface parsing and testing.
