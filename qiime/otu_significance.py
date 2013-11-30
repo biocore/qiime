@@ -13,8 +13,8 @@ __status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
-from numpy import array, argsort, vstack, isnan, inf, nan
-from qiime.pycogent_backports.test import (fisher_confidence_intervals,
+from numpy import array, argsort, vstack, isnan, inf, nan, apply_along_axis
+from qiime.pycogent_backports.test import (fisher_population_correlation,
     pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_test, 
     mw_boot, t_paired, mc_t_two_sample, t_two_sample,
     fisher, kendall, assign_correlation_pval, cscore)
@@ -76,7 +76,7 @@ def get_sample_cats(pmf, category):
     return {k:pmf[k][category] for k in pmf.keys() if pmf[k][category] != ""}
 
 def get_cat_sample_groups(sam_cats):
-    '''Create {category_value:[samples_with_that_value} dict.
+    '''Create {category_value:[samples_with_that_value]} dict.
 
     Inputs:
      sam_cats - dict, output of get_sample_cats.'''
@@ -91,7 +91,8 @@ def get_sample_indices(cat_sam_groups, bt):
      cat_sam_groups - dict, output of get_cat_sample_groups.
      bt - biom table object. Described at top of library.
     '''
-    return {k:[bt.SampleIds.index(i) for i in v] for k,v in cat_sam_groups.items()}
+    return {k:[bt.SampleIds.index(i) for i in v] for k,v in \
+        cat_sam_groups.items()}
 
 def group_significance_row_generator(bt, cat_sam_indices):
     '''Produce generator that feeds lists of arrays to group significance tests.
@@ -141,7 +142,8 @@ def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals,
 
     Inputs are lists of test statistics, pvalues, fdr corrected pvalues, 
     bonferonni corrected pvalues, group means, and the dict of
-    {category:sample_index}.
+    {category:sample_index}, and the key to use to extract metadata from the 
+    biom table. Output is a list of lines.
     '''
     header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P'] + \
         ['%s_mean' % i for i in cat_sample_indices.keys()] + [md_key]
@@ -160,76 +162,64 @@ def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals,
 
 # Functions for gradient correlation testing
 
-def longitudinal_row_generator(bt, pmf, category, hsid_to_samples, 
-    hsid_to_sample_indices):
-    '''Produce generator that feeds lists of arrays to longitudinal tests.
+def grouped_correlation_row_generator(bt, pmf, category, gc_to_samples):
+    '''Create generator for grouped correlation tests. 
 
-    This function groups samples based on hsid_to_samples which is a dict of 
-    {value:[list of sample ids]}. It returns nested lists where each row is a 
-    tuple with the values of the observations in that row grouped by the sample 
-    groupings found in hsid_to_samples, and then the metadata value of those
-    samples in the mapping file based on the given category. Example output row:
-    ([array([ 28.,  52.]), array([ 16.,  77.]), array([ 78.,  51.])],
-     [array([ 1.,  2.]),   array([ 5.,  6.]),   array([ 4.,  3.])]),
-    Inputs: 
-     bt - biom table object. Described at top of library.
-     pmf - nested dict, parsed mapping file object.
-     category - str, column header of parsed_mapping_file. 
-     hsid_to_samples - nested_dict, dict where top level key is a value which 
-      all sample ids in the list of values share. ex {'subject1':['s1', 's2']}.
-     hsid_to_sample_indices - nested dict, conversion of hsid_to_samples where 
-      instead of sample ids, column indices in the biom file are provided.
     '''
     data = array([bt.observationData(i) for i in bt.ObservationIds])
-    try: #create longitudinal data values from the mapping file
-        l_arr = [array([pmf[sid][category] for sid in sids]).astype(float) for \
-            hsid,sids in hsid_to_samples.items()]
+    category_values = gc_to_samples.keys()
+    samples = gc_to_samples.values()
+    sample_inds = [[bt.getSampleIndex(i) for i in group] for group in samples]
+    try:
+        md_vals = [array([pmf[s][category] for s in group]).astype(float) for \
+            group in samples]
     except ValueError:
-        raise ValueError("Couldn't convert values to float. Can't continue.")
-    return ((array([row[v] for k,v in hsid_to_sample_indices.items()]),l_arr) \
-        for row in data)
+        raise ValueError("Couldn't convert sample metadata to float.")
+    otu_vals = [data.take(inds,1) for inds in sample_inds]
+    return category_values, md_vals, otu_vals
 
-def run_longitudinal_correlation_test(data_generator, test, test_choices, 
+def run_grouped_correlation(md_vals, otu_arrays, test, test_choices, 
     pval_assignment_method, permutations=None):
     '''Run longitudinal correlation test.
     '''
-    rs, combo_pvals, combo_rhos, homogenous = [], [], [], []
     test_fn = test_choices[test]
-    for obs_vals, gradient_vals in data_generator:
-        rs_i, pvals_i = [], []
-        for i in range(len(obs_vals)):
-            rs_i.append(test_fn(obs_vals[i], gradient_vals[i])) #calc corr
-            # calculate pval
-            if pval_assignment_method=='bootstrapped':
-                pvals_i.append(assign_correlation_pval(rs_i[-1], 
-                    len(obs_vals[i]), pval_assignment_method, permutations,
-                    test_fn, obs_vals[i], gradient_vals[i]))
-            else:
-                pvals_i.append(assign_correlation_pval(rs_i[-1], 
-                    len(obs_vals[i]), pval_assignment_method))
-        rs.append(rs_i) # append to values for all individuals
-        # compute fisher stats
-        combo_pvals.append(fisher(pvals_i))
-        sample_sizes = [len(vals) for vals in obs_vals]
-        fisher_rho, h = fisher_population_correlation(rs[-1], sample_sizes)
-        combo_rhos.append(fisher_rho)
-        homogenous.append(h)
-    return rs, combo_pvals, combo_rhos, homogenous
+    sample_sizes = [len(x) for x in md_vals]
+    def _rho(otu_vals, md_vals):
+        return test_fn(otu_vals, md_vals)
+    # find the correlations. rhos is list of 1D arrays.
+    rhos = [apply_along_axis(_rho, 1, otu_arrays[i], md_vals[i]) for i in \
+        range(len(md_vals))]
+    # calculate pvals according to passed method, pvals is list of 1D arrays
+    pvals = []
+    for i,group_rhos in enumerate(rhos):
+        pvals_i = []
+        for j,rho in enumerate(group_rhos):
+            pvals_i.append(assign_correlation_pval(rho, sample_sizes[i], 
+                pval_assignment_method, permutations, test_fn, otu_arrays[i][j],
+                md_vals[i]))
+        pvals.append(array(pvals_i))
+    # calculate combined stats
+    fisher_pvals = apply_along_axis(fisher, 0, array(pvals))
+    fisher_rho_and_h = apply_along_axis(fisher_population_correlation, 0, 
+        array(rhos), sample_sizes)
+    return (rhos, pvals, fisher_pvals, fisher_rho_and_h[0], fisher_rho_and_h[1])
 
-def longitudinal_correlation_formatter(bt, combo_rhos, combo_pvals, fdr_ps, 
-    bon_ps, corrcoefs, md_key):
+def grouped_correlation_formatter(bt, rhos, pvals, f_rhos, f_pvals, f_hs, 
+    grouping_category, category_values, md_key):
     '''Format output from longitudinal tests to be written.
 
     Inputs are biom table, list of test statistics.
     '''
-    header = ['OTU', 'population corr coef', 'Fisher Combined P', 'FDR P', 
-        'Bonferroni P', 'homogenous p', md_key]
-    # find out if bt came with taxonomy. this could be improved
-    num_lines = len(combo_rhos)
+    header = ['OTU'] + \
+        ['Rho_%s:%s' % (grouping_category, c) for c in category_values] + \
+        ['Pval_%s:%s' % (grouping_category, c) for c in category_values] + \
+        ['Fisher population correlation', 'Fisher combined p',
+         'Homogeneity pval', md_key]
+    num_lines = len(f_rhos)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.ObservationIds[i], combo_rhos[i], combo_pvals[i], fdr_ps[i], 
-            bon_ps[i], homogenous[i]]
+        tmp = [bt.ObservationIds[i]] + [x[i] for x in rhos] + \
+            [x[i] for x in pvals] + [f_rhos[i]] + [f_pvals[i]] + [f_hs[i]]
         lines.append('\t'.join(map(str, tmp)))
     # attempt to add metadata
     taxonomy_md = biom_taxonomy_formatter(bt, md_key)

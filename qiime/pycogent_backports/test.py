@@ -1174,10 +1174,14 @@ def fisher(probs):
 
     -2 * SUM(ln(P)) gives chi-squared distribution with 2n degrees of freedom.
     """
-    try:
-        return chi_high(-2 * sum(map(log, probs)), 2 * len(probs))
-    except OverflowError, e:
-        return 0.0 
+    stat = -2*log(array(probs)).sum()
+    if isnan(stat):
+        return nan
+    else: 
+        try:
+            return chi_high(stat, 2 * len(probs))
+        except OverflowError, e:
+            return nan 
 
 def f_value(a,b):
     """Returns the num df, the denom df, and the F value.
@@ -1796,6 +1800,10 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
     if not (ns > 3).all():
         # not all samples have size > 3 which causes 0 varaince estimation. 
         # thus we must return nan for pval and h_val
+        return nan, nan
+    if not len(ns) > 1:
+        # only one sample, because of reduced degrees of freedom must have at 
+        # least two samples to calculate the homogeneity.
         return nan, nan
     # calculate zs
     zs = array([fisher_z_transform(i) for i in rs])
