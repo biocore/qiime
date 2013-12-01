@@ -822,7 +822,11 @@ def main():
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         else:
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
-        TextTestRunner(stream=stdout,verbosity=2).run(suite)
+        if opts.verbose:
+            verbosity = 2
+        else:
+            verbosity = 1
+        TextTestRunner(stream=stdout,verbosity=verbosity).run(suite)
 
 if __name__ == "__main__":
     main()
