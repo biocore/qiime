@@ -88,9 +88,8 @@ script_info['optional_options'] = [\
     make_option('-y', '--max_ascii_score', 
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
                       ' Maximum quality score / ascii code allowed to appear within'+\
-                      ' joined pairs output. For more information see:'+\
+                      ' joined pairs output. For more information, please see:'+\
                       ' http://en.wikipedia.org/wiki/FASTQ_format.'
-                      ' If not set, progam defaults will be used.'+\
                       ' [default: %default]', default='J'),
     make_option('-n', '--min_frac_match', type='float',
                 help='Only applies to SeqPrep method, otherwise ignored.'+\
