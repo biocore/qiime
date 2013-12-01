@@ -15,7 +15,7 @@ __status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
-from sys import platform, version as python_version, executable
+from sys import platform, version as python_version, executable, stdout
 from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
@@ -817,13 +817,12 @@ def main():
     for key,value in  qiime_config.items():
         print "%*s:\t%s"%(max_len,key,value)
     
-
     if test:
         if qiime_base_install:
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         else:
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
-        TextTestRunner(verbosity=2).run(suite)
+        TextTestRunner(stream=stdout,verbosity=2).run(suite)
 
 if __name__ == "__main__":
     main()
