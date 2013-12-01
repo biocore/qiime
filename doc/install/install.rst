@@ -7,7 +7,7 @@
 .. index:: Installing QIIME
 
 =========================
-Installing QIIME natively
+QIIME installation guide
 =========================
 
 QIIME consists of native python code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
@@ -18,16 +18,16 @@ As a consequence of this 'pipeline' architecture, **QIIME has a lot of dependenc
 How to not install QIIME
 ========================
 
-Because QIIME is hard to install, we have attempted to shift this burden to the QIIME development group rather than our users by provide virtual machines with QIIME and all of its dependencies pre-installed. We, and third-party developers, have also created several automated installation procedures. These alternatives (`summarized here <../index.html#downloading-and-installing-qiime>`_) allow you to bypass the complex installation procedure and have access to a full, working QIIME installation. 
+Because QIIME is hard to install, we have attempted to shift this burden to the QIIME development group rather than our users by providing virtual machines with QIIME and all of its dependencies pre-installed. We, and third-party developers, have also created several automated installation procedures. These alternatives (`summarized here <../index.html#downloading-and-installing-qiime>`_) allow you to bypass the complex installation procedure and have access to a full, working QIIME installation. 
 
-*We highly recommend going with one of these solutions if you're new to QIIME, or just want to test it out to see if it will do what you want.**
+**We highly recommend going with one of these solutions if you're new to QIIME, or just want to test it out to see if it will do what you want.**
 
 How to install QIIME
 ====================
 
-If you want to customize QIIME, work with QIIME in a multi-user environment (e.g., a Linux cluster), are interested in getting involved in QIIME development, or want to use the development version of QIIME, you may need to install QIIME natively (but you also may not - see `MacQIIME <http://www.wernerlab.org/software/macqiime>`_ and `qiime-deploy <https://github.com/qiime/qiime-deploy>`_).
+If you want to customize QIIME, work with QIIME in a multi-user environment (e.g., a Linux cluster), are interested in getting involved in QIIME development, or want to use the development version of QIIME, you may need to install QIIME manually (but you also may not - see `MacQIIME <http://www.wernerlab.org/software/macqiime>`_ and `qiime-deploy <https://github.com/qiime/qiime-deploy>`_).
 
-Depending on the features of QIIME that you or your users are interested in, a QIIME base install may be sufficient. This is much easier than a QIIME full install. Both of these procedures are covered in the following sections.
+Depending on the features of QIIME that you or your users are interested in, a *QIIME base install* may be sufficient. This is much easier than a *QIIME full install*. Both of these procedures are covered in the following sections.
 
 To install most of following dependencies, either for the base or full install, you need to have a build environment on your machine. On OS X, this involves installing the `developer tools <http://developer.apple.com/technologies/xcode.html>`_. On Debian-based Linux (e.g., Ubuntu), this involves installing the ``build-essential`` package::
 
@@ -128,12 +128,12 @@ You should see output that looks like the following::
 
 This indicates that you have a complete QIIME base install. 
 
-You should next :ref:`run QIIME's unit tests <run-test-suite>`_. You will experience some test failures since as a result of not having a full QIIME install. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
+You should next :ref:`run QIIME's unit tests <run-test-suite>`. You will experience some test failures as a result of not having a full QIIME install. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
 
 QIIME full install (for access to advanced features in QIIME, and non-default processing pipelines)
 ---------------------------------------------------------------------------------------------------
 
-The dependencies described below will support a full QIIME install. These are grouped by the features that they will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file). 
+The dependencies described below will support a full QIIME install. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file). 
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for non-default processing pipelines):
 
@@ -240,7 +240,13 @@ You should see output that looks like the following::
 
 	OK
 
-You should next :ref:`run QIIME's unit tests <run-test-suite>`_. All tests should pass if you have a working full QIIME installation. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
+You should next :ref:`run QIIME's unit tests <run-test-suite>`. All tests should pass if you have a working full QIIME installation. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
+
+==========================================
+QIIME installation guide: Additional notes
+==========================================
+
+The following sections are referenced from the installation guide above.
 
 .. _getting-qiime:
 
