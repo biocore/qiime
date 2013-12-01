@@ -16,13 +16,12 @@ __status__ = "Development"
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
 from sys import platform, version as python_version, executable
-from unittest import skipIf
+from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
 from numpy import __version__ as numpy_lib_version
 
-from cogent.util.unit_test import TestCase, main as test_main
 from cogent.util.misc import app_path, get_random_directory_name, remove_files
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent import __version__ as pycogent_lib_version
@@ -94,6 +93,149 @@ class QIIMEConfig(TestCase):
     
     def setUp(self):
         self.config = load_qiime_config()
+    
+    def test_cluster_jobs_fp(self):
+        """cluster_jobs_fp is set to a valid path and is executable"""       
+        
+        fp = self.config["cluster_jobs_fp"]
+        
+        if not fp:
+            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
+        
+        full_path = app_path(fp)
+        if full_path:
+            fp = full_path
+        
+        #test if file exists or is in $PATH
+        self.assertTrue(exists(fp),
+         "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
+
+        modes = {R_OK:"readable",
+                 W_OK:"writable",
+                 X_OK:"executable"}
+        #test if file readable    
+        self.assertTrue(access(fp, X_OK),
+            "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
+   
+    def test_blastmat_dir(self):
+        """blastmat_dir is set to a valid path."""
+        
+        test_qiime_config_variable("blastmat_dir", self.config, self)
+        
+    def test_blastall_fp(self):
+        """blastall_fp is set to a valid path"""
+        
+        blastall = self.config["blastall_fp"]
+        if not self.config["blastall_fp"].startswith("/"):
+            #path is relative, figure out absolute path
+            blast_all = app_path(blastall)
+            if not blast_all:
+                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
+            self.config["blastall_fp"] = blast_all
+
+        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
+        
+    def test_pynast_template_alignment_fp(self):
+        """pynast_template_alignment, if set, is set to a valid path"""
+            
+        test_qiime_config_variable("pynast_template_alignment_fp",
+                                   self.config, self)
+
+    def test_pynast_template_alignment_blastdb_fp(self):
+        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
+            
+        test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
+                                   self.config, self)
+    def test_pynast_template_alignment_blastdb_fp(self):
+        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
+        
+        test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
+                                   self.config, self)
+        
+    def test_template_alignment_lanemask_fp(self):
+        """template_alignment_lanemask, if set, is set to a valid path"""
+            
+        test_qiime_config_variable("template_alignment_lanemask_fp",
+                                   self.config, self)
+    
+    def test_qiime_scripts_dir(self):
+        """qiime_scripts_dir, if set, is set to a valid path"""
+
+        scripts_dir = self.config["qiime_scripts_dir"]
+        
+        if scripts_dir:
+            self.assertTrue(exists(scripts_dir),
+                            "qiime_scripts_dir does not exist: %s" % scripts_dir)
+            self.assertTrue(isdir(scripts_dir),
+                            "qiime_scripts_dir is not a directory: %s" % scripts_dir)
+        else:
+            pass
+            #self.fail("scripts_dir is not set.")
+
+    def test_temp_dir(self):
+        """temp_dir, if set, is set to a valid path"""
+
+        temp_dir = self.config["temp_dir"]
+        
+        if temp_dir:
+            self.assertTrue(exists(temp_dir),
+                            "temp_dir does not exist: %s" % temp_dir)
+            self.assertTrue(isdir(temp_dir),
+                            "temp_dir is not a directory: %s" % temp_dir)
+        else:
+            pass
+            #self.fail("temp_dir is not set.")
+
+    def test_working_dir(self):
+        """working_dir, if set, is set to a valid path"""
+
+        working_dir = self.config["working_dir"]
+        
+        if working_dir:
+            self.assertTrue(exists(working_dir), 
+                            "working dir does not exist: %s" % working_dir)
+            self.assertTrue(isdir(working_dir),
+                            "working_dir is not a directory: %s" % working_dir)        
+            self.assertTrue(access(working_dir, W_OK),
+                            "working_dir not writable: %s" % working_dir)
+        else:
+            pass
+            #self.fail("working_dir is not set.")
+        
+    #we are not testing these values from the qiime_config:
+    # jobs_to_start   1
+    # seconds_to_sleep        60
+
+    def test_for_obsolete_values(self):
+        """local qiime_config has no extra params"""
+        
+        qiime_project_dir = get_qiime_project_dir()
+        orig_config = parse_qiime_config_file(open(qiime_project_dir +
+                                             '/qiime/support_files/qiime_config'))
+        
+        #check the env qiime_config
+        qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
+        if qiime_config_env_filepath:
+            qiime_config_via_env= parse_qiime_config_file(open(qiime_config_env_filepath))
+            extra_vals = []
+            for key in qiime_config_via_env:
+                if key not in orig_config:
+                    extra_vals.append(key)
+            if extra_vals:
+                self.fail("The qiime_config file set via QIIME_CONFIG_FP"+
+                          "enviroment variable contains obsolete parameters:\n"+
+                          ", ".join(extra_vals))
+        # check the qiime_config in $HOME/.qiime_config
+        home_dir = getenv('HOME')        
+        if (exists(home_dir+"/.qiime_config")):
+            qiime_config_home = parse_qiime_config_file(open(home_dir+"/.qiime_config"))
+            extra_vals = []
+            for key in qiime_config_home:
+                if key not in orig_config:
+                    extra_vals.append(key)
+            if extra_vals:
+                self.fail("The .qiime_config in your HOME contains obsolete "+
+                          "parameters:\n" + ", ".join(extra_vals))
 
 class QIIMEDependencyBase(QIIMEConfig):
                           
@@ -219,7 +361,7 @@ class QIIMEDependencyBase(QIIMEConfig):
          "Unsupported FastTree version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
 
-class QIIMEDependencyFull(QIIMEConfig):
+class QIIMEDependencyFull(QIIMEDependencyBase):
 
     def test_python_exe_fp(self):
         """python_exe_fp is set to a working python env"""
@@ -596,150 +738,7 @@ class QIIMEDependencyFull(QIIMEConfig):
             pass_test = False
         self.assertTrue(pass_test, "gdata is not installed.")
 
-class QIIMEConfigSanity(QIIMEConfig):
-    
-    def test_cluster_jobs_fp(self):
-        """cluster_jobs_fp is set to a valid path and is executable"""       
-        
-        fp = self.config["cluster_jobs_fp"]
-        
-        if not fp:
-            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
-        
-        full_path = app_path(fp)
-        if full_path:
-            fp = full_path
-        
-        #test if file exists or is in $PATH
-        self.assertTrue(exists(fp),
-         "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
 
-        modes = {R_OK:"readable",
-                 W_OK:"writable",
-                 X_OK:"executable"}
-        #test if file readable    
-        self.assertTrue(access(fp, X_OK),
-            "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
-   
-    def test_blastmat_dir(self):
-        """blastmat_dir is set to a valid path."""
-        
-        test_qiime_config_variable("blastmat_dir", self.config, self)
-        
-    def test_blastall_fp(self):
-        """blastall_fp is set to a valid path"""
-        
-        blastall = self.config["blastall_fp"]
-        if not self.config["blastall_fp"].startswith("/"):
-            #path is relative, figure out absolute path
-            blast_all = app_path(blastall)
-            if not blast_all:
-                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
-            self.config["blastall_fp"] = blast_all
-
-        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
-        
-    def test_pynast_template_alignment_fp(self):
-        """pynast_template_alignment, if set, is set to a valid path"""
-            
-        test_qiime_config_variable("pynast_template_alignment_fp",
-                                   self.config, self)
-
-    def test_pynast_template_alignment_blastdb_fp(self):
-        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
-            
-        test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
-                                   self.config, self)
-    def test_pynast_template_alignment_blastdb_fp(self):
-        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
-        
-        test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
-                                   self.config, self)
-        
-    def test_template_alignment_lanemask_fp(self):
-        """template_alignment_lanemask, if set, is set to a valid path"""
-            
-        test_qiime_config_variable("template_alignment_lanemask_fp",
-                                   self.config, self)
-    
-    def test_qiime_scripts_dir(self):
-        """qiime_scripts_dir, if set, is set to a valid path"""
-
-        scripts_dir = self.config["qiime_scripts_dir"]
-        
-        if scripts_dir:
-            self.assertTrue(exists(scripts_dir),
-                            "qiime_scripts_dir does not exist: %s" % scripts_dir)
-            self.assertTrue(isdir(scripts_dir),
-                            "qiime_scripts_dir is not a directory: %s" % scripts_dir)
-        else:
-            pass
-            #self.fail("scripts_dir is not set.")
-
-    def test_temp_dir(self):
-        """temp_dir, if set, is set to a valid path"""
-
-        temp_dir = self.config["temp_dir"]
-        
-        if temp_dir:
-            self.assertTrue(exists(temp_dir),
-                            "temp_dir does not exist: %s" % temp_dir)
-            self.assertTrue(isdir(temp_dir),
-                            "temp_dir is not a directory: %s" % temp_dir)
-        else:
-            pass
-            #self.fail("temp_dir is not set.")
-
-    def test_working_dir(self):
-        """working_dir, if set, is set to a valid path"""
-
-        working_dir = self.config["working_dir"]
-        
-        if working_dir:
-            self.assertTrue(exists(working_dir), 
-                            "working dir does not exist: %s" % working_dir)
-            self.assertTrue(isdir(working_dir),
-                            "working_dir is not a directory: %s" % working_dir)        
-            self.assertTrue(access(working_dir, W_OK),
-                            "working_dir not writable: %s" % working_dir)
-        else:
-            pass
-            #self.fail("working_dir is not set.")
-        
-    #we are not testing these values from the qiime_config:
-    # jobs_to_start   1
-    # seconds_to_sleep        60
-
-    def test_for_obsolete_values(self):
-        """local qiime_config has no extra params"""
-        
-        qiime_project_dir = get_qiime_project_dir()
-        orig_config = parse_qiime_config_file(open(qiime_project_dir +
-                                             '/qiime/support_files/qiime_config'))
-        
-        #check the env qiime_config
-        qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
-        if qiime_config_env_filepath:
-            qiime_config_via_env= parse_qiime_config_file(open(qiime_config_env_filepath))
-            extra_vals = []
-            for key in qiime_config_via_env:
-                if key not in orig_config:
-                    extra_vals.append(key)
-            if extra_vals:
-                self.fail("The qiime_config file set via QIIME_CONFIG_FP"+
-                          "enviroment variable contains obsolete parameters:\n"+
-                          ", ".join(extra_vals))
-        # check the qiime_config in $HOME/.qiime_config
-        home_dir = getenv('HOME')        
-        if (exists(home_dir+"/.qiime_config")):
-            qiime_config_home = parse_qiime_config_file(open(home_dir+"/.qiime_config"))
-            extra_vals = []
-            for key in qiime_config_home:
-                if key not in orig_config:
-                    extra_vals.append(key)
-            if extra_vals:
-                self.fail("The .qiime_config in your HOME contains obsolete "+
-                          "parameters:\n" + ", ".join(extra_vals))
 
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
@@ -768,6 +767,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
+    test = opts.test
     qiime_base_install = opts.qiime_base_install
     
     rdp_jarpath = get_rdp_jarpath()
@@ -816,12 +816,14 @@ def main():
     max_len =  max([len(key) for key in qiime_config])
     for key,value in  qiime_config.items():
         print "%*s:\t%s"%(max_len,key,value)
+    
 
-    #run the Testcase.main function to do the tests
-    # need to mess with the arg string, otherwise TestCase complains
-    if (opts.test):
-        print "\n\nrunning checks:\n"
-        test_main(argv=["","-v"])
+    if test:
+        if qiime_base_install:
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
+        else:
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
+        TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == "__main__":
     main()
