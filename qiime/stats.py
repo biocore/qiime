@@ -1702,6 +1702,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                analysis_categories,
                                state_values,
                                output_dir,
+                               line_color="black",
                                ymin=None,
                                ymax=None):
     """run paired difference analysis one sample t-tests and generate plots
@@ -1801,6 +1802,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
         # initialize a list to store the distribution of changes 
         # with state change
         differences = []
+        pre_values = []
+        post_values = []
         store_biom_datum = True
         
         for personal_id in personal_ids:
@@ -1813,11 +1816,13 @@ def paired_difference_analyses(personal_ids_to_state_values,
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
+                pre_values.append(data[0])
+                post_values.append(data[1])
                 difference = data[1] - data[0]
                 differences.append(difference)
                 # and plot the start and stop values as a line
-                axes.plot(x_values,data,"black",linewidth=0.5)
-                
+                axes.plot(x_values,data,line_color,linewidth=0.5)
+        
         if store_biom_datum:
             biom_observation_ids.append(analysis_category)
             biom_data.append(differences)
@@ -1843,11 +1848,16 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                         p_value]
         
         # Finalize plot for current analysis category
+        axes.plot(x_values,
+                  [median(pre_values), median(post_values)], 
+                  line_color, 
+                  linewidth=3,
+                  ls='--')
         axes.set_ylabel(analysis_category)
         axes.set_xticks(range(len(state_values)))
         axes.set_xticklabels(state_values)
         axes.set_ylim(ymin=ymin,ymax=ymax)
-        fig.savefig(plot_output_fp)
+        fig.savefig(plot_output_fp,transparent=True)
         output_fps.append(plot_output_fp)
     
     # write a biom table based on differences and 

@@ -299,6 +299,8 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
 script_info['version'] = __version__
 
 def main():
+    print "\nWarning: make_3d_plots.py is being deprecated in favor of make_emperor.py, and will no longer be available in QIIME 1.8.0-dev.\n"
+
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     prefs, data, background_color, label_color, ball_scale, arrow_colors= \

@@ -5,7 +5,8 @@ from __future__ import division
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
-               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso"]
+               "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
+               "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
-from os.path import isdir, exists, split
+from os.path import isdir, exists, split, join
 from sys import platform, version as python_version, executable
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
@@ -21,7 +22,7 @@ from subprocess import Popen, PIPE, STDOUT
 from numpy import __version__ as numpy_lib_version
 
 from cogent.util.unit_test import TestCase, main as test_main
-from cogent.util.misc import app_path, get_random_directory_name
+from cogent.util.misc import app_path, get_random_directory_name, remove_files
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent import __version__ as pycogent_lib_version
 
@@ -33,7 +34,9 @@ from qiime.util import (load_qiime_config,
                         get_rdp_jarpath,
                         get_java_version,
                         get_pynast_version,
-                        make_option)
+                        make_option, 
+                        qiime_system_call,
+                        get_qiime_temp_dir)
 from qiime.denoiser.utils import check_flowgram_ali_exe
 
 try:
@@ -50,6 +53,12 @@ try:
     from matplotlib import __version__ as matplotlib_lib_version
 except ImportError:
     matplotlib_lib_version = "Not installed."
+
+try:
+    from emperor import __version__ as emperor_lib_version
+except ImportError:
+    emperor_lib_version = "Not installed."
+
 
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version == None:
@@ -347,7 +356,7 @@ class Qiime_config(TestCase):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,5,1)
+        min_unacceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
@@ -514,13 +523,12 @@ class Qiime_config(TestCase):
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
-        command = "mothur \"#set.logfile(name=mothur.log)\" | grep '^mothur v'"
-        proc = Popen(command,shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=STDOUT)
-        stdout, stderr = proc.communicate()
+        log_file = join(get_qiime_temp_dir(), 'mothur.log')
+        command = "mothur \"#set.logfile(name=%s)\" | grep '^mothur v'" % log_file
+        stdout,stderr, exit_Status = qiime_system_call(command)
         
         # remove log file
-        remove('mothur.log')
+        remove_files([log_file], error_on_missing = False)
         
         version_string = stdout.strip().split(' ')[1].strip('v.')
         try:
@@ -611,7 +619,7 @@ class Qiime_config(TestCase):
         
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
-        acceptable_version = [(0,982),(0,983)]
+        acceptable_version = [(0,984)]
         self.assertTrue(app_path('rtax'),
          "rtax not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -663,7 +671,7 @@ class Qiime_config(TestCase):
         stdout = proc.stdout.read()
         
         # remove log file generated
-        remove('ParsInsert.log')
+        remove_files(['ParsInsert.log'], error_on_missing=False)
 
         version_string = stdout.strip()
         try:
@@ -795,7 +803,8 @@ def main():
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
      ("RDP Classifier version (if installed)", rdp_version),
-     ("Java version (if installed)", java_version)]
+     ("Java version (if installed)", java_version),
+     ("Emperor version", emperor_lib_version)]
 
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"

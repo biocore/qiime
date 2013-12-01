@@ -125,7 +125,7 @@ def run_core_diversity_analyses(
             
     else:
         categories= []
-    
+    comma_separated_categories = ','.join(categories)
     # prep some variables
     if params == None:
         params = parse_qiime_parameters([])
@@ -205,9 +205,6 @@ def run_core_diversity_analyses(
              params=params,
              qiime_config=qiime_config,
              sampling_depth=sampling_depth,
-             # force suppression of distance histograms - boxplots work better
-             # in this context, and are created below.
-             histogram_categories=[],
              tree_fp=tree_fp,
              parallel=parallel,
              logger=logger,
@@ -245,21 +242,9 @@ def run_core_diversity_analyses(
                                     stats_output_fp,
                                     _index_headers['beta_diversity_even'] % sampling_depth))
             
-            index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
-                                _index_headers['beta_diversity_even'] % sampling_depth))
-            index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+            index_links.append(('PCoA plot (%s)' % bdiv_metric,
+                                '%s/%s_emperor_pcoa_plot/index.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
                                 _index_headers['beta_diversity_even'] % sampling_depth))
             index_links.append(('Distance matrix (%s)' % bdiv_metric,
                                 '%s/%s_dm.txt' % \
@@ -290,7 +275,8 @@ def run_core_diversity_analyses(
              min_rare_depth=arare_min_rare_depth,
              max_rare_depth=sampling_depth,
              suppress_md5=True,
-             status_update_callback=status_update_callback)
+             status_update_callback=status_update_callback,
+             retain_intermediate_files=False)
         else:
             logger.write("Skipping alpha_rarefaction.py as %s exists.\n\n" \
                          % rarefaction_plots_output_fp)
@@ -305,33 +291,49 @@ def run_core_diversity_analyses(
             params_str = get_params_str(params['compare_alpha_diversity'])
         except KeyError:
             params_str = ''
-            
-        for category in categories:
+        
+        if len(categories) > 0:
             for collated_alpha_diversity_fp in collated_alpha_diversity_fps:
                 alpha_metric = splitext(split(collated_alpha_diversity_fp)[1])[0]
-                alpha_comparison_output_fp = '%s/%s_%s.txt' % \
-                 (arare_full_output_dir,category,alpha_metric)
-                if not exists(alpha_comparison_output_fp):
+                compare_alpha_output_dir = '%s/compare_%s' % \
+                 (arare_full_output_dir,alpha_metric)
+                if not exists(compare_alpha_output_dir):
                     compare_alpha_cmd = \
                      'compare_alpha_diversity.py -i %s -m %s -c %s -o %s -n 999 %s' %\
-                     (collated_alpha_diversity_fp, mapping_fp, category, 
-                      alpha_comparison_output_fp, params_str)
-                    commands.append([('Compare alpha diversity (%s, %s)' %\
-                                       (category,alpha_metric),
+                     (collated_alpha_diversity_fp,
+                      mapping_fp,
+                      comma_separated_categories,
+                      compare_alpha_output_dir,
+                      params_str)
+                    commands.append([('Compare alpha diversity (%s)' % alpha_metric,
                                       compare_alpha_cmd)])
+                    for category in categories:
+                        alpha_comparison_stat_fp = '%s/%s_stats.txt' % \
+                         (compare_alpha_output_dir,category)
+                        alpha_comparison_boxplot_fp = '%s/%s_boxplots.pdf' % \
+                         (compare_alpha_output_dir,category)
+                        index_links.append(
+                         ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
+                          alpha_comparison_stat_fp,
+                          _index_headers['alpha_diversity']))
+                        index_links.append(
+                         ('Alpha diversity boxplots (%s, %s)' % (category,alpha_metric),
+                          alpha_comparison_boxplot_fp,
+                          _index_headers['alpha_diversity']))
                 else:
-                    logger.write("Skipping compare_alpha_diversity.py for %s as %s exists.\n\n" \
-                                 % (category, alpha_comparison_output_fp))
-                index_links.append(
-                 ('Alpha diversity statistics (%s, %s)' % (category,alpha_metric),
-                  alpha_comparison_output_fp,
-                  _index_headers['alpha_diversity']))
+                    logger.write("Skipping compare_alpha_diversity.py"
+                                 " for %s as %s exists.\n\n" \
+                                 % (alpha_metric, compare_alpha_output_dir))
+        else:
+            logger.write("Skipping compare_alpha_diversity.py as"
+                         " no categories were provided.\n\n")
     
     if not suppress_taxa_summary:
         taxa_plots_output_dir = '%s/taxa_plots/' % output_dir
         # need to check for existence of any html files, since the user can 
         # select only certain ones to be generated
-        existing_taxa_plot_html_fps = glob(join(output_dir,'taxa_summary_plots','*.html'))
+        existing_taxa_plot_html_fps = glob(join(taxa_plots_output_dir,
+                                                'taxa_summary_plots','*.html'))
         if len(existing_taxa_plot_html_fps) == 0:
             run_summarize_taxa_through_plots(
              otu_table_fp=biom_fp,

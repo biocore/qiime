@@ -1,7 +1,7 @@
-usearch61OtuPicker parameters:
+Usearch61ReferenceOtuPicker parameters:
 Application:usearch61
 minlen:64
-output_dir:/Users/caporaso/code/Qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch//step3_otus/
+output_dir:/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_usearch//step3_otus/
 percent_id:0.97
 remove_usearch_logs:False
 rev:True
@@ -14,4 +14,4 @@ usearch61_sort_method:abundance
 usearch_fast_cluster:False
 verbose:False
 wordlength:8
-Num OTUs:1
+Num OTUs:2

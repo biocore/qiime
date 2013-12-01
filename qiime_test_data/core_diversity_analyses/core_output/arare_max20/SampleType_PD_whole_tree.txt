@@ -1,7 +1,0 @@
-Comparison	tval	pval
-feces,L_palm	-2.34313407708	0.384
-Tongue,L_palm	-1.03100708465	1.0
-Other,L_palm	-1.64549343774	1.0
-Tongue,feces	2.49139882301	0.396
-Tongue,Other	129.919492422	1.0
-feces,Other	4.79246371008	1.0

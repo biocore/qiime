@@ -14,6 +14,7 @@ import gzip
 
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
 from biom.parse import parse_biom_table_str, parse_biom_table
+from biom.parse import parse_biom_table_str
 from biom.util import get_biom_format_version_string
 
 from cogent import Sequence
@@ -2140,6 +2141,32 @@ class MetadataMapTests(TestCase):
         obs = self.empty_map.CategoryNames
         self.assertEqual(obs, [])
 
+    def test_filterSamples(self):
+        """Test filtering out samples from metadata map."""
+        exp = ['PC.356', 'PC.593']
+        self.overview_map.filterSamples(['PC.593', 'PC.356'])
+        obs = self.overview_map.SampleIds
+        self.assertEqual(obs, exp)
+
+        self.overview_map.filterSamples([])
+        self.assertEqual(self.overview_map.SampleIds, [])
+
+    def test_filterSamples_strict(self):
+        """Test strict checking of sample prescence when filtering."""
+        with self.assertRaises(ValueError):
+            self.overview_map.filterSamples(['PC.356', 'abc123'])
+
+        with self.assertRaises(ValueError):
+            self.empty_map.filterSamples(['foo'])
+
+    def test_filterSamples_no_strict(self):
+        """Test missing samples does not raise error."""
+        self.overview_map.filterSamples(['PC.356', 'abc123'], strict=False)
+        self.assertEqual(self.overview_map.SampleIds, ['PC.356'])
+
+        self.empty_map.filterSamples(['foo'], strict=False)
+        self.assertEqual(self.empty_map.SampleIds, [])
+
     def test_sync_biom_and_mf(self):
         """Test syncing removes samples from none, one, or both of mf and bt."""
         # test removal of samples from mapping file only
@@ -2242,7 +2269,6 @@ class MetadataMapTests(TestCase):
         self.assertEqual(obs, exp)
         # test that returns none when the taxonomy key is incorrect
         self.assertEqual(None, biom_taxonomy_formatter(bt, 'Nonexistent_MD'))
-
 class RExecutorTests(TestCase):
     """Tests of the RExecutor class."""
 

@@ -16,7 +16,7 @@ This tutorial assumes that you've already run the `QIIME Overview Tutorial <../t
 Getting the greengenes reference OTUs
 -------------------------------------
 
-The most recent version of the greengenes OTUs is always listed on the top right corner of the `QIIME Blog homepage <http://blog.qiime.org>`_ (click the "Most recent Greengenes OTUs" link on that page). As of this writing that is the ``4feb2011`` version, so we'll illustrate commands working with that. 
+The most recent version of the greengenes OTUs is always available from the QIIME Resources page (click the *Resources* link on the left side of the `QIIME homepage <http://www.qiime.org>`_). As of this writing that is the ``4feb2011`` version, so we'll illustrate commands working with that. 
 
 Download and unzip the greengenes reference OTUs::
 
@@ -30,7 +30,7 @@ Next you'll retrain the RDP classifier and classify your sequences. You can use 
 
 ::
 
-	assign_taxonomy.py -i otus/rep_set/seqs_rep_set.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -o otus/rdp_assigned_taxonomy_gg/
+	assign_taxonomy.py -i otus/rep_set/seqs_rep_set.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -o otus/rdp_assigned_taxonomy_gg/ -m rdp
 	
 Integrate the taxonomy assignments into a new OTU table
 -------------------------------------------------------
@@ -51,6 +51,7 @@ If you want to integrate retraining of the RDP classifier into your QIIME workfl
 
 	assign_taxonomy:reference_seqs_fp	$HOME/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
 	assign_taxonomy:id_to_taxonomy_fp	$HOME/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
+	assign_taxonomy:assignment_method	rdp
 
 
 Defining alternate training files

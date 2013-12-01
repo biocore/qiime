@@ -27,7 +27,7 @@ from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from cogent.app.uclust import clusters_from_uc_file
+from qiime.pycogent_backports.uclust import clusters_from_uc_file
 
 class UsearchParseError(Exception):
     pass

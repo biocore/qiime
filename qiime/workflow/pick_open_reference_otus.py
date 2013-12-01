@@ -172,12 +172,14 @@ def assign_tax(repset_fasta_fp,
     try:
         assignment_method = params['assign_taxonomy']['assignment_method']
     except KeyError:
-        assignment_method = 'rdp'
+        assignment_method = 'uclust'
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
-    if parallel and (assignment_method == 'rdp' or assignment_method == 'blast'):
+    if parallel and (assignment_method == 'rdp' or
+                     assignment_method == 'blast' or
+                     assignment_method == 'uclust'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -198,7 +200,7 @@ def assign_tax(repset_fasta_fp,
         # Build the parallel taxonomy assignment command
         assign_taxonomy_cmd = \
          'parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
-         (assignment_method, repset_fasta_fp,assign_taxonomy_dir, params_str)
+         (assignment_method, repset_fasta_fp, assign_taxonomy_dir, params_str)
     else:
         try:
             params_str = get_params_str(params['assign_taxonomy'])

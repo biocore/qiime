@@ -88,7 +88,7 @@ We recommend specifying full paths for many of QIIME scripts, and importantly fo
 	<sample_id>_<unique_seq_id>. The following steps, corresponding to the preliminary data 
 	preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each 
 	OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy 
-	with RDP classifier; filter the alignment prior to tree building - remove positions which 
+	with the uclust consensus taxonomy assigner; filter the alignment prior to tree building - remove positions which 
 	are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree; 
 	build an OTU table. All output files will be written to the directory specified by -o, and 
 	subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented 

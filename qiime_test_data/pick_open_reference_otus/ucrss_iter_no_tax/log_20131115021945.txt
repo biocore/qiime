@@ -1,0 +1,279 @@
+Logging started at 02:19:45 on 15 Nov 2013
+QIIME version: 1.7.0-dev
+
+qiime_config values:
+blastmat_dir	/Applications/blast-2.2.22/data/
+sc_queue	all.q
+topiaryexplorer_project_dir	/Users/caporaso/code/TopiaryExplorer-0.9.1/
+pynast_template_alignment_fp	/Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
+cluster_jobs_fp	start_parallel_jobs.py
+assign_taxonomy_reference_seqs_fp	/Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta
+torque_queue	friendlyq
+template_alignment_lanemask_fp	/Users/caporaso/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
+jobs_to_start	2
+cloud_environment	False
+qiime_scripts_dir	/Users/caporaso/code/Qiime/scripts
+denoiser_min_per_core	50
+python_exe_fp	python
+temp_dir	/Users/caporaso/temp
+blastall_fp	blastall
+seconds_to_sleep	1
+assign_taxonomy_id_to_taxonomy_fp	/Users/caporaso/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
+
+parameter file values:
+align_seqs:min_length	75
+parallel:jobs_to_start	2
+pick_otus:enable_rev_strand_match	True
+
+Input file md5 sums:
+/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs1.fna: 094e424cf45cba69ef1c45fc7f61366f
+/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna: facf235fdcd71d1e99048705276103ab
+
+Overridding similiary with 0.600.
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Executing commands.
+
+# Pick Reference OTUs (prefilter) command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs1.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus/ -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna -m uclust_ref --similarity 0.6 --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Filter prefilter failures from input command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs1.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus//prefiltered_seqs1.fna -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus//seqs1_failures.txt -n
+
+Stdout:
+
+Stderr:
+
+# Pick Reference OTUs command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus//prefiltered_seqs1.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna -m uclust_ref --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Generate full failures fasta file command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus//prefiltered_seqs1.fna -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/prefiltered_seqs1_failures.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/failures.fasta
+
+Stdout:
+
+Stderr:
+
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Executing commands.
+
+# Pick rep set command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/prefiltered_seqs1_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/step1_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//prefilter_otus//prefiltered_seqs1.fna
+
+Stdout:
+
+Stderr:
+
+# Pick de novo OTUs for new clusters command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/subsampled_failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step2_otus/ -m uclust  --uclust_otu_id_prefix New.0.ReferenceOTU --enable_rev_strand_match
+
+Stdout:
+
+Stderr:
+
+# Pick representative set for subsampled failures command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step2_otus//subsampled_failures_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step2_otus//step2_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/subsampled_failures.fasta
+
+Stdout:
+
+Stderr:
+
+# Pick reference OTUs using de novo rep set command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus/ -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step2_otus//step2_rep_set.fna -m uclust_ref --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Create fasta file of step3 failures command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/failures.fasta -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus//failures_failures.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus//failures_failures.fasta
+
+Stdout:
+
+Stderr:
+
+# Pick de novo OTUs on step3 failures command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus//failures_failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step4_otus/ -m uclust  --uclust_otu_id_prefix New.0.CleanUp.ReferenceOTU --enable_rev_strand_match
+
+Stdout:
+
+Stderr:
+
+# Merge OTU maps command 
+cat /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step1_otus/prefiltered_seqs1_otus.txt /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus//failures_otus.txt /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step4_otus//failures_failures_otus.txt >> /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//final_otu_map.txt
+
+Stdout:
+
+Stderr:
+
+# Pick representative set for subsampled failures command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step4_otus//failures_failures_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step4_otus//step4_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//step3_otus//failures_failures.fasta
+
+Stdout:
+
+Stderr:
+
+Executing commands.
+
+# Make the otu table command 
+make_otu_table.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//final_otu_map_mc2.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//otu_table_mc2.biom
+
+Stdout:
+
+Stderr:
+
+Input file md5 sums:
+/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs2.fna: 2b339c49ea204172da7f59973de039cc
+/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//new_refseqs.fna: ceabe7adc74b949a6d5357c85b1fab4e
+
+Overridding similiary with 0.600.
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Executing commands.
+
+# Pick Reference OTUs (prefilter) command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs2.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus/ -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/refseqs.fna -m uclust_ref --similarity 0.6 --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Filter prefilter failures from input command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/seqs2.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus//prefiltered_seqs2.fna -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus//seqs2_failures.txt -n
+
+Stdout:
+
+Stderr:
+
+# Pick Reference OTUs command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus//prefiltered_seqs2.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//new_refseqs.fna -m uclust_ref --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Generate full failures fasta file command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus//prefiltered_seqs2.fna -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/prefiltered_seqs2_failures.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/failures.fasta
+
+Stdout:
+
+Stderr:
+
+Forcing --suppress_new_clusters as this is reference-based OTU picking.
+
+Executing commands.
+
+# Pick rep set command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/prefiltered_seqs2_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/step1_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//prefilter_otus//prefiltered_seqs2.fna
+
+Stdout:
+
+Stderr:
+
+# Pick de novo OTUs for new clusters command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/subsampled_failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step2_otus/ -m uclust  --uclust_otu_id_prefix New.1.ReferenceOTU --enable_rev_strand_match
+
+Stdout:
+
+Stderr:
+
+# Pick representative set for subsampled failures command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step2_otus//subsampled_failures_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step2_otus//step2_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/subsampled_failures.fasta
+
+Stdout:
+
+Stderr:
+
+# Pick reference OTUs using de novo rep set command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus/ -r /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step2_otus//step2_rep_set.fna -m uclust_ref --enable_rev_strand_match --suppress_new_clusters
+
+Stdout:
+
+Stderr:
+
+# Create fasta file of step3 failures command 
+filter_fasta.py -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/failures.fasta -s /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus//failures_failures.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus//failures_failures.fasta
+
+Stdout:
+
+Stderr:
+
+# Pick de novo OTUs on step3 failures command 
+pick_otus.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus//failures_failures.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step4_otus/ -m uclust  --uclust_otu_id_prefix New.1.CleanUp.ReferenceOTU --enable_rev_strand_match
+
+Stdout:
+
+Stderr:
+
+# Merge OTU maps command 
+cat /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step1_otus/prefiltered_seqs2_otus.txt /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus//failures_otus.txt /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step4_otus//failures_failures_otus.txt >> /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//final_otu_map.txt
+
+Stdout:
+
+Stderr:
+
+# Pick representative set for subsampled failures command 
+pick_rep_set.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step4_otus//failures_failures_otus.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step4_otus//step4_rep_set.fna -f /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//step3_otus//failures_failures.fasta
+
+Stdout:
+
+Stderr:
+
+Executing commands.
+
+# Make the otu table command 
+make_otu_table.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//final_otu_map_mc2.txt -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//otu_table_mc2.biom
+
+Stdout:
+
+Stderr:
+
+Executing commands.
+
+# Merge OTU tables command 
+merge_otu_tables.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//0//otu_table_mc2.biom,/Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//1//otu_table_mc2.biom -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//otu_table_mc2.biom
+
+Stdout:
+
+Stderr:
+
+Executing commands.
+
+# Align sequences command 
+align_seqs.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//rep_set.fna -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//pynast_aligned_seqs --min_length 75
+
+Stdout:
+
+Stderr:
+
+# Filter alignment command 
+filter_alignment.py -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//pynast_aligned_seqs -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//pynast_aligned_seqs/rep_set_aligned.fasta 
+
+Stdout:
+
+Stderr:
+
+# Build phylogenetic tree command 
+make_phylogeny.py -i /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//pynast_aligned_seqs/rep_set_aligned_pfiltered.fasta -o /Users/caporaso/code/qiime/qiime_test_data/pick_open_reference_otus/ucrss_iter_no_tax//rep_set.tre 
+
+Stdout:
+
+Stderr:
+
+Executing commands.
+
+
+Logging stopped at 02:20:11 on 15 Nov 2013
