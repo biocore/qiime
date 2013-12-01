@@ -9,7 +9,7 @@
 =========================
 Installing QIIME natively
 =========================
-QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
+QIIME consists of native python code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
 
 As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME's dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
 
@@ -19,37 +19,51 @@ The following programs and datasets were used to generate the QIIME tutorial. QI
 
 You should follow instructions provided by the package developers to install the dependencies.
 
-Dependencies required for all features of QIIME
------------------------------------------------
+QIIME base install (standard QIIME workflow with default parameters)
+--------------------------------------------------------------------
+
+When getting started with QIIME, most users will want to begin with the QIIME base install. This allows users to run through the core QIIME workflows (including, but not limited to `validate_mapping_file.py <../scripts/validate_mapping_file.rst>`_, `split_libraries.py <../scripts/split_libraries.rst>`_, `split_libraries_fastq.py <../scripts/split_libraries_fastq.rst>`_, `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.rst>`_, `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.rst>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.rst>`_, and `core_diversity_analyses.py <../scripts/core_diversity_analyses.rst>`_) while limiting the time and effort spent on installation.
 
 To install most of following dependencies you need to have a build environment on your machine. On OS X, this involves installing the `developer tools <http://developer.apple.com/technologies/xcode.html>`_. On Debian-based Linux (e.g., Ubuntu), this involves installing the ``build-essential`` package::
 
 	sudo apt-get install build-essential
 
-The following are required by QIIME:
+The following QIIME base install dependencies are grouped by installation method. 
+
+The first are the core scientific python dependencies. The easiest way to install these is by installing `Canopy Express <https://www.enthought.com/canopy-express/>`_ (formerly EPD Free), which contains core modules for python scientific computing, including those required by QIIME, but also packages such as IPython and Pandas, which QIIME users may also find useful.
 
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
-* PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * Numpy 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
+* MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+
+The next are python packages not included in Canopy Express. Each of these can be installed by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`<python-setup>` for some notes that may be useful).
+
+* QIIME (see :ref:`<getting-qiime>`)
+* PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
 * biom-format 1.2.0 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.2.0.tar.gz>`_) (license: GPL)
 * qcli 0.1.0 (`src_qcli <ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz>`_) (license: GPL)
+* PyNAST 1.2.1 (`src_pynast <ftp://thebeast.colorado.edu/pub/pynast-releases/pynast-1.2.1.tar.gz>`_) (license: BSD)
+* Emperor 0.9.2 (`src_emperor <ftp://thebeast.colorado.edu/pub/emperor-releases/emperor-0.9.2.tar.gz>`_) (license: BSD)
 
-Dependencies required for a subset of QIIME's features
-------------------------------------------------------
-
-PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required in default pipeline):
+Next, there are two non-python dependencies in the QIIME base package. These should be installed by following their respective install instructions. 
 
 * uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
-* PyNAST 1.2.1 (`src_pynast <ftp://thebeast.colorado.edu/pub/pynast-releases/pynast-1.2.1.tar.gz>`_) (license: BSD)
+* fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) See `FastTree install instructions <http://www.microbesonline.org/fasttree/#Install>`_ (license: GPL)
+
+Finally, several data files are likely to be useful. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
+
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
-* fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
+* Marker gene reference OTUs, taxonomies, and trees  (follow the *Resources* link from the `QIIME homepage <http://www.qiime.org>`_)
+
+QIIME full install (for access to advanced features in QIIME, and non-default processing pipelines)
+---------------------------------------------------------------------------------------------------
+
+Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for non-default processing pipelines):
+
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
 * tax2tree 1.0.0 (`src_tax2tree <https://downloads.sourceforge.net/project/tax2tree/tax2tree-v1.0.tar.gz>`_)
-
-Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
-
 * blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_) (license: GNU)
 * cd-hit 3.1.1 (`src_cdhit <http://www.bioinformatics.org/download/cd-hit/cd-hit-2007-0131.tar.gz>`_) (license: Free access)
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src_chimeraslayer <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
@@ -76,17 +90,11 @@ Denoising 454 data:
 
 Visualization and plotting steps:
 
-* MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
-* Emperor 0.9.2 (`src_emperor <ftp://thebeast.colorado.edu/pub/emperor-releases/emperor-0.9.2.tar.gz>`_) (license: BSD)
 * cytoscape v2.7.0 (`src_cytoscape <http://www.cytoscape.org/>`_) (license: LGPL)
 
 Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
 
 * R 3.0.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
-
-Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97% identity:
-
-* Greengenes OTUs, taxonomies, and trees (`.tar.gz <ftp://greengenes.microbio.me/greengenes_release/gg_12_10/gg_12_10_otus.tar.gz>`_)
 
 If you plan to build the QIIME documentation locally:
 
@@ -110,6 +118,9 @@ For simplicity throughout this document, we assume that you have downloaded QIIM
 
 Getting QIIME
 -------------
+
+.. _getting-qiime:
+
 First, change to the directory where you would like to download QIIME::
 
 	cd $HOME
@@ -146,6 +157,9 @@ QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests
 
 Installing the library code and scripts with setup.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _python-setup:
+
 Using ``Qiime/setup.py`` (and thereby python's ``distutils`` package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed -- depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python's ``site-packages``, and the QIIME scripts will be place in ``/usr/local/bin/``. You may need to run ``setup.py`` using ``sudo`` if you do not have permission to place files in the default locations.
 
 First, ensure that you are in the top-level QIIME directory::
