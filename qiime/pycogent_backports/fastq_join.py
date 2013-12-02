@@ -62,7 +62,7 @@ class FastqJoin(CommandLineApplication):
         if self.Parameters['-o'].isOn():
             output_path = self._absolute(str(self.Parameters['-o'].Value))
         else:
-            raise ValueError, "No output path specified."
+            raise ValueError("No output path specified.")
         return output_path
 
     def _get_stitch_report_path(self):
@@ -171,7 +171,7 @@ def join_paired_end_reads_fastqjoin(
     # check / make absolute infile paths
     for p in infile_paths:
         if not os.path.exists(p):
-            raise IOError, 'File not found at: %s' % p
+            raise IOError('File not found at: %s' % p)
   
     fastq_join_app = FastqJoin(params=params,
                                WorkingDir=working_dir,
@@ -187,19 +187,19 @@ def join_paired_end_reads_fastqjoin(
         if isinstance(perc_max_diff, int) and 0 <= perc_max_diff <= 100: 
             fastq_join_app.Parameters['-p'].on(perc_max_diff)
         else:
-            raise ValueError, "perc_max_diff must be int between 0-100!"
+            raise ValueError("perc_max_diff must be int between 0-100!")
 
     if min_overlap is not None:
         if isinstance(min_overlap, int) and 0 < min_overlap: 
             fastq_join_app.Parameters['-m'].on(min_overlap)
         else:
-            raise ValueError, "min_overlap must be an int >= 0!"
+            raise ValueError("min_overlap must be an int >= 0!")
 
     if outfile_label is not None:
         if isinstance(outfile_label, str): 
             fastq_join_app.Parameters['-o'].on(outfile_label +'.')
         else:
-            raise ValueError, "outfile_label must be a string!"
+            raise ValueError("outfile_label must be a string!")
     else:
         pass
   
@@ -215,7 +215,7 @@ def join_paired_end_reads_fastqjoin(
     # sanity check that files actually exist in path lcoations
     for path in path_dict.values():
         if not os.path.exists(path):
-            raise IOError, 'Output file not found at: %s' % path
+            raise IOError('Output file not found at: %s' % path)
 
     # fastq-join automatically appends: 'join', 'un1', or 'un2'
     # to the end of the file names. But we want to rename them so
@@ -225,11 +225,6 @@ def join_paired_end_reads_fastqjoin(
         new_file_path = file_path + '.fastq'
         shutil.move(file_path, new_file_path)
         path_dict[key] = new_file_path
-
-    # sanity check that files actually exist in path lcoations
-    for path in path_dict.values():
-        if not os.path.exists(path):
-            raise IOError, 'Output file not found at: %s' % path
 
     return path_dict
 

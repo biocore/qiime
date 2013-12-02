@@ -129,7 +129,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-1'].isOn():
             unassembled_reads1 = self._absolute(str(self.Parameters['-1'].Value))
         else:
-            raise ValueError, "No reads1 (flag: -1) output path specified"
+            raise ValueError("No reads1 (flag: -1) output path specified")
         return unassembled_reads1
 
     def _unassembled_reads2_out_file_name(self):
@@ -138,7 +138,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-2'].isOn():
             unassembled_reads2 = self._absolute(str(self.Parameters['-2'].Value))
         else:
-            raise ValueError, "No reads2 (flag -2) output path specified"
+            raise ValueError("No reads2 (flag -2) output path specified")
         return unassembled_reads2
 
     def _discarded_reads1_out_file_name(self):
@@ -147,7 +147,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-3'].isOn():
             discarded_reads1 = self._absolute(str(self.Parameters['-3'].Value))
         else:
-            raise ValueError, "No discarded-reads1 (flag -3) output path specified"
+            raise ValueError("No discarded-reads1 (flag -3) output path specified")
         return discarded_reads1
 
     def _discarded_reads2_out_file_name(self):
@@ -156,7 +156,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-4'].isOn():
             discarded_reads2 = self._absolute(str(self.Parameters['-4'].Value))
         else:
-            raise ValueError, "No discarded-reads2 (flag -4) output path specified"
+            raise ValueError("No discarded-reads2 (flag -4) output path specified")
         return discarded_reads2
 
     def _assembled_out_file_name(self):
@@ -165,7 +165,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-s'].isOn():
             assembled_reads = self._absolute(str(self.Parameters['-s'].Value))
         else:
-            raise ValueError, "No assembled-reads (flag -s) output path specified"
+            raise ValueError("No assembled-reads (flag -s) output path specified")
         return assembled_reads
 
     def _pretty_alignment_out_file_name(self):
@@ -174,7 +174,7 @@ class SeqPrep(CommandLineApplication):
         if self.Parameters['-E'].isOn():
             pretty_alignment = self._absolute(str(self.Parameters['-E'].Value))
         else:
-            raise ValueError, "No pretty-=alignment (flag -E) output path specified"
+            raise ValueError("No pretty-=alignment (flag -E) output path specified")
         return pretty_alignment
 
     def _get_result_paths(self, data):
@@ -270,7 +270,7 @@ def join_paired_end_reads_seqprep(
     # check / make absolute infile paths
     for p in infile_paths:
         if not os.path.exists(p):
-            raise IOError, 'Infile not found at: %s' % p
+            raise IOError('Infile not found at: %s' % p)
 
     # set up controller
     seqprep_app=SeqPrep(params = params,
@@ -289,26 +289,26 @@ def join_paired_end_reads_seqprep(
         seqprep_app.Parameters['-1'].on(outfile_label + '_unassembled_R1.fastq.gz')
         seqprep_app.Parameters['-2'].on(outfile_label + '_unassembled_R2.fastq.gz')
     else:
-        raise ValueError, "Must set an outfile_label in order to set"+\
-                          " the -s, -1, & -2 options!"
+        raise ValueError("Must set an outfile_label in order to set",
+                          " the -s, -1, & -2 options!")
 
     if min_overlap is not None:
         if isinstance(min_overlap, int) and min_overlap > 0:
                 seqprep_app.Parameters['-o'].on(min_overlap)
         else:        
-            raise ValueError, "min_overlap must be an int >= 0!"
+            raise ValueError("min_overlap must be an int >= 0!")
  
     if max_mismatch_good_frac is not None:
         if isinstance(max_mismatch_good_frac, float) and 0.0 < max_mismatch_good_frac <= 1.0:
             seqprep_app.Parameters['-m'].on(max_mismatch_good_frac)
         else:
-            raise ValueError, "max_mismatch_good_frac must be a float between 0.0-1.0!"
+            raise ValueError("max_mismatch_good_frac must be a float between 0.0-1.0!")
 
     if min_frac_matching is not None:
         if isinstance(min_frac_matching, float) and 0.0 < min_frac_matching <= 1.0:
             seqprep_app.Parameters['-n'].on(min_frac_matching)
         else:
-            raise ValueError, "min_frac_matching must be a float between 0.0-1.0!"
+            raise ValueError("min_frac_matching must be a float between 0.0-1.0!")
 
  
     if max_overlap_ascii_q_score is not None:
@@ -316,8 +316,8 @@ def join_paired_end_reads_seqprep(
                 and len(max_overlap_ascii_q_score) == 1:
             seqprep_app.Parameters['-y'].on(max_overlap_ascii_q_score)
         else:
-            raise ValueError, "max_overlap_ascii_q_score must be a single"+\
-                              " ASCII character string. e.g. \'J\'!"
+            raise ValueError("max_overlap_ascii_q_score must be a single",
+                              " ASCII character string. e.g. \'J\'!")
  
 
    # if input is phred+64
@@ -336,7 +336,7 @@ def join_paired_end_reads_seqprep(
    # sanity check that files actually exist in path lcoations
     for path in path_dict.values():
         if not os.path.exists(path):
-            raise IOError, 'Output file not found at: %s' % path
+            raise IOError('Output file not found at: %s' % path)
 
     return path_dict
 
