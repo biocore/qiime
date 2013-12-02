@@ -20,34 +20,45 @@ from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
-from numpy import __version__ as numpy_lib_version
+core_dependency_missing_msg = "See the QIIME Installation Guide: http://qiime.org/install/install.html"
 
-from cogent.util.misc import app_path, get_random_directory_name, remove_files
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent import __version__ as pycogent_lib_version
+try:
+    from numpy import __version__ as numpy_lib_version
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
-from qiime.parse import parse_qiime_config_file
-from qiime.util import (load_qiime_config, 
-                        get_qiime_project_dir, 
-                        parse_command_line_parameters,
-                        get_qiime_library_version,
-                        get_rdp_jarpath,
-                        get_java_version,
-                        get_pynast_version,
-                        make_option, 
-                        qiime_system_call,
-                        get_qiime_temp_dir)
-from qiime.denoiser.utils import check_flowgram_ali_exe
+try:    
+    from cogent.util.misc import app_path, get_random_directory_name, remove_files
+    from cogent.app.util import ApplicationNotFoundError, ApplicationError
+    from cogent import __version__ as pycogent_lib_version
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
+
+try:
+    from qiime.parse import parse_qiime_config_file
+    from qiime.util import (load_qiime_config, 
+                            get_qiime_project_dir, 
+                            parse_command_line_parameters,
+                            get_qiime_library_version,
+                            get_rdp_jarpath,
+                            get_java_version,
+                            get_pynast_version,
+                            make_option, 
+                            qiime_system_call,
+                            get_qiime_temp_dir)
+    from qiime.denoiser.utils import check_flowgram_ali_exe
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
 try:
     from biom import __version__ as biom_lib_version
 except ImportError:
-    biom_lib_version = "ERROR: Not installed - this is required!"
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
     
 try:
     from qcli import __version__ as qcli_lib_version
 except ImportError:
-    qcli_lib_version = "ERROR: Not installed - this is required!"
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
 try:
     from matplotlib import __version__ as matplotlib_lib_version
