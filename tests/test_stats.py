@@ -18,7 +18,7 @@ from os.path import exists, join
 from string import digits
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
-from numpy import array, asarray, roll, median
+from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
 from biom.parse import parse_biom_table
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
@@ -300,25 +300,25 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
         """Test on valid dataset w/ multiple comps."""
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
-            0.021241438692373202, None, None], ['foo', 'baz',
+            0.021241438692373202, nan, nan], ['foo', 'baz',
             -9.7979589711327115, 0.00060818494446333643, 0.0018245548333900093,
-            None, None], ['bar', 'baz', -3.0, 0.05766888562243732,
-            0.17300665686731195, None, None]]
+            nan, nan], ['bar', 'baz', -3.0, 0.05766888562243732,
+            0.17300665686731195, nan, nan]]
         obs = _perform_pairwise_tests(self.labels2, self.dists2, 'two-sided',
                                       0)
         self.assertFloatEqual(obs, exp)
 
     def test_perform_pairwise_tests_too_few_obs(self):
         """Test on dataset w/ too few observations."""
-        exp = [['foo', 'bar', None, None, None, None, None], ['foo', 'baz',
+        exp = [['foo', 'bar', nan, nan, nan, nan, nan], ['foo', 'baz',
             -7.794228634059948, 0.008032650971672552, 0.016065301943345104,
-            None, None], ['bar', 'baz',
+            nan, nan], ['bar', 'baz',
             -2.598076211353316, 0.060844967173160069, 0.12168993434632014,
-            None, None]]
+            nan, nan]]
         obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
         self.assertFloatEqual(obs, exp)
 
-        exp = [['foo', 'bar', None, None, None, None, None]]
+        exp = [['foo', 'bar', nan, nan, nan, nan, nan]]
         obs = _perform_pairwise_tests(['foo', 'bar'], [[], [1, 2, 4]], 'high',
                                       20)
         self.assertFloatEqual(obs, exp)

@@ -24,7 +24,6 @@ from qiime.pycogent_backports.test import (mc_t_two_sample, t_two_sample,
     benjamini_hochberg_step_down, bonferroni_correction, fdr_correction)
 from itertools import combinations
 from collections import defaultdict
-from qiime.otu_category_significance import fdr_correction
 
 
 test_types = ['parametric', 'nonparametric']
