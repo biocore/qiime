@@ -731,7 +731,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                     999, 0.95)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.33 and p_val <= 0.35:
+            if p_val >= 0.66 and p_val <= 0.7:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -756,7 +756,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                     999, 0.90, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.3 and p_val <= 0.35:
+            if p_val >= 0.6 and p_val <= 0.7:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -917,7 +917,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_paired2, 'paired', 'pearson',
                     'two-sided', 999, 0.95)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.009 and p_val <= 0.012:
+            if p_val >= 0.018 and p_val <= 0.024:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -943,7 +943,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_paired2, 'paired', 'pearson',
                     'two-sided', 999, 0.95, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.008 and p_val <= 0.018:
+            if p_val >= 0.016 and p_val <= 0.036:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -980,7 +980,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_paired3, 'paired', 'pearson',
                     'two-sided', 999, 0.90, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.01 and p_val <= 0.018:
+            if p_val >= 0.02 and p_val <= 0.036:
                 found_match = True
                 break
         self.assertTrue(found_match)
