@@ -24,19 +24,19 @@ script_info['brief_description']="""Summarize an OTU table by a single column in
 script_info['script_description']="""Collapse an OTU table based on values in a single column in the mapping file. For example, if you have 10 samples, five of which are from females and five of which are from males, you could use this script to collapse the ten samples into two corresponding based on their values in a 'Sex' column in your mapping file."""
 script_info['script_usage']=[]
 
-script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.biom on the 'Treatment' column in Fasting_Map.txt and write the resulting OTU table to otu_table_by_treatment.txt""","""%prog -c otu_table.biom -i Fasting_Map.txt -m Treatment -o otu_table_by_treatment.biom"""))
+script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.biom on the 'Treatment' column in Fasting_Map.txt and write the resulting OTU table to otu_table_by_treatment.txt""","""%prog -i otu_table.biom -m Fasting_Map.txt -c Treatment -o otu_table_by_treatment.biom"""))
 
-script_info['script_usage'].append(("""""",""" Combine two categories and collapse otu_table.biom on the 'Sex' and 'Age' columns in map.txt and write the resulting OTU table to otu_table_by_sex_and_age.txt""","""%prog -c otu_table.biom -i Fasting_Map.txt -m 'Treatment&&DOB' -o otu_table_by_treatment_and_dob.biom"""))
+script_info['script_usage'].append(("""""",""" Combine two categories and collapse otu_table.biom on the 'Sex' and 'Age' columns in map.txt and write the resulting OTU table to otu_table_by_sex_and_age.txt""","""%prog -i otu_table.biom -m Fasting_Map.txt -c 'Treatment&&DOB' -o otu_table_by_treatment_and_dob.biom"""))
 
 script_info['output_description']= """"""
 script_info['required_options']=[\
-    make_option('-i', '--mapping_fp',
+    make_option('-m', '--mapping_fp',
         help='Input metadata mapping filepath [REQUIRED]',
         type='existing_filepath'),
-    make_option('-c', '--otu_table_fp',
+    make_option('-i', '--otu_table_fp',
         help='Input OTU table filepath. [REQUIRED]',
         type='existing_filepath'),
-    make_option('-m', '--mapping_category', type='string',
+    make_option('-c', '--mapping_category', type='string',
         help='Summarize OTU table using this category. The user can ' +\
         'also combine columns in the mapping file by separating the ' +\
         'categories by "&&" without spaces. [REQUIRED]'),
