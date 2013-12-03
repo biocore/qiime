@@ -167,7 +167,7 @@ script_info['optional_options']=[\
         help=('Number of database hits to consider when making '
               'an assignment, only used for uclust method '
               '[default: %default]'), default=3),
- make_option('--rdp_max_memory', default=1500, type='int',
+ make_option('--rdp_max_memory', default=4000, type='int',
         help='Maximum memory allocation, in MB, for Java virtual machine when '
         'using the rdp method.  Increase for large training sets [default: %default]'),\
  make_option('-e', '--e_value', type='float',
