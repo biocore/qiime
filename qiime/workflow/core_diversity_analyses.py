@@ -403,7 +403,7 @@ def run_core_diversity_analyses(
                 # Build the OTU cateogry significance command
                 category_significance_cmd = \
                  'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
-                 (biom_fp, mapping_fp, category, 
+                 (filtered_biom_fp, mapping_fp, category, 
                   category_signifance_fp, params_str)
                 commands.append([('OTU category significance (%s)' % category, 
                                   category_significance_cmd)])
