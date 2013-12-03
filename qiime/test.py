@@ -652,6 +652,9 @@ def run_script_usage_tests(test_data_dir,
 
         Returns a result summary string and the number of script usage
         examples (i.e. commands) that failed.
+        
+        This code was derived from qcli-0.1.0. The author of this function, 
+         Greg Caporaso, gives permission to include this GPL code in QIIME. 
     """
     # process input filepaths and directories
     test_data_dir = abspath(test_data_dir)
