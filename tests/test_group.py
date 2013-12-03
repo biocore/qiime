@@ -328,7 +328,7 @@ class GroupTests(TestCase):
                     "",
                     "",
                     "eigvals\t191.54\t169.99\t30.45\t19.19",
-                    "%% variation explained\t18.13\t16.09\t2.88\t1.66"]
+                    "% variation explained\t18.13\t16.09\t2.88\t1.66"]
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
