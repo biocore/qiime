@@ -15,39 +15,50 @@ __status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
-from sys import platform, version as python_version, executable
+from sys import platform, version as python_version, executable, stdout
+from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
-from numpy import __version__ as numpy_lib_version
+core_dependency_missing_msg = "See the QIIME Installation Guide: http://qiime.org/install/install.html"
 
-from cogent.util.unit_test import TestCase, main as test_main
-from cogent.util.misc import app_path, get_random_directory_name, remove_files
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent import __version__ as pycogent_lib_version
+try:
+    from numpy import __version__ as numpy_lib_version
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
-from qiime.parse import parse_qiime_config_file
-from qiime.util import (load_qiime_config, 
-                        get_qiime_project_dir, 
-                        parse_command_line_parameters,
-                        get_qiime_library_version,
-                        get_rdp_jarpath,
-                        get_java_version,
-                        get_pynast_version,
-                        make_option, 
-                        qiime_system_call,
-                        get_qiime_temp_dir)
-from qiime.denoiser.utils import check_flowgram_ali_exe
+try:    
+    from cogent.util.misc import app_path, get_random_directory_name, remove_files
+    from cogent.app.util import ApplicationNotFoundError, ApplicationError
+    from cogent import __version__ as pycogent_lib_version
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
+
+try:
+    from qiime.parse import parse_qiime_config_file
+    from qiime.util import (load_qiime_config, 
+                            get_qiime_project_dir, 
+                            parse_command_line_parameters,
+                            get_qiime_library_version,
+                            get_rdp_jarpath,
+                            get_java_version,
+                            get_pynast_version,
+                            make_option, 
+                            qiime_system_call,
+                            get_qiime_temp_dir)
+    from qiime.denoiser.utils import check_flowgram_ali_exe
+except ImportError, e:
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
 try:
     from biom import __version__ as biom_lib_version
 except ImportError:
-    biom_lib_version = "ERROR: Not installed - this is required!"
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
     
 try:
     from qcli import __version__ as qcli_lib_version
 except ImportError:
-    qcli_lib_version = "ERROR: Not installed - this is required!"
+    raise ImportError, "%s\n%s" % (e,core_dependency_missing_msg)
 
 try:
     from matplotlib import __version__ as matplotlib_lib_version
@@ -64,8 +75,6 @@ pynast_lib_version = get_pynast_version()
 if pynast_lib_version == None:
     pynast_lib_version = "Not installed."
 
-
-
 script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
 script_info['script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
@@ -81,32 +90,20 @@ script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
 script_info['required_options']=[]
 script_info['optional_options'] = [\
-    make_option('-t','--test', action='store_true',
-                dest='test', default = False,
-                help='Test the qiime config for sanity '
-                +'[default: %default]')]
+    make_option('-t','--test', 
+                action='store_true',
+                default = False,
+                help='Test the QIIME install and configuration [default: %default]'),
+    make_option('-b',
+                '--qiime_base_install',
+                action='store_true',
+                default=False,
+                help='If passed, report only on dependencies required for the QIIME base install [default: %default]')]
 
-class Qiime_config(TestCase):
+class QIIMEConfig(TestCase):
     
     def setUp(self):
         self.config = load_qiime_config()
-   
-    def test_python_exe_fp(self):
-        """python_exe_fp is set to a working python env"""
-        
-        python = self.config["python_exe_fp"]
-        command = "%s --version" % python
-        proc = Popen(command,shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=STDOUT)
-        #Check if callable
-        if proc.wait() !=0:
-            self.fail("Calling python failed. Check you python_exe_fp:%s" %python)
-        
-        # Does it give its version string?
-        out_string = proc.stdout.read()
-        if not out_string:
-            self.fail("Something is wrong with your python\n." \
-                          +" Check you python_exe_fp:%s" %python)
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
@@ -148,37 +145,6 @@ class Qiime_config(TestCase):
             self.config["blastall_fp"] = blast_all
 
         test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
-
-    def test_ampliconnoise_install(self):
-        """ AmpliconNoise install looks sane."""
-        url="http://qiime.org/install/install.html#ampliconnoise-install-notes"
-        
-        pyro_lookup_file = getenv('PYRO_LOOKUP_FILE')
-        self.assertTrue(pyro_lookup_file != None,
-         "$PYRO_LOOKUP_FILE variable is not set. See %s for help." % url)
-        self.assertTrue(exists(pyro_lookup_file),
-         "$PYRO_LOOKUP_FILE variable is not set to an existing filepath.")
-         
-        seq_lookup_file = getenv('SEQ_LOOKUP_FILE')
-        self.assertTrue(seq_lookup_file != None,
-         "$SEQ_LOOKUP_FILE variable is not set. See %s for help." % url)
-        self.assertTrue(exists(seq_lookup_file),
-         "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
-         
-        self.assertTrue(app_path("SplitKeys.pl"),
-         "Couldn't find SplitKeys.pl. "+\
-         "Perhaps AmpliconNoise Scripts directory isn't in $PATH?"+\
-         " See %s for help." % url)
-         
-        self.assertTrue(app_path("FCluster"),
-         "Couldn't find FCluster. "+\
-         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
-         " See %s for help." % url)
-
-        self.assertTrue(app_path("Perseus"),
-         "Couldn't find Perseus. "+\
-         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
-         " See %s for help." % url)
         
     def test_pynast_template_alignment_fp(self):
         """pynast_template_alignment, if set, is set to a valid path"""
@@ -251,17 +217,6 @@ class Qiime_config(TestCase):
     # jobs_to_start   1
     # seconds_to_sleep        60
 
-    def test_sourcetracker_installed(self):
-        """sourcetracker is installed"""
-            
-        sourcetracker_path = getenv('SOURCETRACKER_PATH')
-        self.assertNotEqual(sourcetracker_path,None,
-         ("SOURCETRACKER_PATH is not set. This is "
-          "only important if you plan to use SourceTracker."))
-        self.assertTrue(exists(sourcetracker_path),
-         "SOURCETRACKER_PATH is not set to a valid path: %s" %\
-          sourcetracker_path)
-
     def test_for_obsolete_values(self):
         """local qiime_config has no extra params"""
         
@@ -293,23 +248,8 @@ class Qiime_config(TestCase):
                 self.fail("The .qiime_config in your HOME contains obsolete "+
                           "parameters:\n" + ", ".join(extra_vals))
 
-    def test_chimeraSlayer_install(self):
-        """no obvious problems with ChimeraSlayer install """
-
-        #The ChimerSalyer app requires that all its components are installed
-        # relative to the main program ChimeraSlayer.pl.
-        # We therefore check that at least one the files is there.
-        # However, if the directory structure of ChimeraSlayer changes, this test will most
-        # likely fail as well and need to be updated.
-        # Tested with the version of microbiomeutil_2010-04-29
-
-        chim_slay = app_path("ChimeraSlayer.pl")
-        self.assertTrue(chim_slay,"ChimeraSlayer was not found in your $PATH")
-        dir, app_name = split(chim_slay)
-        self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
-         "ChimeraSlayer depends on external files in directoryies relative to its "
-         "install directory. Thesedo not appear to be present.")
-
+class QIIMEDependencyBase(QIIMEConfig):
+                          
     def test_uclust_supported_version(self):
         """uclust is in path and version is supported """
         acceptable_version = (1,2,22)
@@ -410,6 +350,105 @@ class Qiime_config(TestCase):
          % ('.'.join(map(str,min_acceptable_version)),
             '.'.join(map(str,min_unacceptable_version)),
             version_string))
+            
+    def test_FastTree_supported_version(self):
+        """FastTree is in path and version is supported """
+        acceptable_version = (2,1,3)
+        self.assertTrue(app_path('FastTree'),
+         "FastTree not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "FastTree 2>&1 > %s | grep version" % devnull
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[4].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version == acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported FastTree version. %s is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+
+class QIIMEDependencyFull(QIIMEDependencyBase):
+
+    def test_python_exe_fp(self):
+        """python_exe_fp is set to a working python env"""
+        
+        python = self.config["python_exe_fp"]
+        command = "%s --version" % python
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        #Check if callable
+        if proc.wait() !=0:
+            self.fail("Calling python failed. Check you python_exe_fp:%s" %python)
+        
+        # Does it give its version string?
+        out_string = proc.stdout.read()
+        if not out_string:
+            self.fail("Something is wrong with your python\n." \
+                          +" Check you python_exe_fp:%s" %python)
+
+    def test_ampliconnoise_install(self):
+        """ AmpliconNoise install looks sane."""
+        url="http://qiime.org/install/install.html#ampliconnoise-install-notes"
+        
+        pyro_lookup_file = getenv('PYRO_LOOKUP_FILE')
+        self.assertTrue(pyro_lookup_file != None,
+         "$PYRO_LOOKUP_FILE variable is not set. See %s for help." % url)
+        self.assertTrue(exists(pyro_lookup_file),
+         "$PYRO_LOOKUP_FILE variable is not set to an existing filepath.")
+         
+        seq_lookup_file = getenv('SEQ_LOOKUP_FILE')
+        self.assertTrue(seq_lookup_file != None,
+         "$SEQ_LOOKUP_FILE variable is not set. See %s for help." % url)
+        self.assertTrue(exists(seq_lookup_file),
+         "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
+         
+        self.assertTrue(app_path("SplitKeys.pl"),
+         "Couldn't find SplitKeys.pl. "+\
+         "Perhaps AmpliconNoise Scripts directory isn't in $PATH?"+\
+         " See %s for help." % url)
+         
+        self.assertTrue(app_path("FCluster"),
+         "Couldn't find FCluster. "+\
+         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
+         " See %s for help." % url)
+
+        self.assertTrue(app_path("Perseus"),
+         "Couldn't find Perseus. "+\
+         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
+         " See %s for help." % url)
+
+    def test_sourcetracker_installed(self):
+        """sourcetracker is installed"""
+            
+        sourcetracker_path = getenv('SOURCETRACKER_PATH')
+        self.assertNotEqual(sourcetracker_path,None,
+         ("SOURCETRACKER_PATH is not set. This is "
+          "only important if you plan to use SourceTracker."))
+        self.assertTrue(exists(sourcetracker_path),
+         "SOURCETRACKER_PATH is not set to a valid path: %s" %\
+          sourcetracker_path)
+
+    def test_chimeraSlayer_install(self):
+        """no obvious problems with ChimeraSlayer install """
+
+        #The ChimerSalyer app requires that all its components are installed
+        # relative to the main program ChimeraSlayer.pl.
+        # We therefore check that at least one the files is there.
+        # However, if the directory structure of ChimeraSlayer changes, this test will most
+        # likely fail as well and need to be updated.
+        # Tested with the version of microbiomeutil_2010-04-29
+
+        chim_slay = app_path("ChimeraSlayer.pl")
+        self.assertTrue(chim_slay,"ChimeraSlayer was not found in your $PATH")
+        dir, app_name = split(chim_slay)
+        self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
+         "ChimeraSlayer depends on external files in directoryies relative to its "
+         "install directory. These do not appear to be present.")
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
@@ -432,27 +471,7 @@ class Qiime_config(TestCase):
          "Unsupported blast version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
          
-    def test_FastTree_supported_version(self):
-        """FastTree is in path and version is supported """
-        acceptable_version = (2,1,3)
-        self.assertTrue(app_path('FastTree'),
-         "FastTree not found. This may or may not be a problem depending on "+\
-         "which components of QIIME you plan to use.")
-        command = "FastTree 2>&1 > %s | grep version" % devnull
-        proc = Popen(command,shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=STDOUT)
-        stdout = proc.stdout.read()
-        version_string = stdout.strip().split(' ')[4].strip()
-        try:
-            version = tuple(map(int,version_string.split('.')))
-            pass_test = version == acceptable_version
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,\
-         "Unsupported FastTree version. %s is required, but running %s." \
-         % ('.'.join(map(str,acceptable_version)), version_string))
-    
+
     def test_cdbtools_supported_version(self):
         """cdbtools is in path and version is supported """
         acceptable_version = (0,99)
@@ -473,7 +492,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported cdbtools version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
+
     def test_INFERNAL_supported_version(self):
         """INFERNAL is in path and version is supported """
         acceptable_version = (1,0,2)
@@ -494,7 +513,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported INFERNAL version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
+
     def test_muscle_supported_version(self):
         """muscle is in path and version is supported """
         acceptable_version = (3,8,31)
@@ -515,7 +534,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported muscle version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
+
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
         acceptable_version = (1,25,0)
@@ -540,7 +559,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported mothur version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-         
+
     def test_denoiser_supported_version(self):
         """denoiser aligner is ready to use """
 
@@ -553,7 +572,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test, "Denoiser flowgram aligner not found or not executable."+\
                             "This may or may not be a problem depending on "+\
                             "which components of QIIME you plan to use.")
-        
+
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
         acceptable_version = [(7,3,0),(7,3,0)]
@@ -574,7 +593,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported raxmlHPC version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
+
     def test_clearcut_supported_version(self):
         """clearcut is in path and version is supported """
         acceptable_version = (1,0,9)
@@ -595,28 +614,14 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported clearcut version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
-        
+
     def test_cdhit_supported_version(self):
         """cd-hit is in path and version is supported """
         self.assertTrue(app_path('cd-hit'),
          "cd-hit not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # cd-hit does not have a version print in their program
-    
-    #def test_rdp_classifier_supported_version(self):
-    #    """rdp_classifier is in path and version is supported """
-    #    #rdp_classifier does not have a version print in their program, not in their
-    #    #command line or in their java manifest, if in the future they add it to the
-    #    #manifest the command is:
-    #    #unzip -c self.config['rdp_classifier_fp'] META-INF/MANIFEST.MF
-    #    pass
-        
-    #def test_ChimeraSlayer_supported_version(self):
-    #    """ChimeraSlayer is in path and version is supported """
-    #    #chim_slay = app_path("ChimeraSlayer.pl")
-    #    #ChimeraSlayer does not have a version print in their program
-    #    pass
-        
+
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
         acceptable_version = [(0,984)]
@@ -745,6 +750,7 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test, "gdata is not installed.")
 
 
+
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""
@@ -772,6 +778,8 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
+    test = opts.test
+    qiime_base_install = opts.qiime_base_install
     
     rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath == None:
@@ -802,9 +810,11 @@ def main():
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
-     ("RDP Classifier version (if installed)", rdp_version),
-     ("Java version (if installed)", java_version),
      ("Emperor version", emperor_lib_version)]
+    if not qiime_base_install:
+        version_info += [
+         ("RDP Classifier version (if installed)", rdp_version),
+         ("Java version (if installed)", java_version)]
 
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"
@@ -817,12 +827,17 @@ def main():
     max_len =  max([len(key) for key in qiime_config])
     for key,value in  qiime_config.items():
         print "%*s:\t%s"%(max_len,key,value)
-
-    #run the Testcase.main function to do the tests
-    # need to mess with the arg string, otherwise TestCase complains
-    if (opts.test):
-        print "\n\nrunning checks:\n"
-        test_main(argv=["","-v"])
+    
+    if test:
+        if qiime_base_install:
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
+        else:
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
+        if opts.verbose:
+            verbosity = 2
+        else:
+            verbosity = 1
+        TextTestRunner(stream=stdout,verbosity=verbosity).run(suite)
 
 if __name__ == "__main__":
     main()
