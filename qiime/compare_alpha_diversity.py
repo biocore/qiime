@@ -25,7 +25,6 @@ from qiime.pycogent_backports.test import (mc_t_two_sample, t_two_sample,
 from itertools import combinations
 from collections import defaultdict
 
-
 test_types = ['parametric', 'nonparametric']
 correction_types = ['bonferroni', 'fdr', 'none']
 

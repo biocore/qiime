@@ -263,6 +263,8 @@ def main():
     tmp_bt = parse_biom_table(open(opts.otu_table_fp))
     tmp_pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
     pmf, bt, nonshared_samples = sync_biom_and_mf(tmp_pmf, tmp_bt)
+
+    # test error conditions for overlapping mf and bt
     if not opts.biom_samples_are_superset: 
         # user indicates biom sample should be subset of mapping file samples
         if any([i in nonshared_samples for i in tmp_bt.SampleIds]):
@@ -275,10 +277,12 @@ def main():
         print 'The following samples were not shared between the mapping file'+\
             ' and the biom file and will not be included in the analysis:\n'+\
             ' '.join(nonshared_samples)
+
     # find group indices
     sam_cats = get_sample_cats(pmf, opts.category)
     cat_sam_groups = get_cat_sample_groups(sam_cats)
     cat_sam_indices = get_sample_indices(cat_sam_groups, bt)
+
     # sanity check to prevent inscrutable errors later
     if not all([len(v)>0 for k,v in cat_sam_indices.items()]):
         raise ValueError('At least one metadata group has no samples. Check '+\
@@ -288,6 +292,7 @@ def main():
         option_parser.error('The t-test and mann_whitney_u test may '+\
             'only be used when there are two sample groups. Choose another '+\
             'test or another metadata category.')
+
     # check that assumptions are met for a given test:
     if opts.test == 'mann_whitney_u':
         sams = reduce(lambda x,y: len(x)+len(y), cat_sam_indices.values())
@@ -295,15 +300,19 @@ def main():
             raise ValueError('The number of samples is too small to use the '+\
                 'Mann-Whitney-U normal approximation. Review the script '+\
                 'documentation.')
+
+    # run actual tests
     data_feed = group_significance_row_generator(bt, cat_sam_indices)
     test_stats, pvals, means = run_group_significance_test(data_feed, opts.test, 
         GROUP_TEST_CHOICES, int(opts.permutations))
+
     # calculate corrected pvals
     fdr_pvals = array(benjamini_hochberg_step_down(pvals))
     bon_pvals = bonferroni_correction(pvals)
     # correct for cases where values above 1.0 due to correction
     fdr_pvals = where(fdr_pvals>1.0, 1.0, fdr_pvals)
     bon_pvals = where(bon_pvals>1.0, 1.0, bon_pvals)
+    
     # write output results after sorting
     lines = group_significance_output_formatter(bt, test_stats, pvals, 
         fdr_pvals, bon_pvals, means, cat_sam_indices, md_key=opts.metadata_key)

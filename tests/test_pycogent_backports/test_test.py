@@ -1038,8 +1038,8 @@ class CorrelationTests(TestsHelper):
 
     def test_pearson_invalid_input(self):
         """Test running pearson on bad input."""
-        self.assertRaises(AssertionError, pearson, [1.4, 2.5], [5.6, 8.8, 9.0])
-        self.assertRaises(AssertionError, pearson, [1.4], [5.6])
+        self.assertRaises(ValueError, pearson, [1.4, 2.5], [5.6, 8.8, 9.0])
+        self.assertRaises(ValueError, pearson, [1.4], [5.6])
 
     def test_spearman(self):
         """Test the spearman function with valid input."""

@@ -2112,7 +2112,7 @@ def sync_biom_and_mf(pmf, bt):
     samples that are not shared. If no samples are unshared this final output
     will be an empty set. 
     """
-    mf_samples = set(pmf.keys())
+    mf_samples = set(pmf)
     bt_samples = set(bt.SampleIds)
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
@@ -2153,13 +2153,19 @@ def biom_taxonomy_formatter(bt, md_key):
     except AttributeError:
         print 'Metadata not formatted in a dictionary, will not be returned.'
         return None
-    if type(dtype) == dict:
-        data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
-            md in bt.ObservationMetadata]
+    if isinstance(dtype, dict):
+        data = []
+        for md in bt.ObservationMetadata:
+            tmp = []
+            for k,v in md[md_key].iteritems():
+                tmp.append('%s_%s' % (k,v))
+            data.append(' '.join(tmp))
+        # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
+        #     md in bt.ObservationMetadata]
         return map(str, data)
-    elif type(dtype) == list:
+    elif isinstance(dtype, list):
         return map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
-    elif type(dtype) in [str, unicode]:
+    elif isinstance(dtype, (str, unicode)):
         return map(str, [md[md_key] for md in bt.ObservationMetadata])
     else:
         print ('Metadata format could not be determined or metadata key (%s) '+\
