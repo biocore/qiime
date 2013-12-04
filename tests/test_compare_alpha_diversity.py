@@ -393,8 +393,7 @@ class TopLevelTests(TestCase):
         for k,v in exp.iteritems():
             self.assertFloatEqual(obs[k], v)
         # check that keys are the same
-        self.assertEqual(set(obs.keys()), set(exp.keys()))
-        
+        self.assertEqualItems(obs.keys(), exp.keys())
         # test when depth is specified
         depth = 850
         exp = {'Sam1': 3.32916466,
@@ -408,7 +407,7 @@ class TopLevelTests(TestCase):
         for k,v in exp.iteritems():
             self.assertFloatEqual(obs[k], v)
         # check that keys are the same
-        self.assertEqual(set(obs.keys()), set(exp.keys()))
+        self.assertEqualItems(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

@@ -159,7 +159,6 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
     
     per_sample_average_diversities = \
      get_per_sample_average_diversities(rarefaction_data,
-                                        category,
                                         depth)
     
     per_category_value_average_diversities = \
