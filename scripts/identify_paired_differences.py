@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -25,8 +25,8 @@ script_info = {}
 script_info['brief_description'] = "Generate plots and stats to test for change in some data point(s) with a state change on a per-individual basis."
 script_info['script_description'] = "This script provides a framework for paired-difference testing (i.e., analysis of data generated under a pre/post experimental design). In a pre/post experimental design, individuals are sampled before and after some 'treatment'. This code plots differences in values in the sample metadata (i.e., the mapping file) or observation counts in a BIOM table, and runs a (Bonferroni-corrected) one sample t-test on each sample metadata category or BIOM observation to determine if the mean of each distribution of pre/post differences differs from zero. If 'None' appears for the t score and p-values, this often means that the distribution of differences contained no variance, so the t-test could not be run. This can happen, for example, if the value passed for --valid_states is so restrictive that only a single sample is retained for analysis."
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Generate plots and stats for two categories from the mapping file where the y-axis should be consistent across plots and the lines in the plots should be light blue.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results --ymin 0 --ymax 60 --line_color '#eeefff'"))
-script_info['script_usage'].append(("Generate plots and stats for four categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Veillonella Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
+script_info['script_usage'].append(("Generate plots and stats for two categories from the mapping file where the y-axis should be consistent across plots and the lines in the plots should be light blue.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_results --ymin 0 --ymax 60 --line_color '#eeefff'"))
+script_info['script_usage'].append(("Generate plots and stats for four categories from the mapping file.","","%prog -m map.txt --metadata_categories 'Streptococcus Abundance,Phylogenetic Diversity,Observed OTUs' --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o taxa_and_alpha_results"))
 script_info['script_usage'].append(("Generate plots for all observations in a biom file","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results"))
 script_info['script_usage'].append(("Generate plots for all observations in a biom file, but only including samples from individuals whose 'TreatmentResponse' was 'Improved' (as defined in the mapping file).","","%prog -m map.txt -b otu_table.biom --state_category TreatmentState --state_values Pre,Post --individual_id_category PersonalID -o otu_results_improved_only --valid_states TreatmentResponse:Improved"))
 
