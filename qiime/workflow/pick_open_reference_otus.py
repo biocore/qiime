@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import split, splitext, getsize, exists
+from os.path import split, splitext, getsize, exists, abspath
 from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
@@ -672,9 +672,11 @@ def pick_subsampled_open_reference_otus(input_fp,
                     percent_subsample)
 
     logger.write('# Subsample the failures fasta file using API \n' + 
-        'qiime.util.subsample_fasta(%s, %s, %s)\n\n' % (step1_failures_fasta_fp,
-            step2_input_fasta_fp, percent_subsample))
-    
+        'python -c "import qiime; qiime.util.subsample_fasta' + 
+        '(\'%s\', \'%s\', \'%f\')\n\n"' % (abspath(step1_failures_fasta_fp),
+                                          abspath(step2_input_fasta_fp),
+                                          percent_subsample))
+
     ## Prep the OTU picking command for the subsampled failures
     step2_dir = '%s/step2_otus/' % output_dir
     step2_cmd = pick_denovo_otus(step2_input_fasta_fp,
@@ -757,8 +759,10 @@ def pick_subsampled_open_reference_otus(input_fp,
     otus_to_keep = filter_otus_from_otu_map(otu_fp,otu_no_singletons_fp,min_otu_size)
 
     logger.write('# Filter singletons from the otu map using API \n' + 
-          'qiime.filter.filter_otus_from_otu_map(%s, %s, %s)\n\n' % (otu_fp,
-              otu_no_singletons_fp, min_otu_size))
+          'python -c "import qiime; qiime.filter.filter_otus_from_otu_map' + 
+          '(\'%s\', \'%s\', \'%d\')"\n\n' % (abspath(otu_fp),
+                                            abspath(otu_no_singletons_fp),
+                                            min_otu_size))
     
     ## make the final representative seqs file and a new refseqs file that 
     ## could be used in subsequent otu picking runs.
