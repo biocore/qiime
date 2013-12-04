@@ -358,6 +358,7 @@ def sort_by_pval(lines, ind):
     """
     def _nan_safe_sort(line):
         """Sort lines based on pvals and force nans to have inf pval."""
+        print line, len(line.split('\t'))
         val = float(line.split('\t')[ind])
         if not isnan(val):
             return val
@@ -373,5 +374,5 @@ def _add_metadata(bt, md_key, lines):
             lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
         return lines
     else: # remove md_header from the first line
-        nls = lines[0].split('\t')[:-1] + lines[1:]
+        nls = ['\t'.join(lines[0].split('\t')[:-1])] + lines[1:]
         return nls
