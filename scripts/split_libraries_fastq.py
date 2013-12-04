@@ -34,17 +34,17 @@ script_info['script_description'] = ""
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q 20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred >= Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q 19"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q 20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred >= Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q 19"))
 
-script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q 20"))
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred >= Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q 19"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt  -q 19 --barcode_type 'not-barcoded'"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.","","%prog -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'"))
 
-script_info['script_usage'].append(("Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 20 --barcode_type 'not-barcoded'"))
+script_info['script_usage'].append(("Quality filter (at Phred >= Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'"))
 
 script_info['output_description']= ""
 script_info['required_options'] = [\
@@ -113,8 +113,8 @@ script_info['optional_options'] = [
         '(useful for reverse-orientation reads) [default: %default]',
         default=False),\
      make_option('-q','--phred_quality_threshold',type='int',
-        help='the minimum acceptable Phred quality score (e.g., for Q20 and better, '+\
-        'specify -q 20) [default: %default]',default=3),
+        help='the maximum unacceptable Phred quality score (e.g., for Q20 and better, '+\
+        'specify -q 19) [default: %default]',default=3),
      make_option('--last_bad_quality_char',
       help='DEPRECATED: use -q instead. This method of setting is not robust to '+\
       'different versions of CASAVA.'),\

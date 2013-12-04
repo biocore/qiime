@@ -56,7 +56,7 @@ script_info['optional_options'] = [\
  make_option('-r','--reference_seqs_fp',action='store',\
            help='Ref seqs to rdp against. [default: %s]' % default_reference_seqs_fp,
            default=default_reference_seqs_fp,type='existing_filepath'),\
- make_option('--rdp_max_memory', default=1500, type='int',
+ make_option('--rdp_max_memory', default=4000, type='int',
     help='Maximum memory allocation, in MB, for Java virtual machine when '
     'using the rdp method.  Increase for large training sets '
     '[default: %default]'),\

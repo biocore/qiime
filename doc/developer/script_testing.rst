@@ -35,9 +35,9 @@ After obtaining the ``qiime`` repository, you can ``cd`` to ``qiime/tests`` dire
 
 	./all_tests.py --suppress_unit_tests
 
-This will run all of the tests which are currently defined in verbose mode. You can run specific tests by passing the names of those tests via the ``--script_tests`` parameter. For example, to run only the tests for ``add_qiime_labels.py`` and ``make_otu_table.py`` you can run the following::
+This will run all of the tests which are currently defined in verbose mode. You can run specific tests by passing the names of those tests via the ``--script_usage_tests`` parameter. For example, to run only the tests for ``add_qiime_labels.py`` and ``make_otu_table.py`` you can run the following::
 
-	./all_tests.py --suppress_unit_tests --script_tests add_qiime_labels,make_otu_table
+	./all_tests.py --suppress_unit_tests --script_usage_tests add_qiime_labels,make_otu_table
 
 These tests will print output to the screen.
 
