@@ -2150,6 +2150,8 @@ def biom_taxonomy_formatter(bt, md_key):
     if bt.ObservationMetadata is None:
         print 'Metadata not formatted in a dictionary, will not be returned.'
         return None
+    else:
+        dtype = bt.ObservationMetadata[0][md_key]
     if isinstance(dtype, dict):
         data = []
         for md in bt.ObservationMetadata:
