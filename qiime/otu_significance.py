@@ -162,11 +162,9 @@ def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals,
             bon_pvals[i]] + means[i] 
         lines.append('\t'.join(map(str, tmp)))
     # attempt to add metadata
-    taxonomy_md = biom_taxonomy_formatter(bt, md_key)
-    if taxonomy_md is not None:
-        for i in range(num_lines):
-            lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
-    return lines
+    nls = _add_metadata(bt, md_key, lines)
+    return nls
+
 
 # Functions for gradient correlation testing
 

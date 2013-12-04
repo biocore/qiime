@@ -2147,10 +2147,7 @@ def biom_taxonomy_formatter(bt, md_key):
     metadata. If no metadata could be found using the given key the function 
     will print a warning and return None. 
     """
-    # assume all metadata encoded like 0th entry <- suffices to test 0th entry
-    try:
-        dtype = bt.ObservationMetadata[0][md_key]
-    except AttributeError:
+    if bt.ObservationMetadata is None:
         print 'Metadata not formatted in a dictionary, will not be returned.'
         return None
     if isinstance(dtype, dict):
