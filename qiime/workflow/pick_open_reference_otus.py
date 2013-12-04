@@ -716,8 +716,10 @@ def pick_subsampled_open_reference_otus(input_fp,
                                      logger)
         step4_otu_map_fp = '%s/failures_failures_otus.txt' % step4_dir
         commands.append([('Pick de novo OTUs on step3 failures', step4_cmd)])
-        # Merge the otu maps
-        cat_otu_tables_cmd = 'cat %s %s %s >> %s' %\
+        # Merge the otu maps, note that we are explicitly using the '>' operator
+        # otherwise passing the --force flag on the script interface would
+        # append the newly created maps to the map that was previously created
+        cat_otu_tables_cmd = 'cat %s %s %s > %s' %\
              (step1_otu_map_fp,step3_otu_map_fp,step4_otu_map_fp,merged_otu_map_fp)
         commands.append([('Merge OTU maps',cat_otu_tables_cmd)])
         step4_repset_fasta_fp = '%s/step4_rep_set.fna' % step4_dir
@@ -726,8 +728,10 @@ def pick_subsampled_open_reference_otus(input_fp,
         commands.append([('Pick representative set for subsampled failures',step4_rep_set_cmd)])
         
     else:
-        # Merge the otu maps
-        cat_otu_tables_cmd = 'cat %s %s >> %s' %\
+        # Merge the otu maps, note that we are explicitly using the '>' operator
+        # otherwise passing the --force flag on the script interface would
+        # append the newly created maps to the map that was previously created
+        cat_otu_tables_cmd = 'cat %s %s > %s' %\
              (step1_otu_map_fp,step3_otu_map_fp,merged_otu_map_fp)
         commands.append([('Merge OTU maps',cat_otu_tables_cmd)])    
         # Move the step 3 failures file to the top-level directory
