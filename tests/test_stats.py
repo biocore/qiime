@@ -1736,30 +1736,15 @@ class PairedDifferenceTests(TestCase):
             [table.getSampleIndex('subject2')],
             -0.07,2)
 
-        # missing data results in skipped observation ids
-        actual = paired_difference_analyses(
-                                   self.personal_ids_to_state_values2,
-                                   ['firmicutes-abundance',
-                                    'bacteroidetes-abundance'],
-                                   ['Pre','Post'],
-                                   output_dir=self.test_out,
-                                   ymin=0.0,
-                                   ymax=1.0)
-        biom_table_fp = join(self.test_out,'differences.biom')
-        self.assertTrue(exists(biom_table_fp))
-        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
-        table = parse_biom_table(open(biom_table_fp,'U'))
-        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
-        self.assertEqualItems(table.ObservationIds,
-         ['bacteroidetes-abundance'])
-        self.assertFloatEqual(table
-         [table.getObservationIndex('bacteroidetes-abundance')]
-         [table.getSampleIndex('subject1')],
-         -0.1,2)
-        self.assertFloatEqual(table
-         [table.getObservationIndex('bacteroidetes-abundance')]
-         [table.getSampleIndex('subject2')],
-         -0.07,2)
+        # missing data should raise ValueError
+        self.assertRaises(ValueError, paired_difference_analyses,
+                          self.personal_ids_to_state_values2,
+                          ['firmicutes-abundance',
+                           'bacteroidetes-abundance'],
+                          ['Pre','Post'],
+                          output_dir=self.test_out,
+                          ymin=0.0,
+                          ymax=1.0)
 
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
