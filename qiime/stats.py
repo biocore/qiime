@@ -5,7 +5,7 @@ __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Andrew Cochran",
-               "Greg Caporaso"]
+               "Jose Carlos Clemente Litran", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
