@@ -132,9 +132,7 @@ def collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
                 result[cat].append(sid_average_diversity)
     return result
 
-def get_per_sample_average_diversities(rarefaction_data,
-                                       category,
-                                       depth=None):
+def get_per_sample_average_diversities(rarefaction_data, depth=None):
     # extract only rows of the rarefaction data that are at the given depth
     # if depth is not given default to the deepest rarefaction available
     # rarefaction file is not guaranteed to be in order of rarefaction depth
@@ -144,8 +142,8 @@ def get_per_sample_average_diversities(rarefaction_data,
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
     
     # Average each col of the rarefaction mtx. Computing t test on averages over
-    # all iterations. Avoids more comps which kills signifigance. 
-    rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
+    # all iterations. Avoids more comps which kills significance. 
+    rare_mat = rare_mat.mean(0)[2:] #remove depth,iter cols
     sids = rarefaction_data[0][3:] # 0-2 are header strings
     return dict(zip(sids, rare_mat))
 
