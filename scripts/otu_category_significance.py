@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+# File created on 09 Feb 2010
+from __future__ import division
+
+__author__ = "Doug Wendel"
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", \
+                "Dan Knights", "Greg Caporaso", "Luke Ursell"]
+__license__ = "GPL"
+__version__ = "1.7.0-dev"
+__maintainer__ = "Doug Wendel"
+__email__ = "wendel@colorado.edu"
+__status__ = "Development"
+
+def main():
+
+    print '\n', '************************************************************'
+    print 'Script has been deprecated in favor of test_group_significance.py.'
+    print '************************************************************', '\n'
+
+if __name__ == "__main__":
+    main()
