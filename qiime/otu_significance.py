@@ -358,7 +358,6 @@ def sort_by_pval(lines, ind):
     """
     def _nan_safe_sort(line):
         """Sort lines based on pvals and force nans to have inf pval."""
-        print line, len(line.split('\t'))
         val = float(line.split('\t')[ind])
         if not isnan(val):
             return val
