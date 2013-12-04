@@ -1812,6 +1812,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
                 # a difference for this individual, and don't store
                 # the category in the BIOM table
                 store_biom_datum = False
+                raise ValueError("Some data points are missing,"+\
+                                     "cannot create biom file.")
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
