@@ -371,4 +371,7 @@ def _add_metadata(bt, md_key, lines):
     if taxonomy_md is not None:
         for i in range(len(lines)-1): #one more line than OTU
             lines[i+1]=lines[i+1]+'\t'+taxonomy_md[i] #skip header line in lines
-    return lines
+        return lines
+    else: # remove md_header from the first line
+        nls = lines[0].split('\t')[:-1] + lines[1:]
+        return nls
