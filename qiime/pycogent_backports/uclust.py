@@ -352,7 +352,8 @@ def uclust_fasta_sort_from_filepath(
      get_tmp_filename(tmp_dir=tmp_dir,prefix='uclust_fasta_sort',
                       suffix='.fasta')
     
-    app = Uclust(params={'--tmpdir':tmp_dir},HALT_EXEC=HALT_EXEC)
+    app = Uclust(params={'--tmpdir':tmp_dir},WorkingDir=tmp_dir,
+                 TmpDir=tmp_dir,HALT_EXEC=HALT_EXEC)
     
     app_result = app(data={'--mergesort':fasta_filepath,\
                            '--output':output_filepath})
@@ -394,7 +395,8 @@ def uclust_search_and_align_from_fasta_filepath(
         params['--rev'] = True
     
     # instantiate the application controller
-    app = Uclust(params,HALT_EXEC=HALT_EXEC)
+    app = Uclust(params,WorkingDir=tmp_dir,
+                 TmpDir=tmp_dir,HALT_EXEC=HALT_EXEC)
     
     # apply uclust
     alignment_filepath = \
@@ -450,7 +452,8 @@ def uclust_cluster_from_sorted_fasta_filepath(
               '--stepwords':stepwords,
               '--w':word_length,
               '--tmpdir':tmp_dir}
-    app = Uclust(params,HALT_EXEC=HALT_EXEC)
+    app = Uclust(params,WorkingDir=tmp_dir,
+                 TmpDir=tmp_dir,HALT_EXEC=HALT_EXEC)
     
     # Set any additional parameters specified by the user
     if enable_rev_strand_matching: app.Parameters['--rev'].on()
