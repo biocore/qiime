@@ -1081,9 +1081,9 @@ class BestTests(TestHelper):
         # but the test is failing because we are doing a dict comparison for 
         # float values. 
         obs = self.best()
-        self.assertTrue(exp['method_name'] == obs['method_name'])
-        self.assertTrue(exp['num_vars'] == obs['num_vars'])
-        self.assertTrue(exp['vars'] == obs['vars'])
+        self.assertEqual(exp['method_name'], obs['method_name'])
+        self.assertEqual(exp['num_vars'], obs['num_vars'])
+        self.assertEqual(exp['vars'], obs['vars'])
         for i,j in zip(exp['rho_vals'], obs['rho_vals']):
             self.assertFloatEqual(i[0], j[0])
             self.assertEqual(i[1], j[1])

@@ -1074,6 +1074,12 @@ class CorrelationTests(TestsHelper):
         obs = spearman(self.b_ranked, self.c_ranked)
         self.assertFloatEqual(obs, exp)
 
+    def test_spearman_too_few_obs(self):
+        """Test that spearman performs correctly with too few observations."""
+        self.assertRaises(ValueError, spearman, [], [])
+        self.assertRaises(ValueError, spearman, [], [1,2,3,4])
+        self.assertRaises(ValueError, spearman, [1], [1])
+
     def test_correlation(self):
         """Correlations and significance should match R's cor.test()"""
         x = [1,2,3,5]
@@ -1745,11 +1751,8 @@ class PvalueTests(TestCase):
         obs = assign_correlation_pval(r, n, 'kendall')
         self.assertFloatEqual(exp, obs)
 
-class Test_kendall(TestCase):
+class KendallTests(TestCase):
     """Tests for functions calculating Kendall tau"""
-    def setUp(self):
-        '''Set up things needed for all Kendall's tau tests.'''
-        pass
 
     def test_rank_with_ties(self):
         '''Test vector is correctly ranked with and without ties.'''
@@ -1835,11 +1838,8 @@ class Test_kendall(TestCase):
         self.assertFloatEqual(obs_prob, exp_prob)
 
 
-class TestCScore(TestCase):
+class CScoreTests(TestCase):
     """Tests functions calculating cscore"""
-    def setUp(self):
-        '''Set up things needed for all cscore tests.'''
-        pass
 
     def test_cscore(self):
         '''Test cscore is calculated correctly.'''

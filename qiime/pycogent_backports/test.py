@@ -465,8 +465,8 @@ def pearson(v1, v2):
     '''Using numpy's builtin corrcoef. Faster, and well tested.'''
     v1, v2 = array(v1), array(v2)
     if not (v1.size==v2.size>1):
-        raise ValueError("Pearson: one or more vectors isn't long enough'+\
-        ' to correlate or they have unequal lengths. Can't continue.")
+        raise ValueError("One or more vectors isn't long enough"+\
+        " to correlate or they have unequal lengths. Can't continue.")
     return corrcoef(v1,v2)[0][1] # 2x2 symmetric unit matrix
 
 def spearman(v1, v2):
@@ -750,8 +750,6 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
     if permutations > 0 and not (isnan(obs_t) or isnan(param_p_val)):
         # Permute observations between x_items and y_items the specified number
         # of times.
-        # perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
-        #                                                    permutations)
         perm_x_items, perm_y_items = _permute_observations(x_items, y_items, 
             permutations)
         perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
@@ -766,7 +764,7 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
             better = (array(perm_t_stats) <= obs_t).sum()
         elif tails == 'high':
             better = (array(perm_t_stats) >= obs_t).sum()
-        nonparam_p_val = better/permutations
+        nonparam_p_val = (better+1) / (permutations+1)
     return obs_t, param_p_val, perm_t_stats, nonparam_p_val
 
 def _permute_observations(x, y, num_perms):

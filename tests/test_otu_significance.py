@@ -914,17 +914,3 @@ class TestGroupedCorrelation(TestCase):
 #run unit tests if run from command-line
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
