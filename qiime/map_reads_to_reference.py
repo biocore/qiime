@@ -315,10 +315,12 @@ def blat_database_mapper(query_fp,
                          output_dir,
                          evalue,
                          min_id,
+                         genetic_code,
                          observation_metadata_fp=None,
                          HALT_EXEC=False):
 
-    params = {'-minIdentity':min_id}
+    params = {'-minIdentity':min_id,
+              'genetic_code':genetic_code}
     
     blat_db_mapper = BlatDatabaseMapper()
     blat_db_mapper.MinId = min_id

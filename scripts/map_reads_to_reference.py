@@ -77,6 +77,11 @@ script_info['optional_options'] = [
               
     make_option('-s', '--min_percent_id', type='float', default=0.75,
         help=('Min percent id to consider a match [default: %default]')),
+
+    make_option('--genetic_code', type='int', default=11,
+        help=('ID of genetic code to use for DNA translations (please see '
+              'http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=cgencodes). '
+              'Only valid with -m blat. [default: %default]')),
               
     make_option('--max_diff', type='float', default=None,
         help=('maxDiff to consider a match (applicable for -m bwa-short) -- '
@@ -130,12 +135,21 @@ def main():
                                maxrejects=opts.max_rejects,
                                observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
-    elif assignment_method == 'blat' or assignment_method == 'blat-nt':
+    elif assignment_method == 'blat-nt':
         assignment_function(query_fp=input_seqs_filepath,
                                refseqs_fp=refseqs_fp,
                                output_dir=output_dir,
                                evalue=opts.evalue,
                                min_id=opts.min_percent_id,
+                               observation_metadata_fp=opts.observation_metadata_fp,
+                               HALT_EXEC=False)
+    elif assignment_method == 'blat':
+        assignment_function(query_fp=input_seqs_filepath,
+                               refseqs_fp=refseqs_fp,
+                               output_dir=output_dir,
+                               evalue=opts.evalue,
+                               min_id=opts.min_percent_id,
+                               genetic_code=opts.genetic_code,
                                observation_metadata_fp=opts.observation_metadata_fp,
                                HALT_EXEC=False)
     elif assignment_method == 'bwa-sw':
