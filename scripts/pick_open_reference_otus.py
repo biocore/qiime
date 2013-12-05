@@ -76,11 +76,8 @@ script_info['script_usage'].append(("", "Run the subsampled open-reference "
     "--suppress_taxonomy_assignment"))
 
 script_info['script_usage_output_to_remove'] = [
-    '$PWD/ucrss/',
-    '$PWD/ucrss_iter/',
-    '$PWD/ucrss_usearch/',
-    '$PWD/ucrss_iter_no_tree/',
-    '$PWD/ucrss_iter_no_tax/'
+    '$PWD/ucrss/', '$PWD/ucrss_iter/', '$PWD/ucrss_usearch/',
+    '$PWD/ucrss_iter_no_tree/', '$PWD/ucrss_iter_no_tax/'
 ]
 
 script_info['output_description']= ""
