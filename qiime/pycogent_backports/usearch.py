@@ -1614,7 +1614,11 @@ class Usearch61(CommandLineApplication):
          
         # Minimum divergence between query and ref sequence
         '--mindiv':ValuedParameter('--', Name='mindiv', Delimiter=' ',
-         IsPath=False)
+         IsPath=False),
+         
+        # Threads allocated for multithreading calls.
+        '--threads':ValuedParameter('--', Name='threads',
+            Delimiter=' ', IsPath=False)
     }
     
      
@@ -1633,7 +1637,7 @@ class Usearch61(CommandLineApplication):
                            '--maxaccepts', '--sizeorder', '--usersort',
                            '--abskew', '--minh', '--xn', '--dn', '--mindiffs',
                            '--mindiv', '--uchime_denovo', '--uchimeout',
-                           '--uchime_ref'
+                           '--uchime_ref', '--threads'
                            ]
                            
         unsupported_parameters = set(data.keys()) - set(allowed_values)
@@ -1711,6 +1715,7 @@ def usearch61_ref_cluster(seq_path,
                           usearch61_maxaccepts = 1,
                           sizeorder = False,
                           suppress_new_clusters = False,
+                          threads = 1.0,
                           HALT_EXEC = False
                           ):
     """ Returns dictionary of cluster IDs:seq IDs
@@ -1740,6 +1745,7 @@ def usearch61_ref_cluster(seq_path,
      when doing open reference de novo clustering)
     suppress_new_clusters: If True, will allow de novo clustering on top of
      reference clusters.
+    threads: Specify number of threads used per core of CPU
     HALT_EXEC: application controller option to halt execution.
     
     Description of analysis workflows
@@ -1774,10 +1780,11 @@ def usearch61_ref_cluster(seq_path,
         if verbose:
             print "Presorting sequences according to abundance..."
         intermediate_fasta, dereplicated_uc, app_result =\
-         sort_by_abundance_usearch61(seq_path, output_dir, rev,
-         minlen, remove_usearch_logs, HALT_EXEC,
-         output_fna_filepath=join(output_dir, 'abundance_sorted.fna'),
-         output_uc_filepath=join(output_dir, 'abundance_sorted.uc')) 
+            sort_by_abundance_usearch61(seq_path, output_dir, rev,
+            minlen, remove_usearch_logs, HALT_EXEC,
+            output_fna_filepath=join(output_dir, 'abundance_sorted.fna'),
+            output_uc_filepath=join(output_dir, 'abundance_sorted.uc'),
+            threads = threads) 
         if not save_intermediate_files:
             files_to_remove.append(intermediate_fasta)
             files_to_remove.append(dereplicated_uc)
@@ -1788,7 +1795,8 @@ def usearch61_ref_cluster(seq_path,
          refseqs_fp, percent_id, rev, minlen, output_dir, 
          remove_usearch_logs, wordlength, usearch61_maxrejects,
          usearch61_maxaccepts, HALT_EXEC,
-         output_uc_filepath=join(output_dir, 'ref_clustered.uc'))
+         output_uc_filepath=join(output_dir, 'ref_clustered.uc'),
+         threads=threads)
         if not save_intermediate_files:
             files_to_remove.append(clusters_fp)
              
@@ -1813,7 +1821,7 @@ def usearch61_ref_cluster(seq_path,
              percent_id, rev, save_intermediate_files, minlen, output_dir,
              remove_usearch_logs, verbose, wordlength, usearch_fast_cluster,
              usearch61_sort_method, otu_prefix, usearch61_maxrejects,
-             usearch61_maxaccepts, sizeorder, HALT_EXEC)
+             usearch61_maxaccepts, sizeorder, threads, HALT_EXEC)
             failures = []
         
             # Merge ref and denovo clusters
@@ -1854,6 +1862,7 @@ def usearch61_denovo_cluster(seq_path,
                              usearch61_maxrejects = 32,
                              usearch61_maxaccepts = 1,
                              sizeorder = False,
+                             threads = 1.0,
                              HALT_EXEC = False,
                              file_prefix = "denovo_"
                              ):
@@ -1880,6 +1889,7 @@ def usearch61_denovo_cluster(seq_path,
     usearch61_maxrejects: Number of rejects allowed by usearch61
     usearch61_maxaccepts: Number of accepts allowed by usearch61
     sizeorder: used for clustering based upon abundance of seeds
+    threads: Specify number of threads used per core of CPU
     HALT_EXEC: application controller option to halt execution.
     """
 
@@ -1898,12 +1908,12 @@ def usearch61_denovo_cluster(seq_path,
         # fast sorting option automatically performs length sorting
         if usearch61_sort_method == 'abundance' and not usearch_fast_cluster:
             intermediate_fasta, dereplicated_uc, app_result =\
-             sort_by_abundance_usearch61(seq_path, output_dir, rev,
-             minlen, remove_usearch_logs, HALT_EXEC,
-             output_fna_filepath=join(output_dir,
-              file_prefix + 'abundance_sorted.fna'),
-             output_uc_filepath=join(output_dir,
-             file_prefix + 'abundance_sorted.uc')) 
+                sort_by_abundance_usearch61(seq_path, output_dir, rev,
+                minlen, remove_usearch_logs, HALT_EXEC,
+                output_fna_filepath=join(output_dir,
+                file_prefix + 'abundance_sorted.fna'),
+                output_uc_filepath=join(output_dir,
+                file_prefix + 'abundance_sorted.uc'), threads=threads) 
             if not save_intermediate_files:
                 files_to_remove.append(intermediate_fasta)
                 files_to_remove.append(dereplicated_uc)
@@ -1923,10 +1933,10 @@ def usearch61_denovo_cluster(seq_path,
             
         if usearch_fast_cluster:
             clusters_fp, app_result = usearch61_fast_cluster(intermediate_fasta,
-             percent_id, minlen, output_dir, remove_usearch_logs, wordlength,
-             usearch61_maxrejects, usearch61_maxaccepts, HALT_EXEC,
-             output_uc_filepath=join(output_dir,
-             file_prefix + 'fast_clustered.uc'))
+                percent_id, minlen, output_dir, remove_usearch_logs, wordlength,
+                usearch61_maxrejects, usearch61_maxaccepts, HALT_EXEC,
+                output_uc_filepath=join(output_dir,
+                file_prefix + 'fast_clustered.uc'), threads=threads)
             if not save_intermediate_files:
                 files_to_remove.append(clusters_fp)
         else:
@@ -1979,7 +1989,8 @@ def sort_by_abundance_usearch61(seq_path,
                                 HALT_EXEC = False,
                                 output_fna_filepath = None,
                                 output_uc_filepath = None,
-                                log_name = "abundance_sorted.log"):
+                                log_name = "abundance_sorted.log",
+                                threads = 1.0):
     """ usearch61 application call to sort fasta file by abundance.
     
     seq_path:  fasta filepath to be clustered with usearch61
@@ -1991,7 +2002,9 @@ def sort_by_abundance_usearch61(seq_path,
     output_fna_filepath: path to write sorted fasta filepath
     output_uc_filepath: path to write usearch61 generated .uc file
     log_name: filepath to write usearch61 generated log file
+    threads: Specify number of threads used per core of CPU
     """
+        
     
     output_fna_filepath = output_fna_filepath or \
      get_tmp_filename(prefix='abundance_sorted', suffix='.fna')
@@ -2005,7 +2018,8 @@ def sort_by_abundance_usearch61(seq_path,
               '--sizeout':True,
               '--derep_fulllength':seq_path,
               '--output':output_fna_filepath,
-              '--uc':output_uc_filepath
+              '--uc':output_uc_filepath,
+              '--threads':threads
              }
              
     if rev:
@@ -2071,7 +2085,8 @@ def usearch61_cluster_ref(intermediate_fasta,
                           usearch61_maxaccepts=1,
                           HALT_EXEC=False,
                           output_uc_filepath = None,
-                          log_filepath = "ref_clustered.log"
+                          log_filepath = "ref_clustered.log",
+                          threads = 1.0
                           ):
     """ Cluster input fasta seqs against reference database
     
@@ -2086,6 +2101,7 @@ def usearch61_cluster_ref(intermediate_fasta,
     usearch61_maxrejects: Number of rejects allowed by usearch61
     usearch61_maxaccepts: Number of accepts allowed by usearch61
     output_uc_filepath: path to write usearch61 generated .uc file
+    threads: Specify number of threads used per core of CPU
     HALT_EXEC: application controller option to halt execution.
     """
 
@@ -2100,7 +2116,7 @@ def usearch61_cluster_ref(intermediate_fasta,
               '--wordlength':wordlength,
               '--maxrejects':usearch61_maxrejects,
               '--maxaccepts':usearch61_maxaccepts,
-
+              '--threads':threads
               }
     
     if not remove_usearch_logs:
@@ -2132,7 +2148,8 @@ def usearch61_fast_cluster(intermediate_fasta,
                            usearch61_maxaccepts=1,
                            HALT_EXEC=False,
                            output_uc_filepath=None,
-                           log_name="fast_clustered.log"):
+                           log_name="fast_clustered.log",
+                           threads = 1.0):
     """ Performs usearch61 de novo fast clustering via cluster_fast option
     
     Only supposed to be used with length sorted data (and performs length
@@ -2150,6 +2167,7 @@ def usearch61_fast_cluster(intermediate_fasta,
     HALT_EXEC: application controller option to halt execution
     output_uc_filepath: Path to write clusters (.uc) file.
     log_name: filepath to write usearch61 generated log file
+    threads: Specify number of threads used per core of CPU
     """
     
     log_filepath = join(output_dir, log_name)
@@ -2161,7 +2179,8 @@ def usearch61_fast_cluster(intermediate_fasta,
               '--wordlength':wordlength,
               '--maxrejects':usearch61_maxrejects,
               '--maxaccepts':usearch61_maxaccepts,
-              '--usersort':True
+              '--usersort':True,
+              '--threads':threads
               }
     
     if not remove_usearch_logs:
@@ -2323,6 +2342,7 @@ def usearch61_chimera_check_ref(abundance_fp,
                                 usearch61_dn = 1.4,
                                 usearch61_mindiffs = 3,
                                 usearch61_mindiv = 0.8,
+                                threads = 1.0,
                                 HALT_EXEC = False):
     """ Does reference based chimera checking with usearch61
     
@@ -2348,6 +2368,7 @@ def usearch61_chimera_check_ref(abundance_fp,
      query and closest reference database sequence. Expressed as a percentage,
      so the default is 0.8%, which allows chimeras that are up to 99.2% similar
      to a reference sequence.
+    threads: Specify number of threads used per core of CPU
     HALTEXEC: halt execution and returns command used for app controller.
     """
     
@@ -2361,7 +2382,8 @@ def usearch61_chimera_check_ref(abundance_fp,
               '--dn':usearch61_dn,
               '--mindiffs':usearch61_mindiffs,
               '--mindiv':usearch61_mindiv,
-              '--strand':'plus'  # Only works in plus according to usearch doc
+              '--strand':'plus',  # Only works in plus according to usearch doc
+              '--threads':threads
               }
 
     if not remove_usearch_logs:
