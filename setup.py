@@ -3,10 +3,13 @@
 from __future__ import division
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
-from os import chdir, getcwd, listdir, chmod, walk
+from stat import S_IEXEC
+from os import chdir, getcwd, listdir, chmod, walk, rename, remove, chmod
 from os.path import join, abspath
+from sys import platform
 from subprocess import call
 from glob import glob
+from urllib import FancyURLopener
 import re
 
 __author__ = "Greg Caporaso"
@@ -66,6 +69,77 @@ def build_denoiser():
     chdir(cwd)
     print "Denoiser built."
 
+# heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
+class URLOpener(FancyURLopener):
+    def http_error_default(self, url, fp, errcode, errmsg, headers):
+        msg = 'ERROR: Could not download %s\nIs the URL valid?' % url
+        raise IOError, msg
+
+# heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
+def download_file(URL, dest_dir, local_file, num_retries=4):
+    """General file downloader
+
+    Inputs:
+    URL: string to download the file from
+    dest_dir: directory where you want to download the file
+    local_file: output filename of the download
+    num_retries: number of times the function will try to download the file
+
+    Output:
+    return_code: exit status for the download 0 = success, 1 = fail
+    """
+    url_opener = URLOpener()
+    localFP = join(dest_dir, local_file)
+    tmpDownloadFP = '%s.part' % localFP
+
+    return_code = 1
+    while num_retries > 0:
+        try:
+            tmpLocalFP, headers = url_opener.retrieve(URL, tmpDownloadFP)
+            rename(tmpDownloadFP, localFP)
+            return_code = 0
+        except IOError, msg:
+            if num_retries == 1:
+                print 'Download of %s failed.' % URL
+            else:
+                print 'Download failed. Trying again... %d tries remain.' % (
+                    num_retries-1)
+            num_retries -= 1
+        else:
+            num_retries = 0
+            print '%s downloaded successfully.' % local_file
+    return return_code
+
+def build_FastTree():
+    """Download and build FastTree then copy it to the scripts directory"""
+    cwd = getcwd()
+    denoiser_dir = join(cwd,'scripts')
+    chdir(denoiser_dir)
+
+    # as suggested by the docs in FastTree.c
+    call(['gcc', '-Wall', '-O3', '-finline-functions', '-funroll-loops', '-o',
+        'FastTree', '-lm', 'FastTree.c'])
+
+    # remove the source
+    remove('FastTree.c')
+    chdir(cwd)
+    print "FastTree built."
+
+def download_UCLUST():
+    """Download the UCLUST executable and set it to the scripts directory"""
+
+    if platform == 'darwin':
+        URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86darwin64'
+    elif platform == 'linux2':
+        URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86linux64'
+    else:
+        raise SystemError, "Platform not supported by UCLUST"
+
+    download_file(URL, 'scripts/', 'uclust')
+
+    # make the file an executable file
+    chmod('scripts/uclust', S_IEXEC)
+
 pycogent_version = tuple([int(v) \
         for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
         
@@ -77,6 +151,12 @@ if app_path("ghc"):
     build_denoiser()
 else:
     print "GHC not installed, so cannot build the Denoiser binary."
+
+if app_path("gcc"):
+    build_FastTree()
+
+if download_UCLUST():
+    print "UCLUST could not be installed."
 
 # compile the list of all qiime_test_data files that need to be installed. 
 # these must be relative file paths, beginning after the qiime_test_data
@@ -107,7 +187,8 @@ setup(name='QIIME',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
                 'qiime/denoiser','qiime/workflow','qiime_test_data'],
       scripts=glob('scripts/*py')+glob('scripts/ec2*')+
-              glob('scripts/FlowgramAli_4frame'),
+              glob('scripts/FlowgramAli_4frame')+glob('scripts/FastTree')+
+              glob('scripts/uclust'),
       package_data={'qiime':
                    ['support_files/qiime_config',
                     'support_files/css/*css',
