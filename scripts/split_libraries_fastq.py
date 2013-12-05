@@ -199,7 +199,7 @@ def main():
         except KeyError:
             # shouldn't be able to get here, but we'll stay on the
             # safe side
-            opption_parser.error("Only valid phred offsets are: %s" %
+            option_parser.error("Only valid phred offsets are: %s" %
                 ' '.join(phred_to_ascii_fs.keys()))
     else:
         # let split_libraries_fastq.process_fastq_single_end_read_file 
