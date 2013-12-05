@@ -17,7 +17,9 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * Update to rtax 0.984.
 * Required PyNAST version is now 1.2.1.
 * Updated default taxonomy assigner to be the new uclust-based consensus taxonomy assigner. This was shown to be more accurate and faster than the existing methods in Bokulich, Rideout et al. (submitted).
-* Renamed check_id_map.py to validate_mapping_file.py for clarity
+* Renamed check_id_map.py to validate_mapping_file.py for clarity.
+* Increased default rdp_max_memory from 1500M to 4000M as this was almost always needing to be increased when re-training on modern reference databases.
+* Required biom-format version is now 1.3.1.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
