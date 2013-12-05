@@ -561,6 +561,21 @@ def gini_index(data, method='rectangles'):
     B = lorenz_curve_integrator(lorenz_points, method)
     return 1-2*B
 
+def enspie(counts):
+    '''Calculates ENS_pie alpha diversity measure
+
+    ENS_pie = 1/sum(pi^2) with the sum occuring over all S species in the pool.
+    pi is the proportion of the entire community that species i represents.
+
+    The forumla is taken from "Scale-dependent effect sizes of ecological 
+    drivers on biodiversity: why standardised sampling is not enough" Chase and 
+    Knight. Ecology Letters, Volume 16, Issue Supplement s1, pgs 17-26 May 
+    2013. http://onlinelibrary.wiley.com/doi/10.1111/ele.12112/full
+
+    It appears that ENS_pie is just 1/dominance(counts). 
+    '''
+    return 1./dominance(counts)
+
 def lladser_point_estimates(sample, r=10):
     """Series of point estimates of the conditional uncovered probability
 
