@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import rename
+
 from cogent import DNA
 from cogent.util.misc import safe_md5, create_dir
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
