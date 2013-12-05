@@ -21,24 +21,36 @@ Blog and Mailing List
 =====================
 We recommend that all QIIME users keep an eye on the QIIME blog for important announcements. You can `subscribe to the RSS feed <http://qiime.wordpress.com/feed/>`_ or `sign up for e-mail notifications on the front page of the blog <http://qiime.wordpress.com>`_. This is a very low traffic list (typically around one message per month), and we will not share subscriber information with anyone.
 
-Download QIIME
-==============
+Downloading and installing QIIME
+================================
+
+There are several ways to get a working install of QIIME. 
+
+The easiest is to use our virtual machines:
 
  * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `see Virtual Box documentation <./install/virtual_box.html>`_.
 
- * Stable Release: Currently the most stable version of QIIME is our |release| release, which you can `download here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.7.0.tar.gz>`_.
+ * Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, `see EC2 documentation <./install/vm_ec2.html>`_.
+
+Alternatively, there are a few choices for automated installation of QIIME.
+
+ * qiime-deploy: The `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ tool can be used to easily install various versions of QIIME natively on Linux systems.
+ * MacQIIME: `MacQIIME <http://www.wernerlab.org/software/macqiime>`_ includes a nearly-full installation of QIIME for Mac OS X users. 
+
+If you are instead interested in a native install of QIIME, you can choose between the QIIME base install, which provides access to the most commonly used features of QIIME (with default parameters), or the QIIME full install. For both, you should begin with the `QIIME installation guide <./install/install.html>`_. For most users, the QIIME base install will be sufficient, at least when getting started. 
+
+If installing QIIME natively, you'll need to choose between the release and development version of QIIME. 
+
+ * Stable Release: Currently the most stable version of QIIME is our |release| release, which you can `download here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.7.0.tar.gz>`_. If you don't know whether you want to install the release or development version of QIIME, you most likely want the release version.
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our git repository, which is hosted on GitHub. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in Qiime/doc. Check out the latest version of QIIME using git with the command::
 
 	git clone git://github.com/qiime/qiime.git Qiime
-	
- * Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, `see EC2 documentation <./install/vm_ec2.html>`_.
 
- * qiime-deploy: The `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ tool can be used to easily install various versions of QIIME natively on Linux systems.
 
-Installing and using QIIME
+Learning QIIME
 ==========================
-New users should begin with the `QIIME installation guide <./install/install.html>`_ or the `QIIME virtual box <./install/virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME overview tutorial <./tutorials/tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation/index.html>`_ and the general `QIIME tutorials <./tutorials/index.html>`_.
+After installing QIIME, you should move on to the `QIIME Illumina Overview Tutorial <./tutorials/illumina_overview_tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME tutorials <./tutorials/index.html>`_  and the `QIIME documentation <./documentation/index.html>`_.
 
 Contact Us
 ==========

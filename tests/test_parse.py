@@ -5,7 +5,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout","Will Van Treuren",
+               "Jai Ram Rideout","Will Van Treuren", "Yoshiki Vazquez-Baeza",
                "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -473,7 +473,25 @@ eigvals\t4.94\t1.79\t1.50
             array([14.3,5.2,4.3]))
         self.assertEqual(obs, exp)
 
-    
+    def test_parse_coords_exceptions(self):
+        """Check exceptions are raised accordingly with missing information"""
+
+        # missing eigenvalues line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_EIGENVALS.splitlines())
+        # missing percentages explained line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_PCNTS.splitlines())
+        # missing vector number line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_VECTORS.splitlines())
+
+        # a whole different file (taxa summary)
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(taxa_summary1.splitlines())
+
+
+
     def test_parse_classic_otu_table_legacy(self):
         """parse_classic_otu_table functions as expected with legacy OTU table
         """
@@ -1136,6 +1154,25 @@ sam1_expected = [["s1_1", "0", "s1_1", "2", "136", "1S65M", "*", "0", "0", "atga
 ["s1_4", "0", "s1_4", "1", "9", "348M", "*", "0", "0", "atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagttacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtctttctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtctttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagccctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgcaaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc", "*", "AS:i:348", "XS:i:336", "XF:i:0", "XE:i:9", "NM:i:0"],
 ["s1_5", "0", "s2_2", "1", "0", "1131M", "*", "0", "0", "atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaaatcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgacaaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcgcaaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggcggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgatatttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataacatggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgactctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagacttgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacagcagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgtcatggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtggacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccggcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggcaacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatcgaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggtaagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgatttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctgctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctcaaagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa", "*", "AS:i:1131", "XS:i:1131", "XF:i:0", "XE:i:24", "NM:i:0"],
 ["s1_6", "0", "s1_6", "1", "1", "1132M", "*", "0", "0", "aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaaatcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgacaaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcgcaaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggcggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgatatttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataacatggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgactctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagacttgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacagcagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgtcatggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtggacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccggcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggcaacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatcgaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggtaagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgatttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctgctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctcaaagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa", "*", "AS:i:1132", "XS:i:1128", "XF:i:0", "XE:i:24", "NM:i:0"]]
+
+COORDS_NO_VECTORS = """A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+eigvals\t4.94\t1.79\t1.50
+% variation explained\t14.3\t5.2\t4.3"""
+
+COORDS_NO_EIGENVALS = """pc vector number\t1\t2\t3
+A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+foo\t4.94\t1.79\t1.50
+% variation explained\t14.3\t5.2\t4.3"""
+
+COORDS_NO_PCNTS = """pc vector number\t1\t2\t3
+A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+eigvals\t4.94\t1.79\t1.50"""
 
 if __name__ =='__main__':
     main()

@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder",
                "Antonio Gonzalez Pena", "Jai Ram Rideout","Will Van Treuren",
-               "Jose Antonio Navas Molina"]
+               "Yoshiki Vazquez-Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -351,14 +351,30 @@ def parse_coords(lines):
 
     Strategy: just read the file into memory, find the lines we want
     """
+
     lines = list(lines)
+
+    # make sure these and the other checks below are true as they are what
+    # differentiate coordinates files from distance matrix files
+    if not lines[0].startswith('pc vector number'):
+        raise QiimeParseError("The line with the vector number was not found"
+            ", this information is required in coordinates files")
+
     lines = map(strip, lines[1:])   #discard first line, which is a label
     lines = filter(None, lines) #remove any blank lines
-    
+
+    # check on this information post removal of blank lines
+    if not lines[-2].startswith('eigvals'):
+        raise QiimeParseError("The line containing the eigenvalues was not "
+            "found, this information is required in coordinates files")
+    if not lines[-1].startswith('% variation'):
+        raise QiimeParseError("The line with the percent of variation explained"
+            " was not found, this information is required in coordinates files")
+
     #now last 2 lines are eigvals and % variation, so read them
     eigvals = asarray(lines[-2].split('\t')[1:], dtype=float)
     pct_var = asarray(lines[-1].split('\t')[1:], dtype=float)
-    
+
     #finally, dump the rest of the lines into a table
     header, result = [], []
     for line in lines[:-2]:

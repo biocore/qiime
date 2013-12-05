@@ -90,5 +90,5 @@ If this doesn't work, you might need to instead hit F9 to enter the BIOS.
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
 .. _CloVR: http://clovr.org
-.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/QIIME-v1.7.0-dependencies/QIIME-1.7.0-amd64.vdi.gz
+.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/qiime-release-VMs/QIIME-1.7.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads

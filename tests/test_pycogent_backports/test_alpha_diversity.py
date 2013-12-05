@@ -11,7 +11,7 @@ from qiime.pycogent_backports.alpha_diversity import (expand_counts, counts,
     fisher_alpha, mcintosh_e, heip_e, simpson_e, robbins, robbins_confidence, 
     chao1_uncorrected, chao1_bias_corrected, chao1, chao1_var, 
     chao1_confidence, ACE, michaelis_menten_fit, diversity, lorenz_curve, 
-    lorenz_curve_integrator, gini_index, goods_coverage, 
+    lorenz_curve_integrator, gini_index, goods_coverage, enspie,
     lladser_ci, lladser_pe,
     starr, ul_confidence_bounds, upper_confidence_bound, 
     lower_confidence_bound, lladser_ci_from_r, lladser_ci_series, starr_est,
@@ -196,9 +196,22 @@ class diversity_tests(TestCase):
 
     def test_simpson_e(self):
         """simpson e should match hand-calculated value"""
-        c = array([1,2,3,1])
-        s = simpson(c)
-        self.assertEqual((1/s)/4, simpson_e(c))
+        # example1 - a totally even community should have simpson_e=1
+        c = array([1,1,1,1,1,1,1])
+        self.assertEqual(simpson_e(c), 1)
+        # example2
+        c = array([0,30,25,40,0,0,5]).astype(float)
+        freq_c = c/c.sum()
+        D = (freq_c**2).sum()
+        exp = 1./(D*4)
+        obs = simpson_e(c)
+        self.assertEqual(obs, exp)
+        # example3 - from https://groups.nceas.ucsb.edu/sun/meetings/calculating-evenness-of-habitat-distributions
+        c = array([500, 400, 600, 500])
+        freq_c = array([.25, .2, .3, .25])
+        D = .0625+.04+.09+.0625
+        exp = 1./(D*4)
+        self.assertEqual(simpson_e(c), exp)
 
     def test_robbins(self):
         """robbins metric should match hand-calculated value"""
@@ -326,6 +339,21 @@ class diversity_tests(TestCase):
 
         self.assertAlmostEqual(expected_rectangles, 
             gini_index(self.gini_data, 'rectangles'))
+
+    def test_enspie(self):
+        """Test that ENS_pie is correctly calculated."""
+        #example1 - totally even community shoudl have ENS_pie=number of species
+        c = array([1,1,1,1,1,1])
+        self.assertFloatEqual(enspie(c), 6)
+        c = array([13,13,13,13])
+        self.assertFloatEqual(enspie(c), 4)
+        #example2 - hand calculated
+        c = array([1, 41, 0, 0, 12, 13]).astype(float)
+        exp = 1./((c/c.sum())**2).sum()
+        self.assertFloatEqual(enspie(c), exp)
+        #example3 using dominance
+        exp = 1./dominance(c)
+        self.assertFloatEqual(enspie(c), exp)
 
     def test_single_file_cup(self):
         """single_file_cup returns matrix with estimates"""
