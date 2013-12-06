@@ -176,7 +176,7 @@ classes = """
 """
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-setup(name='QIIME',
+setup(name='qiime',
       version=__version__,
       description='Quantitative Insights Into Microbial Ecology',
       author=__maintainer__,
