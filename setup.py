@@ -4,7 +4,7 @@ from __future__ import division
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 from stat import S_IEXEC
-from os import chdir, getcwd, listdir, chmod, walk, rename, remove, chmod
+from os import chdir, getcwd, listdir, chmod, walk, rename, remove, chmod, stat
 from os.path import join, abspath
 from sys import platform
 from subprocess import call
@@ -14,7 +14,8 @@ import re
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
+    "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -35,13 +36,6 @@ try:
     import sphinx
 except ImportError:
     doc_imports_failed = True
-
-try:
-    import cogent
-except ImportError:
-    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://www.pycogent.org."
-    exit(1)
-from cogent.util.misc import app_path
 
 def build_html():
     """ Build the sphinx documentation 
@@ -112,6 +106,11 @@ def download_file(URL, dest_dir, local_file, num_retries=4):
 
 def build_FastTree():
     """Download and build FastTree then copy it to the scripts directory"""
+    if download_file('http://www.microbesonline.org/fasttree/FastTree-2.1.3.c',
+            'scripts/dir','FastTree.c'):
+        print 'Could not download FastTree, not installing it.'
+        return
+
     cwd = getcwd()
     denoiser_dir = join(cwd,'scripts')
     chdir(denoiser_dir)
@@ -133,27 +132,31 @@ def download_UCLUST():
     elif platform == 'linux2':
         URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86linux64'
     else:
-        raise SystemError, "Platform not supported by UCLUST"
+        raise SystemError, ("Platform not supported by UCLUST")
 
-    download_file(URL, 'scripts/', 'uclust')
+    return_value = download_file(URL, 'scripts/', 'uclust')
 
     # make the file an executable file
-    chmod('scripts/uclust', S_IEXEC)
+    if not return_value:
+        chmod('scripts/uclust', stat('scripts/uclust').st_mode | S_IEXEC)
+    return return_value
 
-pycogent_version = tuple([int(v) \
-        for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
-        
-if pycogent_version < (1,5,3):
-    print "PyCogent >= 1.5.3 required, but %s is installed." % cogent.__version__
-    exit(1)
+def app_available(app_name):
+    try:
+        call([app_name])
+    except OSError:
+        return False
+    return True
 
-if app_path("ghc"):
+if app_available('ghc'):
     build_denoiser()
 else:
     print "GHC not installed, so cannot build the Denoiser binary."
 
-if app_path("gcc"):
+if app_available('gcc'):
     build_FastTree()
+else:
+    print "GCC not installed, so cannot build FastTree"
 
 if download_UCLUST():
     print "UCLUST could not be installed."
@@ -200,7 +203,11 @@ setup(name='QIIME',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*'],
                     'qiime_test_data':qiime_test_data_files},
-      long_description=long_description
+      long_description=long_description,
+      install_requires=['numpy >= 1.5.1, <= 1.7.1', 'matplotlib >= 1.1.0',
+                        'cogent == 1.5.3', 'pynast == 1.2.2', 'qcli', 'gdata',
+                        'biom-format == 1.3.0', 'emperor >= 0.9.3'],
+      extras_require={'all': ['ipython', 'sphinx >= 0.3']}
 )
 
 if doc_imports_failed:
