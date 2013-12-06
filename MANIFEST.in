@@ -1,0 +1,18 @@
+include README.md
+include ChangeLog.md
+include README
+include INSTALL
+
+graft examples
+graft qiime_test_data
+graft tests
+graft scripts
+graft doc
+
+prune docs/_build
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude FastTree
+global-exclude uclust

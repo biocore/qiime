@@ -179,6 +179,21 @@ for root, dnames, fnames in walk('qiime_test_data'):
         for fname in fnames:
             qiime_test_data_files.append(join(root,fname))
 
+# taken from PyNAST
+classes = """
+    Development Status :: 4 - Beta
+    License :: OSI Approved :: GPL License
+    Topic :: Software Development :: Libraries :: Application Frameworks
+    Topic :: Software Development :: Bioinformatics
+    Programming Language :: Python
+    Programming Language :: Python :: 2.7
+    Programming Language :: Python :: Implementation :: CPython
+    Operating System :: OS Independent
+    Operating System :: POSIX
+    Operating System :: MacOS :: MacOS X
+"""
+classifiers = [s.strip() for s in classes.split('\n') if s]
+
 setup(name='QIIME',
       version=__version__,
       description='Quantitative Insights Into Microbial Ecology',
