@@ -117,7 +117,7 @@ def build_FastTree():
 
     # as suggested by the docs in FastTree.c
     call(['gcc', '-Wall', '-O3', '-finline-functions', '-funroll-loops', '-o',
-        'FastTree', '-lm', 'FastTree.c'])
+        'FastTree', 'FastTree.c', '-lm'])
 
     # remove the source
     remove('FastTree.c')
