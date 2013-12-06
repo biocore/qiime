@@ -107,27 +107,24 @@ class QIIMEConfig(TestCase):
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
-        
         fp = self.config["cluster_jobs_fp"]
-        
-        if not fp:
-            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
-        
-        full_path = app_path(fp)
-        if full_path:
-            fp = full_path
-        
-        #test if file exists or is in $PATH
-        self.assertTrue(exists(fp),
-         "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
 
-        modes = {R_OK:"readable",
-                 W_OK:"writable",
-                 X_OK:"executable"}
-        #test if file readable    
-        self.assertTrue(access(fp, X_OK),
-            "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
-   
+        if fp:
+            full_path = app_path(fp)
+            if full_path:
+                fp = full_path
+
+            #test if file exists or is in $PATH
+            self.assertTrue(exists(fp),
+             "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
+
+            modes = {R_OK:"readable",
+                     W_OK:"writable",
+                     X_OK:"executable"}
+            #test if file readable    
+            self.assertTrue(access(fp, X_OK),
+                "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
+
     def test_blastmat_dir(self):
         """blastmat_dir is set to a valid path."""
         
