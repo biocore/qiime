@@ -4,7 +4,6 @@ include README
 include INSTALL
 
 graft examples
-graft qiime_test_data
 graft tests
 graft scripts
 graft doc
@@ -18,4 +17,4 @@ global-exclude FastTree
 global-exclude uclust
 global-exclude *.hi
 global-exclude *.o
-global-exclude FlowgramAli_4frame
+global-exclude qiime_test_data

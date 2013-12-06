@@ -107,7 +107,7 @@ def download_file(URL, dest_dir, local_file, num_retries=4):
 def build_FastTree():
     """Download and build FastTree then copy it to the scripts directory"""
     if download_file('http://www.microbesonline.org/fasttree/FastTree-2.1.3.c',
-            'scripts/dir','FastTree.c'):
+            'scripts/','FastTree.c'):
         print 'Could not download FastTree, not installing it.'
         return
 
@@ -161,24 +161,6 @@ else:
 if download_UCLUST():
     print "UCLUST could not be installed."
 
-# compile the list of all qiime_test_data files that need to be installed. 
-# these must be relative file paths, beginning after the qiime_test_data
-# directory
-qiime_test_data_files = []
-for root, dnames, fnames in walk('qiime_test_data'):
-    try:
-        # strip 'qiime_test_data/' from the beginning of root
-        root = root.split('/',1)[1]
-    except IndexError:
-        # if there is no '/', then we're in qiime_test_data itself
-        # so there is nothing to do
-        continue
-    else:
-        # if there is a slash, we're in a script test data directory,
-        # so compile all relative filepaths
-        for fname in fnames:
-            qiime_test_data_files.append(join(root,fname))
-
 # taken from PyNAST
 classes = """
     Development Status :: 4 - Beta
@@ -203,7 +185,7 @@ setup(name='QIIME',
       maintainer_email=__email__,
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports',
-                'qiime/denoiser','qiime/workflow','qiime_test_data'],
+                'qiime/denoiser','qiime/workflow'],
       scripts=glob('scripts/*py')+glob('scripts/ec2*')+
               glob('scripts/FlowgramAli_4frame')+glob('scripts/FastTree')+
               glob('scripts/uclust'),
@@ -216,8 +198,8 @@ setup(name='QIIME',
                     'support_files/js/*js',
                     'support_files/R/*r',
                     'support_files/denoiser/Data/*',
-                    'support_files/denoiser/TestData/*'],
-                    'qiime_test_data':qiime_test_data_files},
+                    'support_files/denoiser/TestData/*',
+                    'support_files/denoiser/FlowgramAlignment/*',]},
       long_description=long_description,
       install_requires=['numpy >= 1.5.1, <= 1.7.1', 'matplotlib >= 1.1.0',
                         'cogent == 1.5.3', 'pynast == 1.2.2', 'qcli', 'gdata',
