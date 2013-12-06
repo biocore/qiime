@@ -133,19 +133,6 @@ class QIIMEConfig(TestCase):
         
         test_qiime_config_variable("blastmat_dir", self.config, self)
         
-    def test_blastall_fp(self):
-        """blastall_fp is set to a valid path"""
-        
-        blastall = self.config["blastall_fp"]
-        if not self.config["blastall_fp"].startswith("/"):
-            #path is relative, figure out absolute path
-            blast_all = app_path(blastall)
-            if not blast_all:
-                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
-            self.config["blastall_fp"] = blast_all
-
-        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
-        
     def test_pynast_template_alignment_fp(self):
         """pynast_template_alignment, if set, is set to a valid path"""
             
@@ -449,6 +436,19 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
          "ChimeraSlayer depends on external files in directoryies relative to its "
          "install directory. These do not appear to be present.")
+
+    def test_blastall_fp(self):
+        """blastall_fp is set to a valid path"""
+        
+        blastall = self.config["blastall_fp"]
+        if not self.config["blastall_fp"].startswith("/"):
+            #path is relative, figure out absolute path
+            blast_all = app_path(blastall)
+            if not blast_all:
+                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
+            self.config["blastall_fp"] = blast_all
+
+        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
