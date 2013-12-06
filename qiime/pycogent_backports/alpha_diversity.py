@@ -177,8 +177,10 @@ def heip_e(counts):
     return exp(shannon(counts, base=e)-1)/((counts!=0).sum()-1)
 
 def simpson_e(counts):
-    """Simpson's evenness, from SDR-IV."""
-    return reciprocal_simpson(counts)/(counts!=0).sum()
+    """Simpson's evenness.
+    Previous formula updated based on discussion at 
+    https://groups.google.com/forum/#!searchin/qiime-forum/simpsons%2420e/qiime-forum/F7GvTT2Elgw/rU8fnNfLoNMJ"""
+    return (1./dominance(counts))/(counts!=0).sum()
 
 def robbins(counts):
     """Robbins 1968 estimator for Pr(unobserved) at n trials.
