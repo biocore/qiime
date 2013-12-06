@@ -16,3 +16,6 @@ global-exclude *.pyo
 global-exclude .git
 global-exclude FastTree
 global-exclude uclust
+global-exclude *.hi
+global-exclude *.o
+global-exclude FlowgramAli_4frame
