@@ -107,44 +107,28 @@ class QIIMEConfig(TestCase):
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
-        
         fp = self.config["cluster_jobs_fp"]
-        
-        if not fp:
-            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
-        
-        full_path = app_path(fp)
-        if full_path:
-            fp = full_path
-        
-        #test if file exists or is in $PATH
-        self.assertTrue(exists(fp),
-         "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
 
-        modes = {R_OK:"readable",
-                 W_OK:"writable",
-                 X_OK:"executable"}
-        #test if file readable    
-        self.assertTrue(access(fp, X_OK),
-            "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
-   
+        if fp:
+            full_path = app_path(fp)
+            if full_path:
+                fp = full_path
+
+            #test if file exists or is in $PATH
+            self.assertTrue(exists(fp),
+             "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
+
+            modes = {R_OK:"readable",
+                     W_OK:"writable",
+                     X_OK:"executable"}
+            #test if file readable    
+            self.assertTrue(access(fp, X_OK),
+                "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
+
     def test_blastmat_dir(self):
         """blastmat_dir is set to a valid path."""
         
         test_qiime_config_variable("blastmat_dir", self.config, self)
-        
-    def test_blastall_fp(self):
-        """blastall_fp is set to a valid path"""
-        
-        blastall = self.config["blastall_fp"]
-        if not self.config["blastall_fp"].startswith("/"):
-            #path is relative, figure out absolute path
-            blast_all = app_path(blastall)
-            if not blast_all:
-                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
-            self.config["blastall_fp"] = blast_all
-
-        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
         
     def test_pynast_template_alignment_fp(self):
         """pynast_template_alignment, if set, is set to a valid path"""
@@ -449,6 +433,19 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
          "ChimeraSlayer depends on external files in directoryies relative to its "
          "install directory. These do not appear to be present.")
+
+    def test_blastall_fp(self):
+        """blastall_fp is set to a valid path"""
+        
+        blastall = self.config["blastall_fp"]
+        if not self.config["blastall_fp"].startswith("/"):
+            #path is relative, figure out absolute path
+            blast_all = app_path(blastall)
+            if not blast_all:
+                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
+            self.config["blastall_fp"] = blast_all
+
+        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
