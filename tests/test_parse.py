@@ -671,17 +671,17 @@ eigvals\t4.94\t1.79\t1.50
     def test_parse_taxonomy(self):
         """ should parse taxonomy example, keeping otu id only"""
         example_tax = \
-"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
-319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
-353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+"""412 PC.635_647	Root;Bacteria;Firmicutes; "Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes   	0.970
+353 PC.634_154	Root; Bacteria ; Bacteroidetes	0.830
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13 PC.481_1214	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
-338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
+338 PC.593_1314	Root; Bacteria 	0.990	42556	Additional fields ignored"""
         res = parse_taxonomy(example_tax.split('\n'))
         self.assertEqual(res['412'],
-         "Root;Bacteria;Firmicutes;\"Clostridia\";Clostridiales")
+         ["Root","Bacteria","Firmicutes","\"Clostridia\"","Clostridiales"])
         self.assertEqual(res['338'],
-         "Root;Bacteria")
+         ["Root","Bacteria"])
 
     def test_parse_taxonomy_to_otu_metadata(self):
         """parsing of taxonomy file to otu metadata format functions as expected
