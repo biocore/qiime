@@ -47,8 +47,8 @@ The following QIIME base install dependencies are grouped by installation method
 The first are the core scientific python dependencies. The easiest way to install these is by installing `Canopy Express <https://www.enthought.com/canopy-express/>`_ (formerly EPD Free), which contains core modules for python scientific computing, including those required by QIIME, but also packages such as IPython and Pandas, which QIIME users may also find useful.
 
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
-* Numpy 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
-* MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+* Numpy 1.5.1 - 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
+* MatPlotLib 1.1.0 - 1.3.1 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
 
 The next are python packages not included in Canopy Express. Each of these can be installed by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
