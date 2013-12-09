@@ -354,7 +354,7 @@ def parse_coords(lines):
 
     Strategy: just read the file into memory, find the lines we want
     """
-    if isinstance(lines, GeneratorType):
+    if hasattr(lines, 'next'):
         magic_check = lines.next().strip().split('\t')
     else:
         magic_check = lines[0].strip().split('\t')
