@@ -280,11 +280,11 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,7,1)
+        max_acceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and version <= max_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
@@ -292,18 +292,18 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,\
          "Unsupported numpy version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
+            '.'.join(map(str,max_acceptable_version)),
             version_string))
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
         min_acceptable_version = (1,1,0)
-        min_unacceptable_version = (1,3,1)
+        max_acceptable_version = (1,3,1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
             pass_test = (version >= min_acceptable_version and
-                         version <= min_unacceptable_version)
+                         version <= max_acceptable_version)
             version_string = str(matplotlib_lib_version)
         except ImportError:
             pass_test = False
@@ -311,27 +311,27 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,\
          "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)), version_string))
+            '.'.join(map(str,max_acceptable_version)), version_string))
             
     def test_pynast_suported_version(self):
         """pynast version is supported """
         min_acceptable_version = (1,2)
-        min_unacceptable_version = (1,3)
+        max_acceptable_version = (1,2,2)
         try:
             from pynast import __version__ as pynast_lib_version
             version = pynast_lib_version.split('.')
             if version[-1][-4:]=='-dev':
                  version[-1] = version[-1][:-4]
             version = tuple(map(int,version))
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and version <= max_acceptable_version)
             version_string = str(pynast_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
-         "Unsupported pynast version. Must be >= %s and < %s , but running %s." \
+         "Unsupported pynast version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
+            '.'.join(map(str,max_acceptable_version)),
             version_string))
             
     def test_FastTree_supported_version(self):
