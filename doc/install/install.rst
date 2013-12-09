@@ -42,6 +42,25 @@ QIIME base install (standard QIIME workflow with default parameters)
 
 When getting started with QIIME, most users will want to begin with the QIIME base install. This allows users to run through the core QIIME workflows (including, but not limited to `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_, `split_libraries.py <../scripts/split_libraries.html>`_, `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_, `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_, `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, and `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_) while limiting the time and effort spent on installation.
 
+You can install the QIIME base dependencies either via pip or by manually downloading and installing each package.
+
+Installing QIIME via pip
+++++++++++++++++++++++++
+
+The easiest way to install the latest QIIME release and its base dependencies is by using pip::
+
+	pip install numpy==1.7.1
+	pip install qiime
+
+You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations.
+
+That's it!
+
+Manually installing QIIME
++++++++++++++++++++++++++
+
+If you decided not to install QIIME using pip, you can install it (and its dependencies) manually.
+
 The following QIIME base install dependencies are grouped by installation method.
 
 The first are the core scientific python dependencies. The easiest way to install these is by installing `Canopy Express <https://www.enthought.com/canopy-express/>`_ (formerly EPD Free), which contains core modules for python scientific computing, including those required by QIIME, but also packages such as IPython and Pandas, which QIIME users may also find useful.
@@ -50,7 +69,7 @@ The first are the core scientific python dependencies. The easiest way to instal
 * Numpy 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
 * MatPlotLib 1.1.0 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
 
-The next are python packages not included in Canopy Express. Each of these can be installed by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
+The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
 * QIIME (see :ref:`Getting QIIME <getting-qiime>`)
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
@@ -64,7 +83,10 @@ Next, there are two non-python dependencies required for the QIIME base package.
 * uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) See `FastTree install instructions <http://www.microbesonline.org/fasttree/#Install>`_ (license: GPL)
 
-Finally, several data files are likely to be useful. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
+Data files necessary for the QIIME base installation
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+After you've installed the base QIIME dependencies, there are several data files that are likely to be useful in your analyses. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
 
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
