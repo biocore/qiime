@@ -11,7 +11,7 @@ __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
-from itertools import combinations
+from itertools import combinations, izip
 from collections import defaultdict
 from numpy import array, isnan, min as np_min
 from cogent.draw.distribution_plots import generate_box_plots
@@ -133,19 +133,29 @@ def collapse_sample_diversities_by_category_value(category_value_to_sample_ids,
     return result
 
 def get_per_sample_average_diversities(rarefaction_data, depth=None):
-    # extract only rows of the rarefaction data that are at the given depth
-    # if depth is not given default to the deepest rarefaction available
-    # rarefaction file is not guaranteed to be in order of rarefaction depth
+    """Extract data rows from rarefaction data matrix.
+
+    Notes: if depth is not given default to the deepest rarefaction available. 
+    Rarefaction file is not guaranteed to be in order of rarefaction depth so we 
+    traverse the entire thing looking for the max.
+
+    Inputs: 
+     rarefaction_data - tuple of lists, results from parse_rarefaction. First 
+     entry is header line (split on tabs), second is comments, third is file 
+     names, 4th is list/array of values where first two columns ar depth of 
+     rarefaction and iteration at that depth (respectively). 
+     depth - int, depth to use or None if max depth should be used.
+    Outputs:
+     dict, {sampleID:avg_score_at_given_depth}
+    """
     if depth == None:
         depth = array(rarefaction_data[3])[:,0].max()
-    
     rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
-    
     # Average each col of the rarefaction mtx. Computing t test on averages over
     # all iterations. Avoids more comps which kills significance. 
     rare_mat = rare_mat.mean(0)[2:] #remove depth,iter cols
     sids = rarefaction_data[0][3:] # 0-2 are header strings
-    return dict(zip(sids, rare_mat))
+    return dict(izip(sids, rare_mat))
 
 def generate_alpha_diversity_boxplots(rarefaction_lines,
                                       mapping_lines,
