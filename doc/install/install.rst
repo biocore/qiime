@@ -52,7 +52,9 @@ The easiest way to install the latest QIIME release and its base dependencies is
 	pip install numpy==1.7.1
 	pip install qiime
 
-You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations.
+**Note:** You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations. You will also need an active Internet connection. If you do not have pip, the easiest way to install it is by running::
+
+	easy_install pip
 
 That's it!
 
