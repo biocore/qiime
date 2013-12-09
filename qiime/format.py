@@ -631,6 +631,17 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
     log_out.append('\nTotal number seqs written\t%d' % total_seqs_written)
     return '\n'.join(log_out)
 
+def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
+    """Returns a unifrac sample mapping file from output of parse_otu_table
+    """
+    out = []
+    for i, row in enumerate(otu_table_array):
+        for j, val in enumerate(row):
+            if val > 0:
+                line = [otu_ids[i], sample_ids[j], str(val)]
+                out.append('\t'.join(line))
+    return out
+
 def write_Fasta_from_name_seq_pairs(name_seqs, fh):
     """writes a list of (name,seqs) to filehandle.
 

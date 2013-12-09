@@ -26,7 +26,7 @@ from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
     format_histograms, write_Fasta_from_name_seq_pairs, 
-    format_otu_map,write_otu_map, 
+    format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
     format_taxa_summary, format_correlation_vector,
@@ -548,6 +548,15 @@ y\t5\t6\tsample y""")
         remove(tmp_filename)
         
         self.assertEqual(actual_seqs, seqs)
+
+    def test_format_unifrac_sample_mapping(self):
+        """format sample mapping works
+        """
+        a = [[1,0,0], [0,2,4], [7,0,9.0]]
+        otu_ids = ['OTUa','OTUb','OTUc']
+        sample_ids = ['Sa','Sb','Sc']
+        result = format_unifrac_sample_mapping(sample_ids, otu_ids, a)
+        self.assertEqual(result, ['OTUa\tSa\t1', 'OTUb\tSb\t2', 'OTUb\tSc\t4', 'OTUc\tSa\t7', 'OTUc\tSc\t9.0'])
         
     def test_illumina_data_to_fastq(self):
         """illumina_data_to_fastq functions as expected """
