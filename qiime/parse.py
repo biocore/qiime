@@ -370,10 +370,11 @@ def parse_coords(lines):
     sample_ids = []
     result = [] # could determine n_samples, and preallocate...
     for line in lines:
+        line = line.strip()
         if not line:
             continue
         
-        fields = line.strip().split('\t')
+        fields = line.split('\t')
         values = asarray(fields[1:], dtype=float)
 
         if fields[0] == 'eigvals':
@@ -391,7 +392,7 @@ def parse_coords(lines):
     if pct_var is None:
         raise QiimeParseError("The line with the percent of variation explained"
             " was not found, this information is required in coordinates files")
-
+    
     return sample_ids, asarray(result), eigvals, pct_var
 
 def parse_rarefaction_fname(name_string):
