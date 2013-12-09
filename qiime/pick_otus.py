@@ -18,7 +18,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split, abspath, join
+from os.path import splitext, split, abspath, join, getsize, exists
 from os import makedirs
 from itertools import imap
 
@@ -73,7 +73,15 @@ class OtuPicker(FunctionWithParams):
         log_path: path to log, which should include dump of params.
         """
         raise NotImplementedError, "OtuPicker is an abstract class"
-        
+    
+    def _validate_input(self,seq_path):
+        """Confirm that the input seqs path exists and has size > 0"""
+        if not exists(seq_path):
+            raise ValueError(
+             "Input sequences filepath doesn't exist: %s" % seq_path)
+        if getsize(seq_path) == 0:
+            raise ValueError(
+             "Input sequences filepath is empty: %s" % seq_path)
 
     def _prefilter_exact_prefixes(self,seqs,prefix_length=100):
         """
@@ -188,6 +196,7 @@ class BlastOtuPicker(OtuPicker):
     def __call__(self,seq_path,result_path=None,log_path=None,
         blast_db=None,refseqs_fp=None):
         
+        self._validate_input(seq_path)
         self.log_lines = []
         
         if not blast_db:
@@ -448,6 +457,7 @@ class PrefixSuffixOtuPicker(OtuPicker):
          scale well
 
         """
+        self._validate_input(seq_path)
         log_lines = []
         log_lines.append('Prefix length: %d' % prefix_length)
         log_lines.append('Suffix length: %d' % suffix_length)
@@ -548,6 +558,8 @@ class TrieOtuPicker(OtuPicker):
         log_path: path to log, which includes dump of params.
 
         """
+        
+        self._validate_input(seq_path)
         log_lines = []
         
         # Get the appropriate sequence iterator
@@ -644,6 +656,8 @@ class CdHitOtuPicker(OtuPicker):
          Togther with cd-hit this is a non-heuristic filter reduces run time a lot.
          Still a bit slower than the prefix_prefilter toggled with prefix_prefilter_length.
         """
+        
+        self._validate_input(seq_path)
         moltype = DNA
         log_lines = []
         
@@ -850,6 +864,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
         log_path: path to log, which includes dump of params.
 
         """
+        
+        self._validate_input(seq_path)
         prefilter_identical_sequences =\
          self.Params['prefilter_identical_sequences']
         original_fasta_path = seq_path
@@ -985,6 +1001,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
 
         """
 
+        self._validate_input(seq_path)
         original_fasta_path = seq_path
         self.files_to_remove = []
         
@@ -1134,6 +1151,7 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
 
         """
 
+        self._validate_input(seq_path)
         original_fasta_path = seq_path
         self.files_to_remove = []
         
@@ -1267,6 +1285,7 @@ class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
          otherwise a dict is returned with data.
 
         """
+        self._validate_input(seq_path)
         # perform de novo clustering
         clusters = usearch61_denovo_cluster(
          seq_path,
@@ -1373,6 +1392,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
 
         """
         
+        self._validate_input(seq_path)
         # perform reference clustering
         clusters, failures = usearch61_ref_cluster(
          seq_path,
@@ -1460,6 +1480,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                  log_path=None,
                  failure_path=None,
                  HALT_EXEC=False):
+        self._validate_input(seq_fp)
                      
         original_fasta_path = seq_fp
         prefilter_identical_sequences =\
@@ -1603,6 +1624,7 @@ class MothurOtuPicker(OtuPicker):
         dump the result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
         """
+        self._validate_input(seq_path)
         app = Mothur(InputHandler='_input_as_path', TmpDir=get_qiime_temp_dir())
         app.Parameters['method'].on(self.Params['Algorithm'])
         results = app(seq_path)
