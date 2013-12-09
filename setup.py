@@ -1,23 +1,39 @@
 #!/usr/bin/env python
 # File created on 17 Feb 2010
 from __future__ import division
-from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 from os import chdir, getcwd, listdir, chmod, walk
 from os.path import join, abspath
 from subprocess import call
 from glob import glob
 import re
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout", 
+               "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
- 
+
+classes = """
+    Development Status :: 4 - Beta
+    License :: OSI Approved :: GPL License
+    Topic :: Scientific/Engineering
+    Topic :: Scientific/Engineering :: Bio-Informatics
+    Programming Language :: Python :: 2.7
+    Programming Language :: Python :: Implementation :: CPython
+    Operating System :: OS Independent
+    Operating System :: POSIX
+    Operating System :: POSIX :: Linux
+    Operating System :: MacOS :: MacOS X
+""" 
  
 long_description = """QIIME: Quantitative Insights Into Microbial Ecology
 http://www.qiime.org
@@ -119,10 +135,9 @@ setup(name='QIIME',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*'],
                     'qiime_test_data':qiime_test_data_files},
-      long_description=long_description
+      long_description=long_description,
+      install_requires=["PyCogent == 1.5.3",
+                        "numpy == 1.5.1",
+                        "biom-format == 1.1.2",
+                        "sphinx == 1.0.4"]
 )
-
-if doc_imports_failed:
-    print "Sphinx not installed, so cannot build local html documentation."
-else:
-    build_html()
