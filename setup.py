@@ -4,7 +4,8 @@ from __future__ import division
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 from stat import S_IEXEC
-from os import chdir, getcwd, listdir, chmod, walk, rename, remove, chmod, stat
+from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
+    stat, null)
 from os.path import join, abspath
 from sys import platform
 from subprocess import call
@@ -142,11 +143,26 @@ def download_UCLUST():
     return return_value
 
 def app_available(app_name):
+    """Check if a binary is available and on the user Path
+
+    Inputs:
+    app_name: Name of the binary, i. e. 'ls', 'gcc' etc.
+
+    Output:
+    False if the binary is not found, True if the binary is found
+    """
+    # redirect all output to /dev/null so nothing is seen on screen
+    dev_null = open(null, 'w')
+    output = True;
+
     try:
-        call([app_name])
+        call([app_name], stdout=dev_null, stderr=dev_null)
     except OSError:
-        return False
-    return True
+        output = False
+    finally:
+        dev_null.close()
+
+    return output
 
 if app_available('ghc'):
     build_denoiser()
