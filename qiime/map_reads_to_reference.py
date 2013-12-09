@@ -32,8 +32,12 @@ class DatabaseMapper(object):
                  database_fasta_fp,
                  output_dir,
                  observation_metadata_fp=None,
-                 params={},
+                 params=None,
                  HALT_EXEC=False):
+
+        if params is None:
+            params = {}
+
         """ Call the DatabaseMapper """
         create_dir(output_dir)
         raw_output_fp = self._get_raw_output_fp(output_dir,
