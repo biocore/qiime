@@ -471,6 +471,7 @@ eigvals\t4.94\t1.79\t1.50
 
 """.splitlines()
         obs = parse_coords(coords)
+
         exp = (['A','B','C'], 
             array([[.11,.09,.23],[.03,.07,-.26],[.12,.06,-.32]]),
             array([4.94,1.79,1.50]),

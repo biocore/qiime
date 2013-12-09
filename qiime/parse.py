@@ -32,6 +32,7 @@ from cogent.core.tree import PhyloNode
 from cogent import DNA
 from biom.table import table_factory
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
+from types import GeneratorType
 
 def MinimalFastqParser(data,strict=False):
     return MinimalFastqParserCogent(data,strict=strict)
@@ -353,38 +354,46 @@ def parse_coords(lines):
 
     Strategy: just read the file into memory, find the lines we want
     """
+    if hasattr(lines, 'next'):
+        magic_check = lines.next().strip().split('\t')
+    else:
+        magic_check = lines[0].strip().split('\t')
+        lines = lines[1:]
 
-    lines = list(lines)
+    if magic_check[0] != 'pc vector number':
+        raise QiimeParseError("The line with the vector number was not "
+                              "found, this information is required in " 
+                              "coordinates files")
 
-    # make sure these and the other checks below are true as they are what
-    # differentiate coordinates files from distance matrix files
-    if not lines[0].startswith('pc vector number'):
-        raise QiimeParseError("The line with the vector number was not found"
-            ", this information is required in coordinates files")
+    eigvals = None
+    pct_var = None 
+    sample_ids = []
+    result = [] # could determine n_samples, and preallocate...
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        fields = line.split('\t')
+        values = asarray(fields[1:], dtype=float)
 
-    lines = map(strip, lines[1:])   #discard first line, which is a label
-    lines = filter(None, lines) #remove any blank lines
+        if fields[0] == 'eigvals':
+            eigvals = values
+        elif fields[0] == '% variation explained':
+            pct_var = values
+        else:    
+            sample_ids.append(fields[0])
+            result.append(values)
 
     # check on this information post removal of blank lines
-    if not lines[-2].startswith('eigvals'):
+    if eigvals is None:
         raise QiimeParseError("The line containing the eigenvalues was not "
             "found, this information is required in coordinates files")
-    if not lines[-1].startswith('% variation'):
+    if pct_var is None:
         raise QiimeParseError("The line with the percent of variation explained"
             " was not found, this information is required in coordinates files")
-
-    #now last 2 lines are eigvals and % variation, so read them
-    eigvals = asarray(lines[-2].split('\t')[1:], dtype=float)
-    pct_var = asarray(lines[-1].split('\t')[1:], dtype=float)
-
-    #finally, dump the rest of the lines into a table
-    header, result = [], []
-    for line in lines[:-2]:
-        fields = map(strip, line.split('\t'))
-        header.append(fields[0])
-        result.append(map(float, fields[1:]))
-
-    return header, asarray(result), eigvals, pct_var
+    
+    return sample_ids, asarray(result), eigvals, pct_var
 
 def parse_rarefaction_fname(name_string):
     """returns base, seqs/sam, iteration, extension.  seqs, iters as ints
