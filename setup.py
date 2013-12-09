@@ -5,9 +5,9 @@ from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 from stat import S_IEXEC
 from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
-    stat, null)
+    stat, devnull)
 from os.path import join, abspath
-from sys import platform
+from sys import platform, argv
 from subprocess import call
 from glob import glob
 from urllib import FancyURLopener
@@ -37,6 +37,9 @@ try:
     import sphinx
 except ImportError:
     doc_imports_failed = True
+
+# if egg_info is passed as an argument do not build any of the dependencies
+build_stack = 'egg_info' in argv
 
 def build_html():
     """ Build the sphinx documentation 
@@ -152,30 +155,32 @@ def app_available(app_name):
     False if the binary is not found, True if the binary is found
     """
     # redirect all output to /dev/null so nothing is seen on screen
-    dev_null = open(null, 'w')
+    devnull_fd = open(devnull, 'w')
     output = True;
 
     try:
-        call([app_name], stdout=dev_null, stderr=dev_null)
+        call([app_name], stdout=devnull_fd, stderr=devnull_fd)
     except OSError:
         output = False
     finally:
-        dev_null.close()
+        devnull_fd.close()
 
     return output
 
-if app_available('ghc'):
-    build_denoiser()
-else:
-    print "GHC not installed, so cannot build the Denoiser binary."
+# do not compile and build any of these if running under pip's egg_info
+if build_stack:
+    if app_available('ghc'):
+        build_denoiser()
+    else:
+        print "GHC not installed, so cannot build the Denoiser binary."
 
-if app_available('gcc'):
-    build_FastTree()
-else:
-    print "GCC not installed, so cannot build FastTree"
+    if app_available('gcc'):
+        build_FastTree()
+    else:
+        print "GCC not installed, so cannot build FastTree"
 
-if download_UCLUST():
-    print "UCLUST could not be installed."
+    if download_UCLUST():
+        print "UCLUST could not be installed."
 
 # taken from PyNAST
 classes = """
@@ -217,13 +222,15 @@ setup(name='qiime',
                     'support_files/denoiser/TestData/*',
                     'support_files/denoiser/FlowgramAlignment/*',]},
       long_description=long_description,
-      install_requires=['numpy >= 1.5.1, <= 1.7.1', 'matplotlib >= 1.1.0',
-                        'cogent == 1.5.3', 'pynast == 1.2.2', 'qcli', 'gdata',
-                        'biom-format == 1.3.0', 'emperor >= 0.9.3'],
+      install_requires=['numpy >= 1.5.1, <= 1.7.1',
+                        'matplotlib >= 1.1.0, <= 1.3.1', 'cogent == 1.5.3',
+                        'pynast == 1.2.2', 'qcli', 'gdata',
+                        'biom-format == 1.3.1', 'emperor >= 0.9.3'],
       extras_require={'all': ['ipython', 'sphinx >= 0.3']}
 )
 
-if doc_imports_failed:
-    print "Sphinx not installed, so cannot build local html documentation."
-else:
-    build_html()
+if build_stack:
+    if doc_imports_failed:
+        print "Sphinx not installed, so cannot build local html documentation."
+    else:
+        build_html()
