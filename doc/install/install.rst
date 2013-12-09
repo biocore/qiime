@@ -283,7 +283,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Release
 --------------
-Currently the most stable version of QIIME is our |release| release, which you can download from `here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.7.0.tar.gz>`_.
+Currently the most stable version of QIIME is our |release| release, which you can download from `here <https://pypi.python.org/pypi/qiime>`_.
 
 Latest Development Version
 --------------------------
