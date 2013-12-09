@@ -54,10 +54,10 @@ The next are python packages not included in Canopy Express. Each of these can b
 
 * QIIME (see :ref:`Getting QIIME <getting-qiime>`)
 * PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
-* biom-format 1.2.0 (`src_biom <ftp://thebeast.colorado.edu/pub/biom-format-releases/biom-format-1.2.0.tar.gz>`_) (license: GPL)
+* biom-format 1.3.1 (`src_biom <https://pypi.python.org/packages/source/b/biom-format/biom-format-1.3.1.tar.gz>`_) (license: BSD)
 * qcli 0.1.0 (`src_qcli <ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz>`_) (license: GPL)
-* PyNAST 1.2.1 (`src_pynast <ftp://thebeast.colorado.edu/pub/pynast-releases/pynast-1.2.1.tar.gz>`_) (license: BSD)
-* Emperor 0.9.2 (`src_emperor <ftp://thebeast.colorado.edu/pub/emperor-releases/emperor-0.9.2.tar.gz>`_) (license: BSD)
+* PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
+* Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions. 
 

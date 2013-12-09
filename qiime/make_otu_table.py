@@ -49,7 +49,7 @@ def make_otu_table(otu_map_f,
         otu_metadata = []
         for o in otu_ids:
             try:
-                otu_metadata.append({'taxonomy':otu_to_taxonomy[o].split(';')})
+                otu_metadata.append({'taxonomy':otu_to_taxonomy[o]})
             except KeyError:
                 otu_metadata.append({'taxonomy':["None"]})
     else: 
