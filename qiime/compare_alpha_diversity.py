@@ -193,6 +193,7 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
 def compare_alpha_diversities(rarefaction_lines, mapping_lines, category, 
     depth=None, test_type='nonparametric', num_permutations=999):
     """Compares alpha diversity values for differences per category treatment.
+    
     Notes: 
      Returns a defaultdict which as keys has the pairs of treatments being 
      compared, and as values, lists of (pval,tval) tuples for each comparison at
@@ -218,32 +219,26 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
     samid_pairs, treatment_pairs = sampleId_pairs(mapping_data, 
         rarefaction_data, category)
     
-    # extract only rows of the rarefaction data that are at the given depth
-    # if depth is not given default to the deepest rarefaction available
-    # rarefaction file is not guaranteed to be in order of rarefaction depth
-    if depth == None:
-        depth = array(rarefaction_data[3])[:,0].max()
-
-    rare_mat = array([row for row in rarefaction_data[3] if row[0]==depth])
+    ps_avg_div = get_per_sample_average_diversities(rarefaction_data, depth)
     
-    # Average each col of the rarefaction mtx. Computing t test on averages over
-    # all iterations. Avoids more comps which kills signifigance. 
-    rare_mat = (rare_mat.sum(0)/rare_mat.shape[0])[2:] #remove depth,iter cols
-    sids = rarefaction_data[0][3:] # 0-2 are header strings
-    
-    ttest_results = {}
+    ttest_results, ad_avgs = {}, {}
     for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
         # if there is only 1 sample for each treatment in a comparison, and mc
         # using mc method, will error (e.g. mc_t_two_sample([1],[1]).
         if len(sid_pair[0])==1 and len(sid_pair[1])==1:
             ttest_results[treatment_pair]= (None,None)
+            # add alpha diversity averages and standard deviations. since their 
+            # is only a single sample if we are in this part of the loop, we can
+            # just record the sample value as the avg and 0 as the std.
+            ad_avgs[treatment_pair[0]] = (sid_pair[0][0], 0.)
+            ad_avgs[treatment_pair[1]] = (sid_pair[1][0], 0.)
         else:
-            pair0_indices = [sids.index(i) for i in sid_pair[0]]
-            pair1_indices = [sids.index(i) for i in sid_pair[1]]
-            i = rare_mat.take(pair0_indices)
-            j = rare_mat.take(pair1_indices)
-            # found discussion of how to quickly check an array for nan here:
-            # http://stackoverflow.com/questions/6736590/fast-check-for-nan-in-numpy
+            i = array([ps_avg_div[x] for x in sid_pair[0]])
+            j = array([ps_avg_div[x] for x in sid_pair[1]])
+            # add alpha diversity averages and standard deviations.
+            ad_avgs[treatment_pair[0]] = (i.mean(), i.std())
+            ad_avgs[treatment_pair[1]] = (j.mean(), j.std())
+            # conduct tests
             if isnan(np_min(i)) or isnan(np_min(j)):
                 ttest_results[treatment_pair]= (None,None)
                 continue
@@ -260,17 +255,5 @@ def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,
             else:
                 raise ValueError("Invalid test type '%s'." % test_type)
             ttest_results[treatment_pair]= (obs_t,p_val)
-    # create dict of average alpha diversity values
-    alphadiv_avgs = {}
-    for sid_pair, treatment_pair in zip(samid_pairs, treatment_pairs):
-        # calculate the alpha diversity average, std vals. choosing only first
-        # treatment pair doesn't guarantees full covering, must look at both
-        for sid_list, treatment_str in zip(sid_pair, treatment_pair):
-            # check if already computed and added
-            if not treatment_str in alphadiv_avgs.keys():
-                alphadiv_vals = \
-                    rare_mat.take([sids.index(i) for i in sid_list])
-                ad_mean = alphadiv_vals.mean()
-                ad_std = alphadiv_vals.std()
-                alphadiv_avgs[treatment_str] = (ad_mean, ad_std) 
-    return ttest_results, alphadiv_avgs
+
+    return ttest_results, ad_avgs
