@@ -426,7 +426,7 @@ def parse_taxonomy(infile):
         line = line.rstrip("\n")
         fields = line.split('\t')
         otu = fields[0].split(' ')[0]
-        res[otu] = fields[1]
+        res[otu] = taxa_split(fields[1])
 
     return res
 parse_observation_metadata = parse_taxonomy
