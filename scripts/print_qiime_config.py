@@ -297,22 +297,21 @@ class QIIMEDependencyBase(QIIMEConfig):
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
-        #min_acceptable_version = (1,1,0)
-        #min_unacceptable_version = (1,1,0)
-        matplotlib_acceptable_version = (1,1,0)
+        min_acceptable_version = (1,1,0)
+        min_unacceptable_version = (1,3,1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
-            pass_test = (version == matplotlib_acceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= min_unacceptable_version)
             version_string = str(matplotlib_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
          "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,matplotlib_acceptable_version)),
-            '.'.join(map(str,matplotlib_acceptable_version)),
-            version_string))
+         % ('.'.join(map(str,min_acceptable_version)),
+            '.'.join(map(str,min_unacceptable_version)), version_string))
             
     def test_pynast_suported_version(self):
         """pynast version is supported """
