@@ -74,9 +74,9 @@ The first are the core scientific python dependencies. The easiest way to instal
 The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
 * QIIME (see :ref:`Getting QIIME <getting-qiime>`)
-* PyCogent 1.5.3 (`src_pycogent <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.3/PyCogent-1.5.3.tgz/download>`_) (license: GPL)
+* PyCogent 1.5.3 (`src_pycogent <https://pypi.python.org/packages/source/c/cogent/cogent-1.5.3.tgz>`_) (license: GPL)
 * biom-format 1.3.1 (`src_biom <https://pypi.python.org/packages/source/b/biom-format/biom-format-1.3.1.tar.gz>`_) (license: BSD)
-* qcli 0.1.0 (`src_qcli <ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz>`_) (license: GPL)
+* qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
 
