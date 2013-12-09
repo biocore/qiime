@@ -14,19 +14,17 @@ from string import upper
 from itertools import izip, cycle
 from os.path import join
 from os import rename
+from re import compile
 
 from cogent.parse.fastq import MinimalFastqParser
 from cogent import DNA
-from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 
 from qiime.check_id_map import process_id_map
 from qiime.split_libraries_fastq import (check_header_match_pre180,
- check_header_match_180_or_later)
+    check_header_match_180_or_later)
 from qiime.parse import is_casava_v180_or_later
 from qiime.format import format_fastq_record
-
-class FastqParseError(Exception):
-    pass
+from qiime.pycogent_backports.fastq import FastqParseError
 
 def extract_barcodes(fastq1,
                      fastq2 = None,
@@ -53,20 +51,20 @@ def extract_barcodes(fastq1,
     rev_comp_bc1: If True, reverse complement bc1 before writing.
     rev_comp_bc2: If True, reverse complement bc2 before writing.
     char_delineator: Specify character that immediately precedes the barcode
-     for input_type of barcode_in_label.
+        for input_type of barcode_in_label.
     switch_bc_order: Normally, barcode 1 will be written first, followed by
-     barcode 2 in a combined output fastq file. If True, the order will be 
-     reversed. Only applies to stitched reads processing, as other barcode
-     orders are dictated by the the parameter chosen for the fastq files.
+        barcode 2 in a combined output fastq file. If True, the order will be 
+        reversed. Only applies to stitched reads processing, as other barcode
+        orders are dictated by the the parameter chosen for the fastq files.
     map_fp: open file object of mapping file, requires a LinkerPrimerSequence
-     and ReversePrimer field to be present. Used for orienting reads.
+        and ReversePrimer field to be present. Used for orienting reads.
     attempt_read_orientation: If True, will attempt to orient the reads 
-     according to the forward primers in the mapping file. If primer is 
-     detected in current orientation, leave the read as is, but if reverse
-     complement is detected (or ReversePrimer is detected in the current 
-     orientation) the read will either be written to the forward (read 1) or
-     reverse (read 2) reads for the case of paired files, or the read will be
-     reverse complemented in the case of stitched reads.
+        according to the forward primers in the mapping file. If primer is 
+        detected in current orientation, leave the read as is, but if reverse
+        complement is detected (or ReversePrimer is detected in the current 
+        orientation) the read will either be written to the forward (read 1) or
+        reverse (read 2) reads for the case of paired files, or the read will be
+        reverse complemented in the case of stitched reads.
     disable_header_match: if True, suppresses checks between fastq headers.
     """
     
@@ -109,53 +107,38 @@ def extract_barcodes(fastq1,
     else:
         not_paired = False
         
-    # determine the version of casava that was used to generate the fastq
-    # to determine how to compare header lines and decode ascii phred scores
-    # Modified code from split_libraries_fastq.py for this check
-    try:
-        fastq_read_f_line1 = fastq1.readline()
-        fastq_read_f_line2 = fastq1.readline()
-        fastq1.seek(0)
-    except AttributeError:
-        fastq_read_f_line1 = fastq1[0]
-        fastq_read_f_line2 = fastq1[1]
-    post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
-    if post_casava_v180:
-        check_header_match_f = check_header_match_180_or_later
-    else:
-        check_header_match_f = check_header_match_pre180
+    check_header_match_f = get_casava_version(fastq1)
         
     header_index = 0
         
     for read1_data, read2_data in izip(MinimalFastqParser(fastq1,strict=False),
                                        MinimalFastqParser(fastq2,strict=False)):
-
         if not disable_header_match:
             if not check_header_match_f(read1_data[header_index],\
-             read2_data[header_index]):
+                read2_data[header_index]):
                 raise FastqParseError,\
-                 ("Headers of read1 and read2 do not match. Can't continue. "
-                 "Confirm that the fastq sequences that you are "
-                 "passing match one another. --disable_header_match can be "
-                 "used to suppress header checks.")
+                    ("Headers of read1 and read2 do not match. Can't continue. "
+                    "Confirm that the fastq sequences that you are "
+                    "passing match one another. --disable_header_match can be "
+                    "used to suppress header checks.")
                  
         if input_type == "barcode_single_end":
             process_barcode_single_end_data(read1_data, output_bc_fastq,
-             output_fastq1, bc1_len, rev_comp_bc1)
-             
+                output_fastq1, bc1_len, rev_comp_bc1)
+         
         elif input_type == "barcode_paired_end":
             process_barcode_paired_end_data(read1_data, read2_data,
-             output_bc_fastq, output_fastq1, output_fastq2, bc1_len, bc2_len,
-             rev_comp_bc1, rev_comp_bc2, attempt_read_orientation,
-             forward_primers, reverse_primers, output_bc_not_oriented,
-             fastq1_out_not_oriented, fastq2_out_not_oriented)
+                output_bc_fastq, output_fastq1, output_fastq2, bc1_len, bc2_len,
+                rev_comp_bc1, rev_comp_bc2, attempt_read_orientation,
+                forward_primers, reverse_primers, output_bc_not_oriented,
+                fastq1_out_not_oriented, fastq2_out_not_oriented)
              
         elif input_type == "barcode_paired_stitched":
              process_barcode_paired_stitched(read1_data,
-              output_bc_fastq, output_fastq1, bc1_len, bc2_len,
-              rev_comp_bc1, rev_comp_bc2, attempt_read_orientation,
-              forward_primers, reverse_primers, output_bc_not_oriented,
-              fastq1_out_not_oriented, switch_bc_order)
+                 output_bc_fastq, output_fastq1, bc1_len, bc2_len,
+                 rev_comp_bc1, rev_comp_bc2, attempt_read_orientation,
+                 forward_primers, reverse_primers, output_bc_not_oriented,
+                 fastq1_out_not_oriented, switch_bc_order)
               
         elif input_type == "barcode_in_label":
              if not_paired:
@@ -163,8 +146,8 @@ def extract_barcodes(fastq1,
              else:
                  curr_read2_data = read2_data
              process_barcode_in_label(read1_data, curr_read2_data,
-             output_bc_fastq, bc1_len, bc2_len,
-             rev_comp_bc1, rev_comp_bc2, char_delineator)
+                 output_bc_fastq, bc1_len, bc2_len,
+                 rev_comp_bc1, rev_comp_bc2, char_delineator)
     
     output_bc_fastq.close()
     rename(output_bc_fastq.name, join(output_dir, "barcodes.fastq"))
@@ -183,6 +166,26 @@ def extract_barcodes(fastq1,
     if fastq2_out_not_oriented:
         rename(fastq2_out_not_oriented.name,
          join(output_dir, "reads2_not_oriented.fastq"))
+         
+def get_casava_version(fastq1):
+    """ determine the version of casava that was used to generate the fastq 
+    
+    fastq1: open fastq file or list of lines
+    """
+    # to determine how to compare header lines and decode ascii phred scores
+    # Modified code from split_libraries_fastq.py for this check
+    if isinstance(fastq1, list):
+        fastq_read_f_line1 = fastq1[0]
+    else:
+        fastq_read_f_line1 = fastq1.readline()    
+        fastq1.seek(0)
+    post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
+    if post_casava_v180:
+        check_header_match_f = check_header_match_180_or_later
+    else:
+        check_header_match_f = check_header_match_pre180
+        
+    return check_header_match_f
         
              
 def process_barcode_single_end_data(read1_data,
@@ -203,8 +206,8 @@ def process_barcode_single_end_data(read1_data,
     sequence_index = 1
     quality_index = 2
     
-    bc_read = read1_data[sequence_index][0:bc1_len]
-    bc_qual = read1_data[quality_index][0:bc1_len]
+    bc_read = read1_data[sequence_index][:bc1_len]
+    bc_qual = read1_data[quality_index][:bc1_len]
     if rev_comp_bc1:
         bc_read = DNA.rc(bc_read)
         bc_qual = bc_qual[::-1]
@@ -212,7 +215,8 @@ def process_barcode_single_end_data(read1_data,
     bc_lines = format_fastq_record(read1_data[header_index], bc_read, bc_qual)
     output_bc_fastq.write(bc_lines)
     seq_lines = format_fastq_record(read1_data[header_index],
-     read1_data[sequence_index][bc1_len:], read1_data[quality_index][bc1_len:])
+        read1_data[sequence_index][bc1_len:],
+        read1_data[quality_index][bc1_len:])
     output_fastq1.write(seq_lines)
     
     return
@@ -244,57 +248,58 @@ def process_barcode_paired_end_data(read1_data,
     rev_comp_bc1: reverse complement barcode 1 before writing.
     rev_comp_bc2: reverse complement barcode 2 before writing.
     attempt_read_orientation: If True, will attempt to orient the reads 
-     according to the forward primers in the mapping file. If primer is 
-     detected in current orientation, leave the read as is, but if reverse
-     complement is detected (or ReversePrimer is detected in the current 
-     orientation) the read will either be written to the forward (read 1) or
-     reverse (read 2) reads for the case of paired files, or the read will be
-     reverse complemented in the case of stitched reads.
-    forward_primers: set of forward primers
-    reverse_primers: set of reverse primers
+        according to the forward primers in the mapping file. If primer is 
+        detected in current orientation, leave the read as is, but if reverse
+        complement is detected (or ReversePrimer is detected in the current 
+        orientation) the read will either be written to the forward (read 1) or
+        reverse (read 2) reads for the case of paired files, or the read will be
+        reverse complemented in the case of stitched reads.
+    forward_primers: list of regular expression generators, forward primers
+    reverse_primers: list of regular expression generators, reverse primers
     output_bc_not_oriented: Barcode output from reads that are not oriented
     fastq1_out_not_oriented: Open filepath to write reads 1 where primers
-     can't be found when attempt_read_orientation is True.
+        can't be found when attempt_read_orientation is True.
     fastq2_out_not_oriented: Open filepath to write reads 2 where primers
-     can't be found when attempt_read_orientation is True.
+        can't be found when attempt_read_orientation is True.
     """
-    
+
     header_index = 0
     sequence_index = 1
     quality_index = 2
     
+    found_primer_match = False
     # Break from orientation search as soon as a match is found
     if attempt_read_orientation:
-        found_primer_match = False
+        # First check forward primers
         for curr_primer in forward_primers:
-            if curr_primer in read1_data[sequence_index]:
+            if curr_primer.search(read1_data[sequence_index]):
                 read1 = read1_data
                 read2 = read2_data
                 found_primer_match = True
                 break
-            if curr_primer in read2_data[sequence_index]:
+            if curr_primer.search(read2_data[sequence_index]):
                 read1 = read2_data
                 read2 = read1_data
                 found_primer_match = True
                 break
+        # Check reverse primers if forward primers not found
         if not found_primer_match:
             for curr_primer in reverse_primers:
-                if curr_primer in read1_data[sequence_index]:
+                if curr_primer.search(read1_data[sequence_index]):
                     read1 = read2_data
                     read2 = read1_data
                     found_primer_match = True
                     break
-                if curr_primer in read2_data[sequence_index]:
+                if curr_primer.search(read2_data[sequence_index]):
                     read1 = read1_data
                     read2 = read2_data
                     found_primer_match = True
                     break
     else:
-        found_primer_match = True
         read1 = read1_data
         read2 = read2_data
         
-    if not found_primer_match:
+    if not found_primer_match and attempt_read_orientation:
         read1 = read1_data
         read2 = read2_data
         output_bc = output_bc_not_oriented
@@ -351,21 +356,21 @@ def process_barcode_paired_stitched(read_data,
     rev_comp_bc1: reverse complement barcode 1 before writing.
     rev_comp_bc2: reverse complement barcode 2 before writing.
     attempt_read_orientation: If True, will attempt to orient the reads 
-     according to the forward primers in the mapping file. If primer is 
-     detected in current orientation, leave the read as is, but if reverse
-     complement is detected (or ReversePrimer is detected in the current 
-     orientation) the read will either be written to the forward (read 1) or
-     reverse (read 2) reads for the case of paired files, or the read will be
-     reverse complemented in the case of stitched reads.
-    forward_primers: set of forward primers
-    reverse_primers: set of reverse primers
+        according to the forward primers in the mapping file. If primer is 
+        detected in current orientation, leave the read as is, but if reverse
+        complement is detected (or ReversePrimer is detected in the current 
+        orientation) the read will either be written to the forward (read 1) or
+        reverse (read 2) reads for the case of paired files, or the read will be
+        reverse complemented in the case of stitched reads.
+    forward_primers: list of regular expression generators, forward primers
+    reverse_primers: list of regular expression generators, reverse primers
     output_bc_not_oriented: Barcode output from reads that are not oriented
     fastq_out_not_oriented: Open filepath to write reads where primers
-     can't be found when attempt_read_orientation is True.
+        can't be found when attempt_read_orientation is True.
     switch_bc_order: Normally, barcode 1 will be written first, followed by
-     barcode 2 in a combined output fastq file. If True, the order will be 
-     reversed. Only applies to stitched reads processing, as other barcode
-     orders are dictated by the the parameter chosen for the fastq files.
+        barcode 2 in a combined output fastq file. If True, the order will be 
+        reversed. Only applies to stitched reads processing, as other barcode
+        orders are dictated by the the parameter chosen for the fastq files.
     """
     
     header_index = 0
@@ -375,24 +380,22 @@ def process_barcode_paired_stitched(read_data,
     read_seq = read_data[sequence_index]
     read_qual = read_data[quality_index]
     
+    found_primer_match = False
     # Break from orientation search as soon as a match is found
     if attempt_read_orientation:
-        found_primer_match = False
         for curr_primer in forward_primers:
-            if curr_primer in read_data[sequence_index]:
+            if curr_primer.search(read_data[sequence_index]):
                 found_primer_match = True
                 break
         if not found_primer_match:
             for curr_primer in reverse_primers:
-                if curr_primer in read_data[sequence_index]:
+                if curr_primer.search(read_data[sequence_index]):
                     read_seq = DNA.rc(read_seq)
                     read_qual = read_qual[::-1]
                     found_primer_match = True
                     break
-    else:
-        found_primer_match = True
  
-    if not found_primer_match:
+    if not found_primer_match and attempt_read_orientation:
         output_bc = output_bc_not_oriented
         output_read = fastq_out_not_oriented
     else:
@@ -416,10 +419,10 @@ def process_barcode_paired_stitched(read_data,
         bc_qual1, bc_qual2 = bc_qual2, bc_qual1
     
     bc_lines = format_fastq_record(read_data[header_index],
-     bc_read1 + bc_read2, bc_qual1 + bc_qual2)
+        bc_read1 + bc_read2, bc_qual1 + bc_qual2)
     output_bc.write(bc_lines)
     seq_lines = format_fastq_record(read_data[header_index],
-     read_seq[bc1_len:-bc2_len], read_qual[bc1_len:-bc2_len])
+        read_seq[bc1_len:-bc2_len], read_qual[bc1_len:-bc2_len])
     output_read.write(seq_lines)
     
     return
@@ -442,7 +445,7 @@ def process_barcode_in_label(read1_data,
     rev_comp_bc1: reverse complement barcode 1 before writing.
     rev_comp_bc2: reverse complement barcode 2 before writing.
     char_delineator: Specify character that immediately precedes the barcode
-     for input_type of barcode_in_label.
+        for input_type of barcode_in_label.
     """
     
     header_index = 0
@@ -450,13 +453,15 @@ def process_barcode_in_label(read1_data,
     quality_index = 2
     
     # Check for char_delineator in sequence
-    if char_delineator not in read1_data[header_index].strip():
-        raise ValueError,("Found sequence lacking character delineator. "
-         "Sequence header %s, character delineator %s" %\
-         (read1_data[header_index], char_delineator))
+    try:
+        bc1_read=read1_data[header_index].split(char_delineator)[-1][0:bc1_len]
+    # If there is an index error, it means the char_delineator wasn't found
+    except IndexError:
+        raise IndexError,("Found sequence lacking character delineator. "
+            "Sequence header %s, character delineator %s" %\
+            (read1_data[header_index], char_delineator))
 
-    bc1_read =\
-     read1_data[header_index].strip().split(char_delineator)[-1][0:bc1_len]
+    
     # Create fake quality scores
     bc1_qual = "F"*len(bc1_read)
     if rev_comp_bc1:
@@ -464,7 +469,7 @@ def process_barcode_in_label(read1_data,
     
     if read2_data:
         bc2_read =\
-         read2_data[header_index].strip().split(char_delineator)[-1][0:bc2_len]
+            read2_data[header_index].strip().split(char_delineator)[-1][0:bc2_len]
         bc2_qual = "F"*len(bc2_read)
         if rev_comp_bc2:
             bc2_read = DNA.rc(bc2_read)
@@ -472,13 +477,13 @@ def process_barcode_in_label(read1_data,
         bc2_read = ""
         bc2_qual = ""
             
-    if len(bc1_read + bc2_read) == 0:
+    if not bc1_read and not bc2_read:
         raise ValueError,("Came up with empty barcode sequence, please check "
-         "character delineator with -s, and fastq label "
-         "%s" % read1_data[header_index])
+            "character delineator with -s, and fastq label "
+            "%s" % read1_data[header_index])
     
     bc_lines = format_fastq_record(read1_data[header_index],
-     bc1_read + bc2_read, bc1_qual + bc2_qual)
+        bc1_read + bc2_read, bc1_qual + bc2_qual)
     
     output_bc_fastq.write(bc_lines)
     
@@ -486,69 +491,63 @@ def process_barcode_in_label(read1_data,
 
 def get_primers(header,
                 mapping_data):
-    """ Returns sets of all forward and reverse primers
+    """ Returns lists of forward/reverse primer regular expression generators
     
     header:  list of strings of header data.
     mapping_data:  list of lists of mapping data
     
     Will raise error if either the LinkerPrimerSequence or ReversePrimer fields
-     are not present, if no primers are detected in the data fields, or if
-     invalid characters are present in the primer sequences.
+        are not present
     """
     
-    try:
+    if "LinkerPrimerSequence" in header:
         primer_ix = header.index("LinkerPrimerSequence")
-    except IndexError:
+    else:
         raise IndexError,("Mapping file is missing LinkerPrimerSequence field.")
-    try:
+    if "ReversePrimer" in header:
         rev_primer_ix = header.index("ReversePrimer")
-    except IndexError:
+    else:
         raise IndexError,("Mapping file is missing ReversePrimer field.")
-    
-    all_forward_primers = set([])
-    all_reverse_primers = set([])
-    all_forward_rc_primers = set([])
-    all_reverse_rc_primers = set([])
-       
-    for line in mapping_data:
-            
-        all_raw_forward_primers =\
-         set([upper(primer).strip() for primer in line[primer_ix].split(',')])
-        for curr_primer in all_raw_forward_primers:
-            all_forward_primers.update(expand_degeneracies([curr_primer]))
-            
-        all_raw_reverse_primers =\
-         set([upper(primer).strip() for \
-         primer in line[rev_primer_ix].split(',')])
-        for curr_primer in all_raw_reverse_primers:
-            all_reverse_primers.update(expand_degeneracies([curr_primer]))
-            
-    if len(all_forward_primers) == 0:
-        raise ValueError,("No forward primers detected in mapping file.")
-    if len(all_reverse_primers) == 0:
-        raise ValueError,("No reverse primers detected in mapping file.")
         
-    for curr_primer in all_forward_primers:
-        all_forward_rc_primers.update([DNA.rc(curr_primer)])
-    for curr_primer in all_reverse_primers:
-        all_reverse_rc_primers.update([DNA.rc(curr_primer)])
+    iupac = {'A':'A', 'T':'T', 'G':'G', 'C':'C', 'R':'[AG]', 'Y':'[CT]',
+        'S':'[GC]', 'W':'[AT]', 'K':'[GT]', 'M':'[AC]', 'B':'[CGT]',
+        'D':'[AGT]', 'H':'[ACT]', 'V':'[ACG]', 'N':'[ACGT]'}
+    
+    raw_forward_primers = set([])
+    raw_forward_rc_primers = set([])
+    raw_reverse_primers = set([])
+    raw_reverse_rc_primers = set([])
+    
+    for line in mapping_data:
+        # Split on commas to handle pool of primers
+        raw_forward_primers.update([upper(primer).strip() for\
+            primer in line[primer_ix].split(',')])
+        raw_forward_rc_primers.update([DNA.rc(primer) for\
+            primer in raw_forward_primers])   
+        raw_reverse_primers.update([upper(primer).strip() for \
+            primer in line[rev_primer_ix].split(',')])
+        raw_reverse_rc_primers.update([DNA.rc(primer) for\
+            primer in raw_reverse_primers])
+       
+    if not raw_forward_primers:
+        raise ValueError,("No forward primers detected in mapping file.")
+    if not raw_reverse_primers:
+        raise ValueError,("No reverse primers detected in mapping file.")
+
         
     # Finding the forward primers, or rc of reverse primers indicates forward
     # read. Finding the reverse primer, or rc of the forward primers, indicates
     # the reverse read, so these sets are merged.
-    all_forward_primers.update(all_reverse_rc_primers)
-    all_reverse_primers.update(all_forward_rc_primers)
-        
-    return all_forward_primers, all_reverse_primers
+    raw_forward_primers.update(raw_reverse_rc_primers)
+    raw_reverse_primers.update(raw_forward_rc_primers)
     
-def expand_degeneracies(raw_primers):
-    """ Returns all non-degenerate versions of a given primer sequence """
-    
-    expanded_primers=[]
-    for raw_primer in raw_primers:
-        primers=SequenceGenerator(template=raw_primer.strip(),
-         alphabet=IUPAC_DNA)
-        for primer in primers:
-            expanded_primers.append(primer)
-        
-    return expanded_primers
+    forward_primers = []
+    reverse_primers = []
+    for curr_primer in raw_forward_primers:
+        forward_primers.append(compile(''.join([iupac[symbol] for\
+            symbol in curr_primer])))
+    for curr_primer in raw_reverse_primers:
+        reverse_primers.append(compile(''.join([iupac[symbol] for\
+            symbol in curr_primer])))
+
+    return forward_primers, reverse_primers

@@ -11,6 +11,7 @@ __status__ = "Development"
 
 from os.path import isdir, isfile, exists, join, basename
 from shutil import rmtree
+from re import compile
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
@@ -19,7 +20,7 @@ from qiime.util import create_dir, get_tmp_filename
 from qiime.extract_barcodes import (extract_barcodes,
  process_barcode_single_end_data, process_barcode_paired_end_data,
  process_barcode_paired_stitched, process_barcode_in_label,
- get_primers, expand_degeneracies)
+ get_primers)
  
 class FakeOutFile(object):
     
@@ -33,6 +34,10 @@ class FakeOutFile(object):
 class ExtractBarcodes(TestCase):
     def setUp(self):
         # create the temporary input files that will be used
+        
+        self.iupac = {'A':'A', 'T':'T', 'G':'G', 'C':'C', 'R':'[AG]',
+            'Y':'[CT]', 'S':'[GC]', 'W':'[AT]', 'K':'[GT]', 'M':'[AC]',
+            'B':'[CGT]','D':'[AGT]', 'H':'[ACT]', 'V':'[ACG]', 'N':'[ACGT]'}
  
         self.output_dir = get_random_directory_name(prefix = '/tmp/')
         self.output_dir += '/'
@@ -192,8 +197,10 @@ class ExtractBarcodes(TestCase):
         reads1_out = FakeOutFile()
         reads2_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['ATA'])
-        reverse_primers = set(['ATA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'AYA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         fastq2_out_not_oriented = FakeOutFile()
@@ -243,8 +250,10 @@ class ExtractBarcodes(TestCase):
         reads1_out = FakeOutFile()
         reads2_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['GATCGA'])
-        reverse_primers = set(['ATA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'GATCGA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         fastq2_out_not_oriented = FakeOutFile()
@@ -294,8 +303,10 @@ class ExtractBarcodes(TestCase):
         reads1_out = FakeOutFile()
         reads2_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['TTCCA'])
-        reverse_primers = set(['ATA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'TTCCA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         fastq2_out_not_oriented = FakeOutFile()
@@ -344,8 +355,10 @@ class ExtractBarcodes(TestCase):
         reads1_out = FakeOutFile()
         reads2_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['TTTTT'])
-        reverse_primers = set(['CGATCGA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'TTTTT']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'CGATCGA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         fastq2_out_not_oriented = FakeOutFile()
@@ -394,8 +407,10 @@ class ExtractBarcodes(TestCase):
         reads1_out = FakeOutFile()
         reads2_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['TTTTTT'])
-        reverse_primers = set(['TCCAA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'TTTTTT']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'TCCAA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         fastq2_out_not_oriented = FakeOutFile()
@@ -443,8 +458,10 @@ class ExtractBarcodes(TestCase):
          "1234567890ABCDEFGHIJ"]
         reads1_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['ATA'])
-        reverse_primers = set(['ATA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         
@@ -485,8 +502,10 @@ class ExtractBarcodes(TestCase):
          "1234567890ABCDEFGHIJ"]
         reads1_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['GATCGA'])
-        reverse_primers = set(['ATA'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'GATCGA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'ATA']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         
@@ -526,8 +545,10 @@ class ExtractBarcodes(TestCase):
          "1234567890ABCDEFGHIJ"]
         reads1_out = FakeOutFile()
         bcs_out = FakeOutFile()
-        forward_primers = set(['AAAAAA'])
-        reverse_primers = set(['GATCG'])
+        forward_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'AAAAAA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for\
+            symbol in 'GATCG']))]
         output_bc_not_oriented = FakeOutFile()
         fastq1_out_not_oriented = FakeOutFile()
         
@@ -574,28 +595,27 @@ class ExtractBarcodes(TestCase):
         self.assertEqual(actual_bcs, expected_bcs)                 
         
     def test_get_primers(self):
-        """ Get forward and reverse primers out of mapping data """
+        """ Get primer regular expression generators out of mapping data """
         
         # Raise error if ReversePrimer not supplied
         header = ['SampleID','BarcodeSequence','LinkerPrimerSequence',
          'Description']
-        mapping_data = [['s1','ATCG','TTGGCC','ATRCCTA']]
-        self.assertRaises(ValueError, get_primers, header, mapping_data)
+        mapping_data = [['s1','ATCG','TTGGCC,TTGGWC','ATRCCTA']]
+        self.assertRaises(IndexError, get_primers, header, mapping_data)
                 
         header = ['SampleID','BarcodeSequence','LinkerPrimerSequence',
          'ReversePrimer','Description']
         forward_primers, reverse_primers = get_primers(header, mapping_data)
         
-        expected_forward_primers = set(['TTGGCC', 'TAGGCAT', 'TAGGTAT'])
-        expected_reverse_primers = set(['GGCCAA', 'ATACCTA', 'ATGCCTA'])
+        forward_primers = set([seq.pattern for seq in forward_primers])
+        reverse_primers = set([seq.pattern for seq in reverse_primers])
+        
+        expected_forward_primers = set(['TTGGCC', 'TAGG[CT]AT', 'TTGG[AT]C'])
+        expected_reverse_primers = set(['GGCCAA', 'AT[AG]CCTA', 'G[AT]CCAA'])
         
         self.assertEqual(forward_primers, expected_forward_primers)
         self.assertEqual(reverse_primers, expected_reverse_primers)
         
-    def test_expand_degeneracies(self):
-        """ Expands degenerate DNA characters """
-        
-        pass
         
 
 if __name__ =='__main__':
