@@ -1745,7 +1745,7 @@ def usearch61_ref_cluster(seq_path,
      when doing open reference de novo clustering)
     suppress_new_clusters: If True, will allow de novo clustering on top of
      reference clusters.
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     HALT_EXEC: application controller option to halt execution.
     
     Description of analysis workflows
@@ -1889,7 +1889,7 @@ def usearch61_denovo_cluster(seq_path,
     usearch61_maxrejects: Number of rejects allowed by usearch61
     usearch61_maxaccepts: Number of accepts allowed by usearch61
     sizeorder: used for clustering based upon abundance of seeds
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     HALT_EXEC: application controller option to halt execution.
     """
 
@@ -2002,7 +2002,7 @@ def sort_by_abundance_usearch61(seq_path,
     output_fna_filepath: path to write sorted fasta filepath
     output_uc_filepath: path to write usearch61 generated .uc file
     log_name: filepath to write usearch61 generated log file
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     """
         
     
@@ -2101,7 +2101,7 @@ def usearch61_cluster_ref(intermediate_fasta,
     usearch61_maxrejects: Number of rejects allowed by usearch61
     usearch61_maxaccepts: Number of accepts allowed by usearch61
     output_uc_filepath: path to write usearch61 generated .uc file
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     HALT_EXEC: application controller option to halt execution.
     """
 
@@ -2167,7 +2167,7 @@ def usearch61_fast_cluster(intermediate_fasta,
     HALT_EXEC: application controller option to halt execution
     output_uc_filepath: Path to write clusters (.uc) file.
     log_name: filepath to write usearch61 generated log file
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     """
     
     log_filepath = join(output_dir, log_name)
@@ -2368,7 +2368,7 @@ def usearch61_chimera_check_ref(abundance_fp,
      query and closest reference database sequence. Expressed as a percentage,
      so the default is 0.8%, which allows chimeras that are up to 99.2% similar
      to a reference sequence.
-    threads: Specify number of threads used per core of CPU
+    threads: Specify number of threads used per core per CPU
     HALTEXEC: halt execution and returns command used for app controller.
     """
     
