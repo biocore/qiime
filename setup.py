@@ -39,7 +39,7 @@ except ImportError:
     doc_imports_failed = True
 
 # if egg_info is passed as an argument do not build any of the dependencies
-build_stack = 'egg_info' in argv
+build_stack = 'egg_info' not in argv
 
 def build_html():
     """ Build the sphinx documentation 
