@@ -63,6 +63,8 @@ def build_denoiser():
     cwd = getcwd()
     denoiser_dir = join(cwd,'qiime/support_files/denoiser/FlowgramAlignment')
     chdir(denoiser_dir)
+    # make sure we compile the executable
+    call(["make", "clean"])
     call(["make"])
     chdir(cwd)
     print "Denoiser built."
