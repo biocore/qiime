@@ -1404,10 +1404,6 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
-        self.assertFloatEqual(obs_ax.get_xticks(),
-            [0., 0.2, 0.4, 0.6, 0.8, 1.0])
-        self.assertFloatEqual(obs_ax.get_yticks(),
-            [0., 0.2, 0.4, 0.6, 0.8, 1.0])
 
 
 class MantelTests(TestHelper):
