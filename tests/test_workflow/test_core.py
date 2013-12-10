@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 
 from itertools import izip
-from qiime.workflow.core import Workflow, requires
+from qiime.workflow.core import Workflow, requires, priority
 from cogent.util.unit_test import TestCase, main
+
+__author__ = "Daniel McDonald"
+__copyright__ = "Copyright 2013, The QIIME Project"
+__credits__ = ["Daniel McDonald",
+__license__ = "BSD" # NOTE, this script does _not_ import GPL code
+__version__ = "1.7.0-dev"
+__maintainer__ = "Daniel McDonald"
+__email__ = "mcdonadt@colorado.edu"
+__status__ = "Development"
 
 def construct_iterator(**kwargs):
     """make an iterator for testing purposes"""
@@ -16,26 +25,20 @@ def construct_iterator(**kwargs):
         return izip(*to_gen)
 
 class MockWorkflow(Workflow):
-    def _assign_function_groups(self, **kwargs):
-        groups = []
-        if 'A' in kwargs:
-            groups.append(self.groupA)
-        if 'B' in kwargs:
-            groups.append(self.groupB)
-        if 'C' in kwargs:
-            groups.append(self.groupC)
-        return groups
-
-    def groupA(self, item):
+    @priority(90)
+    @requires(Option='A', Values=True)
+    def wf_groupA(self, item):
         self.methodA1(item)
         self.methodA2(item)
 
-    def groupB(self, item):
+    @requires(Option='B', Values=True)
+    def wf_groupB(self, item):
         self.methodB1(item)
         self.methodB2(item)
    
-    @requires(IsValid=True)
-    def groupC(self, item):
+    @priority(10)
+    @requires(Option='C', Values=True)
+    def wf_groupC(self, item):
         self.methodC1(item)
         self.methodC2(item)
 
@@ -92,38 +95,38 @@ class MockWorkflow(Workflow):
 
 class WorkflowTests(TestCase):
     def setUp(self):
-        self.obj_short = MockWorkflow(**{'A1':'foo', 'xyz':10,'C2':2})
-        self.obj_noshort = MockWorkflow(ShortCircuit=False, **{'A1':'foo', 
-                                                             'xyz':10,'C2':2})
+        self.obj_short = MockWorkflow(**{'A':True, 'C':True})
+        self.obj_noshort = MockWorkflow(ShortCircuit=False, **{'A':True, 
+                                                               'C':True})
 
-    def test_init(self):
-        self.assertEqual(self.obj_short.Options, {'A1':'foo', 'xyz':10, 'C2':2})
+    def test_get_workflow(self):
+        gen = single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        exp_wf = [self.obj_short.wf_groupA, self.obj_short.wf_groupC]
+        obs_gen, obs_wf = self.obj_short._get_workflow(gen)
+
+        self.assertEqual(obs_wf, exp_wf)
+        self.assertEqual(list(obs_gen), [1,2,3,4,5])
+        
         self.assertEqual(self.obj_short.Stats, {})
         self.assertTrue(self.obj_short.ShortCircuit)
-        self.assertEqual(self.obj_noshort.Options, {'A1':'foo', 'xyz':10, 
-                                                   'C2':2})
+    
+    def test_init(self):
+        self.assertEqual(self.obj_short.Options, {'A':True, 'C':True})
+        self.assertEqual(self.obj_short.Stats, {})
+        self.assertTrue(self.obj_short.ShortCircuit)
+        self.assertEqual(self.obj_noshort.Options, {'A':True, 'C':True})
         self.assertEqual(self.obj_noshort.Stats, {})
         self.assertFalse(self.obj_noshort.ShortCircuit)
-
-    def test_assign_function_groups(self):
-        exp_None = []
-        exp_AB = [self.obj_short.groupA, self.obj_short.groupB]
-
-        obs_None = self.obj_short._assign_function_groups()
-        obs_AB = self.obj_short._assign_function_groups(**{'A':None, 'B':None})
-        
-        self.assertEqual(obs_None, exp_None)
-        self.assertEqual(obs_AB, exp_AB)
 
     def test_call_AC_no_fail(self):
         single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
         sf = lambda x: x.FinalState # success function
         
-        exp_stats = {'A1':5, 'A2':5, 'C1':5, 'C2':5}
-        exp_result = [('C2',1), ('C2',2), ('C2',3), ('C2',4), ('C2', 5)]
+        exp_stats = {'A1':5, 'A2':5, 'C1':5}
+        # C2 isn't executed as its requirements aren't met in the Options
+        exp_result = [('C1',1), ('C1',2), ('C1',3), ('C1',4), ('C1', 5)]
 
-        kwargs = {'A':None, 'C':None}
-        obs_result = list(self.obj_short(single_iter, sf, None, **kwargs))
+        obs_result = list(self.obj_short(single_iter, sf, None))
 
         self.assertEqual(obs_result, exp_result)
         self.assertEqual(self.obj_short.Stats, exp_stats)
@@ -135,10 +138,9 @@ class WorkflowTests(TestCase):
         
         exp_stats = {'A1':5, 'A2':5, 'C1':4, 'C2':4}
 
-        kwargs = {'A':None, 'C':None, 'C2':1}
-
+        self.obj_short.Options['C2'] = 1
         # pass in a failed callback to capture the result, and pause execution
-        gen = self.obj_short(single_iter, sf, ff, **kwargs)
+        gen = self.obj_short(single_iter, sf, ff)
 
         r1 = gen.next()
         self.assertEqual(r1, ('C2', 1))
@@ -168,31 +170,29 @@ class WorkflowTests(TestCase):
         sf = lambda x: x.FinalState # success function
         ff = lambda x: x.FinalState # failed function
         
-        exp_stats = {'A1':5, 'A2':5, 'C1':5, 'C2':5}
-
-        kwargs = {'A':None, 'C':None}
+        exp_stats = {'A1':5, 'A2':5, 'C1':5}
 
         # pass in a failed callback to capture the result, and pause execution
-        gen = self.obj_noshort(single_iter, sf, ff, **kwargs)
+        gen = self.obj_noshort(single_iter, sf, ff)
 
         r1 = gen.next()
-        self.assertEqual(r1, ('C2', 1))
+        self.assertEqual(r1, ('C1', 1))
         self.assertFalse(self.obj_noshort.Failed)
 
         r2 = gen.next()
-        self.assertEqual(r2, ('C2', 2))
+        self.assertEqual(r2, ('C1', 2))
         self.assertFalse(self.obj_noshort.Failed)
         
         r3 = gen.next()
-        self.assertEqual(self.obj_noshort.FinalState, ('C2', 'fail A2'))
+        self.assertEqual(self.obj_noshort.FinalState, ('C1', 'fail A2'))
         self.assertTrue(self.obj_noshort.Failed)
 
         r4 = gen.next()
-        self.assertEqual(r4, ('C2', 4))
+        self.assertEqual(r4, ('C1', 4))
         self.assertFalse(self.obj_noshort.Failed)
         
         r5 = gen.next()
-        self.assertEqual(r5, ('C2', 5))
+        self.assertEqual(r5, ('C1', 5))
         self.assertFalse(self.obj_noshort.Failed)
 
         self.assertEqual(self.obj_noshort.Stats, exp_stats)
@@ -236,6 +236,17 @@ class RequiresTests(TestCase):
         obj.methodB2('test')
         self.assertEqual(obj.FinalState, None)
         self.assertEqual(obj.Stats, {})
-        
+
+class PriorityTests(TestCase):
+    def test_dec(self):
+        @priority(10)
+        def foo(x,y,z):
+            """doc check"""
+            return x+y+z
+
+        self.assertEqual(foo.Priority, 10)
+        self.assertEqual(foo.__name__, 'foo')
+        self.assertEqual(foo.__doc__, 'doc check')
+
 if __name__ == '__main__':
     main()

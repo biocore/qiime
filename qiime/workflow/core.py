@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 
+from itertools import chain
 from functools import update_wrapper
 from collections import Iterable, defaultdict
 
+__author__ = "Daniel McDonald"
+__copyright__ = "Copyright 2013, The QIIME Project"
+__credits__ = ["Daniel McDonald", "Tony Walters"]
+__license__ = "BSD" # NOTE, this script does _not_ import GPL code
+__version__ = "1.7.0-dev"
+__maintainer__ = "Daniel McDonald"
+__email__ = "mcdonadt@colorado.edu"
+__status__ = "Development"
+
 # thank you Flask project...
 _missing = object()
+_executed = object()
 
 class Workflow(object):
     """Arbitrary worflow support structure"""
@@ -23,45 +34,60 @@ class Workflow(object):
         self.Failed = False
         self.FinalState = None
 
-    def _assign_function_groups(self, **kwargs):
-        """Determine what function groups will be used
-
-        A function group is simply a function that subsequently calls the
-        methods of interested. For instance, you may have a _process_seqs 
-        function group, that then calls _check_length, _split_sequence, etc.
+    def _all_workflow_methods(self, default_priority=0):
+        """Get all workflow methods
+        
+        Methods are sorted by priority
         """
-        raise NotImplementedError("Must be implemented")
+        methods = [getattr(self, f) for f in dir(self) if f.startswith('wf_')]
+        key = lambda x: getattr(x, 'Priority', default_priority)
+        return sorted(methods, key=key, reverse=True)
 
-    def __call__(self, it, success_callback=None, failed_callback=None, **kwargs):
+    def _get_workflow(self, it):
+        """Get the methods executed, sorted by priority"""
+        # save state
+        shortcircuit_state = self.ShortCircuit
+        self.ShortCircuit = False
+        stats = self.Stats.copy()
+
+        all_wk_methods = self._all_workflow_methods()
+
+        peek = it.next()
+        generator_reset = chain([peek], it)
+
+        executed = []
+        for f in all_wk_methods:
+            if f(peek) is _executed:
+                executed.append(f)
+
+        # restore state
+        self.ShortCircuit = shortcircuit_state
+        self.Stats = stats
+
+        return generator_reset, executed
+
+    def __call__(self, it, success_callback=None, fail_callback=None):
         """Operate on all the data
 
         it : an iterator
         success_callback : method to call on a successful item prior to 
             yielding
-        failed_callback : method to call on a failed item prior to yielding
-        kwargs : these will get passed to the iterator constructor and to the
-            the method that determines the function groups
+        fail_callback : method to call on a failed item prior to yielding
         """
         if success_callback is None:
             success_callback = lambda x: x.FinalState
 
-        function_groups = self._assign_function_groups(**kwargs)
-
-        # note: can also implement a peek and prune approach where only the
-        # methods that execute on the first item (w/o short circuiting) are
-        # subsequently left in the workflow. The functions can then be
-        # chained as well. this reduces the number of function calls, but
-        # likely adds a little more complexity into using this object
-
+        it, workflow = self._get_workflow(it)
+    
         for item in it:
             self.Failed = False
             self.FinalState = None
             
-            for f in function_groups:
+            for f in workflow:
                 f(item)
 
-            if self.Failed and failed_callback is not None:
-                yield failed_callback(self)
+            if self.Failed and fail_callback is not None:
+                yield fail_callback(self)
             else:
                 yield success_callback(self)
 
@@ -111,7 +137,8 @@ class requires(object):
             value = dec_self.Options.get(self.Option, _missing)
             if value in self.Values:
                 f(dec_self, *args, **kwargs)
-        
+                return _executed
+
         def decorated_without_option(dec_self, *args, **kwargs):
             """A decorated function that does not have an option to validate
 
@@ -121,8 +148,18 @@ class requires(object):
                 return
 
             f(dec_self, *args, **kwargs)
+            return _executed
 
         if self.Option is None:
             return update_wrapper(decorated_without_option, f)
         else:
             return update_wrapper(decorated_with_option, f)
+
+class priority(object):
+    """Sets a function priority"""
+    def __init__(self, Priority):
+        self.Priority = Priority
+
+    def __call__(self, f):
+        f.Priority = self.Priority
+        return f
