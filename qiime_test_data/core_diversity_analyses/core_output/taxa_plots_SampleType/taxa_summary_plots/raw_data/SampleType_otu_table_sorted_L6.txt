@@ -1,4 +1,0 @@
-Taxon	feces	L_palm	Other	Tongue
-Unclassified;Other;Other;Other;Other;Other	0.0113636363636	0.2	0.909090909091	0.777777777778
-k__Bacteria;Other;Other;Other;Other;Other	0.988636363636	0.777777777778	0.0909090909091	0.222222222222
-k__Bacteria;p__Proteobacteria;Other;Other;Other;Other	0.0	0.0222222222222	0.0	0.0
