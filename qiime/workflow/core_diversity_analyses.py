@@ -391,7 +391,7 @@ def run_core_diversity_analyses(
                                 _index_headers['taxa_summary_categorical'] % category))
     
     if not suppress_group_significance:
-        params_str = params.get('test_group_significance', '')
+        params_str = params.get('group_significance', '')
         # group significance tests, aka category significance 
         for category in categories:
             group_signifance_fp = \
@@ -399,13 +399,13 @@ def run_core_diversity_analyses(
             if not exists(group_signifance_fp):
                 # Build the OTU cateogry significance command
                 group_significance_cmd = \
-                 'test_group_significance.py -i %s -m %s -c %s -o %s %s' %\
+                 'group_significance.py -i %s -m %s -c %s -o %s %s' %\
                  (biom_fp, mapping_fp, category, 
                   group_signifance_fp, params_str)
                 commands.append([('Group significance (%s)' % category, 
                                   group_significance_cmd)])
             else:
-                logger.write("Skipping test_group_significance.py for %s as %s exists.\n\n" \
+                logger.write("Skipping group_significance.py for %s as %s exists.\n\n" \
                              % (category, group_signifance_fp))
             
             index_links.append(('Category significance (%s)' % category,
