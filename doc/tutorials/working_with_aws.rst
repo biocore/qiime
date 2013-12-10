@@ -39,8 +39,16 @@ For example::
 	ssh -i  ~/my_key.pem ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com
 
 
+Go `here for instructions on using PuTTY to connect to your running EC2 instance <http://ged.msu.edu/angus/tutorials-2011/logging-into-ec2-windows.html>`_. Here is another guide to `connect to Amazon EC2 using Putty and private keys <http://blog.linuxacademy.com/linux/connect-to-amazon-ec2-using-putty-private-key-on-windows/>`_, suggested by `Leland <https://groups.google.com/forum/?fromgroups#!topic/qiime-forum/fEtGsfomGLM>`_.
 
-Go `here for instructions on using PuTTY to connect to your running EC2 instance <http://ged.msu.edu/angus/tutorials-2011/logging-into-ec2-windows.html>`_.
+Setting the QIIME temporary directory
+=====================================
+
+By default the QIIME temporary directory is set to ``/tmp/`` which will work for most cases but it can cause issues in two scenarios. First, if your dataset is large there may not be enough space on the filesystem containing ``/tmp``, and second when you are running in a parallel environment that makes use of multiple AWS instances, for example: :ref:`using-qiime-with-starcluster-and-the-ipython-notebook`. In both cases you will need to set up your ``temp_dir`` variable within your ``qiime_config`` file to a different directory.
+
+When you are working with only single instance, you can set ``temp_dir`` to point to a directory on a larger partition (exactly where will depend on your instance configuration), or to the drive created as described in :ref:`creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances`. When working in a parallel environment with multiple instances (e.g., with StarCluster (:ref:`using-qiime-with-starcluster-and-the-ipython-notebook`)) ``temp_dir`` will need to be set to a folder that is NFS shared across the instances (again, this will depend on your specific configuration).
+
+You can change the ``temp_dir`` setting in your QIIME install, see the instructions for :ref:`qiime_config`. 
 
 Getting data into and out of your QIIME EC2 instance
 ====================================================
@@ -134,6 +142,8 @@ As long as your EC2 instances are running, you're paying for them by the hour. W
 
 If you're permanently done with an EC2 instance, you can terminate it by selecting the instance and choosing ``Instance Actions`` > ``Terminate``. Once you've terminated an instance you can never get it back: all data in that instance, as well as any configuration changes you've made, etc, is lost forever, so be sure this is what you want to do.
 
+.. _creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances:
+
 Creating a volume for persistent storage across different launches of an instance (or different instances)
 ==========================================================================================================
 The disk space is fairly limited on the EC2 instances. To get around this you can create a volume (the equivalent of an external hard drive) and mount that on your instance. Data that you store in this volume can be accessed across different launches of an instance, or across different instances, but can only be attached to one instance at a time. 
@@ -179,6 +189,7 @@ Anytime you attach or re-attach your volume to an instance (so after starting a 
 
 Once you've created your device, you only need to go through the attachment step to attach to future instances. This is the step illustrated in Figure 11. Note that you'll need to create future instances in the same availability zone as this volume if you'd like to attach this volume.
 
+.. _using-qiime-with-starcluster-and-the-ipython-notebook:
 
 Using QIIME with StarCluster and the IPython Notebook
 =====================================================

@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -548,7 +548,7 @@ y\t5\t6\tsample y""")
         remove(tmp_filename)
         
         self.assertEqual(actual_seqs, seqs)
-        
+
     def test_format_unifrac_sample_mapping(self):
         """format sample mapping works
         """
