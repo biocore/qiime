@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+from functools import update_wrapper
 from collections import Iterable, defaultdict
+
+# thank you Flask project...
+_missing = object()
 
 class Workflow(object):
     """Arbitrary worflow support structure"""
@@ -19,10 +23,6 @@ class Workflow(object):
         self.Failed = False
         self.FinalState = None
 
-    def _construct_iterator(self, **kwargs):
-        """Define the central iterator"""
-        raise NotImplementedError("Must be implemented")
-
     def _assign_function_groups(self, **kwargs):
         """Determine what function groups will be used
 
@@ -32,13 +32,10 @@ class Workflow(object):
         """
         raise NotImplementedError("Must be implemented")
 
-    def _initialize_item_state(self, item):
-        """Initialie the per-item state in self"""
-        raise NotImplementedError("Must be implemented")
-
-    def __call__(self, success_callback=None, failed_callback=None, **kwargs):
+    def __call__(self, it, success_callback=None, failed_callback=None, **kwargs):
         """Operate on all the data
 
+        it : an iterator
         success_callback : method to call on a successful item prior to 
             yielding
         failed_callback : method to call on a failed item prior to yielding
@@ -46,28 +43,32 @@ class Workflow(object):
             the method that determines the function groups
         """
         if success_callback is None:
-            success_callback = lambda x: x
+            success_callback = lambda x: x.FinalState
 
-        gen = self._construct_iterator(**kwargs)
         function_groups = self._assign_function_groups(**kwargs)
 
-        for item in gen:
+        # note: can also implement a peek and prune approach where only the
+        # methods that execute on the first item (w/o short circuiting) are
+        # subsequently left in the workflow. The functions can then be
+        # chained as well. this reduces the number of function calls, but
+        # likely adds a little more complexity into using this object
+
+        for item in it:
             self.Failed = False
-            self._initialize_item_state(item)
+            self.FinalState = None
             
             for f in function_groups:
                 f(item)
 
             if self.Failed and failed_callback is not None:
-                yield failed_callback(self.FinalState)
+                yield failed_callback(self)
             else:
-                yield success_callback(self.FinalState)
+                yield success_callback(self)
 
 class requires(object):
     """Decorator that executes a function if requirements are met"""
     def __init__(self, IsValid=True, Option=None, Values=None):
         """
-        f : the decorated function
         IsValid : execute the function if self.Failed is False
         Option : a required option
         Values : required values associated with an option
@@ -83,24 +84,45 @@ class requires(object):
             else:
                 self.Values = set([self.Values])
     
-    def __call__(outer_self, f):
+        if _missing in self.Values:
+            raise ValueError("_missing cannot be in Values!")
+
+    def doShortCircuit(self, wrapped):
+        if self.IsValid and (wrapped.Failed and wrapped.ShortCircuit):
+            return True
+        else:
+            return False
+
+    def __call__(self, f):
+        """Wrap a function
+
+        f : the function to wrap
+        """
         # outer_self is the requires object
         # self is expected to be a Workflow object
-        def decorated_with_option(self, *args, **kwargs):
-            if outer_self.IsValid and (self.Failed and self.ShortCircuit):
+        def decorated_with_option(dec_self, *args, **kwargs):
+            """A decorated function that has an option to validate
+
+            dec_self : this is "self" for the decorated function
+            """
+            if self.doShortCircuit(dec_self):
                 return
-            
-            opt = self.Options.get(outer_self.Option, 'MISSING OPTION')
-            if opt != 'MISSING OPTION' and opt in outer_self.Values:
-                f(self, *args, **kwargs)
+
+            value = dec_self.Options.get(self.Option, _missing)
+            if value in self.Values:
+                f(dec_self, *args, **kwargs)
         
-        def decorated_without_option(self, *args, **kwargs):
-            if outer_self.IsValid and (self.Failed and self.ShortCircuit):
+        def decorated_without_option(dec_self, *args, **kwargs):
+            """A decorated function that does not have an option to validate
+
+            dec_self : this is "self" for the decorated function
+            """
+            if self.doShortCircuit(dec_self):    
                 return
 
-            f(self, *args, **kwargs)
+            f(dec_self, *args, **kwargs)
 
-        if outer_self.Option is not None:
-            return decorated_with_option
+        if self.Option is None:
+            return update_wrapper(decorated_without_option, f)
         else:
-            return decorated_without_option
+            return update_wrapper(decorated_with_option, f)

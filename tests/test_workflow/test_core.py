@@ -4,17 +4,18 @@ from itertools import izip
 from qiime.workflow.core import Workflow, requires
 from cogent.util.unit_test import TestCase, main
 
-class MockWorkflow(Workflow):
-    def _construct_iterator(self, **kwargs):
-        to_gen = []
-        for k in sorted(kwargs):
-            if k.startswith('iter'):
-                to_gen.append(kwargs[k])
-        if len(to_gen) == 1:
-            return (x for x in to_gen[0])
-        else:
-            return izip(*to_gen)
+def construct_iterator(**kwargs):
+    """make an iterator for testing purposes"""
+    to_gen = []
+    for k in sorted(kwargs):
+        if k.startswith('iter'):
+            to_gen.append(kwargs[k])
+    if len(to_gen) == 1:
+        return (x for x in to_gen[0])
+    else:
+        return izip(*to_gen)
 
+class MockWorkflow(Workflow):
     def _assign_function_groups(self, **kwargs):
         groups = []
         if 'A' in kwargs:
@@ -24,10 +25,6 @@ class MockWorkflow(Workflow):
         if 'C' in kwargs:
             groups.append(self.groupC)
         return groups
-
-    def _initialize_item_state(self, item):
-        self.Foo = None
-        self.Bar = None
 
     def groupA(self, item):
         self.methodA1(item)
@@ -108,19 +105,6 @@ class WorkflowTests(TestCase):
         self.assertEqual(self.obj_noshort.Stats, {})
         self.assertFalse(self.obj_noshort.ShortCircuit)
 
-    def test_construct_iterator(self):
-        exp_1gen = [1,2,3,4,5]
-        exp_2gen = [(1,6),(2,7),(3,8),(4,9),(5,10)]
-        
-        single_iter = {'iter_x':[1,2,3,4,5]}
-        double_iter = {'iter_x':[1,2,3,4,5], 'iter_y':[6,7,8,9,10]}
-        
-        obs_1gen = list(self.obj_short._construct_iterator(**single_iter))
-        obs_2gen = list(self.obj_short._construct_iterator(**double_iter))
-        
-        self.assertEqual(obs_1gen, exp_1gen)
-        self.assertEqual(obs_2gen, exp_2gen)
-
     def test_assign_function_groups(self):
         exp_None = []
         exp_AB = [self.obj_short.groupA, self.obj_short.groupB]
@@ -131,28 +115,30 @@ class WorkflowTests(TestCase):
         self.assertEqual(obs_None, exp_None)
         self.assertEqual(obs_AB, exp_AB)
 
-    def test_initialize_item_state(self):
-        self.obj_short._initialize_item_state(None)
-        self.assertEqual(self.obj_short.Foo, None)
-        self.assertEqual(self.obj_short.Bar, None)
-
     def test_call_AC_no_fail(self):
+        single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        sf = lambda x: x.FinalState # success function
+        
         exp_stats = {'A1':5, 'A2':5, 'C1':5, 'C2':5}
         exp_result = [('C2',1), ('C2',2), ('C2',3), ('C2',4), ('C2', 5)]
 
-        kwargs = {'iter_x':[1,2,3,4,5], 'A':None, 'C':None, 'C2':1}
-        obs_result = list(self.obj_short(None, None, **kwargs))
+        kwargs = {'A':None, 'C':None}
+        obs_result = list(self.obj_short(single_iter, sf, None, **kwargs))
 
         self.assertEqual(obs_result, exp_result)
         self.assertEqual(self.obj_short.Stats, exp_stats)
 
     def test_call_AC_fail(self):
+        single_iter = construct_iterator(**{'iter_x':[1,2,'fail A2',4,5]})
+        sf = lambda x: x.FinalState # success function
+        ff = lambda x: x.FinalState # failed function
+        
         exp_stats = {'A1':5, 'A2':5, 'C1':4, 'C2':4}
 
-        kwargs = {'iter_x':[1,2,'fail A2',4,5], 'A':None, 'C':None, 'C2':1}
+        kwargs = {'A':None, 'C':None, 'C2':1}
 
         # pass in a failed callback to capture the result, and pause execution
-        gen = self.obj_short(None, lambda x: x, **kwargs)
+        gen = self.obj_short(single_iter, sf, ff, **kwargs)
 
         r1 = gen.next()
         self.assertEqual(r1, ('C2', 1))
@@ -178,12 +164,16 @@ class WorkflowTests(TestCase):
         self.assertEqual(self.obj_short.Stats, exp_stats)
 
     def test_call_AC_fail_noshort(self):
+        single_iter = construct_iterator(**{'iter_x':[1,2,'fail A2',4,5]})
+        sf = lambda x: x.FinalState # success function
+        ff = lambda x: x.FinalState # failed function
+        
         exp_stats = {'A1':5, 'A2':5, 'C1':5, 'C2':5}
 
-        kwargs = {'iter_x':[1,2,'fail A2',4,5], 'A':None, 'C':None, 'C2':1}
+        kwargs = {'A':None, 'C':None}
 
         # pass in a failed callback to capture the result, and pause execution
-        gen = self.obj_noshort(None, lambda x: x, **kwargs)
+        gen = self.obj_noshort(single_iter, sf, ff, **kwargs)
 
         r1 = gen.next()
         self.assertEqual(r1, ('C2', 1))
