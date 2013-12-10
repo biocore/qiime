@@ -2,12 +2,12 @@
 
 from itertools import izip
 from qiime.workflow.core import Workflow, requires, priority
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Daniel McDonald",
-__license__ = "BSD" # NOTE, this script does _not_ import GPL code
+__credits__ = ["Daniel McDonald"]
+__license__ = "BSD" # NOTE, does not import any GPL code
 __version__ = "1.7.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
@@ -117,6 +117,13 @@ class WorkflowTests(TestCase):
         self.assertEqual(self.obj_noshort.Options, {'A':True, 'C':True})
         self.assertEqual(self.obj_noshort.Stats, {})
         self.assertFalse(self.obj_noshort.ShortCircuit)
+
+    def test_all_wf_methods(self):
+        # note on priority: groupA:90, groupC:10, groupB:0 (default)
+        exp = [self.obj_short.wf_groupA, self.obj_short.wf_groupC,
+               self.obj_short.wf_groupB]
+        obs = self.obj_short._all_wf_methods()
+        self.assertEqual(obs, exp)
 
     def test_call_AC_no_fail(self):
         single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})

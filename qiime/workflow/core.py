@@ -34,7 +34,7 @@ class Workflow(object):
         self.Failed = False
         self.FinalState = None
 
-    def _all_workflow_methods(self, default_priority=0):
+    def _all_wf_methods(self, default_priority=0):
         """Get all workflow methods
         
         Methods are sorted by priority
@@ -50,19 +50,13 @@ class Workflow(object):
         self.ShortCircuit = False
         stats = self.Stats.copy()
 
-        all_wk_methods = self._all_workflow_methods()
-
         peek = it.next()
-        generator_reset = chain([peek], it)
-
-        executed = []
-        for f in all_wk_methods:
-            if f(peek) is _executed:
-                executed.append(f)
+        executed = [f for f in self._all_wf_methods() if f(peek) is _executed]
 
         # restore state
         self.ShortCircuit = shortcircuit_state
         self.Stats = stats
+        generator_reset = chain([peek], it)
 
         return generator_reset, executed
 
@@ -124,8 +118,6 @@ class requires(object):
 
         f : the function to wrap
         """
-        # outer_self is the requires object
-        # self is expected to be a Workflow object
         def decorated_with_option(dec_self, *args, **kwargs):
             """A decorated function that has an option to validate
 
