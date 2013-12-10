@@ -80,7 +80,7 @@ script_info['optional_options'] = [
 
     make_option('--genetic_code', type='int', default=11,
         help=('ID of genetic code to use for DNA translations (please see '
-              'http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=cgencodes). '
+              'http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi) '
               'Only valid with -m blat. [default: %default]')),
               
     make_option('--max_diff', type='float', default=None,
