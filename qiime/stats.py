@@ -5,7 +5,7 @@ __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Andrew Cochran",
-               "Greg Caporaso"]
+               "Jose Carlos Clemente Litran", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -1813,6 +1813,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
                 # a difference for this individual, and don't store
                 # the category in the BIOM table
                 store_biom_datum = False
+                raise ValueError("Some data points are missing, "
+                                     "cannot create biom file.")
             else:
                 # otherwise compute the difference between the ending
                 # and starting state

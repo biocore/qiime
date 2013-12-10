@@ -13,7 +13,7 @@ __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
 
 from numpy.random import seed
-from numpy import nan, isnan
+from numpy import nan, isnan, array
 from cogent.util.unit_test import TestCase,main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
@@ -370,7 +370,40 @@ class TopLevelTests(TestCase):
                      'L_palm':[4.5,4.3],
                      'otro':[4.6]}
          self.assertEqual(actual,expected)
-        
+
+    def test_get_per_sample_average_diversities(self):
+        """Test that get_per_sample_average_diversities works as expected."""
+        # test that it extracts the correct max depth if depth==None
+        exp_depth = 910 
+        exp_rare_mat = array([ 2.73645965,  2.20813124,  2.88191683,  
+            2.78969155,  3.10064886, 3.08441138])
+        exp_sids = ['Sam1', 'Sam2', 'Sam3', 'Sam4', 'Sam5', 'Sam6']
+        exp = {'Sam1': 2.736459655,
+               'Sam2': 2.2081312350000002,
+               'Sam3': 2.8819168300000002,
+               'Sam4': 2.7896915474999999,
+               'Sam5': 3.1006488600000002,
+               'Sam6': 3.0844113799999997}
+        obs = get_per_sample_average_diversities(self.rarefaction_data, None)
+        # check that values are the same
+        for k,v in exp.iteritems():
+            self.assertFloatEqual(obs[k], v)
+        # check that keys are the same
+        self.assertEqualItems(obs.keys(), exp.keys())
+        # test when depth is specified
+        depth = 850
+        exp = {'Sam1': 3.32916466,
+              'Sam2': nan,
+              'Sam3': nan,
+              'Sam4': 2.2746077633333335,
+              'Sam5': 3.0135700166666664,
+              'Sam6': 2.1973854533333337}
+        obs = get_per_sample_average_diversities(self.rarefaction_data, depth)
+        # check that values are the same
+        for k,v in exp.iteritems():
+            self.assertFloatEqual(obs[k], v)
+        # check that keys are the same
+        self.assertEqualItems(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

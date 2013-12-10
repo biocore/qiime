@@ -107,44 +107,28 @@ class QIIMEConfig(TestCase):
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
-        
         fp = self.config["cluster_jobs_fp"]
-        
-        if not fp:
-            self.fail("Your qiime_config file doesn't have cluster_jobs_fp\n.")
-        
-        full_path = app_path(fp)
-        if full_path:
-            fp = full_path
-        
-        #test if file exists or is in $PATH
-        self.assertTrue(exists(fp),
-         "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
 
-        modes = {R_OK:"readable",
-                 W_OK:"writable",
-                 X_OK:"executable"}
-        #test if file readable    
-        self.assertTrue(access(fp, X_OK),
-            "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
-   
+        if fp:
+            full_path = app_path(fp)
+            if full_path:
+                fp = full_path
+
+            #test if file exists or is in $PATH
+            self.assertTrue(exists(fp),
+             "cluster_jobs_fp set to an invalid file path or is not in $PATH: %s" % fp)
+
+            modes = {R_OK:"readable",
+                     W_OK:"writable",
+                     X_OK:"executable"}
+            #test if file readable    
+            self.assertTrue(access(fp, X_OK),
+                "cluster_jobs_fp is not %s: %s" % (modes[X_OK], fp))
+
     def test_blastmat_dir(self):
         """blastmat_dir is set to a valid path."""
         
         test_qiime_config_variable("blastmat_dir", self.config, self)
-        
-    def test_blastall_fp(self):
-        """blastall_fp is set to a valid path"""
-        
-        blastall = self.config["blastall_fp"]
-        if not self.config["blastall_fp"].startswith("/"):
-            #path is relative, figure out absolute path
-            blast_all = app_path(blastall)
-            if not blast_all:
-                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
-            self.config["blastall_fp"] = blast_all
-
-        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
         
     def test_pynast_template_alignment_fp(self):
         """pynast_template_alignment, if set, is set to a valid path"""
@@ -296,11 +280,12 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,7,1)
+        max_acceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
@@ -308,49 +293,51 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,\
          "Unsupported numpy version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
+            '.'.join(map(str,max_acceptable_version)),
             version_string))
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
-        #min_acceptable_version = (1,1,0)
-        #min_unacceptable_version = (1,1,0)
-        matplotlib_acceptable_version = (1,1,0)
+        min_acceptable_version = (1,1,0)
+        max_acceptable_version = (1,3,1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
-            pass_test = (version == matplotlib_acceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(matplotlib_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
          "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,matplotlib_acceptable_version)),
-            '.'.join(map(str,matplotlib_acceptable_version)),
-            version_string))
+         % ('.'.join(map(str,min_acceptable_version)),
+            '.'.join(map(str,max_acceptable_version)), version_string))
             
     def test_pynast_suported_version(self):
         """pynast version is supported """
         min_acceptable_version = (1,2)
-        min_unacceptable_version = (1,3)
+        max_acceptable_version = (1,2,2)
         try:
             from pynast import __version__ as pynast_lib_version
             version = pynast_lib_version.split('.')
             if version[-1][-4:]=='-dev':
                  version[-1] = version[-1][:-4]
             version = tuple(map(int,version))
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(pynast_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
-        self.assertTrue(pass_test,\
-         "Unsupported pynast version. Must be >= %s and < %s , but running %s." \
-         % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
-            version_string))
-            
+
+        min_version_str = '.'.join(map(str, min_acceptable_version))
+        max_version_str = '.'.join(map(str, max_acceptable_version))
+        error_msg = ("Unsupported pynast version. Must be >= %s and <= %s, "
+                     "but running %s." % (min_version_str, max_version_str,
+                                          version_string))
+        self.assertTrue(pass_test, error_msg)
+
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
         acceptable_version = (2,1,3)
@@ -449,6 +436,19 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
          "ChimeraSlayer depends on external files in directoryies relative to its "
          "install directory. These do not appear to be present.")
+
+    def test_blastall_fp(self):
+        """blastall_fp is set to a valid path"""
+        
+        blastall = self.config["blastall_fp"]
+        if not self.config["blastall_fp"].startswith("/"):
+            #path is relative, figure out absolute path
+            blast_all = app_path(blastall)
+            if not blast_all:
+                raise ApplicationNotFoundError("blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." % blastall)
+            self.config["blastall_fp"] = blast_all
+
+        test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
