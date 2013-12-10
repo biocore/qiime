@@ -17,6 +17,11 @@ __status__ = "Development"
 _missing = object()
 _executed = object()
 
+class Exists(object):
+    def __contains__(self, item):
+        return True
+option_exists = Exists()
+
 class Workflow(object):
     """Arbitrary worflow support structure"""
     def __init__(self, ShortCircuit=True, **kwargs):
@@ -87,7 +92,7 @@ class Workflow(object):
 
 class requires(object):
     """Decorator that executes a function if requirements are met"""
-    def __init__(self, IsValid=True, Option=None, Values=None):
+    def __init__(self, IsValid=True, Option=None, Values=_missing):
         """
         IsValid : execute the function if self.Failed is False
         Option : a required option
@@ -96,16 +101,16 @@ class requires(object):
         # self here is the requires object
         self.IsValid = IsValid
         self.Option = Option
-        self.Values = Values
 
-        if not isinstance(self.Values, set):
-            if isinstance(self.Values, Iterable):
-                self.Values = set(self.Values)
+        if Values is _missing:
+            self.Values = option_exists
+        elif not isinstance(Values, set):
+            if isinstance(Values, Iterable):
+                self.Values = set(Values)
             else:
-                self.Values = set([self.Values])
-    
-        if _missing in self.Values:
-            raise ValueError("_missing cannot be in Values!")
+                self.Values = set([Values])
+        else:
+            self.Values = Values
 
     def doShortCircuit(self, wrapped):
         if self.IsValid and (wrapped.Failed and wrapped.ShortCircuit):
@@ -146,6 +151,7 @@ class requires(object):
             return update_wrapper(decorated_without_option, f)
         else:
             return update_wrapper(decorated_with_option, f)
+
 
 class priority(object):
     """Sets a function priority"""
