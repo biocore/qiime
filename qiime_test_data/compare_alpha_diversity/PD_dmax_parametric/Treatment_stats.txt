@@ -1,2 +1,0 @@
-Group1	Group2	Group1 mean	Group1 std	Group2 mean	Group2 std	t stat	p-value
-Control	Fast	4.4455362	0.534006934468	5.79022775	0.323085749714	-3.90625860184	0.0058515370117

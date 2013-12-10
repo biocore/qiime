@@ -1,3 +1,0 @@
-New.0.ReferenceOTU0	p2_33176	t2_53250	t1_55836	t2_53194	t1_56191	t1_57363
-New.0.ReferenceOTU1	f3_141
-New.0.ReferenceOTU2	p2_35810
