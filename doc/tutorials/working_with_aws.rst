@@ -44,11 +44,11 @@ Go `here for instructions on using PuTTY to connect to your running EC2 instance
 Setting the QIIME temporary directory
 =====================================
 
-By default the QIIME temporary directory is set to ``/tmp/`` which will work for most cases but it can cause issues in two scenarios: (1) when your dataset is large, and (2) when you are running in a parallel environment, for example: :ref:`using-qiime-with-starcluster-and-the-ipython-notebook`. In both cases you will need to set up your ``tmp_dir`` variable within your ``qiime_config`` file to a larger available path. 
+By default the QIIME temporary directory is set to ``/tmp/`` which will work for most cases but it can cause issues in two scenarios. First, if your dataset is large there may not be enough space on the filesystem containing ``/tmp``, and second when you are running in a parallel environment that makes use of multiple AWS instances, for example: :ref:`using-qiime-with-starcluster-and-the-ipython-notebook`. In both cases you will need to set up your ``temp_dir`` variable within your ``qiime_config`` file to a different directory.
 
-When you are working in a single instance you can set it up to point either a larger partition, setting will depend on your instance configuration, or to the drive created when following :ref:`creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances`. When working with StarCluster/IPython (:ref:`using-qiime-with-starcluster-and-the-ipython-notebook`) you will need to set it to a NFS folder; actual path will depend on your configuration.
+When you are working with only single instance, you can set ``temp_dir`` to point to a directory on a larger partition (exactly where will depend on your instance configuration), or to the drive created as described in :ref:`creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances`. When working in a parallel environment with multiple instances (e.g., with StarCluster (:ref:`using-qiime-with-starcluster-and-the-ipython-notebook`)) ``temp_dir`` will need to be set to a folder that is NFS shared across the instances (again, this will depend on your specific configuration).
 
-To make this change you will need to use your favorite editor and modify the ``tmp_dir`` variable, for example: ``vi $QIIME_CONFIG_FP``. Remember, the actual paths will depend on your instance and configuration.
+You can change the ``temp_dir`` setting in your QIIME install, see the instructions for :ref:`qiime_config`. 
 
 Getting data into and out of your QIIME EC2 instance
 ====================================================
