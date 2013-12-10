@@ -28,7 +28,7 @@ def fasta_qual_iterator(fasta_fps, qual_fps=None):
 
 class QualFilterFastaWorkflow(Workflow):
     @priority(90)
-    @requires(Option='min_seq_len', Values=_continuous)
+    @requires(Option='min_seq_len')
     def wf_length_check(self, item):
         seq_id, seq, qual_id, qual = item
 
