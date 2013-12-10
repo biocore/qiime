@@ -30,20 +30,8 @@ from qiime.parse import parse_mapping_file_to_dict, parse_otu_table
 from biom.parse import parse_biom_table
 from qiime.format import format_biom_table
 
-# globals used by certain tests.
-BT_IN_1 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
-MF_IN_1 = ['#SampleID\ttest_cat\ttest_corr',
-'Sample1\tcat1\t1',
-'Sample2\tcat1\t2',
-'Sample3\tcat2\t3',
-'Sample4\tcat2\t4',
-'Sample5\tcat3\t5',
-'Sample6\tcat3\t6',
-'NotInOtuTable1\tcat5\t7',
-'NotInOtuTable2\tcat5\t8']
-BT_4 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-08-16T15:23:02.872397","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 8],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[0,6,73.0],[0,7,6.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[1,6,27.0],[1,7,38.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[2,6,64.0],[2,7,54.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[3,6,60.0],[3,7,23.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[4,6,35.0],[4,7,5.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0],[5,6,93.0],[5,7,19.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null},{"id": "Sample7", "metadata": null},{"id": "Sample8", "metadata": null}]}"""
 
-class TestGroupSignificanceFunctions(TestCase):
+class GroupSignificanceFunctionsTests(TestCase):
     """Tests of group significance functions."""
 
     def setUp(self):
@@ -53,7 +41,8 @@ class TestGroupSignificanceFunctions(TestCase):
 
     def test_get_sample_cats(self):
         """Test get_sample_cats."""
-        pmf_in = {'Sample1': {'test_cat': 'cat1', 'test_corr': '1', 'test_empty': 'abc'},
+        pmf_in = \
+           {'Sample1': {'test_cat': 'cat1', 'test_corr': '1', 'test_empty': 'abc'},
             'Sample2': {'test_cat': 'cat1', 'test_corr': '1', 'test_empty': 'abc'},
             'Sample3': {'test_cat': 'cat2', 'test_corr': '1', 'test_empty': ''},
             'Sample4': {'test_cat': 'cat2', 'test_corr': '1', 'test_empty': ''},
@@ -126,7 +115,8 @@ class TestGroupSignificanceFunctions(TestCase):
         obs = list(group_significance_row_generator(bt, sample_indices))
         exp = zip(data.take([0,1,4,5],1), data.take([3],1), data.take([2],1))
         for o,e in zip(obs, exp):
-            [self.assertFloatEqual(i,j) for i, j in zip(sorted(hstack(e)),sorted(hstack(o)))]
+            [self.assertFloatEqual(i,j) for i, j in \
+                zip(sorted(hstack(e)),sorted(hstack(o)))]
             # the order of e and o are not the same. this isn't a problem in 
             # the actual function because we iterate over the order of the 
             # sample keys every time. 
@@ -614,7 +604,7 @@ class TestGroupSignificanceFunctions(TestCase):
         self.assertEqual(lines_pval_fdr[1], lines_sorted_fdr_1)
         self.assertEqual(lines_pval_bonf[6], lines_sorted_bonf_6)
 
-class TestGroupedCorrelation(TestCase):
+class GroupedCorrelationTests(TestCase):
     """Tests of grouped correlation significance functions."""
 
     def setUp(self):
@@ -912,6 +902,19 @@ class TestGroupedCorrelation(TestCase):
             CORRELATION_TEST_CHOICES, pval_assignment_method='bootstrapped',
             permutations=1000)
         self.assertFloatEqual(exp_bootstrapped_pvals, obs_pvals)
+
+# globals used by certain tests.
+BT_IN_1 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+MF_IN_1 = ['#SampleID\ttest_cat\ttest_corr',
+'Sample1\tcat1\t1',
+'Sample2\tcat1\t2',
+'Sample3\tcat2\t3',
+'Sample4\tcat2\t4',
+'Sample5\tcat3\t5',
+'Sample6\tcat3\t6',
+'NotInOtuTable1\tcat5\t7',
+'NotInOtuTable2\tcat5\t8']
+BT_4 = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date": "2013-08-16T15:23:02.872397","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 8],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[0,6,73.0],[0,7,6.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[1,6,27.0],[1,7,38.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[2,6,64.0],[2,7,54.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[3,6,60.0],[3,7,23.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[4,6,35.0],[4,7,5.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0],[5,6,93.0],[5,7,19.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": "k__One"}},{"id": "OTU2", "metadata": {"taxonomy": "k__Two"}},{"id": "OTU3", "metadata": {"taxonomy": "k__Three"}},{"id": "OTU4", "metadata": {"taxonomy": "k__Four"}},{"id": "OTU5", "metadata": {"taxonomy": "k__Five"}},{"id": "OTU6", "metadata": {"taxonomy": "k__Six"}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null},{"id": "Sample7", "metadata": null},{"id": "Sample8", "metadata": null}]}"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
