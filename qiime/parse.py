@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder",
                "Antonio Gonzalez Pena", "Jai Ram Rideout","Will Van Treuren",
-               "Yoshiki Vazquez-Baeza"]
+               "Yoshiki Vazquez-Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -15,7 +15,6 @@ __status__ = "Development"
 
 from string import strip
 from collections import defaultdict
-from copy import deepcopy
 import os
 from os.path import expandvars
 import re
@@ -30,7 +29,6 @@ from cogent.parse.tree import DndParser
 from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
 from cogent.core.tree import PhyloNode
 from cogent import DNA
-from biom.table import table_factory
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
 from types import GeneratorType
 
@@ -672,88 +670,6 @@ def parse_qiime_parameters(lines):
             
             result[script_id][parameter_id] = value
     return result
-
-def sample_mapping_to_otu_table(lines):
-    """Converts the UniFrac sample mapping file to an OTU table
-    
-    The sample mapping file is a required input for the UniFrac web interface.
-    """
-    out = ["#Full OTU Counts"]
-    header = ["#OTU ID"]
-
-    OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
-    all_sample_names = list(all_sample_names)
-    all_sample_names.sort()
-    header.extend(all_sample_names)
-    out.append('\t'.join(header))
-    for OTU in OTU_sample_info:
-        new_line = []
-        new_line.append(OTU)
-        for sample in all_sample_names:
-            new_line.append(OTU_sample_info[OTU][sample])
-        out.append('\t'.join(new_line))
-    return out
-
-def sample_mapping_to_biom_table(lines):
-    """Converts the UniFrac sample mapping file to biom table object
-    
-    The sample mapping file is a required input for the UniFrac web interface.
-    """
-    data = []
-    sample_ids = []
-    observation_ids = []
-    for line in lines:
-        fields = line.strip().split()
-        observation_id = fields[0]
-        sample_id = fields[1]
-        count = float(fields[2])
-        
-        try:
-            sample_idx = sample_ids.index(sample_id)
-        except ValueError:
-            sample_idx = len(sample_ids)
-            sample_ids.append(sample_id)
-        try:
-            observation_idx = observation_ids.index(observation_id)
-        except ValueError:
-            observation_idx = len(observation_ids)
-            observation_ids.append(observation_id)
-            
-        data.append([observation_idx, sample_idx, count])
-    
-    return table_factory(data,sample_ids,observation_ids)
-
-
-def parse_sample_mapping(lines):
-    """Parses the UniFrac sample mapping file (environment file)
-
-    The sample mapping file is a required input for the UniFrac web interface.
-    Returns a dict of OTU names mapped to sample:count dictionaries.
-    This code is used to convert this file to an OTU table for QIIME
-    """
-    #add the count of 1 if count info is not supplied
-    new_lines = []
-    for line in lines:
-        line = line.strip().split('\t')
-        if len(line) == 2:
-            line.append('1')
-        new_lines.append(line)
-
-    all_sample_names = [line[1] for line in new_lines]
-    all_sample_names = set(all_sample_names)
-    #create a dict of dicts with the OTU name mapped to a dictionary of
-    #sample names with counts
-    OTU_sample_info = {}
-    for line in new_lines:
-        OTU_name = line[0]
-        if OTU_name not in OTU_sample_info:
-            sample_info = dict([(i,'0') for i in all_sample_names])
-            OTU_sample_info[OTU_name] = deepcopy(sample_info)
-        sample_name = line[1]
-        count = line[2]
-        OTU_sample_info[OTU_name][sample_name] = count
-    return OTU_sample_info, all_sample_names
-
 
 def parse_qiime_config_file(qiime_config_file):
     """ Parse lines in a qiime_config file
