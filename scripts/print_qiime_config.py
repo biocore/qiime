@@ -284,7 +284,8 @@ class QIIMEDependencyBase(QIIMEConfig):
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version <= max_acceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
@@ -323,17 +324,20 @@ class QIIMEDependencyBase(QIIMEConfig):
             if version[-1][-4:]=='-dev':
                  version[-1] = version[-1][:-4]
             version = tuple(map(int,version))
-            pass_test = (version >= min_acceptable_version and version <= max_acceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(pynast_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
-        self.assertTrue(pass_test,\
-         "Unsupported pynast version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,max_acceptable_version)),
-            version_string))
-            
+
+        min_version_str = '.'.join(map(str, min_acceptable_version))
+        max_version_str = '.'.join(map(str, max_acceptable_version))
+        error_msg = ("Unsupported pynast version. Must be >= %s and <= %s, "
+                     "but running %s." % (min_version_str, max_version_str,
+                                          version_string))
+        self.assertTrue(pass_test, error_msg)
+
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
         acceptable_version = (2,1,3)
