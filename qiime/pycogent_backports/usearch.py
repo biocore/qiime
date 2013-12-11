@@ -1796,7 +1796,7 @@ def usearch61_ref_cluster(seq_path,
          remove_usearch_logs, wordlength, usearch61_maxrejects,
          usearch61_maxaccepts, HALT_EXEC,
          output_uc_filepath=join(output_dir, 'ref_clustered.uc'),
-         threads=threads)
+             threads=threads)
         if not save_intermediate_files:
             files_to_remove.append(clusters_fp)
              
