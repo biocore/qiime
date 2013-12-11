@@ -186,16 +186,16 @@ if build_stack:
 
 # taken from PyNAST
 classes = """
-    Development Status :: 4 - Beta
+    Development Status :: 5 - Production/Stable
+    Environment :: Console
     License :: OSI Approved :: GPL License
-    Topic :: Software Development :: Libraries :: Application Frameworks
     Topic :: Software Development :: Bioinformatics
     Programming Language :: Python
     Programming Language :: Python :: 2.7
-    Programming Language :: Python :: Implementation :: CPython
-    Operating System :: OS Independent
-    Operating System :: POSIX
-    Operating System :: MacOS :: MacOS X
+    Operating System :: UNIX
+    Operating System :: MacOS X
+    Operating System :: POSIX :: BSD
+    Operating System :: POSIX :: Linux
 """
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
@@ -220,6 +220,7 @@ for root, dnames, fnames in walk('qiime_test_data'):
 setup(name='qiime',
       version=__version__,
       description='Quantitative Insights Into Microbial Ecology',
+      long_description=long_description,
       author=__maintainer__,
       author_email=__email__,
       maintainer=__maintainer__,
@@ -243,7 +244,9 @@ setup(name='qiime',
                     'support_files/denoiser/FlowgramAlignment/*.lhs',
                     'support_files/denoiser/FlowgramAlignment/Makefile'],
                     'qiime_test_data':qiime_test_data_files},
-      long_description=long_description,
+      license=__license__,
+      keywords=['bioinformatics', 'microbiome', 'microbiology', 'qiime'],
+      platforms=['MacOS', 'Linux'],
       install_requires=['numpy >= 1.5.1, <= 1.7.1',
                         'matplotlib >= 1.1.0, <= 1.3.1', 'cogent == 1.5.3',
                         'pynast == 1.2.2', 'qcli', 'gdata',
