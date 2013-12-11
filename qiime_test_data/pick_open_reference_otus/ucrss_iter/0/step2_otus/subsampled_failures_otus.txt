@@ -1,2 +1,0 @@
-New.0.ReferenceOTU0	t2_52630	t1_57105
-New.0.ReferenceOTU1	f1_8307

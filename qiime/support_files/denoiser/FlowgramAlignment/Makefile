@@ -8,7 +8,7 @@ FlowgramAli_4frame: FlowgramAli_4frame.lhs
 # On ghc7+ consider using -with-rtsopts="-H100M" for increased speed
 
 clean:
-	rm *.o
-	rm *.hi
-	rm FlowgramAli_4frame
-	rm ../../../../scripts/FlowgramAli_4frame
+	rm -f *.o
+	rm -f *.hi
+	rm -f FlowgramAli_4frame
+	rm -f ../../../../scripts/FlowgramAli_4frame

@@ -1,4 +1,0 @@
-#FP1	FP2	Num included dimensions	Monte Carlo p-value	Count better	M^2
-#Warning: p-values in this file are NOT currently adjusted for multiple comparisons.
-s1_pc.txt	s2_pc.txt	3	0.000	0	0.343
-s1_pc.txt	s3_pc.txt	3	0.015	15	0.434

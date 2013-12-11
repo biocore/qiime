@@ -1,9 +1,0 @@
-#NodeID	NodeType	Abundance	k	p	c	o	f
-o1	otu	15.0	k__Bacteria	p__Firmicutes	c__Clost5	o__Clostridiales	f__Lachnospiraceae
-o2	otu	40.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostridiales	f__Lachnos1
-o3	otu	65.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostridiales	f__Lachnos1
-o4	otu	90.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostridiales	f__Lachnos2
-o5	otu	115.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostridiales	f__Lachnos2
-o6	otu	140.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostri3	f__Lachnospiraceae
-o7	otu	165.0	k__Bacteria	p__Firmicutes	c__Clostridia	o__Clostri3	f__Lachnospiraceae
-o8	otu	190.0	k__Bacteria	p__Firmicutes	c__Clost5	o__Clostridiales	f__Lachnospiraceae
