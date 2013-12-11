@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena", "John Chase"]
+__credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
@@ -112,8 +112,8 @@ def _get_level(value, levels, prefix=None):
 
     """
     if value > 1 or value < 0:
-        raise ValueError("Encountered invalid normalized alpha diversity value %s. "
-            "Normalized values must be between 0 and 1." % value)
+        raise ValueError("Encountered invalid normalized alpha diversity value %s." 
+        "Normalized values must be between 0 and 1." % value)
 
     check = [i for i in range(0, len(levels)) if levels[i] == value]
 
