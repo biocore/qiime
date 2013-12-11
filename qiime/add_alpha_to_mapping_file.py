@@ -182,7 +182,7 @@ def mean_alpha(alpha_dict, depth):
         if sample_ids:
             if not sample_ids == identifiers[3:]:
                 raise ValueError, ("Non-matching sample ids were found in the "
-                "collated alpha diversity files. Make sure all the files "
+                    "collated alpha diversity files. Make sure all the files "
                     "contain data for the same samples.")
         else:
             sample_ids = identifiers[3:]
