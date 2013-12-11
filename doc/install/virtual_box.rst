@@ -9,6 +9,8 @@ Because of the 'pipeline' nature of QIIME, there are many external dependencies 
 
 The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME's dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.
 
+It is strongly recommended that your system have 8 or more gigabytes of memory to use the virtual box with the newest releases of reference databases (e.g. Greengenes, UNITE).
+
 Installing the QIIME Virtual Box
 ================================
 1. Download and install the `VirtualBox`_ (VB) version for your machine.
