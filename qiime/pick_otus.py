@@ -1240,9 +1240,9 @@ class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
          'usearch61_sort_method':'abundance',
          'usearch61_maxrejects':32,
          'usearch61_maxaccepts':1,
-         'sizeorder':False
+         'sizeorder':False,
+         'threads':1.0
          }
-         
          
         _params.update(params)
         OtuPicker.__init__(self, _params)
@@ -1267,6 +1267,7 @@ class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
          otherwise a dict is returned with data.
 
         """
+        
         # perform de novo clustering
         clusters = usearch61_denovo_cluster(
          seq_path,
@@ -1284,6 +1285,7 @@ class Usearch610DeNovoOtuPicker(UclustOtuPickerBase):
          usearch61_maxrejects = self.Params['usearch61_maxrejects'],
          usearch61_maxaccepts = self.Params['usearch61_maxaccepts'],
          sizeorder = self.Params['sizeorder'],
+         threads = self.Params['threads'],
          HALT_EXEC=HALT_EXEC
          )
         
@@ -1342,7 +1344,8 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
          'usearch61_maxrejects':32,
          'usearch61_maxaccepts':1,
          'sizeorder':False,
-         'suppress_new_clusters':False
+         'suppress_new_clusters':False,
+         'threads':1.0
          }
          
          
@@ -1392,6 +1395,7 @@ class Usearch61ReferenceOtuPicker(UclustOtuPickerBase):
          usearch61_maxaccepts = self.Params['usearch61_maxaccepts'],
          sizeorder = self.Params['sizeorder'],
          suppress_new_clusters = self.Params['suppress_new_clusters'],
+         threads = self.Params['threads'],
          HALT_EXEC=HALT_EXEC
          )
         
