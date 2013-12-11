@@ -77,7 +77,7 @@ class FizzyTests(TestCase):
     def test_run_pyfeast(self):
         """assert that each of the selected features are in the appropriate range"""
         n_select = 5
-        (data, labels)  = self.uniform_data(500, 50, n_select)
+        (data, labels)  = self.uniform_data(1000, 50, n_select)
         variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
 
         selected_features = fizzy.run_pyfeast(data, labels, variable_names, "MIM", n_select)
