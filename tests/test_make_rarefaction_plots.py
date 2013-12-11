@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jesse Stombaugh"]
+__credits__ = ["Jesse Stombaugh", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -171,7 +171,7 @@ class TopLevelTests(TestCase):
         obs=make_html(self.rarefaction_legend_mat, \
                          self.rarefaction_data_mat,self.data['xaxis'], \
                          self.imagetype,self.mapping_lookup)
-                         
+
         self.assertEqual(obs,exp_html)
     
     def test_make_averages(self):
@@ -318,9 +318,288 @@ class TopLevelTests(TestCase):
     '''
 
     
-exp_html=\
-'''\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n<html>\n<head>\n  <meta http-equiv="content-type" content="text/html;">\n  <title>Rarefaction Curves</title>\n<style type="text/css">\ntd.data{font-size:10px;border-spacing:0px 10px;text-align:center;}\ntd.headers{font-size:12px;font-weight:bold;text-align:center;}\ntable{border-spacing:0px;}\n.removed{display:none;}\n.expands{cursor:pointer; cursor:hand;}\n.child1 td:first-child{padding-left: 3px;}\n</style>\n<script language="javascript" type="text/javascript">\n\nfunction show_hide_category(checkobject){\n    var imagetype=document.getElementById(\'imagetype\').value;\n    img=document.getElementById(checkobject.name.replace(\'_raw\'+imagetype,\'_ave\'+imagetype))\n    if (checkobject.checked==false){\n        img.style.display=\'none\';\n    }else{\n        img.style.display=\'\';\n    }\n}\n\nfunction reset_tree(){\n    var category=document.getElementById(\'category\').value;\n    var metric=document.getElementById(\'metric\').value;\n    var old_all_categories=document.getElementById(\'all_categories\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    cat_list=old_all_categories.value.split(\'$#!\')\n    if (metric!=\'\' && category != \'\'){\n    for (var i=1, il=cat_list.length; i<il; i++){\n        group=metric+category+cat_list[i]\n        main_class=metric+category\n        var exp_item=document.getElementById(group);\n        if (exp_item!=null){\n            if (exp_item.innerHTML==\'\\u25BC\'){\n                exp_item.innerHTML=\'\\u25B6\'\n                var rows=document.getElementsByName(group);\n                for (var j=0, jl=rows.length; j<jl; j++){\n                    rows[j].style.display="none";\n                }\n            }\n            var rows=document.getElementsByName(group+\'_raw\'+imagetype);\n            for (var j=0, jl=rows.length; j<jl; j++){\n                if (rows[j].checked==false){\n                    rows[j].checked=true;\n                }\n            }\n        }\n    }\n}\n}\n\nfunction changeMetric(SelObject){\n    var category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n    var array=document.getElementById(\'all_categories\').value.split(\'$#!\')\n    var plots=document.getElementById(\'plots\');\n    plots.style.display=\'none\'\n    reset_tree();\n    if (category.value != \'\'){\n        legend.style.display="";\n        cat=SelObject.value+category.value\n        data_display=document.getElementsByName(cat)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n        cat=old_metric.value+category.value\n        data_hide=document.getElementsByName(cat)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n        data_display=document.getElementsByName(category.value)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n        new_cat=SelObject.value+category.value\n        plots.innerHTML=\'\'\n        for (var i=1, il=array.length; i<il; i++){\n            img=document.createElement(\'img\')\n            img.setAttribute(\'width\',"600px") \n            img.setAttribute(\'id\',array[i]+\'_ave\'+imagetype)\n            img.setAttribute(\'style\',\'position:absolute;z-index:0\')\n            img.setAttribute(\'src\',"./html_plots/"+SelObject.value+array[i]+\'_ave\'+imagetype)\n            plots.appendChild(img)\n        }\n        plots.style.display=\'\'\n    }\n    \nold_metric.value=SelObject.value;\n}\n\nfunction changeCategory(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var metric=document.getElementById(\'metric\').value;\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n    var plots=document.getElementById(\'plots\');\n    var array=SelObject.value.split(\'$#!\')\n    var old_all_categories=document.getElementById(\'all_categories\')\n    category=array[0]\n    plots.style.display=\'none\'\n    reset_tree();\n\n    if (metric != \'\'){\n        legend.style.display="";\n\n        data_display=document.getElementsByName(category)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n        data_hide=document.getElementsByName(old_category.value)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n        cat=metric+category\n        data_display=document.getElementsByName(cat)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n        cat=metric+old_category.value\n        data_hide=document.getElementsByName(cat)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n        cat=metric+category\n        plots.innerHTML=\'\'\n        for (var i=1, il=array.length; i<il; i++){\n            img=document.createElement(\'img\')\n            img.setAttribute(\'width\',"600px") \n            img.setAttribute(\'id\',metric+array[i]+\'_ave\'+imagetype)\n            img.setAttribute(\'style\',\'position:absolute;z-index:0\')\n            img.setAttribute(\'src\',"./html_plots/"+metric+array[i]+\'_ave\'+imagetype)\n            plots.appendChild(img)\n        }\n        plots.style.display=\'\'\n    }\nold_all_categories.value=SelObject.value;\nold_category.value=category;\n}\nfunction toggle(){\n    var plots=document.getElementById(\'plots\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var plot_str=\'\';\n    var category=document.getElementById(\'category\');\n    var metric=document.getElementById(\'metric\');\n    expansion_element=document.getElementById(arguments[0]);\n    rows=document.getElementsByName(arguments[0]);\n    if (expansion_element.innerHTML==\'\\u25B6\'){\n        expansion_element.innerHTML=\'\\u25BC\'\n        show_row=arguments[0]+\'_raw\'+imagetype\n        \n        if (document.getElementById(show_row)==null){\n            img=document.createElement(\'img\')\n            img.setAttribute(\'width\',"600px") \n            img.setAttribute(\'id\',arguments[0]+\'_raw\'+imagetype)\n            img.setAttribute(\'style\',\'position:absolute;z-index:0\')\n            img.setAttribute(\'src\',"./html_plots/"+arguments[0]+\'_raw\'+imagetype)\n            plots.appendChild(img)\n        }else{\n            document.getElementById(arguments[0]+\'_raw\'+imagetype).style.display=\'\'\n        }\n        for (var i=0, il=rows.length;i<il;i++){\n            rows[i].style.display=\'\';\n        }\n    }else{\n        expansion_element.innerHTML=\'\\u25B6\'\n        document.getElementById(arguments[0]+\'_raw\'+imagetype).style.display=\'none\'\n        for (var i=0, il=rows.length;i<il;i++){\n            rows[i].style.display=\'none\';\n        }\n    }\n}\n\nfunction show_hide_categories(SelObject){\n    var all_categories=document.getElementById(\'all_categories\').value.split(\'$#!\')\n    var category=document.getElementById(\'category\').value;\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var metric=document.getElementById(\'metric\').value;\n    for (var i=1, il=all_categories.length; i<il; i++){\n        basename=metric+category+all_categories[i]\n        raw_image=basename+\'_raw\'+imagetype\n        ave_image=basename+\'_ave\'+imagetype\n        checkbox=document.getElementsByName(raw_image)\n        if (SelObject.value==\'All\'){\n            if (checkbox[0].checked==false){\n                checkbox[0].checked=true\n                document.getElementById(ave_image).style.display=\'\'\n            }\n        }else if (SelObject.value==\'None\'){\n            if (checkbox[0].checked==true){\n                checkbox[0].checked=false\n                document.getElementById(ave_image).style.display=\'none\'\n            }\n        }else if (SelObject.value==\'Invert\'){\n            if (checkbox[0].checked==true){\n                checkbox[0].checked=false\n                document.getElementById(ave_image).style.display=\'none\'\n            }else if (checkbox[0].checked==false){\n                checkbox[0].checked=true\n                document.getElementById(ave_image).style.display=\'\'\n            }\n        }\n    }\n    document.getElementById(\'show_category\').selectedIndex=0;\n}\n</script>\n\n</head>\n<body>\n<form action=\'\'>\n<input id="metric" type="hidden">\n<input id="category" type="hidden">\n<input id="imagetype" type="hidden" value=".png">\n<input id="all_categories" type="hidden">\n</form>\n<table><tr>\n<td><b>Select a Metric:</b></td>\n<td>\n<select onchange="javascript:changeMetric(this)">\n<option>&nbsp;</option>\n<option value="test">test</option>\n</select>\n</td>\n<td><b>&nbsp;&nbsp;Select a Category:</b></td>\n<td>\n<select onchange="javascript:changeCategory(this)">\n<option>&nbsp;</option>\n<option value="SampleID$#!col_0_row_0">SampleID</option>\n</select>\n</td>\n</table>\n<br>\n<div style="width:950px">\n<div id="plots" style="width:650px;height:550px;float:left;"></div>\n\n<div id="legend" style="width:300px;height:550px;float:right;display:none;">\n    <p><b>Show Categories: \n    <select id="show_category" onchange="show_hide_categories(this);">\n        <option value="">&nbsp;</option>\n        <option value="All">All</option>\n        <option value="None">None</option>\n        <option value="Invert">Invert</option>\n    </select>\n    </b></p>\n<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 200px; font-size: 12px; overflow: auto;"><table>\n<tr id="testSampleID" name="testSampleID" style="display: none;"><td class="data" onmouseover="document.body.style.cursor=\'pointer\'"  onmouseout="document.body.style.cursor=\'default\'" onclick="toggle(\'testcol_0_row_0\')" id="testcol_0_row_0" name="\'Sample1\'">&#x25B6;</td><td><input name="testcol_0_row_0_raw.png" type="checkbox" checked="True" onclick="show_hide_category(this)"></td><td style="color:#ff0000">&#x25A0;&nbsp;</td><td class="data"><b>Sample1</b></td></tr>\n<tr id="testcol_0_row_0_raw" name="testcol_0_row_0" style="display: none;"><td class="data" align="right">&#x221F;</td><td></td><td style="color:#ff0000">&#x25C6;</td><td class="data" align="left"><b>Sample1</b></td></tr>\n</table></div></div>\n<div style="position:relative;clear:both;">\n<table id="rare_data" border="1px">\n<tr name="SampleID" style="display: none;"><td class="headers">SampleID</td><td class="headers">Seqs/Sample</td>\n<td class="headers">test Ave.</td><td class="headers">test Err.</td>\n</tr>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#ff0000">Sample1</td><td class="data">10.0</td>\n<td class="data">     7.000</td><td class="data">       nan</td>\n</tr>\n</table>\n</div>\n</div>\n</body>\n</html>\n'''
+exp_html="""
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;">
+  <title>Rarefaction Curves</title>
+<style type="text/css">
+td.data{font-size:10px;border-spacing:0px 10px;text-align:center;}
+td.headers{font-size:12px;font-weight:bold;text-align:center;}
+table{border-spacing:0px;}
+.removed{display:none;}
+.expands{cursor:pointer; cursor:hand;}
+.child1 td:first-child{padding-left: 3px;}
+</style>
+<script language="javascript" type="text/javascript">
 
+function show_hide_category(checkobject){
+    var imagetype=document.getElementById('imagetype').value;
+    img=document.getElementById(checkobject.name.replace('_raw'+imagetype,'_ave'+imagetype))
+    if (checkobject.checked==false){
+        img.style.display='none';
+    }else{
+        img.style.display='';
+    }
+}
+
+function reset_tree(){
+    var category=document.getElementById('category').value;
+    var metric=document.getElementById('metric').value;
+    var old_all_categories=document.getElementById('all_categories');
+    var imagetype=document.getElementById('imagetype').value;
+    cat_list=old_all_categories.value.split('$#!')
+    if (metric!='' && category != ''){
+    for (var i=1, il=cat_list.length; i<il; i++){
+        group=metric+category+cat_list[i]
+        main_class=metric+category
+        var exp_item=document.getElementById(group);
+        if (exp_item!=null){
+            if (exp_item.innerHTML=='\u25BC'){
+                exp_item.innerHTML='\u25B6'
+                var rows=document.getElementsByName(group);
+                for (var j=0, jl=rows.length; j<jl; j++){
+                    rows[j].style.display="none";
+                }
+            }
+            var rows=document.getElementsByName(group+'_raw'+imagetype);
+            for (var j=0, jl=rows.length; j<jl; j++){
+                if (rows[j].checked==false){
+                    rows[j].checked=true;
+                }
+            }
+        }
+    }
+}
+}
+
+function changeMetric(SelObject){
+    var category=document.getElementById('category');
+    var old_metric=document.getElementById('metric');
+    var imagetype=document.getElementById('imagetype').value;
+    var legend=document.getElementById('legend');
+    var array=document.getElementById('all_categories').value.split('$#!')
+    var plots=document.getElementById('plots');
+    plots.style.display='none'
+    reset_tree();
+    if (category.value != ''){
+        legend.style.display="";
+        cat=SelObject.value+category.value
+        data_display=document.getElementsByName(cat)
+        for (var i=0, il=data_display.length; i<il; i++){
+            data_display[i].style.display="";
+        }
+        cat=old_metric.value+category.value
+        data_hide=document.getElementsByName(cat)
+        for (var i=0, il=data_hide.length; i<il; i++){
+            data_hide[i].style.display="none";
+        }
+        data_display=document.getElementsByName(category.value)
+        for (var i=0, il=data_display.length; i<il; i++){
+            data_display[i].style.display="";
+        }
+        new_cat=SelObject.value+category.value
+        plots.innerHTML=''
+        for (var i=1, il=array.length; i<il; i++){
+            img=document.createElement('img')
+            img.setAttribute('width',"600px") 
+            img.setAttribute('id',array[i]+'_ave'+imagetype)
+            img.setAttribute('style','position:absolute;z-index:0')
+            img.setAttribute('src',"./html_plots/"+SelObject.value+array[i]+'_ave'+imagetype)
+            plots.appendChild(img)
+        }
+        plots.style.display=''
+    }
+    
+old_metric.value=SelObject.value;
+
+// If both combo boxes have changed the value, display a disclaimer
+if (document.getElementById('select_metric_combo').selectedIndex !== 0 &&  document.getElementById('select_category_combo').selectedIndex !== 0) {
+    document.getElementById('nan_disclaimer').style.display='inline';
+}
+}
+
+function changeCategory(SelObject){
+    var old_category=document.getElementById('category');
+    var metric=document.getElementById('metric').value;
+    var imagetype=document.getElementById('imagetype').value;
+    var legend=document.getElementById('legend');
+    var plots=document.getElementById('plots');
+    var array=SelObject.value.split('$#!')
+    var old_all_categories=document.getElementById('all_categories')
+    category=array[0]
+    plots.style.display='none'
+    reset_tree();
+
+    if (metric != ''){
+        legend.style.display="";
+
+        data_display=document.getElementsByName(category)
+        for (var i=0, il=data_display.length; i<il; i++){
+            data_display[i].style.display="";
+        }
+        data_hide=document.getElementsByName(old_category.value)
+        for (var i=0, il=data_hide.length; i<il; i++){
+            data_hide[i].style.display="none";
+        }
+        cat=metric+category
+        data_display=document.getElementsByName(cat)
+        for (var i=0, il=data_display.length; i<il; i++){
+            data_display[i].style.display="";
+        }
+        cat=metric+old_category.value
+        data_hide=document.getElementsByName(cat)
+        for (var i=0, il=data_hide.length; i<il; i++){
+            data_hide[i].style.display="none";
+        }
+        cat=metric+category
+        plots.innerHTML=''
+        for (var i=1, il=array.length; i<il; i++){
+            img=document.createElement('img')
+            img.setAttribute('width',"600px") 
+            img.setAttribute('id',metric+array[i]+'_ave'+imagetype)
+            img.setAttribute('style','position:absolute;z-index:0')
+            img.setAttribute('src',"./html_plots/"+metric+array[i]+'_ave'+imagetype)
+            plots.appendChild(img)
+        }
+        plots.style.display=''
+    }
+old_all_categories.value=SelObject.value;
+old_category.value=category;
+// If both combo boxes have changed the value, display a disclaimer
+if (document.getElementById('select_metric_combo').selectedIndex !== 0 &&  document.getElementById('select_category_combo').selectedIndex !== 0) {
+    document.getElementById('nan_disclaimer').style.display='inline';
+}
+}
+function toggle(){
+    var plots=document.getElementById('plots');
+    var imagetype=document.getElementById('imagetype').value;
+    var plot_str='';
+    var category=document.getElementById('category');
+    var metric=document.getElementById('metric');
+    expansion_element=document.getElementById(arguments[0]);
+    rows=document.getElementsByName(arguments[0]);
+    if (expansion_element.innerHTML=='\u25B6'){
+        expansion_element.innerHTML='\u25BC'
+        show_row=arguments[0]+'_raw'+imagetype
+        
+        if (document.getElementById(show_row)==null){
+            img=document.createElement('img')
+            img.setAttribute('width',"600px") 
+            img.setAttribute('id',arguments[0]+'_raw'+imagetype)
+            img.setAttribute('style','position:absolute;z-index:0')
+            img.setAttribute('src',"./html_plots/"+arguments[0]+'_raw'+imagetype)
+            plots.appendChild(img)
+        }else{
+            document.getElementById(arguments[0]+'_raw'+imagetype).style.display=''
+        }
+        for (var i=0, il=rows.length;i<il;i++){
+            rows[i].style.display='';
+        }
+    }else{
+        expansion_element.innerHTML='\u25B6'
+        document.getElementById(arguments[0]+'_raw'+imagetype).style.display='none'
+        for (var i=0, il=rows.length;i<il;i++){
+            rows[i].style.display='none';
+        }
+    }
+}
+
+function show_hide_categories(SelObject){
+    var all_categories=document.getElementById('all_categories').value.split('$#!')
+    var category=document.getElementById('category').value;
+    var imagetype=document.getElementById('imagetype').value;
+    var metric=document.getElementById('metric').value;
+    for (var i=1, il=all_categories.length; i<il; i++){
+        basename=metric+category+all_categories[i]
+        raw_image=basename+'_raw'+imagetype
+        ave_image=basename+'_ave'+imagetype
+        checkbox=document.getElementsByName(raw_image)
+        if (SelObject.value=='All'){
+            if (checkbox[0].checked==false){
+                checkbox[0].checked=true
+                document.getElementById(ave_image).style.display=''
+            }
+        }else if (SelObject.value=='None'){
+            if (checkbox[0].checked==true){
+                checkbox[0].checked=false
+                document.getElementById(ave_image).style.display='none'
+            }
+        }else if (SelObject.value=='Invert'){
+            if (checkbox[0].checked==true){
+                checkbox[0].checked=false
+                document.getElementById(ave_image).style.display='none'
+            }else if (checkbox[0].checked==false){
+                checkbox[0].checked=true
+                document.getElementById(ave_image).style.display=''
+            }
+        }
+    }
+    document.getElementById('show_category').selectedIndex=0;
+}
+</script>
+
+</head>
+<body>
+<form action=''>
+<input id="metric" type="hidden">
+<input id="category" type="hidden">
+<input id="imagetype" type="hidden" value=".png">
+<input id="all_categories" type="hidden">
+</form>
+<table><tr>
+<td><b>Select a Metric:</b></td>
+<td>
+<select onchange="javascript:changeMetric(this)" id="select_metric_combo">
+<option>&nbsp;</option>
+<option value="test">test</option>
+</select>
+</td>
+<td><b>&nbsp;&nbsp;Select a Category:</b></td>
+<td>
+<select onchange="javascript:changeCategory(this)" id="select_category_combo">
+<option>&nbsp;</option>
+<option value="SampleID$#!col_0_row_0">SampleID</option>
+</select>
+</td>
+</table>
+<br>
+<div style="width:950px">
+<div id="plots" style="width:650px;height:550px;float:left;"></div>
+
+<div id="legend" style="width:300px;height:550px;float:right;display:none;">
+    <p><b>Show Categories: 
+    <select id="show_category" onchange="show_hide_categories(this);">
+        <option value="">&nbsp;</option>
+        <option value="All">All</option>
+        <option value="None">None</option>
+        <option value="Invert">Invert</option>
+    </select>
+    </b></p>
+<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 200px; font-size: 12px; overflow: auto;"><table>
+<tr id="testSampleID" name="testSampleID" style="display: none;"><td class="data" onmouseover="document.body.style.cursor='pointer'"  onmouseout="document.body.style.cursor='default'" onclick="toggle('testcol_0_row_0')" id="testcol_0_row_0" name="'Sample1'">&#x25B6;</td><td><input name="testcol_0_row_0_raw.png" type="checkbox" checked="True" onclick="show_hide_category(this)"></td><td style="color:#ff0000">&#x25A0;&nbsp;</td><td class="data"><b>Sample1</b></td></tr>
+<tr id="testcol_0_row_0_raw" name="testcol_0_row_0" style="display: none;"><td class="data" align="right">&#x221F;</td><td></td><td style="color:#ff0000">&#x25C6;</td><td class="data" align="left"><b>Sample1</b></td></tr>
+</table></div></div>
+<div style="position:relative;clear:both;">
+<div style="position:relative;clear:both;display:none;" class="strong" id="nan_disclaimer">
+<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many samples.</b>
+</div>
+<br><br>
+<table id="rare_data" border="1px">
+<tr name="SampleID" style="display: none;"><td class="headers">SampleID</td><td class="headers">Seqs/Sample</td>
+<td class="headers">test Ave.</td><td class="headers">test Err.</td>
+</tr>
+<tr name="SampleID" style="display: none;">
+<td class="data" bgcolor="#ff0000">Sample1</td><td class="data">10.0</td>
+<td class="data">     7.000</td><td class="data">       nan</td>
+</tr>
+</table>
+</div>
+</div>
+</body>
+</html>
+"""
 
 if __name__ == "__main__":
     main()
