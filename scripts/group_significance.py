@@ -260,7 +260,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     # sync the mapping file and the biom file
-    tmp_bt = parse_biom_table(open(opts.otu_table_fp))
+    tmp_bt = parse_biom_table(open(opts.otu_table_fp, 'U'))
     tmp_pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
     pmf, bt, nonshared_samples = sync_biom_and_mf(tmp_pmf, tmp_bt)
 

@@ -24,7 +24,7 @@ from collections import defaultdict
 from itertools import izip
 
 """
-Library for test_group_significance.py and test_gradient_correlation.py. 
+Library for group_significance.py. 
 The code in this library is based around two central frameworks. For the group
 significance tests the framework is as follows:
 The OTU table is a rowXcolumn (otuXsample) matrix. The mapping file specifies 
