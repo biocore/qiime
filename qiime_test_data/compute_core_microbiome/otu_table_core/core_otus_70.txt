@@ -1,4 +1,0 @@
-# Core OTUs across 70 % of samples.
-63	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
-70	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']
-394	[u'Root', u'k__Bacteria', u'p__Bacteroidetes', u'c__Bacteroidia', u'o__Bacteroidales', u'f__']

@@ -24,6 +24,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * convert_unifrac_sample_mapping_to_otu_table.py and convert_otu_table_to_unifrac_sample_mapping.py have been moved to the FastUnifrac repo (https://github.com/qiime/FastUnifrac)
 * Required matplotlib version is now >= 1.1.0, <= 1.3.1.
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
+* QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
 
 QIIME 1.7.0 (14 May 2013)
 =========================

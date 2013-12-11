@@ -1,7 +1,0 @@
-# Correlation coefficient: spearman.
-# The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.
-# The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.
-# The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher's z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.
-# Number of samples that matched between the taxa summary files: 9
-Correlation coefficient	Parametric p-value	Nonparametric p-value	CI (lower)	CI (upper)
-0.9687	0.0000	0.001	0.9502	0.9803
