@@ -570,13 +570,13 @@ def format_map_file(headers, id_map, desc_key, sample_id_key, \
         result.append('\t'.join(map(str, curr_line)))
     return '\n'.join(result)
     
-'''def format_histograms(pre_hist, post_hist, bin_edges):
+def format_histograms_two_bins(pre_hist, post_hist, bin_edges):
     """Returns text-formatted histogram."""
     lines = []
     lines.append('Length\tBefore\tAfter')
     for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
         lines.append('\t'.join(map(str, [edge, pre, post])))
-    return '\n'.join(lines)'''
+    return '\n'.join(lines)
     
 def format_histograms(raw_hist, pre_hist, post_hist, bin_edges):
     """Returns text-formatted histogram.  Needs to take 3 bins of data"""
@@ -991,7 +991,7 @@ Notes for interpreting this report:
     <li>Errors will be listed in red, warnings in yellow.  
     <li>Mouse over an error or warning in a cell for more details.
     <li>Errors in the header row may mask other errors, so these should be corrected first.
-    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>check_id_map.py</tt> until no errors (nor warnings, ideally) are found.
+    <li>Modifications to your mapping file to fix certain issues may result in different errors. You should run <tt>validate_mapping_file.py</tt> until no errors (nor warnings, ideally) are found.
 </ul>
 <p>
 Some general rules about formatting mapping files (see <a href="http://qiime.org/documentation/file_formats.html#metadata-mapping-files">here</a> for additional details):

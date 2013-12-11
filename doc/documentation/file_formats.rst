@@ -141,7 +141,7 @@ To validate such a mapping file, the user will need to disable barcode and prime
 
 	check_id_map.py -m <mapping_filepath> -o check_id_output/ -p -b
 
-
+The above mapping file will still show a warning-as it is lacking any barcodes, it has no way to differentiate sequences, and thus can not be used for demultiplexing. However, such warnings can be ignored if the mapping file is being used for steps downstream of demultiplexing.
 
 
 Demultiplexed sequences

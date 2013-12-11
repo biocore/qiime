@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -97,6 +97,9 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         List of output filepaths is returned.
     
     """
+    if seqs_per_file <= 0:
+        raise ValueError("seqs_per_file must be > 0!")
+
     seq_counter = 0
     out_files = []
     if working_dir and not working_dir.endswith('/'):
@@ -115,6 +118,9 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         if seq_counter == seqs_per_file:
             current_out_file.close()
             seq_counter = 0
-            
+    
+    if not current_out_file.closed:
+        current_out_file.close()
+
     return out_files
     

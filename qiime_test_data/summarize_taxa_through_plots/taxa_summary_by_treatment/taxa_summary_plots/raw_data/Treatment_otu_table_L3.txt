@@ -1,9 +1,0 @@
-Taxon	Control	Fast
-Root;k__Bacteria;Other	0.0188933873144	0.0335570469799
-Root;k__Bacteria;p__Actinobacteria	0.00134952766532	0.0134228187919
-Root;k__Bacteria;p__Bacteroidetes	0.217273954116	0.536912751678
-Root;k__Bacteria;p__Deferribacteres	0.0	0.0285234899329
-Root;k__Bacteria;p__Firmicutes	0.715249662618	0.320469798658
-Root;k__Bacteria;p__Proteobacteria	0.00674763832659	0.011744966443
-Root;k__Bacteria;p__TM7	0.0	0.00335570469799
-Root;k__Bacteria;p__Tenericutes	0.0404858299595	0.0520134228188

@@ -5,14 +5,14 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout","Will Van Treuren"] #remember to add yourself
+               "Jai Ram Rideout","Will Van Treuren", "Yoshiki Vazquez-Baeza",
+               "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from biom.table import table_factory
 from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase,main
@@ -20,16 +20,16 @@ from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    parse_classic_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
-    parse_qiime_parameters, parse_qiime_config_files,sample_mapping_to_biom_table,
-    parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
-    sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
-    parse_metadata_state_descriptions, parse_rarefaction_data,
-    parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
-    parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping, parse_otu_map, parse_sample_id_map,
-    parse_taxonomy_to_otu_metadata, is_casava_v180_or_later, MinimalSamParser)
+    parse_classic_otu_table, make_envs_dict, fields_to_dict,
+    parse_rarefaction_fname, parse_qiime_parameters, parse_qiime_config_files,
+    parse_bootstrap_support, parse_distmat_to_dict, parse_taxonomy,
+    parse_mapping_file, parse_metadata_state_descriptions,
+    parse_rarefaction_data, parse_illumina_line, parse_qual_score,
+    parse_qual_scores, QiimeParseError, parse_newick,parse_trflp,
+    parse_taxa_summary_table, parse_prefs_file, parse_mapping_file_to_dict,
+    mapping_file_to_dict, MinimalQualParser, parse_denoiser_mapping,
+    parse_otu_map, parse_sample_id_map, parse_taxonomy_to_otu_metadata,
+    is_casava_v180_or_later, MinimalSamParser)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -62,11 +62,7 @@ class TopLevelTests(TestCase):
         'sam14', 'sam15', 'sam16', 'sam17', 'sam18', 'sam19']
         self.l19_taxon_names =  ['tax1', 'tax2', 'tax3', 'tax4', 'endbigtaxon',\
         'tax6', 'tax7', 'tax8', 'tax9']
-        self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
-        "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
-        self.SampleMapping2 = ["OTU1\tsample1", "OTU1\tsample3", \
-        "OTU2\tsample1", "OTU2\tsample2"]
-        
+
         self.legacy_otu_table1 = legacy_otu_table1
         self.otu_table1 = otu_table1
         self.otu_table_without_leading_comment = \
@@ -471,13 +467,32 @@ eigvals\t4.94\t1.79\t1.50
 
 """.splitlines()
         obs = parse_coords(coords)
+
         exp = (['A','B','C'], 
             array([[.11,.09,.23],[.03,.07,-.26],[.12,.06,-.32]]),
             array([4.94,1.79,1.50]),
             array([14.3,5.2,4.3]))
         self.assertEqual(obs, exp)
 
-    
+    def test_parse_coords_exceptions(self):
+        """Check exceptions are raised accordingly with missing information"""
+
+        # missing eigenvalues line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_EIGENVALS.splitlines())
+        # missing percentages explained line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_PCNTS.splitlines())
+        # missing vector number line
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(COORDS_NO_VECTORS.splitlines())
+
+        # a whole different file (taxa summary)
+        with self.assertRaises(QiimeParseError):
+            out = parse_coords(taxa_summary1.splitlines())
+
+
+
     def test_parse_classic_otu_table_legacy(self):
         """parse_classic_otu_table functions as expected with legacy OTU table
         """
@@ -653,50 +668,21 @@ eigvals\t4.94\t1.79\t1.50
         # default dict functions as expected -- looking up non-existant key
         # returns empty dict
         self.assertEqual(actual['some_other_script'],{})
-
-    def test_parse_sample_mapping(self):
-        """parse_sample_mapping works"""
-        lines = self.SampleMapping
-        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
-        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '2'}, 'OTU1': {'sample1': '3', 'sample3': '2', 'sample2': '0'}})
-        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
-        #test that it works if no sample counts in there
-        lines = self.SampleMapping2
-        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
-        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '1'}, 'OTU1': {'sample1': '1', 'sample3': '1', 'sample2': '0'}})
-        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
-
-    def test_sample_mapping_to_otu_table(self):
-        """sample_mapping_to_otu_table works"""
-        lines = self.SampleMapping
-        result = sample_mapping_to_otu_table(lines)
-        self.assertEqual(result, ['#Full OTU Counts',\
-         '#OTU ID\tsample1\tsample2\tsample3', 'OTU2\t1\t2\t0', \
-        'OTU1\t3\t0\t2'])
-
-    def test_sample_mapping_to_biom_table(self):
-        """sample_mapping_to_biom_table works"""
-        lines = self.SampleMapping
-        actual = sample_mapping_to_biom_table(lines)
-        exp = table_factory(array([[3.,0.,2.],[1.,2.,0.]]),
-                            ['sample1','sample2','sample3'],
-                            ['OTU1','OTU2'])
-        self.assertEqual(actual.sortBySampleId(), exp.sortBySampleId())
     
     def test_parse_taxonomy(self):
         """ should parse taxonomy example, keeping otu id only"""
         example_tax = \
-"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
-319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
-353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+"""412 PC.635_647	Root;Bacteria;Firmicutes; "Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes   	0.970
+353 PC.634_154	Root; Bacteria ; Bacteroidetes	0.830
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13 PC.481_1214	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
-338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
+338 PC.593_1314	Root; Bacteria 	0.990	42556	Additional fields ignored"""
         res = parse_taxonomy(example_tax.split('\n'))
         self.assertEqual(res['412'],
-         "Root;Bacteria;Firmicutes;\"Clostridia\";Clostridiales")
+         ["Root","Bacteria","Firmicutes","\"Clostridia\"","Clostridiales"])
         self.assertEqual(res['338'],
-         "Root;Bacteria")
+         ["Root","Bacteria"])
 
     def test_parse_taxonomy_to_otu_metadata(self):
         """parsing of taxonomy file to otu metadata format functions as expected
@@ -1169,6 +1155,25 @@ sam1_expected = [["s1_1", "0", "s1_1", "2", "136", "1S65M", "*", "0", "0", "atga
 ["s1_4", "0", "s1_4", "1", "9", "348M", "*", "0", "0", "atgaagaaaattttcagaacagtgttattcggcagcctgatggccgtctgcgcaaacagttacgcgctcagcgagtctgaagccgaagatatggccgatttaacggcagtttttgtctttctgaagaacgattgtggttaccagaacttacctaacgggcaaattcgtcgcgcactggtctttttcgctcagcaaaaccagtgggacctcagtaattacgacaccttcgacatgaaagccctcggtgaagacagctaccgcgatctcagcggcattggcattcccgtcgctaaaaaatgcaaagccctggcccgcgattccttaagcctgcttgcctacgtcaaatcc", "*", "AS:i:348", "XS:i:336", "XF:i:0", "XE:i:9", "NM:i:0"],
 ["s1_5", "0", "s2_2", "1", "0", "1131M", "*", "0", "0", "atggctaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaaatcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgacaaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcgcaaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggcggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgatatttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataacatggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgactctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagacttgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacagcagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgtcatggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtggacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccggcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggcaacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatcgaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggtaagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgatttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctgctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctcaaagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa", "*", "AS:i:1131", "XS:i:1131", "XF:i:0", "XE:i:24", "NM:i:0"],
 ["s1_6", "0", "s1_6", "1", "1", "1132M", "*", "0", "0", "aatgactaagcaagattattacgagattttaggcgtttccaaaacagcggaagagcgtgaaatcagaaaggcctacaaacgcctggccatgaaataccacccggaccgtaaccagggtgacaaagaggccgaggcgaaatttaaagagatcaaggaagcttatgaagttctgaccgactcgcaaaaacgtgcggcatacgatcagtatggtcatgctgcgtttgagcaaggtggcatgggcggcggcggttttggcggcggcgcagacttcagcgatatttttggtgacgttttcggcgatatttttggcggcggacgtggtcgtcaacgtgcggcgcgcggtgctgatttacgctataacatggagctcaccctcgaagaagctgtacgtggcgtgaccaaagagatccgcattccgactctggaagagtgtgacgtttgccacggtagcggtgcaaaaccaggtacacagccgcagacttgtccgacctgtcatggttctggtcaggtgcagatgcgccagggattcttcgctgtacagcagacctgtccacactgtcagggccgcggtacgctgatcaaagatccgtgcaacaaatgtcatggtcatggtcgtgttgagcgcagcaaaacgctgtccgttaaaatcccggcaggggtggacactggagaccgcatccgtcttgcgggcgaaggtgaagcgggcgagcatggcgcaccggcaggcgatctgtacgttcaggttcaggttaaacagcacccgattttcgagcgtgaaggcaacaacctgtattgcgaagtcccgatcaacttcgctatggcggcgctgggtggcgaaatcgaagtaccgacccttgatggtcgcgtcaaactgaaagtgcctggcgaaacccagaccggtaagctattccgtatgcgcggtaaaggcgtcaagtctgtccgcggtggcgcacagggtgatttgctgtgccgcgttgtcgtcgaaacaccggtaggcctgaacgaaaggcagaaacagctgctgcaagagctgcaagaaagcttcggtggcccaaccggcgagcacaacagcccgcgctcaaagagcttctttgatggtgtgaagaagttttttgacgacctgacccgctaa", "*", "AS:i:1132", "XS:i:1128", "XF:i:0", "XE:i:24", "NM:i:0"]]
+
+COORDS_NO_VECTORS = """A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+eigvals\t4.94\t1.79\t1.50
+% variation explained\t14.3\t5.2\t4.3"""
+
+COORDS_NO_EIGENVALS = """pc vector number\t1\t2\t3
+A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+foo\t4.94\t1.79\t1.50
+% variation explained\t14.3\t5.2\t4.3"""
+
+COORDS_NO_PCNTS = """pc vector number\t1\t2\t3
+A\t0.11\t0.09\t0.23
+B\t0.03\t0.07\t-0.26
+C\t0.12\t0.06\t-0.32
+eigvals\t4.94\t1.79\t1.50"""
 
 if __name__ =='__main__':
     main()
