@@ -3,7 +3,8 @@
 from __future__ import division
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena", "Will Van Treuren"] 
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena",
+    "Will Van Treuren", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -1037,6 +1038,11 @@ function changeMetric(SelObject){
     }
     
 old_metric.value=SelObject.value;
+
+// If both combo boxes have changed the value, display a disclaimer
+if (document.getElementById('select_metric_combo').selectedIndex !== 0 &&  document.getElementById('select_category_combo').selectedIndex !== 0) {
+    document.getElementById('nan_disclaimer').style.display='inline';
+}
 }
 
 function changeCategory(SelObject){
@@ -1086,6 +1092,10 @@ function changeCategory(SelObject){
     }
 old_all_categories.value=SelObject.value;
 old_category.value=category;
+// If both combo boxes have changed the value, display a disclaimer
+if (document.getElementById('select_metric_combo').selectedIndex !== 0 &&  document.getElementById('select_category_combo').selectedIndex !== 0) {
+    document.getElementById('nan_disclaimer').style.display='inline';
+}
 }
 function toggle(){
     var plots=document.getElementById('plots');
@@ -1166,14 +1176,14 @@ function show_hide_categories(SelObject){
 <table><tr>
 <td><b>Select a Metric:</b></td>
 <td>
-<select onchange="javascript:changeMetric(this)">
+<select onchange="javascript:changeMetric(this)" id="select_metric_combo">
 <option>&nbsp;</option>
 %s
 </select>
 </td>
 <td><b>&nbsp;&nbsp;Select a Category:</b></td>
 <td>
-<select onchange="javascript:changeCategory(this)">
+<select onchange="javascript:changeCategory(this)" id="select_category_combo">
 <option>&nbsp;</option>
 %s
 </select>
@@ -1194,6 +1204,10 @@ function show_hide_categories(SelObject){
     </b></p>
 %s
 <div style="position:relative;clear:both;">
+<div style="position:relative;clear:both;display:none;" class="strong" id="nan_disclaimer">
+<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many samples.</b>
+</div>
+<br><br>
 <table id="rare_data" border="1px">
 %s
 </table>
