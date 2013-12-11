@@ -63,7 +63,7 @@ Users can also submit bug reports and feature requests via our `GitHub issue tra
 QIIME Development
 =================
 
-QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the `developer notes <./developer/index.html>`_.
+QIIME is an open-source project, primarily developed in the `Knight Lab <https://knightlab.colorado.edu>`_ at the University of Colorado at Boulder, the `Caporaso Lab <http://caporasolab.us>`_ at Northern Arizona University and the `Clemente Lab <http://clemente-lab.github.io>`_ at Icahn School of Medicine at Mount Sinai. If you are interested in getting involved, check out the `developer notes <./developer/index.html>`_.
 
 Citing QIIME
 ============
