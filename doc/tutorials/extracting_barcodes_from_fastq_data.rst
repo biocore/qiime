@@ -31,7 +31,7 @@ Example of raw data for the file in_seqs.fastq::
 	+
 	JJY````JO[`bab`b`bbaaaaa`\`a`OVT``]]`aa^aI\HMMMWWHHNNNGLL\`________\Z^]]^^^^^^GX]\QTXXZ[YZ^^XZ[Z^\Z^GW\^^\\^^^VZ\Y^^^^\\\\[^[\\\^VWYWWXWWZYZW^[X^\\Z^[TQ
 
-An example command to parse out the barcodes and the reads (with barcodes removed) to the output directory parsed_barcodes would be this::
+An example command to parse out the barcodes and the reads (with barcodes removed) to the output directory parsed_barcodes follows::
 
 	extract_barcodes.py -f in_seqs.fastq --bc1_len 10 -o parsed_barcodes/ --input_type barcode_single_end
 
@@ -78,7 +78,7 @@ In this case, a single stitched fastq file (reads.fastq) is present that contain
 
 	extract_barcodes.py --input_type barcode_paired_stitched -f reads.fastq --bc1_len 6 --bc2_len 6 -o parsed_barcodes/
 
-If one wanted the order of the barcodes switched (the barcode at the end of the read written first), the ``--switch_bc_order`` option could be enabled. The barcodes can individually, or both, be reverse complemented in the same manner as described above. Additionally, one can attempt to orient the sequences as described in the paired-end read example. In this case, the orientation process will reverse complement the stitched reads to try and match the orientation of the forward primers.
+To switch the order of the barcodes (i.e., the barcode at the end of the read is written first), the ``--switch_bc_order`` option could be enabled. The barcodes can individually, or both, be reverse complemented in the same manner as described above. Additionally, one can attempt to orient the sequences as described in the paired-end read example. In this case, the orientation process will reverse complement the stitched reads to try and match the orientation of the forward primers.
 
 Barcodes in fastq labels
 ------------------------
