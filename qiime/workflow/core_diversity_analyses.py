@@ -391,7 +391,7 @@ def run_core_diversity_analyses(
                                 _index_headers['taxa_summary_categorical'] % category))
     
     if not suppress_group_significance:
-        params_str = params.get('group_significance', '')
+        params_str = get_params_str(params['group_significance'])
         # group significance tests, aka category significance 
         for category in categories:
             group_signifance_fp = \
