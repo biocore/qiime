@@ -48,7 +48,7 @@ class FizzyTests(TestCase):
 
     def test_parse_biom(self):
         """this test is going to ensure that we can properly parse our biom file"""
-        correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  10.], [  4.,   7.,   9.,   8.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
+        correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  6.], [  0.,   7.,   1.,   6.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
 
         parsed_biom = fizzy.parse_biom(self.biom_file_handle)
         self.assertEqual(parsed_biom, correct_biom)
@@ -93,8 +93,8 @@ class FizzyTests(TestCase):
         """test the feature selection on a toy problem"""
         column_name = "Class"
 
-        selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=3)
-        self.assertEqual(selected_features, ['OTU0', "OTU1", "OTU3"])
+        selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=2)
+        self.assertEqual(selected_features, ['OTU0', "OTU1"])
 
     def test_zero_selection(self):
         """assert that fizzy throws an error for zero features being selected"""
@@ -116,7 +116,6 @@ class FizzyTests(TestCase):
      
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 map_file_string = """#SampleID\tClass\nID0\tS1\nID1\tS2\nID2\tS2\n"""
-biom_file_string = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date":"2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type":"float","shape": [4, 3],     "data": [[0,0,1.0],[0,2,4.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,9.0],[3,0,6.0],[3,1,10.0],[3,2,8.0]],"rows":[{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "ID0", "metadata": null},{"id": "ID1", "metadata": null},{"id": "ID2", "metadata": null}]}"""
-
+biom_file_string = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "BIOM-Format 1.1.2","date":"2013-03-27T13:59:38.949014","matrix_type": "sparse","matrix_element_type":"float","shape": [4, 3],     "data": [[0,0,1.0],[1,1,5.0],[1,2,7.0],[2,0,1.0],[2,1,1.0],[2,2,1.0],[3,0,6.0],[3,1,6.0],[3,2,6.0]],"rows":[{"id": "OTU0", "metadata": null},{"id": "OTU1", "metadata": null},{"id": "OTU2", "metadata": null},{"id": "OTU3", "metadata": null}],"columns": [{"id": "ID0", "metadata": null},{"id": "ID1", "metadata": null},{"id": "ID2", "metadata": null}]}""" 
 if __name__ == "__main__":
     main()
