@@ -48,27 +48,29 @@ def get_mapping_details(mapping_fp,
     loc_bcs = ",1"
     loc_primers = ",2"
     if errors:
-        raise_error = False
         for curr_error in errors:
             # Halt when header has error
             if curr_error.startswith("Found header field"):
-                raise_error = True
+                raise ValueError,('Error in mapping file, please validate '
+                    'mapping file with check_id_map.py')
             elif curr_error.endswith(loc_bcs):
+                # Halt for barcode errors unless suppressed
                 if suppress_barcode_checks:
                     continue
                 else:
-                    raise_error = True
+                    raise ValueError,('Error in mapping file, please validate '
+                        'mapping file with check_id_map.py')
             elif curr_error.endswith(loc_primers):
+                # Halt for primer errors unless suppressed
                 if suppress_primer_checks:
                     continue
                 else:
-                    raise_error = True
+                    raise ValueError,('Error in mapping file, please validate '
+                        'mapping file with check_id_map.py')
             # Raise error on duplicate sample IDs
             elif curr_error.startswith("Duplicate SampleID"):
-                raise_error = True
-        if raise_error:
-            raise ValueError,('Error in mapping file, please validate '+\
-             'mapping file with check_id_map.py')
+                raise ValueError,('Error in mapping file, please validate '
+                    'mapping file with check_id_map.py')
          
     # create dict of dicts with SampleID:{each header:mapping data}
     
@@ -452,12 +454,6 @@ def run_fasta_checks(input_fasta_fp,
          check_tree_exact_match(fasta_labels, tree_fp)
     else:
         fasta_report['tree_exact_match'] = False
-        
-    """ From stackoverflow http://stackoverflow.com/questions/9835762/find-and-list-duplicates-in-python-list
-    a = [1,2,3,2,1,5,6,5,5,5]
-
-    import collections
-    print [x for x, y in collections.Counter(a).items() if y > 1]"""
      
     return fasta_report
      
