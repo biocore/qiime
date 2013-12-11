@@ -1,7 +1,7 @@
 Contributing to QIIME
 =====================
 
-QIIME is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users. 
+[QIIME](http://www.qiime.org) is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users. 
 
 This document covers what you should do to get started with contributing to QIIME. You should read this whole document before considering submitting code to QIIME. This will save time for both you and the QIIME developers.
 
