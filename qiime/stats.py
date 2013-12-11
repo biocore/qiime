@@ -29,7 +29,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
-        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median)
+        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median, nan)
 from numpy import argsort, min as np_min, max as np_max, log10
 from numpy.random import permutation
 from cogent.util.misc import combinate, create_dir
@@ -38,8 +38,9 @@ from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
-                                           pearson, permute_2d, spearman)
+    pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
+from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
 
 # Top-level stats functions.
@@ -110,7 +111,7 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
 
     stats = _perform_pairwise_tests(labels, dists, tail_type, num_permutations)
     for stat in stats:
-        stat = ['N/A' if e is None else e for e in stat]
+        stat = ['N/A' if e is nan else e for e in stat]
         result += '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (stat[0], stat[1], stat[2],
                 stat[3], stat[4],
                 format_p_value_for_num_iters(stat[5], num_permutations) if
@@ -141,21 +142,21 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
             if ((len(g1_dist) == 1 and len(g2_dist) == 1) or
                 (len(g1_dist) < 1 or len(g2_dist) < 1)):
                 # Not enough data to run the test.
-                obs_t, param_p_val, nonparam_p_val = None, None, None
+                obs_t, param_p_val, nonparam_p_val = nan, nan, nan
             else:
                 obs_t, param_p_val, _, nonparam_p_val = mc_t_two_sample(
                         g1_dist, g2_dist, tails=tail_type,
                         permutations=num_permutations)
             result.append([g1_label, g2_label, obs_t, param_p_val, None,
                            nonparam_p_val, None])
-            if obs_t is not None:
+            if obs_t is not nan:
                 num_tests += 1
 
     # Correct the p-values for multiple comparisons, now that we know how many
     # tests succeeded.
     for stat in result:
-        stat[4] = stat[3] if stat[3] is None else min(stat[3] * num_tests, 1)
-        stat[6] = stat[5] if stat[5] is None else min(stat[5] * num_tests, 1)
+        stat[4] = stat[3] if stat[3] is nan else min(stat[3] * num_tests, 1)
+        stat[6] = stat[5] if stat[5] is nan else min(stat[5] * num_tests, 1)
     return result
 
 def quantile(data, quantiles):

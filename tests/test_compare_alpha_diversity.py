@@ -201,9 +201,9 @@ class TopLevelTests(TestCase):
              'A,F': (None, None),
              'Control,1xDose': (None, None),
              'Control,2xDose': (-0.6366887333996324, 0.639061687134877)}
-        self.assertEqual(expected_fdr_results,
-            _correct_compare_alpha_results(input_results,'fdr'))
-        
+        for k,v in _correct_compare_alpha_results(input_results,'fdr').items():
+            self.assertFloatEqual(v, expected_fdr_results[k])
+
     def test_compare_alpha_diversities(self):
         """Tests alpha diversities are correctly calculated."""
         # test 'Dose' at 480 inputs
@@ -246,12 +246,9 @@ class TopLevelTests(TestCase):
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type, num_permutations=num_permutations)
-
-        exp_tcomps = \
-            {('Control','2xDose'): (1.1746048668554037, 0.63),
-             ('1xDose','2xDose'): (1.7650193854830403, 0.09),
-             ('Control','1xDose'): (0.43618805086434992, 0.76)}
- 
+        exp_tcomps = {('1xDose', '2xDose'): (1.7650193854830403, 0.13), 
+            ('Control', '1xDose'): (0.43618805086434992, 0.83), ('Control', 
+            '2xDose'): (1.1746048668554037, 0.62)}
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
@@ -262,9 +259,8 @@ class TopLevelTests(TestCase):
         # dose
         # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
         # Control = ['Sam5']
-        exp_ad_avgs = {'1xDose':(3.2511951575216664, 0.18664627928763661),
-        '2xDose':(2.7539647172550001, 0.30099438035250015),
-        'Control':(3.3663303519925001, 0.0)}
+        exp_ad_avgs = {'Control': (3.3663303519925001, 0.0), '1xDose': (3.2511951575216664, 0.18664627928763661), '2xDose': (2.7539647172550001, 0.30099438035250015)}
+
         for k in exp_ad_avgs:
             self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
@@ -286,7 +282,7 @@ class TopLevelTests(TestCase):
         seed(0)
         test_type = 'nonparametric'
         exp_tcomps = \
-            {('Control','2xDose'): (-0.63668873339963239, 0.675), 
+            {('Control','2xDose'): (-0.63668873339963239, 0.672), 
              ('1xDose','2xDose'): (None,None), 
              ('Control','1xDose'): (None,None)}
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,

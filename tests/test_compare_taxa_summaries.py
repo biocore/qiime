@@ -731,7 +731,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                     999, 0.95)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.33 and p_val <= 0.35:
+            if p_val >= 0.66 and p_val <= 0.7:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -756,7 +756,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                     999, 0.90, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.3 and p_val <= 0.35:
+            if p_val >= 0.6 and p_val <= 0.7:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -912,12 +912,19 @@ class CompareTaxaSummariesTests(TestCase):
         self.assertFloatEqual(obs[1], exp[1])
         
         found_match = False
+        # for this test:
+        # x = array([ 0.4,  0.5,  0.4,  0.5,  0.7,  0.4])
+        # y = array([ 0.5,  0.7,  0.5,  0.6,  0.8,  0.6])
+        # ccs = [corrcoef(x,i) for i in permutations(y)]
+        # 24/720 = .03333 <- (abs(array(ccs))>=corrcoef(x,y)[0][1]).sum() 
+        # so for our bound should be symmetric about this
         for i in range(self.p_val_tests):
             p_val = _compute_correlation(self.taxa_summary_paired1,
                     self.taxa_summary_paired2, 'paired', 'pearson',
                     'two-sided', 999, 0.95)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.009 and p_val <= 0.012:
+            # 
+            if p_val >= 0.02833333 and p_val <= 0.0383333: 
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -943,7 +950,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_paired2, 'paired', 'pearson',
                     'two-sided', 999, 0.95, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.008 and p_val <= 0.018:
+            if p_val >= 0.016 and p_val <= 0.036:
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -980,7 +987,7 @@ class CompareTaxaSummariesTests(TestCase):
                     self.taxa_summary_paired3, 'paired', 'pearson',
                     'two-sided', 999, 0.90, True)[0][2]
             self.assertIsProb(p_val)
-            if p_val >= 0.01 and p_val <= 0.018:
+            if p_val >= 0.02 and p_val <= 0.036:
                 found_match = True
                 break
         self.assertTrue(found_match)
