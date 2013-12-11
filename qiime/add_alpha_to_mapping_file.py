@@ -111,7 +111,10 @@ def _get_level(value, levels, prefix=None):
     the value is returned as an integer
 
     """
-    assert value <= 1 and value >= 0, "The value must be between 0 and 1"
+
+    if value > 1 or value < 0:
+        raise ValueError("Encountered invalid normalized alpha diversity value %s. "
+        "Normalized values must be between 0 and 1." % value)
 
     check = [i for i in range(0, len(levels)) if levels[i] == value]
 
@@ -179,7 +182,7 @@ def mean_alpha(alpha_dict, depth):
         if sample_ids:
             if not sample_ids == identifiers[3:]:
                 raise ValueError, ("Non-matching sample ids were found in the "
-                    "collated alpha diversity files. Make sure all the files "
+                "collated alpha diversity files. Make sure all the files "
                     "contain data for the same samples.")
         else:
             sample_ids = identifiers[3:]
