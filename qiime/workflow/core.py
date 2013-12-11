@@ -54,7 +54,7 @@ As a multiprocess example:
 # assumes: "ipcluster start -n 4"
 from IPython.parallel import Client
 from time import sleep
-from example import MyWorkflow
+from qiime.workflow.example import MyWorkflow
 
 def exec_wf():
     result = []
@@ -67,13 +67,13 @@ dv = c[:]
 opts = {'add_value':None, 'sub_value':5}
 nprocs = len(c)
 for rank, worker in enumerate(c):
-    worker.execute("from example import MyWorkflow")
+    worker.execute("from qiime.workflow.example import MyWorkflow")
     worker.execute("gen = (i for i in range(10))")
     worker['rank'] = rank
     worker['opts'] = opts
     worker['nprocs'] = nprocs
     worker.execute("wf = MyWorkflow(Options=opts, Rank=rank, NProcs=nprocs)")
-ar = dv.apply_async(exec_wf)
+ar = dv.apply_sync(exec_wf)
 while not ar.ready():
     sleep(1)
 
@@ -183,6 +183,8 @@ class Workflow(object):
             if count % self.NProcs == self.Rank:
                 for f in workflow:
                     f(item)
+            else:
+                continue
 
             if self.Failed and fail_callback is not None:
                 yield fail_callback(self)
