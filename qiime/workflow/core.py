@@ -24,6 +24,7 @@ option_exists = Exists()
 
 class Workflow(object):
     """Arbitrary worflow support structure"""
+
     def __init__(self, ShortCircuit=True, **kwargs):
         """Build thy self
 
@@ -38,6 +39,10 @@ class Workflow(object):
         self.ShortCircuit = ShortCircuit
         self.Failed = False
         self.FinalState = None
+
+        for f in self._all_wf_methods():
+            if not hasattr(f, '__workflowtag__'):
+                raise AttributeError("%s isn't a workflow method!" % f.__name__)
 
     def _all_wf_methods(self, default_priority=0):
         """Get all workflow methods
@@ -90,6 +95,17 @@ class Workflow(object):
             else:
                 yield success_callback(self)
 
+    @staticmethod
+    def tagFunction(f):
+        setattr(f, '__workflowtag__', None)
+
+def no_requirements(f):
+    def decorated(self, *args, **kwargs):
+        f(self, *args, **kwargs)
+        return _executed
+    Workflow.tagFunction(decorated)
+    return decorated
+
 class requires(object):
     """Decorator that executes a function if requirements are met"""
     def __init__(self, IsValid=True, Option=None, Values=_missing):
@@ -131,8 +147,9 @@ class requires(object):
             if self.doShortCircuit(dec_self):
                 return
 
-            value = dec_self.Options.get(self.Option, _missing)
-            if value in self.Values:
+            s_opt = self.Option
+            ds_opts = dec_self.Options
+            if s_opt in ds_opts and ds_opts[s_opt] in self.Values:
                 f(dec_self, *args, **kwargs)
                 return _executed
 
@@ -147,11 +164,13 @@ class requires(object):
             f(dec_self, *args, **kwargs)
             return _executed
 
+        Workflow.tagFunction(decorated_with_option)
+        Workflow.tagFunction(decorated_without_option)
+
         if self.Option is None:
             return update_wrapper(decorated_without_option, f)
         else:
             return update_wrapper(decorated_with_option, f)
-
 
 class priority(object):
     """Sets a function priority"""

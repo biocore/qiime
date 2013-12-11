@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from itertools import izip
-from qiime.workflow.core import Workflow, requires, priority
+from qiime.workflow.core import (Workflow, requires, priority,
+        no_requirements)
 from unittest import TestCase, main
 
 __author__ = "Daniel McDonald"
@@ -77,7 +78,7 @@ class MockWorkflow(Workflow):
         else:
             self.FinalState = (name, item)
 
-    @requires(IsValid=True)
+    @no_requirements
     def methodC1(self, item):
         name = 'C1'
         self.Stats[name] += 1
@@ -98,6 +99,17 @@ class WorkflowTests(TestCase):
         self.obj_short = MockWorkflow(**{'A':True, 'C':True})
         self.obj_noshort = MockWorkflow(ShortCircuit=False, **{'A':True, 
                                                                'C':True})
+
+    def test_untagged_wf_method(self):
+        class WFTest(Workflow):
+            @no_requirements
+            def wf_1(self):
+                pass
+            def wf_2(self):
+                pass
+
+        with self.assertRaises(AttributeError):
+            _ = WFTest()
 
     def test_get_workflow(self):
         gen = single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
