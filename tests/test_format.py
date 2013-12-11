@@ -34,11 +34,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
     format_biom_table, format_mapping_html_data, format_te_prefs, 
     format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
-<<<<<<< HEAD
-    format_best_results, format_permanova_results, format_fastq_record)
-=======
-    format_best_results, format_permanova_results, format_histograms_two_bins)
->>>>>>> 6786fd72b38638da501b060b1e31ee19e0fecfb9
+    format_best_results, format_permanova_results, format_fastq_record,
+    format_histograms_two_bins)
 from qiime.stats import Anosim, Best, Permanova
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
 from biom.table import SparseTaxonTable
