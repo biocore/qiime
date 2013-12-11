@@ -1,7 +1,7 @@
 Contributing to QIIME
 =====================
 
-QIIME is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in `the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users.
+QIIME is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users.
 
 This document covers what you should do to get started with contributing to QIIME. You should read this whole document before considering submitting code to QIIME. This will save time for both you and the QIIME developers.
 
@@ -11,18 +11,18 @@ Type of Submissions
 
 Some of the types of contributions we're interested in are new features (big or small, but for big ones it's generally a good idea to ask us if we're interested in including it before starting development), bug fixes, and documentation updates, additions, and fixes.
 
-When considering submitting a new feature to QIIME, you should begin by posting an issue to the [QIIME issue tracker](https://github.com/qiime/qiime/issues). The information that you include in that post will differ based on the type of contribution. You contribution will also need to be fully tested (discussed further below).
+When considering submitting a new feature to QIIME, you should begin by posting an issue to the [QIIME issue tracker](https://github.com/qiime/qiime/issues). The information that you include in that post will differ based on the type of contribution. Your contribution will also need to be fully tested (discussed further below).
 
-For new features, you'll want to describe why the functionality that you are proposing to add is relevant. For it to be relevant, it should be demonstrably useful to QIIME users. This typically means that a new analytic method is implemented (you should describe why it's useful, ideally including a link to a paper that uses this method), or an existing method is enhanced (your implementation matches the performance of the pre-existing method while reducing runtime, memory consumption, etc, or it improves performance over the pre-existing method). We will request benchmarking against the pre-existing methods (which would also be required for publication of your method) so pointing to a paper or other document containing benchmark results, or including benchmark results in your issue, will speed up the process.
+* For new features, you'll want to describe why the functionality that you are proposing to add is relevant. For it to be relevant, it should be demonstrably useful to QIIME users. This typically means that a new analytic method is implemented (you should describe why it's useful, ideally including a link to a paper that uses this method), or an existing method is enhanced (your implementation matches the performance of the pre-existing method while reducing runtime, memory consumption, etc, or it improves performance over the pre-existing method). We will request benchmark results comparing your method to the pre-existing methods (which would also be required for publication of your method) so pointing to a paper or other document containing benchmark results, or including benchmark results in your issue, will speed up the process.
 
-For bug fixes, you should provide a detailed description of the bug so other developers can reproduce it. We take bugs in QIIME very seriously. Bugs can be related to errors in code, documentation, or tests. Errors in documentation or tests are usually updated in the next official release of QIIME. Errors in code that could result in incorrect results or inability to access certain functionality may result in a new minor release of QIIME. 
+* For bug fixes, you should provide a detailed description of the bug so other developers can reproduce it. We take bugs in QIIME very seriously. Bugs can be related to errors in code, documentation, or tests. Errors in documentation or tests are usually updated in the next major release of QIIME. Errors in code that could result in incorrect results or inability to access certain functionality may result in a new minor release of QIIME. 
 
-You should include the following information in your bug report:
+ You should include the following information in your bug report:
 
-1. The exact command or function call that you issue to create the bug.
-2. A link to all necessary input files for reproducing the bug. These files should only be as large as necessary to create the bug. For example, if you have an input file with 10,000 fasta-formatted sequences but the error only arises due to one of the sequences, create a new fasta file with only that sequence, run the command that was giving you problems, and verify that you still get an error. Then post that command and link to the trimmed fasta file. This is *extremely* useful to other developer, and it is likely that if you don't provide this information you'll get a response asking for it. Often this process helps you to better understand the bug as well.
+ 1. The exact command or function call that you issue to create the bug.
+ 2. A link to all necessary input files for reproducing the bug. These files should only be as large as necessary to create the bug. For example, if you have an input file with 10,000 fasta-formatted sequences but the error only arises due to one of the sequences, create a new fasta file with only that sequence, run the command that was giving you problems, and verify that you still get an error. Then post that command and link to the trimmed fasta file. This is *extremely* useful to other developer, and it is likely that if you don't provide this information you'll get a response asking for it. Often this process helps you to better understand the bug as well.
 
-For documentation additions, you should first post an issue describing what you propose to add, where you'd like to add it in the documentation, and a description of why you think it's an important addition. For documentation improvements and fixes, you should post an issue describing what is currently wrong or missing, and how you propose to address it.
+* For documentation additions, you should first post an issue describing what you propose to add, where you'd like to add it in the documentation, and a description of why you think it's an important addition. For documentation improvements and fixes, you should post an issue describing what is currently wrong or missing, and how you propose to address it.
 
 When you post your issue, the QIIME developers will respond to let you know if we agree with the addition or change. It's very important that you go through this step to avoid wasting time working on a feature that we are not interested in including in QIIME.
 
@@ -38,7 +38,7 @@ Code Review
 
 When you submit code to QIIME, it will be reviewed by one or more QIIME developers. These reviews are intended to confirm a few points:
 
-* Your code is sufficiently well-tested (see testing discussion below).
+* Your code is sufficiently well-tested (see testing  below).
 * Your code adheres to our Coding Guidelines (see Coding Guidelines below).
 * Your code is sufficiently well-documented (see Coding Guidelines below).
 * Your code provides relevant changes or additions to QIIME (Type of Submissions above).
