@@ -9,7 +9,7 @@
 
 This script plugs several QIIME diversity analyses together to form a basic workflow beginning with a BIOM table, mapping file, and optional phylogenetic tree. 
 
-The included scripts are those run by the workflow scripts `alpha_rarefaction.py <./alpha_rarefaction.html>`_, `beta_diversity_through_plots.py <./beta_diversity_through_plots.html>`_, `summarize_taxa_through_plots.py <./summarize_taxa_through_plots.html>`_, plus the (non-workflow) scripts `make_distance_boxplots.py <./make_distance_boxplots.html>`_, `compare_alpha_diversity.py <./compare_alpha_diversity.html>`_, and `otu_category_significance.py <./otu_category_significance.html>`_. To update parameters to the workflow scripts, you should pass the same parameters file that you would pass if calling the workflow script directly.
+The included scripts are those run by the workflow scripts `alpha_rarefaction.py <./alpha_rarefaction.html>`_, `beta_diversity_through_plots.py <./beta_diversity_through_plots.html>`_, `summarize_taxa_through_plots.py <./summarize_taxa_through_plots.html>`_, plus the (non-workflow) scripts `make_distance_boxplots.py <./make_distance_boxplots.html>`_, `compare_alpha_diversity.py <./compare_alpha_diversity.html>`_, and `group_significance.py <./group_significance.html>`_. To update parameters to the workflow scripts, you should pass the same parameters file that you would pass if calling the workflow script directly.
 
 
 
@@ -45,7 +45,7 @@ The included scripts are those run by the workflow scripts `alpha_rarefaction.py
 		Suppress beta diversity analyses. [default: False]
 	`-`-suppress_alpha_diversity
 		Suppress alpha diversity analyses. [default: False]
-	`-`-suppress_otu_category_significance
+	`-`-suppress_group_significance
 		Suppress OTU/category significance analysis. [default: False]
 	-t, `-`-tree_fp
 		Path to the tree file if one should be used. [default: no tree will be used]

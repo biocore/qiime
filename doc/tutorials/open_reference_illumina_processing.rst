@@ -185,7 +185,7 @@ Procrustes results are highly significant for the three comparisons, suggesting 
 
 OTU category significance
 -------------------------
-Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``otu_category_significance.py`` script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods I don't think it's important that this isn't the most biologically relevant binning strategy. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
+Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``group_significance.py`` script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods I don't think it's important that this isn't the most biologically relevant binning strategy. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
 
 Results
 ```````
@@ -293,7 +293,7 @@ Procrustes results are highly significant for the three comparisons, suggesting 
 
 OTU category significance
 -------------------------
-Here I confirm that the same taxonomy groups are identified as significantly different across the body sites in this study using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``otu_category_significance.py`` script. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
+Here I confirm that the same taxonomy groups are identified as significantly different across the body sites in this study using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``group_significance.py`` script. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
 
 Results
 ```````

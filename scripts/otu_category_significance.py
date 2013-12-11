@@ -12,11 +12,6 @@ __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
 __status__ = "Development"
 
-def main():
-
-    print '\n', '************************************************************'
-    print 'Script has been deprecated in favor of test_group_significance.py.'
-    print '************************************************************', '\n'
-
-if __name__ == "__main__":
-    main()
+print ("\nThis script has been deprecated in favor of group_significance.py " + 
+    "which is more generally applicable. For more details, call:\n\n " +
+    "group_significance.py -h\n\n")
