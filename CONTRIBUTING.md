@@ -38,14 +38,14 @@ Code Review
 
 When you submit code to QIIME, it will be reviewed by one or more QIIME developers. These reviews are intended to confirm a few points:
 
-* Your code is sufficiently well-tested (see testing  below).
+* Your code is sufficiently well-tested (see Testing Guidelines below).
 * Your code adheres to our Coding Guidelines (see Coding Guidelines below).
 * Your code is sufficiently well-documented (see Coding Guidelines below).
 * Your code provides relevant changes or additions to QIIME (Type of Submissions above).
 
 This process is designed to ensure the quality of QIIME, and can be a very useful experience for new developers. 
 
-Particularly for big changes, if you'd like feedback on your code in the form of a code review as you work, you should request help in the issue that you created and one of the QIIME developers will work with you to perform regular code reviews. This can greatly reduce development time (and frustration) so we highly recommend that new developers take advantage of this rather than submitting a single massive chunk of code. That can lead to frustration when the developer thinks they are done, but the reviewer requests large amounts of changes.
+Particularly for big changes, if you'd like feedback on your code in the form of a code review as you work, you should request help in the issue that you created and one of the QIIME developers will work with you to perform regular code reviews. This can greatly reduce development time (and frustration) so we highly recommend that new developers take advantage of this rather than submitting a pull request with a massive amount of code in one chunk. That can lead to frustration when the developer thinks they are done, but the reviewer requests large amounts of changes, and it is also very hard to review.
 
 
 Submitting code to QIIME
