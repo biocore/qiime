@@ -41,26 +41,28 @@ This process is designed to ensure the quality of QIIME, and can be a very usefu
 Submitting code to QIIME
 ------------------------
 
-QIIME is hosted on [GitHub](http://www.github.com), and we use GitHub's [Pull Request](https://help.github.com/articles/using-pull-requests) mechanism for accepting submissions.
+QIIME is hosted on [GitHub](http://www.github.com), and we use GitHub's [Pull Request](https://help.github.com/articles/using-pull-requests) mechanism for accepting submissions. You should go through the following steps to submit code to QIIME. 
 
-You should begin by [creating an issue](https://github.com/qiime/qiime/issues) describing your code. This should include a description of your code (is it a new feature, a bug fix, etc.), and note in the issue description that you want to work on it. 
+ #. Begin by [creating an issue](https://github.com/qiime/qiime/issues) describing your proposed change. This should include a description of your proposed change (is it a new feature, a bug fix, etc.), and note in the issue description that you want to work on it. If you'll be modifying existing QIIME file(s), you'll want to get input from the primary developer of the relevant file(s) via a discussion on the issue tracker to let them know you what you'd like to do. The primary developer is the person listed in the ``__maintainer__`` variable at the top of the file. Once you hear back that it is OK to make changes (i.e., they don't have local edits, they agree with the change you'd like to make, and they're comfortable with you editing their code), we will assign the issue to you on GitHub.
 
- #. If you'll be modifying existing QIIME file(s), you'll want to get input from the primary developer of the relevant file(s) via a discussion on the issue tracker to let them know you what you'd like to do. The primary developer is the person listed in the ``__maintainer__`` variable at the top of the file. Once you hear back that it is OK to make changes (i.e., they don't have local edits, they agree with the change you'd like to make, and they're comfortable with you editing their code), we will assign the issue to you on GitHub.
  #. [Fork](https://help.github.com/articles/fork-a-repo) the QIIME repository on the GitHub website to your GitHub account.
+
  #. Clone your forked repository to the system where you'll be developing with ``git clone``.
+
  #. Ensure that you have the latest version of all files (especially important if you cloned a long time ago, but you'll need to do this before submitting changes regardless). You should do this by adding QIIME as a remote repository and then pulling from that repository. You'll only need to run the ``git remote`` step one time::
 	
 	git checkout master
 	git remote add upstream https://github.com/qiime/qiime.git
 	git pull upstream master
-	git checkout -b my-topic-branch
 
  #. Create a new topic branch that you will make your changes in with ``git checkout -b``::
 	
 	git checkout -b my-topic-branch
 
- #. Run ``qiime/tests/all_tests.py`` to confirm that tests pass before you make any changes. You may get some failures, for example if you don't have an external application (e.g., RDP Classifier) installed. It is acceptable to continue if the failing tests are unrelated to the the code your working with. However, if you want to make changes to ``align_seqs.py`` and ``test_align_seqs.py`` is failing because of missing external applications, you should not proceed until you have installed the external applications and all tests pass.
- #. Make your changes, and commit them. Don't forget to update associated scripts and tests as necessary. You should make incremental commits, rather than one massive commit at the end. Write descriptive commit messages to accompany each commit.
+ #. Run ``qiime/tests/all_tests.py`` to confirm that the tests pass before you make any changes. You may get some failures, for example if you don't have an external application (e.g., RDP Classifier) installed. It is acceptable to continue if the failing tests are unrelated to the the code your working with. However, if you want to make changes to ``assign_taxonomy.py`` and ``test_assign_taxonomy.py`` is failing because of missing external applications, you should not proceed until you have installed the external applications and all tests pass.
+
+ #. Make your changes, add them (with ``git add``), and commit them (with ``git commit``). Don't forget to update associated scripts and tests as necessary. You should make incremental commits, rather than one massive commit at the end. Write descriptive commit messages to accompany each commit.
+ 
  #. When you think you're ready to submit your code, again ensure that you have the latest version of all files in case some changed while you were working on your edits. You can do this by merging master into your topic branch::
 	
 	git checkout my-topic-branch
@@ -70,6 +72,7 @@ You should begin by [creating an issue](https://github.com/qiime/qiime/issues) d
  #. Once the tests pass, you should push your changes to your forked repository on GitHub using::
 	
 	git push origin my-topic-branch
+	
  #. Issue a [pull request](https://help.github.com/articles/using-pull-requests) on the GitHub website to request that we merge your branch's changes into QIIME's master branch. One of the QIIME developers will review your code at this stage. If we request changes (which is very common), *don't issue a new pull request*. You should make changes on your topic branch, and commit and push them to GitHub. Your pull request will update automatically.
 
 
