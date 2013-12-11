@@ -19,7 +19,6 @@ class MyWorkflow(Workflow):
     def wf_add(self, item):
         self.FinalState += item
     
-    @priority(10)
     @requires(Option='sub_value', Values=[1,5,10])
     def wf_sub(self, item):
         self.FinalState -= item
