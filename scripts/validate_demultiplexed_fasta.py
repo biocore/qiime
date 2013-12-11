@@ -50,7 +50,13 @@ script_info['optional_options']=[\
          '[default: %default]'),
     make_option('-a', '--all_ids_found', default=False, action='store_true',
         help='Determine if all SampleIDs provided in the mapping file '+\
-         'are represented in the fasta file labels. [default: %default]')
+         'are represented in the fasta file labels. [default: %default]'),
+    make_option('-b', '--suppress_barcode_checks', default=False,
+        action='store_true', help='Suppress barcode checks '+\
+         '[default: %default]'),
+    make_option('-p', '--suppress_primer_checks', default=False,
+        action='store_true', help='Suppress primer checks '+\
+         '[default: %default]')
     
 ] 
 script_info['version'] = __version__
@@ -96,7 +102,8 @@ def main():
              'are enabled.')
          
     validate_fasta(input_fasta_fp, mapping_fp, output_dir, tree_fp, tree_subset,
-     tree_exact_match, same_seq_lens, all_ids_found)
+     tree_exact_match, same_seq_lens, all_ids_found,
+     opts.suppress_barcode_checks, opts.suppress_primer_checks)
 
 
 if __name__ == "__main__":

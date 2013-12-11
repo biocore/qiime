@@ -61,9 +61,16 @@ class ValidateDemultiplexedFastaTests(TestCase):
         tree_file.write(sample_tree_file_5tips)
         tree_file.close()
         
+        self.sample_mapping_file_errors_fp =\
+         get_tmp_filename(prefix="error_mapping_", suffix = ".txt")
+        map_file = open(self.sample_mapping_file_errors_fp, "w")
+        map_file.write(sample_mapping_file_errors)
+        map_file.close() 
+         
         self._files_to_remove = [self.sample_fasta_fp,
          self.sample_fasta_invalid_fp, self.sample_mapping_fp,
-         self.sample_tree_3tips_fp, self.sample_tree_5tips_fp]
+         self.sample_tree_3tips_fp, self.sample_tree_5tips_fp,
+         self.sample_mapping_file_errors_fp]
         
         self.output_dir =\
          get_tmp_filename(prefix = "validate_demultiplexed_fasta_",
@@ -270,11 +277,15 @@ class ValidateDemultiplexedFastaTests(TestCase):
         
         labels = ['seq1', 'seq2', 'seq3', 'seq4']
         
-        actual_perc = get_dup_labels_perc(labels)
+        actual_perc, dups = get_dup_labels_perc(labels)
         
         expected_perc = "%1.3f" % 0.0
         
         self.assertEqual(actual_perc, expected_perc)
+        
+        expected_dups = []
+        
+        self.assertEqual(dups, expected_dups)
         
     def test_get_dup_labels_perc_with_dupes(self):
         """ Properly gets percentage of duplicate labels """
@@ -283,11 +294,15 @@ class ValidateDemultiplexedFastaTests(TestCase):
         
         labels = ['seq1', 'seq2', 'seq1', 'seq2']
         
-        actual_perc = get_dup_labels_perc(labels)
+        actual_perc, dups = get_dup_labels_perc(labels)
         
         expected_perc = "%1.3f" % 0.5
         
         self.assertEqual(actual_perc, expected_perc)
+        
+        expected_dups = ['seq1', 'seq2']
+        
+        self.assertEqual(set(dups), set(expected_dups))
         
     def test_check_labels_sampleids_all_valid(self):
         """  Properly checks for QIIME labels, sampleID matching """
@@ -338,7 +353,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
          'all_ids_found': False, 
          'same_seq_lens': False, 
          'barcodes_detected': '0.000', 
-         'duplicate_labels': '0.000', 
+         'duplicate_labels': '0.000',
+         'duplicate_ids': [],
          'invalid_seq_chars': '0.000', 
          'nosample_ids_map': '0.000', 
          'linkerprimers_detected': '0.000', 
@@ -359,7 +375,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
          'all_ids_found': False,
          'same_seq_lens': False, 
          'barcodes_detected': '0.250', 
-         'duplicate_labels': '0.250', 
+         'duplicate_labels': '0.250',
+         'duplicate_ids': ['seq1'], 
          'invalid_seq_chars': '0.500', 
          'nosample_ids_map': '0.750', 
          'linkerprimers_detected': '0.250', 
@@ -368,6 +385,42 @@ class ValidateDemultiplexedFastaTests(TestCase):
          
          
         self.assertEqual(actual_fasta_report, expected_fasta_report)
+        
+    def test_validate_fasta_suppress_primers_barcodes(self):
+        """ Overall module test with primer/barcode check suppressed """
+       
+        # Should raise errors when both primer/barcode check not suppressed
+        self.assertRaises(ValueError, validate_fasta, self.sample_fasta_fp,
+         self.sample_mapping_file_errors_fp, self.output_dir)
+         
+        self.assertRaises(ValueError, validate_fasta, self.sample_fasta_fp,
+         self.sample_mapping_file_errors_fp, self.output_dir,
+         suppress_primer_checks=True)
+        
+        self.assertRaises(ValueError, validate_fasta, self.sample_fasta_fp,
+         self.sample_mapping_file_errors_fp, self.output_dir,
+         suppress_barcode_checks=True)
+        
+        # No errors when both suppressed
+        validate_fasta(self.sample_fasta_fp, self.sample_mapping_file_errors_fp,
+         self.output_dir, suppress_primer_checks = True,
+         suppress_barcode_checks = True)
+         
+        expected_log_fp = join(self.output_dir,
+         split(self.sample_fasta_fp)[1] + "_report.log")
+         
+        log_f = open(expected_log_fp, "U")
+        actual_log_lines = [line.strip() for line in log_f][1:]
+        
+        expected_log_lines = """Percent duplicate labels: 0.000
+Percent QIIME-incompatible fasta labels: 0.000
+Percent of labels that fail to map to SampleIDs: 0.000
+Percent of sequences with invalid characters: 0.000
+Percent of sequences with barcodes detected: 0.000
+Percent of sequences with barcodes detected at the beginning of the sequence: 0.000
+Percent of sequences with primers detected: 0.000""".split('\n')
+
+        self.assertEqual(actual_log_lines, expected_log_lines)
         
     def test_validate_fasta(self):
         """ Overall module runs properly """
@@ -448,7 +501,9 @@ Percent of labels that fail to map to SampleIDs: 0.750
 Percent of sequences with invalid characters: 0.500
 Percent of sequences with barcodes detected: 0.250
 Percent of sequences with barcodes detected at the beginning of the sequence: 0.000
-Percent of sequences with primers detected: 0.250""".split('\n')
+Percent of sequences with primers detected: 0.250
+Duplicate labels found:
+seq1""".split('\n')
 
         self.assertEqual(actual_log_lines, expected_log_lines)
 
@@ -475,6 +530,11 @@ ACCAGATTATATTACCAGATTACCCAGAG--ATTA"""
 sample_mapping_file = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription
 seq1\tAAAAAAAA\tTTTTTTTT\tseq1_desc
 seq2\tTTTTTTTT\tAGATTTACCA\tseq2_desc
+seq3\tAGATTATAT\tTTTTTTYT\tseq3_desc"""
+
+sample_mapping_file_errors = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription
+seq1\t\t\tseq1_desc
+seq2\t\tAGATTTACCA\tseq2_desc
 seq3\tAGATTATAT\tTTTTTTYT\tseq3_desc"""
 
 # sample tree file
