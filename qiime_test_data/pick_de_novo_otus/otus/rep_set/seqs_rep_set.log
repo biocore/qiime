@@ -1,6 +1,0 @@
-GenericRepSetPicker parameters:
-Algorithm:first: picks first seq in output from each OTU
-Application:None
-ChoiceF:<function <lambda> at 0x10c8998c0>
-ChoiceFRequiresSeqs:False
-Result path: /Users/caporaso/code/qiime/qiime_test_data/pick_de_novo_otus/otus//rep_set//seqs_rep_set.fasta

@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
@@ -34,7 +34,7 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
     format_biom_table, format_mapping_html_data, format_te_prefs, 
     format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
-    format_best_results, format_permanova_results)
+    format_best_results, format_permanova_results, format_histograms_two_bins)
 from qiime.stats import Anosim, Best, Permanova
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
 from biom.table import SparseTaxonTable
@@ -525,6 +525,13 @@ y\t5\t6\tsample y""")
          array([100,110,120,130,140,150,160])),
             """# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\nLength\tRaw\tBefore\tAfter\n100\t0\t2\t0\n110\t1\t1\t0\n120\t0\t0\t0\n130\t2\t2\t2\n140\t2\t0\t0\n150\t3\t0\t1""")
 
+    def test_format_histograms_two_bins(self):
+        """format_histograms_two_bins should print histograms correctly """
+        self.assertEqual(format_histograms_two_bins(array([0,1,0,2,2,3]),
+         array([2,1,0,2,0,0]), array([100,110,120,130,140,150,160])), 
+         """Length\tBefore\tAfter\n100\t0\t2\n110\t1\t1\n120\t0\t0\n130\t2\t2\n140\t2\t0\n150\t3\t0""")
+
+        
     def test_write_Fasta_from_name_seqs_pairs(self):
         """write_Fasta_from_name_seqs_pairs write proper FASTA string."""
         
@@ -541,7 +548,7 @@ y\t5\t6\tsample y""")
         remove(tmp_filename)
         
         self.assertEqual(actual_seqs, seqs)
-        
+
     def test_format_unifrac_sample_mapping(self):
         """format sample mapping works
         """

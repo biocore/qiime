@@ -2,31 +2,47 @@
 """Unit tests for statistical tests and utility functions.
 """
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.test import tail, G_2_by_2,G_fit, likelihoods,\
-    posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, \
-    mc_t_two_sample, _permute_observations, t_one_observation, correlation, \
-    correlation_test, correlation_matrix, z_test, z_tailed_prob, \
-    t_tailed_prob, sign_test, reverse_tails, ZeroExpectedError, combinations, \
-    multiple_comparisons, multiple_inverse, multiple_n, fisher, regress, \
-    regress_major, f_value, f_two_sample, calc_contingency_expected, \
-    G_fit_from_Dict2D, chi_square_from_Dict2D, MonteCarloP, \
-    regress_residuals, safe_sum_p_log_p, G_ind, regress_origin, stdev_from_mean, \
-    regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, \
-    pearson, spearman, _get_rank, kendall_correlation, std, median, \
-    get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, \
-    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow
-
-from numpy import array, concatenate, fill_diagonal, reshape, arange, matrix, \
-        ones, testing, tril, cov, sqrt
-from cogent.util.dict2d import Dict2D
+from qiime.pycogent_backports.test import (tail, likelihoods,
+    posteriors, bayes_updates, t_paired, t_one_sample, t_two_sample, 
+    mc_t_two_sample, _permute_observations, t_one_observation, correlation, 
+    correlation_test, correlation_matrix, z_test, z_tailed_prob, 
+    t_tailed_prob, sign_test, reverse_tails, ZeroExpectedError, combinations, 
+    multiple_comparisons, multiple_inverse, multiple_n, fisher, regress, 
+    regress_major, f_value, f_two_sample, MonteCarloP, 
+    regress_residuals, safe_sum_p_log_p, regress_origin, stdev_from_mean, 
+    regress_R2, permute_2d, mantel, mantel_test, _flatten_lower_triangle, 
+    pearson, spearman, std, median, 
+    get_values_from_matrix, get_ltm_cells, distance_matrix_permutation_test, 
+    ANOVA_one_way, mw_test, mw_boot, is_symmetric_and_hollow)
+from numpy import (array, concatenate, fill_diagonal, reshape, arange, matrix,
+    ones, testing, tril, cov, sqrt, nan, corrcoef, e, log)
+from numpy.random import seed
 import math
-from cogent.maths.stats.util import Numbers
+# G Test related imports
+from qiime.pycogent_backports.test import (williams_correction, G_stat, G_fit)
+from qiime.pycogent_backports.test import (G_2_by_2, safe_sum_p_log_p, G_ind)
+# Kruskal Wallis related imports
+from qiime.pycogent_backports.test import (_corr_kw, ssl_ssr_sx, tie_correction,
+    kruskal_wallis)
+# p value calculation tests
+from qiime.pycogent_backports.test import (benjamini_hochberg_step_down, 
+    fdr_correction, bonferroni_correction, kendall_pval, fisher_z_transform,
+    z_transform_pval, inverse_fisher_z_transform, fisher_population_correlation, 
+    assign_correlation_pval)
+# kendalls tau import
+from qiime.pycogent_backports.test import (rank_with_ties, count_occurrences, 
+    kendall)
+# cscore imports
+from qiime.pycogent_backports.test import (cscore)
+# cogent imports
+from cogent.maths.stats import chisqprob
+from cogent.maths.stats.distribution import zprob, tprob
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Gavin Huttley",
                "Sandra Smit", "Daniel McDonald", "Jai Ram Rideout",
-               "Michael Dwan"]
+               "Michael Dwan, Luke Ursell, Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -213,7 +229,6 @@ class TestsTests(TestCase):
         y = [2.28,2.43]
         exp = (8.761682243E-05, -5.341209112E-01)
         self.assertFloatEqual(regress(x,y),exp,0.001)
- 
 
     def test_regress_origin(self):
         """regression slope constrained through origin should match Excel"""
@@ -226,7 +241,6 @@ class TestsTests(TestCase):
         y = [2.28,2.43]
         exp = (7.1428649481939822e-05, 0)
         self.assertFloatEqual(regress_origin(x,y),exp,0.001)
- 
 
     def test_regress_R2(self):
         """regress_R2 returns the R^2 value of a regression"""
@@ -285,6 +299,67 @@ class TestsTests(TestCase):
 
 class GTests(TestCase):
     """Tests implementation of the G tests for fit and independence."""
+    def setUp(self):
+        """Set up required values for all G test test."""
+        pass # nothing required by all
+
+    def test_williams_correction(self):
+        """Test that the Williams correction is correctly computed."""
+        n = 100
+        a = 10
+        G = 10.5783
+        exp = 10.387855973813421
+        self.assertFloatEqual(williams_correction(n,a,G), exp)
+        # test with an example from Sokal and Rohlf pg 699
+        n = 241
+        a = 8
+        G = 8.82396
+        exp = 8.76938
+        self.assertFloatEqual(williams_correction(n,a,G), exp)
+
+    def test_G_stat(self):
+        """Test G-stat is correct when extrinsic hypothesis is equal freqs."""
+        # test with equal len=1 vectors
+        data = [array(i) for i in [63,31,28,12,39,16,40,12]]
+        exp = 69.030858949133162
+        self.assertFloatEqual(G_stat(data), exp)
+        # test with a hand computed example 
+        data = [array([75,65,48]), array([200]), array([10,250,13,85])]
+        exp = 85.908598110052
+        self.assertFloatEqual(G_stat(data), exp)
+
+    def test_G_fit(self):
+        """Test G fit is correct with and without Williams correction."""
+        # test with williams correction
+        data = [array(i) for i in [63,31,28,12,39,16,40,12]]
+        exp_G = 69.030858949133162/1.00622406639
+        exp_p = 2.8277381487281706e-12
+        obs_G, obs_p = G_fit(data, williams=True)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # test with hand computed example and williams correction
+        data = [array([75,65,48]), array([200]), array([10,250,13,85])]
+        exp_G = 85.90859811005285/1.0018930430667
+        exp_p = 2.4012235241479195e-19
+        obs_G, obs_p = G_fit(data, williams=True)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # test without williams correction on another hand computed example
+        data = [array([10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
+        exp_G = 1.6610421781232
+        exp_p = 0.43582212499949591
+        obs_G, obs_p = G_fit(data, williams=False)
+        self.assertFloatEqual(obs_G, exp_G)
+        self.assertFloatEqual(obs_p, exp_p)
+        # now test that assertions raise AssertionErrors
+        # neg_data = [array([-10,12,15,7]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, neg_data)
+        # emp_data = [array([]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, emp_data)
+        # zer_data = [array([0,0,0]), array([15,12,17,18]), array([6,9,13])]
+        # self.assertRaises(AssertionError, G_fit, zer_data)
+
+
     def test_G_2_by_2_2tailed_equal(self):
         """G_2_by_2 should return 0 if all cell counts are equal"""
         self.assertFloatEqual(0, G_2_by_2(1, 1, 1, 1, False, False)[0])
@@ -322,55 +397,6 @@ class GTests(TestCase):
         self.assertFloatEqualAbs(G_2_by_2(5,47,36,108), (-6.065167, 0.993106),
             0.00001)
 
-    def test_calc_contingency_expected(self):
-        """calcContingencyExpected returns new matrix with expected freqs"""
-        matrix = Dict2D({'rest_of_tree': {'env1': 2, 'env3': 1, 'env2': 0},
-                  'b': {'env1': 1, 'env3': 1, 'env2': 3}})
-        result = calc_contingency_expected(matrix)
-        self.assertFloatEqual(result['rest_of_tree']['env1'], [2, 1.125])
-        self.assertFloatEqual(result['rest_of_tree']['env3'], [1, 0.75])
-        self.assertFloatEqual(result['rest_of_tree']['env2'], [0, 1.125])
-        self.assertFloatEqual(result['b']['env1'], [1, 1.875])
-        self.assertFloatEqual(result['b']['env3'], [1, 1.25])
-        self.assertFloatEqual(result['b']['env2'], [3, 1.875])
-        
-    def test_Gfit_unequal_lists(self):
-        """Gfit should raise errors if lists unequal"""
-        #lists must be equal
-        self.assertRaises(ValueError, G_fit, [1, 2, 3], [1, 2])
-
-    def test_Gfit_negative_observeds(self):
-        """Gfit should raise ValueError if any observeds are negative."""
-        self.assertRaises(ValueError, G_fit, [-1, 2, 3], [1, 2, 3])
-    
-    def test_Gfit_nonpositive_expecteds(self):
-        """Gfit should raise ZeroExpectedError if expecteds are zero/negative"""
-        self.assertRaises(ZeroExpectedError, G_fit, [1, 2, 3], [0, 1, 2])
-        self.assertRaises(ZeroExpectedError, G_fit, [1, 2, 3], [-1, 1, 2])
-    
-    def test_Gfit_good_data(self):
-        """Gfit tests for fit should match examples in Sokal and Rohlf"""
-        #example from p. 699, Sokal and Rohlf (1995)
-        obs = [63, 31, 28, 12, 39, 16, 40, 12]
-        exp = [ 67.78125, 22.59375, 22.59375, 7.53125, 45.18750,
-                15.06250, 45.18750, 15.06250]
-        #without correction
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[0], 8.82397, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[1], 0.26554, 0.00002)
-        #with correction
-        self.assertFloatEqualAbs(G_fit(obs, exp)[0], 8.76938, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp)[1], 0.26964, 0.00002)
-        
-        #example from p. 700, Sokal and Rohlf (1995)
-        obs = [130, 46]
-        exp = [132, 44]
-        #without correction
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[0], 0.12002, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp, False)[1], 0.72901, 0.00002)
-        #with correction
-        self.assertFloatEqualAbs(G_fit(obs, exp)[0], 0.11968, 0.00002)
-        self.assertFloatEqualAbs(G_fit(obs, exp)[1], 0.72938, 0.00002)
-
     def test_safe_sum_p_log_p(self):
         """safe_sum_p_log_p should ignore zero elements, not raise error"""
         m = array([2,4,0,8])
@@ -381,47 +407,6 @@ class GTests(TestCase):
         a = array([[29,11],[273,191],[8,31],[64,64]])
         self.assertFloatEqual(G_ind(a)[0], 28.59642)
         self.assertFloatEqual(G_ind(a, True)[0], 28.31244)
-
-    def test_G_fit_from_Dict2D(self):
-        """G_fit_from_Dict2D runs G-fit on data in a Dict2D
-        """
-        matrix = Dict2D({'Marl': {'val':[2, 5.2]},
-                        'Chalk': {'val':[10, 5.2]},
-                        'Sandstone':{'val':[8, 5.2]},
-                        'Clay':{'val':[2, 5.2]},
-                        'Limestone':{'val':[4, 5.2]}
-                        })
-        g_val, prob = G_fit_from_Dict2D(matrix)
-        self.assertFloatEqual(g_val, 9.84923)
-        self.assertFloatEqual(prob, 0.04304536)
-
-    def test_chi_square_from_Dict2D(self):
-        """chi_square_from_Dict2D calcs a Chi-Square and p value from Dict2D"""
-        #test1
-        obs_matrix = Dict2D({'rest_of_tree': {'env1': 2, 'env3': 1, 'env2': 0},
-                  'b': {'env1': 1, 'env3': 1, 'env2': 3}})
-        input_matrix = calc_contingency_expected(obs_matrix)
-        test, csp = chi_square_from_Dict2D(input_matrix)
-        self.assertFloatEqual(test, 3.0222222222222221)
-        #test2
-        test_matrix_2 = Dict2D({'Marl': {'val':[2, 5.2]},
-                                'Chalk': {'val':[10, 5.2]},
-                                'Sandstone':{'val':[8, 5.2]},
-                                'Clay':{'val':[2, 5.2]},
-                                'Limestone':{'val':[4, 5.2]}
-                                })
-        test2, csp2 = chi_square_from_Dict2D(test_matrix_2)
-        self.assertFloatEqual(test2, 10.1538461538)
-        self.assertFloatEqual(csp2, 0.0379143890013)
-        #test3
-        matrix3_obs = Dict2D({'AIDS':{'Males':4, 'Females':2, 'Both':3},
-                        'No_AIDS':{'Males':3, 'Females':16, 'Both':2}
-                       })
-        matrix3 = calc_contingency_expected(matrix3_obs)
-        test3, csp3 = chi_square_from_Dict2D(matrix3)
-        self.assertFloatEqual(test3, 7.6568405139833722)
-        self.assertFloatEqual(csp3, 0.0217439383468)
-
 
 class LikelihoodTests(TestCase):
     """Tests implementations of likelihood calculations."""
@@ -553,8 +538,8 @@ class StatTests(TestsHelper):
         """t_paired should return None if lists are invariant"""
         x = [1, 1, 1]
         y = [0, 0, 0]
-        self.assertEqual(t_paired(x,x), (None, None))
-        self.assertEqual(t_paired(x,y), (None, None))
+        self.assertEqual(t_paired(x,x), (nan, nan))
+        self.assertEqual(t_paired(x,y), (nan, nan))
         
     def test_t_paired_1tailed(self):
         """t_paired should match pre-calculated 1-tailed values"""
@@ -596,8 +581,8 @@ class StatTests(TestsHelper):
         # By default should return (None, None) to mimic R's t.test.
         x = array([1, 1., 1])
         y = array([0, 0, 0.0])
-        self.assertEqual(t_two_sample(x,x), (None, None))
-        self.assertEqual(t_two_sample(x,y), (None, None))
+        self.assertEqual(t_two_sample(x,x), (nan, nan))
+        self.assertEqual(t_two_sample(x,y), (nan, nan))
 
         # Test none_on_zero_variance=False on various tail types. We use
         # self.assertEqual instead of self.assertFloatEqual because the latter
@@ -631,12 +616,12 @@ class StatTests(TestsHelper):
                               none_on_zero_variance=False),
                               (float('inf'), 1.0))
 
-        # Should still receive (None, None) if the lists have no variance and
+        # Should still receive (nan, nan) if the lists have no variance and
         # have the same single value.
         self.assertEqual(t_two_sample(x, x, none_on_zero_variance=False),
-                         (None, None))
+                         (nan, nan))
         self.assertEqual(t_two_sample(x, [1, 1], none_on_zero_variance=False),
-                         (None, None))
+                         (nan, nan))
 
     def test_t_two_sample_invalid_input(self):
         """t_two_sample should raise an error on invalid input."""
@@ -777,7 +762,7 @@ class StatTests(TestsHelper):
 
     def test_mc_t_two_sample_no_perms(self):
         """Test gives empty permutation results if no perms are given."""
-        exp = (-0.11858541225631833, 0.90756579317867436, [], None)
+        exp = (-0.11858541225631833, 0.90756579317867436, [], nan)
         I =  array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
         II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
         obs = mc_t_two_sample(I, II, permutations=0)
@@ -787,7 +772,7 @@ class StatTests(TestsHelper):
         """Test no MC stats if initial t-test is bad."""
         x = array([1, 1, 1])
         y = array([0, 0, 0])
-        self.assertEqual(mc_t_two_sample(x,x), (None, None, [], None))
+        self.assertEqual(mc_t_two_sample(x,x), (nan, nan, [], nan))
 
     def test_mc_t_two_sample_no_variance(self):
         """Test input with no variance. Should match Deducer::perm.t.test."""
@@ -1089,52 +1074,11 @@ class CorrelationTests(TestsHelper):
         obs = spearman(self.b_ranked, self.c_ranked)
         self.assertFloatEqual(obs, exp)
 
-    def test_spearman_one_obs(self):
-        """Test running spearman on a single observation."""
-        self.assertRaises(ValueError, spearman, [1.0], [5.0])
-
-    def test_spearman_invalid_input(self):
-        """Test the spearman function with invalid input."""
-        self.assertRaises(ValueError, spearman, [],[])
-        self.assertRaises(ValueError, spearman, self.a, [])
-        self.assertRaises(TypeError, spearman, {0:2}, [1,2,3])
-
-    def test_get_rank(self):
-        """Test the _get_rank function with valid input."""
-        exp = ([1.5,3.5,7.5,5.5,1.5,9.0,10.0,11.0,12.0,7.5,14.0,3.5,5.5,13.0],
-               4)
-        obs = _get_rank(self.x)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,3.0,5.5,4.0,1.5,7.0,8.0,9.0,10.0,5.5],2)
-        obs = _get_rank(self.a)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([2,7,10,1,3,6,4,8,5,9],0)
-        obs = _get_rank(self.b)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([1.5,7.0,10.0,1.5,3.0,6.0,4.0,8.0,5.0,9.0], 1)
-        obs = _get_rank(self.r)
-        self.assertFloatEqual(exp,obs)
-
-        exp = ([],0)
-        obs = _get_rank([])
-        self.assertEqual(exp,obs)
-
-    def test_get_rank_invalid_input(self):
-        """Test the _get_rank function with invalid input."""
-        vec = [1, 'a', 3, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, {1:2}, 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, [23,1], 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
-
-        vec = [1, 2, (1,), 2.5, 3, 1]
-        self.assertRaises(TypeError, _get_rank, vec)
+    def test_spearman_too_few_obs(self):
+        """Test that spearman performs correctly with too few observations."""
+        self.assertRaises(ValueError, spearman, [], [])
+        self.assertRaises(ValueError, spearman, [], [1,2,3,4])
+        self.assertRaises(ValueError, spearman, [1], [1])
 
     def test_correlation(self):
         """Correlations and significance should match R's cor.test()"""
@@ -1415,80 +1359,66 @@ class MannWhitneyTests(TestCase):
         U, p = mw_boot(self.x, self.y, 10)
         self.assertFloatEqual(U, 123.5)
         self.assertTrue(0 <= p <= 0.5)
-    
 
-class KendallTests(TestCase):
-    """check accuracy of Kendall tests against values from R"""
-    
-    def do_test(self, x, y, alt_expecteds):
-        """conducts the tests for each alternate hypothesis against expecteds"""
-        for alt, exp_p, exp_tau in alt_expecteds:
-            tau, p_val = kendall_correlation(x, y, alt=alt, warn=False)
-            self.assertFloatEqual(tau, exp_tau, eps=1e-3)
-            self.assertFloatEqual(p_val, exp_p, eps=1e-3)
-    
-    def test_exact_calcs(self):
-        """calculations of exact probabilities should match R"""
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [["gt", 0.05972, 0.4444444],
-                     ["lt",  0.9624, 0.4444444],
-                     ["ts",  0.1194, 0.4444444]]
-        self.do_test(x,y,expecteds)
-    
-    def test_with_ties(self):
-        """tied values calculated from normal approx"""
-        # R example with ties in x
-        x = (44.4, 45.9, 41.9, 53.3, 44.4, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [#["gt", 0.05793, 0.4225771],
-                     ["lt", 0.942, 0.4225771],
-                     ["ts", 0.1159, 0.4225771]]
-        self.do_test(x,y,expecteds)
-        
-        # R example with ties in y
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
-        y = ( 2.6,  3.1,  2.5,  5.0,  3.1,  4.0,  5.2,  2.8,  3.8)
-        expecteds = [["gt", 0.03737, 0.4789207],
-                     ["lt",  0.9626, 0.4789207],
-                     ["ts", 0.07474, 0.4789207]]
-        self.do_test(x,y,expecteds)
-        # R example with ties in x and y
-        x = (44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 44.4, 60.1)
-        y = ( 2.6,  3.6,  2.5,  5.0,  3.6,  4.0,  5.2,  2.8,  3.8)
-        expecteds=[["gt", 0.02891, 0.5142857],
-                   ["lt",   0.971, 0.5142857],
-                   ["ts", 0.05782, 0.5142857]]
-        self.do_test(x,y,expecteds)
-    
-    def test_bigger_vectors(self):
-        """docstring for test_bigger_vectors"""
-        # q < expansion
-        x= (0.118583104633, 0.227860069338, 0.143856130991, 0.935362617582,
-            0.0471303856799, 0.659819202174, 0.739247965907, 0.268929000278,
-            0.848250568194, 0.307764819102, 0.733949480141, 0.271662210481,
-            0.155903098872)
-        y= (0.749762144455, 0.407571703468, 0.934176427266, 0.188638794706,
-            0.184844781493, 0.391485553856, 0.735504815302, 0.363655952442,
-            0.18489971978, 0.851075466765, 0.139932273818, 0.333675110224,
-            0.570250937033)
-        expecteds = [["gt", 0.9183, -0.2820513],
-                     ["lt", 0.1022, -0.2820513],
-                     ["ts", 0.2044, -0.2820513]]
-        self.do_test(x,y,expecteds)
-        # q > expansion
-        x= (0.2602556958, 0.441506392849, 0.930624643531, 0.728461775775,
-            0.234341774892, 0.725677256368, 0.354788882728, 0.475882541956,
-            0.347533553428, 0.608578046857, 0.144697962102, 0.784502692164,
-            0.872607603407)
-        y= (0.753056395718, 0.454332072011, 0.791882395707, 0.622853579015,
-            0.127030232518, 0.232086215578, 0.586604349918, 0.0139051260749,
-            0.579079370051, 0.0550643809812, 0.94798878249, 0.318410679439,
-            0.86725134615)
-        expecteds = [["gt", 0.4762, 0.02564103],
-                     ["lt", 0.5711, 0.02564103],
-                     ["ts", 0.9524, 0.02564103]]
-        self.do_test(x,y,expecteds)
+class KruskalWallisTests(TestCase):
+    """Check that Kruskal Wallis tests are performing as expected."""
+    def setUp(self):
+        """Set values used for all Kruskal Wallis tests."""
+        pass #nothing used by all
+
+    def test_kw_correction(self):
+        """Test n**3-n values for kruskal_wallis correction."""
+        self.assertEqual(_corr_kw(10), 990)
+        self.assertEqual(_corr_kw(5), 120)
+        self.assertFloatEqual(_corr_kw(5.4), 152.064)
+
+    def test_ssl_ssr_kw(self):
+        """Test the searchsorted and sorting is behaving as expected."""
+        x = array([75,67,70,75,65,71,67,67,76,68,57,58,60,59,62,60,60,57,59,61,
+            58,61,56,58,57,56,61,60,57,58,58,59,58,61,57,56,58,57,57,59,62,66,
+            65,63,64,62,65,65,62,67])
+        obs_ssl, obs_ssr, obs_sx = ssl_ssr_sx(x)
+        exp_ssl = array([47,40,45,47,35,46,40,40,49,44,3,10,21,17,29,21,21,3,17,
+            25,10,25,0,10,3,0,25,21,3,10,10,17,10,25,3,0,10,3,3,17,29,39,35,33,
+            34,29,35,35,29,40])
+        exp_ssr = array([49,44,46,49,39,47,44,44,50,45,10,17,25,21,33,25,25,10,
+            21,29,17,29,3,17,10,3,29,25,10,17,17,21,17,29,10,3,17,10,10,21,33,
+            40,39,34,35,33,39,39,33,44])
+        exp_sx = array([56,56,56,57,57,57,57,57,57,57,58,58,58,58,58,58,58,59,
+            59,59,59,60,60,60,60,61,61,61,61,62,62,62,62,63,64,65,65,65,65,66,
+            67,67,67,67,68,70,71,75,75,76])
+        self.assertEqual(obs_ssl, exp_ssl)
+        self.assertEqual(obs_ssr, exp_ssr)
+        self.assertEqual(obs_sx, exp_sx)
+
+    def test_tie_correction_kw(self):
+        """Test that tie correction for Kruskal Wallis behaves as expected."""
+        # sorted input data
+        sx = array([56,56,56,57,57,57,57,57,57,57,58,58,58,58,58,58,58,59,
+            59,59,59,60,60,60,60,61,61,61,61,62,62,62,62,63,64,65,65,65,65,66,
+            67,67,67,67,68,70,71,75,75,76])
+        obs = tie_correction(sx)
+        self.assertFloatEqual(obs, 0.99150060024)
+
+    def test_kruskal_wallis(self):
+        """Test kruskal_wallis on Sokal & Rohlf Box 13.6 dataset"""
+        d_control = [75,67,70,75,65,71,67,67,76,68]
+        d_2_gluc = [57,58,60,59,62,60,60,57,59,61]
+        d_2_fruc = [58,61,56,58,57,56,61,60,57,58]
+        d_1_1 = [58,59,58,61,57,56,58,57,57,59]
+        d_2_sucr = [62,66,65,63,64,62,65,65,62,67]
+        data = [d_control, d_2_gluc, d_2_fruc, d_1_1, d_2_sucr]
+        kw_stat, pval = kruskal_wallis(data)
+        self.assertFloatEqual(kw_stat, 38.436807439)
+        self.assertFloatEqual(pval, 9.105424085598766e-08)
+        # test using a random data set against scipy
+        x_0 = array([0,0,0,31,12,0,25,26,775,13])
+        x_1 = array([14,15,0,15,12,13])
+        x_2 = array([0,0,0,55,92,11,11,11,555])
+        # kruskal(x_0, x_1, x_2) = (0.10761259465923653, 0.94761564440615031)
+        exp = (0.10761259465923653, 0.94761564440615031)
+        obs = kruskal_wallis([x_0, x_1, x_2])
+        self.assertFloatEqual(obs, exp)
 
 class TestDistMatrixPermutationTest(TestCase):
     """Tests of distance_matrix_permutation_test"""
@@ -1645,18 +1575,291 @@ class TestDistMatrixPermutationTest(TestCase):
     def test_ANOVA_one_way(self):
         """ANOVA one way returns same values as ANOVA on a stats package
         """
-        g1 = Numbers([10.0, 11.0, 10.0, 5.0, 6.0])
-        g2 = Numbers([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
-        g3 = Numbers([6.0, 7.0, 5.0, 6.0, 7.0])
+        g1 = array([10.0, 11.0, 10.0, 5.0, 6.0])
+        g2 = array([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
+        g3 = array([6.0, 7.0, 5.0, 6.0, 7.0])
         i = [g1, g2, g3]
-        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(i)
-        self.assertEqual(dfn, 2)
-        self.assertEqual(dfd, 13)
+        # dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(i)
+        F, pval = ANOVA_one_way(i)
+        # self.assertEqual(dfn, 2)
+        # self.assertEqual(dfd, 13)
         self.assertFloatEqual(F, 18.565450643776831)
-        self.assertFloatEqual(between_MS, 55.458333333333343)
-        self.assertFloatEqual(within_MS, 2.9871794871794868)
-        self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
-        self.assertFloatEqual(prob, 0.00015486238993089464)
+        # self.assertFloatEqual(between_MS, 55.458333333333343)
+        # self.assertFloatEqual(within_MS, 2.9871794871794868)
+        # self.assertFloatEqual(group_means, [8.4000000000000004, 2.1666666666666665, 6.2000000000000002])
+        self.assertFloatEqual(pval, 0.00015486238993089464)
+
+class PvalueTests(TestCase):
+    '''Test that the methods for handling Pvalues return the results we expect.
+    
+    Note: eps is being set lower on some of these because Sokal and Rohlf 
+    provide only ~5 sig figs and our integrals diverge by that much or more. 
+    '''
+
+    def setUp(self):
+        '''Nothing needed for all tests.'''
+        pass
+
+    def test_fdr_correction(self):
+        """Test that the fdr_correction works as anticipated."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = array([.5, .7*5/4., .5*5/3., .3*5/2., .9])
+        obs = fdr_correction(pvals)
+        self.assertFloatEqual(obs, exp)
+
+    def test_benjamini_hochberg_step_down(self):
+        """Test that the BH step down procedure behaves as it does in R."""
+        # r values 
+        #q = c(0.64771481,  0.93517796,  0.7169902 ,  0.18223457,  0.26918556,
+        #  0.1450153 ,  0.22448242,  0.74723508,  0.89061034,  0.74007906)
+        # p.adjust(q, method='BH')
+        #  [1] 0.9340439 0.9351780 0.9340439 0.6729639 0.6729639 0.6729639 0.6729639
+        #  [8] 0.9340439 0.9351780 0.9340439
+        pvals = array([ 0.64771481,  0.93517796,  0.7169902 ,  0.18223457, 
+            0.26918556, 0.1450153 ,  0.22448242,  0.74723508,  0.89061034,  
+            0.74007906])
+        exp = array([0.9340439, 0.9351780, 0.9340439, 0.6729639, 0.6729639, 
+            0.6729639, 0.6729639, 0.9340439, 0.9351780, 0.9340439])
+        obs = benjamini_hochberg_step_down(pvals)
+        self.assertFloatEqual(obs, exp)
+        # example 2
+        pvals = array([ 1.32305426,  1.9345059 ,  0.87129877,  1.89957702, 
+            1.85712616, 0.68757988,  0.41248969,  0.20751712,  1.97658599, 
+            1.06209437])
+        exp = array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])
+        obs = benjamini_hochberg_step_down(pvals)
+        self.assertFloatEqual(obs,exp)
+
+    def test_bonferroni_correction(self):
+        """Test that Bonferroni correction behaves correctly."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = pvals*5.
+        obs = bonferroni_correction(pvals)
+        self.assertFloatEqual(obs, exp)
+
+    def test_fisher_z_transform(self):
+        '''Test Fisher Z transform is correct.'''
+        r = .657
+        exp = .5*log(1.657/.343)
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(exp, obs)
+        r = 1
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(obs, nan)
+        r = -1
+        obs = fisher_z_transform(r)
+        self.assertFloatEqual(obs, nan)
+        # from sokal and rohlf pg 575
+        r = .972
+        obs = fisher_z_transform(r)
+        exp = 2.12730
+        self.assertFloatEqual(exp, obs)
+
+    def test_z_transform_pval(self):
+        '''Test that pval associated with Fisher Z is correct.'''
+        r = .6
+        n = 100
+        obs = z_transform_pval(r,n)
+        exp = 3.4353390341723208e-09
+        self.assertFloatEqual(exp, obs)
+        r = .5
+        n = 3
+        obs = z_transform_pval(r,n)
+        self.assertFloatEqual(obs, nan)
+
+    def test_inverse_fisher_z_transform(self):
+        '''Test that Fisher's Z transform is computed correctly.'''
+        z = .65
+        exp = 0.5716699660851171
+        obs = inverse_fisher_z_transform(z)
+        self.assertFloatEqual(exp, obs)
+
+    def test_fisher_population_correlation(self):
+        '''Test that the population rho and homogeneity coeff are correct.'''
+        # example from Sokal and Rohlf Biometry pg. 580 - 582
+        rs = array([.29, .7, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 28, 74, 33, 27, 52, 26, 20, 17])
+        zbar = .615268
+        X2 = 15.26352
+        pop_r = .547825
+        hval = chisqprob(X2, len(ns)-1)
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, pop_r)
+        self.assertFloatEqual(obs_hval, hval)
+        # test with nans
+        rs = array([.29, .7, nan, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 400, 28, 74, 33, 27, 52, 26, 20, 17])
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, pop_r)
+        self.assertFloatEqual(obs_hval, hval)
+        # test with short vectors
+        rs = [.6, .5, .4, .6, .7]
+        ns = [10, 12, 42, 11, 3]
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        self.assertFloatEqual(obs_p_rho, nan)
+        self.assertFloatEqual(obs_hval, nan)
+
+    def test_assign_correlation_pval(self):
+        '''Test that correlation pvalues are assigned correctly with each meth.
+        '''
+        # test with parametric t distribution, use example from Sokal and Rohlf
+        # Biometry pg 576.
+        r = .86519
+        n = 12
+        ts = 5.45618 # only 5 sig figs in sokal and rohlf
+        exp = tprob(ts, n-2)
+        obs = assign_correlation_pval(r, n, 'parametric_t_distribution')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        # test with too few samples
+        n = 3
+        self.assertRaises(AssertionError, assign_correlation_pval, r, n, 
+            'parametric_t_distribution')
+        # test with fisher_z_transform
+        r = .29
+        n = 100
+        z = 0.29856626366017841 #.2981 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        r = .61
+        n = 26
+        z = 0.70892135942740819 #.7089 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        self.assertFloatEqual(exp, obs, eps=10**-5)
+        # prove that we can have specify the other options, and as long as we 
+        # dont have bootstrapped selected we are fine. 
+        v1 = array([10,11,12])
+        v2 = array([10,14,15])
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform', 
+            permutations=1000, perm_test_fn=pearson, v1=v1, v2=v2)
+        self.assertFloatEqual(exp, obs)
+        # test with bootstrapping, seed for reproducibility. 
+        seed(0)
+        v1 = array([54, 71, 60, 54, 42, 64, 43, 89, 96, 38])
+        v2 = array([79, 52, 56, 92,  7,  8,  2, 83, 77, 87])
+        #c = corrcoef(v1,v2)[0][1]
+        exp = .357
+        obs = assign_correlation_pval(0.33112494, 20000, 'bootstrapped', 
+            permutations=1000, perm_test_fn=pearson, v1=v1, v2=v2)
+        self.assertFloatEqual(exp, obs)
+        # make sure it throws an error
+        self.assertRaises(ValueError, assign_correlation_pval, 7, 20000, 
+            'bootstrapped', perm_test_fn=pearson, v1=None, v2=v2)
+        # test that it does properly with kendall
+        exp = kendall_pval(r, n)
+        obs = assign_correlation_pval(r, n, 'kendall')
+        self.assertFloatEqual(exp, obs)
+
+class KendallTests(TestCase):
+    """Tests for functions calculating Kendall tau"""
+
+    def test_rank_with_ties(self):
+        '''Test vector is correctly ranked with and without ties.'''
+        v1 = [1, 1, 1, 1, 4, 5, 10, 1]
+        exp = array([3, 3, 3, 3, 6, 7, 8, 3])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [1.5, 1.3, 0.0, 12, 1.3, 7.9]
+        exp = array([4, 2.5, 1, 6, 2.5, 5])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 1, 0, 0]
+        exp = array([3, 3, 3, 6, 3, 3])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,6.13,
+            6.30,6.03]
+        exp = array([9,4,10,6.5,2,3,15,1,13,8,6.5,5,12,14,11])
+        obs = rank_with_ties(v1)
+        self.assertFloatEqual(obs, exp)
+
+    def test_count_occurrences(self):
+        '''Test that ties are properly counted in vectors.'''
+        v1 = [1, 1, 1, 1, 4, 5, 10, 1]
+        exp = [5, 1, 1, 1]
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [1.5, 1.3, 0.0, 12, 1.3, 7.9]
+        exp = array([1, 2, 1, 1, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 1, 0, 0]
+        exp = array([5, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [5, 4, 2, 1, 7.8]
+        exp = array([1, 1, 1, 1, 1])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+        v1 = [0, 0, 0, 0, 0, 0]
+        exp = array([6])
+        obs = count_occurrences(v1)
+        self.assertFloatEqual(obs, exp)
+
+    def test_kendall(self):
+        """tests new kendall tau implamentation, returns tau, prob"""
+        #test from pg. 594 Sokal and Rohlf, Box 15.7
+        v1 = [8.7,8.5,9.4,10,6.3,7.8,11.9,6.5,6.6,10.6,10.2,7.2,8.6,11.1,11.6]
+        v2 = [5.95,5.65,6.00,5.70,4.70,5.53,6.40,4.18,6.15,5.93,5.70,5.68,
+            6.13,6.30,6.03]
+        obs_tau = kendall(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
+        exp_tau = 0.49761335152811925
+        exp_prob = 0.0097188572446995618
+        self.assertFloatEqual(obs_tau, exp_tau)
+        self.assertFloatEqual(obs_prob, exp_prob)
+        # random vectors checked against scipy. v1 has 33 ties, v2 32
+        v1 = array([ 1.2,  9.7,  8.8,  1.7,  8.6,  9.9,  6.8,  7.3,  5.5,  5.4,  8.3,
+        3.6,  7.5,  2. ,  9.3,  5.1,  8.4,  0.3,  8.2,  2.4,  9.8,  8.5,
+        2.1,  6. ,  1.8,  3.7,  1.4,  4.6,  7.6,  5.2,  0.9,  5.2,  4.7,
+        2.9,  5. ,  6.9,  1.3,  6.7,  5.2,  2.4,  6.9,  2. ,  7.4,  0.4,
+        8.2,  9.5,  2.9,  5.7,  2.4,  8.8,  1.6,  3.5,  5.1,  3.6,  3.3,
+        7.5,  0.9,  9.3,  5.4,  6.9,  9.3,  2.3,  1.9,  8.1,  3.2,  4.2,
+        8.7,  3. ,  9.8,  5.3,  6.2,  4.8,  9. ,  2.8,  5.5,  8.4,  4.1,
+        5.6,  5.4,  6.9,  3.8,  2.7,  0.3,  3.9,  8.2,  6.6,  1.9,  3.9,
+        2. ,  4.4,  0.8,  6.5,  4.8,  1.5,  9.9,  9.1,  9.9,  6.2,  2.9,
+        2. ])
+        v2 = array([  6.6,   8.6,   3.9,   6.1,   0.9,   8.4,  10. ,   3.3,   0.4,
+         3.9,   7.6,   8.2,   8.6,   3. ,   6.9,   0.6,   8.4,   8.1,
+         6.3,   0.5,   5.2,   6.4,   8. ,   9.9,   1.2,   6.7,   8.4,
+         2.7,   8.4,   4.1,   4.6,   5.1,   5.2,   5.3,   2.2,   2.2,
+         4.3,   7.1,   1.4,   6.6,   7.6,   4.5,   7.8,   3.5,   7.1,
+         0.6,   4.6,   3.2,   2.2,   0.2,   3.9,   5.9,   7.7,   8.8,
+         1.3,   5.1,   5.6,   8.3,   8.8,   1.7,   5.2,   6.9,   1.3,
+         1.4,   4.9,   9.4,   2.3,   3.7,   9.1,   3.4,   1.6,   4.1,
+         9.7,   2.8,   9.9,   0.5,   2. ,   2.7,   3.3,   2.4,   3.6,
+         7.9,   6.5,   7. ,   4.2,   1.8,   1.6,   1.9,   5.5,   0. ,
+         1.4,   2.2,   7.2,   8.2,   1.1,   2.5,   5.3,   0.2,   9. ,   0.2])
+        exp_tau, exp_prob = (0.024867511238807951, 0.71392573687923555)
+        obs_tau = kendall(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
+        self.assertFloatEqual(obs_tau, exp_tau)
+        self.assertFloatEqual(obs_prob, exp_prob)
+
+
+class CScoreTests(TestCase):
+    """Tests functions calculating cscore"""
+
+    def test_cscore(self):
+        '''Test cscore is calculated correctly.'''
+        # test using example from Stone and Roberts pg 75
+        v1 = array([1,0,0,0,1,1,0,1,0,1])
+        v2 = array([1,1,1,0,1,0,1,1,1,0])
+        obs = cscore(v1,v2)
+        exp = 8
+        self.assertEqual(obs, exp)
+        # test using examples verified in ecosim
+        v1 = array([4,6,12,13,14,0,0,0,14,11,9,6,0,1,1,0,0,4])
+        v2 = array([4,0,0,113,1,2,20,0,1,0,19,16,0,13,6,0,5,4])
+        # from R
+        # library(vegan)
+        # library(bipartite)
+        # m = matrix(c(4,6,12,13,14,0,0,0,14,11,9,6,0,1,1,0,0,4,4,0,0,113,1,2,20,0,1,0,19,16,0,13,6,0,5,4), 18,2)
+        # C.score(m, normalise=FALSE)
+        exp = 9
+        obs = cscore(v1,v2)
+        self.assertEqual(obs, exp)
 
 #execute tests if called from command line
 if __name__ == '__main__':

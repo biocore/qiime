@@ -120,6 +120,7 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
                               output_dir=self.test_out,
                               evalue=1e-10,
                               min_id=0.75,
+                              genetic_code=11,
                               HALT_EXEC=False)
         observation_map_fp = join(self.test_out,'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
@@ -136,6 +137,7 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
                               output_dir=self.test_out,
                               evalue=1e-2,
                               min_id=0.75,
+                              genetic_code=2,
                               HALT_EXEC=False)
         observation_map_fp = join(self.test_out,'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
