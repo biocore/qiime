@@ -8,7 +8,7 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
     "Justin Kuczynski", "Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza",
-    "John Chase", "Jose Antonio Navas Molina"]
+    "John Chase", "Jose Antonio Navas Molina", "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jesse Stombaugh"

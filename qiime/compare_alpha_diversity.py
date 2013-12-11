@@ -20,8 +20,10 @@ from qiime.parse import (parse_mapping_file_to_dict,
                          parse_rarefaction,
                          group_by_field,
                          parse_mapping_file)
-from qiime.pycogent_backports.test import mc_t_two_sample, t_two_sample
-from qiime.otu_category_significance import fdr_correction
+from qiime.pycogent_backports.test import (mc_t_two_sample, t_two_sample, 
+    benjamini_hochberg_step_down, bonferroni_correction, fdr_correction)
+from itertools import combinations
+from collections import defaultdict
 
 test_types = ['parametric', 'nonparametric']
 correction_types = ['bonferroni', 'fdr', 'none']
