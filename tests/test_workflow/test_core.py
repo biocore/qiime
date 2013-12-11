@@ -96,8 +96,9 @@ class MockWorkflow(Workflow):
 
 class WorkflowTests(TestCase):
     def setUp(self):
-        self.obj_short = MockWorkflow(**{'A':True, 'C':True})
-        self.obj_noshort = MockWorkflow(ShortCircuit=False, **{'A':True, 
+        self.obj_short = MockWorkflow(Options={'A':True, 'C':True})
+        self.obj_noshort = MockWorkflow(ShortCircuit=False, Options=\
+                                                              {'A':True, 
                                                                'C':True})
 
     def test_untagged_wf_method(self):
@@ -237,7 +238,7 @@ class RequiresTests(TestCase):
     def test_methodb2_accept(self):
         # methodb2 is setup to be valid when foo is in [1,2,3], make sure we
         # can execute
-        obj = MockWorkflow(**{'foo':1})
+        obj = MockWorkflow(Options={'foo':1})
         obj.methodB2('test')
         self.assertEqual(obj.FinalState, ('B2', 'test'))
         self.assertEqual(obj.Stats, {'B2':1})
@@ -251,7 +252,7 @@ class RequiresTests(TestCase):
     def test_methodb2_ignore(self):
         # methodb2 is setup to be valid when foo is in [1, 2, 3], make sure
         # we do not execute
-        obj = MockWorkflow(**{'foo':'bar'})
+        obj = MockWorkflow(Options={'foo':'bar'})
         obj.methodB2('test')
         self.assertEqual(obj.FinalState, None)
         self.assertEqual(obj.Stats, {})

@@ -1,5 +1,54 @@
 #!/usr/bin/env python
 
+"""Perform multiple method calls, determined at runtime, on independent items
+
+Construct arbitrarily complex workflows in which the specific methods run are
+determined at runtime. These methods are applied to items that are assumed to
+be independent.
+
+As an example:
+
+class MyWorkflow(Workflow):
+    @priority(100)
+    @no_requirements
+    def wf_mul(self, item):
+        self.FinalState *= item
+
+    @priority(10)
+    @requires(Option='add_value')
+    def wf_add(self, item):
+        self.FinalState += item
+    
+    @priority(10)
+    @requires(Option='sub_value', Values=[1,5,10])
+    def wf_sub(self, item):
+        self.FinalState -= item
+        self.FinalState -= self.Options['sub_value']
+
+    @priority(1000)
+    @requires(IsValid=False)
+    def wf_init(self, item):
+        self.FinalState = item
+
+# (i * i) + i - i - 5
+wf = MyWorkflow(Options={'add_value':None, 'sub_value':5})
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+
+# (i * i) - i - 10
+wf = MyWorkflow(Options={'sub_value':10})
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+
+# (i * i)
+wf = MyWorkflow()
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+"""
+
 from itertools import chain
 from functools import update_wrapper
 from collections import Iterable, defaultdict
@@ -25,16 +74,22 @@ option_exists = Exists()
 class Workflow(object):
     """Arbitrary worflow support structure"""
 
-    def __init__(self, ShortCircuit=True, **kwargs):
+    def __init__(self, ShortCircuit=True, Debug=True, Options=None):
         """Build thy self
 
         ShortCiruit : if True, enables ignoring function groups when a given
             item has failed
+        Options : runtime options, {'option':values}
 
-        kwargs are stored as self.Options. Support for arbitrary Stats is 
-        implicit
+        All workflow methods (i.e., those starting with "wk_") must be decorated
+        by either "no_requirements" or "requires". This ensures that the methods
+        support the automatic workflow determination mechanism.
         """
-        self.Options = kwargs
+        if Options is None:
+            self.Options = {}
+        else:
+            self.Options = Options
+
         self.Stats = defaultdict(int)
         self.ShortCircuit = ShortCircuit
         self.Failed = False
@@ -82,11 +137,11 @@ class Workflow(object):
             success_callback = lambda x: x.FinalState
 
         it, workflow = self._get_workflow(it)
-    
+        
         for item in it:
             self.Failed = False
             self.FinalState = None
-            
+
             for f in workflow:
                 f(item)
 
@@ -104,7 +159,7 @@ def no_requirements(f):
         f(self, *args, **kwargs)
         return _executed
     Workflow.tagFunction(decorated)
-    return decorated
+    return update_wrapper(decorated, f)
 
 class requires(object):
     """Decorator that executes a function if requirements are met"""
@@ -149,6 +204,7 @@ class requires(object):
 
             s_opt = self.Option
             ds_opts = dec_self.Options
+
             if s_opt in ds_opts and ds_opts[s_opt] in self.Values:
                 f(dec_self, *args, **kwargs)
                 return _executed
