@@ -23,10 +23,16 @@ from qiime.check_id_map import process_id_map
 from qiime.split_libraries import expand_degeneracies
 
 
-def get_mapping_details(mapping_fp):
+def get_mapping_details(mapping_fp,
+                        suppress_barcode_checks = False,
+                        suppress_primer_checks = False):
     """ Returns SampleIDs, Barcodes, Primer seqs from mapping file
     
     mapping_fp: filepath to mapping file
+    suppress_barcode_checks=If True, will skip getting barcodes from mapping 
+     file and searching for these in sequences.
+    suppress_primer_checks=If True, will skip getting primers from mapping 
+     file and searching for these in sequences
     """
     
     mapping_f = open(mapping_fp, "U")
@@ -37,10 +43,34 @@ def get_mapping_details(mapping_fp):
         
     mapping_f.close()
     
-    # Errors means problems with SampleIDs or headers
+    # Should raise errors for barcodes or primers unless suppressed, and
+    # should raise errors for headers or duplicate SampleIDs in any case.
+    loc_bcs = ",1"
+    loc_primers = ",2"
     if errors:
-        raise ValueError,('Error in mapping file, please validate '+\
-         'mapping file with check_id_map.py')
+        for curr_error in errors:
+            # Halt when header has error
+            if curr_error.startswith("Found header field"):
+                raise ValueError,('Error in mapping file, please validate '
+                    'mapping file with check_id_map.py')
+            elif curr_error.endswith(loc_bcs):
+                # Halt for barcode errors unless suppressed
+                if suppress_barcode_checks:
+                    continue
+                else:
+                    raise ValueError,('Error in mapping file, please validate '
+                        'mapping file with check_id_map.py')
+            elif curr_error.endswith(loc_primers):
+                # Halt for primer errors unless suppressed
+                if suppress_primer_checks:
+                    continue
+                else:
+                    raise ValueError,('Error in mapping file, please validate '
+                        'mapping file with check_id_map.py')
+            # Raise error on duplicate sample IDs
+            elif curr_error.startswith("Duplicate SampleID"):
+                raise ValueError,('Error in mapping file, please validate '
+                    'mapping file with check_id_map.py')
          
     # create dict of dicts with SampleID:{each header:mapping data}
     
@@ -60,8 +90,10 @@ def get_mapping_details(mapping_fp):
     raw_linkerprimer_seqs = []
     
     for curr_id in id_map:
-        barcode_seqs.append(id_map[curr_id]['BarcodeSequence'])
-        raw_linkerprimer_seqs.append(id_map[curr_id]['LinkerPrimerSequence'])
+        if not suppress_barcode_checks:
+            barcode_seqs.append(id_map[curr_id]['BarcodeSequence'])
+        if not suppress_primer_checks:
+            raw_linkerprimer_seqs.append(id_map[curr_id]['LinkerPrimerSequence'])
     
     # remove duplicates    
     raw_linkerprimer_seqs = set(raw_linkerprimer_seqs)
@@ -113,8 +145,17 @@ def get_dup_labels_perc(fasta_labels):
     
     perc_dup = "%1.3f" %\
      ((fasta_labels_count-fasta_labels_derep)/fasta_labels_count)
+     
+    label_counts = defaultdict(int)
+    for curr_label in fasta_labels:
+        label_counts[curr_label] += 1
+        
+    labels_from_dups = []
+    for label in label_counts:
+        if label_counts[label] > 1:
+            labels_from_dups.append(label)
     
-    return perc_dup
+    return perc_dup, labels_from_dups
     
 def check_labels_sampleids(fasta_labels,
                            sample_ids,
@@ -174,7 +215,10 @@ def check_fasta_seqs(input_fasta_fp,
     barcodes_at_start = 0
     
     # Get max barcode length to checking the beginning of seq for barcode
-    max_bc_len = max([len(bc_len) for bc_len in barcodes])
+    if barcodes:
+        max_bc_len = max([len(bc_len) for bc_len in barcodes])
+    else:
+        max_bc_len = 0
     
     for label,seq in MinimalFastaParser(input_fasta_f):
         
@@ -349,7 +393,9 @@ def run_fasta_checks(input_fasta_fp,
                      tree_subset=False,
                      tree_exact_match=False,
                      same_seq_lens=False,
-                     all_ids_found=False):
+                     all_ids_found=False,
+                     suppress_barcode_checks=False,
+                     suppress_primer_checks=False):
     """ Returns dictionary of records for different fasta checks
     
     input_fasta_fp: fasta filepath
@@ -360,19 +406,25 @@ def run_fasta_checks(input_fasta_fp,
      the tree
     same_seq_lens: If True, will determine if sequences are of different lens.
     all_ids_found: If True, will determine if all SampleIDs are represented
-     in the sequence labels."""
+     in the sequence labels.
+    suppress_barcode_checks=If True, will skip getting barcodes from mapping 
+     file and searching for these in sequences.
+    suppress_primer_checks=If True, will skip getting primers from mapping 
+     file and searching for these in sequences"""
 
     # Stores details of various checks
     fasta_report = {}
     
     # get sets of data for testing fasta labels/seqs
-    sample_ids, barcodes, linkerprimerseqs = get_mapping_details(mapping_fp)
+    sample_ids, barcodes, linkerprimerseqs = get_mapping_details(mapping_fp,
+     suppress_barcode_checks, suppress_primer_checks)
     
     fasta_labels = get_fasta_labels(input_fasta_fp)
     
     total_seq_count = len(fasta_labels)
     
-    fasta_report['duplicate_labels'] = get_dup_labels_perc(fasta_labels)
+    fasta_report['duplicate_labels'], fasta_report['duplicate_ids'] =\
+     get_dup_labels_perc(fasta_labels)
      
     fasta_report['invalid_labels'], fasta_report['nosample_ids_map'] =\
      check_labels_sampleids(fasta_labels, sample_ids, total_seq_count)
@@ -402,8 +454,6 @@ def run_fasta_checks(input_fasta_fp,
          check_tree_exact_match(fasta_labels, tree_fp)
     else:
         fasta_report['tree_exact_match'] = False
-        
-    
      
     return fasta_report
      
@@ -480,6 +530,11 @@ def write_log_file(output_dir,
             output_f.write("The following tips were not in fasta labels:\n")
             for curr_tip in fasta_report['tree_exact_match'][1]:
                 output_f.write("%s\n" % curr_tip)
+                
+    if fasta_report['duplicate_ids']:
+        output_f.write("Duplicate labels found:\n")
+        for id in fasta_report['duplicate_ids']:
+            output_f.write("%s\n" % id)
     
     
 def validate_fasta(input_fasta_fp,
@@ -489,7 +544,9 @@ def validate_fasta(input_fasta_fp,
                    tree_subset=False,
                    tree_exact_match=False,
                    same_seq_lens=False,
-                   all_ids_found=False):
+                   all_ids_found=False,
+                   suppress_barcode_checks=False,
+                   suppress_primer_checks=False):
     """ Main function for validating demultiplexed fasta file
     
     input_fasta_fp: fasta filepath
@@ -502,6 +559,10 @@ def validate_fasta(input_fasta_fp,
     same_seq_lens: If True, will determine if sequences are of different lens.
     all_ids_found: If True, will determine if all SampleIDs are represented
      in the sequence labels.
+    suppress_barcode_checks=If True, will skip getting barcodes from mapping 
+     file and searching for these in sequences.
+    suppress_primer_checks=If True, will skip getting primers from mapping 
+     file and searching for these in sequences
     """
 
     # First test is valid fasta format, can't do other tests if file can't be
@@ -510,7 +571,8 @@ def validate_fasta(input_fasta_fp,
     verify_valid_fasta_format(input_fasta_fp)
     
     fasta_report = run_fasta_checks(input_fasta_fp, mapping_fp, tree_fp,
-     tree_subset, tree_exact_match, same_seq_lens, all_ids_found)
+     tree_subset, tree_exact_match, same_seq_lens, all_ids_found,
+     suppress_barcode_checks, suppress_primer_checks)
      
     write_log_file (output_dir, input_fasta_fp, fasta_report)
     
