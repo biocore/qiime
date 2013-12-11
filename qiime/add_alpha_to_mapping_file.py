@@ -114,7 +114,7 @@ def _get_level(value, levels, prefix=None):
 
     if value > 1 or value < 0:
         raise ValueError("Encountered invalid normalized alpha diversity value %s. "
-        "Normalized values must be between 0 and 1." % value)
+            "Normalized values must be between 0 and 1." % value)
 
     check = [i for i in range(0, len(levels)) if levels[i] == value]
 
