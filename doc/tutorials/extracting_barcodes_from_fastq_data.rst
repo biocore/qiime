@@ -95,8 +95,3 @@ In this case, the "#" character is before the barcode, and the barcodes are 6 ba
 	extract_barcodes.py --input_type barcode_in_label --char_delineator "#" -f in_seqs.fastq --bc1_len 6 -o parsed_barcodes/
 	
 A second fastq file could be passed (``-r``) if one had paired files with barcodes in the labels, and the parameters for changing barcode lengths or reverse complementing barcodes all apply.
-
-Notes for post-demultiplexing
------------------------------
-
-In many of these cases, the primer sequences (forward and potentially reverse) will remain in the sequences. It is standard practice to remove these from the sequences before clustering or other analyses. The `quality_filter_fastq.py` script can remove forward and optionally, reverse primers, but one should disable the other quality filtering settings (e.g. homopolymer checks, which are issues with the 454 platform).
