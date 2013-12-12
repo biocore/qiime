@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "Jeremy.Widmann@colorado.edu"
  

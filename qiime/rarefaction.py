@@ -8,7 +8,7 @@ __credits__ = ["Justin Kuczynski",
                "Rob Knight", 
                "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 

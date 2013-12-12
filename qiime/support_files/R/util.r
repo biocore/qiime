@@ -4,7 +4,7 @@
 # __copyright__ = "Copyright 2011, The QIIME Project"
 # __credits__ = ["Dan Knights"]
 # __license__ = "GPL"
-# __version__ = "1.8.0"
+# __version__ = "1.8.0-dev"
 # __maintainer__ = "Dan Knights"
 # __email__ = "daniel.knights@colorado.edu"
 # 
