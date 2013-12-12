@@ -1,6 +1,6 @@
 QIIME 1.8.0 (11 Dec 2013)
 =========================
-* Tutorial added for usage of extract_barcodes.py script. This adds support for alternative illumina barcoding schemes.
+* New script, extract_barcodes.py, and associated tutorial added to support alternative illumina barcoding schemes.
 * Added script join_paired_ends.py, which supports joining of overlapping paired-end reads in fastq files. This wraps fastq-join and SeqPrep.
 * extract_barcodes.py script added-this script is intended to help process fastq data that is not in a compatible format with split_libraries_fastq.py.
 * otu_category_significance.py has been removed in favor of a new script called ``group_significance.py`` which has significantly more functionality.
