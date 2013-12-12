@@ -61,7 +61,7 @@ That's it!
 Installing QIIME on Mac OS X (Using MacQIIME)
 +++++++++++++++++++++++++++++++++++++++++++++
 
-Jeff Werner builds and maintain MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
+Jeff Werner builds and maintains MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
 
 
 Manually installing QIIME
