@@ -34,7 +34,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
     format_biom_table, format_mapping_html_data, format_te_prefs, 
     format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
-    format_best_results, format_permanova_results, format_histograms_two_bins)
+    format_best_results, format_permanova_results, format_fastq_record,
+    format_histograms_two_bins)
 from qiime.stats import Anosim, Best, Permanova
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
 from biom.table import SparseTaxonTable
@@ -753,6 +754,18 @@ y\t5\t6\tsample y""")
         # Multiple categories.
         obs = format_best_results(self.best_88_soils(0))
         self.assertEqual(self.remove_nums(obs), exp_best_88_soils)
+        
+    def test_format_fastq_record(self):
+        """ Returns fastq record in the correct format """
+        
+        label = "test_label"
+        seq = "AATTCCGG"
+        qual = "12345678"
+        
+        actual_lines = format_fastq_record(label, seq, qual)
+        expected_lines = '@test_label\nAATTCCGG\n+\n12345678\n'
+        
+        self.assertEqual(actual_lines, expected_lines)
 
 
 example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
