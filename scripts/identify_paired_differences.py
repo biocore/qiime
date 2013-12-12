@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.group import (extract_per_individual_state_metadata_from_sample_metadata,

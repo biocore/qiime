@@ -12,10 +12,9 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Dan Knights", "Antonio Gonzalez Pena",
                 "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
-__status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 from qiime.util import make_option

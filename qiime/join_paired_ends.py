@@ -4,10 +4,9 @@ __author__ = "Mike Robeson"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
-__status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.pycogent_backports.fastq_join import FastqJoin,join_paired_end_reads_fastqjoin

@@ -5,10 +5,9 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Greg Caporaso",
                 "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.util import make_option

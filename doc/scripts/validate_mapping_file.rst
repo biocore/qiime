@@ -1,8 +1,8 @@
-.. _check_id_map:
+.. _validate_mapping_file:
 
-.. index:: check_id_map.py
+.. index:: validate_mapping_file.py
 
-*check_id_map.py* -- Checks user's metadata mapping file for required data, valid format
+*validate_mapping_file.py* -- Checks user's metadata mapping file for required data, valid format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -61,7 +61,7 @@ Specifically, we check that:
 
 
 
-**Usage:** :file:`check_id_map.py [options]`
+**Usage:** :file:`validate_mapping_file.py [options]`
 
 **Input Arguments:**
 
@@ -86,7 +86,7 @@ Specifically, we check that:
 	-B, `-`-variable_len_barcodes
 		Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]
 	-p, `-`-disable_primer_check
-		Use -p to disable checks for primers.  LinkerPrimerSequence header still required.  [default: False]
+		Use -p to disable checks for primers.  LinkerPrimerSequence header still required. [default: False]
 	-j, `-`-added_demultiplex_field
 		Use -j to add a field to use in the mapping file as additional demultiplexing (can be used with or without barcodes).  All combinations of barcodes/primers and the these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column header "run_prefix".  [default: None]
 	-s, `-`-suppress_html
@@ -100,10 +100,10 @@ A log file, html file, and corrected_mapping.txt file will be written to the cur
 
 **Example:**
 
-Check the Fasting_Map.txt mapping file for problems, supplying the required mapping file, and output the results in the check_id_map_output directory
+Check the Fasting_Map.txt     mapping file for problems, supplying the required mapping file, and output     the results in the validate_mapping_file_output directory
 
 ::
 
-	check_id_map.py -m Fasting_Map.txt -o check_id_map_output
+	validate_mapping_file.py -m     Fasting_Map.txt -o validate_mapping_file_output
 
 

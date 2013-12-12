@@ -7,7 +7,7 @@
 
 **Description:**
 
-Fits a spatial autocorrelation model between two matrices and plots the result. This script will work with two distance matrices but will ignore the 0s at the diagonal and the values that go to N/A
+Fits a spatial autocorrelation model between two matrices and plots the result. This script will work with two distance matrices but will ignore the 0s at the diagonal and the values that go to N/A. See `distance_matrix_from_mapping.py <./distance_matrix_from_mapping.html>`_.
 
 
 **Usage:** :file:`plot_semivariogram.py [options]`
@@ -56,10 +56,14 @@ Fits a spatial autocorrelation model between two matrices and plots the result. 
 		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
 	`-`-line_alpha
 		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
-	-m, `-`-model
+	`-`-model
 		Model to be fitted to the data. Valid choices are:nugget, exponential, gaussian, periodic, linear. [default: exponential]
 	-p, `-`-print_model
 		Print in the title of the plot the function of the fit. [default: False]
+	-c, `-`-category
+		Category to color each of the trajectories when you have multiple treatments [default: None]
+	-m, `-`-mapping_fp
+		Metadata mapping file, only used when coloring by a category, a file with the legends and color coding will be created with the suffix legend [default: None]
 
 
 **Output:**
@@ -79,6 +83,14 @@ Modify the the default method to gaussian
 
 ::
 
-	plot_semivariogram.py -x distance.txt -y unifrac.txt -m gaussian -o semivariogram_gaussian.png
+	plot_semivariogram.py -x distance.txt -y unifrac.txt --model gaussian -o semivariogram_gaussian.png
+
+**Color semivariograms by a category in the metadata mapping file:**
+
+Using a header name in the mapping file (Time), create two separate semivariograms in the same plot, an accompanying file with the color coding will be created(categories_legend.eps), both the legends and the plot will be in eps format.
+
+::
+
+	plot_semivariogram.py -y unweighted_unifrac_dm.txt -x time_dm.txt --model gaussian -m Fasting_Map.txt -o categories.eps -c Treatment
 
 

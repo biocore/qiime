@@ -10,10 +10,9 @@ __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Daniel McDonald","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
-__status__ = "Development"
 
 class JobError(Exception):
     pass

@@ -10,10 +10,9 @@ __credits__ = ["William Walters",
                "Jose Carlos Clemente Litran",
                "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.5.3-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
 
 from os.path import isfile, basename, join, exists
 from shutil import rmtree

@@ -5,10 +5,9 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
-__status__ = "Development"
 
 from os.path import exists
 from numpy import array, log10, asarray, float64

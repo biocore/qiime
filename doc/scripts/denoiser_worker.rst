@@ -32,7 +32,7 @@ A worker waits for data and does flowgram alignments once it gets it.
 	**[OPTIONAL]**
 		
 	-e, `-`-error_profile
-		Path to error profile [DEFAULT: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
+		Path to error profile [DEFAULT: /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
 	-c, `-`-counter
 		Round counter to start this worker with  [default: 0]
 

@@ -10,10 +10,9 @@ __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
     "Justin Kuczynski", "Antonio Gonzalez Pena", "Yoshiki Vazquez Baeza",
     "John Chase", "Jose Antonio Navas Molina", "Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
  
 from qiime.util import make_option, parse_command_line_parameters
 from qiime.util import get_options_lookup, create_dir

@@ -6,10 +6,9 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "John Chase"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
  
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir, \

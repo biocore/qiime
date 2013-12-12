@@ -8,10 +8,9 @@ __credits__ = ["Jai Ram Rideout",
                "Greg Caporaso",
                "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 from numpy import array, matrix
 from biom.parse import parse_biom_table

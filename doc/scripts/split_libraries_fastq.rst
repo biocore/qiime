@@ -32,8 +32,8 @@
 		The barcode read fastq files (comma-separated if more than one) [default: None]
 	`-`-store_qual_scores
 		Store qual strings in .qual files [default: False]
-	`-`-sample_id
-		Single sample id to be applied to all sequences (used when data is not multiplexed) [default: None]
+	`-`-sample_ids
+		Comma-separated list of samples id to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
 	`-`-store_demultiplexed_fastq
 		Write demultiplexed fastq files [default: False]
 	`-`-retain_unassigned_reads
@@ -47,13 +47,13 @@
 	-s, `-`-start_seq_id
 		Start seq_ids as ascending integers beginning with start_seq_id [default: 0]
 	`-`-rev_comp_barcode
-		Reverse compliment barcode reads before lookup [default: False]
+		Reverse complement barcode reads before lookup [default: False]
 	`-`-rev_comp_mapping_barcodes
-		Reverse compliment barcode in mapping before lookup (useful if barcodes in mapping file are reverse compliments of golay codes)[default: False]
+		Reverse complement barcode in mapping before lookup (useful if barcodes in mapping file are reverse complements of golay codes) [default: False]
 	`-`-rev_comp
-		Reverse compliment sequence before writing to output file (useful for reverse-orientation reads) [default: False]
+		Reverse complement sequence before writing to output file (useful for reverse-orientation reads) [default: False]
 	-q, `-`-phred_quality_threshold
-		The minimum acceptable Phred quality score (e.g., for Q20 and better, specify -q 20) [default: 3]
+		The maximum unacceptable Phred quality score (e.g., for Q20 and better, specify -q 19) [default: 3]
 	`-`-last_bad_quality_char
 		DEPRECATED: use -q instead. This method of setting is not robust to different versions of CASAVA.
 	`-`-barcode_type
@@ -69,34 +69,40 @@
 
 
 
-**Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.:**
+**Demultiplex and quality filter (at Phred >= Q20) one lane of Illumina fastq data and write results to ./slout_q20.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q20
+	split_libraries_fastq.py -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q 19
 
-**Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.:**
-
-::
-
-	split_libraries_fastq.py -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q20
-
-**Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.:**
+**Demultiplex and quality filter (at Phred >= Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20
+	split_libraries_fastq.py -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q 19
 
-**Quality filter (at Phred Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.:**
-
-::
-
-	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'
-
-**Quality filter (at Phred Q20) two non-multiplexed lanes of Illumina fastq data and write results to ./slout_single_sample_q20.:**
+**Demultiplex and quality filter (at Phred >= Q20) two lanes of Illumina fastq data and write results to ./slout_q20.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q20 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q 19
+
+**Quality filter (at Phred >= Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.:**
+
+::
+
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt  -q 19 --barcode_type 'not-barcoded'
+
+**Quality filter (at Phred >= Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.:**
+
+::
+
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'
+
+**Quality filter (at Phred >= Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.:**
+
+::
+
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'
 
 

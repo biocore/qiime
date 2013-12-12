@@ -7,10 +7,9 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski",
                  "John Chase", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
 """
 This script generates taxonomy charts
 """

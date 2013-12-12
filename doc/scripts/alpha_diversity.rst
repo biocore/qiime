@@ -22,7 +22,7 @@ This script calculates alpha diversity, or within-sample diversity, using an otu
 	-i, `-`-input_path
 		Input OTU table filepath or input directory containing OTU tables for batch processing. [default: None]
 	-o, `-`-output_path
-		Output distance matrix filepath or output directory to store distance matrices when batch processing. [default: None]
+		Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format or output directory when batch processing. [default: None]
 	-m, `-`-metrics
 		Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_species]
 	-s, `-`-show_metrics

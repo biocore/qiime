@@ -7,10 +7,9 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout", 
                "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from math import ceil
 from os.path import split, splitext, join
