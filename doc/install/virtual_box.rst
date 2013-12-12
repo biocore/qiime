@@ -33,11 +33,6 @@ VirtualBox help video
 =====================
 A video illustrating these steps can be found `here <http://www.youtube.com/watch?v=1jYupkquaME>`_.
 
-QIIME VB and CloVR
-==================
-
-As of the QIIME 1.2.0 release, the QIIME VB and EC2 images are built using `CloVR`_.  CloVR provides a platform for building portable virtual machines. The platform automates builds in formats compatible with VirtualBox, VMware, and Clouds, including Amazon EC2.  The `CloVR developer <http://clovr.org/developers>`_ pages have more information on the platform and build process.
-
 Limitations of the QIIME Virtual Box
 ====================================
 Due to licensing restrictions, we cannot package Roche's ``sff tools`` with the QIIME Virtual Box. These must be obtained from Roche/454. When you run QIIME's ``tests/all_tests.py`` script, you will therefore get failures associated with the wrapper for ``sff tools`` which look like:
