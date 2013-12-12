@@ -8,7 +8,7 @@ __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
                "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"

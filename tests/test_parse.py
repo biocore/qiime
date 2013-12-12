@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Jai Ram Rideout","Will Van Treuren", "Yoshiki Vazquez-Baeza",
                "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"

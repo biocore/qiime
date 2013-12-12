@@ -6,7 +6,7 @@ __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann",
                "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"

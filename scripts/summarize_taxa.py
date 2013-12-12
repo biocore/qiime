@@ -9,7 +9,7 @@ __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",
                "Jesse Stombaugh", "Jose Carlos Clemente Litran",
                "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 __status__ = "Development"

@@ -8,7 +8,7 @@ __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone",
     "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso", 
     "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 __status__ = "Development"
