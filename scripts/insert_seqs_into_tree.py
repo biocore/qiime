@@ -61,7 +61,7 @@ script_info['optional_options'] = [\
     make_option('-s','--stats_fp',\
           type='existing_filepath',help='Stats file produced by tree-building software. REQUIRED if -m pplacer [default: %default]'),
     make_option('-p','--method_params_fp',\
-            type='existing_filepath',help='Parameters file containing method-specific parameters to use. Lines should be formatted as 'raxml:-m GTRCAT' (note this is not a standard QIIME parameters file, but a RAxML parameters file). [default: %default]'),
+            type='existing_filepath',help="Parameters file containing method-specific parameters to use. Lines should be formatted as 'raxml:-m GTRCAT' (note this is not a standard QIIME parameters file, but a RAxML parameters file). [default: %default]"),
 
 ]
 script_info['version'] = __version__
