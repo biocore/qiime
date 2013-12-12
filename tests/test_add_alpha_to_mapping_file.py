@@ -96,10 +96,10 @@ class TopLevelTests(TestCase):
         self.assertEquals(output, expected_output)
 
         # unwanted cases, greater than one and negative values
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             output = _get_level(1.3, [0.5])
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             output = _get_level(-1, [0.25, 0.5, 0.75])
 
     def test_mean_alpha(self):
