@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
-__status__ = "Development"
 
 """
 This script generates the otu networks and statistics

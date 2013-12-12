@@ -13,7 +13,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
@@ -75,7 +74,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
-__status__ = "Development"
 """ % strftime('%d %b %Y')
 
     script_block = """

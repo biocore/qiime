@@ -13,7 +13,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
 
 def get_ids(lines, field, bad_ids=None, debug=False):
     """Make dict of lib:ids"""

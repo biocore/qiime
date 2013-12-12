@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 from qiime.collate_alpha import make_output_row
 from cogent.util.unit_test import TestCase, main

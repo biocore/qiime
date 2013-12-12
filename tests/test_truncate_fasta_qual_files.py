@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
 
 from os.path import isdir, isfile, basename
 from shutil import rmtree

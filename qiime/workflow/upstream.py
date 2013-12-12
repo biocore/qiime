@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import split, splitext, abspath
 from qiime.util import (get_qiime_scripts_dir,

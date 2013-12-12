@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 from optparse import OptionParser
 from itertools import imap

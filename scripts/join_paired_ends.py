@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
-__status__ = "Development"
 
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,

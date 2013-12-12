@@ -27,7 +27,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
 
 """Contains code for filtering alignments before building trees from them
 """

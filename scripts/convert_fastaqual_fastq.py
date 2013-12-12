@@ -8,7 +8,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
-__status__ = "Development"
 
 # Reviewed by William Walters
 

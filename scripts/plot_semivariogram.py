@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
 
 from qiime.plot_taxa_summary import make_legend
 from qiime.colors import get_qiime_hex_string_color

@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
 
 from os import remove, path, devnull
 from os.path import join, split, splitext, exists

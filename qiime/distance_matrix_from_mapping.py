@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
 
 """Contains code for performing distance matrix analyses of a column from a mapping file.
 

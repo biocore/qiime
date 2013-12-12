@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "Jeremy.Widmann@colorado.edu"
-__status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\

@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
 
 from numpy import array
 from qiime.parse import parse_mapping_file_to_dict

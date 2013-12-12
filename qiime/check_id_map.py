@@ -46,7 +46,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
 
 from collections import defaultdict
 from string import letters, digits, upper

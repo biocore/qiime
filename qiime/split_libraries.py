@@ -31,7 +31,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Walters"
 __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
-__status__ = "Development"
 
 import re
 from gzip import GzipFile

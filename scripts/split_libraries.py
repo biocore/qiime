@@ -12,7 +12,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup

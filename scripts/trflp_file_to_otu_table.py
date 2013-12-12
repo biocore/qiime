@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
 
 from biom.table import table_factory
 from qiime.util import make_option

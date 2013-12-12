@@ -6,7 +6,6 @@ __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
-__status__ = "Development"
 
 # Should be part of cogent.parse.fastq
 

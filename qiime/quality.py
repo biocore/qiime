@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 def ascii_to_phred(c,offset):
     """  Convert ascii character to Phred quality score with specified ASCII offset.

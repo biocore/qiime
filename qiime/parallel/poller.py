@@ -16,7 +16,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 def get_function_handle(s):
     last_dot = s.rindex('.')

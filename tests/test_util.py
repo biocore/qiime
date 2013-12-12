@@ -65,7 +65,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""

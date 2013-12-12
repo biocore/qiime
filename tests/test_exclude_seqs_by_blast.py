@@ -8,7 +8,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
-__status__ = "Development"
 
 """
 Test code for exclude_seqs_by_blast.py.  

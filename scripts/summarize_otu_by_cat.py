@@ -11,7 +11,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Development"
  
 from os import getcwd, makedirs
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,

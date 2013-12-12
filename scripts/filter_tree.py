@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
 
 
 from cogent.parse.tree import DndParser

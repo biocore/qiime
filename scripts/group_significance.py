@@ -11,7 +11,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
 
 from qiime.util import (parse_command_line_parameters, make_option, 
     sync_biom_and_mf)

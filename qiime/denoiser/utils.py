@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 import sys
 from os import remove, makedirs, access, X_OK, R_OK

@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
-__status__ = "Development"
  
 from numpy.random import shuffle
 from numpy import std, mean, arange, eye

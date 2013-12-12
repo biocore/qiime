@@ -11,7 +11,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join

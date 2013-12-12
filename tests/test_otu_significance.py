@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
-__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main 
 from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups, 

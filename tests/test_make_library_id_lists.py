@@ -11,7 +11,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in make_library_id_lists.py"""

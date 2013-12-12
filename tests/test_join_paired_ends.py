@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
-__status__ = "Development"
 
 
 import os

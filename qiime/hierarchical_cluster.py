@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 """runs upgma or nj on a distance matrix file, writes the resulting tree
 with distances to specified output file

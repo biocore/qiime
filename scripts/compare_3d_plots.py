@@ -15,7 +15,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
-__status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 from qiime.util import make_option

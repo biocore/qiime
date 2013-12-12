@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Development"
 
 print ("\nThis script has been deprecated in favor of group_significance.py " + 
     "which is more generally applicable. For more details, call:\n\n " +

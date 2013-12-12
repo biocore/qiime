@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Development"
  
 
 from os.path import split, exists, splitext, getsize

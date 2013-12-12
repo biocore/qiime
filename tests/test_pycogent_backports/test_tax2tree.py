@@ -7,7 +7,6 @@ __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
-__status__ = "Development"
 
 """Test suite for the generate_taxa_compare_table.py module.
 

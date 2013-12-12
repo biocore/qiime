@@ -7,8 +7,7 @@
 # __version__ = "1.8.0"
 # __maintainer__ = "Dan Knights"
 # __email__ = "daniel.knights@colorado.edu"
-# __status__ = "Development"
-
+# 
 
 # Attempts to load a given library. If does not exists, fails gracefully
 # and prints instructions for installing the library

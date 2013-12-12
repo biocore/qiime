@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
-__status__ = "Development"
 
 from numpy import array, median
 from cogent.util.unit_test import TestCase, main

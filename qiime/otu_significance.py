@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
-__status__ = "Development"
 
 from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict

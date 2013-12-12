@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option

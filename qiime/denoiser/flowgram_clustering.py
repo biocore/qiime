@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 from os import remove, popen, makedirs, rename
 from os.path import exists

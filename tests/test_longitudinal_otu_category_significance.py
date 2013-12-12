@@ -10,7 +10,6 @@ __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info, make_new_otu_counts, longitudinal_otu_table_conversion_wrapper
