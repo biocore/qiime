@@ -1,3 +1,6 @@
+QIIME 1.8.0-dev (changes since 1.8.0 go here)
+=============================================
+
 QIIME 1.8.0 (11 Dec 2013)
 =========================
 * New script, extract_barcodes.py, and associated tutorial added to support alternative illumina barcoding schemes.
