@@ -21,18 +21,21 @@ from qiime.cluster_quality import clust_qual_ratio
 
 
 class FunctionTests(TestCase):
+
     """Tests of the abstract OtuPicker class"""
 
     def test_clust_qual_ratio(self):
-        dist_labels = ['s1','s2','s3']
-        dmtx = numpy.array([[0,2.1,3],[2.1,0,1],[3,1,0]])
-        dists = [dist_labels,dmtx]
+        dist_labels = ['s1', 's2', 's3']
+        dmtx = numpy.array([[0, 2.1, 3], [2.1, 0, 1], [3, 1, 0]])
+        dists = [dist_labels, dmtx]
         map_data = \
-            {'s1':{'color':'red'},'s2':{'color':'blue'},'s3':{'color':'red'}}
-        bet, within = clust_qual_ratio(dists, [map_data,[]], 'color')
-        self.assertFloatEqual( sorted(bet), [1,2.1])
+            {'s1': {'color': 'red'},
+             's2': {'color': 'blue'},
+                's3': {'color': 'red'}}
+        bet, within = clust_qual_ratio(dists, [map_data, []], 'color')
+        self.assertFloatEqual(sorted(bet), [1, 2.1])
         self.assertFloatEqual(within, [3.])
 
-#run unit tests if run from command-line
+# run unit tests if run from command-line
 if __name__ == '__main__':
     main()

@@ -4,8 +4,9 @@
 """
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__copyright__ = "Copyright 2011, The QIIME Project"
+# remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -27,32 +28,35 @@ from qiime.denoiser.preprocess import make_tmp_name
 
 PROJECT_HOME = get_qiime_project_dir()
 
-#timeout handling taken from test_workflow.py
+# timeout handling taken from test_workflow.py
+
+
 class TimeExceededError(Exception):
     pass
 
 allowed_seconds_per_test = 240
 
+
 def timeout(signum, frame):
-    raise TimeExceededError,\
-     "Test failed to run in allowed time (%d seconds)."\
-      % allowed_seconds_per_test
+    raise TimeExceededError("Test failed to run in allowed time (%d seconds)."
+                            % allowed_seconds_per_test)
+
 
 class DenoiserTests(TestCase):
 
     def setUp(self):
-        #abort all tests without the alignment binary
+        # abort all tests without the alignment binary
         check_flowgram_ali_exe()
 
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
         signal.alarm(allowed_seconds_per_test)
-        
-        self.test_dir = "denoiser_main_test" +make_tmp_name() +"/"
-        self.expected = """>FS8APND01D3TW3 | cluster size: 94 
+
+        self.test_dir = "denoiser_main_test" + make_tmp_name() + "/"
+        self.expected = """>FS8APND01D3TW3 | cluster size: 94
 CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCACCCTCTCAGGCCGGCTACCCGTCAAAGCCTTGGTAAGCCACTACCCCACCAACAAGCTGATAAGCCGCGAGTCCATCCCCAACCGCCGAAACTTTCCAACCCCCACCATGCAGCAGGAGCTCCTATCCGGTATTAGCCCCAGTTTCCTGAAGTTATCCCAAAGTCAAGGGCAGGTTACTCACGTGTTACTCACCCGTTCGCC
 """
-        self.expected_map_string= """FS8APND01EWRS4:
+        self.expected_map_string = """FS8APND01EWRS4:
 FS8APND01BSTVP:
 FS8APND01DXG45:
 FS8APND01D3TW3:\tFS8APND01CSXFN\tFS8APND01DQ8MX\tFS8APND01DY7QW\tFS8APND01B5QNI\tFS8APND01CQ6OG\tFS8APND01C7IGN\tFS8APND01DHSGH\tFS8APND01DJ17E\tFS8APND01CUXOA\tFS8APND01EUTYG\tFS8APND01EKK7T\tFS8APND01D582W\tFS8APND01B5GWU\tFS8APND01D7N2A\tFS8APND01BJGHZ\tFS8APND01D6DYZ\tFS8APND01C6ZIM\tFS8APND01D2X6Y\tFS8APND01BUYCE\tFS8APND01BNUEY\tFS8APND01DKLOE\tFS8APND01C24PP\tFS8APND01EBWQX\tFS8APND01ELDYW\tFS8APND01B0GCS\tFS8APND01D4QXI\tFS8APND01EMYD9\tFS8APND01EA2SK\tFS8APND01DZOSO\tFS8APND01DHYAZ\tFS8APND01C7UD9\tFS8APND01BTZFV\tFS8APND01CR78R\tFS8APND01B39IE\tFS8APND01ECVC0\tFS8APND01DM3PL\tFS8APND01DELWS\tFS8APND01CIEK8\tFS8APND01D7ZOZ\tFS8APND01CZSAI\tFS8APND01DYOVR\tFS8APND01BX9XY\tFS8APND01DEWJA\tFS8APND01BEKIW\tFS8APND01DCKB9\tFS8APND01EEYIS\tFS8APND01DDKEA\tFS8APND01DSZLO\tFS8APND01C6EBC\tFS8APND01EE15M\tFS8APND01ELO9B\tFS8APND01C58QY\tFS8APND01DONCG\tFS8APND01DVXX2\tFS8APND01BL5YT\tFS8APND01BIL2V\tFS8APND01EBSYQ\tFS8APND01CCX8R\tFS8APND01B2YCJ\tFS8APND01B1JG4\tFS8APND01DJ024\tFS8APND01BIJY0\tFS8APND01CIA4G\tFS8APND01DV74M\tFS8APND01ECAX5\tFS8APND01DC3TZ\tFS8APND01EJVO6\tFS8APND01D4VFG\tFS8APND01DYYYO\tFS8APND01D1EDD\tFS8APND01DQUOT\tFS8APND01A2NSJ\tFS8APND01DDC8I\tFS8APND01BP1T2\tFS8APND01DPY6U\tFS8APND01CIQGV\tFS8APND01BPUT8\tFS8APND01BDNH4\tFS8APND01DOZDN\tFS8APND01DS866\tFS8APND01DGS2J\tFS8APND01EDK32\tFS8APND01EPA0T\tFS8APND01CK3JM\tFS8APND01BKLWW\tFS8APND01DV0BO\tFS8APND01DPNXE\tFS8APND01B7LUA\tFS8APND01BTTE2\tFS8APND01CKO4X\tFS8APND01DGGBY\tFS8APND01C4NHX\tFS8APND01DYPQN
@@ -68,7 +72,7 @@ FS8APND01EFK0W:
 FS8APND01DCIOO:
 FS8APND01CKOMZ:
 """
-                
+
     def tearDown(self):
         """remove tmp files and stop alarm"""
 
@@ -79,18 +83,18 @@ FS8APND01CKOMZ:
             try:
                 rmtree(self.result_dir)
             except OSError:
-            #directory probably not empty (e.g. stale nfs files)
+            # directory probably not empty (e.g. stale nfs files)
                 pass
         try:
             rmdir(self.test_dir)
         except OSError:
-            #directory probably not empty, better not remove
+            # directory probably not empty, better not remove
             pass
-    
+
     def test_main(self):
         """Denoiser should always give same result on test data"""
 
-        expected = """>FS8APND01D3TW3 | cluster size: 94 
+        expected = """>FS8APND01D3TW3 | cluster size: 94
 CTCCCGTAGGAGTCTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCACCCTCTCAGGCCGGCTACCCGTCAAAGCCTTGGTAAGCCACTACCCCACCAACAAGCTGATAAGCCGCGAGTCCATCCCCAACCGCCGAAACTTTCCAACCCCCACCATGCAGCAGGAGCTCCTATCCGGTATTAGCCCCAGTTTCCTGAAGTTATCCCAAAGTCAAGGGCAGGTTACTCACGTGTTACTCACCCGTTCGCC
 """
 
@@ -103,140 +107,149 @@ FS8APND01DCIOO:
 FS8APND01CKOMZ:
 """
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "--force", "-o", self.test_dir, "-i",
-                              "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME] );
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "--force", "-o", self.test_dir, "-i",
+                            "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        observed = "".join(list(open(self.result_dir+ "centroids.fasta")))
+        observed = "".join(list(open(self.result_dir + "centroids.fasta")))
         self.assertEqual(observed, expected)
-        
-        self.assertEqual(len(list(MinimalFastaParser(open(self.result_dir + "singletons.fasta")))), 6)
 
-        observed = "".join(list(open(self.result_dir+ "denoiser_mapping.txt")))
+        self.assertEqual(
+            len(list(MinimalFastaParser(open(self.result_dir + "singletons.fasta")))),
+            6)
+
+        observed = "".join(
+            list(open(self.result_dir + "denoiser_mapping.txt")))
         self.assertEqual(observed, expected_map)
-        
+
     def test_main_with_fasta(self):
         """Denoiser with fasta file should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "--force", "-o", self.test_dir,
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "--force", "-o", self.test_dir,
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        observed = "".join(list(open(self.result_dir+ "centroids.fasta")))
+        observed = "".join(list(open(self.result_dir + "centroids.fasta")))
         self.assertEqual(observed, self.expected)
 
-        observed = "".join(list(open(self.result_dir+ "denoiser_mapping.txt")))
-        self.assertEqual(observed,self.expected_map_string)
-        
+        observed = "".join(
+            list(open(self.result_dir + "denoiser_mapping.txt")))
+        self.assertEqual(observed, self.expected_map_string)
+
     def test_main_with_titanium_error(self):
         """Denoiser with titanium error should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "--force", "-o", self.test_dir,
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
-                              "-e", "%s/qiime/support_files/denoiser/Data/Titanium_error_profile.dat" % PROJECT_HOME] )
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "--force", "-o", self.test_dir,
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                            "-e", "%s/qiime/support_files/denoiser/Data/Titanium_error_profile.dat" % PROJECT_HOME])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
-        
-        observed = "".join(list(open(self.result_dir+ "centroids.fasta")))
+
+        observed = "".join(list(open(self.result_dir + "centroids.fasta")))
         self.assertEqual(observed, self.expected)
-        
-        observed = "".join(list(open(self.result_dir+ "denoiser_mapping.txt")))
-        self.assertEqual(observed,self.expected_titanium_map_string)
-                                                                
+
+        observed = "".join(
+            list(open(self.result_dir + "denoiser_mapping.txt")))
+        self.assertEqual(observed, self.expected_titanium_map_string)
+
     def test_main_on_cluster(self):
         """Denoiser works in a cluster environment"""
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "--force","-o", self.test_dir, "-c", "-n", "2",
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "--force", "-o", self.test_dir, "-c", "-n", "2",
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        observed = "".join(list(open(self.result_dir+ "centroids.fasta")))
-        self.assertEqual(observed, self.expected)     
+        observed = "".join(list(open(self.result_dir + "centroids.fasta")))
+        self.assertEqual(observed, self.expected)
 
     def test_main_low_mem(self):
         """Denoiser works using low_memory"""
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-o", self.test_dir, "--low_memory"] )
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-o", self.test_dir, "--low_memory"])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        observed = "".join(list(open(self.result_dir+ "centroids.fasta")))
+        observed = "".join(list(open(self.result_dir + "centroids.fasta")))
         self.assertEqual(observed, self.expected)
-        
+
     def test_main_split(self):
         """Denoiser in split mode should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "-S", "--force",
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
-                              "-o", self.test_dir] )
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "-S", "--force",
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                            "-o", self.test_dir])
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        for subdir in ["0/","1/"]:
-            observed = "".join(list(open(self.result_dir+ subdir+"centroids.fasta")))
+        for subdir in ["0/", "1/"]:
+            observed = "".join(
+                list(open(self.result_dir + subdir + "centroids.fasta")))
             self.assertEqual(observed, expected_centroids[subdir])
 
-            observed = "".join(list(open(self.result_dir+ subdir+"denoiser_mapping.txt")))
+            observed = "".join(
+                list(open(self.result_dir + subdir + "denoiser_mapping.txt")))
             self.assertEqual(observed, expected_map_string[subdir])
 
     def test_main_split_cluster(self):
         """Denoiser on cluster in split mode should always give same result on test data"""
-        
-        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "-S", "--force", '-c', '-n 2',
-                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
-                              "-o", self.test_dir] )
 
-        result = Popen(command,shell=True,universal_newlines=True,\
-                           stdout=PIPE,stderr=STDOUT).stdout.read()
+        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+                            "-S", "--force", '-c', '-n 2',
+                            "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                            "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                            "-o", self.test_dir])
+
+        result = Popen(command, shell=True, universal_newlines=True,
+                       stdout=PIPE, stderr=STDOUT).stdout.read()
         self.result_dir = self.test_dir
 
-        for subdir in ["0/","1/"]:
-            observed = "".join(list(open(self.result_dir+ subdir+"centroids.fasta")))
+        for subdir in ["0/", "1/"]:
+            observed = "".join(
+                list(open(self.result_dir + subdir + "centroids.fasta")))
             self.assertEqual(observed, expected_centroids[subdir])
 
-            observed = "".join(list(open(self.result_dir+ subdir+"denoiser_mapping.txt")))
+            observed = "".join(
+                list(open(self.result_dir + subdir + "denoiser_mapping.txt")))
             self.assertEqual(observed, expected_map_string_on_cluster[subdir])
 
-expected_centroids = {'0/': """>FS8APND01D3TW3 | cluster size: 49 
+expected_centroids = {'0/': """>FS8APND01D3TW3 | cluster size: 49
 CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCACCCTCTCAGGCCGGCTACCCGTCAAAGCCTTGGTAAGCCACTACCCCACCAACAAGCTGATAAGCCGCGAGTCCATCCCCAACCGCCGAAACTTTCCAACCCCCACCATGCAGCAGGAGCTCCTATCCGGTATTAGCCCCAGTTTCCTGAAGTTATCCCAAAGTCAAGGGCAGGTTACTCACGTGTTACTCACCCGTTCGCC
 """,
-                              '1/': """>FS8APND01DQ8MX | cluster size: 45 
+                      '1/': """>FS8APND01DQ8MX | cluster size: 45
 CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCACCCTCTCAGGCCGGCTACCCGTCAAAGCCTTGGTAAGCCACTACCCCACCAACAAGCTGATAAGCCGCGAGTCCATCCCCAACCGCCGAAACTTTCCAACCCCCACCATGCAGCAGGAGCTCCTATCCGGTATTAGCCCCAGTTTCCTGAAGTTATCCCAAAGTCAAGGGCAGGTTACTCACGTGTTACTCACCCGTTCGCC
 """}
 
 expected_map_string = {'0/': """FS8APND01EFK0W:
 FS8APND01D3TW3:\tFS8APND01CSXFN\tFS8APND01DY7QW\tFS8APND01C7IGN\tFS8APND01EUTYG\tFS8APND01EKK7T\tFS8APND01B5GWU\tFS8APND01D7N2A\tFS8APND01C6ZIM\tFS8APND01BUYCE\tFS8APND01BNUEY\tFS8APND01EBWQX\tFS8APND01D4QXI\tFS8APND01EMYD9\tFS8APND01EA2SK\tFS8APND01DHYAZ\tFS8APND01BTZFV\tFS8APND01B39IE\tFS8APND01ECVC0\tFS8APND01DELWS\tFS8APND01CIEK8\tFS8APND01DEWJA\tFS8APND01BEKIW\tFS8APND01DCKB9\tFS8APND01C6EBC\tFS8APND01EE15M\tFS8APND01C58QY\tFS8APND01DVXX2\tFS8APND01EBSYQ\tFS8APND01CCX8R\tFS8APND01B1JG4\tFS8APND01BIJY0\tFS8APND01DV74M\tFS8APND01DC3TZ\tFS8APND01D1EDD\tFS8APND01DQUOT\tFS8APND01A2NSJ\tFS8APND01DDC8I\tFS8APND01BP1T2\tFS8APND01DPY6U\tFS8APND01CIQGV\tFS8APND01BDNH4\tFS8APND01DOZDN\tFS8APND01DS866\tFS8APND01EDK32\tFS8APND01BKLWW\tFS8APND01DPNXE\tFS8APND01DGGBY\tFS8APND01C4NHX
 """,
-                               '1/': """FS8APND01EWRS4:
+                       '1/': """FS8APND01EWRS4:
 FS8APND01DQ8MX:\tFS8APND01B5QNI\tFS8APND01CQ6OG\tFS8APND01DHSGH\tFS8APND01DJ17E\tFS8APND01CUXOA\tFS8APND01D582W\tFS8APND01BJGHZ\tFS8APND01D6DYZ\tFS8APND01D2X6Y\tFS8APND01DKLOE\tFS8APND01C24PP\tFS8APND01ELDYW\tFS8APND01B0GCS\tFS8APND01DZOSO\tFS8APND01C7UD9\tFS8APND01CR78R\tFS8APND01DM3PL\tFS8APND01D7ZOZ\tFS8APND01CZSAI\tFS8APND01DYOVR\tFS8APND01BX9XY\tFS8APND01EEYIS\tFS8APND01DDKEA\tFS8APND01DSZLO\tFS8APND01ELO9B\tFS8APND01DONCG\tFS8APND01BL5YT\tFS8APND01BIL2V\tFS8APND01B2YCJ\tFS8APND01DJ024\tFS8APND01CIA4G\tFS8APND01ECAX5\tFS8APND01EJVO6\tFS8APND01D4VFG\tFS8APND01DYYYO\tFS8APND01BPUT8\tFS8APND01DGS2J\tFS8APND01EPA0T\tFS8APND01CK3JM\tFS8APND01DV0BO\tFS8APND01B7LUA\tFS8APND01BTTE2\tFS8APND01CKO4X\tFS8APND01DYPQN
 FS8APND01DXG45:
 FS8APND01DCIOO:
@@ -244,12 +257,12 @@ FS8APND01BSTVP:
 FS8APND01CKOMZ:
 """}
 
-#Except for the ordering this is the same as expected_map_string
-#If we'd have a more clever way of comparing otu maps, we could use it here...
+# Except for the ordering this is the same as expected_map_string
+# If we'd have a more clever way of comparing otu maps, we could use it here...
 expected_map_string_on_cluster = {'0/': """FS8APND01EFK0W:
 FS8APND01D3TW3:\tFS8APND01CSXFN\tFS8APND01DY7QW\tFS8APND01C7IGN\tFS8APND01EUTYG\tFS8APND01EKK7T\tFS8APND01B5GWU\tFS8APND01D7N2A\tFS8APND01C6ZIM\tFS8APND01BUYCE\tFS8APND01BNUEY\tFS8APND01EBWQX\tFS8APND01D4QXI\tFS8APND01EMYD9\tFS8APND01EA2SK\tFS8APND01DHYAZ\tFS8APND01BTZFV\tFS8APND01B39IE\tFS8APND01ECVC0\tFS8APND01DELWS\tFS8APND01CIEK8\tFS8APND01DEWJA\tFS8APND01BEKIW\tFS8APND01DCKB9\tFS8APND01C6EBC\tFS8APND01EE15M\tFS8APND01C58QY\tFS8APND01DVXX2\tFS8APND01EBSYQ\tFS8APND01CCX8R\tFS8APND01B1JG4\tFS8APND01BIJY0\tFS8APND01DV74M\tFS8APND01DC3TZ\tFS8APND01D1EDD\tFS8APND01DQUOT\tFS8APND01A2NSJ\tFS8APND01DDC8I\tFS8APND01BP1T2\tFS8APND01DPY6U\tFS8APND01CIQGV\tFS8APND01BDNH4\tFS8APND01DOZDN\tFS8APND01DS866\tFS8APND01EDK32\tFS8APND01BKLWW\tFS8APND01DPNXE\tFS8APND01DGGBY\tFS8APND01C4NHX
 """,
-                               '1/': """FS8APND01EWRS4:
+                                  '1/': """FS8APND01EWRS4:
 FS8APND01DXG45:
 FS8APND01DCIOO:
 FS8APND01BSTVP:

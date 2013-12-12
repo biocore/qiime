@@ -24,6 +24,7 @@ from qiime.util import (get_qiime_temp_dir, DistanceMatrix, MetadataMap,
 methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
            'permdisp', 'dbrda']
 
+
 def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
     """Runs the specified statistical method using the category of interest.
 

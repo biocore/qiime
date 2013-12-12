@@ -3,8 +3,8 @@
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.app.blat import Blat, assign_reads_to_database, \
-                assign_dna_reads_to_dna_database, \
-                assign_dna_reads_to_protein_database
+    assign_dna_reads_to_dna_database, \
+    assign_dna_reads_to_protein_database
 from os.path import join, exists
 from os import remove
 from re import search
@@ -17,6 +17,7 @@ __version__ = "1.5.3-dev"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
 __status__ = "Production"
+
 
 class BlatTests(TestCase):
     files_to_remove = []
@@ -47,14 +48,15 @@ class BlatTests(TestCase):
         self.testout = get_tmp_filename().replace('"', '')
 
         self.files_to_remove += [self.test_db_prot_filename,
-                            self.test_db_dna_filename,
-                            self.test_query_filename, self.testout]
+                                 self.test_db_dna_filename,
+                                 self.test_query_filename, self.testout]
 
     def tearDown(self):
         """Removes temporary files created during the tests
         """
         for filename in self.files_to_remove:
-            if exists(filename): remove(filename)
+            if exists(filename):
+                remove(filename)
 
     def test_assign_reads_to_database(self):
         """Tests that assign_reads_to_database works as expected.
@@ -67,7 +69,7 @@ class BlatTests(TestCase):
                                              self.test_db_dna_filename,
                                              self.testout).read().splitlines()
         obs = [l for l in obs_lines if not l.startswith('#')]
-        
+
         self.assertEqual(obs, exp)
 
     def test_assign_dna_reads_to_dna_database(self):
@@ -79,10 +81,10 @@ class BlatTests(TestCase):
         exp = [l for l in assign_reads_exp if not l.startswith('#')]
 
         obs_lines = assign_dna_reads_to_dna_database(self.test_query_filename,
-                                             self.test_db_dna_filename,
-                                             self.testout).read().splitlines()
+                                                     self.test_db_dna_filename,
+                                                     self.testout).read().splitlines()
         obs = [l for l in obs_lines if not l.startswith('#')]
-        
+
         self.assertEqual(obs, exp)
 
     def test_assign_dna_reads_to_protein_database(self):
@@ -94,11 +96,11 @@ class BlatTests(TestCase):
         exp = [l for l in assign_reads_prot_exp if not l.startswith('#')]
 
         obs_lines = assign_dna_reads_to_protein_database(
-                    self.test_query_filename,
-                    self.test_db_prot_filename,
-                    self.testout).read().splitlines()
+            self.test_query_filename,
+            self.test_db_prot_filename,
+            self.testout).read().splitlines()
         obs = [l for l in obs_lines if not l.startswith('#')]
-        
+
         self.assertEqual(obs, exp)
 
     def test_get_base_command(self):
@@ -106,13 +108,13 @@ class BlatTests(TestCase):
         various inputs.
         """
         test_parameters_blank = {}
-        files = (self.test_query_filename, self.test_db_dna_filename, 
-                self.testout)
+        files = (self.test_query_filename, self.test_db_dna_filename,
+                 self.testout)
         exp_blank = 'blat %s %s %s' % (files[1], files[0], files[2])
 
         # initialize a Blat instance with these parameters and get the
         # command string
-        b = Blat(params = {}, HALT_EXEC=True)
+        b = Blat(params={}, HALT_EXEC=True)
         # need to set the positional parameters' values
         b._input_as_list(files)
         cmd = b._get_base_command()
@@ -151,7 +153,7 @@ class BlatTests(TestCase):
 
         # initialize a Blat instance with these parameters and get the
         # command string
-        b = Blat(params = test_parameters_1, HALT_EXEC=True)
+        b = Blat(params=test_parameters_1, HALT_EXEC=True)
         # need to set the positional parameters' values
         b._input_as_list(files)
         cmd = b._get_base_command()
@@ -178,7 +180,7 @@ class BlatTests(TestCase):
 
         # initialize a Blat instance with these parameters and get the
         # command string
-        b = Blat(params = test_parameters_2, HALT_EXEC=True)
+        b = Blat(params=test_parameters_2, HALT_EXEC=True)
         # need to set the positional parameters' values
         b._input_as_list(files)
         cmd = b._get_base_command()

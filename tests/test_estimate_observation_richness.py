@@ -20,11 +20,13 @@ from cogent.util.unit_test import TestCase, main
 from numpy import asarray, array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,
-        Chao1MultinomialPointEstimator, EmptySampleError,
-        EmptyTableError, ObservationRichnessEstimator,
-        RichnessEstimatesResults)
+                                                 Chao1MultinomialPointEstimator, EmptySampleError,
+                                                 EmptyTableError, ObservationRichnessEstimator,
+                                                 RichnessEstimatesResults)
+
 
 class ObservationRichnessEstimatorTests(TestCase):
+
     """Tests for the ObservationRichnessEstimator class."""
 
     def setUp(self):
@@ -32,7 +34,7 @@ class ObservationRichnessEstimatorTests(TestCase):
         # Single sample, 6 observations, one of which isn't observed in sample.
         self.biom_table1 = parse_biom_table(biom_table_str1)
         self.estimator1 = ObservationRichnessEstimator(self.biom_table1,
-                Chao1MultinomialPointEstimator)
+                                                       Chao1MultinomialPointEstimator)
 
     def test_constructor(self):
         """Test instantiating an ObservationRichnessEstimator."""
@@ -60,26 +62,27 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = self.estimator1(start=15, stop=15, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
+                              [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # start=1 and reference.
         obs = self.estimator1(start=1, stop=1, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
-                 (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
+                              [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
+                               (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # Points in between start=1 and reference.
         obs = self.estimator1(start=1, stop=15, num_steps=3)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
-                 (5, 3.40326340326, 0.655024590447, 2.119438797,
-                  4.68708800953),
-                 (9, 4.4001998002, 0.680106580075, 3.0672153976, 5.7331842028),
-                 (13, 4.85714285714, 0.665379090563, 3.55302380357,
-                  6.16126191071),
-                 (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
+                              [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
+                               (5, 3.40326340326, 0.655024590447, 2.119438797,
+                                4.68708800953),
+                                  (9, 4.4001998002, 0.680106580075,
+                                   3.0672153976, 5.7331842028),
+                                  (13, 4.85714285714, 0.665379090563, 3.55302380357,
+                                   6.16126191071),
+                                  (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
     def test_call_extrapolate(self):
         """Test __call__ computes correct estimates (extrapolation)."""
@@ -92,20 +95,20 @@ class ObservationRichnessEstimatorTests(TestCase):
         obs = self.estimator1(start=15, stop=30, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
-                 (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
-                  7.5463829648)])
+                              [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
+                               (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
+                                7.5463829648)])
 
         obs = self.estimator1(start=20, stop=30, num_steps=2)
         self.assertEqual(obs.getSampleCount(), 1)
         self.assertFloatEqual(obs.getEstimates('S1'),
-                [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
-                 (20, 5.2555272427983537, 0.77331345626875192, 3.73986071975,
-                  6.77119376585),
-                 (25, 5.38046614197245, 0.93220670591157662, 3.55337457224,
-                  7.20755771171),
-                 (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
-                  7.5463829648)])
+                              [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
+                               (20, 5.2555272427983537, 0.77331345626875192, 3.73986071975,
+                                6.77119376585),
+                                  (25, 5.38046614197245, 0.93220670591157662, 3.55337457224,
+                                   7.20755771171),
+                                  (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
+                                   7.5463829648)])
 
     def test_get_points_to_estimate_invalid_input(self):
         """Raises an error on invalid input."""
@@ -137,6 +140,7 @@ class ObservationRichnessEstimatorTests(TestCase):
 
 
 class AbstractPointEstimatorTests(TestCase):
+
     """Tests for the AbstractPointEstimator class."""
 
     def setUp(self):
@@ -193,6 +197,7 @@ class AbstractPointEstimatorTests(TestCase):
 
 
 class Chao1MultinomialPointEstimatorTests(TestCase):
+
     """Tests for the Chao1MultinomialPointEstimator class."""
 
     def setUp(self):
@@ -362,6 +367,7 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
 
 class RichnessEstimatesResultsTests(TestCase):
+
     """Tests for the RichnessEstimatesResults class."""
 
     def setUp(self):
@@ -408,7 +414,7 @@ class RichnessEstimatesResultsTests(TestCase):
         self.res1.addSampleEstimate('S1', 15, 30, 4.75, 2.5, 3.5)
         self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
         self.assertFloatEqual(self.res1.getEstimates('S1'),
-                [(10, 20, 2.5, 2.5, 3.5), (15, 30, 4.75, 2.5, 3.5)])
+                              [(10, 20, 2.5, 2.5, 3.5), (15, 30, 4.75, 2.5, 3.5)])
 
     def test_addSample(self):
         """Test adding a new sample to the results container."""
@@ -438,7 +444,7 @@ class RichnessEstimatesResultsTests(TestCase):
         out_f = StringIO()
         self.res1.toTable(out_f)
         self.assertEqual(out_f.getvalue(),
-                "SampleID\tSize\tEstimate\tStd Err\tCI (lower)\tCI (upper)\n")
+                         "SampleID\tSize\tEstimate\tStd Err\tCI (lower)\tCI (upper)\n")
         out_f.close()
 
         # Results with multiple samples.
@@ -461,7 +467,7 @@ S1\t5\t21\t1.5\t2.5\t3.5
         self.res1.addSample('S1', 42)
         self.res1.addSampleEstimate('S1', 5, 21, 1.5, 2.5, 3.5)
         self.res1.toTable(out_f,
-                header=['foo', 'bar', 'baz', 'bazaar', 'bazaaar', 'bazaaaar'])
+                          header=['foo', 'bar', 'baz', 'bazaar', 'bazaaar', 'bazaaaar'])
         self.assertEqual(out_f.getvalue(), exp)
         out_f.close()
 
@@ -494,13 +500,306 @@ biom_table_str1 = """{"id": "None","format": "Biological Observation Matrix 1.0.
 
 # Taken from Colwell 2012 Osa second growth sample (Table 1a). Added some zeros
 # as these should be ignored.
-colwell_data1 = [64, 1, 1, 1, 1, 0.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8, 8, 9, 10, 10, 11, 11, 11, 12, 12, 77, 14, 14, 17, 19, 19, 20, 20, 20, 21, 24, 26, 40, 71, 57, 57, 60, 0]
-colwell_fk1 = defaultdict(int, {1: 70, 2: 17, 3: 4, 4: 5, 5: 5, 6: 5, 7: 5, 8: 3, 9: 1, 10: 2, 11: 3, 12: 2, 14: 2, 17: 1, 19: 2, 20: 3, 21: 1, 24: 1, 26: 1, 40: 1, 57: 2, 60: 1, 64: 1, 71: 1, 77: 1})
+colwell_data1 = [64,
+                 1,
+                 1,
+                 1,
+                 1,
+                 0.0,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 2,
+                 2,
+                 2,
+                 2,
+                 0,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 3,
+                 3,
+                 3,
+                 3,
+                 4,
+                 4,
+                 4,
+                 4,
+                 4,
+                 5,
+                 5,
+                 5,
+                 5,
+                 5,
+                 6,
+                 6,
+                 6,
+                 6,
+                 6,
+                 7,
+                 7,
+                 7,
+                 7,
+                 7,
+                 8,
+                 8,
+                 8,
+                 9,
+                 10,
+                 10,
+                 11,
+                 11,
+                 11,
+                 12,
+                 12,
+                 77,
+                 14,
+                 14,
+                 17,
+                 19,
+                 19,
+                 20,
+                 20,
+                 20,
+                 21,
+                 24,
+                 26,
+                 40,
+                 71,
+                 57,
+                 57,
+                 60,
+                 0]
+colwell_fk1 = defaultdict(
+    int,
+    {1: 70,
+     2: 17,
+     3: 4,
+     4: 5,
+     5: 5,
+     6: 5,
+     7: 5,
+     8: 3,
+     9: 1,
+     10: 2,
+     11: 3,
+     12: 2,
+     14: 2,
+     17: 1,
+     19: 2,
+     20: 3,
+     21: 1,
+     24: 1,
+     26: 1,
+     40: 1,
+     57: 2,
+     60: 1,
+     64: 1,
+     71: 1,
+     77: 1})
 
 # Taken from Colwell 2012 Osa old growth sample (Table 1b). Added some zeros as
 # these should be ignored.
-colwell_data2 = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 7, 7, 8, 42, 14]
-colwell_fk2 = defaultdict(int, {1: 84, 2: 10, 3: 4, 4: 3, 5: 5, 6: 1, 7: 2, 8: 1, 14: 1, 42: 1})
+colwell_data2 = [0,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 0.0,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 0,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 1,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 2,
+                 3,
+                 3,
+                 3,
+                 3,
+                 4,
+                 4,
+                 4,
+                 5,
+                 5,
+                 5,
+                 5,
+                 5,
+                 6,
+                 7,
+                 7,
+                 8,
+                 42,
+                 14]
+colwell_fk2 = defaultdict(
+    int,
+    {1: 84,
+     2: 10,
+     3: 4,
+     4: 3,
+     5: 5,
+     6: 1,
+     7: 2,
+     8: 1,
+     14: 1,
+     42: 1})
 
 
 if __name__ == "__main__":

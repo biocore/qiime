@@ -17,32 +17,47 @@ from qiime.sort import natsort
 from sys import stdout
 
 script_info = {}
-script_info['brief_description'] = "Count the number of samples associated to a category value"
-script_info['script_description'] = """Sum up the number of samples with each category value and print this information."""
-script_info['script_usage'] = [("Example:","Count the number of samples associated with Treatment","""%prog -m $PWD/mapping.txt -c Treatment"""),
-("Example writting the output to a file", "Count the number of samples associated with Treatment and save them to a file called stats.txt", """%prog -m mapping.txt -c Treatment -o stats.txt""")]
-script_info['output_description']= """Two columns, the first being the category value and the second being the count. Output is to standard out. If there are unspecified values, the output category is identified as ***UNSPECIFIED***"""
-script_info['required_options'] = [\
- make_option('-m', '--mapping_file',type="existing_filepath",help='the input metadata file'),\
- make_option('-c','--category',type='string',help='the category to examine')
+script_info[
+    'brief_description'] = "Count the number of samples associated to a category value"
+script_info[
+    'script_description'] = """Sum up the number of samples with each category value and print this information."""
+script_info[
+    'script_usage'] = [("Example:", "Count the number of samples associated with Treatment", """%prog -m $PWD/mapping.txt -c Treatment"""),
+                       ("Example writting the output to a file", "Count the number of samples associated with Treatment and save them to a file called stats.txt", """%prog -m mapping.txt -c Treatment -o stats.txt""")]
+script_info[
+    'output_description'] = """Two columns, the first being the category value and the second being the count. Output is to standard out. If there are unspecified values, the output category is identified as ***UNSPECIFIED***"""
+script_info['required_options'] = [
+    make_option(
+        '-m',
+        '--mapping_file',
+        type="existing_filepath",
+        help='the input metadata file'),
+    make_option(
+        '-c',
+        '--category',
+        type='string',
+        help='the category to examine')
 ]
 script_info['optional_options'] = [
-    make_option('-o','--output_fp',type="new_filepath", 
-    help="path where output will be written [default: print to screen]", 
-    default=None)
+    make_option('-o', '--output_fp', type="new_filepath",
+                help="path where output will be written [default: print to screen]",
+                default=None)
 ]
 script_info['version'] = __version__
 
+
 def main():
     option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
+        parse_command_line_parameters(**script_info)
 
     output_fp = opts.output_fp
 
     map_data, header, comments = parse_mapping_file(opts.mapping_file)
 
     if opts.category not in header:
-        option_parser.error("%s doesn't appear to exist in the mapping file!" % opts.category)
+        option_parser.error(
+            "%s doesn't appear to exist in the mapping file!" %
+            opts.category)
 
     # use stdout or the user supplied file path
     if output_fp:

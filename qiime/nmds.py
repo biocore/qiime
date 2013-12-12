@@ -15,16 +15,17 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 
-def nmds(file,dimensions=2):
+def nmds(file, dimensions=2):
     samples, distmtx = parse_distmat(file)
-    nmds_res = nmds_module.NMDS(distmtx,verbosity=0,dimension=dimensions)
+    nmds_res = nmds_module.NMDS(distmtx, verbosity=0, dimension=dimensions)
     pts = nmds_res.getPoints()
     stress = nmds_res.getStress()
-    
+
     return format_nmds_coords(samples, pts, stress)
 
-def multiple_file_nmds(input_dir, output_dir,dimensions=2):
-    """perform PCoAs on all distance matrices in the input_dir 
+
+def multiple_file_nmds(input_dir, output_dir, dimensions=2):
+    """perform PCoAs on all distance matrices in the input_dir
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -35,9 +36,8 @@ def multiple_file_nmds(input_dir, output_dir,dimensions=2):
         base_fname, ext = os.path.splitext(fname)
         infile = os.path.join(input_dir, fname)
         lines = open(infile, 'U')
-        nmds_res_string = nmds(lines,dimensions)
-        outfile = os.path.join(output_dir, 'nmds_'+base_fname+'.txt')
+        nmds_res_string = nmds(lines, dimensions)
+        outfile = os.path.join(output_dir, 'nmds_' + base_fname + '.txt')
         outfile = open(outfile, 'w')
         outfile.write(nmds_res_string)
         outfile.close()
-
