@@ -19,7 +19,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
 

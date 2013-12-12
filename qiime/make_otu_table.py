@@ -4,7 +4,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

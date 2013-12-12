@@ -8,7 +8,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Julia Goodrich","Greg Caporaso","Justin Kuczynski",
     "Jose Carlos Clemente Litran", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
  

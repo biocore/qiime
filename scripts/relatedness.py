@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["William Van Treuren", "Jose Carlos Clemente Litran",
                 "Jose Antonio Navas Molina", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
  

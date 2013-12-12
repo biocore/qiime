@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Greg Caporaso",
                 "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
 

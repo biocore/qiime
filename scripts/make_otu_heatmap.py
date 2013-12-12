@@ -8,7 +8,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Dan Knights", "Jose Carlos Clemente Litran", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 

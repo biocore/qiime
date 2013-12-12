@@ -5,7 +5,7 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Julia Goodrich"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 
