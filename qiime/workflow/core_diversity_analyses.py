@@ -67,7 +67,9 @@ def generate_index_page(index_links,
         index_lines.append(
          '<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center>%s</td></tr>\n' % k)
         for description,path in v:
-            path = re.sub('.*%s' % top_level_dir,'./',path)
+            # if path starts with top_level_dir, replace it
+            # with ./
+            path = re.sub('^.*%s\/' % top_level_dir,'./',path)
             index_lines.append('<tr>%s</tr>\n' % format_index_link(description,path))
     index_lines.append('</table>\n')
     
@@ -183,6 +185,17 @@ def run_core_diversity_analyses(
                      % filtered_biom_fp)
     biom_fp = filtered_biom_fp
     
+    # rarify the BIOM table to sampling_depth
+    rarefied_biom_fp = "%s/table_even%d.biom" % (output_dir, sampling_depth)
+    if not exists(rarefied_biom_fp):
+        single_rarefaction_cmd = "single_rarefaction.py -i %s -o %s -d %d" %\
+         (biom_fp,rarefied_biom_fp,sampling_depth)
+        commands.append([('Rarify the OTU table to %d sequences/sample' % sampling_depth,
+                          single_rarefaction_cmd)])
+    else:
+        logger.write("Skipping single_rarefaction.py as %s exists.\n\n" \
+                     % rarefied_biom_fp)
+    
     # run initial commands and reset the command list
     if len(commands) > 0:
         command_handler(commands, 
@@ -198,13 +211,16 @@ def run_core_diversity_analyses(
         existing_dm_fps = glob('%s/*_dm.txt' % bdiv_even_output_dir)
         if len(existing_dm_fps) == 0:
             even_dm_fps = run_beta_diversity_through_plots(
-             otu_table_fp=biom_fp, 
+             otu_table_fp=rarefied_biom_fp, 
              mapping_fp=mapping_fp,
              output_dir=bdiv_even_output_dir,
              command_handler=command_handler,
              params=params,
              qiime_config=qiime_config,
-             sampling_depth=sampling_depth,
+             # Note: we pass sampling depth=None here as 
+             # we rarify the BIOM table above and pass that
+             # in here.
+             sampling_depth=None,
              tree_fp=tree_fp,
              parallel=parallel,
              logger=logger,
@@ -400,7 +416,7 @@ def run_core_diversity_analyses(
                 # Build the OTU cateogry significance command
                 group_significance_cmd = \
                  'group_significance.py -i %s -m %s -c %s -o %s %s' %\
-                 (biom_fp, mapping_fp, category, 
+                 (rarefied_biom_fp, mapping_fp, category, 
                   group_signifance_fp, params_str)
                 commands.append([('Group significance (%s)' % category, 
                                   group_significance_cmd)])
@@ -411,15 +427,27 @@ def run_core_diversity_analyses(
             index_links.append(('Category significance (%s)' % category,
                         group_signifance_fp,
                         _index_headers['group_significance']))
+    
     filtered_biom_gzip_fp = '%s.gz' % filtered_biom_fp
     if not exists(filtered_biom_gzip_fp):
         commands.append([('Compress the filtered BIOM table','gzip %s' % filtered_biom_fp)])
-        index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
-                            filtered_biom_gzip_fp,
-                            _index_headers['run_summary']))
     else:
         logger.write("Skipping compressing of filtered BIOM table as %s exists.\n\n" \
                      % filtered_biom_gzip_fp)
+    index_links.append(('Filtered BIOM table (minimum sequence count: %d)' % sampling_depth,
+                        filtered_biom_gzip_fp,
+                        _index_headers['run_summary']))
+    
+    rarified_biom_gzip_fp = '%s.gz' % rarefied_biom_fp
+    if not exists(rarified_biom_gzip_fp):
+        commands.append([('Compress the rarified BIOM table','gzip %s' % rarefied_biom_fp)])
+    else:
+        logger.write("Skipping compressing of rarified BIOM table as %s exists.\n\n" \
+                     % rarified_biom_gzip_fp)
+    index_links.append(('Rarified BIOM table (sampling depth: %d)' % sampling_depth,
+                        rarified_biom_gzip_fp,
+                        _index_headers['run_summary']))
+                        
     if len(commands) > 0:
         command_handler(commands, status_update_callback, logger)
     else:
