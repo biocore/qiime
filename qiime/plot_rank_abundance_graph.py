@@ -13,7 +13,7 @@ __email__ = "justinak@gmail.com"
 from matplotlib import use
 use('Agg', warn=False)
 
-from numpy import arange, array
+from numpy import arange, array, sort
 from itertools import cycle
 from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
@@ -29,7 +29,7 @@ def make_sorted_frequencies(counts, absolute=False):
     absolute: if True return absolute values instead of frequencies.
     """
 
-    c = sorted(counts)
+    c = sort(counts)
     c = c[c.nonzero()]
     c = c[::-1]
     if absolute:
