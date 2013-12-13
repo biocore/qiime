@@ -150,13 +150,13 @@ def kempton_taylor_q(counts, lower_quantile=.25, upper_quantile=.75):
     n = len(counts)
     lower = int(ceil(n * lower_quantile))
     upper = int(n * upper_quantile)
-    sorted = sorted(counts.copy())
-    return (upper - lower) / log(sorted[upper] / sorted[lower])
+    sorted_counts = sorted(counts.copy())
+    return (upper - lower) / log(sorted_counts[upper] / sorted_counts[lower])
 
 
 def strong(counts):
     """Strong's 2002 dominance index, by way of SDR-IV."""
-    cc = sorted(counts.copy())
+    cc = array(sorted(counts.copy()))
     cc = cc[::-1]
     sorted_sum = cc.cumsum()
     n = counts.sum()
