@@ -1571,8 +1571,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1615,8 +1614,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1_derep)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1655,8 +1653,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1695,8 +1692,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1735,8 +1731,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1774,8 +1769,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1814,8 +1808,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -1855,8 +1848,7 @@ class UsearchOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2030,8 +2022,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2078,8 +2069,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1_derep, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2121,8 +2111,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2169,8 +2158,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2214,8 +2202,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath1, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2258,8 +2245,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2304,8 +2290,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2350,8 +2335,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs = app(self.tmp_seq_filepath2, self.tmp_otu_ref_database)
 
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2497,8 +2481,7 @@ class UclustOtuPickerTests(TestCase):
                                     'prefilter_identical_sequences': False,
                                     'output_dir': self.temp_dir})
         result_wo_collapse_identical = \
-            app_wo_collapse_identical(self.tmp_seq_filepath4).values()
-        result_wo_collapse_identical.sort()
+            sorted(app_wo_collapse_identical(self.tmp_seq_filepath4).values())
 
         self.assertEqual(result_w_collapse_identical,
                          result_wo_collapse_identical)
@@ -2591,8 +2574,7 @@ class UclustOtuPickerTests(TestCase):
         app = UclustOtuPicker(params={'save_uc_files': False})
         obs = app(self.tmp_seq_filepath1)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2620,8 +2602,7 @@ class UclustOtuPickerTests(TestCase):
                                       'suppress_sort': True})
         obs = app(self.tmp_seq_filepath1)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2665,8 +2646,7 @@ class UclustOtuPickerTests(TestCase):
 
         # Make sure other results are correct with uc file being saved.
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2695,8 +2675,7 @@ class UclustOtuPickerTests(TestCase):
                                       'save_uc_files': False})
         obs = app(self.tmp_seq_filepath1)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2726,8 +2705,7 @@ class UclustOtuPickerTests(TestCase):
                                       'save_uc_files': False})
         obs = app(self.tmp_seq_filepath1)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2750,8 +2728,7 @@ class UclustOtuPickerTests(TestCase):
                                       'save_uc_files': False})
         obs = app(self.tmp_seq_filepath2)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -2770,8 +2747,7 @@ class UclustOtuPickerTests(TestCase):
                                       'save_uc_files': False})
         obs = app(self.tmp_seq_filepath3)
         obs_otu_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
         # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
@@ -3333,8 +3309,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         # arbitrary, and otu identifier assignment is based on order of
         # iteration over a dict
         exp_cluster_ids = sorted(exp.keys())
-        exp_clusters = exp.values()
-        exp_clusters.sort()
+        exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = obs.keys()
         obs_cluster_ids.sort()
@@ -3376,8 +3351,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         # arbitrary, and otu identifier assignment is based on order of
         # iteration over a dict
         exp_cluster_ids = sorted(exp.keys())
-        exp_clusters = exp.values()
-        exp_clusters.sort()
+        exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = obs.keys()
         obs_cluster_ids.sort()
@@ -3433,8 +3407,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         # arbitrary, and otu identifier assignment is based on order of
         # iteration over a dict
         exp_cluster_ids = sorted(exp.keys())
-        exp_clusters = exp.values()
-        exp_clusters.sort()
+        exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = obs.keys()
         obs_cluster_ids.sort()

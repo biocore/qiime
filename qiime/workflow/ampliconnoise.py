@@ -114,7 +114,7 @@ def run_ampliconnoise(mapping_fp,
     # these are the fasta results, e.g. PC.636_Good.fa
     # later we merge them and copy to output file
     post_pyro_tail = '_' + truncate_len
-    if suppress_perseus == True:
+    if suppress_perseus:
         fasta_result_names = [sample_name + post_pyro_tail + '_seqnoise_cd.fa'
                               for sample_name in sample_names]
     else:
@@ -207,7 +207,7 @@ def run_ampliconnoise(mapping_fp,
             sample_name + post_pyro_tail + '.snout'
         commands.append([('seqnoise ' + sample_name, cmd)])
 
-        if suppress_perseus == False:
+        if not suppress_perseus:
 
             cmd = 'Perseus -sin ' + sample_name + post_pyro_tail +\
                 '_seqnoise_cd.fa > ' +\

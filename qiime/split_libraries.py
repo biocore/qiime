@@ -595,8 +595,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     barcode_length_order = barcode_length_order[::-1]
 
     primer_mismatch_count = 0
-    all_primers_lens = list(set(all_primers.values()))
-    all_primers_lens.sort()
+    all_primers_lens = sorted(set(all_primers.values()))
 
     reverse_primer_not_found = 0
 

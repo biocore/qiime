@@ -386,10 +386,9 @@ class TopLevelTests(TestCase):
     def test_format_otu_map(self):
         """format_otu_map functions as expected """
         actual = sorted(format_otu_map(self.otu_map1, ''))
-        expected = ['0\tseq1\tseq2\tseq5\n',
-                    '1\tseq3\tseq4\n',
-                    '2\tseq6\tseq7\tseq8\n']
-        expected.sort()
+        expected = sorted(['0\tseq1\tseq2\tseq5\n',
+                           '1\tseq3\tseq4\n',
+                           '2\tseq6\tseq7\tseq8\n'])
         self.assertEqual(actual, expected)
 
     def test_write_otu_map(self):
@@ -413,10 +412,9 @@ class TopLevelTests(TestCase):
     def test_format_otu_map_prefix(self):
         """format_otu_map functions as expected w prefix"""
         actual = sorted(format_otu_map(self.otu_map1, 'my.otu.'))
-        expected = ['my.otu.0\tseq1\tseq2\tseq5\n',
-                    'my.otu.1\tseq3\tseq4\n',
-                    'my.otu.2\tseq6\tseq7\tseq8\n']
-        expected.sort()
+        expected = sorted(['my.otu.0\tseq1\tseq2\tseq5\n',
+                           'my.otu.1\tseq3\tseq4\n',
+                           'my.otu.2\tseq6\tseq7\tseq8\n'])
         self.assertEqual(actual, expected)
 
     def test_format_otu_map_error_on_bad_prefix(self):

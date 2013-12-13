@@ -470,7 +470,7 @@ def ACE(count, rare_threshold=10):
         n_rare used for the variation coefficient."""
 
         n_rare = 0
-        if gamma == True:
+        if gamma:
             for i, j in enumerate(freq_counts[:rare_threshold + 1]):
                 n_rare = n_rare + (i * j) * (i - 1)
             return n_rare

@@ -226,7 +226,7 @@ class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
         for name, value in params.items():
             if name in ignored_params or value == False:
                 pass
-            elif value == True:
+            elif value:
                 param_fields.append('--%s' % name)
             else:
                 param_fields.append('--%s %s' % (name, value))

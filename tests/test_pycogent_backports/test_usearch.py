@@ -1194,9 +1194,8 @@ class UsearchTests(TestCase):
         # confirm that the clusters look like what we expect
         expected_clusters = sorted(
             [['eco:b0015'], ['eco:b0122', 'eco:b0122-like']])
-        actual_clusters = clusters_from_blast_uc_file(
-            open(output_fp))[0].values()
-        actual_clusters.sort()
+        actual_clusters = sorted(clusters_from_blast_uc_file(
+            open(output_fp))[0].values())
         self.assertEqual(actual_clusters, expected_clusters)
 
     def test_assign_dna_reads_to_protein_database_alt_params(self):
@@ -1216,9 +1215,8 @@ class UsearchTests(TestCase):
 
         # confirm that the clusters look like what we expect
         expected_clusters = sorted([['eco:b0015'], ['eco:b0122']])
-        actual_clusters = clusters_from_blast_uc_file(
-            open(output_fp))[0].values()
-        actual_clusters.sort()
+        actual_clusters = sorted(clusters_from_blast_uc_file(
+            open(output_fp))[0].values())
         self.assertEqual(actual_clusters, expected_clusters)
 
     def test_assign_dna_reads_to_dna_database(self):
@@ -1238,9 +1236,8 @@ class UsearchTests(TestCase):
         # confirm that the clusters look like what we expect
         expected_clusters = sorted(
             [['eco:b0015'], ['eco:b0122', 'eco:b0122-like']])
-        actual_clusters = clusters_from_blast_uc_file(
-            open(output_fp))[0].values()
-        actual_clusters.sort()
+        actual_clusters = sorted(clusters_from_blast_uc_file(
+            open(output_fp))[0].values())
         self.assertEqual(actual_clusters, expected_clusters)
 
 # Long strings for test files, output, etc.

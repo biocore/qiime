@@ -292,8 +292,7 @@ def make_stats_files(sample_dc, otu_dc, degree_counts, num_con_cat, num_con,
 
     output = open(os.path.join(dir_path,
                                "stats/real_dc_otu_degree.txt"), 'w')
-    otu_dc_out = otu_dc.items()
-    otu_dc_out.sort()
+    otu_dc_out = sorted(otu_dc.items())
     otu_dc_str = '\n'.join(['\t'.join(map(str, t)) for t in otu_dc_out])
     output.write(''.join(["# Just OTU degree counts\n",
                           "Degree	OTU Count\n", otu_dc_str]))
