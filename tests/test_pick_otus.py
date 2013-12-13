@@ -3312,8 +3312,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
 
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
@@ -3353,8 +3352,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
 
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
@@ -3408,8 +3406,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         exp_clusters = sorted(exp.values())
 
         obs_cluster_ids = sorted(obs.keys())
-        obs_clusters = obs.values()
-        obs_clusters.sort()
+        obs_clusters = sorted(obs.values())
 
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
