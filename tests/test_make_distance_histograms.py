@@ -292,27 +292,6 @@ class DistanceHistogramsTests(TestCase):
             make_nav_html(distances_dict, label_to_histogram_filename)
         self.assertEqual(nav_html_obs, NAV_HTML)
 
-    def test_make_main_html(self):
-        """make_main_html should return correct result.
-        """
-        distances_dict, label_to_histogram_filename = \
-            draw_all_histograms(single_field=self.single_field_treatment,
-                                paired_field=self.paired_field_treatment,
-                                dmat=self.dmat,
-                                histogram_dir=self.histogram_dir,
-                                field_to_color_prefs=FIELD_TO_COLOR_PREFS,
-                                background_color='white')
-
-        make_main_html(distances_dict=distances_dict,
-                       label_to_histogram_filename=label_to_histogram_filename,
-                       root_outdir=self.working_dir,
-                       outfile_name='QIIME_Distance_Histograms.html')
-        main_html_obs = \
-            open(self.working_dir +
-                 'QIIME_Distance_Histograms.html', 'U').readlines()
-
-        self.assertEqual(len(''.join(main_html_obs)), len(MAIN_HTML))
-
     def test_get_valid_indices(self):
         """get_valid_indices should return correct result.
         """
