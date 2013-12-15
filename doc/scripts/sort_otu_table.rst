@@ -39,6 +39,14 @@
 
 
 
+**Default:**
+
+case insensitive natural sorting i.e. SAMP0, samp1, SAMP2, samp10, samp12
+
+::
+
+	sort_otu_table.py -i otu_table.biom -o sorted_otu_table.biom
+
 sort samples by the age field in the mapping file
 
 ::

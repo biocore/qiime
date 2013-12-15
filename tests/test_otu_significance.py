@@ -6,10 +6,9 @@ __author__ = "Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Luke Ursell, Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
-__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main 
 from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups, 

@@ -50,6 +50,10 @@ This script creates an html file of rarefaction plots based on the supplied coll
 		Path to the output directory
 	`-`-output_type
 		Write the HTML output as one file, images embedded, or several. Options are file_creation, multiple files, and memory. [default: file_creation]
+	`-`-generate_per_sample_plots
+		Generate per sample plots for each of the metadata categories. This will allow you to show/hide samples from the plots but will required a larger processing time. In general, this practice is useful only for small datasets. [default: False]
+	`-`-generate_average_tables
+		Generate average tables of results. A summary of the metrics and alpha diversity measurements. [default: False]
 
 
 **Output:**

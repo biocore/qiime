@@ -5,10 +5,9 @@ __author__ = "William Anton Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Anton Walters"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "William Anton Walters"
 __email__ = "william.a.walters@gmail.com"
-__status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
  make_option, create_dir

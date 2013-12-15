@@ -35,7 +35,7 @@ This script takes a set of aligned sequences (query) either in the same file as 
 	-s, `-`-stats_fp
 		Stats file produced by tree-building software. REQUIRED if -m pplacer [default: None]
 	-p, `-`-method_params_fp
-		Parameters file containing method-specific parameters to use. [default: None]
+		Parameters file containing method-specific parameters to use. Lines should be formatted as 'raxml:-m GTRCAT' (note this is not a standard QIIME parameters file, but a RAxML parameters file). [default: None]
 
 
 **Output:**
