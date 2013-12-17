@@ -52,6 +52,8 @@ class QualFilterFastaWorkflow(Workflow):
                   'original_barcode':None,
                   'corrected_barcode':None}
     
+    ### Start Workflow methods
+
     @priority(1000)
     @no_requirements
     def wf_init(self, item):
@@ -76,7 +78,10 @@ class QualFilterFastaWorkflow(Workflow):
         self._set_primers(item)
 
         self._local_align_forward_primer(item)
-        self._
+        self._count_mismatches(item)
+
+    ### End Workflow methods
+
     @requires(IsValid=False, Option='ids_primers')
     def _set_primers(self, item):
         """ """
@@ -102,19 +107,33 @@ class QualFilterFastaWorkflow(Workflow):
     def _count_mismatches(self, item):
         """ """
         seq = item[SEQ_INDEX]
+        qual = item[QUAL_INDEX]
+
+        failed = True
         for primer in self._primers:
             exceeds_mismatch = count_mismatches(seq, primer,
                                        self.Options['max_primer_mismatch'])
             if not exceeds_mismatch:
                 self.Stats['exceeds_max_primer_mismatch'] += 1
                 if not retain_primer:
-                    fasta_seq = fasta_seq[len(primer):]
-                    qual_seq = qual_seq[len(primer):]
+                    seq = seq[len(primer):]
+                    qual = qual[len(primer):]
                 failed = False
                 break
+
+        ### should decompose this 
+        if failed:
+            self.Stats['max_primer_mismatch'] += 1
+            self.Stats['exceeds_max_primer_mismatch'] = 1
+        else:
+            self.FinalState['fwd_primer'] = primer
+            self.FinalState['seq'] = seq
+        ###
+
     @requires(Option='local_align_forward_primer', Values=True)
     @requires(Option='max_primer_mismatch')
     def _local_align_forward_primer(self, item):
+        """ """
         seq = item[SEQ_INDEX]
         qual = item[QUAL_INDEX]
         
