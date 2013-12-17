@@ -6,10 +6,9 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh", "Jai Ram Rideout", "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, make_option, \
                        get_options_lookup,load_qiime_config,create_dir
@@ -61,7 +60,7 @@ script_info['optional_options'] = [\
     make_option('-s','--stats_fp',\
           type='existing_filepath',help='Stats file produced by tree-building software. REQUIRED if -m pplacer [default: %default]'),
     make_option('-p','--method_params_fp',\
-            type='existing_filepath',help='Parameters file containing method-specific parameters to use. Lines should be formatted as 'raxml:-m GTRCAT' (note this is not a standard QIIME parameters file, but a RAxML parameters file). [default: %default]'),
+            type='existing_filepath',help="Parameters file containing method-specific parameters to use. Lines should be formatted as 'raxml:-m GTRCAT' (note this is not a standard QIIME parameters file, but a RAxML parameters file). [default: %default]"),
 
 ]
 script_info['version'] = __version__

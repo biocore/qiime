@@ -6,19 +6,18 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
-from cogent.app.blat import (
+from pycogent_backports.blat import (
   assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database,
   assign_dna_reads_to_dna_database as blat_assign_dna_reads_to_dna_database)
-from cogent.app.usearch import (clusters_from_blast_uc_file,
+from pycogent_backports.usearch import (clusters_from_blast_uc_file,
   assign_dna_reads_to_database as usearch_assign_dna_reads_to_database)
-from cogent.app.bwa import (
+from pycogent_backports.bwa import (
   assign_dna_reads_to_dna_database as bwa_assign_dna_reads_to_dna_database)
 from qiime.format import format_observation_map
 from qiime.parse import parse_taxonomy, MinimalSamParser
@@ -32,8 +31,12 @@ class DatabaseMapper(object):
                  database_fasta_fp,
                  output_dir,
                  observation_metadata_fp=None,
-                 params={},
+                 params=None,
                  HALT_EXEC=False):
+
+        if params is None:
+            params = {}
+
         """ Call the DatabaseMapper """
         create_dir(output_dir)
         raw_output_fp = self._get_raw_output_fp(output_dir,
@@ -315,10 +318,12 @@ def blat_database_mapper(query_fp,
                          output_dir,
                          evalue,
                          min_id,
+                         genetic_code,
                          observation_metadata_fp=None,
                          HALT_EXEC=False):
 
-    params = {'-minIdentity':min_id}
+    params = {'-minIdentity':min_id,
+              'genetic_code':genetic_code}
     
     blat_db_mapper = BlatDatabaseMapper()
     blat_db_mapper.MinId = min_id

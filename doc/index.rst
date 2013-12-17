@@ -41,7 +41,7 @@ If you are instead interested in a native install of QIIME, you can choose betwe
 
 If installing QIIME natively, you'll need to choose between the release and development version of QIIME. 
 
- * Stable Release: Currently the most stable version of QIIME is our |release| release, which you can `download here <ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.7.0.tar.gz>`_. If you don't know whether you want to install the release or development version of QIIME, you most likely want the release version.
+ * Stable Release: Currently the most stable version of QIIME is our |release| release, which you can `download here <https://pypi.python.org/pypi/qiime>`_. If you don't know whether you want to install the release or development version of QIIME, you most likely want the release version.
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our git repository, which is hosted on GitHub. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in Qiime/doc. Check out the latest version of QIIME using git with the command::
 
@@ -63,7 +63,7 @@ Users can also submit bug reports and feature requests via our `GitHub issue tra
 QIIME Development
 =================
 
-QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the `developer notes <./developer/index.html>`_.
+QIIME is an open-source project, primarily developed in the `Knight Lab <https://knightlab.colorado.edu>`_ at the University of Colorado at Boulder, the `Caporaso Lab <http://caporasolab.us>`_ at Northern Arizona University and the `Clemente Lab <http://clemente-lab.github.io>`_ at Icahn School of Medicine at Mount Sinai. If you are interested in getting involved, check out the `developer notes <./developer/index.html>`_.
 
 Citing QIIME
 ============

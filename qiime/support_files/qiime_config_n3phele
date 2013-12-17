@@ -3,7 +3,7 @@
 # To overwrite defaults, copy this file to $HOME/.qiime_config or a full path
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
 
-cluster_jobs_fp	/home/ubuntu/qiime_software/qiime-1.7.0-release/bin/start_parallel_jobs.py
+cluster_jobs_fp	/home/ubuntu/qiime_software/qiime-1.8.0-release/bin/start_parallel_jobs.py
 python_exe_fp	python
 working_dir	/tmp/
 blastmat_dir	/home/ubuntu/qiime_software/blast-2.2.22-release/data
@@ -13,7 +13,7 @@ pynast_template_alignment_blastdb
 template_alignment_lanemask_fp	/home/ubuntu/qiime_software/lanemask_in_1s_and_0s
 jobs_to_start	8
 seconds_to_sleep	60
-qiime_scripts_dir	/home/ubuntu/qiime_software/qiime-1.7.0-release/bin
+qiime_scripts_dir	/home/ubuntu/qiime_software/qiime-1.8.0-release/bin
 temp_dir	/tmp/
 denoiser_min_per_core	50
 cloud_environment	True

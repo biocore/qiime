@@ -5,10 +5,9 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 import json
 from cogent.util.unit_test import TestCase, main
@@ -58,7 +57,8 @@ z	DEF_3	XYZ_1""".split('\n')
 1	ABC_1
 x	GHI_2	GHI_3	GHI_77
 z	DEF_3	XYZ_1""".split('\n')
-        taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
+        taxonomy = {'0':['Bacteria','Firmicutes'], 
+                    'x':['Bacteria','Bacteroidetes']}
         obs = make_otu_table(otu_map_lines, taxonomy,constructor=DenseOTUTable)
         exp = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Firmicutes"]}}, {"id": "1", "metadata": {"taxonomy": ["None"]}}, {"id": "x", "metadata": {"taxonomy": ["Bacteria", "Bacteroidetes"]}}, {"id": "z", "metadata": {"taxonomy": ["None"]}}], "format": "Biological Observation Matrix 0.9dev", "data": [[1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 3.0, 0.0], [0.0, 1.0, 0.0, 1.0]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://biom-format.org", "date": "2011-12-21T00:19:30.961477", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         self.assertEqual(parse_biom_table(obs.split('\n')), parse_biom_table(exp.split('\n')))

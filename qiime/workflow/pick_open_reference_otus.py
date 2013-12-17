@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import split, splitext, getsize, exists, abspath
 from shutil import copy, rmtree
@@ -617,10 +616,25 @@ def pick_subsampled_open_reference_otus(input_fp,
             filter_fasta_cmd = 'filter_fasta.py -f %s -o %s -s %s -n' %\
              (input_fp,prefiltered_input_fp,prefilter_failures_list_fp)
             commands.append([('Filter prefilter failures from input', filter_fasta_cmd)])
-            
+
+            # Call the command handler on the list of commands
+            command_handler(commands,
+                            status_update_callback,
+                            logger=logger,
+                            close_logger_on_success=False)
+            commands = []
+
             input_fp = prefiltered_input_fp
             input_dir, input_filename = split(input_fp)
             input_basename, input_ext = splitext(input_filename)
+            if getsize(prefiltered_input_fp) == 0:
+                raise ValueError(
+                 "All sequences were discarded by the prefilter. "
+                 "Are the input sequences in the same orientation "
+                 "in your input file and reference file (you can "
+                 "add 'pick_otus:enable_rev_strand_match True' to "
+                 "your parameters file if not)? Are you using the "
+                 "correct reference file?")
             
         ## Build the OTU picking command
         step1_dir = \

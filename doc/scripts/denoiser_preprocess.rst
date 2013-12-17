@@ -20,8 +20,8 @@ which groups reads based on common prefixes.
 	
 	**[REQUIRED]**
 		
-	-i, `-`-input_file
-		Path to flowgram file [REQUIRED]
+	-i, `-`-input_files
+		Path to flowgram files (.sff.txt), comma separated
 	
 	**[OPTIONAL]**
 		

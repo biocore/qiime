@@ -1,9 +1,0 @@
-Details for removal of reverse primers
-Original fasta filepath: seqs.fna
-Total seqs in fasta: 7
-Mapping filepath: Mapping_File_Rev_Primer.txt
-Truncation option: truncate_only
-Mismatches allowed: 2
-Total seqs written: 7
-SampleIDs not found: 1
-Reverse primers not found: 2

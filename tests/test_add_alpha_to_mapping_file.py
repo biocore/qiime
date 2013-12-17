@@ -6,10 +6,9 @@ __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
-__status__ = "Development"
 
 from numpy import array, median
 from cogent.util.unit_test import TestCase, main
@@ -97,10 +96,10 @@ class TopLevelTests(TestCase):
         self.assertEquals(output, expected_output)
 
         # unwanted cases, greater than one and negative values
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             output = _get_level(1.3, [0.5])
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             output = _get_level(-1, [0.25, 0.5, 0.75])
 
     def test_mean_alpha(self):

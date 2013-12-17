@@ -43,7 +43,7 @@
 	-O, `-`-jobs_to_start
 		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 	-s, `-`-percent_subsample
-		Percent of failure sequences to include in the subsample to cluster de novo (larger numbers should give more comprehensive ,results but will be slower) [default:0.001]
+		Percent of failure sequences to include in the subsample to cluster de novo (larger numbers should give more comprehensive results but will be slower) [default:0.001]
 	`-`-prefilter_percent_id
 		Sequences are pre-clustered at this percent id against the reference and any reads which fail to hit are discarded (a quality filter); pass 0.0 to disable [default:0.60]
 	`-`-step1_otu_map_fp

@@ -20,7 +20,7 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		The input fasta file [REQUIRED]
+		The input OTU table in biom format [REQUIRED]
 	-o, `-`-output_dir
 		The output directory [REQUIRED]
 	-e, `-`-seqs_per_sample

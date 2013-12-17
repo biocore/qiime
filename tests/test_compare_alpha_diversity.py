@@ -7,13 +7,12 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
 
 from numpy.random import seed
-from numpy import nan, isnan
+from numpy import nan, isnan, array
 from cogent.util.unit_test import TestCase,main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
@@ -201,9 +200,9 @@ class TopLevelTests(TestCase):
              'A,F': (None, None),
              'Control,1xDose': (None, None),
              'Control,2xDose': (-0.6366887333996324, 0.639061687134877)}
-        self.assertEqual(expected_fdr_results,
-            _correct_compare_alpha_results(input_results,'fdr'))
-        
+        for k,v in _correct_compare_alpha_results(input_results,'fdr').items():
+            self.assertFloatEqual(v, expected_fdr_results[k])
+
     def test_compare_alpha_diversities(self):
         """Tests alpha diversities are correctly calculated."""
         # test 'Dose' at 480 inputs
@@ -246,12 +245,9 @@ class TopLevelTests(TestCase):
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
             self.mapping_file, category=category, depth=depth, 
             test_type=test_type, num_permutations=num_permutations)
-
-        exp_tcomps = \
-            {('Control','2xDose'): (1.1746048668554037, 0.63),
-             ('1xDose','2xDose'): (1.7650193854830403, 0.09),
-             ('Control','1xDose'): (0.43618805086434992, 0.76)}
- 
+        exp_tcomps = {('1xDose', '2xDose'): (1.7650193854830403, 0.13), 
+            ('Control', '1xDose'): (0.43618805086434992, 0.83), ('Control', 
+            '2xDose'): (1.1746048668554037, 0.62)}
         # test each key in expected results -- this won't catch if 
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
@@ -262,9 +258,8 @@ class TopLevelTests(TestCase):
         # dose
         # 1xDose = ['Sam1','Sam2','Sam6'], 2xDose = ['Sam3','Sam4'], 
         # Control = ['Sam5']
-        exp_ad_avgs = {'1xDose':(3.2511951575216664, 0.18664627928763661),
-        '2xDose':(2.7539647172550001, 0.30099438035250015),
-        'Control':(3.3663303519925001, 0.0)}
+        exp_ad_avgs = {'Control': (3.3663303519925001, 0.0), '1xDose': (3.2511951575216664, 0.18664627928763661), '2xDose': (2.7539647172550001, 0.30099438035250015)}
+
         for k in exp_ad_avgs:
             self.assertFloatEqual(exp_ad_avgs[k],obs_ad_avgs[k])
 
@@ -286,7 +281,7 @@ class TopLevelTests(TestCase):
         seed(0)
         test_type = 'nonparametric'
         exp_tcomps = \
-            {('Control','2xDose'): (-0.63668873339963239, 0.675), 
+            {('Control','2xDose'): (-0.63668873339963239, 0.672), 
              ('1xDose','2xDose'): (None,None), 
              ('Control','1xDose'): (None,None)}
         obs_tcomps, obs_ad_avgs = compare_alpha_diversities(self.rarefaction_file,
@@ -374,7 +369,40 @@ class TopLevelTests(TestCase):
                      'L_palm':[4.5,4.3],
                      'otro':[4.6]}
          self.assertEqual(actual,expected)
-        
+
+    def test_get_per_sample_average_diversities(self):
+        """Test that get_per_sample_average_diversities works as expected."""
+        # test that it extracts the correct max depth if depth==None
+        exp_depth = 910 
+        exp_rare_mat = array([ 2.73645965,  2.20813124,  2.88191683,  
+            2.78969155,  3.10064886, 3.08441138])
+        exp_sids = ['Sam1', 'Sam2', 'Sam3', 'Sam4', 'Sam5', 'Sam6']
+        exp = {'Sam1': 2.736459655,
+               'Sam2': 2.2081312350000002,
+               'Sam3': 2.8819168300000002,
+               'Sam4': 2.7896915474999999,
+               'Sam5': 3.1006488600000002,
+               'Sam6': 3.0844113799999997}
+        obs = get_per_sample_average_diversities(self.rarefaction_data, None)
+        # check that values are the same
+        for k,v in exp.iteritems():
+            self.assertFloatEqual(obs[k], v)
+        # check that keys are the same
+        self.assertEqualItems(obs.keys(), exp.keys())
+        # test when depth is specified
+        depth = 850
+        exp = {'Sam1': 3.32916466,
+              'Sam2': nan,
+              'Sam3': nan,
+              'Sam4': 2.2746077633333335,
+              'Sam5': 3.0135700166666664,
+              'Sam6': 2.1973854533333337}
+        obs = get_per_sample_average_diversities(self.rarefaction_data, depth)
+        # check that values are the same
+        for k,v in exp.iteritems():
+            self.assertFloatEqual(obs[k], v)
+        # check that keys are the same
+        self.assertEqualItems(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

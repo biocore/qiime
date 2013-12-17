@@ -31,11 +31,11 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-c, `-`-confidence
 		Minimum confidence to record an assignment [default: 0.8]
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt]
+		Full path to id_to_taxonomy mapping file [default: /Users/caporaso/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt]
 	-r, `-`-reference_seqs_fp
-		Ref seqs to rdp against. [default: /Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta]
+		Ref seqs to rdp against. [default: /Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta]
 	`-`-rdp_max_memory
-		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1500]
+		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 4000]
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 2]
 	-R, `-`-retain_temp_files

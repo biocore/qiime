@@ -42,6 +42,7 @@ The QIIME development team is very interested in incorporating community-contrib
    predicting_mislabeled_samples
    filtering_contamination_otus
    chaining_otu_pickers
+   extracting_barcodes_from_fastq_data
 
 **Analyzing diversity**
 

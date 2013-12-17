@@ -24,10 +24,9 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
 
 """Contains code for filtering alignments before building trees from them
 """
@@ -58,139 +57,57 @@ def apply_gap_filter(fastalines, allowed_gap_frac=1-eps, verbose=False):
     return apply_lane_mask_and_gap_filter(fastalines, None, \
      allowed_gap_frac=allowed_gap_frac, verbose=False)
 
-def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
+def attempt_file_reset(f):
+    """Attempt to seek 0"""
+    if hasattr(f, 'seek'):
+        f.seek(0)
+
+def apply_lane_mask_and_gap_filter(fastalines, mask,\
     allowed_gap_frac=1-eps, verbose=False, entropy_threshold=None):
-    """Applies lanemask and gap filter to fasta file, yielding filtered seqs.
-    """
+    """Applies a mask and gap filter to fasta file, yielding filtered seqs."""
+    if entropy_threshold is not None and not (0 < entropy_threshold < 1):
+        raise ValueError('Entropy threshold parameter (-e) needs to be '
+                         'between 0 and 1')
 
-    if entropy_threshold:
-        if entropy_threshold < 0 or entropy_threshold > 1:
-            raise ValueError,('Entropy threshold parameter (-e) needs to be '+\
-             'between 0 and 1')
-    
-    if lane_mask:
-        # convert lane_mask to a numpy index array
-        p = mask_to_positions(lane_mask)
-        
-        # special case: lanemask is all zeros
-        if sum(p) == 0:
-            for line in fastalines:
-                if line.startswith(">"):
-                    yield line + '\n'
-                else:
-                    yield '\n'
-            return
+    # resolve the mask
+    if mask:
+        mask = mask_to_positions(mask)
+    elif entropy_threshold is not None:
+        mask = generate_lane_mask(fastalines, entropy_threshold)
+        mask = mask_to_positions(mask)
+        attempt_file_reset(fastalines)
+    else:
+        mask = slice(None)
 
-    # random temporary file for first-pass results
-    tmpfilename = get_tmp_filename()
-    try:
-        tmpfile = open(tmpfilename,'w')
-    except IOError:
-        raise IOError, "Can't open temporary file for writing: %s" %\
-          tmpfilename
-
-    # the number of gaps seen in each position (length may be unknown here)
+    # resolve the gaps based on masked sequence
     gapcounts = None
-
-    # First pass: apply filter, and track gaps
-    if verbose and lane_mask:
-        print "Applying lanemask..."
-    seq_count = 0
-    for k, v in MinimalFastaParser(fastalines):
-        seq_count += 1
-        # print progress in verbose mode
-        if verbose and (seq_count % 100) == 0: status(seq_count)
-
-        # apply lanemask if there is one
-        if lane_mask:
-            masked = get_masked_string(v,p)
-        else:
-            masked = v.replace('.', '-')
-
-        # initialize gapcount array to proper length
-        if gapcounts == None:
-            gapcounts = zeros(len(masked))
-
-        # increment gap counts if requested
-        if allowed_gap_frac < 1:
-            gapcounts[find_gaps(masked)] += 1
-                     
-        # write masked sequence to temporary file
-        tmpfile.write('>%s\n%s\n' % (k, masked))
-    if verbose: print; print
-    tmpfile.close()
-    tmpfile = open(tmpfilename,'U')
-    
-    # random temporary file for second-pass results
-    tmpfilename_gaps = get_tmp_filename()
-    try:
-        tmpfile_gaps = open(tmpfilename_gaps,'w')
-    except IOError:
-        raise IOError, "Can't open temporary file for writing: %s" %\
-          tmpfilename_gaps
-
-
-    # if we're not removing gaps, we're done; yield the temp file contents
-    if allowed_gap_frac == 1:
-        for line in tmpfile:
-            yield line
-            
-    # else we are removing gaps; do second pass
-    else:
-
-        # convert gapcounts to true/false mask
-        gapcounts = (gapcounts / float(seq_count) ) <= allowed_gap_frac
-        
-        # Second pass: remove all-gap positions
-        if verbose: print "Remove all-gap positions..."
-        seq_count = 0
-        for k, v in MinimalFastaParser(tmpfile):
+    gapmask = slice(None)
+    if allowed_gap_frac < 1:
+        seq_count = 0.0
+        for seq_id, seq in MinimalFastaParser(fastalines):
             seq_count += 1
-            # print progress in verbose mode
-            if verbose and (seq_count % 100) == 0: status(seq_count)
-            
-            masked = get_masked_string(v.replace('.','-'),gapcounts)
-            tmpfile_gaps.write('>%s\n' % (k))
-            tmpfile_gaps.write('%s\n' % (masked))
-        if verbose: print
-    
-    tmpfile_gaps.close()
-    tmpfile_gaps = open(tmpfilename_gaps, "U")
-        
-    # If no dynamic entropy calculations, return current values
-    if not entropy_threshold:
-        for line in tmpfile_gaps:
-            yield line
-    # Otherwise, filter out positions of post-gap filtered sequences
-    else:
-        if verbose:
-            print "Generating lanemask..."
-        lane_mask = generate_lane_mask(tmpfile_gaps, entropy_threshold)
-        tmpfile_gaps.close()
-        tmpfile_gaps = open(tmpfilename_gaps, "U")
-        if verbose:
-            print "Applying lanemask..."
-        
-        p = mask_to_positions(lane_mask)
-        
-        seq_count = 0
-        for k, v in MinimalFastaParser(tmpfile_gaps):
-            seq_count += 1
-            # print progress in verbose mode
-            if verbose and (seq_count % 100) == 0: status(seq_count)
+            seq = seq.replace('.','-')
 
-            masked = get_masked_string(v,p)
+            seq = get_masked_string(seq, mask)
+                
+            if gapcounts is None:
+                gapcounts = zeros(len(seq))
+             
+            gapcounts[find_gaps(seq)] += 1
             
-            yield(">%s\n%s\n" % (k, masked))
-            
-        if verbose:
-            print
+        gapmask = (gapcounts / seq_count) <= allowed_gap_frac
+
+        attempt_file_reset(fastalines)
+
+    # mask, degap, and yield
+    for seq_id, seq in MinimalFastaParser(fastalines):
+        seq = seq.replace('.','-')
         
-    # delete temporary files
-    tmpfile.close()
-    tmpfile_gaps.close()
-    remove(tmpfilename)
-    remove(tmpfilename_gaps)
+        seq = get_masked_string(seq, mask)
+        seq = get_masked_string(seq, gapmask)
+
+        yield ">%s\n" % seq_id
+        yield "%s\n"  % seq
 
 def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
     """ remove sequences very different from the majority consensus

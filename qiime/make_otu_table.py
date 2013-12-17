@@ -4,10 +4,9 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 """Makes sample x OTU table from OTU map and taxonomy.
 
@@ -49,7 +48,7 @@ def make_otu_table(otu_map_f,
         otu_metadata = []
         for o in otu_ids:
             try:
-                otu_metadata.append({'taxonomy':otu_to_taxonomy[o].split(';')})
+                otu_metadata.append({'taxonomy':otu_to_taxonomy[o]})
             except KeyError:
                 otu_metadata.append({'taxonomy':["None"]})
     else: 

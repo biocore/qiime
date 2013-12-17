@@ -8,10 +8,9 @@ __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
                "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
@@ -19,6 +18,7 @@ from sys import platform, version as python_version, executable, stdout
 from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
+from optparse import SUPPRESS_HELP
 
 core_dependency_missing_msg = "See the QIIME Installation Guide: http://qiime.org/install/install.html"
 
@@ -98,7 +98,12 @@ script_info['optional_options'] = [\
                 '--qiime_base_install',
                 action='store_true',
                 default=False,
-                help='If passed, report only on dependencies required for the QIIME base install [default: %default]')]
+                help='If passed, report only on dependencies required for the QIIME base install [default: %default]'),
+    make_option('--haiku',
+                action='store_true',
+                default=False,
+                help=SUPPRESS_HELP)
+]
 
 class QIIMEConfig(TestCase):
     
@@ -280,11 +285,12 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_numpy_suported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1,5,1)
-        min_unacceptable_version = (1,7,1)
+        max_acceptable_version = (1,7,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
@@ -292,49 +298,51 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,\
          "Unsupported numpy version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
+            '.'.join(map(str,max_acceptable_version)),
             version_string))
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
-        #min_acceptable_version = (1,1,0)
-        #min_unacceptable_version = (1,1,0)
-        matplotlib_acceptable_version = (1,1,0)
+        min_acceptable_version = (1,1,0)
+        max_acceptable_version = (1,3,1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
-            pass_test = (version == matplotlib_acceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(matplotlib_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
          "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s." \
-         % ('.'.join(map(str,matplotlib_acceptable_version)),
-            '.'.join(map(str,matplotlib_acceptable_version)),
-            version_string))
+         % ('.'.join(map(str,min_acceptable_version)),
+            '.'.join(map(str,max_acceptable_version)), version_string))
             
     def test_pynast_suported_version(self):
         """pynast version is supported """
         min_acceptable_version = (1,2)
-        min_unacceptable_version = (1,3)
+        max_acceptable_version = (1,2,2)
         try:
             from pynast import __version__ as pynast_lib_version
             version = pynast_lib_version.split('.')
             if version[-1][-4:]=='-dev':
                  version[-1] = version[-1][:-4]
             version = tuple(map(int,version))
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and
+                         version <= max_acceptable_version)
             version_string = str(pynast_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
-        self.assertTrue(pass_test,\
-         "Unsupported pynast version. Must be >= %s and < %s , but running %s." \
-         % ('.'.join(map(str,min_acceptable_version)),
-            '.'.join(map(str,min_unacceptable_version)),
-            version_string))
-            
+
+        min_version_str = '.'.join(map(str, min_acceptable_version))
+        max_version_str = '.'.join(map(str, max_acceptable_version))
+        error_msg = ("Unsupported pynast version. Must be >= %s and <= %s, "
+                     "but running %s." % (min_version_str, max_version_str,
+                                          version_string))
+        self.assertTrue(pass_test, error_msg)
+
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
         acceptable_version = (2,1,3)
@@ -773,6 +781,10 @@ def test_qiime_config_variable(variable, qiime_config, test,
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    if opts.haiku:
+        print "QIIME provides insight\nmicrobial in nature\nto ecology"
+        exit(0)
 
     qiime_config = load_qiime_config()
     test = opts.test

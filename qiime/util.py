@@ -5,12 +5,12 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
-               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza"] #remember to add yourself if you make changes
+               "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
+               "Will Van Treuren"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 
 """Contains general utility code in support of the Qiime project.
@@ -2101,3 +2101,71 @@ def add_filename_suffix(filepath, suffix):
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
 
+def sync_biom_and_mf(pmf, bt):
+    """Reduce mapping file dict and biom table to shared samples.
+
+    Inputs: 
+     pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
+     bt - parse biom table from parse_biom_table (biom table object).
+    Outputs are a bt and pmf that contain only shared samples and a set of 
+    samples that are not shared. If no samples are unshared this final output
+    will be an empty set. 
+    """
+    mf_samples = set(pmf)
+    bt_samples = set(bt.SampleIds)
+    if mf_samples == bt_samples:
+        # agreement, can continue without fear of breaking code
+        return pmf, bt, set()
+    else: 
+        shared_samples = mf_samples.intersection(bt_samples)
+        # check that we shared something
+        assert len(shared_samples)!=0, \
+            "sync_biom_and_mf: No shared samples, no point in continuing."
+        nonshared_samples = mf_samples.union(bt_samples)-shared_samples
+        # remove samples that were in the mapping file but not biom file
+        npmf = {k:v for k,v in pmf.items() if k in shared_samples}
+        # remove samples in the biom table that were not in the mapping file
+        def _f(sv, sid, smd):
+            return sid in shared_samples
+        nbt = bt.filterSamples(_f)
+    return npmf, nbt, nonshared_samples
+
+def biom_taxonomy_formatter(bt, md_key):
+    """Return md strings from bt using md_key in order of bt.ObservationMetadata
+    
+    There are multiple legacy formats for metadata encoding in biom formats 
+    including as lists, dicts, and strings. This function attempts to figure out
+    what form the metadata is in and convert it into a single string. This 
+    function assumes that the metadata is encoded as a single format. It will 
+    break if some of the metadata is e.g., encoded as a dict and some as a list.
+
+    Inputs:
+     bt - biom table object
+     md_key - string, the key to return the metadata from the biom table. 
+    Outputs a list of strings (in order of bt.ObservationMetadata entries) of 
+    metadata. If no metadata could be found using the given key the function 
+    will print a warning and return None. 
+    """
+    if bt.ObservationMetadata is None:
+        print 'No metadata in biom table.'
+        return None
+    else:
+        dtype = bt.ObservationMetadata[0][md_key]
+    if isinstance(dtype, dict):
+        data = []
+        for md in bt.ObservationMetadata:
+            tmp = []
+            for k,v in md[md_key].iteritems():
+                tmp.append('%s_%s' % (k,v))
+            data.append(' '.join(tmp))
+        # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
+        #     md in bt.ObservationMetadata]
+        return map(str, data)
+    elif isinstance(dtype, list):
+        return map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+    elif isinstance(dtype, (str, unicode)):
+        return map(str, [md[md_key] for md in bt.ObservationMetadata])
+    else:
+        print ('Metadata format could not be determined or metadata key (%s) '+\
+            'was incorrect. Metadata will not be returned.') % md_key
+        return None

@@ -6,10 +6,9 @@ __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann",
                "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 import numpy
 from numpy import asarray, isnan, log10, median
@@ -963,6 +962,19 @@ def format_best_results(best_results):
                                     ', '.join(best_results['vars']),
                                     ', '.join(rho_vals))
     return result
+    
+def format_fastq_record(label,
+                        seq,
+                        qual):
+    """ Formats a line of fastq data to be written
+    
+    label: fastq label
+    seq: nucleotide sequence
+    qual: quality scores
+    """
+    
+    return "@%s\n%s\n+\n%s\n" % (label, seq, qual)
+    
 
 
 HTML_LINES_INIT = """<html>

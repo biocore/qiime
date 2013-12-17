@@ -8,10 +8,9 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina", "John Chase"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
  
  
 from matplotlib import use
@@ -153,13 +152,6 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    matplotlib_version = re.split("[^\d]", matplotlib.__version__)
-    matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
-                            i.isdigit()])
-
-    if matplotlib_version_info != (1,1,0):
-        print "This code was only tested with Matplotlib-1.1.0"
-        
     data = {}
 
     prefs,data,background_color,label_color,ball_scale, arrow_colors= \

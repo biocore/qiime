@@ -9,10 +9,9 @@ __credits__ =  ["Rob Knight", "Micah Hamady", "Greg Caporaso",
                 "Jens Reeder", "Jose Antonio Navas Molina",
                 "Jai Ram Rideout"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup

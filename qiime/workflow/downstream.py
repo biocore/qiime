@@ -7,12 +7,12 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso",
                "Kyle Bittinger",
                "Justin Kuczynski",
-               "Jesse Stombaugh"]
+               "Jesse Stombaugh",
+               "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import split, splitext, join
 from biom.parse import parse_biom_table
@@ -629,7 +629,7 @@ def run_summarize_taxa_through_plots(otu_table_fp,
         output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat.replace(' ','-')))
         # Build the summarize otu by category command
         summarize_otu_by_cat_cmd = \
-         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m '%s' %s" %\
+         "%s %s/summarize_otu_by_cat.py -m %s -i %s -o %s -c '%s' %s" %\
          (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp,
           mapping_cat, params_str)
         

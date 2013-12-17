@@ -7,10 +7,9 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh","Julia Goodrich", "Justin Kuczynski",
                  "John Chase", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
 """
 This script generates taxonomy charts
 """
@@ -174,14 +173,6 @@ script_info['version']=__version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    
-    #Check the version of Matplotlib
-    matplotlib_version = re.split("[^\d]", matplotlib.__version__)
-    matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
-                            i.isdigit()])
-
-    if matplotlib_version_info != (1,1,0):
-        print "This code was only tested with Matplotlib-1.1.0"
 
     #get QIIME directory
     qiime_dir=get_qiime_project_dir()

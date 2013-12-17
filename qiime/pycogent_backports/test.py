@@ -3,22 +3,22 @@
 """
 from __future__ import division
 import warnings
-from cogent.maths.stats.distribution import chi_high, z_low, z_high, zprob, \
-    t_high, t_low, tprob, f_high, f_low, fprob, binomial_high, binomial_low, \
-    ndtri
-from cogent.maths.stats.special import lgam, log_one_minus, one_minus_exp,\
-    MACHEP
+from cogent.maths.stats.distribution import (chi_high, z_low, z_high, zprob,
+    t_high, t_low, tprob, f_high, f_low, fprob, binomial_high, binomial_low,
+    ndtri)
+from cogent.maths.stats.special import (lgam, log_one_minus, one_minus_exp,
+    MACHEP)
+from cogent.maths.stats import chisqprob
 from cogent.maths.stats.ks import psmirnov2x, pkstwo
-from cogent.maths.stats.kendall import pkendall, kendalls_tau
 from cogent.maths.stats.special import Gamma
 
-from numpy import absolute, arctanh, array, asarray, concatenate, transpose, \
-        ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any, \
-        reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp, \
-        median as _median, zeros, ones
+from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
+        ravel, take, nonzero, log, sum, mean, cov, corrcoef, fabs, any,
+        reshape, tanh, clip, nan, isnan, isinf, sqrt, trace, exp,
+        median as _median, zeros, ones, unique, copy, searchsorted, var, 
+        argsort, hstack, arange, empty, e, where)
         #, std - currently incorrect
-from numpy.random import permutation, randint
-from cogent.maths.stats.util import Numbers
+from numpy.random import permutation, randint, shuffle
 from operator import add
 from random import choice
 
@@ -26,7 +26,8 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Gavin Huttley", "Rob Knight", "Catherine Lozupone",
                "Sandra Smit", "Micah Hamady", "Daniel McDonald",
-               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan"]
+               "Greg Caporaso", "Jai Ram Rideout", "Michael Dwan",
+               "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -238,119 +239,239 @@ def G_ind(m, williams=False):
         G = G/q
     return G, chi_high(max(G,0), df)
 
-
-def calc_contingency_expected(matrix):
-        """Calculates expected frequencies from a table of observed frequencies
-
-        The input matrix is a dict2D object and represents a frequency table
-        with different variables in the rows and columns. (observed
-        frequencies as values)
-                                
-        The expected value is calculated with the following equation:
-            Expected = row_total x column_total / overall_total
-                                            
-        The returned matrix (dict2D) has lists of the observed and the 
-        expected frequency as values
-        """
-        #transpose matrix for calculating column totals
-        t_matrix = matrix.copy()
-        t_matrix.transpose()
-
-        overall_total = sum(list(matrix.Items))
-        #make new matrix for storing results
-        result = matrix.copy()
-
-        #populate result with expected values
-        for row in matrix:
-            row_sum = sum(matrix[row].values())
-            for item in matrix[row]:
-                column_sum = sum(t_matrix[item].values())
-                #calculate expected frequency
-                Expected = (row_sum * column_sum)/overall_total
-                result[row][item] = [result[row][item]]
-                result[row][item].append(Expected)
-        return result
-
-def G_fit(obs, exp, williams=1):
-    """G test for fit between two lists of counts.
-
-    Usage: test, prob = G_fit(obs, exp, williams)
+## Start functions for G goodness of fit 
+def williams_correction(n, a, G):
+    """Return the Williams corrected G statistic for G goodness of fit test.
     
-    obs and exp are two lists of numbers.
-    williams is a boolean stating whether to do the Williams correction.
-    
-    SUM(2 f(obs)ln (f(obs)/f(exp)))
-    
-    See Sokal and Rohlf chapter 17.
+    For discussion read Sokal and Rohlf Biometry pg 698,699.
+    Inputs:
+     n - int, sum of observed frequencies
+     a - int, number of groups that are being compared
+     G - float, uncorrected G statistic
     """
-    k = len(obs)
-    if k != len(exp):
-        raise ValueError, "G_fit requires two lists of equal length."
-    G = 0
-    n = 0
-    
-    for o, e in zip(obs, exp):
-        if o < 0:
-            raise ValueError, \
-            "G_fit requires all observed values to be positive."
-        if e <= 0:
-            raise ZeroExpectedError, \
-            "G_fit requires all expected values to be positive."
-        if o:   #if o is zero, o * log(o/e) must be zero as well.
-            G += o * log(o/e)
-            n += o
-    
-    G *= 2
+    # q = 1. + (a**2 - 1)/(6.*n*a - 6.*n) == 1. + (a+1.)/(6.*n)
+    q = 1. + (a+1.)/(6.*n)
+    return G/q
+
+def G_stat(data):
+    """Calculate the G statistic for data. 
+
+    For discussion read Sokal and Rohlf Biometry pg. 695-699. The G tests is 
+    normally applied to data where you have only one observation of any given
+    sample class (e.g. you observe 90 wildtype and 30 mutants). In microbial
+    ecology it is normal to have multiple samples which contain a given feature
+    where those samples share a metadata class (e.g. you observe OTUX at certain
+    frequencies in 12 samples, 6 of which are treatment samples, 6 of which are 
+    control samples). To reconcile these approaches this function averages the 
+    frequency of the given feature (OTU) across all samples in the metadata 
+    class (e.g. in the 6 treatment samples, the value for OTUX is averaged, and 
+    this forms the average frequency which represents all treatment samples in 
+    aggregate). This means that this version of the G stat cannot detect sample
+    heterogeneity as a replicated goodness of fit test would be able to. 
+
+    In addition, this function assumes the extrinsic hypothesis is that the 
+    mean frequency in all the samples groups is the same.
+
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+    """
+    # G = 2*sum(f_i*ln(f_i/f_i_hat)) over all i phenotypes/sample classes
+    # calculate the total number of observations under the consideration that
+    # multiple observations in a given group are averaged. 
+    n = sum([arr.mean() for arr in data])
+    a = len(data) #a is number of phenotypes or sample classes
+    obs_freqs = array([sample_type.mean() for sample_type in data]) #f_i vals 
+    exp_freqs = zeros(a)+(n/float(a)) #f_i_hat vals
+    G = 2.*(obs_freqs*log(obs_freqs/exp_freqs)).sum()
+    return G
+
+def G_fit(data, williams=True):
+    """Calculate G statistic and compare to one tailed chi-squared distribution.
+
+    For discussion read Sokal and Rohlf Biometry pg. 695-699. This function 
+    compares the calculated G statistic (with Williams correction by default) to 
+    the chi-squared distribution with the appropriate number of degrees of 
+    freedom. 
+
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+     williams - boolean, whether or not to apply williams correction before 
+      comparing to the chi-squared dsitribution.
+    """
+    # sanity checks on the data to return nans if conditions are not met
+    if not all([(i>=0).all() for i in data]):
+        # G_fit: data contains negative values. G test would be 
+        # undefined. Ignoring this OTU.
+        return nan, nan
+    if not all([i.sum()>0 for i in data]):
+        # G_fit: data contains sample group with zero only values. This 
+        # means that the given OTU was never observed in this sample class
+        # The G test fails in this case because we would be forced to 
+        # take log(0). Ignoring this OTU.
+        return nan, nan
+   
+    G = G_stat(data)
+    a = len(data) #a is number of phenotypes or sample classes
     if williams:
-        q = 1 + (k + 1)/(6*n)
-        G /= q
+        # calculate the total number of observations under the consideration 
+        # that multiple observations in a given group are averaged. 
+        n = sum([arr.mean() for arr in data]) #total observations
+        G = williams_correction(n, a, G)
+    return G, chi_high(G, a-1) #a-1 degrees of freedom because of sum constraint
+## End functions for G goodness of fit test
 
-    return G, chi_high(G, k - 1)
+## Start functions for kruskal_wallis test
+def _corr_kw(n):
+    """Return n**3-n. Used for correction of Kruskal Wallis."""
+    return n**3 - n 
 
-def G_fit_from_Dict2D(data):
-    """G test for fit on a Dict2D
+def ssl_ssr_sx(x):
+    """Return searchsorted right and left indices of x and sorted copy of x."""
+    y = copy(x)
+    y.sort()
+    ssl = searchsorted(y, x, 'left')
+    ssr = searchsorted(y, x, 'right')
+    return ssl, ssr, y
 
-    data is a dict2D. Values are a list containing the observed
-    and expected frequencies (can be created with calc_contingency_expected)
-    """
-    obs_counts = []
-    exp_counts = []
-    for item in data.Items:
-        if len(item) == 2:
-            obs_counts.append(item[0])
-            exp_counts.append(item[1])
-    g_val, prob = G_fit(obs_counts, exp_counts)
-    return g_val, prob
+def tie_correction(sx):
+    """Correct for ties in Kruskal Wallis."""
+    ux = unique(sx)
+    uxl = searchsorted(sx, ux, 'left')
+    uxr = searchsorted(sx, ux, 'right')
+    return 1.-_corr_kw(uxr-uxl).sum()/float(_corr_kw(len(sx)))
 
-def chi_square_from_Dict2D(data):
-    """Chi Square test on a Dict2D
+def kruskal_wallis(data):
+    """Calculates corrected Kruskal Wallis statistic (Sokal and Rolhf pg. 423).
 
-    data is a Dict2D. The values are a list of the observed (O)
-    and expected (E) frequencies,(can be created with calc_contingency_expected)
+    Implementation taken from Wikipedia and Sokal and Rohlf Biometry pg. 423. 
+    H = [12/n(n+1) * sum(T_i^2/n_i)] - 3(n+1) = the Kruskal Wallis value, the 
+    expected value of the variance of the sum of the ranks. Summation occurs
+    over all groups (samples)
+    T_i = sum of the ranks (with ties resolved by the Kruskal Wallis procedure) 
+    of the values (or variates) in the ith group (sample). 
+    n_i = number of values in the ith group. 
+    n = total number of samples in all groups being compared. 
+    D = 1 - sum(T_j^3-T_j)/(n^3-n) = correction factor for ties. 
+    T_j = number of ties in the jth group of ties. 
 
-    The chi-square value (test) is the sum of (O-E)^2/E over the items in data
-
-    degrees of freedom are calculated from data as:
-    (r-1)*(c-1) if cols and rows are both > 1
-    otherwise is just 1 - the # of rows or columns
-    (whichever is greater than 1)
-    
-    """
-    test =  sum([((item[0] - item[1]) * (item[0] - item[1]))/item[1] \
-                   for item in data.Items])
-    num_rows = len(data)
-    num_cols = len([col for col in data.Cols])
-    if num_rows == 1:
-        df = num_cols - 1
-    elif num_cols == 1:
-        df = num_rows - 1
-    elif num_rows == 0 or num_cols == 0:
-        raise ValueError, "data matrix must have data"
+    Inputs:
+     data - list of arrays, each array is 1D with any length. each array 
+      represents the observed frequencies of a given OTU in one of the sample
+      classes.
+    Outputs:
+     H/D
+    """ 
+    # record number of groups for comparison
+    num_groups = len(data)
+    x = hstack(data)
+    # calculate searchsorted right and searchsroted left indices.
+    ssl, ssr, sx = ssl_ssr_sx(x)
+    # calculate H
+    start = 0
+    stop = 0
+    tot = 0
+    for group in data:
+        stop += len(group)
+        # To average the ranks for tied entries we compute leftmost rank of 
+        # value i, minus rightmost rank of value i (and divide by 2). Since 
+        # python indexes to 0, ssl ranks are 1 lower than they shoud be (i.e.
+        # the smallest value has rank 0 instead of 1). The +1 below corrects for
+        # this and .5 averages. 
+        ranks = (ssr[start:stop]+ssl[start:stop]+1)*.5
+        tot+=(ranks.sum()**2)/float(len(group))
+        start += len(group)
+    n = len(x)
+    a = 12./(n*(n+1))
+    b = -3.*(n+1)
+    H = (a*tot + b)
+    # correct for ties by calulating D
+    D = tie_correction(sx)
+    # Because of the way the chisqprob function in pycogent works, if it gets 
+    # H/D = 0/0 it will fail to exit the loop and hang indefintitely.
+    if D == 0:
+        return nan, nan
     else:
-        df = (len(data) - 1) * (len([col for col in data.Cols]) - 1)
-    
-    return test, chi_high(test, df)
-    
+        # give chisqprob the kw statistic, degrees of freedom = (num groups - 1)
+        p_value = chisqprob(H/D, num_groups-1)
+        return H/D, p_value
+## End functions for kruskal_wallis test
+
+## Begin functinos for Kendalls Tau
+def rank_with_ties(v1):
+    '''Return ranked values of 1D vector v1 with averages for tied entries.'''
+    tmp_v1 = array(v1).astype(float)
+    tmp_v1.sort()
+    return (searchsorted(tmp_v1,v1,'left')+searchsorted(tmp_v1,v1,'right')+1)*.5
+
+def count_occurrences(x):
+    """Count occurrences of each entry in sorted(unique(x))."""
+    tmp_x = copy(x)
+    tmp_x.sort()
+    ux = unique(x)
+    return searchsorted(tmp_x, ux, 'right') - searchsorted(tmp_x, ux, 'left')
+
+def kendall(v1, v2):
+    '''Compute Kendalls Tau correlation between v1 and v2.
+
+    This function calculates tie adjusted Kendalls Tau statistic according to 
+    Wikipedia and Sokal and Rohlf Biometry pg 594-595. Sokal and Rohlf's 
+    implementation is significantly more confusing than that from Wikipedia and 
+    the results are the same. In short, we calculate:
+    tau = n_c - n_d / ((n_o - n_1)(n_o - n_2))^.5
+    n_c = sum concordant pairs
+    n_d = sum discordant pairs
+    n_o = n(n-1)/2 where n is the length either input vector (len(v1)=len(v2))
+    n_1 = sum of ti(ti-1)/2 where ti is the  number of ties in the ith group of 
+    ties for v1
+    n_2 = same as n_1 but for v2.
+
+    Inputs:
+     v1, v2 = 1D array like, vectors to be correlated
+    '''
+    v1r = rank_with_ties(array(v1))
+    v2r = rank_with_ties(array(v2))
+    # sort both vectors according to v1r's order
+    sort_inds = argsort(v1r)
+    v1rs = v1r[sort_inds]
+    v2rs = v2r[sort_inds]
+    # iterate through vectors counting concordant and discordant pairs
+    c, d = 0. , 0. 
+    n = len(v1r)
+    for i in range(n-1):
+        diff = (v1rs[i+1:] - v1rs[i]) * (v2rs[i+1:] - v2rs[i])
+        c += (diff > 0).sum() # concordant pairs
+        d += (diff < 0).sum() # discordant pairs
+        # if product=0, one or more of the pairs was tied and should be ignored 
+    # count ties in both vectors for correction factor calculation
+    t = count_occurrences(v1)
+    u = count_occurrences(v2)
+    n_o = n*(n-1)*.5
+    denom = ((n_o - (t*(t-1)).sum()*.5) * (n_o - (u*(u-1)).sum()*.5))**.5
+    tau = (c - d)/denom
+    return tau
+
+def kendall_pval(tau, n):
+    '''Calculate the p-value for the passed tau and vector length n.'''
+    test_stat = tau/((2*(2*n+5))/float(9*n*(n-1)))**.5
+    return zprob(test_stat)
+
+## End functions for Kendall Tau
+
+def pearson(v1, v2):
+    '''Using numpy's builtin corrcoef. Faster, and well tested.'''
+    v1, v2 = array(v1), array(v2)
+    if not (v1.size==v2.size>1):
+        raise ValueError("One or more vectors isn't long enough"+\
+        " to correlate or they have unequal lengths. Can't continue.")
+    return corrcoef(v1,v2)[0][1] # 2x2 symmetric unit matrix
+
+def spearman(v1, v2):
+    '''Calculate Spearmans rho.'''
+    return pearson(rank_with_ties(v1), rank_with_ties(v2))
 
 def likelihoods(d_given_h, priors):
     """Calculate likelihoods through marginalization, given Pr(D|H) and priors.
@@ -422,7 +543,7 @@ def bayes_updates(ds_given_h, priors = None):
     except (ZeroDivisionError, FloatingPointError):
         return [0] * length
 
-def t_paired (a,b, tails=None, exp_diff=0):
+def t_paired(a,b, tails=None, exp_diff=0):
     """Returns t and prob for TWO RELATED samples of scores a and b.  
     
     From Sokal and Rohlf (1995), p. 354.
@@ -444,9 +565,8 @@ def t_paired (a,b, tails=None, exp_diff=0):
         return t_one_sample(diffs, popmean=exp_diff, tails=tails)
     except (ZeroDivisionError, ValueError, AttributeError, TypeError, \
         FloatingPointError):
-        return (None, None)
+        return (nan, nan)
     
-
 def t_one_sample(a,popmean=0, tails=None):
     """Returns t for ONE group of scores a, given a population mean.
 
@@ -456,19 +576,18 @@ def t_one_sample(a,popmean=0, tails=None):
     a should support Mean, StandardDeviation, and Count.
     popmean should be the expected mean; 0 by default.
     tails should be None (default), 'high', or 'low'.
-"""
+    """
     try:
         n = len(a)
         t = (mean(a) - popmean)/(std(a)/sqrt(n))
     except (ZeroDivisionError, ValueError, AttributeError, TypeError, \
         FloatingPointError):
-        return None, None
+        return nan, nan
     if isnan(t) or isinf(t):
-        return None, None
+        return nan, nan
 
     prob = t_tailed_prob(t, n-1, tails)
     return t, prob
-
 
 def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
     """Returns t, prob for two INDEPENDENT samples of scores a, and b.  
@@ -534,7 +653,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
         if var1 == 0 and var2 == 0:
             # Both lists do not vary.
             if x1 == x2 or none_on_zero_variance:
-                result = (None, None)
+                result = (nan, nan)
             else:
                 result = _t_test_no_variance(x1, x2, tails)
         else:
@@ -544,7 +663,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
             t = (x1-x2-exp_diff)/sqrt(svar*(1/n1 + 1/n2))
 
             if isnan(t) or isinf(t):
-                result = (None, None)
+                result = (nan, nan)
             else:
                 prob = t_tailed_prob(t, df, tails)
                 result = (t, prob)
@@ -552,7 +671,7 @@ def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
             FloatingPointError), e:
         #invalidate if the sample sizes are wrong, the values aren't numeric or
         #aren't present, etc.
-        result = (None, None)
+        result = (nan, nan)
 
     return result
 
@@ -626,13 +745,13 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
 
     # Only perform the Monte Carlo test if we got a sane answer back from the
     # initial t-test and we have been specified permutations.
-    nonparam_p_val = None
+    nonparam_p_val = nan
     perm_t_stats = []
-    if permutations > 0 and obs_t is not None and param_p_val is not None:
+    if permutations > 0 and not (isnan(obs_t) or isnan(param_p_val)):
         # Permute observations between x_items and y_items the specified number
         # of times.
-        perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
-                                                           permutations)
+        perm_x_items, perm_y_items = _permute_observations(x_items, y_items, 
+            permutations)
         perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
                                      tails=tails, exp_diff=exp_diff,
                                      none_on_zero_variance=False)[0]
@@ -645,32 +764,25 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
             better = (array(perm_t_stats) <= obs_t).sum()
         elif tails == 'high':
             better = (array(perm_t_stats) >= obs_t).sum()
-        nonparam_p_val = (better + 1) / (permutations + 1)
-
+        nonparam_p_val = (better+1) / (permutations+1)
     return obs_t, param_p_val, perm_t_stats, nonparam_p_val
 
-def _permute_observations(x_items, y_items, permutations,
-                          permute_f=permutation):
-    """Returns permuted versions of the sequences of observations.
-
-    Values are permuted between x_items and y_items (i.e. shuffled between the
-    two input sequences of observations).
-
-    This code is based on Jeremy Widmann's
-    qiime.make_distance_histograms.permute_between_groups code.
-    """
-    num_x = len(x_items)
-    num_y = len(y_items)
-    num_total_obs = num_x + num_y
-    combined_obs = concatenate((x_items, y_items))
-
-    # Generate a list of all permutations.
-    perms = [permute_f(num_total_obs) for i in range(permutations)]
-
-    # Use random permutations to split into groups.
-    rand_xs = [combined_obs[perm[:num_x]] for perm in perms]
-    rand_ys = [combined_obs[perm[num_x:num_total_obs]] for perm in perms]
-    return rand_xs, rand_ys
+def _permute_observations(x, y, num_perms):
+    """Return num_perms pairs of permuted vectors x,y."""
+    vals = hstack([array(x), array(y)])
+    lenx = len(x)
+    # sorting step is unnecessary for this code, but it ensure that test code 
+    # which relies on seeding the prng works (if we dont do this then different
+    # observation orders in x and y for eg. the mc_t_two_sample test will fail
+    # to produce the same results)
+    vals.sort()
+    inds = arange(vals.size)
+    xs, ys = [], []
+    for i in range(num_perms):
+        shuffle(inds)
+        xs.append(vals[inds[:lenx]])
+        ys.append(vals[inds[lenx:]])
+    return xs, ys
 
 def t_one_observation(x, sample, tails=None, exp_diff=0,
                       none_on_zero_variance=True):
@@ -706,121 +818,6 @@ def t_one_observation(x, sample, tails=None, exp_diff=0,
 
     return result
 
-def pearson(x_items, y_items):
-    """Returns Pearson's product moment correlation coefficient.
-    
-    This will always be a value between -1.0 and +1.0. x_items and y_items must
-    be the same length, and cannot have fewer than 2 elements each. If one or
-    both of the input vectors do not have any variation, the return value will
-    be 0.0.
-
-    Arguments:
-        x_items - the first list of observations
-        y_items - the second list of observations
-    """
-    x_items, y_items = array(x_items), array(y_items)
-
-    if len(x_items) != len(y_items):
-        raise ValueError("The length of the two vectors must be the same in "
-                         "order to calculate the Pearson correlation "
-                         "coefficient.")
-    if len(x_items) < 2:
-        raise ValueError("The two vectors must both contain at least 2 "
-                "elements. The vectors are of length %d." % len(x_items))
-
-    sum_x = sum(x_items)
-    sum_y = sum(y_items)
-    sum_x_sq = sum(x_items*x_items)
-    sum_y_sq = sum(y_items*y_items)
-    sum_xy = sum(x_items*y_items)
-    n = len(x_items)
-
-    try:
-        r = 1.0 * ((n * sum_xy) - (sum_x * sum_y)) / \
-           (sqrt((n * sum_x_sq)-(sum_x*sum_x))*sqrt((n*sum_y_sq)-(sum_y*sum_y)))
-    except (ZeroDivisionError, ValueError, FloatingPointError): #no variation
-        r = 0.0
-    #check we didn't get a naughty value for r due to rounding error
-    if r > 1.0:
-        r = 1.0
-    elif r < -1.0:
-        r = -1.0
-    return r
-
-def spearman(x_items, y_items):
-    """Returns Spearman's rho.
-
-    This will always be a value between -1.0 and +1.0. x_items and y_items must
-    be the same length, and cannot have fewer than 2 elements each. If one or
-    both of the input vectors do not have any variation, the return value will
-    be 0.0.
-
-    Arguments:
-        x_items - the first list of observations
-        y_items - the second list of observations
-    """
-    x_items, y_items = array(x_items), array(y_items)
-
-    if len(x_items) != len(y_items):
-        raise ValueError("The length of the two vectors must be the same in "
-                         "order to calculate Spearman's rho.")
-    if len(x_items) < 2:
-        raise ValueError("The two vectors must both contain at least 2 "
-                "elements. The vectors are of length %d." % len(x_items))
-
-    # Rank the two input vectors.
-    rank1, ties1 = _get_rank(x_items)
-    rank2, ties2 = _get_rank(y_items)
-
-    if ties1 == 0 and ties2 == 0:
-        n = len(rank1)
-        sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
-        rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
-    else:
-        avg = lambda x: sum(x)/len(x)
-
-        x_bar = avg(rank1)
-        y_bar = avg(rank2)
-
-        numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
-        denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*
-                           sum([(y-y_bar)**2 for y in rank2]))
-
-        # Calculate rho. Handle the case when there is no variation in one or
-        # both of the input vectors.
-        if denominator == 0.0:
-            rho = 0.0
-        else:
-            rho = numerator/denominator
-    return rho
-
-def _get_rank(data):
-    """Ranks the elements of a list. Used in Spearman correlation."""
-    indices = range(len(data))
-    ranks = range(1,len(data)+1)
-    indices.sort(key=lambda index:data[index])
-    ranks.sort(key=lambda index:indices[index-1])
-    data_len = len(data)
-    i = 0
-    ties = 0
-    while i < data_len:
-        j = i + 1
-        val = data[indices[i]]
-        try:
-            val += 0
-        except TypeError:
-            raise(TypeError)
-
-        while j < data_len and data[indices[j]] == val:
-            j += 1
-        dup_ranks = j - i
-        val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
-        for k in range(i, i+dup_ranks):
-            ranks[indices[k]] = val
-        i += dup_ranks
-        ties += dup_ranks-1
-    return ranks, ties
-
 def correlation(x_items, y_items):
     """Returns Pearson correlation between x and y, and its significance.
 
@@ -844,7 +841,7 @@ def correlation_test(x_items, y_items, method='pearson', tails=None,
     greater than 3. Please see Sokal and Rohlf pp. 575-580 and pg. 598-601 for
     more details regarding these techniques.
 
-    Warning: the parametric p-value is unreliable when the method is spearman
+    Warning: the parametric p-value is unreliable when the method is spearman's
     and there are less than 11 observations in each vector.
 
     Returns the correlation coefficient (r or rho), the parametric p-value, a
@@ -1076,17 +1073,17 @@ def regress_major(x, y):
 def z_test(a, popmean=0, popstdev=1, tails=None):
     """Returns z and probability score for a single sample of items.
 
-Calculates the z-score on ONE sample of items with mean x, given a population 
-mean and standard deviation (parametric).
+    Calculates the z-score on ONE sample of items with mean x, given a 
+    population mean and standard deviation (parametric).
 
-Usage:   z, prob = z_test(a, popmean, popstdev, tails)
+    Usage:   z, prob = z_test(a, popmean, popstdev, tails)
 
-z is a float; prob is a probability.
-a is a sample with Mean and Count.
-popmean should be the parametric population mean; 0 by default.
-popstdev should be the parametric population standard deviation, 1 by default.
-tails should be None (default), 'high', or 'low'.
-""" 
+    z is a float; prob is a probability.
+    a is a sample with Mean and Count.
+    popmean should be the parametric population mean; 0 by default.
+    popstdev should be the parametric population standard deviation, default=1.
+    tails should be None (default), 'high', or 'low'.
+    """ 
     try:
         z = (mean(a) - popmean)/popstdev*sqrt(len(a))
         return z, z_tailed_prob(z, tails)
@@ -1167,10 +1164,14 @@ def fisher(probs):
 
     -2 * SUM(ln(P)) gives chi-squared distribution with 2n degrees of freedom.
     """
-    try:
-        return chi_high(-2 * sum(map(log, probs)), 2 * len(probs))
-    except OverflowError, e:
-        return 0.0 
+    stat = -2*log(array(probs)).sum()
+    if isnan(stat):
+        return nan
+    else: 
+        try:
+            return chi_high(stat, 2 * len(probs))
+        except OverflowError, e:
+            return nan 
 
 def f_value(a,b):
     """Returns the num df, the denom df, and the F value.
@@ -1218,38 +1219,43 @@ def ANOVA_one_way(a):
 
     a is a list of lists of observed values. Each list is the values
     within a category. The analysis must include 2 or more categories(lists).
-    the lists must have a Mean and variance attribute. Recommende to make
-    the Numbers objects
-    
+    Each category of the list, and overall list, is converted to a numpy array.
+
     An F value is first calculated as the variance of the group means
     divided by the mean of the within-group variances.
     """
+    #a = array(a)
     group_means = []
     group_variances = []
-    num_cases = 0
+    num_cases = 0 # total observations in all groups
     all_vals = []
     for i in a:
         num_cases += len(i)
-        group_means.append(i.Mean)
-        group_variances.append(i.Variance * (len(i)-1))
+        group_means.append(mean(i))
+        group_variances.append(i.var(ddof=1) * (len(i)-1))
         all_vals.extend(i)
-    group_means = Numbers(group_means)
-    #get within group variances (denominator)
-    group_variances = Numbers(group_variances)
+
+    # Get within Group variances (denominator)
     dfd = num_cases - len(group_means)
-    within_MS = sum(group_variances)/dfd
-    #get between group variances (numerator)
-    grand_mean = Numbers(all_vals).Mean
-    between_MS = 0
+    # need to add a check -- if the sum of the group variances is zero it will 
+    # error, but only if the between_Groups value is not zero
+    within_Groups = sum(group_variances) / dfd
+    if within_Groups == 0.:
+        return nan, nan
+    # Get between Group variances (numerator)
+    all_vals = array(all_vals)
+    grand_mean = all_vals.mean()
+    between_Groups = 0
     for i in a:
-        diff = i.Mean - grand_mean
+        diff = i.mean() - grand_mean
         diff_sq = diff * diff
         x = diff_sq * len(i)
-        between_MS += x
+        between_Groups += x
+
     dfn = len(group_means) - 1
-    between_MS = between_MS/dfn
-    F = between_MS/within_MS
-    return dfn, dfd, F, between_MS, within_MS, group_means, f_high(dfn, dfd, F)
+    between_Groups = between_Groups/dfn
+    F = between_Groups/within_Groups
+    return F, f_high(dfn, dfd, F)
 
 def MonteCarloP(value, rand_values, tail = 'high'):
     """takes a true value and a list of random values as
@@ -1411,65 +1417,66 @@ def ks_boot(x, y, alt = "two sided", num_reps=1000):
             num_greater += 1
     return observed_stat, num_greater / num_reps
 
-def _average_rank(start_rank, end_rank):
-    ave_rank = sum(range(start_rank, end_rank+1)) / (1+end_rank-start_rank)
-    return ave_rank
+def mw_test(n1, n2):
+    """Compute Mann-Whitney U (equivalent to Wilcoxon ranked sum) stat. 
 
-def mw_test(x, y):
-    """computes the Mann-Whitney U statistic and the probability using the
-    normal approximation"""
-    if len(x) > len(y):
-        x, y = y, x
-    
-    num_x = len(x)
-    num_y = len(y)
-    
-    x = zip(x, zeros(len(x), int), zeros(len(x), int))
-    y = zip(y, ones(len(y), int), zeros(len(y), int))
-    combined = x+y
-    combined = array(combined, dtype=[('stat', float), ('sample', int),
-                                      ('rank', float)])
-    combined.sort(order='stat')
-    prev = None
-    start = None
-    ties = False
-    T = 0.0
-    for index in range(combined.shape[0]):
-        value = combined['stat'][index]
-        sample = combined['sample'][index]
-        if value == prev and start is None:
-            start = index
-            continue
-        
-        if value != prev and start is not None:
-            ties = True
-            ave_rank = _average_rank(start, index)
-            num_tied = index - start + 1
-            T += (num_tied**3 - num_tied)
-            for i in range(start-1, index):
-                combined['rank'][i] = ave_rank
-            start = None
-        combined['rank'][index] = index+1
-        prev = value
-    
-    if start is not None:
-        ave_rank = _average_rank(start, index)
-        num_tied = index - start + 2
-        T += (num_tied**3 - num_tied)
-        for i in range(start-1, index+1):
-            combined['rank'][i] = ave_rank
-    
-    total = combined.shape[0]
-    x_ranks_sum = sum(combined['rank'][i] for i in range(total) if combined['sample'][i] == 0)
-    prod = num_x * num_y
-    U1 = prod + (num_x * (num_x+1) / 2) - x_ranks_sum
-    U2 = prod - U1
-    U = max([U1, U2])
-    numerator = U - prod / 2
-    denominator = sqrt((prod / (total * (total-1)))*((total**3 - total - T)/12))
-    z = (numerator/denominator)
-    p = zprob(z)
-    return U, p
+    This function computes the MWU statistic which is equivalent to the 
+    Wilcoxon ranked sum test. It then computes the (two-tail) pval based on 
+    the normal approximation. Two tails is appropriate because we do not know 
+    which of our groups has a higher mean, thus our alternate hypothesis is that
+    the distributions from which the two samples come are not the same (FA!=FB)
+    and we must account for E[FA] > E[FB] and E[FB] < E[FA].
+
+    Implementation of test from Sokal and Rolhf, Biometry, pgs 427-431. 
+    Specifically the algorithm is derived from pgs 429-430 under heading 
+    'The Wilcoxon two-sample test'. 
+    C = n1*n2 + n2(n2+1)/2 - sum(ranks of n2)
+    U = max(C, n1*n2 - C) 
+
+    n1 and n2 are lists or arrays of numeric values.
+    """
+    # find smaller sample, defined historically as n2. modify the names so we 
+    # don't risk modifying data outside the scope of the function.
+    if len(n2) > len(n1):
+        sn1, sn2 = array(n2), array(n1)
+    else:
+        sn1, sn2 = array(n1), array(n2)
+    # sum the ranks of s2 by using the searchsorted magic. the logic is that we
+    # use a sorted copy of the data from both groups (n1 and n2) to figure out 
+    # at what index we would insert the values from sample 2. by assessing the 
+    # difference between the index that value x would be inserted in if we were
+    # doing left insertion versus right insertion, we can tell how many values 
+    # are tied with x. this allows us to calculate the average ranks easily. 
+    data = hstack([sn1,sn2])
+    data.sort()
+    ssl = searchsorted(data, sn2, 'left')
+    ssr = searchsorted(data, sn2, 'right')
+    sum_sn2_ranks = ((ssl+ssr+1)/2.).sum()
+    ln1, ln2 = sn1.size, sn2.size
+    C = (ln1*ln2)+ (ln2*(ln2+1)/2.) - sum_sn2_ranks
+    U = max(C, ln1*ln2 - C)
+    # now we calculate the pvalue using the normal approximation and the two 
+    # tailed test. our formula corrects for ties, because in the case where 
+    # there are no ties, the forumla on the bottom of pg 429=the formula on the
+    # bottom of pg 430.
+    numerator = (U - ln1*ln2/2.)
+    # follwing three lines give the T value in the formula on page 430. same 
+    # logic as above; we calculate the left and right indices of the unique 
+    # values for all combined data from both samples, then calculate ti**3-ti 
+    # for each value. 
+    ux = unique(data)
+    uxl = searchsorted(data, ux, 'left')
+    uxr = searchsorted(data, ux, 'right')
+    T = _corr_kw(uxr-uxl).sum()
+    denominator = sqrt(((ln1*ln2)/float((ln1+ln2)*(ln1+ln2-1)))*(((ln1+ln2)**3 \
+        - (ln1+ln2)-T)/12.))
+    if denominator == 0:
+        # Warning: probability of U can't be calculated by mw_test
+        # because all ranks of data were tied. Returning nan as pvalue.
+        return U, nan
+    else:
+        pval = zprob(numerator/float(denominator))
+        return U, pval
 
 def mw_boot(x, y, num_reps=1000):
     """Monte Carlo (bootstrap) variant of the Mann-Whitney test.
@@ -1601,65 +1608,6 @@ def _flatten_lower_triangle(matrix):
                     flattened.append(matrix[row_num][col_num])
     return flattened
 
-def kendall_correlation(x, y, alt="two sided", exact=None, warn=True):
-    """returns the statistic (tau) and probability from Kendall's non-parametric
-    test of association that tau==0. Uses the large sample approximation when
-    len(x) >= 50 or when there are ties, otherwise it computes the probability
-    exactly.
-    
-    Based on the algorithm implemented in R v2.5
-    
-    Arguments:
-        - alt: the alternate hypothesis (greater, less, two sided)
-        - exact: when False, forces use of the large sample approximation
-          (normal distribution). Not allowed for len(x) >= 50.
-        - warn: whether to warn about tied values
-    """
-    
-    assert len(x) == len(y), "data (x, y) not of same length"
-    assert len(x) > 2, "not enough observations"
-    
-    # possible alternate hypotheses arguments
-    lo = ["less", "lo", "lower", "l", "lt"]
-    hi = ["greater", "hi", "high", "h", "g", "gt"]
-    two = ["two sided", "2", 2, "two tailed", "two", "two.sided", "ts"]
-    
-    ties = False
-    num = len(x)
-    ties = len(set(x)) != num or len(set(y)) != num
-    if ties and warn:
-        warnings.warn("Tied values, using normal approximation")
-    
-    if not ties and num < 50:
-        exact = True
-    
-    if num < 50 and not ties and exact:
-        combs = int(num * (num-1) / 2)
-        working = []
-        for i in range(combs):
-            row = [-1 for j in range(combs)]
-            working.append(row)
-        
-        tau = kendalls_tau(x, y, False)
-        q = round((tau+1)*num*(num-1) / 4)
-        if alt in two:
-            if q > num * (num - 1) / 4:
-                p = 1 - pkendall(q-1, num, Gamma(num+1), working)
-            else:
-                p = pkendall(q, num, Gamma(num+1), working)
-            p = min(2*p, 1)
-        elif alt in hi:
-            p = 1 - pkendall(q-1, num, Gamma(num+1), working)
-        elif alt in lo:
-            p = pkendall(q, num, Gamma(num+1), working)
-    else:
-        tau, p = kendalls_tau(x, y, True)
-        if alt in hi:
-            p /= 2
-        elif alt in lo:
-            p = 1 - p/2
-    return tau, p
-
 ## Start functions for distance_matrix_permutation_test
 
 def distance_matrix_permutation_test(matrix, cells, cells2=None,\
@@ -1766,3 +1714,191 @@ def get_ltm_cells(cells):
     return list(new_cells)
 
 ## End functions for distance_matrix_permutation_test
+
+def fdr_correction(pvals):
+    """Adjust pvalues for multiple tests using the false discovery rate method.
+
+    In short: ranks the p-values in ascending order and multiplies each p-value 
+    by the number of comparisons divided by the rank of the p-value in the 
+    sorted list. Input is list of floats.
+
+    Does *not* assume pvals is sorted.
+    """
+    tmp = array(pvals).astype(float) #this converts Nones to nans
+    return tmp*tmp.size/(1.+argsort(argsort(tmp)).astype(float))
+    
+def benjamini_hochberg_step_down(pvals):
+    """Perform Benjamini and Hochberg's 1995 FDR step down procedure.
+
+    In short, compute  the fdr adjusted pvals (ap_i's), and working from
+    the largest to smallest, compare ap_i to ap_i-1. If ap_i < ap_i-1 set ap_i-1
+    equal to ap_i. 
+
+    Does *not* assume pvals is sorted
+    """
+    tmp = fdr_correction(pvals)
+    corrected_vals = empty(len(pvals))
+    max_pval = 1. 
+    for i in argsort(pvals)[::-1]:
+        if tmp[i]<max_pval:
+            corrected_vals[i] = tmp[i]
+            max_pval = tmp[i]
+        else:
+            corrected_vals[i] = max_pval
+    return corrected_vals
+
+def bonferroni_correction(pvals):
+    """Adjust pvalues for multiple tests using the Bonferroni method.
+
+    In short: multiply all pvals by the number of comparisons."""
+    return array(pvals, dtype=float)*len(pvals) #float conversion: Nones->nans
+
+def fisher_z_transform(r):
+    """Calculate the Fisher Z transform of a correlation coefficient.
+
+    Relies on formulation in Sokal and Rohlf Biometry pg 575.
+    """
+    if abs(r) == 1: # fisher z transform is undefined, have to return nan
+        return nan
+    return .5*log((1.+r)/(1.-r))
+
+def z_transform_pval(z, n):
+    '''Calculate two tailed probability of value more extreme than z given n.
+
+    Relies on formulation in Sokal and Rohlf Biometry pg 576.
+    '''
+    if n <= 3: #sample size must be greater than 3 otherwise this transform 
+        # isn't supported.
+        return nan
+    return zprob(z*((n-3)**.5))
+
+def inverse_fisher_z_transform(z):
+    """Calculate the inverse of the Fisher Z transform on a z value.
+
+    Relies on formulation in Sokal and Rohlf Biometry pg 576.
+    """
+    return ((e**(2*z))-1.)/((e**(2*z))+1.)
+
+def fisher_population_correlation(corrcoefs, sample_sizes):
+    """Calculate population rho, homogeneity from corrcoefs using Z transform.
+
+    Exclude pvals of nan. 
+    """
+    tmp_rs = array(corrcoefs)
+    tmp_ns = array(sample_sizes)
+    # make checks for nans and exclude them as they will cause things to break
+    rs = tmp_rs[~isnan(tmp_rs)]
+    ns = tmp_ns[~isnan(tmp_rs)]
+    if not (ns > 3).all():
+        # not all samples have size > 3 which causes 0 varaince estimation. 
+        # thus we must return nan for pval and h_val
+        return nan, nan
+    if not len(ns) > 1:
+        # only one sample, because of reduced degrees of freedom must have at 
+        # least two samples to calculate the homogeneity.
+        return nan, nan
+    # calculate zs
+    zs = array(map(fisher_z_transform, rs))
+    # calculate variance weighted z average = z_bar
+    z_bar = (zs*(ns-3)).sum()/float((ns-3).sum())
+    rho = inverse_fisher_z_transform(z_bar)
+    # calculate homogeneity
+    x_2 = ((ns-3)*(zs-z_bar)**2).sum()
+    h_val = chisqprob(x_2, len(ns)-1)
+    return rho, h_val
+
+def assign_correlation_pval(corr, n, method, permutations=None, 
+    perm_test_fn=None, v1=None, v2=None):
+    '''Assign pval to a correlation score with given method.
+
+    This function will assign significance to the correlation score passed given
+    the method that is passed. Some of the methods are appropriate only for 
+    certain types of data and there is no way for this test to determine the 
+    appropriateness, thus you must use this function only when with the proper
+    prior knowledge. The 'parametric_t_distribution' method is described in 
+    Sokal and Rohlf Biometry pg. 576, the 'fisher_z_transform' method is 
+    described on pg 576 and 577. The 'bootstrap' method calculates the given 
+    correlation permutations number of times using perm_test_fn.
+    Also note, this does *not* take the place of FDR correction.
+    Inputs: 
+     corr - float, correlation score from Kendall's Tau, Spearman's Rho, or 
+     Pearson. 
+     n - length of the vectors that were correlated. 
+     method - str in ['parametric_t_distribution', 'fisher_z_transform', 
+     'bootstrapped', 'kendall'].
+     permutations - int, number of permutations to use if bootstrapped selected.
+     perm_test_fn - function, to use to calculate correlation if permuation test
+     desired. 
+     v1, v2 = 1D vectors of numerics, passed if method='bootstrapped'
+    '''
+    if method == 'parametric_t_distribution':
+        df = n-2
+        assert df>1, "Must have more than 1 degree of freedom. Can't Continue."
+        try:
+            ts = corr*((df/(1.-corr**2))**.5)
+            return tprob(ts, df) #two tailed test because H0 is corr=0
+        except (ValueError, FloatingPointError, ZeroDivisionError):
+            # something unpleasant happened, most likely r or rho where +- 1 
+            # which means the parametric p val should be 1 or 0 or nan
+            return nan
+    elif method=='fisher_z_transform':
+        # Sokal and Rohlf indicate that for n<50, the Fisher Z transform for 
+        # assigning correlation probabilities is not accurate. Currently no 
+        # check is in place
+        z = fisher_z_transform(corr)
+        # the z transform pval compares against a t distribution with inf 
+        # degrees of freedom which is equal to a z distribution. 
+        return z_transform_pval(z, n)
+    elif method=='bootstrapped':
+        if any([v1==None, v2==None, permutations==None, perm_test_fn==None]):
+            raise ValueError('You must specify vectors, permutation '+\
+                'function, and number of permutations to calculate '+\
+                'bootstrapped pvalues. Cant continue.')
+        r = empty(permutations)
+        for i in range(permutations):
+            r[i] = perm_test_fn(v1,permutation(v2))
+        return (abs(r)>=abs(corr)).sum()/float(permutations)
+    elif method == 'kendall':
+        return kendall_pval(corr, n)
+
+    else:
+        raise ValueError("'%s' method is unknown." % method)
+
+def fisher_confidence_intervals(test_stat, n, confidence_level=.95):
+    """Calc confidence interval of test_stat using Fishers Z transform.
+
+    Fishers Z transform is described in Sokal and Rolhf. 
+    Inputs:
+     test_stat - numeric, the correlation coefficient whose significance we are 
+      to test.
+     n - int, length of vectors that were correlated. 
+     confidence_level - float in (0,1), level of confidence we want for the 
+      intervals.
+    """
+    # compute confidence intervals using fishers z transform
+    z_crit = abs(ndtri((1 - confidence_level) / 2.))
+    ci_low, ci_high = None, None
+    if n > 3:
+        try:
+            ci_low = tanh(arctanh(test_stat) - (z_crit / sqrt(n - 3)))
+            ci_high = tanh(arctanh(test_stat) + (z_crit / sqrt(n - 3)))
+        except (ZeroDivisionError, FloatingPointError):
+            # r or rho was presumably 1 or -1. Match what R does in this case.
+            # feel like nan should be returned here given that we can't make 
+            # the calculation
+            ci_low, ci_high = test_stat, test_stat
+    return ci_low, ci_high
+
+def cscore(v1, v2):
+    '''Calculate C-score between v1 and v2 according to Stone and Roberts 1990. 
+
+    This function calculates the C-score between equal length vectors v1 and v2 
+    according to the formulation given in Stone and Roberts 1990, Oecologia 
+    85: 74-79.
+    v1, v2 - 1d arrays of equal length.
+    '''
+    v1_b = v1.astype(bool)
+    v2_b = v2.astype(bool)
+    sij = (v1_b*v2_b).sum()
+    return (v1_b.sum()-sij)*(v2_b.sum()-sij)
+
