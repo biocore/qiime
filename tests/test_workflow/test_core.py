@@ -26,6 +26,9 @@ def construct_iterator(**kwargs):
         return izip(*to_gen)
 
 class MockWorkflow(Workflow):
+    def _sanity_check(self):
+        pass
+
     @priority(90)
     @requires(Option='A', Values=True)
     def wf_groupA(self, item):

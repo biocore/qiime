@@ -73,17 +73,14 @@ option_exists = Exists()
 class Workflow(object):
     """Arbitrary worflow support structure"""
 
-    def __init__(self, ShortCircuit=True, Debug=True, Options=None, 
-                 Mapping=None, StagingFunction=None):
+    def __init__(self, ShortCircuit=True, Debug=True, Options=None, **kwargs):
         """Build thy self
 
         ShortCiruit : if True, enables ignoring function groups when a given
             item has failed
         Debug : Enable debug mode
         Options : runtime options, {'option':values}
-        Mapping : Optional metadata mapping
-        StagingFunction : Optional staging function that can setup additional
-            state in self, such as providing self.Barcodes, etc
+        kwargs : Additional arguments will be added to self
 
         All workflow methods (i.e., those starting with "wk_") must be decorated
         by either "no_requirements" or "requires". This ensures that the methods
@@ -98,14 +95,29 @@ class Workflow(object):
         self.ShortCircuit = ShortCircuit
         self.Failed = False
         self.FinalState = None
-        self.Mapping = Mapping
+        
+        for k,v in kwargs.iteritems():
+            if hasattr(self, k):
+                raise AttributeError("%s exists in self!" % k)
+            setattr(self, k, v)
 
         for f in self._all_wf_methods():
             if not hasattr(f, '__workflowtag__'):
                 raise AttributeError("%s isn't a workflow method!" % f.__name__)
 
-        if StagingFunction is not None:
-            StagingFunction(self)
+        self._stage_state()
+        self._sanity_check()
+
+    def _stage_state(self):
+        """Stage any additional data necessary for the workflow
+        
+        This does not need to be overloaded
+        """
+        pass
+
+    def _sanity_check(self):
+        """Perform a sanity check on self"""
+        raise NotImplementedError("Must implement a sanity check!")
 
     def _all_wf_methods(self, default_priority=0):
         """Get all workflow methods
