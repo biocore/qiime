@@ -46,40 +46,6 @@ wf = MyWorkflow()
 gen = (i for i in range(10))
 for i in wf(gen):
     print i
-
-
-# assumes MyWorkflow is in a separate module
-As a multiprocess example:
-
-# assumes: "ipcluster start -n 4"
-from IPython.parallel import Client
-from time import sleep
-from qiime.workflow.example import MyWorkflow
-
-def exec_wf():
-    result = []
-    for i in wf(gen):
-        result.append(i)
-    return result
-
-c = Client()
-dv = c[:]
-opts = {'add_value':None, 'sub_value':5}
-nprocs = len(c)
-for rank, worker in enumerate(c):
-    worker.execute("from qiime.workflow.example import MyWorkflow")
-    worker.execute("gen = (i for i in range(10))")
-    worker['rank'] = rank
-    worker['opts'] = opts
-    worker['nprocs'] = nprocs
-    worker.execute("wf = MyWorkflow(Options=opts, Rank=rank, NProcs=nprocs)")
-ar = dv.apply_sync(exec_wf)
-while not ar.ready():
-    sleep(1)
-
-# not merged, but same result as the first single core example
-for foo in ar.get():
-    print foo
 """
 
 from itertools import chain
@@ -107,13 +73,17 @@ option_exists = Exists()
 class Workflow(object):
     """Arbitrary worflow support structure"""
 
-    def __init__(self, ShortCircuit=True, Debug=True, Options=None, Rank=0,
-            NProcs=1, Finalize=None):
+    def __init__(self, ShortCircuit=True, Debug=True, Options=None, 
+                 Mapping=None, StagingFunction=None):
         """Build thy self
 
         ShortCiruit : if True, enables ignoring function groups when a given
             item has failed
+        Debug : Enable debug mode
         Options : runtime options, {'option':values}
+        Mapping : Optional metadata mapping
+        StagingFunction : Optional staging function that can setup additional
+            state in self, such as providing self.Barcodes, etc
 
         All workflow methods (i.e., those starting with "wk_") must be decorated
         by either "no_requirements" or "requires". This ensures that the methods
@@ -128,13 +98,14 @@ class Workflow(object):
         self.ShortCircuit = ShortCircuit
         self.Failed = False
         self.FinalState = None
-        self.Rank = Rank
-        self.NProcs = NProcs
-        self.Finalize = Finalize
+        self.Mapping = Mapping
 
         for f in self._all_wf_methods():
             if not hasattr(f, '__workflowtag__'):
                 raise AttributeError("%s isn't a workflow method!" % f.__name__)
+
+        if StagingFunction is not None:
+            StagingFunction(self)
 
     def _all_wf_methods(self, default_priority=0):
         """Get all workflow methods
@@ -175,27 +146,17 @@ class Workflow(object):
 
         it, workflow = self._get_workflow(it)
         
-        count = 0
         for item in it:
             self.Failed = False
-            self.FinalState = None
 
-            if count % self.NProcs == self.Rank:
-                for f in workflow:
-                    f(item)
-            else:
-                continue
+            for f in workflow:
+                f(item)
 
             if self.Failed and fail_callback is not None:
                 yield fail_callback(self)
             else:
                 yield success_callback(self)
             
-            count += 1
-
-        if self.Finalize is not None:
-            self.Finalize(self)
-
     @staticmethod
     def tagFunction(f):
         setattr(f, '__workflowtag__', None)
