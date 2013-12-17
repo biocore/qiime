@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from itertools import izip
-from qiime.workflow.core import Workflow, requires, priority
+from qiime.workflow.core import (Workflow, requires, priority,
+        no_requirements)
 from unittest import TestCase, main
 
 __author__ = "Daniel McDonald"
@@ -77,7 +78,7 @@ class MockWorkflow(Workflow):
         else:
             self.FinalState = (name, item)
 
-    @requires(IsValid=True)
+    @no_requirements
     def methodC1(self, item):
         name = 'C1'
         self.Stats[name] += 1
@@ -95,9 +96,21 @@ class MockWorkflow(Workflow):
 
 class WorkflowTests(TestCase):
     def setUp(self):
-        self.obj_short = MockWorkflow(**{'A':True, 'C':True})
-        self.obj_noshort = MockWorkflow(ShortCircuit=False, **{'A':True, 
+        self.obj_short = MockWorkflow(Options={'A':True, 'C':True})
+        self.obj_noshort = MockWorkflow(ShortCircuit=False, Options=\
+                                                              {'A':True, 
                                                                'C':True})
+
+    def test_untagged_wf_method(self):
+        class WFTest(Workflow):
+            @no_requirements
+            def wf_1(self):
+                pass
+            def wf_2(self):
+                pass
+
+        with self.assertRaises(AttributeError):
+            _ = WFTest()
 
     def test_get_workflow(self):
         gen = single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
@@ -225,7 +238,7 @@ class RequiresTests(TestCase):
     def test_methodb2_accept(self):
         # methodb2 is setup to be valid when foo is in [1,2,3], make sure we
         # can execute
-        obj = MockWorkflow(**{'foo':1})
+        obj = MockWorkflow(Options={'foo':1})
         obj.methodB2('test')
         self.assertEqual(obj.FinalState, ('B2', 'test'))
         self.assertEqual(obj.Stats, {'B2':1})
@@ -239,7 +252,7 @@ class RequiresTests(TestCase):
     def test_methodb2_ignore(self):
         # methodb2 is setup to be valid when foo is in [1, 2, 3], make sure
         # we do not execute
-        obj = MockWorkflow(**{'foo':'bar'})
+        obj = MockWorkflow(Options={'foo':'bar'})
         obj.methodB2('test')
         self.assertEqual(obj.FinalState, None)
         self.assertEqual(obj.Stats, {})

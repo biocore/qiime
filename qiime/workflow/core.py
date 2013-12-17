@@ -1,5 +1,53 @@
 #!/usr/bin/env python
 
+"""Perform multiple method calls, determined at runtime, on independent items
+
+Construct arbitrarily complex workflows in which the specific methods run are
+determined at runtime. These methods are applied to items that are assumed to
+be independent.
+
+As an example:
+
+class MyWorkflow(Workflow):
+    @priority(100)
+    @no_requirements
+    def wf_mul(self, item):
+        self.FinalState *= item
+
+    @priority(10)
+    @requires(Option='add_value')
+    def wf_add(self, item):
+        self.FinalState += item
+    
+    @requires(Option='sub_value', Values=[1,5,10])
+    def wf_sub(self, item):
+        self.FinalState -= item
+        self.FinalState -= self.Options['sub_value']
+
+    @priority(1000)
+    @requires(IsValid=False)
+    def wf_init(self, item):
+        self.FinalState = item
+
+# (i * i) + i - i - 5
+wf = MyWorkflow(Options={'add_value':None, 'sub_value':5})
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+
+# (i * i) - i - 10
+wf = MyWorkflow(Options={'sub_value':10})
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+
+# (i * i)
+wf = MyWorkflow()
+gen = (i for i in range(10))
+for i in wf(gen):
+    print i
+"""
+
 from itertools import chain
 from functools import update_wrapper
 from collections import Iterable, defaultdict
@@ -17,22 +65,47 @@ __status__ = "Development"
 _missing = object()
 _executed = object()
 
+class Exists(object):
+    def __contains__(self, item):
+        return True
+option_exists = Exists()
+
 class Workflow(object):
     """Arbitrary worflow support structure"""
-    def __init__(self, ShortCircuit=True, **kwargs):
+
+    def __init__(self, ShortCircuit=True, Debug=True, Options=None, 
+                 Mapping=None, StagingFunction=None):
         """Build thy self
 
         ShortCiruit : if True, enables ignoring function groups when a given
             item has failed
+        Debug : Enable debug mode
+        Options : runtime options, {'option':values}
+        Mapping : Optional metadata mapping
+        StagingFunction : Optional staging function that can setup additional
+            state in self, such as providing self.Barcodes, etc
 
-        kwargs are stored as self.Options. Support for arbitrary Stats is 
-        implicit
+        All workflow methods (i.e., those starting with "wk_") must be decorated
+        by either "no_requirements" or "requires". This ensures that the methods
+        support the automatic workflow determination mechanism.
         """
-        self.Options = kwargs
+        if Options is None:
+            self.Options = {}
+        else:
+            self.Options = Options
+
         self.Stats = defaultdict(int)
         self.ShortCircuit = ShortCircuit
         self.Failed = False
         self.FinalState = None
+        self.Mapping = Mapping
+
+        for f in self._all_wf_methods():
+            if not hasattr(f, '__workflowtag__'):
+                raise AttributeError("%s isn't a workflow method!" % f.__name__)
+
+        if StagingFunction is not None:
+            StagingFunction(self)
 
     def _all_wf_methods(self, default_priority=0):
         """Get all workflow methods
@@ -72,11 +145,10 @@ class Workflow(object):
             success_callback = lambda x: x.FinalState
 
         it, workflow = self._get_workflow(it)
-    
+        
         for item in it:
             self.Failed = False
-            self.FinalState = None
-            
+
             for f in workflow:
                 f(item)
 
@@ -84,10 +156,21 @@ class Workflow(object):
                 yield fail_callback(self)
             else:
                 yield success_callback(self)
+            
+    @staticmethod
+    def tagFunction(f):
+        setattr(f, '__workflowtag__', None)
+
+def no_requirements(f):
+    def decorated(self, *args, **kwargs):
+        f(self, *args, **kwargs)
+        return _executed
+    Workflow.tagFunction(decorated)
+    return update_wrapper(decorated, f)
 
 class requires(object):
     """Decorator that executes a function if requirements are met"""
-    def __init__(self, IsValid=True, Option=None, Values=None):
+    def __init__(self, IsValid=True, Option=None, Values=_missing):
         """
         IsValid : execute the function if self.Failed is False
         Option : a required option
@@ -96,16 +179,16 @@ class requires(object):
         # self here is the requires object
         self.IsValid = IsValid
         self.Option = Option
-        self.Values = Values
 
-        if not isinstance(self.Values, set):
-            if isinstance(self.Values, Iterable):
-                self.Values = set(self.Values)
+        if Values is _missing:
+            self.Values = option_exists
+        elif not isinstance(Values, set):
+            if isinstance(Values, Iterable):
+                self.Values = set(Values)
             else:
-                self.Values = set([self.Values])
-    
-        if _missing in self.Values:
-            raise ValueError("_missing cannot be in Values!")
+                self.Values = set([Values])
+        else:
+            self.Values = Values
 
     def doShortCircuit(self, wrapped):
         if self.IsValid and (wrapped.Failed and wrapped.ShortCircuit):
@@ -126,8 +209,10 @@ class requires(object):
             if self.doShortCircuit(dec_self):
                 return
 
-            value = dec_self.Options.get(self.Option, _missing)
-            if value in self.Values:
+            s_opt = self.Option
+            ds_opts = dec_self.Options
+
+            if s_opt in ds_opts and ds_opts[s_opt] in self.Values:
                 f(dec_self, *args, **kwargs)
                 return _executed
 
@@ -141,6 +226,9 @@ class requires(object):
 
             f(dec_self, *args, **kwargs)
             return _executed
+
+        Workflow.tagFunction(decorated_with_option)
+        Workflow.tagFunction(decorated_without_option)
 
         if self.Option is None:
             return update_wrapper(decorated_without_option, f)
