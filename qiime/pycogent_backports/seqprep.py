@@ -18,7 +18,6 @@ __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Michael Robeson"
 __email__ = "robesonms@ornl.gov"
-__status__ = "Development"
 
 # SeqPrep help:
 # Usage:

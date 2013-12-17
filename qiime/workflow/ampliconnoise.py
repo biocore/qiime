@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 import os
 from cogent.core.moltype import IUPAC_DNA_ambiguities

@@ -1,5 +1,13 @@
-QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
-===================================================
+QIIME 1.8.0-dev (changes since 1.8.0 go here)
+=============================================
+
+QIIME 1.8.0 (11 Dec 2013)
+=========================
+* New script, extract_barcodes.py, and associated tutorial added to support alternative illumina barcoding schemes.
+* Added script join_paired_ends.py, which supports joining of overlapping paired-end reads in fastq files. This wraps fastq-join and SeqPrep.
+* extract_barcodes.py script added-this script is intended to help process fastq data that is not in a compatible format with split_libraries_fastq.py.
+* otu_category_significance.py has been removed in favor of a new script called ``group_significance.py`` which has significantly more functionality.
+* map_reads_to_reference.py has a new parameter, ``--genetic_code``, which can be used to specify which genetic code should be used when doing translated searches (from nucleotide sequences against a protein database). Genetic codes are specified numerically, corresponding to the genetic codes detailed on the [NCBI page here](http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
 * core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 * QIIME now depends on [qcli 0.1.0](ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz), a stand-alone package which performs command line interface parsing and testing.
@@ -23,6 +31,7 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * convert_unifrac_sample_mapping_to_otu_table.py and convert_otu_table_to_unifrac_sample_mapping.py have been moved to the FastUnifrac repo (https://github.com/qiime/FastUnifrac)
 * Required matplotlib version is now >= 1.1.0, <= 1.3.1.
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
+* QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
 
 QIIME 1.7.0 (14 May 2013)
 =========================

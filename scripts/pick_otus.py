@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # File created on 09 Feb 2010
+from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
@@ -7,13 +8,14 @@ __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
                "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import splitext, split, exists, abspath
 from os import makedirs
+from multiprocessing import cpu_count
+
 from qiime.util import make_option
 from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
@@ -365,7 +367,16 @@ script_info['optional_options'] = [
     make_option('--sizeorder', default=False, help=(
                 "Enable size based preference in clustering with usearch61. "
                 "Requires that --usearch61_sort_method be abundance. "
-                "[default: %default]"), action='store_true')
+                "[default: %default]"), action='store_true'),
+                
+    make_option('--threads', default='one_per_cpu', help=(
+                "Specify number of threads per core to be used for  "
+                "usearch61 commands that utilize multithreading. By default, "
+                "will calculate the number of cores to utilize so a single "
+                "thread will be used per CPU. Specify a fractional number, e.g."
+                " 1.0 for 1 thread per core, or 0.5 for a single thread on "
+                "a two core CPU. Only applies to usearch61. "
+                "[default: %default]"))
 
                ]
 
@@ -402,6 +413,7 @@ def main():
     derep_fullseq = opts.derep_fullseq
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
+    threads = opts.threads
     
     
     # usearch specific parameters
@@ -542,6 +554,18 @@ def main():
             option_parser.error('refseqs_fp %s does not exist' %refseqs_fp)
         else:
             refseqs_fp = abspath(refseqs_fp)
+    
+    # calculate threads as 1 per CPU, or use float of input value    
+    if threads == 'one_per_cpu':
+        threads = float(1/cpu_count())
+    else:
+         # Make sure input is a float
+         try:
+             threads = float(threads)
+         except ValueError:
+             option_parser.error("--threads must be a float value if "
+              "default 'one_per_cpu' value overridden.")
+              
     # End input validation
     
     
@@ -671,7 +695,8 @@ def main():
         'usearch61_sort_method':usearch61_sort_method,
         'usearch61_maxrejects':max_rejects,
         'usearch61_maxaccepts':max_accepts,
-        'sizeorder':sizeorder
+        'sizeorder':sizeorder,
+        'threads':threads
         }
         
         otu_picker = otu_picker_constructor(params)
@@ -696,7 +721,8 @@ def main():
         'usearch61_maxrejects':max_rejects,
         'usearch61_maxaccepts':max_accepts,
         'sizeorder':sizeorder,
-        'suppress_new_clusters':opts.suppress_new_clusters
+        'suppress_new_clusters':opts.suppress_new_clusters,
+        'threads':threads
         }
         
         otu_picker = otu_picker_constructor(params)

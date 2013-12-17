@@ -6,10 +6,9 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
  
 from sys import argv, exit, stderr, stdout
 from os.path import splitext

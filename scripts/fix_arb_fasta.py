@@ -5,10 +5,9 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import parse_command_line_parameters, get_options_lookup

@@ -36,6 +36,8 @@
 		Max e-value to consider a match [default: 1e-10]
 	-s, `-`-min_percent_id
 		Min percent id to consider a match [default: 0.75]
+	`-`-genetic_code
+		ID of genetic code to use for DNA translations (please see http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi) Only valid with -m blat. [default: 11]
 	`-`-max_diff
 		MaxDiff to consider a match (applicable for -m bwa-short) -- see the aln section of "man bwa" for details [default (defined by bwa): 0.04]
 	`-`-queryalnfract

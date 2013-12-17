@@ -1,0 +1,1 @@
+#SampleID	diet	before_after	sample_group	yearSample1	control	before	cat1	1Sample2	control	before	cat1	2Sample3	fasting	after	cat2	3Sample4	fasting	after	cat2	4Sample5	standard		cat3	5Sample6	standard		cat3	6NotInOtuTable1			cat4	7NotInOtuTable2			cat4	8

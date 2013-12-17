@@ -58,6 +58,12 @@ The easiest way to install the latest QIIME release and its base dependencies is
 
 That's it!
 
+Installing QIIME on Mac OS X (Using MacQIIME)
++++++++++++++++++++++++++++++++++++++++++++++
+
+Jeff Werner builds and maintain MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
+
+
 Manually installing QIIME
 +++++++++++++++++++++++++
 
@@ -302,8 +308,8 @@ After downloading the QIIME release tar file you'll need to unpack the code. For
 Unpack the release .tar.gz file with the commands::
 
 	cd $HOME
-	tar -xvzf qiime-1.7.0.tar.gz
-	ln -s $HOME/qiime-1.7.0 $HOME/Qiime
+	tar -xvzf qiime-1.8.0.tar.gz
+	ln -s $HOME/qiime-1.8.0 $HOME/Qiime
 
 If you have downloaded the development version from GitHub, QIIME is already unpacked.
 

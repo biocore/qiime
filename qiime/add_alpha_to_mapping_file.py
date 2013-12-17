@@ -6,10 +6,9 @@ __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
-__status__ = "Development"
 
 
 from copy import deepcopy
@@ -111,7 +110,10 @@ def _get_level(value, levels, prefix=None):
     the value is returned as an integer
 
     """
-    assert value <= 1 and value >= 0, "The value must be between 0 and 1"
+
+    if value > 1 or value < 0:
+        raise ValueError("Encountered invalid normalized alpha diversity value %s. "
+            "Normalized values must be between 0 and 1." % value)
 
     check = [i for i in range(0, len(levels)) if levels[i] == value]
 

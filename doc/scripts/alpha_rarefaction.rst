@@ -47,6 +47,8 @@ The steps performed by this script are: Generate rarefied OTU tables; compute al
 		The upper limit of rarefaction depths [default: median sequence/sample count]
 	-O, `-`-jobs_to_start
 		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+	`-`-retain_intermediate_files
+		Retain intermediate files: rarefied OTU tables (rarefaction) and alpha diversity results (alpha_div). By default these will be erased [default: False]
 
 
 **Output:**

@@ -6,10 +6,9 @@ __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Antonio Gonzalez Pena, Kyle Patnode", "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
-__status__ = "Development"
 
 from qiime.plot_taxa_summary import make_legend
 from qiime.colors import get_qiime_hex_string_color

@@ -7,10 +7,9 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"] 
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os import remove
 from os.path import abspath, join, exists
@@ -817,12 +816,13 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         obs_clusters = app(self.tmp_seq_filepath_97perc_id_rc)
                                        
         # RC seq should fall into its own cluster
-        expected_clusters = [['usearch_ecoli_seq', 
-        'usearch_ecoli_seq_1bp_change'], ['usearch_ecoli_seq_2bp_change_rc']]
+        expected_clusters = [set(['usearch_ecoli_seq', 
+            'usearch_ecoli_seq_1bp_change']),
+            set(['usearch_ecoli_seq_2bp_change_rc'])]
                 
         self.assertEqual(len(obs_clusters), 2)
         for result in obs_clusters:
-            self.assertTrue(obs_clusters[result] in expected_clusters)
+            self.assertTrue(set(obs_clusters[result]) in expected_clusters)
         
         
     def test_call_default_params_reversed_seq_w_rev(self):

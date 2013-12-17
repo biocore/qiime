@@ -5,10 +5,9 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Greg Caporaso",
                 "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
 
 print """\nThis script has been moved to the FastUnifrac repository. \
 For more information, see http://github.com/qiime/FastUnifrac"""

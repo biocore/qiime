@@ -29,10 +29,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso","Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 #NOTE: The next ChimeraSlayer release will have an option to increase the number of
 #      iterations performed. Currently the hard coded default is 100, which leads to 
@@ -647,6 +646,7 @@ def usearch61_chimera_check(input_seqs_fp,
                             max_accepts = 1,
                             max_rejects = 8,
                             verbose=False,
+                            threads = 1.0,
                             HALT_EXEC=False):
     """ Main convenience function for usearch61 chimera checking
     
@@ -680,6 +680,7 @@ def usearch61_chimera_check(input_seqs_fp,
     max_accepts: max number of accepts for hits with usearch61
     max_rejects: max number of rejects for usearch61, increasing allows more
      sensitivity at a cost of speed
+    threads: Specify number of threads used per core per CPU
     HALT_EXEC=application controller option to halt execution and print command
     """
     
@@ -732,7 +733,7 @@ def usearch61_chimera_check(input_seqs_fp,
              usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
              usearch61_abundance_skew, percent_id_usearch61, minlen,
              word_length, max_accepts, max_rejects, files_to_remove, HALT_EXEC,
-             log_lines, verbose)
+             log_lines, verbose, threads)
              
             chimeras += curr_chimeras
             non_chimeras += curr_non_chimeras
@@ -747,7 +748,7 @@ def usearch61_chimera_check(input_seqs_fp,
          usearch61_dn, usearch61_mindiffs, usearch61_mindiv,
          usearch61_abundance_skew, percent_id_usearch61, minlen,
          word_length, max_accepts, max_rejects, files_to_remove, HALT_EXEC,
-         log_lines, verbose)
+         log_lines, verbose, threads)
          
     # write log, non chimeras, chimeras.
     write_usearch61_log(log_fp, input_seqs_fp, output_dir,
@@ -791,7 +792,8 @@ def identify_chimeras_usearch61(input_seqs_fp,
                                 files_to_remove = [],
                                 HALT_EXEC=False,
                                 log_lines ={},
-                                verbose=False):
+                                verbose=False,
+                                threads = 1.0):
     """ Calls de novo, ref useach61 chimera checking, returns flagged seqs
     
     input_seqs_fp:  filepath of input fasta file.
@@ -826,6 +828,7 @@ def identify_chimeras_usearch61(input_seqs_fp,
     files_to_remove: list of filepaths to remove if intermediate files are to
      be removed.
     HALT_EXEC=application controller option to halt execution and print command
+    threads: Specify number of threads used per core per CPU
     """
     
     output_consensus_fp = join(output_dir,
@@ -932,6 +935,7 @@ def identify_chimeras_usearch61(input_seqs_fp,
                                       usearch61_dn=usearch61_dn,
                                       usearch61_mindiffs=usearch61_mindiffs,
                                       usearch61_mindiv=usearch61_mindiv,
+                                      threads = threads,
                                       HALT_EXEC=HALT_EXEC)
         
          if suppress_usearch61_intermediates:

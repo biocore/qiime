@@ -8,10 +8,9 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Greg Caporaso","Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
  
 from os.path import exists, splitext, split
 from qiime.util import make_option

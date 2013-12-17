@@ -1,5 +1,0 @@
-	lladser_pe	lladser_lower_bound	lladser_upper_bound
-S1	NaN	NaN	NaN
-S2	NaN	NaN	NaN
-S3	NaN	NaN	NaN
-S4	0.747573	0.114886	1

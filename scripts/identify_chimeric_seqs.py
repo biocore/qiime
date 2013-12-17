@@ -8,12 +8,12 @@ __credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder",
                 "Jose Antonio Navas Molina"]
 __credits__ = ["Greg Caporaso", "Daniel McDonald","Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
  
 from os.path import split, splitext, join, abspath
+from multiprocessing import cpu_count
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
  make_option, create_dir)
@@ -203,7 +203,16 @@ script_info['optional_options']=[\
     make_option('-o', '--output_fp',type='new_filepath',
         help='Path to store output, output filepath in the case of '
         'blast_fragments and ChimeraSlayer, or directory in case of usearch61 '
-        ' [default: derived from input_seqs_fp]')
+        ' [default: derived from input_seqs_fp]'),
+        
+    make_option('--threads', default='one_per_cpu', help=(
+                "Specify number of threads per core to be used for  "
+                "usearch61 commands that utilize multithreading. By default, "
+                "will calculate the number of cores to utilize so a single "
+                "thread will be used per CPU. Specify a fractional number, e.g."
+                " 1.0 for 1 thread per core, or 0.5 for a single thread on "
+                "a two core CPU. Only applies to usearch61. "
+                "[default: %default]"))
     ]
 script_info['version'] = __version__
 
@@ -269,6 +278,19 @@ def main():
     max_e_value = opts.max_e_value
     blast_db = opts.blast_db
     keep_intermediates = opts.keep_intermediates
+    threads = opts.threads
+    
+                
+    # calculate threads as 1 per CPU, or use float of input value    
+    if threads == 'one_per_cpu':
+        threads = float(1/cpu_count())
+    else:
+         # Make sure input is a float
+         try:
+             threads = float(threads)
+         except ValueError:
+             option_parser.error("--threads must be a float value if "
+              "default 'one_per_cpu' value overridden.")
     
     if not output_fp:
         if chimera_detection_method == "usearch61":
@@ -317,7 +339,8 @@ def main():
          word_length = opts.word_length,
          max_accepts = opts.max_accepts,
          max_rejects = opts.max_rejects,
-         verbose = opts.verbose)
+         verbose = opts.verbose,
+         threads = threads)
 
 
 if __name__ == "__main__":

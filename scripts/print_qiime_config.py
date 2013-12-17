@@ -8,10 +8,9 @@ __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout","Greg Caporaso",
                "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
@@ -19,6 +18,7 @@ from sys import platform, version as python_version, executable, stdout
 from unittest import TestLoader, TextTestRunner, TestCase
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
+from optparse import SUPPRESS_HELP
 
 core_dependency_missing_msg = "See the QIIME Installation Guide: http://qiime.org/install/install.html"
 
@@ -98,7 +98,12 @@ script_info['optional_options'] = [\
                 '--qiime_base_install',
                 action='store_true',
                 default=False,
-                help='If passed, report only on dependencies required for the QIIME base install [default: %default]')]
+                help='If passed, report only on dependencies required for the QIIME base install [default: %default]'),
+    make_option('--haiku',
+                action='store_true',
+                default=False,
+                help=SUPPRESS_HELP)
+]
 
 class QIIMEConfig(TestCase):
     
@@ -776,6 +781,10 @@ def test_qiime_config_variable(variable, qiime_config, test,
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    if opts.haiku:
+        print "QIIME provides insight\nmicrobial in nature\nto ecology"
+        exit(0)
 
     qiime_config = load_qiime_config()
     test = opts.test

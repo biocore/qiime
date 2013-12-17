@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 
 from shutil import rmtree
@@ -120,6 +119,7 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
                               output_dir=self.test_out,
                               evalue=1e-10,
                               min_id=0.75,
+                              genetic_code=11,
                               HALT_EXEC=False)
         observation_map_fp = join(self.test_out,'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
@@ -136,6 +136,7 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
                               output_dir=self.test_out,
                               evalue=1e-2,
                               min_id=0.75,
+                              genetic_code=2,
                               HALT_EXEC=False)
         observation_map_fp = join(self.test_out,'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
