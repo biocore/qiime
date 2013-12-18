@@ -1782,7 +1782,30 @@ def inverse_fisher_z_transform(z):
 def fisher_population_correlation(corrcoefs, sample_sizes):
     """Calculate population rho, homogeneity from corrcoefs using Z transform.
 
-    Exclude pvals of nan. 
+    Derived from Biometry pg 580-581. Their discussion seems to be partially 
+    based on "Tests of Homogeneity of Independent Correlation Coefficients" by
+    Helena Kraemer, Psychoometrika Vol. 44 No. 3 September 1979. 
+
+    The null hypothesis for this test is that there is no heterogeneity in the 
+    population (i.e. all the sampled populations have the same correlation 
+    coefficient). For example, a returned h_val < .05 means that: assuming that 
+    the populations from which your corrcoefs are generated all have the same 
+    rho, you would find the heterogeneity in the sample of those population 
+    corrcoefs that you are testing less than 5 percent of the time. This would 
+    mean you would like reject H0 in favor of H1 and find that the populations 
+    you sampled really do have different rho values. 
+
+    The script will combine all non-nan corrcoefs to test the h_val and return 
+    the combined correlation coefficient. 
+
+    Inputs:
+     corrcoefs - list of floats in [-1.0, 1.0], correlation coefficients that 
+      are to be tested for homogeneity. 
+     sample_sizes - list of ints, sizes of the samples from which the
+      correlation coefficients came. 
+    Outputs:
+     rho - float in [-1.0, 1.0], the combined population rho.
+     h_val - float in [0, 1.0], the probability of homgeneity.
     """
     tmp_rs = array(corrcoefs)
     tmp_ns = array(sample_sizes)
@@ -1804,7 +1827,12 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
     rho = inverse_fisher_z_transform(z_bar)
     # calculate homogeneity
     x_2 = ((ns-3)*(zs-z_bar)**2).sum()
-    h_val = chisqprob(x_2, len(ns)-1)
+    # if chisqprob gets x_2=nan it will get stuck in an optimization loop that 
+    # won't end.
+    if isnan(x_2):
+        h_val = nan
+    else:
+        h_val = chisqprob(x_2, len(ns)-1)
     return rho, h_val
 
 def assign_correlation_pval(corr, n, method, permutations=None, 
