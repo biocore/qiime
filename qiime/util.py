@@ -1764,6 +1764,7 @@ class MetadataMap():
         """
         self._metadata = sample_metadata
         self.Comments = Comments
+        self.no_data_value = 'no_data'
 
     def __eq__(self, other):
         """Test this instance for equality with another.
@@ -1785,6 +1786,124 @@ class MetadataMap():
             classes.
         """
         return not self.__eq__(other)
+
+    def __str__(self):
+        """Returns a tab-separated version of the mapping file
+
+        Missing data will be filled in with the value set in the member
+        variable no_data_value.
+
+        Note: that required columns will be in the required positions, but
+              optional columns may be re-ordered compared to the input data.
+        """
+        # this will hold the output lines while we are generating them
+        output_lines = []
+
+        # Build an ordered list of headers
+        # 1. The required headers in the required locations
+        headers = ['#SampleID', 'BarcodeSequence', 'LinkerPrimerSequence']
+
+        required_columns = set([
+            'Description', 'BarcodeSequence',
+            'LinkerPrimerSequence'])
+
+        # 2. The optional columns in the mapping file
+        for header in self._metadata.iteritems().next()[1].keys():
+            if header in required_columns:
+                continue
+
+            headers.append(header)
+
+        # 3. the last required column in its required location
+        headers.append('Description')
+
+        output_lines.append('\t'.join(headers))
+
+        for sample_id, data in self._metadata.iteritems():
+            current_data = []
+
+            # Get the first three required columns
+            current_data.append(sample_id)
+            current_data.append(data['BarcodeSequence'])
+            current_data.append(data['LinkerPrimerSequence'])
+
+            # Get the optional columns (slice the headers list here to exclude
+            # the required headers we set explicitly above and below this
+            # for loop)
+            for header in headers[3:-1]:
+                if header not in data:
+                    raise ValueError("Required metadata column %s missing!" %
+                                     header)
+
+                value = self.no_data_value if data[header] is None else \
+                    data[header]
+
+                current_data.append(str(value))
+
+            # get the last required column
+            current_data.append(data['Description'])
+
+            output_lines.append('\t'.join(current_data))
+
+        return '\n'.join(output_lines)
+
+    def __add__(self, other):
+        """Merges two mapping files
+
+        Fills in None where there is no data (i.e., when one mapping file
+        does not have a column in the other)
+        """
+        # These two functions are used to make a defaultdict of defaultdicts,
+        # the latter of which returns None when an key is not present
+        def returnNone():
+            return None
+
+        def returnNoneDefaultDict():
+            return defaultdict(returnNone)
+
+        merged_data = defaultdict(returnNoneDefaultDict)
+
+        # We will keep track of all unique sample_ids and metadata headers
+        # we have seen as we go
+        all_sample_ids = set()
+        all_headers = set()
+
+        # add all values from self into the merged_data structure
+        for sample_id, data in self._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                merged_data[sample_id][header] = value
+
+        # then add all data from other
+        for sample_id, data in other._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                # if the two mapping files have identical sample_ids and
+                # metadata columns but have DIFFERENT values, raise a value
+                # error
+                if merged_data[sample_id][header] is not None and \
+                        merged_data[sample_id][header] != value:
+                    raise ValueError("Different values provided for %s for "
+                                     "sample %s in different mapping files."
+                                     % (header, sample_id))
+                else:
+                    merged_data[sample_id][header] = value
+
+        # Now, convert what we have seen into a normal dict
+        normal_dict = {}
+        for sample_id in all_sample_ids:
+            if sample_id not in normal_dict:
+                normal_dict[sample_id] = {}
+
+            for header in all_headers:
+                normal_dict[sample_id][header] = \
+                    merged_data[sample_id][header]
+
+        # and create a MetadataMap object from it
+        normal_dict = Dict2D(normal_dict)
+        return MetadataMap(normal_dict, self.Comments + other.Comments)
 
     def getSampleMetadata(self, sample_id):
         """Returns the metadata associated with a particular sample.
