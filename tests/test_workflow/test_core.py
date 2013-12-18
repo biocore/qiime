@@ -104,7 +104,7 @@ class WorkflowTests(TestCase):
         self.obj_noshort = MockWorkflow(ShortCircuit=False, Options=\
                                                               {'A':True, 
                                                                'C':True})
-    
+   
     def test_untagged_wf_method(self):
         class WFTest(Workflow):
             @no_requirements
@@ -250,7 +250,43 @@ class WorkflowTests(TestCase):
 
         self.assertEqual(self.obj_noshort.Stats, exp_stats)
 
+class MockWorkflowReqTest(Workflow):
+    def _sanity_check(self):
+        pass
+
+    @priority(5)
+    @requires(ValidData=lambda x: x < 3)
+    def wf_needs_data(self, item):
+        name = 'needs_data'
+        self.Stats[name] += 1
+        if item == 'fail %s' % name:
+            self.Failed = True
+        self.FinalState = (name, item)
+
+    @priority(10)
+    @no_requirements
+    def wf_always_run(self, item):
+        name = 'always_run'
+        self.Stats[name] += 1
+        if item == 'fail %s' % name:
+            self.Failed = True
+        self.FinalState = (name, item)
+
 class RequiresTests(TestCase):
+    def test_validdata(self):
+        obj = MockWorkflowReqTest()
+        single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        
+        exp_stats = {'needs_data':2, 'always_run':5}
+        # C2 isn't executed as its requirements aren't met in the Options
+        exp_result = [('needs_data',1), ('needs_data',2), ('always_run',3), 
+                      ('always_run',4), ('always_run', 5)]
+
+        obs_result = list(obj(single_iter))
+
+        self.assertEqual(obs_result, exp_result)
+        self.assertEqual(obj.Stats, exp_stats)
+
     def test_methodb1(self):
         obj = MockWorkflow()
         obj.methodB1('test')

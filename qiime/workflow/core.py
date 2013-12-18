@@ -104,15 +104,21 @@ def no_requirements(f):
 
 class requires(object):
     """Decorator that executes a function if requirements are met"""
-    def __init__(self, IsValid=True, Option=None, Values=_missing):
+    def __init__(self, IsValid=True, Option=None, Values=_missing, 
+                 ValidData=None):
         """
         IsValid : execute the function if self.Failed is False
         Option : a required option
         Values : required values associated with an option
+        ValidData : data level requirements, this must be a function with the 
+            following signature: f(*args, **kwargs) returning True. NOTE: if
+            ValidData returns False on the first item evaluated, the decorated
+            function will be removed from the remaining workflow. 
         """
         # self here is the requires object
         self.IsValid = IsValid
         self.Option = Option
+        self.ValidData = ValidData
 
         if Values is _missing:
             self.Values = option_exists
@@ -135,6 +141,10 @@ class requires(object):
 
         f : the function to wrap
         """
+        ### not sure how I feel about having multiple functions in here. 
+        ### also, the handling of Data is a bit dirty as it is now replicated
+        ### over these functions. It is ideal to keep the functions slim, thus
+        ### the multiple functions, but this could explode if not careful
         def decorated_with_option(dec_self, *args, **kwargs):
             """A decorated function that has an option to validate
 
@@ -142,6 +152,10 @@ class requires(object):
             """
             if self.doShortCircuit(dec_self):
                 return
+
+            if self.ValidData is not None:
+                if not self.ValidData(*args, **kwargs):
+                    return
 
             s_opt = self.Option
             ds_opts = dec_self.Options
@@ -157,6 +171,10 @@ class requires(object):
             """
             if self.doShortCircuit(dec_self):    
                 return
+
+            if self.ValidData is not None:
+                if not self.ValidData(*args, **kwargs):
+                    return
 
             f(dec_self, *args, **kwargs)
             return _executed
