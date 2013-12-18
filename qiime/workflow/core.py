@@ -51,6 +51,7 @@ for i in wf(gen):
 from itertools import chain
 from functools import update_wrapper
 from collections import Iterable, defaultdict
+from types import MethodType
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
@@ -70,114 +71,35 @@ class Exists(object):
         return True
 option_exists = Exists()
 
-class Workflow(object):
-    """Arbitrary worflow support structure"""
+def _debug_trace_wrapper(obj, f):
+    """Trace a function call"""
+    def wrapped(self, *args, **kwargs):
+        if not hasattr(obj, 'DebugTrace'):
+            raise AttributeError("%s does not have DebugTrace!" % obj.__class__)
 
-    def __init__(self, ShortCircuit=True, Debug=True, Options=None, **kwargs):
-        """Build thy self
+        obj.DebugTrace.append(f.__name__)
+        return f(self, *args, **kwargs)
 
-        ShortCiruit : if True, enables ignoring function groups when a given
-            item has failed
-        Debug : Enable debug mode
-        Options : runtime options, {'option':values}
-        kwargs : Additional arguments will be added to self
+    return update_wrapper(wrapped, f)
 
-        All workflow methods (i.e., those starting with "wk_") must be decorated
-        by either "no_requirements" or "requires". This ensures that the methods
-        support the automatic workflow determination mechanism.
-        """
-        if Options is None:
-            self.Options = {}
-        else:
-            self.Options = Options
+def _tag_function(f):
+    """Tag, you're it"""
+    setattr(f, '__workflowtag__', None)
 
-        self.Stats = defaultdict(int)
-        self.ShortCircuit = ShortCircuit
-        self.Failed = False
-        self.FinalState = None
-        
-        for k,v in kwargs.iteritems():
-            if hasattr(self, k):
-                raise AttributeError("%s exists in self!" % k)
-            setattr(self, k, v)
+class priority(object):
+    """Sets a function priority"""
+    def __init__(self, Priority):
+        self.Priority = Priority
 
-        for f in self._all_wf_methods():
-            if not hasattr(f, '__workflowtag__'):
-                raise AttributeError("%s isn't a workflow method!" % f.__name__)
-
-        self._stage_state()
-        self._sanity_check()
-
-    def _stage_state(self):
-        """Stage any additional data necessary for the workflow
-        
-        This does not need to be overloaded
-        """
-        pass
-
-    def _sanity_check(self):
-        """Perform a sanity check on self"""
-        raise NotImplementedError("Must implement a sanity check!")
-
-    def _all_wf_methods(self, default_priority=0):
-        """Get all workflow methods
-        
-        Methods are sorted by priority
-        """
-        methods = [getattr(self, f) for f in dir(self) if f.startswith('wf_')]
-        key = lambda x: getattr(x, 'Priority', default_priority)
-        return sorted(methods, key=key, reverse=True)
-
-    def _get_workflow(self, it):
-        """Get the methods executed, sorted by priority"""
-        # save state
-        shortcircuit_state = self.ShortCircuit
-        self.ShortCircuit = False
-        stats = self.Stats.copy()
-
-        peek = it.next()
-        executed = [f for f in self._all_wf_methods() if f(peek) is _executed]
-
-        # restore state
-        self.ShortCircuit = shortcircuit_state
-        self.Stats = stats
-        generator_reset = chain([peek], it)
-
-        return generator_reset, executed
-
-    def __call__(self, it, success_callback=None, fail_callback=None):
-        """Operate on all the data
-
-        it : an iterator
-        success_callback : method to call on a successful item prior to 
-            yielding
-        fail_callback : method to call on a failed item prior to yielding
-        """
-        if success_callback is None:
-            success_callback = lambda x: x.FinalState
-
-        it, workflow = self._get_workflow(it)
-        
-        for item in it:
-            self.Failed = False
-
-            for f in workflow:
-                f(item)
-
-            if self.Failed and fail_callback is not None:
-                yield fail_callback(self)
-            else:
-                yield success_callback(self)
-            
-    @staticmethod
-    def tagFunction(f):
-        setattr(f, '__workflowtag__', None)
+    def __call__(self, f):
+        f.Priority = self.Priority
+        return f
 
 def no_requirements(f):
     def decorated(self, *args, **kwargs):
         f(self, *args, **kwargs)
         return _executed
-    Workflow.tagFunction(decorated)
+    _tag_function(decorated)
     return update_wrapper(decorated, f)
 
 class requires(object):
@@ -239,19 +161,152 @@ class requires(object):
             f(dec_self, *args, **kwargs)
             return _executed
 
-        Workflow.tagFunction(decorated_with_option)
-        Workflow.tagFunction(decorated_without_option)
+        _tag_function(decorated_with_option)
+        _tag_function(decorated_without_option)
 
         if self.Option is None:
             return update_wrapper(decorated_without_option, f)
         else:
             return update_wrapper(decorated_with_option, f)
 
-class priority(object):
-    """Sets a function priority"""
-    def __init__(self, Priority):
-        self.Priority = Priority
+class Workflow(object):
+    """Arbitrary worflow support structure"""
 
-    def __call__(self, f):
-        f.Priority = self.Priority
-        return f
+    def __init__(self, ShortCircuit=True, Debug=False, Options=None, **kwargs):
+        """Build thy self
+
+        ShortCiruit : if True, enables ignoring function groups when a given
+            item has failed
+        Debug : Enable debug mode
+        Options : runtime options, {'option':values}
+        kwargs : Additional arguments will be added to self
+
+        All workflow methods (i.e., those starting with "wk_") must be decorated
+        by either "no_requirements" or "requires". This ensures that the methods
+        support the automatic workflow determination mechanism.
+        """
+        if Options is None:
+            self.Options = {}
+        else:
+            self.Options = Options
+
+        ### collections.Counter instead?
+        self.Stats = defaultdict(int)
+        self.ShortCircuit = ShortCircuit
+        self.Failed = False
+        self.FinalState = None
+        self.Debug = Debug
+
+        if self.Debug:
+            self.DebugTrace = []
+
+        for k,v in kwargs.iteritems():
+            if hasattr(self, k):
+                raise AttributeError("%s exists in self!" % k)
+            setattr(self, k, v)
+
+        for f in self._all_wf_methods():
+            if not hasattr(f, '__workflowtag__'):
+                raise AttributeError("%s isn't a workflow method!" % f.__name__)
+
+        self._sanity_check()
+        self._stage_state()
+        self._setup_debug()
+    
+    def _setup_debug(self):
+        """Wrap all methods with debug trace support"""
+        if not self.Debug:
+            return
+       
+        _ignore = set(['_get_workflow','_all_wf_methods','_sanity_check',
+                       '_stage_state'])
+        
+        for attrname in dir(self):
+            if attrname.startswith('__'):
+                continue
+            if attrname in _ignore:    
+                continue
+
+            attr = getattr(self, attrname)
+
+            if isinstance(attr, MethodType):
+                setattr(self, attrname, _debug_trace_wrapper(self, attr))
+
+    def _stage_state(self):
+        """Stage any additional data necessary for the workflow
+        
+        This does not need to be overloaded
+        """
+        pass
+
+    def _sanity_check(self):
+        """Perform a sanity check on self"""
+        raise NotImplementedError("Must implement a sanity check!")
+
+    def _all_wf_methods(self, default_priority=0):
+        """Get all workflow methods
+        
+        Methods are sorted by priority
+        """
+        methods = [getattr(self, f) for f in dir(self) if f.startswith('wf_')]
+        key = lambda x: getattr(x, 'Priority', default_priority)
+        methods_sorted = sorted(methods, key=key, reverse=True)
+
+        if methods_sorted[0] != self.wf_SETUP_DEBUG_TRACE:
+            name = methods_sorted[0].__name__
+            debug_prio = self.wf_SETUP_DEBUG_TRACE.Priority
+
+            raise AttributeError("Method %s has a higher priority than the "
+                                 "debug trace method. Please set its priority "
+                                 "below %d." % (name, debug_prio))
+        
+        if not self.Debug:
+            methods_sorted.pop(0)
+        
+        return methods_sorted
+
+    def _get_workflow(self, it):
+        """Get the methods executed, sorted by priority"""
+        # save state
+        shortcircuit_state = self.ShortCircuit
+        self.ShortCircuit = False
+        stats = self.Stats.copy()
+
+        peek = it.next()
+        executed = [f for f in self._all_wf_methods() if f(peek) is _executed]
+
+        # restore state
+        self.ShortCircuit = shortcircuit_state
+        self.Stats = stats
+        generator_reset = chain([peek], it)
+
+        return generator_reset, executed
+
+    @priority(99999999)
+    @no_requirements
+    def wf_SETUP_DEBUG_TRACE(self, item):
+        self.DebugTrace = []
+
+    def __call__(self, it, success_callback=None, fail_callback=None):
+        """Operate on all the data
+
+        it : an iterator
+        success_callback : method to call on a successful item prior to 
+            yielding
+        fail_callback : method to call on a failed item prior to yielding
+        """
+        if success_callback is None:
+            success_callback = lambda x: x.FinalState
+
+        it, workflow = self._get_workflow(it)
+        
+        for item in it:
+            self.Failed = False
+
+            for f in workflow:
+                f(item)
+
+            if self.Failed and fail_callback is not None:
+                yield fail_callback(self)
+            else:
+                yield success_callback(self)

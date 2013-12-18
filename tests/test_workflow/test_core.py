@@ -100,10 +100,11 @@ class MockWorkflow(Workflow):
 class WorkflowTests(TestCase):
     def setUp(self):
         self.obj_short = MockWorkflow(Options={'A':True, 'C':True})
+        self.obj_debug = MockWorkflow(Debug=True, Options={'A':True, 'C':True})
         self.obj_noshort = MockWorkflow(ShortCircuit=False, Options=\
                                                               {'A':True, 
                                                                'C':True})
-
+    
     def test_untagged_wf_method(self):
         class WFTest(Workflow):
             @no_requirements
@@ -115,8 +116,37 @@ class WorkflowTests(TestCase):
         with self.assertRaises(AttributeError):
             _ = WFTest()
 
+    def test_get_workflow_debug(self):
+        gen = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        exp_wf = [self.obj_debug.wf_SETUP_DEBUG_TRACE, self.obj_debug.wf_groupA,
+                  self.obj_debug.wf_groupC]
+        obs_gen, obs_wf = self.obj_debug._get_workflow(gen)
+
+        self.assertEqual(obs_wf, exp_wf)
+        self.assertEqual(list(obs_gen), [1,2,3,4,5])
+        
+        self.assertEqual(self.obj_debug.Stats, {})
+        self.assertTrue(self.obj_debug.ShortCircuit)
+    
+    def test_debug_trace(self):
+        gen = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        obj = self.obj_debug(gen)
+        
+        exp = ('C1',1)
+        obs = obj.next()
+        self.assertEqual(obs, exp)
+
+        exp = ['wf_groupA', 
+               'methodA1',
+               'methodA2',
+               'wf_groupC',
+               'methodC1',
+               'methodC2']
+        obs = self.obj_debug.DebugTrace
+        self.assertEqual(obs, exp)
+        
     def test_get_workflow(self):
-        gen = single_iter = construct_iterator(**{'iter_x':[1,2,3,4,5]})
+        gen = construct_iterator(**{'iter_x':[1,2,3,4,5]})
         exp_wf = [self.obj_short.wf_groupA, self.obj_short.wf_groupC]
         obs_gen, obs_wf = self.obj_short._get_workflow(gen)
 

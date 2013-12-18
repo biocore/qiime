@@ -4,6 +4,10 @@ from qiime.workflow.core import Workflow, requires, priority, _continuous
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import MinimalQualParser
 from itertools import chain, izip
+from qiime.util import MetadataMap
+
+from qiime.hamming import decode as decode_hamming_8
+from qiime.golay import decode as decode_golay_12
 
 def _fasta_qual_strict(fasta_gen, qual_gen):
     """Yield fasta and qual together
@@ -40,6 +44,10 @@ def fasta_qual_iterator(fasta_fps, qual_fps=None):
 
     return gen
 
+def _count_mismatches(seq1, seq2):
+    """Counts mismatches between two sequences"""
+    return sum([a == b for a,b in zip(seq1, seq2)])    
+
 SEQ_ID_INDEX = 0
 SEQ_INDEX = 1
 QUAL_INDEX = 2
@@ -49,15 +57,32 @@ class SequenceWorkflow(Workflow):
                   'rev_primer':None,
                   'seq':None,
                   'qual':None,
+                  'sample':None,
                   'original_barcode':None,
-                  'corrected_barcode':None}
-   
+                  'corrected_barcode':None,
+                  'final_barcode':None,
+                  'corrected_barcode_errors':None}
+    
+    def _stage_state(self):
+        """Fish out barcodes from the mapping data"""
+        # set all the barcodes
+        bcs = {}
+        for sample in self.Mapping.SampleIds:
+            sample_bc = self.Mapping.getCategoryValue(sample, 'barcode')
+            if sample_bc in bcs:
+                raise ValueError("Duplicate barcode found for sample %s" \
+                                 % sample)
+            else:
+                bcs[sample_bc] = sample
+        self.Barcodes = frozenset(bcs)
+
     def _sanity_check(self):
         name = self.__name__
         if not hasattr(self, 'Mapping'):
             raise AttributeError("%s is missing Mapping!" % name)
-        if not hasattr(self, 'Barcodes'):
-            raise AttributeError("%s is missing Mapping!" % name)
+        
+        if not isinstance(self.Mapping, MetadataMap):
+            raise AttributeError("self.Mapping is not of type MetadataMap")
 
     ### Start Workflow methods
 
@@ -67,10 +92,21 @@ class SequenceWorkflow(Workflow):
         self._init_final_state(item)
 
     @priority(900)
-    @requires(Option='barcode_type', Values=['hamming_8','golay_12','variable'])
-    def wf_demultiplex(self, item):
+    @requires(Option='max_bc_errors')
+    @requires(Option='barcode_type', Values=['hamming_8','golay_12'])
+    def wf_demultiplex_fixed(self, item):
         self._correct_golay12(item)
         self._correct_hamming8(item)
+
+        bc_errors = self.Options['max_bc_errors']
+        if self.FinalState['corrected_barcode_errors'] > bc_errors:
+            self.Failed = True
+            self.Stats['exceeds_bc_errors'] += 1
+    
+    @priority(900)
+    @requires(Option='barcode_type', Values='variable')
+    def wf_demultiplex_variable(self, item):
+        raise NotImplementedError("variable length barcodes not supported yet")
         self._correct_variable(item)
 
     @priority(90)
@@ -84,81 +120,88 @@ class SequenceWorkflow(Workflow):
             self.Stats['min_seq_len'] += 1
 
     @priority(89)
-    @requires(IsValid=True)
+    @requires(Option='instrument-type', Values='454')
+    @requires(Option='disable_primer_check', Values=False)
     def wf_check_primer(self, item):
         """ """
-        self._set_primers(item)
-
-        self._local_align_forward_primer(item)
         self._count_mismatches(item)
+        self._local_align_forward_primer(item)
 
     ### End Workflow methods
 
+    def _check_exact_barcode(self):
+        """Check for a match"""
+        return self.FinalState['original_barcode'] in self.Barcodes
+
     @requires(Option='barcode_type', Values='golay_12')
     def _correct_golay12(self, item):
-        pass
+        """ """
+        self._correct_encoded_barcode(item, decode_golay_12, 12)
 
     @requires(Option='barcode_type', Values='hamming_8')
     def _correct_hamming8(self, item):
-        pass
+        """ """
+        self._correct_encoded_barcode(item, decode_hamming_8, 8)
 
-    @requires(Option='barcode_type', Values='variable')
-    def _correct_variable(self, item):
-        pass
+    def _correct_encoded_barcode(self, item, method, bc_length):
+        putative_bc = item[SEQ_INDEX][:bc_length]
+        self.FinalState['original_barcode'] = putative_bc
+        
+        if self._check_exact_barcode():
+            self.FinalState['corrected_barcode_errors'] = 0
+            final_bc = putative_bc
+            sample = self.Barcodes.get(putative_bc, None)
+        else:
+            corrected, num_errors = method(putative_bc)
+            final_bc = corrected
+
+            self.FinalState['corrected_barcode'] = corrected
+            self.FinalState['corrected_barcode_errors'] = num_errors
+            self.Stats['barcodes_corrected'] += 1
+            sample = self.Barcodes.get(corrected, None)
+
+        self.FinalState['final_barcode'] = final_bc
+
+        if sample is None:
+            self.Failed = True
+        else:
+            self.FinalState['sample'] = sample
 
     def _init_final_state(self, item):
         """Reset final state"""
         for k in self.FinalState:
             self.FinalState[k] = None
         
-    @requires(IsValid=False, Option='ids_primers')
-    def _set_primers(self, item):
-        """ """
-        seq_id = item[SEQ_ID_INDEX]
-
-        if self.Options['suppress_sample_id_check']:
-            primers = self.Options['ids_primers']['all_primers']
-        else:
-            seq_label = seq_id.split('_')[0]
-            if seq_label not in self.Options['ids_primers']:
-                self.Stats['seq_id_not_in_mapping'] += 1
-                self.Failed = True
-            else:
-                primers = self.Options['ids_primers'][seq_label]
-        else:
-            primers = ids_primers['all_primers']
-
-        self._primers = primers
-
-    @requires(Option='local_align_forward_primer', Values=False)
+    ##### the requires are likely wrong here
     @requires(Option='max_primer_mismatch')
-    @requires(Option='retain_primer', Values=False)
     def _count_mismatches(self, item):
         """ """
         seq = item[SEQ_INDEX]
         qual = item[QUAL_INDEX]
+        
+        exp_primer = self.Mapping.getCategoryValue(self.FinalState['sample'],
+                                                   'LinkerPrimerSequence'))
+        len_primer = len(exp_primer)
+        obs_primer = seq[:len_primer]
+        
+        mismatches = _count_mismatches(obs_primer, exp_primer)
+        
+        if not self.Options['retain_primer']:
+            seq = seq[len_primer:]
+            qual = qual[len_primer:]
 
-        failed = True
-        for primer in self._primers:
-            exceeds_mismatch = count_mismatches(seq, primer,
-                                       self.Options['max_primer_mismatch'])
-            if not exceeds_mismatch:
-                self.Stats['exceeds_max_primer_mismatch'] += 1
-                if not retain_primer:
-                    seq = seq[len(primer):]
-                    qual = qual[len(primer):]
-                failed = False
-                break
-
-        ### should decompose this 
-        if failed:
+        if mismatches > self.Options['max_primer_mismatch']:
+            self.Failed = True
             self.Stats['max_primer_mismatch'] += 1
             self.Stats['exceeds_max_primer_mismatch'] = 1
-        else:
-            self.FinalState['fwd_primer'] = primer
-            self.FinalState['seq'] = seq
-        ###
+        
+        self.FinalState['fwd_primer'] = obs_primer
+        self.FinalState['seq'] = seq
 
+    ##### for truncating i believe, but isn't clear why we need to attempt to 
+    ##### align against all possible primers instead of just the one we expect
+
+    ### THIS IS STILL IN PROGRESS
     @requires(Option='local_align_forward_primer', Values=True)
     @requires(Option='max_primer_mismatch')
     def _local_align_forward_primer(self, item):
@@ -183,3 +226,5 @@ class SequenceWorkflow(Workflow):
             self.FinalState['fwd_primer'] = primer
             self.FinalState['seq'] = seq
             self.FinalState['qual'] = qual
+
+
