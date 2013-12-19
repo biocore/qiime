@@ -1607,13 +1607,8 @@ class SubSampleFastaTests(TestCase):
         # fixed seed for consistent calls with random()
         seed(128)
         
-        subsample_fasta(self.fasta_filepath, self.output_filepath,
-         percent_subsample = 0.50)
-    
-        self._files_to_remove.append(self.output_filepath)
-         
-        actual_results =\
-         [line.strip() for line in open(self.output_filepath, "U")]
+        actual_results = subsample_fasta(open(self.fasta_filepath, 'U'),
+                                         percent_subsample=0.50)
         
         self.assertEqual(actual_results, self.expected_lines_50_perc)
 
@@ -1622,17 +1617,10 @@ class SubSampleFastaTests(TestCase):
         
         seed(12210)
 
-        subsample_fasta(self.fasta_filepath, self.output_filepath,
-         percent_subsample = 0.20)
-    
-        self._files_to_remove.append(self.output_filepath)
+        actual_results = subsample_fasta(open(self.fasta_filepath, 'U'),
+                                         percent_subsample=0.20)
          
-        actual_results =\
-         [line.strip() for line in open(self.output_filepath, "U")]
-        
         self.assertEqual(actual_results, self.expected_lines_20_perc)
-
-
 
 
 class DistanceMatrixTests(TestCase):
@@ -2433,10 +2421,10 @@ ACAGAGAGACCC
 >seq4
 ACAGGAGACCGAGAAGA
 >seq5
-ACCAGAGACCGAGA""".split('\n')
+ACCAGAGACCGAGA"""
 
 expected_lines_20_perc = """>seq4
-ACAGGAGACCGAGAAGA""".split('\n')
+ACAGGAGACCGAGAAGA"""
 
 
 #run unit tests if run from command-line
