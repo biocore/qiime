@@ -1535,7 +1535,7 @@ def subsample_fasta(input_fasta,
                     percent_subsample):
     """ Writes random percent_sample of sequences from input fasta filepath
     
-    input_fasta: input cogent.parse.fasta.MinimalFastaParser object
+    input_fasta: FASTA lines or open file
     percent_subsample: percent of sequences to write
     """
     output_lines = []
