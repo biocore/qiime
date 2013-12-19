@@ -9,21 +9,21 @@ __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 __status__ = "Development"
 
-from qiime.util import parse_command_line_parameters, make_option, \
-    subsample_fastqs
+from qiime.util import (parse_command_line_parameters, make_option,
+                        subsample_fastqs)
 
 script_info={}
-script_info['brief_description']="""Randomly subsample sequences from two fastq\
- files"""
-script_info['script_description']="""Subsample the reads and barcode files of \
-a given file at the same time."""
+script_info['brief_description']=("Randomly subsample sequences from two "
+    "fastq files")
+script_info['script_description']=("Subsample the reads and barcode files of "
+    "a given file at the same time.")
 script_info['script_usage']=[]
 script_info['script_usage'].append(
-    ("""Example:""",
-    """Subsample seqs.fastq and seqs_barcodes.fastq to approximately 5%""",
-    """%prog -i $PWD/seqs.fastq -b $PWD/seqs_barcodes.fastq -p 0.05 """ +\
-    """-o $PWD/subsampled_seqs.fastq -u $PWD/barcodes_subsampled.fastq"""))
-script_info['output_description']=""""""
+    ("Example:",
+    "Subsample seqs.fastq and seqs_barcodes.fastq to approximately 5%",
+    "%prog -i $PWD/seqs.fastq -b $PWD/seqs_barcodes.fastq -p 0.05 "
+        "-o $PWD/subsampled_seqs.fastq -u $PWD/barcodes_subsampled.fastq"))
+script_info['output_description']= ""
 script_info['required_options']=[
     make_option('-i', '--input_fp', type='existing_filepath',
         help='Path to the fastq file.'),
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     barcodes_output_fp = opts.barcodes_output_fp
 
     if percent_subsample > 1 or percent_subsample <= 0:
-        raise ValueError, 'percent_subsample must be in range 0-1'
+        option_parser.error('percent_subsample must be in range 0-1')
 
     if not output_fp:
         in_file_basename, in_file_ext = splitext(split(input_fp)[1])
