@@ -9,8 +9,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
 
-from os.path import split, splitext
-
 from pyqi.core.command import (
     Command, CommandIn, CommandOut, ParameterCollection)
 
