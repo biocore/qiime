@@ -506,9 +506,14 @@ def write_log_file(output_dir,
         for len_data in fasta_report['same_seq_lens']:
             output_f.write("%s\t%s\n" % (len_data[0], len_data[1]))
 
+    # need to make an explicit check for true as there can be other non-boolean
+
+    # values stored under this key in the dictionary; this needs to be fixed
+
     if fasta_report['all_ids_found']:
         output_f.write("Sample ID in fasta sequences report\n")
-        if fasta_report['all_ids_found']:
+        if fasta_report['all_ids_found'] == True:
+
             output_f.write("All SampleIDs found in sequence labels.\n")
         else:
             output_f.write("The following SampleIDs were not found:\n")
@@ -517,7 +522,8 @@ def write_log_file(output_dir,
 
     if fasta_report['tree_subset']:
         output_f.write("Fasta label subset in tree tips report\n")
-        if fasta_report['tree_subset']:
+        if fasta_report['tree_subset'] == True:
+
             output_f.write("All fasta labels were a subset of tree tips.\n")
         else:
             output_f.write("The following labels were not in tree tips:\n")
@@ -526,13 +532,15 @@ def write_log_file(output_dir,
 
     if fasta_report['tree_exact_match']:
         output_f.write("Fasta label/tree tip exact match report\n")
-        if fasta_report['tree_exact_match'][0]:
+        if fasta_report['tree_exact_match'][0] == True:
+
             output_f.write("All fasta labels found in tree tips.\n")
         else:
             output_f.write("The following labels were not in tree tips:\n")
             for curr_label in fasta_report['tree_exact_match'][0]:
                 output_f.write("%s\n" % curr_label)
-        if fasta_report['tree_exact_match'][1]:
+        if fasta_report['tree_exact_match'][1] == True:
+
             output_f.write("All tree tips found in fasta labels.\n")
         else:
             output_f.write("The following tips were not in fasta labels:\n")
