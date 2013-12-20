@@ -1585,18 +1585,9 @@ class SubSampleFastaTests(TestCase):
         
         self.temp_dir = load_qiime_config()['temp_dir']
         
-        self.fasta_lines = fasta_lines
-        self.fasta_filepath = get_tmp_filename(
-            prefix='subsample_test_', suffix='.fasta')
-        self.fasta_file = open(self.fasta_filepath, "w")
-        self.fasta_file.write(self.fasta_lines)
-        self.fasta_file.close()
+        self.fasta_file = StringIO(fasta_lines)
         
-        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
-         suffix='.fasta')
-        
-        self._files_to_remove =\
-         [self.fasta_filepath]
+        self._files_to_remove = []
 
     def tearDown(self):
         remove_files(self._files_to_remove)
@@ -1607,7 +1598,7 @@ class SubSampleFastaTests(TestCase):
         # fixed seed for consistent calls with random()
         seed(128)
         
-        actual_results = subsample_fasta(open(self.fasta_filepath, 'U'),
+        actual_results = subsample_fasta(self.fasta_file,
                                          percent_subsample=0.50)
         
         self.assertEqual(actual_results, self.expected_lines_50_perc)
@@ -1617,7 +1608,7 @@ class SubSampleFastaTests(TestCase):
         
         seed(12210)
 
-        actual_results = subsample_fasta(open(self.fasta_filepath, 'U'),
+        actual_results = subsample_fasta(self.fasta_file,
                                          percent_subsample=0.20)
          
         self.assertEqual(actual_results, self.expected_lines_20_perc)
