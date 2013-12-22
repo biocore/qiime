@@ -10,13 +10,14 @@ from qiime.merge_mapping_files import merge_mapping_files
 
 __author__ = "Adam Robbins-Pianka"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Adam Robbins-Pianka"]
+__credits__ = ["Greg Caporaso", "Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
 
 class MergeMappingFilesTests(TestCase):
+
     """ Tests of the MergeMappingFiles script"""
     def setUp(self):
         self.m1 = StringIO(m1)
@@ -43,10 +44,14 @@ class MergeMappingFilesTests(TestCase):
             
     def test_merge_mapping_file_bad_duplicates(self):
         """merge_mapping_file: error raised when merging mapping files where same sample ids has different values """
-        self.assertRaises(ValueError,merge_mapping_files,[self.m1,self.m1_dup_bad])
+        self.assertRaises(
+            ValueError,
+            merge_mapping_files,
+            [self.m1,
+             self.m1_dup_bad])
 
     def test_merge_mapping_file_good_duplicates(self):
-        """merge_mapping_file: same sample ids merged correctly when they have mergable data 
+        """merge_mapping_file: same sample ids merged correctly when they have mergable data
         """
         actual = merge_mapping_files([self.m1,self.m1_dup_good])
 

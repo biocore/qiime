@@ -14,6 +14,7 @@ from cogent.util.unit_test import TestCase, main
 
 
 class FunctionTests(TestCase):
+
     """Tests of top-level functions"""
 
     def setUp(self):
@@ -25,9 +26,9 @@ sam3\t.44\t.66\t0""".split('\n')
     def test_pcoa(self):
         """ pcoa should throw no errors"""
         res = pcoa(self.distmtx_txt)
-        assert res # formatting tested elsewhere
+        assert res  # formatting tested elsewhere
 
 
-#run tests if called from command line
+# run tests if called from command line
 if __name__ == '__main__':
     main()
