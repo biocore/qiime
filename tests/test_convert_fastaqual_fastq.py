@@ -23,7 +23,9 @@ from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
                                            convert_fastaqual_fastq,
                                            get_filename_with_new_ext)
 
+
 class MakeFastqTests(TestCase):
+
     """ Unit tests for the convert_fastaqual_fastq.py module """
 
     def setUp(self):
@@ -31,11 +33,11 @@ class MakeFastqTests(TestCase):
 
         self.qual_file_path = get_tmp_filename(prefix='qual_', suffix='.qual')
         self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')
-        self.nolabel_qual_file_path = get_tmp_filename(prefix='qual_', 
+        self.nolabel_qual_file_path = get_tmp_filename(prefix='qual_',
                                                        suffix='.qual')
         self.noseq_qual_file_path = get_tmp_filename(prefix='qual_',
                                                      suffix='.qual')
-        
+
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
 
@@ -44,30 +46,30 @@ class MakeFastqTests(TestCase):
 
         fasta_file.write(fasta_test_string)
         fasta_file.close()
-        
-        #Error testing files
+
+        # Error testing files
         nolabel_qual_file = open(self.nolabel_qual_file_path, 'w')
         nolabel_qual_file.write(nolabel_qual_test_string)
         nolabel_qual_file.close()
         noseq_qual_file = open(self.noseq_qual_file_path, 'w')
         noseq_qual_file.write(noseq_qual_test_string)
         noseq_qual_file.close()
-        self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_',
-                                                     suffix = '/')
+        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+                                                     suffix='/')
         create_dir(self.read_only_output_dir)
         # Need read only directory to test errors for files written during
         # fastq/fasta iteration.
-        chmod(self.read_only_output_dir, 0555)
+        chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
-                                           suffix = '/')
+        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+                                           suffix='/')
         self.output_dir += sep
 
         create_dir(self.output_dir)
 
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)
-        
+
     def tearDown(self):
         if self._files_to_remove:
             remove_files(self._files_to_remove)
@@ -79,11 +81,12 @@ class MakeFastqTests(TestCase):
     def test_default_settings(self):
         """ Handles conversions with default settings """
         convert_fastq(self.fasta_file_path, self.qual_file_path,
-         output_directory=self.output_dir)
+                      output_directory=self.output_dir)
 
-        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
-                                                          '.fastq',
-                                                          self.output_dir)
+        actual_output_file_path = get_filename_with_new_ext(
+            self.fasta_file_path,
+            '.fastq',
+            self.output_dir)
 
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
@@ -94,12 +97,13 @@ class MakeFastqTests(TestCase):
 
     def test_full_fasta_headers(self):
         """ Properly retains full fasta headers """
-        convert_fastq(self.fasta_file_path, self.qual_file_path, \
-        full_fasta_headers = True, output_directory = self.output_dir)
+        convert_fastq(self.fasta_file_path, self.qual_file_path,
+                      full_fasta_headers=True, output_directory=self.output_dir)
 
-        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
-                                                          '.fastq',
-                                                          self.output_dir)
+        actual_output_file_path = get_filename_with_new_ext(
+            self.fasta_file_path,
+            '.fastq',
+            self.output_dir)
 
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
@@ -110,14 +114,14 @@ class MakeFastqTests(TestCase):
 
     def test_full_fasta_full_fastq(self):
         """ Properly writes labels to quality score headers """
-        convert_fastq(self.fasta_file_path, self.qual_file_path, \
-        full_fasta_headers = True, full_fastq = True, \
-        output_directory = self.output_dir)
+        convert_fastq(self.fasta_file_path, self.qual_file_path,
+                      full_fasta_headers=True, full_fastq=True,
+                      output_directory=self.output_dir)
 
-        actual_output_file_path=get_filename_with_new_ext(self.fasta_file_path,
-                                                          '.fastq',
-                                                          self.output_dir)
-
+        actual_output_file_path = get_filename_with_new_ext(
+            self.fasta_file_path,
+            '.fastq',
+            self.output_dir)
 
         actual_output_file = open(actual_output_file_path)
         actual_output = actual_output_file.read()
@@ -129,82 +133,81 @@ class MakeFastqTests(TestCase):
     def test_multiple_output_files(self):
         """ properly writes multiple fasta files for each sampleID"""
         convert_fastq(self.fasta_file_path, self.qual_file_path,
-                      multiple_output_files = True,
-                      output_directory = self.output_dir,
+                      multiple_output_files=True,
+                      output_directory=self.output_dir,
                       per_file_buffer_size=23)
 
-        sample_ids = [('PC.634', expected_fastq_634_default), 
-                ('PC.354', expected_fastq_354_default), 
-                ('PC.481', expected_fastq_481_default)]
+        sample_ids = [('PC.634', expected_fastq_634_default),
+                      ('PC.354', expected_fastq_354_default),
+                      ('PC.481', expected_fastq_481_default)]
         for sample_id, expected_output in sample_ids:
             actual_output_file_path = get_filename_with_new_ext(
-                                                    self.fasta_file_path,
-                                                    '_' + sample_id + '.fastq',
-                                                    self.output_dir)
+                self.fasta_file_path,
+                '_' + sample_id + '.fastq',
+                self.output_dir)
 
             actual_output_file = open(actual_output_file_path)
             actual_output = actual_output_file.read()
             actual_output_file.close()
             self._files_to_remove.append(actual_output_file_path)
-            
-            self.assertEquals(actual_output, expected_output) 
-            
+
+            self.assertEquals(actual_output, expected_output)
+
     def test_ascii_increment(self):
         """ Tests for proper range of ascii increments """
         self.assertRaises(ValueError, convert_fastq, self.fasta_file_path,
-         self.qual_file_path, ascii_increment=140, output_directory \
-         = self.output_dir)
+                          self.qual_file_path, ascii_increment=140, output_directory=self.output_dir)
         self.assertRaises(ValueError, convert_fastq, self.fasta_file_path,
-         self.qual_file_path, ascii_increment=10, output_directory = \
-         self.output_dir)
-        
+                          self.qual_file_path, ascii_increment=10, output_directory=
+                          self.output_dir)
+
     def test_fastq_output(self):
         """ Raises errors when can't write output file """
-        self.assertRaises(IOError, convert_fastq, self.fasta_file_path, \
-        self.qual_file_path, output_directory = self.read_only_output_dir )
-        
+        self.assertRaises(IOError, convert_fastq, self.fasta_file_path,
+                          self.qual_file_path, output_directory=self.read_only_output_dir)
+
     def test_qual_label(self):
         """ Raises error if mismatch between quality and fasta labels """
-        self.assertRaises(KeyError, convert_fastq, self.fasta_file_path, \
-        self.nolabel_qual_file_path, output_directory = self.output_dir)
-        
+        self.assertRaises(KeyError, convert_fastq, self.fasta_file_path,
+                          self.nolabel_qual_file_path, output_directory=self.output_dir)
+
     def test_qual_seq_length(self):
         """ Raises error if mismatch between length of fasta and qual scores """
-        self.assertRaises(KeyError, convert_fastq, self.fasta_file_path, \
-        self.noseq_qual_file_path, output_directory = self.output_dir)
-        
+        self.assertRaises(KeyError, convert_fastq, self.fasta_file_path,
+                          self.noseq_qual_file_path, output_directory=self.output_dir)
 
 
 class MakeFastaqualTests(TestCase):
+
     """ Unit tests for the convert_fastaqual_fastq.py module """
 
     def setUp(self):
         self._files_to_remove = []
-        
-        self.fasta_file_path = get_tmp_filename(prefix='fastq_', \
-        suffix='.fastq')
-        
+
+        self.fasta_file_path = get_tmp_filename(prefix='fastq_',
+                                                suffix='.fastq')
+
         fastq_file = open(self.fasta_file_path, 'w')
-        
+
         fastq_file.write(fastq_test_string)
         fastq_file.close()
-        
-        #Error testing files
+
+        # Error testing files
         false_fasta_file = '/'
         false_qual_file = '/'
-        self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_', \
-        suffix = '/')
+        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+                                                     suffix='/')
         create_dir(self.read_only_output_dir)
-        chmod(self.read_only_output_dir, 0555)
+        chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
-         suffix = '/')
+        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+                                           suffix='/')
         self.output_dir += sep
-        
+
         create_dir(self.output_dir)
-        
+
         self._files_to_remove.append(self.fasta_file_path)
-        
+
     def tearDown(self):
         if self._files_to_remove:
             remove_files(self._files_to_remove)
@@ -212,21 +215,21 @@ class MakeFastaqualTests(TestCase):
             rmtree(self.output_dir)
         if exists(self.read_only_output_dir):
             rmtree(self.read_only_output_dir)
-            
+
     def test_default_settings(self):
         """ Converting to fasta/qual files handles default settings """
         convert_fastaqual(self.fasta_file_path,
-                          output_directory = self.output_dir)
+                          output_directory=self.output_dir)
 
         actual_output_fasta_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '.fna',
-                                                self.output_dir)
+            self.fasta_file_path,
+            '.fna',
+            self.output_dir)
 
         actual_output_qual_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '.qual',
-                                                self.output_dir)
+            self.fasta_file_path,
+            '.qual',
+            self.output_dir)
 
         actual_output_fasta = open(actual_output_fasta_path)
         actual_output_qual = open(actual_output_qual_path)
@@ -236,24 +239,24 @@ class MakeFastaqualTests(TestCase):
         actual_output_qual.close()
         self._files_to_remove.append(actual_output_fasta_path)
         self._files_to_remove.append(actual_output_qual_path)
-        
+
         self.assertEquals(actual_fasta, expected_fasta_default_options)
         self.assertEquals(actual_qual, expected_qual_default_options)
-        
+
     def test_full_fasta_headers(self):
         """ Full headers written to fasta/qual files """
-        convert_fastaqual(self.fasta_file_path, full_fasta_headers = True,
-         output_directory = self.output_dir)
+        convert_fastaqual(self.fasta_file_path, full_fasta_headers=True,
+                          output_directory=self.output_dir)
 
         actual_output_fasta_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '.fna',
-                                                self.output_dir)
+            self.fasta_file_path,
+            '.fna',
+            self.output_dir)
 
         actual_output_qual_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '.qual',
-                                                self.output_dir)
+            self.fasta_file_path,
+            '.qual',
+            self.output_dir)
 
         actual_output_fasta = open(actual_output_fasta_path)
         actual_output_qual = open(actual_output_qual_path)
@@ -263,33 +266,33 @@ class MakeFastaqualTests(TestCase):
         actual_output_qual.close()
         self._files_to_remove.append(actual_output_fasta_path)
         self._files_to_remove.append(actual_output_qual_path)
-        
+
         self.assertEquals(actual_fasta, expected_fasta_full_fasta_headers)
         self.assertEquals(actual_qual, expected_qual_full_fasta_headers)
-        
+
     def test_multiple_output_files(self):
         """ Creates one file per sampleID for fasta/qual output """
-        convert_fastaqual(self.fasta_file_path, 
-                          multiple_output_files = True,
-                          output_directory = self.output_dir,
+        convert_fastaqual(self.fasta_file_path,
+                          multiple_output_files=True,
+                          output_directory=self.output_dir,
                           per_file_buffer_size=23)
 
-        sample_id_s = [('PC.634', expected_fasta_634_default, \
-        expected_qual_634_default), \
-                ('PC.354', expected_fasta_354_default, \
-                expected_qual_354_default), 
-                ('PC.481', expected_fasta_481_default, \
-                expected_qual_481_default)]
+        sample_id_s = [('PC.634', expected_fasta_634_default,
+                        expected_qual_634_default),
+                       ('PC.354', expected_fasta_354_default,
+                        expected_qual_354_default),
+                       ('PC.481', expected_fasta_481_default,
+                        expected_qual_481_default)]
         for sample_id, expected_fasta, expected_qual in sample_id_s:
             actual_output_fasta_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '_' + sample_id + '.fna',
-                                                self.output_dir)
+                self.fasta_file_path,
+                '_' + sample_id + '.fna',
+                self.output_dir)
 
             actual_output_qual_path = get_filename_with_new_ext(
-                                                self.fasta_file_path,
-                                                '_' + sample_id + '.qual',
-                                                self.output_dir)
+                self.fasta_file_path,
+                '_' + sample_id + '.qual',
+                self.output_dir)
 
             actual_output_fasta = open(actual_output_fasta_path)
             actual_output_qual = open(actual_output_qual_path)
@@ -299,45 +302,47 @@ class MakeFastaqualTests(TestCase):
             actual_output_qual.close()
             self._files_to_remove.append(actual_output_fasta_path)
             self._files_to_remove.append(actual_output_qual_path)
-            
+
             self.assertEquals(actual_fasta, expected_fasta)
             self.assertEquals(actual_qual, expected_qual)
-            
+
     def test_ascii_increment(self):
         """ Detects proper range of ascii increment """
-        self.assertRaises(ValueError, convert_fastaqual, self.fasta_file_path,\
-        ascii_increment=140, output_directory = self.output_dir)
-        
+        self.assertRaises(ValueError, convert_fastaqual, self.fasta_file_path,
+                          ascii_increment=140, output_directory=self.output_dir)
+
     def test_fastaqual_output(self):
         """ Raises error if cannot open output filepath """
-        self.assertRaises(IOError, convert_fastaqual, self.fasta_file_path, \
-           output_directory = self.read_only_output_dir)
-        
+        self.assertRaises(IOError, convert_fastaqual, self.fasta_file_path,
+                          output_directory=self.read_only_output_dir)
+
 
 class ConvertFastaqualTests(TestCase):
+
     """ Main function for testing input files, calling proper conversion """
+
     def setUp(self):
         self._files_to_remove = []
 
         self.qual_file_path = get_tmp_filename(prefix='qual_', suffix='.qual')
-        self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')        
-        
+        self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')
+
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
-        self.read_only_output_dir = get_tmp_filename(prefix = 'read_only_', \
-        suffix = '/')
+        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+                                                     suffix='/')
         create_dir(self.read_only_output_dir)
-        chmod(self.read_only_output_dir, 0555)
+        chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix = 'convert_fastaqual_fastq_',\
-         suffix = '/')
+        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+                                           suffix='/')
         self.output_dir += sep
 
         create_dir(self.output_dir)
 
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)
-    
+
     def tearDown(self):
         if self._files_to_remove:
             remove_files(self._files_to_remove)
@@ -345,37 +350,37 @@ class ConvertFastaqualTests(TestCase):
             rmtree(self.output_dir)
         if exists(self.read_only_output_dir):
             rmtree(self.read_only_output_dir)
-            
+
     def test_fasta_file(self):
         """ Raises error if cannot open fasta file """
-        self.assertRaises(IOError, convert_fastaqual_fastq, \
-        self.read_only_output_dir, self.qual_file_path)
-        
+        self.assertRaises(IOError, convert_fastaqual_fastq,
+                          self.read_only_output_dir, self.qual_file_path)
+
     def test_qual_file(self):
         """ Raises error if cannot open qual file """
-        self.assertRaises(IOError, convert_fastaqual_fastq, \
-        self.fasta_file_path, self.read_only_output_dir)
-        
+        self.assertRaises(IOError, convert_fastaqual_fastq,
+                          self.fasta_file_path, self.read_only_output_dir)
+
     def test_conversion_type(self):
         """ Raises error if incorrect conversion type used """
-        self.assertRaises(ValueError, convert_fastaqual_fastq, \
-        self.fasta_file_path, self.qual_file_path, conversion_type = 'soijdfl',\
-         output_directory = self.output_dir)
+        self.assertRaises(ValueError, convert_fastaqual_fastq,
+                          self.fasta_file_path, self.qual_file_path, conversion_type='soijdfl',
+                          output_directory=self.output_dir)
 
     def test_get_filename_with_new_ext(self):
         """ Tests proper function of the utility function. """
         test_paths = [('/from/root/test.xxx', 'test.yyy'),
                       ('../relative/path/test.xxx', 'test.yyy'),
                       ('/double/extension/in/filename/test.zzz.xxx',
-                                                            'test.zzz.yyy')]
+                       'test.zzz.yyy')]
 
         for input, exp_output in test_paths:
             exp_output = join(self.output_dir, exp_output)
 
             self.assertEquals(
-                    get_filename_with_new_ext(input, '.yyy', self.output_dir),
-                    exp_output)
-         
+                get_filename_with_new_ext(input, '.yyy', self.output_dir),
+                exp_output)
+
 fasta_test_string = '''>PC.634_1 FLP3FBN01ELBSX orig_bc=GCAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=1
 CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTTACCTCACCAACTAGCTAATGCGCCGCAGGTCCATCCATGTTCACGCCTTGATGGGCGCTTTAATATACTGAGCATGCGCTCTGTATACCTATCCGGTTTTAGCTACCGTTTCCAGCAGTTATCCCGGACACATGGGCTAGG
 >PC.634_2 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0

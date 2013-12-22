@@ -20,7 +20,9 @@ from cogent.util.unit_test import TestCase, main
 from qiime.compare_categories import compare_categories
 from qiime.util import get_qiime_temp_dir
 
+
 class CompareCategoriesTests(TestCase):
+
     """Tests for the compare_categories.py module."""
 
     def setUp(self):
@@ -92,7 +94,7 @@ class CompareCategoriesTests(TestCase):
         """Test compare_categories() on categorical methods/input."""
         for method in self.cat_methods:
             compare_categories(self.dm1_fp, self.map1_fp, method,
-                    self.cat_categories, self.num_perms, self.test_dir)
+                               self.cat_categories, self.num_perms, self.test_dir)
             results_fp = join(self.test_dir, '%s_results.txt' % method)
             self.files_to_remove.append(results_fp)
             results_f = open(results_fp, 'U')
@@ -106,7 +108,7 @@ class CompareCategoriesTests(TestCase):
         """Test compare_categories() on numeric methods/input."""
         for method in self.num_methods:
             compare_categories(self.dm1_fp, self.map1_fp, method,
-                    self.num_categories, self.num_perms, self.test_dir)
+                               self.num_categories, self.num_perms, self.test_dir)
             results_fp = join(self.test_dir, '%s_results.txt' % method)
             self.files_to_remove.append(results_fp)
             results_f = open(results_fp, 'U')
@@ -131,50 +133,50 @@ class CompareCategoriesTests(TestCase):
         # Non-numeric categories with BEST and Moran's I.
         for method in self.num_methods:
             self.assertRaises(TypeError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, self.cat_categories, self.num_perms,
-                    self.test_dir)
+                              self.map1_fp, method, self.cat_categories, self.num_perms,
+                              self.test_dir)
 
         # SampleID with all methods.
         for method in self.num_methods + self.cat_methods:
             self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, ['SampleID'], self.num_perms,
-                    self.test_dir)
+                              self.map1_fp, method, ['SampleID'], self.num_perms,
+                              self.test_dir)
 
         # Single category passed as a string instead of a list of string(s).
         for method in self.num_methods + self.cat_methods:
             self.assertRaises(TypeError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, 'SampleID', self.num_perms,
-                    self.test_dir)
+                              self.map1_fp, method, 'SampleID', self.num_perms,
+                              self.test_dir)
 
         # Non-symmetric/hollow distance matrix.
         for method in self.num_methods:
             self.assertRaises(ValueError, compare_categories,
-                    self.invalid_dm_fp, self.map1_fp, method,
-                    self.num_categories, self.num_perms, self.test_dir)
+                              self.invalid_dm_fp, self.map1_fp, method,
+                              self.num_categories, self.num_perms, self.test_dir)
         for method in self.cat_methods:
             self.assertRaises(ValueError, compare_categories,
-                    self.invalid_dm_fp, self.map1_fp, method,
-                    self.cat_categories, self.num_perms, self.test_dir)
+                              self.invalid_dm_fp, self.map1_fp, method,
+                              self.cat_categories, self.num_perms, self.test_dir)
 
         # Nonexistent category.
         for method in self.num_methods + self.cat_methods:
             self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, ['bar'], self.num_perms,
-                    self.test_dir)
+                              self.map1_fp, method, ['bar'], self.num_perms,
+                              self.test_dir)
 
         # Unique category values only.
         for method in self.cat_methods:
             self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, ['Unique'], self.num_perms,
-                    self.test_dir)
+                              self.map1_fp, method, ['Unique'], self.num_perms,
+                              self.test_dir)
 
         # Only a single category value.
         for method in self.cat_methods + self.num_methods:
             if method == 'best':
                 # BEST is okay with this type of category.
                 compare_categories(self.dm1_fp,
-                        self.map1_fp, method, ['Single'], self.num_perms,
-                        self.test_dir)
+                                   self.map1_fp, method, ['Single'], self.num_perms,
+                                   self.test_dir)
                 results_fp = join(self.test_dir, '%s_results.txt' % method)
                 self.files_to_remove.append(results_fp)
                 results_f = open(results_fp, 'U')
@@ -183,14 +185,14 @@ class CompareCategoriesTests(TestCase):
                 self.assertTrue(len(results) > 0)
             else:
                 self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                        self.map1_fp, method, ['Single'], self.num_perms,
-                        self.test_dir)
+                                  self.map1_fp, method, ['Single'], self.num_perms,
+                                  self.test_dir)
 
         # Bad number of permutations.
         for method in self.cat_methods:
             self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                    self.map1_fp, method, self.cat_categories, -42,
-                    self.test_dir)
+                              self.map1_fp, method, self.cat_categories, -42,
+                              self.test_dir)
 
         # Unrecognized method.
         self.assertRaises(ValueError, compare_categories, self.dm1_fp,

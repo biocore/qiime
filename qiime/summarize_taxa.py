@@ -2,8 +2,9 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski","Julia Goodrich", \
-               "Antonio Gonzalez Pena", "Jose Carlos Clemente Litran"]
+__credits__ = [
+    "Rob Knight", "Catherine Lozupone", "Justin Kuczynski", "Julia Goodrich",
+    "Antonio Gonzalez Pena", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -17,12 +18,13 @@ from optparse import OptionParser
 from string import strip
 from numpy import array
 
+
 def make_summary(otu_table,
                  level,
                  upper_percentage,
                  lower_percentage,
                  md_as_string=False,
-                 md_identifier="taxonomy"): 
+                 md_identifier="taxonomy"):
     """Returns taxonomy summary data
 
     header is a list of:
@@ -34,26 +36,27 @@ def make_summary(otu_table,
     header = ['Taxon']
     header.extend(otu_table.SampleIds)
 
-    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, 
-                                                              level, 
-                                                              "Other", 
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table,
+                                                              level,
+                                                              "Other",
                                                               md_as_string,
                                                               md_identifier)
 
     total_counts = float(sum([sum(i) for i in counts_by_consensus.values()]))
     taxonomy_summary = []
     for consensus, otu_counts in sorted(counts_by_consensus.items()):
-        if lower_percentage!=None and \
-                                otu_counts.sum()>lower_percentage*total_counts:
+        if lower_percentage is not None and \
+                otu_counts.sum() > lower_percentage * total_counts:
             continue
-        elif upper_percentage!=None and \
-                                otu_counts.sum()<upper_percentage*total_counts:
+        elif upper_percentage is not None and \
+                otu_counts.sum() < upper_percentage * total_counts:
             continue
         new_row = [(consensus)]
         new_row.extend(otu_counts)
         taxonomy_summary.append(new_row)
 
     return taxonomy_summary, header
+
 
 def sum_counts_by_consensus(otu_table,
                             level,
@@ -68,14 +71,14 @@ def sum_counts_by_consensus(otu_table,
     until the taxonomy string is of length level
     """
     if otu_table.ObservationMetadata is None:
-        raise ValueError, ("BIOM table does not contain any "
-                           "observation metadata (e.g., taxonomy)."
-                           " You can add metadata to it using the "
-                           "'biom add-metadata' command.")
-    
+        raise ValueError("BIOM table does not contain any "
+                         "observation metadata (e.g., taxonomy)."
+                         " You can add metadata to it using the "
+                         "'biom add-metadata' command.")
+
     result = {}
-    sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
-    
+    sample_map = dict([(s, i) for i, s in enumerate(otu_table.SampleIds)])
+
     # Define a function to process the metadata prior to summarizing - this
     # is more convenient than having to check md_as_string on every iteration
     # in the for loop below
@@ -88,9 +91,10 @@ def sum_counts_by_consensus(otu_table,
 
     for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
         if md_identifier not in otu_metadata:
-            raise KeyError, \
-             "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" % (md_identifier,otu_id)
-             
+            raise KeyError(
+                "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" %
+                (md_identifier, otu_id))
+
         consensus = process_md(otu_metadata[md_identifier])
         n_ranks = len(consensus)
         if n_ranks > level:
@@ -111,22 +115,23 @@ def sum_counts_by_consensus(otu_table,
 
     return result, sample_map
 
+
 def add_summary_mapping(otu_table,
-                        mapping, 
+                        mapping,
                         level,
                         md_as_string=False,
-                        md_identifier='taxonomy'): 
+                        md_identifier='taxonomy'):
     """Returns sample summary of sample counts by taxon
-    
+
     Summary is keyed by sample_id, valued by otu counts for each taxon
     Taxon order is a list of taxons where idx n corresponds to otu count idx n
     """
-    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, 
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table,
                                                               level,
                                                               "Other",
                                                               md_as_string,
                                                               md_identifier)
-    
+
     summary = defaultdict(list)
     for row in mapping:
         # grab otu idx if the sample exists, otherwise ignore it
@@ -141,4 +146,3 @@ def add_summary_mapping(otu_table,
     taxon_order = sorted(counts_by_consensus.keys())
 
     return summary, taxon_order
-
