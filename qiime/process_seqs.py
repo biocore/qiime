@@ -231,7 +231,7 @@ class SequenceWorkflow(Workflow):
         self._correct_hamming8(item)
 
         bc_errors = self.Options['max_bc_errors']
-        if self.FinalState['corrected_barcode_errors'] > bc_errors:
+        if self.FinalState['Corrected barcode errors'] > bc_errors:
             self.Failed = True
             self.Stats['exceeds_bc_errors'] += 1
     
@@ -242,12 +242,10 @@ class SequenceWorkflow(Workflow):
         self._correct_variable(item)
 
     @priority(90)
-    @requires(Option='min_seq_len')
+    @requires(Option='min_seq_len', ValidData=_has_qual)
     def wf_length_check(self, item):
         """Checks minimum sequence length"""
-        seq_id, seq, qual = item
-
-        if len(seq) < self.Options['min_seq_len']:
+        if len(item['Qual']) < self.Options['min_seq_len']:
             self.Failed = True
             self.Stats['min_seq_len'] += 1
 
@@ -272,27 +270,31 @@ class SequenceWorkflow(Workflow):
         self._correct_encoded_barcode(item, decode_hamming_8, 8)
 
     def _correct_encoded_barcode(self, item, method, bc_length):
-        putative_bc = item[SEQ_INDEX][:bc_length]
-        self.FinalState['original_barcode'] = putative_bc
+        if item['Barcode'] is not None:
+            putative_bc = item['Barcode']
+        else:
+            putative_bc = item['Sequence'][:bc_length]
+
+        self.FinalState['Original barcode'] = putative_bc
          
         if putative_bc in self.Barcodes:
-            self.FinalState['corrected_barcode_errors'] = 0
+            self.FinalState['Corrected barcode errors'] = 0
             final_bc = putative_bc
             sample = self.Barcodes.get(putative_bc, None)
         else:
             corrected, num_errors = method(putative_bc)
             final_bc = corrected
-            self.FinalState['corrected_barcode'] = corrected
-            self.FinalState['corrected_barcode_errors'] = num_errors
-            self.Stats['barcodes_corrected'] += 1
+            self.FinalState['Corrected barcode'] = corrected
+            self.FinalState['Corrected barcode errors'] = num_errors
+            self.Stats['Barcodes corrected'] += 1
             sample = self.Barcodes.get(corrected, None)
 
-        self.FinalState['final_barcode'] = final_bc
+        self.FinalState['Final barcode'] = final_bc
 
         if sample is None:
             self.Failed = True
         else:
-            self.FinalState['sample'] = sample
+            self.FinalState['Sample'] = sample
 
     def _init_final_state(self, item):
         """Reset final state"""
@@ -302,10 +304,10 @@ class SequenceWorkflow(Workflow):
     @requires(Option='max_primer_mismatch')
     def _count_primer_mismatches(self, item):
         """ """
-        seq = item[SEQ_INDEX]
-        qual = item[QUAL_INDEX]
+        seq = item['Sequence']
+        qual = item['Qual']
         
-        obs_barcode = self.FinalState['final_barcode']
+        obs_barcode = self.FinalState['Final barcode']
         len_barcode = len(obs_barcode)
 
         exp_primers = self.Primers[obs_barcode]
@@ -326,8 +328,8 @@ class SequenceWorkflow(Workflow):
             if qual is not None:
                 qual = qual[len_primer:]
         
-        self.FinalState['fwd_primer'] = obs_primer
-        self.FinalState['seq'] = seq
+        self.FinalState['Forward primer'] = obs_primer
+        self.FinalState['Sequence'] = seq
 
     ##### for truncating i believe, but isn't clear why we need to attempt to 
     ##### align against all possible primers instead of just the one we expect
@@ -337,8 +339,8 @@ class SequenceWorkflow(Workflow):
     @requires(Option='max_primer_mismatch')
     def _local_align_forward_primer(self, item):
         """ """
-        seq = item[SEQ_INDEX]
-        qual = item[QUAL_INDEX]
+        seq = item['Sequence']
+        qual = item['Qual']
         
         failed = True
         max_primer_mismatch = self.Options['max_primer_mismatch']
@@ -354,8 +356,6 @@ class SequenceWorkflow(Workflow):
             self.Stats['max_primer_mismatch'] += 1
             self.Stats['exceeds_max_primer_mismatch'] = 1
         else:
-            self.FinalState['fwd_primer'] = primer
-            self.FinalState['seq'] = seq
-            self.FinalState['qual'] = qual
-
-
+            self.FinalState['Forward primer'] = primer
+            self.FinalState['Sequence'] = seq
+            self.FinalState['Qual'] = qual
