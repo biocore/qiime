@@ -19,6 +19,7 @@ from biom.util import compute_counts_per_sample_stats
 from cogent.maths.stats.distribution import ndtri
 from numpy import empty, ones, sqrt, tensordot
 
+
 class EmptyTableError(Exception):
     pass
 
@@ -28,8 +29,9 @@ class EmptySampleError(Exception):
 
 
 class ObservationRichnessEstimator(object):
+
     """Class to estimate richness of samples in a table at varying depths.
-    
+
     This is the main class that users of this module will interact with. It
     handles computing estimates at points within a user-specified range, and
     collates these point estimates into an object that provides various output
@@ -95,7 +97,7 @@ class ObservationRichnessEstimator(object):
 
             for size in sizes:
                 exp_obs_count, std_err, ci_low, ci_high = point_estimator(size,
-                        confidence_level=confidence_level)
+                                                                          confidence_level=confidence_level)
                 results.addSampleEstimate(samp_id, size, exp_obs_count,
                                           std_err, ci_low, ci_high)
         return results
@@ -106,7 +108,7 @@ class ObservationRichnessEstimator(object):
         if stop is None:
             # Compute base sample size as stopping point.
             min_size, max_size, _, _, _ = compute_counts_per_sample_stats(
-                    self._biom_table)
+                self._biom_table)
             stop = int(max(2 * min_size, max_size))
 
         if start < 1 or num_steps < 1:
@@ -127,6 +129,7 @@ class ObservationRichnessEstimator(object):
 
 
 class AbstractPointEstimator(object):
+
     """Abstract class for a point estimator.
 
     A point estimator is concerned with a *single* sample's observation data
@@ -209,6 +212,7 @@ class AbstractPointEstimator(object):
 
 
 class Chao1MultinomialPointEstimator(AbstractPointEstimator):
+
     """Point estimator using the multinomial model and Chao1.
 
     Supports both interpolation/rarefaction and extrapolation by implementing
@@ -222,8 +226,8 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
         n = self.getTotalIndividualCount()
         self._cov_matrix = self._calculate_covariance_matrix(
-                self.getAbundanceFrequencyCounts(), n,
-                self.estimateFullRichness())
+            self.getAbundanceFrequencyCounts(), n,
+            self.estimateFullRichness())
 
         self._pd_matrix = ones((n, n))
 
@@ -241,7 +245,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
         """
         # S_est = S_obs + f_hat
         return self.getObservationCount() + \
-                self.estimateUnobservedObservationCount()
+            self.estimateUnobservedObservationCount()
 
     def __call__(self, size, confidence_level=0.95):
         if confidence_level <= 0 or confidence_level >= 1:
@@ -271,7 +275,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             for k in range(1, n + 1):
                 alpha_km = self._calculate_alpha_km(n, k, m)
                 estimate_acc += alpha_km * fk[k]
-                std_err_acc += (((1 - alpha_km)**2) * fk[k])
+                std_err_acc += (((1 - alpha_km) ** 2) * fk[k])
 
             estimate = s_obs - estimate_acc
 
@@ -287,7 +291,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
             try:
                 # Equation 9 in Colwell 2012.
                 estimate = s_obs + f_hat * (1 -
-                        (1 - (f1 / (n * f_hat))) ** m_star)
+                                            (1 - (f1 / (n * f_hat))) ** m_star)
             except ZeroDivisionError:
                 # This can happen if we have exactly one singleton and no
                 # doubletons, or no singletons and no doubletons.
@@ -451,6 +455,7 @@ class Chao1MultinomialPointEstimator(AbstractPointEstimator):
 
 
 class RichnessEstimatesResults(object):
+
     """Container to hold estimates results and provide output formatting.
 
     Currently only supports writing to a table, but may be able to create plots
@@ -484,7 +489,7 @@ class RichnessEstimatesResults(object):
             results = []
             for size in sorted(self._data[sample_id][1]):
                 estimate, std_err, ci_low, ci_high = \
-                        self._data[sample_id][1][size]
+                    self._data[sample_id][1][size]
                 results.append((size, estimate, std_err, ci_low, ci_high))
             return results
         else:
@@ -547,4 +552,4 @@ class RichnessEstimatesResults(object):
         for sample_id in sorted(self._data):
             estimates = self.getEstimates(sample_id)
             table_writer.writerows([[sample_id] + map(missing_f, row)
-                                     for row in estimates])
+                                    for row in estimates])

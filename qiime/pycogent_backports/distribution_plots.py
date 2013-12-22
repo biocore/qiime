@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Jai Ram Rideout"]
@@ -28,6 +28,7 @@ from matplotlib.patches import Polygon, Rectangle
 from matplotlib.pyplot import boxplot, figure
 from matplotlib.transforms import Bbox
 from numpy import arange, array, mean, random, sqrt, std
+
 
 def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
@@ -81,7 +82,7 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
             raise ValueError("Each value in each distribution must be a "
                              "number.")
 
-    _validate_x_values(x_values, x_tick_labels, len(distributions));
+    _validate_x_values(x_values, x_tick_labels, len(distributions))
 
     # Create a new figure to plot our data on, and then plot the distributions.
     result, plot_axes = _create_plot()
@@ -124,12 +125,13 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
     _set_figure_size(result, figure_width, figure_height)
     return result
 
+
 def generate_comparative_plots(plot_type, data, x_values=None,
-        data_point_labels=None, distribution_labels=None,
-        distribution_markers=None, x_label=None, y_label=None, title=None,
-        x_tick_labels_orientation='vertical', y_min=None, y_max=None,
-        whisker_length=1.5, error_bar_type='stdv', distribution_width=None,
-        figure_width=None, figure_height=None):
+                               data_point_labels=None, distribution_labels=None,
+                               distribution_markers=None, x_label=None, y_label=None, title=None,
+                               x_tick_labels_orientation='vertical', y_min=None, y_max=None,
+                               whisker_length=1.5, error_bar_type='stdv', distribution_width=None,
+                               figure_width=None, figure_height=None):
     """Returns a Figure containing plots grouped at points along the x-axis.
 
     Arguments:
@@ -194,10 +196,10 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         marker_type = 'colors'
     else:
         raise ValueError("Invalid plot type '%s'. Supported plot types are "
-                "'bar', 'scatter', or 'box'." % plot_type)
+                         "'bar', 'scatter', or 'box'." % plot_type)
 
     num_points, num_distributions = _validate_input(data, x_values,
-            data_point_labels, distribution_labels)
+                                                    data_point_labels, distribution_labels)
 
     # Create a list of matplotlib markers (colors or symbols) that can be used
     # to distinguish each of the distributions. If the user provided a list of
@@ -212,7 +214,7 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     # Now calculate where each of the data points will start on the x-axis.
     x_locations = _calc_data_point_locations(num_points, x_values)
     assert (len(x_locations) == num_points), "The number of x_locations " +\
-            "does not match the number of data points."
+        "does not match the number of data points."
 
     if distribution_width is None:
         # Find the smallest gap between consecutive data points and divide this
@@ -241,15 +243,15 @@ def generate_comparative_plots(plot_type, data, x_values=None,
                                                  point, distribution_markers):
             dist_location = x_pos + dist_offset
             distribution_plot_result = plotting_function(plot_axes, dist,
-                    dist_marker, distribution_width, dist_location,
-                    whisker_length, error_bar_type)
+                                                         dist_marker, distribution_width, dist_location,
+                                                         whisker_length, error_bar_type)
             dist_offset += distribution_width
 
     # Set up various plot options that are best set after the plotting is done.
     # The x-axis tick marks (one per data point) are centered on each group of
     # distributions.
     plot_axes.set_xticks(_calc_data_point_ticks(x_locations,
-            num_distributions, distribution_width, distribution_centered))
+                                                num_distributions, distribution_width, distribution_centered))
     _set_axes_options(plot_axes, title, x_label, y_label, x_values,
                       data_point_labels, x_tick_labels_orientation, y_min,
                       y_max)
@@ -274,10 +276,11 @@ def generate_comparative_plots(plot_type, data, x_values=None,
 
     return result
 
+
 def _validate_input(data, x_values, data_point_labels, distribution_labels):
     """Returns a tuple containing the number of data points and distributions
     in the data.
-    
+
     Validates plotting options to make sure they are valid with the supplied
     data.
     """
@@ -306,17 +309,18 @@ def _validate_input(data, x_values, data_point_labels, distribution_labels):
     _validate_x_values(x_values, data_point_labels, num_points)
 
     if (distribution_labels is not None and
-        len(distribution_labels) != num_distributions):
+            len(distribution_labels) != num_distributions):
         raise ValueError("The number of distribution labels must be equal "
                          "to the number of distributions.")
     return num_points, num_distributions
 
+
 def _validate_x_values(x_values, x_tick_labels, num_expected_values):
     """Validates the x values provided by the user, making sure they are the
     correct length and are all numbers.
-    
+
     Also validates the number of x-axis tick labels.
-    
+
     Raises a ValueError if these conditions are not met.
     """
     if x_values is not None:
@@ -332,6 +336,7 @@ def _validate_x_values(x_values, x_tick_labels, num_expected_values):
         if len(x_tick_labels) != num_expected_values:
             raise ValueError("The number of x-axis tick labels must match the "
                              "number of data points.")
+
 
 def _get_distribution_markers(marker_type, marker_choices, num_markers):
     """Returns a list of length num_markers of valid matplotlib colors or
@@ -369,6 +374,7 @@ def _get_distribution_markers(marker_type, marker_choices, num_markers):
             marker_choices.append(marker_cycle.next())
     return marker_choices[:num_markers]
 
+
 def _calc_data_point_locations(num_points, x_values=None):
     """Returns the x-axis location for each of the data points to start at.
 
@@ -398,27 +404,30 @@ def _calc_data_point_locations(num_points, x_values=None):
 
     return x_locs
 
+
 def _calc_data_point_ticks(x_locations, num_distributions, distribution_width,
                            distribution_centered):
     """Returns a 1D numpy array of x-axis tick positions.
 
     These positions will be centered on each data point.
-    
+
     Set distribution_centered to True for scatter and box plots because their
-    plot types naturally center over a given horizontal position. Bar charts 
+    plot types naturally center over a given horizontal position. Bar charts
     should use distribution_centered = False because the leftmost edge of a bar
     starts at a given horizontal position and extends to the right for the
     width of the bar.
     """
     dist_size = num_distributions - 1 if distribution_centered else\
-            num_distributions
+        num_distributions
     return x_locations + ((dist_size * distribution_width) / 2)
+
 
 def _create_plot():
     """Creates a plot and returns the associated Figure and Axes objects."""
     fig = figure()
     ax = fig.add_subplot(111)
     return fig, ax
+
 
 def _plot_bar_data(plot_axes, distribution, distribution_color,
                    distribution_width, x_position, whisker_length,
@@ -436,11 +445,12 @@ def _plot_bar_data(plot_axes, distribution, distribution_color,
             error_bar = std(distribution) / sqrt(len(distribution))
         else:
             raise ValueError("Invalid error bar type '%s'. Supported error "
-                    "bar types are 'stdv' and 'sem'." % error_bar_type)
+                             "bar types are 'stdv' and 'sem'." % error_bar_type)
         result = plot_axes.bar(x_position, avg, distribution_width,
                                yerr=error_bar, ecolor='black',
                                facecolor=distribution_color)
     return result
+
 
 def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
                        distribution_width, x_position, whisker_length,
@@ -455,6 +465,7 @@ def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
                                    marker=distribution_symbol, c='k')
     return result
 
+
 def _plot_box_data(plot_axes, distribution, distribution_color,
                    distribution_width, x_position, whisker_length,
                    error_bar_type):
@@ -463,11 +474,12 @@ def _plot_box_data(plot_axes, distribution, distribution_color,
 
     if len(distribution) > 0:
         result = plot_axes.boxplot([distribution], positions=[x_position],
-                                     widths=distribution_width,
-                                     whis=whisker_length)
+                                   widths=distribution_width,
+                                   whis=whisker_length)
         _color_box_plot(plot_axes, result, [distribution_color])
 
     return result
+
 
 def _color_box_plot(plot_axes, box_plot, colors):
     """Color boxes in the box plot with the specified colors.
@@ -512,6 +524,7 @@ def _color_box_plot(plot_axes, box_plot, colors):
                 median_y.append(median.get_ydata()[i])
                 plot_axes.plot(median_x, median_y, 'black')
 
+
 def _is_single_matplotlib_color(color):
     """Returns True if color is a single (not a list) mpl color."""
     single_color = False
@@ -527,6 +540,7 @@ def _is_single_matplotlib_color(color):
 
     return single_color
 
+
 def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
                       x_values=None, x_tick_labels=None,
                       x_tick_labels_orientation='vertical', y_min=None,
@@ -540,7 +554,7 @@ def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
         plot_axes.set_ylabel(y_label)
 
     if (x_tick_labels_orientation != 'vertical' and
-        x_tick_labels_orientation != 'horizontal'):
+            x_tick_labels_orientation != 'horizontal'):
         raise ValueError("Invalid orientation for x-axis tick labels: %s. "
                          "Valid orientations are 'vertical' or 'horizontal'."
                          % x_tick_labels_rotation)
@@ -557,14 +571,15 @@ def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
                                            rotation=x_tick_labels_orientation)
     else:
         labels = plot_axes.set_xticklabels(
-                    range(1, len(plot_axes.get_xticklabels()) + 1),
-                    rotation=x_tick_labels_orientation)
+            range(1, len(plot_axes.get_xticklabels()) + 1),
+            rotation=x_tick_labels_orientation)
 
     # Set the y-axis range if specified.
     if y_min is not None:
         plot_axes.set_ylim(bottom=float(y_min))
     if y_max is not None:
         plot_axes.set_ylim(top=float(y_max))
+
 
 def _create_legend(plot_axes, distribution_markers, distribution_labels,
                    marker_type):
@@ -592,6 +607,7 @@ def _create_legend(plot_axes, distribution_markers, distribution_labels,
     else:
         raise ValueError("Invalid marker_type: '%s'. marker_type must be "
                          "either 'colors' or 'symbols'." % marker_type)
+
 
 def _set_figure_size(fig, width=None, height=None):
     """Sets the plot figure size and makes room for axis labels, titles, etc.
