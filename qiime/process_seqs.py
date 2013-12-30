@@ -198,18 +198,12 @@ class SequenceWorkflow(Workflow):
         self.Primers = primers
 
     def _sanity_check(self):
-        name = self.__class__
+        name = self.__class__.__name__
         if not hasattr(self, 'Mapping'):
             raise AttributeError("%s is missing Mapping!" % name)
         
         if not isinstance(self.Mapping, MetadataMap):
             raise AttributeError("self.Mapping is not of type MetadataMap")
-
-        if not hasattr(self, 'Barcodes'):
-            raise AttributeError("%s does not have Barcodes!" % name)
-        
-        if not hasattr(self, 'Primers'):
-            raise AttributeError("%s does not have Primers!" % name)
 
     ### Start Workflow methods
 

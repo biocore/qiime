@@ -123,7 +123,9 @@ class requires(object):
         if Values is _missing:
             self.Values = option_exists
         elif not isinstance(Values, set):
-            if isinstance(Values, Iterable):
+            if isinstance(Values, str):
+                self.Values = Values
+            elif isinstance(Values, Iterable):
                 self.Values = set(Values)
             else:
                 self.Values = set([Values])
@@ -212,7 +214,6 @@ class Workflow(object):
         self.Stats = defaultdict(int)
         self.ShortCircuit = ShortCircuit
         self.Failed = False
-        self.FinalState = None
         self.Debug = Debug
 
         if self.Debug:
@@ -324,7 +325,8 @@ class Workflow(object):
             for f in workflow:
                 f(item)
 
-            if self.Failed and fail_callback is not None:
-                yield fail_callback(self)
+            if self.Failed: 
+                if fail_callback is not None:
+                    yield fail_callback(self)
             else:
                 yield success_callback(self)
