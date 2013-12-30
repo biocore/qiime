@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder"]
+__credits__ = ["Jens Reeder", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -110,7 +110,10 @@ def plot_rank_abundance_graphs(result_fp, sample_names, otu_table,
     # settings for all series
     ax.grid()
     ax.set_xlabel('Species rank')
-    ax.set_ylabel('Relative abundance')
+    if absolute_counts:
+        ax.set_ylabel('Absolute abundance')
+    else:
+        ax.set_ylabel('Relative abundance')
 
     if not x_linear_scale:
         ax.set_xscale('log')
