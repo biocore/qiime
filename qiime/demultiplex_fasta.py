@@ -10,7 +10,8 @@ __credits__ = [
     "Greg Caporaso",
     "Kyle Bittinger",
     "Jesse Stombaugh",
-    "Jens Reeder"]  # remember to add yourself
+    "Jens Reeder",
+    "Emily TerAvest"]  # remember to add yourself
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -666,7 +667,7 @@ def check_map(mapping_file,
     # SampleIDs, or header problems.
     if errors:
         raise ValueError("Errors found in mapping file, please check " +
-                         "mapping file with check_id_map.py")
+                         "mapping file with validate_mapping_file.py")
 
     return header, mapping_data
 

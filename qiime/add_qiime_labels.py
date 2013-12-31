@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -62,7 +62,7 @@ def check_mapping_data(mapping_data, headers, filename_column):
         sample_id_ix = headers.index("SampleID")
     except ValueError:
         raise ValueError("SampleID column not found in mapping file, please " +
-                         "check mapping file with check_id_map.py")
+                         "check mapping file with validate_mapping_file.py")
 
     try:
         filename_col_ix = headers.index(filename_column)

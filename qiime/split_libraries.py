@@ -33,7 +33,8 @@ __credits__ = [
     "Kyle Bittinger",
     "Jesse Stombaugh",
     "William Walters",
-    "Jens Reeder"]  # remember to add yourself
+    "Jens Reeder",
+    "Emily TerAvest"]  # remember to add yourself
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -309,7 +310,8 @@ def check_map(infile, disable_primer_check, barcode_type="golay_12",
 
     if errors:
         raise ValueError('Errors were found with mapping file, ' +
-                         'please run check_id_map.py to identify problems.')
+                         'please run validate_mapping_file.py to ' +
+                         'identify problems.')
 
     id_map = {}
 

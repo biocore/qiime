@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -31,7 +31,8 @@ def get_rev_primer_seqs(mapping_fp):
         for curr_err in errors:
             if curr_err.startswith("Duplicate SampleID"):
                 raise ValueError('Errors were found with mapping file, ' +
-                                 'please run check_id_map.py to identify problems.')
+                                 'please run validate_mapping_file.py to ' +
+                                 'identify problems.')
 
     # create dict of dicts with SampleID:{each header:mapping data}
 
@@ -60,7 +61,7 @@ def get_rev_primer_seqs(mapping_fp):
     for curr_err in errors:
         if curr_err.startswith("Invalid DNA sequence detected"):
             raise ValueError("Problems found with reverse primers, please " +
-                             "check mapping file with check_id_map.py")
+                             "check mapping file with validate_mapping_file.py")
 
     return reverse_primers
 
