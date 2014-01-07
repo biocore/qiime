@@ -64,9 +64,9 @@ For the purposes of this tutorial, we will use the mapping file :file:`Fasting_M
 
 Check Mapping File
 --------------------------------------------------------------------
-Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `check_id_map.py <../scripts/check_id_map.html>`_ script. Type: ::
+Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ script. Type: ::
 
-    check_id_map.py -m Fasting_Map.txt -o mapping_output
+    validate_mapping_file.py -m Fasting_Map.txt -o mapping_output
 
 This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
 

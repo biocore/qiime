@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "William Anton Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Anton Walters"]
+__credits__ = ["William Anton Walters", "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Anton Walters"
@@ -51,25 +51,25 @@ def get_mapping_details(mapping_fp,
             # Halt when header has error
             if curr_error.startswith("Found header field"):
                 raise ValueError('Error in mapping file, please validate '
-                                 'mapping file with check_id_map.py')
+                                 'mapping file with validate_mapping_file.py')
             elif curr_error.endswith(loc_bcs):
                 # Halt for barcode errors unless suppressed
                 if suppress_barcode_checks:
                     continue
                 else:
                     raise ValueError('Error in mapping file, please validate '
-                                     'mapping file with check_id_map.py')
+                                     'mapping file with validate_mapping_file.py')
             elif curr_error.endswith(loc_primers):
                 # Halt for primer errors unless suppressed
                 if suppress_primer_checks:
                     continue
                 else:
                     raise ValueError('Error in mapping file, please validate '
-                                     'mapping file with check_id_map.py')
+                                     'mapping file with validate_mapping_file.py')
             # Raise error on duplicate sample IDs
             elif curr_error.startswith("Duplicate SampleID"):
                 raise ValueError('Error in mapping file, please validate '
-                                 'mapping file with check_id_map.py')
+                                 'mapping file with validate_mapping_file.py')
 
     # create dict of dicts with SampleID:{each header:mapping data}
 
