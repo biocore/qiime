@@ -672,7 +672,7 @@ def run_script_usage_tests(test_data_dir,
         failure_log_f = open(failure_log_fp, 'w')
 
     script_tester = ScriptTester(failure_log_f=failure_log_f, verbose=verbose)
-    script_tester(scripts_dir, test_data_dir, working_dir, tests=tests,
+    script_tester(scripts_dir, test_data_dir, working_dir, scripts=tests,
             timeout=timeout, force_overwrite=force_overwrite)
     result_summary = script_tester.result_summary()
 
@@ -694,7 +694,7 @@ class ScriptTester(object):
         self.verbose = verbose
 
         self.total_scripts = 0
-        self.total_tests = 0
+        self.total_commands = 0
 
         self.successes = []
         self.failures = []
@@ -722,7 +722,7 @@ class ScriptTester(object):
 
     def result_summary(self):
         summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
-            self.total_tests,
+            self.total_commands,
             self.total_scripts,
             self.num_failures)
 
@@ -737,6 +737,14 @@ class ScriptTester(object):
 
         if self.num_failures > 0:
             summary += '\nFailed scripts were: %s' % " ".join(self.failed_scripts())
+
+        if self.missing_scripts:
+            summary += (
+                '\n%d scripts could not be loaded because they do not exist.\n'
+                'Missing scripts were: %s' % (len(self.missing_scripts),
+                                              " ".join(self.missing_scripts)))
+
+
         if self.failure_log_f:
             summary += "\nFailures are summarized in %s" % self.failure_log_f.name
 
@@ -748,32 +756,41 @@ class ScriptTester(object):
 
         return summary
 
-    def __call__(self, scripts_dir, test_data_dir, working_dir, tests=None,
+    def __call__(self, scripts_dir, test_data_dir, working_dir, scripts=None,
                  timeout=60, force_overwrite=False):
         test_data_dir = abspath(test_data_dir)
 
         if force_overwrite and exists(working_dir):
             rmtree(working_dir)
 
-        if tests is None:
-            tests = [split(d)[1] for d in
+        if scripts is None:
+            scripts = [split(d)[1] for d in
                      sorted(glob(join(test_data_dir, '*'))) if isdir(d)]
 
         if self.verbose:
-            print 'Tests to run:\n %s\n' % ' '.join(tests)
+            print 'Scripts to test:\n %s\n' % ' '.join(scripts)
 
         addsitedir(scripts_dir)
 
-        for test in tests:
+        for script_name in scripts:
             self.total_scripts += 1
 
             # import the usage examples - this is possible because we added
             # scripts_dir to the PYTHONPATH above
-            script_basename = test + '.py'
+            script_basename = script_name + '.py'
             script_fn = join(scripts_dir, script_basename)
 
+            if not exists(script_fn):
+                self.missing_scripts.append(script_basename)
+
+                msg = ('Script %s does not exist.' % script_basename)
+                if self.verbose:
+                    print msg
+                if self.failure_log_f:
+                    self.failure_log_f.write(msg + '\n')
+
             try:
-                script = __import__(test)
+                script = __import__(script_name)
             except ImportError as e:
                 #unloadable_scripts.append((script_basename))
                 #if verbose:
@@ -791,8 +808,8 @@ class ScriptTester(object):
                 print '\nTesting %d usage examples from: %s' % (len(usage_examples), script_fn)
 
             # init the test environment
-            test_input_dir = join(test_data_dir, test)
-            test_working_dir = join(working_dir, test)
+            test_input_dir = join(test_data_dir, script_name)
+            test_working_dir = join(working_dir, script_name)
             copytree(test_input_dir, test_working_dir)
             chdir(test_working_dir)
 
@@ -802,7 +819,7 @@ class ScriptTester(object):
 
             for usage_example in usage_examples:
                 if '%prog' not in usage_example[2]:
-                    msg = '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % test
+                    msg = '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % script_name
                     if self.verbose:
                         print msg
                     self.warnings.append(msg)
@@ -827,7 +844,7 @@ class ScriptTester(object):
         else:
             disable_timeout()
 
-        self.total_tests += 1
+        self.total_commands += 1
 
         if timed_out:
             self.timeouts.append(cmd)
