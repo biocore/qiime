@@ -27,27 +27,28 @@ from cogent.util.misc import get_random_directory_name, remove_files
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
                          QiimeParseError)
-from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
-                        extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
-                        raise_error_on_parallel_unavailable,
-                        convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
-                        summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
-                        idealfourths, isarray, matrix_IQR, degap_fasta_aln,
-                        write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-                        convert_otu_table_relative, write_seqs_to_fasta,
-                        split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
-                        split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-                        guess_even_sampling_depth, compute_days_since_epoch,
-                        get_interesting_mapping_fields, inflate_denoiser_output,
-                        flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
-                        count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
-                        iseq_to_qseq_fields, get_top_fastq_two_lines,
-                        make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
-                        subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
-                        get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
-                        RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
-                        qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-                        is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
+from qiime.util import (
+    make_safe_f, FunctionWithParams, qiime_blast_seqs,
+    extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
+    raise_error_on_parallel_unavailable,
+    convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
+    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
+    idealfourths, isarray, matrix_IQR, degap_fasta_aln,
+    write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
+    convert_otu_table_relative, write_seqs_to_fasta,
+    split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
+    split_fasta_on_sample_ids_to_files, median_absolute_deviation,
+    guess_even_sampling_depth, compute_days_since_epoch,
+    get_interesting_mapping_fields, inflate_denoiser_output,
+    flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
+    count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
+    iseq_to_qseq_fields, get_top_fastq_two_lines,
+    make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
+    subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
+    get_tmp_filename, load_qiime_config, DistanceMatrix, MetadataMap,
+    RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
+    qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
+    is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
 
 import numpy
 from numpy import array, asarray
@@ -60,7 +61,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
-               "Will Van Treuren", "Luke Ursell"]
+               "Will Van Treuren", "Luke Ursell", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -1660,19 +1661,10 @@ class SubSampleFastaTests(TestCase):
         self.expected_lines_20_perc = expected_lines_20_perc
 
         self.temp_dir = load_qiime_config()['temp_dir']
-
-        self.fasta_lines = fasta_lines
-        self.fasta_filepath = get_tmp_filename(
-            prefix='subsample_test_', suffix='.fasta')
-        self.fasta_file = open(self.fasta_filepath, "w")
-        self.fasta_file.write(self.fasta_lines)
-        self.fasta_file.close()
-
-        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
-                                                suffix='.fasta')
-
-        self._files_to_remove =\
-            [self.fasta_filepath]
+        
+        self.fasta_file = StringIO(fasta_lines)
+        
+        self._files_to_remove = []
 
     def tearDown(self):
         remove_files(self._files_to_remove)
@@ -1682,15 +1674,10 @@ class SubSampleFastaTests(TestCase):
 
         # fixed seed for consistent calls with random()
         seed(128)
-
-        subsample_fasta(self.fasta_filepath, self.output_filepath,
-                        percent_subsample=0.50)
-
-        self._files_to_remove.append(self.output_filepath)
-
-        actual_results =\
-            [line.strip() for line in open(self.output_filepath, "U")]
-
+        
+        actual_results = subsample_fasta(self.fasta_file,
+                                         percent_subsample=0.50)
+        
         self.assertEqual(actual_results, self.expected_lines_50_perc)
 
     def test_subsample_fasta_20(self):
@@ -1698,16 +1685,10 @@ class SubSampleFastaTests(TestCase):
 
         seed(12210)
 
-        subsample_fasta(self.fasta_filepath, self.output_filepath,
-                        percent_subsample=0.20)
-
-        self._files_to_remove.append(self.output_filepath)
-
-        actual_results =\
-            [line.strip() for line in open(self.output_filepath, "U")]
-
+        actual_results = subsample_fasta(self.fasta_file,
+                                         percent_subsample=0.20)
+         
         self.assertEqual(actual_results, self.expected_lines_20_perc)
-
 
 class DistanceMatrixTests(TestCase):
 
@@ -2525,10 +2506,10 @@ ACAGAGAGACCC
 >seq4
 ACAGGAGACCGAGAAGA
 >seq5
-ACCAGAGACCGAGA""".split('\n')
+ACCAGAGACCGAGA"""
 
 expected_lines_20_perc = """>seq4
-ACAGGAGACCGAGAAGA""".split('\n')
+ACAGGAGACCGAGAAGA"""
 
 
 # run unit tests if run from command-line

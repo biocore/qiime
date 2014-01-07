@@ -698,18 +698,16 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # Subsample the failures fasta file to retain (roughly) the
     # percent_subsample
-    step2_input_fasta_fp = \
-        '%s/subsampled_failures.fasta' % step1_dir
-    subsample_fasta(step1_failures_fasta_fp,
-                    step2_input_fasta_fp,
-                    percent_subsample)
+    step2_input_fasta_fp = '%s/subsampled_failures.fasta' % step1_dir
 
-    logger.write('# Subsample the failures fasta file using API \n' +
-                 'python -c "import qiime; qiime.util.subsample_fasta' +
-                 '(\'%s\', \'%s\', \'%f\')\n\n"' % (abspath(step1_failures_fasta_fp),
-                                                    abspath(
-                                                        step2_input_fasta_fp),
-                                                    percent_subsample))
+    with open(step2_input_fasta_fp, 'w') as f:
+        f.write(subsample_fasta(open(step1_failures_fasta_fp, 'U'),
+                                percent_subsample))
+
+    logger.write('# Subsample the failures fasta file using API \n'
+                 'python -c "import qiime; qiime.util.subsample_fasta'
+                 '(\'%s\', \'%f\')\n\n"' % (abspath(step1_failures_fasta_fp),
+                 percent_subsample))
 
     # Prep the OTU picking command for the subsampled failures
     step2_dir = '%s/step2_otus/' % output_dir
@@ -719,6 +717,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                                  denovo_otu_picking_method,
                                  params,
                                  logger)
+
     step2_otu_map_fp = '%s/subsampled_failures_otus.txt' % step2_dir
 
     commands.append([('Pick de novo OTUs for new clusters', step2_cmd)])

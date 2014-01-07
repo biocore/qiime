@@ -1595,27 +1595,20 @@ def _chk_asarray(a, axis):
     return a, outaxis
 
 
-def subsample_fasta(input_fasta_fp,
-                    output_fp,
+def subsample_fasta(input_fasta,
                     percent_subsample):
     """ Writes random percent_sample of sequences from input fasta filepath
-
-    input_fasta_fp: input fasta filepath
-    output_fp: output fasta filepath
+    
+    input_fasta: FASTA lines or open file
     percent_subsample: percent of sequences to write
     """
-
-    input_fasta = open(input_fasta_fp, "U")
-
-    output_fasta = open(output_fp, "w")
-
+    output_lines = []
+    
     for label, seq in MinimalFastaParser(input_fasta):
         if random() < percent_subsample:
-            output_fasta.write('>%s\n%s\n' % (label, seq))
-
-    input_fasta.close()
-    output_fasta.close()
-
+            output_lines.append('>%s\n%s' % (label, seq))
+    
+    return '\n'.join(output_lines)
 
 def subsample_fastq(input_fastq_fp,
                     output_fp,
