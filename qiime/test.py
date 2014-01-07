@@ -720,16 +720,6 @@ def run_script_usage_tests(test_data_dir,
         copytree(test_input_dir, test_working_dir)
         chdir(test_working_dir)
 
-        # remove pre-exisitng output files if any
-        try:
-            script_usage_output_to_remove = script.script_info[
-                'script_usage_output_to_remove']
-        except KeyError:
-            script_usage_output_to_remove = []
-        for e in script_usage_output_to_remove:
-            rmtree(e.replace('$PWD', getcwd()), ignore_errors=True)
-            remove_files([e.replace('$PWD', getcwd())], error_on_missing=False)
-
         if verbose:
             print 'Running tests in: %s' % getcwd()
             print 'Tests:'
