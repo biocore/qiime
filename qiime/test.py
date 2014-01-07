@@ -748,31 +748,12 @@ def run_script_usage_tests(test_data_dir,
         print ''
 
     num_scripts = len(tests)
-    num_missing = len(unloadable_scripts)
-
-    result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
-        script_tester.total_tests,
-        num_scripts,
-        script_tester.num_failures)
-
-    if unloadable_scripts:
-        result_summary += ('\n%d out of %d scripts could not be loaded. This '
-                'may have occurred because an existing test data directory '
-                'did not have a matching script to test, or an invalid script '
-                'name was provided in the list of scripts to test.\n' % (
-                num_missing, num_scripts))
-        result_summary += ('Missing scripts were: %s' %
-                           " ".join(unloadable_scripts))
-
-    if script_tester.num_failures > 0:
-        result_summary += '\nFailed scripts were: %s' % " ".join(script_tester.failed_scripts())
-    if failure_log_fp:
-        result_summary += "\nFailures are summarized in %s" % failure_log_fp
+    result_summary = script_tester.result_summary(num_scripts, failure_log_fp)
 
     if exists(working_dir):
         rmtree(working_dir)
 
-    return result_summary, script_tester.num_failures, num_missing
+    return result_summary, script_tester.num_failures
 
 
 class ScriptTester(object):
@@ -802,6 +783,28 @@ class ScriptTester(object):
             failed.append(self._parse_script_name(timeout))
 
         return set(failed)
+
+    def result_summary(self, num_scripts, failure_log_fp=None):
+        summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
+            self.total_tests,
+            num_scripts,
+            self.num_failures)
+
+        #if self.unloadable_scripts:
+        #    result_summary += ('\n%d out of %d scripts could not be loaded. This '
+        #            'may have occurred because an existing test data directory '
+        #            'did not have a matching script to test, or an invalid script '
+        #            'name was provided in the list of scripts to test.\n' % (
+        #            num_missing, num_scripts))
+        #    result_summary += ('Missing scripts were: %s' %
+        #                       " ".join(unloadable_scripts))
+
+        if self.num_failures > 0:
+            summary += '\nFailed scripts were: %s' % " ".join(self.failed_scripts())
+        if failure_log_fp:
+            summary += "\nFailures are summarized in %s" % failure_log_fp
+
+        return summary
 
     def run_command(self, cmd, timeout=60, verbose=False, failure_log_f=None):
         if verbose:
