@@ -104,16 +104,13 @@ def main():
             script_usage_tests = None
 
         # Run the script usage testing functionality
-        script_usage_result_summary, num_script_usage_example_failures = \
-            run_script_usage_tests(
-                test_data_dir=qiime_test_data_dir,
-                scripts_dir=get_qiime_scripts_dir(),
-                working_dir=qiime_config['temp_dir'],
-                verbose=True,
-                tests=script_usage_tests,
-                failure_log_fp=None,
-                force_overwrite=True,
-                timeout=240)
+        script_usage_result_summary, num_script_usage_example_failures, \
+                num_missing_scripts = run_script_usage_tests(
+                        test_data_dir=qiime_test_data_dir,
+                        scripts_dir=get_qiime_scripts_dir(),
+                        working_dir=qiime_config['temp_dir'],
+                        verbose=True, tests=script_usage_tests,
+                        failure_log_fp=None, force_overwrite=True, timeout=240)
 
     print "==============\nResult summary\n=============="
 

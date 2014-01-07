@@ -677,19 +677,34 @@ def run_script_usage_tests(test_data_dir,
                  for d in sorted(glob('%s/*' % test_data_dir)) if isdir(d)]
 
     if verbose:
-        print 'Tests to run:\n %s' % ' '.join(tests)
+        print 'Tests to run:\n %s\n' % ' '.join(tests)
 
     addsitedir(scripts_dir)
 
     failed_tests = []
+    unloadable_scripts = []
     warnings = []
     total_tests = 0
     for test in tests:
 
         # import the usage examples - this is possible because we added
         # scripts_dir to the PYTHONPATH above
-        script_fn = '%s/%s.py' % (scripts_dir, test)
-        script = __import__(test)
+        script_basename = test + '.py'
+        script_fn = join(scripts_dir, script_basename)
+
+        try:
+            script = __import__(test)
+        except ImportError as e:
+            unloadable_scripts.append((script_basename))
+            if verbose:
+                print ('Could not load the script \'%s\'. Please ensure that '
+                       'the file exists.\nOriginal error message:\n%s\n' %
+                       (script_fn, e))
+            continue
+        except:
+            print 'SDDFHDSFHSDFD'
+            continue
+
         usage_examples = script.script_info['script_usage']
 
         if verbose:
@@ -773,16 +788,30 @@ def run_script_usage_tests(test_data_dir,
             print ' ' + warning
         print ''
 
+    num_scripts = len(tests)
+    num_missing = len(unloadable_scripts)
+
     result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
         total_tests,
-        len(tests),
+        num_scripts,
         len(failed_tests))
+
+    if unloadable_scripts:
+        result_summary += ('\n%d out of %d scripts could not be loaded. This '
+                'may have occurred because an existing test data directory '
+                'did not have a matching script to test, or an invalid script '
+                'name was provided in the list of scripts to test.\n' % (
+                num_missing, num_scripts))
+        result_summary += ('Missing scripts were: %s' %
+                           " ".join(unloadable_scripts))
+
     if len(failed_tests) > 0:
         failed_scripts = set([split(e[0].split()[0])[1] for e in failed_tests])
         result_summary += '\nFailed scripts were: %s' % " ".join(failed_scripts)
     if failure_log_fp:
         result_summary += "\nFailures are summarized in %s" % failure_log_fp
 
-    rmtree(working_dir)
+    if exists(working_dir):
+        rmtree(working_dir)
 
-    return result_summary, len(failed_tests)
+    return result_summary, len(failed_tests), num_missing

@@ -9,6 +9,8 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
+sdflkjs
+
 from os.path import isdir
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
@@ -104,7 +106,7 @@ def main():
     create_dir(output_dir)
 
     add_qiime_labels(open(mapping_fp, "U"), fasta_dir, filename_column,
-                     output_dir, count_start)
+                     output_dir, count_start, foo)
 
 
 if __name__ == "__main__":
