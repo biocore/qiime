@@ -677,6 +677,8 @@ def run_script_usage_tests(test_data_dir,
     result_summary = script_tester.result_summary()
 
     if failure_log_f is not None:
+        if script_tester.num_failures == 0:
+            failure_log_f.write("All script usage tests passed.\n")
         failure_log_f.close()
 
     if exists(working_dir):
@@ -844,7 +846,7 @@ class ScriptTester(object):
             if self.verbose:
                 print msg
             if self.failure_log_f:
-                self.failure_log_f.write(cmd + msg + '\n')
+                self.failure_log_f.write(cmd + msg)
 
     def _parse_script_name(self, cmd):
         return split(cmd.split()[0])[1]
