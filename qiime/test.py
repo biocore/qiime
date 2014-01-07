@@ -664,91 +664,20 @@ def run_script_usage_tests(test_data_dir,
         This code was derived from qcli-0.1.0. The author of this function,
          Greg Caporaso, gives permission to include this GPL code in QIIME.
     """
-    # process input filepaths and directories
-    test_data_dir = abspath(test_data_dir)
     working_dir = join(working_dir, 'script_usage_tests')
 
-    if force_overwrite and exists(working_dir):
-        rmtree(working_dir)
-
-    if failure_log_fp:
+    failure_log_f = None
+    if failure_log_fp is not None:
         failure_log_fp = abspath(failure_log_fp)
         failure_log_f = open(failure_log_fp, 'w')
-    else:
-        failure_log_f = None
 
-    if tests is None:
-        tests = [split(d)[1]
-                 for d in sorted(glob('%s/*' % test_data_dir)) if isdir(d)]
+    script_tester = ScriptTester(failure_log_f=failure_log_f, verbose=verbose)
+    script_tester(scripts_dir, test_data_dir, working_dir, tests=tests,
+            timeout=timeout, force_overwrite=force_overwrite)
+    result_summary = script_tester.result_summary()
 
-    if verbose:
-        print 'Tests to run:\n %s\n' % ' '.join(tests)
-
-    addsitedir(scripts_dir)
-
-    unloadable_scripts = []
-    warnings = []
-    script_tester = ScriptTester()
-    for test in tests:
-
-        # import the usage examples - this is possible because we added
-        # scripts_dir to the PYTHONPATH above
-        script_basename = test + '.py'
-        script_fn = join(scripts_dir, script_basename)
-
-        try:
-            script = __import__(test)
-        except ImportError as e:
-            unloadable_scripts.append((script_basename))
-            if verbose:
-                print ('Could not load the script \'%s\'. Please ensure that '
-                       'the file exists.\nOriginal error message:\n%s\n' %
-                       (script_fn, e))
-            continue
-        except:
-            #print 'SDDFHDSFHSDFD'
-            continue
-
-        usage_examples = script.script_info['script_usage']
-
-        if verbose:
-            print '\nTesting %d usage examples from: %s' % (len(usage_examples), script_fn)
-
-        # init the test environment
-        test_input_dir = '%s/%s' % (test_data_dir, test)
-        test_working_dir = '%s/%s' % (working_dir, test)
-        copytree(test_input_dir, test_working_dir)
-        chdir(test_working_dir)
-
-        if verbose:
-            print 'Running tests in: %s' % getcwd()
-            print 'Tests:'
-
-        for usage_example in usage_examples:
-            if '%prog' not in usage_example[2]:
-                warnings.append(
-                    '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' %
-                    test)
-            cmd = usage_example[2].replace('%prog', script_fn)
-            script_tester.run_command(cmd, timeout=timeout, verbose=verbose,
-                                      failure_log_f=failure_log_f)
-
-        if verbose:
-            print ''
-
-    if failure_log_f:
-        if script_tester.num_failures == 0:
-            failure_log_f.write('All script interface tests passed.\n')
+    if failure_log_f is not None:
         failure_log_f.close()
-
-    if warnings:
-        print 'Warnings:'
-        for warning in warnings:
-            print ' ' + warning
-        print ''
-
-    num_scripts = len(tests)
-    result_summary = script_tester.result_summary(num_scripts, failure_log_fp)
 
     if exists(working_dir):
         rmtree(working_dir)
@@ -758,13 +687,18 @@ def run_script_usage_tests(test_data_dir,
 
 class ScriptTester(object):
 
-    def __init__(self):
+    def __init__(self, failure_log_f=None, verbose=False):
+        self.failure_log_f = failure_log_f
+        self.verbose = verbose
+
+        self.total_scripts = 0
         self.total_tests = 0
+
         self.successes = []
         self.failures = []
         self.timeouts = []
-
         self.warnings = []
+
         self.missing_scripts = []
         self.import_errors = []
         self.invalid_scripts = []
@@ -784,10 +718,10 @@ class ScriptTester(object):
 
         return set(failed)
 
-    def result_summary(self, num_scripts, failure_log_fp=None):
+    def result_summary(self):
         summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
             self.total_tests,
-            num_scripts,
+            self.total_scripts,
             self.num_failures)
 
         #if self.unloadable_scripts:
@@ -801,13 +735,84 @@ class ScriptTester(object):
 
         if self.num_failures > 0:
             summary += '\nFailed scripts were: %s' % " ".join(self.failed_scripts())
-        if failure_log_fp:
-            summary += "\nFailures are summarized in %s" % failure_log_fp
+        if self.failure_log_f:
+            summary += "\nFailures are summarized in %s" % self.failure_log_f.name
+
+        if self.warnings:
+            summary += '\nWarnings:\n'
+            for warning in self.warnings:
+                summary += ' ' + warning + '\n'
+            summary += '\n'
 
         return summary
 
-    def run_command(self, cmd, timeout=60, verbose=False, failure_log_f=None):
-        if verbose:
+    def __call__(self, scripts_dir, test_data_dir, working_dir, tests=None,
+                 timeout=60, force_overwrite=False):
+        test_data_dir = abspath(test_data_dir)
+
+        if force_overwrite and exists(working_dir):
+            rmtree(working_dir)
+
+        if tests is None:
+            tests = [split(d)[1] for d in
+                     sorted(glob(join(test_data_dir, '*'))) if isdir(d)]
+
+        if self.verbose:
+            print 'Tests to run:\n %s\n' % ' '.join(tests)
+
+        addsitedir(scripts_dir)
+
+        for test in tests:
+            self.total_scripts += 1
+
+            # import the usage examples - this is possible because we added
+            # scripts_dir to the PYTHONPATH above
+            script_basename = test + '.py'
+            script_fn = join(scripts_dir, script_basename)
+
+            try:
+                script = __import__(test)
+            except ImportError as e:
+                #unloadable_scripts.append((script_basename))
+                #if verbose:
+                #    print ('Could not load the script \'%s\'. Please ensure that '
+                #           'the file exists.\nOriginal error message:\n%s\n' %
+                #           (script_fn, e))
+                continue
+            except:
+                #print 'SDDFHDSFHSDFD'
+                continue
+
+            usage_examples = script.script_info['script_usage']
+
+            if self.verbose:
+                print '\nTesting %d usage examples from: %s' % (len(usage_examples), script_fn)
+
+            # init the test environment
+            test_input_dir = join(test_data_dir, test)
+            test_working_dir = join(working_dir, test)
+            copytree(test_input_dir, test_working_dir)
+            chdir(test_working_dir)
+
+            if self.verbose:
+                print 'Running tests in: %s' % getcwd()
+                print 'Tests:'
+
+            for usage_example in usage_examples:
+                if '%prog' not in usage_example[2]:
+                    msg = '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % test
+                    if self.verbose:
+                        print msg
+                    self.warnings.append(msg)
+
+                cmd = usage_example[2].replace('%prog', script_fn)
+                self._run_command(cmd, timeout)
+
+            if self.verbose:
+                print ''
+
+    def _run_command(self, cmd, timeout):
+        if self.verbose:
             print cmd,
 
         timed_out = False
@@ -825,21 +830,21 @@ class ScriptTester(object):
         if timed_out:
             self.timeouts.append(cmd)
             msg = ": Timed out"
-            if verbose:
+            if self.verbose:
                 print msg
-            if failure_log_f:
-                failure_log_f.write(cmd + msg + '\n')
+            if self.failure_log_f:
+                self.failure_log_f.write(cmd + msg + '\n')
         elif return_value == 0:
             self.successes.append(cmd)
-            if verbose:
+            if self.verbose:
                 print ": Pass"
         else:
             self.failures.append((cmd, stdout, stderr, return_value))
             msg = ": Failed\nStdout:\n%s\nStderr:\n%s\n" % (stdout, stderr)
-            if verbose:
+            if self.verbose:
                 print msg
-            if failure_log_f:
-                failure_log_f.write(cmd + msg + '\n')
+            if self.failure_log_f:
+                self.failure_log_f.write(cmd + msg + '\n')
 
     def _parse_script_name(self, cmd):
         return split(cmd.split()[0])[1]
