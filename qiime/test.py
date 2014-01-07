@@ -667,10 +667,15 @@ def run_script_usage_tests(test_data_dir,
     # process input filepaths and directories
     test_data_dir = abspath(test_data_dir)
     working_dir = join(working_dir, 'script_usage_tests')
+
     if force_overwrite and exists(working_dir):
         rmtree(working_dir)
-    if failure_log_fp is not None:
+
+    if failure_log_fp:
         failure_log_fp = abspath(failure_log_fp)
+        failure_log_f = open(failure_log_fp, 'w')
+    else:
+        failure_log_f = None
 
     if tests is None:
         tests = [split(d)[1]
@@ -681,10 +686,9 @@ def run_script_usage_tests(test_data_dir,
 
     addsitedir(scripts_dir)
 
-    failed_tests = []
     unloadable_scripts = []
     warnings = []
-    total_tests = 0
+    script_tester = ScriptTester()
     for test in tests:
 
         # import the usage examples - this is possible because we added
@@ -702,7 +706,7 @@ def run_script_usage_tests(test_data_dir,
                        (script_fn, e))
             continue
         except:
-            print 'SDDFHDSFHSDFD'
+            #print 'SDDFHDSFHSDFD'
             continue
 
         usage_examples = script.script_info['script_usage']
@@ -736,50 +740,15 @@ def run_script_usage_tests(test_data_dir,
                     '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' %
                     test)
             cmd = usage_example[2].replace('%prog', script_fn)
-            if verbose:
-                print '%s' % cmd,
-
-            timed_out = False
-            initiate_timeout(timeout)
-            try:
-                stdout, stderr, return_value = qcli_system_call(cmd)
-            except TimeExceededError:
-                timed_out = True
-            else:
-                disable_timeout()
-
-            total_tests += 1
-            if timed_out:
-                # Add a string instead of return_value - if fail_tests ever ends
-                # up being returned from this function we'll want to code this as
-                # an int for consistency in the return value type.
-                failed_tests.append((cmd, "", "", "None, time exceeded"))
-                if verbose:
-                    print ": Timed out"
-            elif return_value != 0:
-                failed_tests.append((cmd, stdout, stderr, return_value))
-                if verbose:
-                    print ": Failed\nStdout:\n%s\nStderr:\n%s\n" % \
-                        (stdout, stderr)
-            else:
-                pass
-                if verbose:
-                    print ": Pass"
+            script_tester.run_command(cmd, timeout=timeout, verbose=verbose,
+                                      failure_log_f=failure_log_f)
 
         if verbose:
             print ''
 
-    if failure_log_fp:
-        failure_log_f = open(failure_log_fp, 'w')
-        if len(failed_tests) == 0:
+    if failure_log_f:
+        if script_tester.num_failures == 0:
             failure_log_f.write('All script interface tests passed.\n')
-        else:
-            i = 1
-            for cmd, stdout, stderr, return_value in failed_tests:
-                failure_log_f.write(
-                    '**Failed test %d:\n%s\n\nReturn value: %s\n\nStdout:\n%s\n\nStderr:\n%s\n\n' %
-                    (i, cmd, str(return_value), stdout, stderr))
-                i += 1
         failure_log_f.close()
 
     if warnings:
@@ -792,9 +761,9 @@ def run_script_usage_tests(test_data_dir,
     num_missing = len(unloadable_scripts)
 
     result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
-        total_tests,
+        script_tester.total_tests,
         num_scripts,
-        len(failed_tests))
+        script_tester.num_failures)
 
     if unloadable_scripts:
         result_summary += ('\n%d out of %d scripts could not be loaded. This '
@@ -805,13 +774,79 @@ def run_script_usage_tests(test_data_dir,
         result_summary += ('Missing scripts were: %s' %
                            " ".join(unloadable_scripts))
 
-    if len(failed_tests) > 0:
-        failed_scripts = set([split(e[0].split()[0])[1] for e in failed_tests])
-        result_summary += '\nFailed scripts were: %s' % " ".join(failed_scripts)
+    if script_tester.num_failures > 0:
+        result_summary += '\nFailed scripts were: %s' % " ".join(script_tester.failed_scripts())
     if failure_log_fp:
         result_summary += "\nFailures are summarized in %s" % failure_log_fp
 
     if exists(working_dir):
         rmtree(working_dir)
 
-    return result_summary, len(failed_tests), num_missing
+    return result_summary, script_tester.num_failures, num_missing
+
+
+class ScriptTester(object):
+
+    def __init__(self):
+        self.total_tests = 0
+        self.successes = []
+        self.failures = []
+        self.timeouts = []
+
+        self.warnings = []
+        self.missing_scripts = []
+        self.import_errors = []
+        self.invalid_scripts = []
+        self.other_errors = []
+
+    @property
+    def num_failures(self):
+        return len(self.failures) + len(self.timeouts)
+
+    def failed_scripts(self):
+        failed = []
+
+        for failure in self.failures:
+            failed.append(self._parse_script_name(failure[0]))
+        for timeout in self.timeouts:
+            failed.append(self._parse_script_name(timeout))
+
+        return set(failed)
+
+    def run_command(self, cmd, timeout=60, verbose=False, failure_log_f=None):
+        if verbose:
+            print cmd,
+
+        timed_out = False
+        initiate_timeout(timeout)
+
+        try:
+            stdout, stderr, return_value = qcli_system_call(cmd)
+        except TimeExceededError:
+            timed_out = True
+        else:
+            disable_timeout()
+
+        self.total_tests += 1
+
+        if timed_out:
+            self.timeouts.append(cmd)
+            msg = ": Timed out"
+            if verbose:
+                print msg
+            if failure_log_f:
+                failure_log_f.write(cmd + msg + '\n')
+        elif return_value == 0:
+            self.successes.append(cmd)
+            if verbose:
+                print ": Pass"
+        else:
+            self.failures.append((cmd, stdout, stderr, return_value))
+            msg = ": Failed\nStdout:\n%s\nStderr:\n%s\n" % (stdout, stderr)
+            if verbose:
+                print msg
+            if failure_log_f:
+                failure_log_f.write(cmd + msg + '\n')
+
+    def _parse_script_name(self, cmd):
+        return split(cmd.split()[0])[1]
