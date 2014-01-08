@@ -109,8 +109,11 @@ def main():
                 test_data_dir=qiime_test_data_dir,
                 scripts_dir=get_qiime_scripts_dir(),
                 working_dir=qiime_config['temp_dir'],
-                verbose=True, tests=script_usage_tests,
-                failure_log_fp=None, force_overwrite=True, timeout=240)
+                verbose=True,
+                tests=script_usage_tests,
+                failure_log_fp=None,
+                force_overwrite=True,
+                timeout=240)
 
     print "==============\nResult summary\n=============="
 
