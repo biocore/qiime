@@ -16,6 +16,7 @@ from shutil import copytree, rmtree
 from glob import glob
 from site import addsitedir
 from tempfile import NamedTemporaryFile
+from traceback import format_exc
 from cogent.util.misc import remove_files
 from qcli.test import (TimeExceededError,
                        initiate_timeout,
@@ -658,8 +659,8 @@ def run_script_usage_tests(test_data_dir,
                            timeout=60):
     """ Test script_usage examples when test data is present in test_data_dir
 
-        Returns a result summary string and the number of script usage
-        examples (i.e. commands) that failed.
+        Returns a result summary string and a boolean indicating whether there
+        were any errors or failures while running the commands.
 
         This code was derived from qcli-0.1.0. The author of this function,
          Greg Caporaso, gives permission to include this GPL code in QIIME.
@@ -673,23 +674,53 @@ def run_script_usage_tests(test_data_dir,
 
     script_tester = ScriptTester(failure_log_f=failure_log_f, verbose=verbose)
     script_tester(scripts_dir, test_data_dir, working_dir, scripts=tests,
-            timeout=timeout, force_overwrite=force_overwrite)
+                  timeout=timeout, force_overwrite=force_overwrite)
     result_summary = script_tester.result_summary()
+    has_failures_or_errors = script_tester.has_failures_or_errors()
 
     if failure_log_f is not None:
-        if script_tester.num_failures == 0:
+        if not has_failures_or_errors:
             failure_log_f.write("All script usage tests passed.\n")
         failure_log_f.close()
 
     if exists(working_dir):
         rmtree(working_dir)
 
-    return result_summary, script_tester.num_failures
+    return result_summary, has_failures_or_errors
 
+class UsageExampleImportError(ImportError):
+    pass
 
 class ScriptTester(object):
+    """Harness for testing command-line scripts.
+
+    Given a directory of test data and a directory of scripts, this class
+    attempts to import usage examples from each script and run the example
+    commands using the corresponding test data.
+
+    Basic stats are collected, including script errors and failures. In this
+    context, a script error means that a problem has occurred while attempting
+    to load the script and its usage examples (for example, an ``ImportError``,
+    or an improperly-formatted script file). A failure means that a script was
+    successfully loaded, but when running a usage example, the command returned
+    an exit code that was not 0.
+
+    The class also imposes time limits for how long a command can be run; if a
+    command exceeds the allotted time, this is counted as a failure too.
+
+    """
 
     def __init__(self, failure_log_f=None, verbose=False):
+        """Initialize a script testing harness with the appropriate logging.
+
+        Arguments:
+        failure_log_f -- open filehandle that failure/error messages will be
+            written to. The user is responsible for opening and closing the
+            file
+        verbose -- if ``True``, information (including successes, failures,
+            errors, and warnings) will be written to stdout
+
+        """
         self.failure_log_f = failure_log_f
         self.verbose = verbose
 
@@ -701,63 +732,42 @@ class ScriptTester(object):
         self.timeouts = []
         self.warnings = []
 
-        self.missing_scripts = []
-        self.import_errors = []
-        self.invalid_scripts = []
-        self.other_errors = []
-
-    @property
-    def num_failures(self):
-        return len(self.failures) + len(self.timeouts)
-
-    def failed_scripts(self):
-        failed = []
-
-        for failure in self.failures:
-            failed.append(self._parse_script_name(failure[0]))
-        for timeout in self.timeouts:
-            failed.append(self._parse_script_name(timeout))
-
-        return set(failed)
-
-    def result_summary(self):
-        summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (
-            self.total_commands,
-            self.total_scripts,
-            self.num_failures)
-
-        #if self.unloadable_scripts:
-        #    result_summary += ('\n%d out of %d scripts could not be loaded. This '
-        #            'may have occurred because an existing test data directory '
-        #            'did not have a matching script to test, or an invalid script '
-        #            'name was provided in the list of scripts to test.\n' % (
-        #            num_missing, num_scripts))
-        #    result_summary += ('Missing scripts were: %s' %
-        #                       " ".join(unloadable_scripts))
-
-        if self.num_failures > 0:
-            summary += '\nFailed scripts were: %s' % " ".join(self.failed_scripts())
-
-        if self.missing_scripts:
-            summary += (
-                '\n%d scripts could not be loaded because they do not exist.\n'
-                'Missing scripts were: %s' % (len(self.missing_scripts),
-                                              " ".join(self.missing_scripts)))
-
-
-        if self.failure_log_f:
-            summary += "\nFailures are summarized in %s" % self.failure_log_f.name
-
-        if self.warnings:
-            summary += '\nWarnings:\n'
-            for warning in self.warnings:
-                summary += ' ' + warning + '\n'
-            summary += '\n'
-
-        return summary
+        # Maps script error type to a list of scripts that had the error, as
+        # well as a partial error message that is used by the error-reporting
+        # facilities of this class. See _format_script_error_summary.
+        self.script_errors = {
+            'missing': ([], 'be loaded because they do not exist'),
+            'import': ([], 'be imported'),
+            'usage': ([], 'have their usage examples loaded'),
+            'other': ([], 'be loaded')
+        }
 
     def __call__(self, scripts_dir, test_data_dir, working_dir, scripts=None,
                  timeout=60, force_overwrite=False):
+        """Run the test harness over the scripts in the provided directory.
+
+        This method may be called multiple times using the same
+        ``ScriptTester`` instance. This may be useful, for example, if you want
+        to use the same test harness to collate results for multiple scripts
+        directories and generate a single master report when finished.
+
+        This method does not return anything, as all results are recorded in
+        instance variables. Use ``ScriptTester.result_summary`` to generate a
+        summary report.
+
+        Arguments:
+        scripts_dir -- dirpath of scripts directory
+        test_data_dir -- dirpath of corresponding test data directory
+        working_dir -- dirpath where the tests will be run
+        scripts -- list of script names to test (without the ``.py``
+            extension). If not provided, all scripts that have test data in
+            ``test_data_dir`` will be tested
+        timeout -- time limit in seconds that a single script usage example
+            (command) can run before being halted as a failure
+        force_overwrite -- if ``True``, ``working_dir`` will be removed if it
+            already exists
+
+        """
         test_data_dir = abspath(test_data_dir)
 
         if force_overwrite and exists(working_dir):
@@ -777,35 +787,21 @@ class ScriptTester(object):
 
             # import the usage examples - this is possible because we added
             # scripts_dir to the PYTHONPATH above
-            script_basename = script_name + '.py'
-            script_fn = join(scripts_dir, script_basename)
-
-            if not exists(script_fn):
-                self.missing_scripts.append(script_basename)
-
-                msg = ('Script %s does not exist.' % script_basename)
-                if self.verbose:
-                    print msg
-                if self.failure_log_f:
-                    self.failure_log_f.write(msg + '\n')
-
             try:
-                script = __import__(script_name)
-            except ImportError as e:
-                #unloadable_scripts.append((script_basename))
-                #if verbose:
-                #    print ('Could not load the script \'%s\'. Please ensure that '
-                #           'the file exists.\nOriginal error message:\n%s\n' %
-                #           (script_fn, e))
-                continue
-            except:
-                #print 'SDDFHDSFHSDFD'
+                usage_examples = self._load_usage_examples(scripts_dir,
+                                                           script_name)
+            except UsageExampleImportError:
+                # _load_usage_examples has already taken care of
+                # recording/reporting the errors, so skip to the next script to
+                # test.
                 continue
 
-            usage_examples = script.script_info['script_usage']
+            script_fp = join(scripts_dir,
+                             self._append_script_extension(script_name))
 
             if self.verbose:
-                print '\nTesting %d usage examples from: %s' % (len(usage_examples), script_fn)
+                print ('\nTesting %d usage examples from: %s' %
+                       (len(usage_examples), script_fp))
 
             # init the test environment
             test_input_dir = join(test_data_dir, script_name)
@@ -819,16 +815,108 @@ class ScriptTester(object):
 
             for usage_example in usage_examples:
                 if '%prog' not in usage_example[2]:
-                    msg = '%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % script_name
+                    msg = ('%s usage examples do not all use %%prog to '
+                           'represent the command name. You may not be '
+                           'running the version of the command that you think '
+                           'you are!' % script_name)
                     if self.verbose:
                         print msg
                     self.warnings.append(msg)
 
-                cmd = usage_example[2].replace('%prog', script_fn)
+                cmd = usage_example[2].replace('%prog', script_fp)
                 self._run_command(cmd, timeout)
 
             if self.verbose:
                 print ''
+
+    def has_failures_or_errors(self):
+        """Return ``True`` if there's failures or errors in testing results.
+
+        Useful as an overall check to see if there were any problems with a
+        testing run. Status of warnings is ignored.
+
+        """
+        has_errors = False
+        for error_type, error_info in self.script_errors.iteritems():
+            if error_info[0]:
+                has_errors = True
+                break
+
+        return (self._num_failures() > 0) or has_errors
+
+    def result_summary(self):
+        """Return a summary string reporting various test results.
+
+        Includes failed scripts, as well as script errors stratified by error
+        type. Warnings are also included.
+
+        """
+        summary = ('Ran %d commands to test %d scripts. %d of these commands '
+                   'failed.' % (self.total_commands, self.total_scripts,
+                                self._num_failures()))
+
+        if self._num_failures() > 0:
+            summary += ('\nFailed scripts were: %s' %
+                        " ".join(self._failed_scripts()))
+
+        for error_type, error_info in self.script_errors.iteritems():
+            summary += self._format_script_error_summary(*error_info)
+
+        if self.failure_log_f:
+            summary += ('\nFailures and errors are summarized in %s' %
+                        self.failure_log_f.name)
+
+        if self.warnings:
+            summary += '\nWarnings:\n'
+            for warning in self.warnings:
+                summary += ' ' + warning + '\n'
+            summary += '\n'
+
+        return summary
+
+    def _load_usage_examples(self, scripts_dir, script_name):
+        script_basename = self._append_script_extension(script_name)
+        script_fp = join(scripts_dir, script_basename)
+
+        if not exists(script_fp):
+            msg = 'Script %s does not exist.\n' % script_basename
+            self._record_script_error(self.script_errors['missing'][0],
+                                      script_basename, msg)
+            raise UsageExampleImportError
+
+        try:
+            script = __import__(script_name)
+        except ImportError as e:
+            msg = ('Could not import the script %s. Original error '
+                   'message:\n\n%s' % (script_basename, format_exc()))
+            self._record_script_error(self.script_errors['import'][0],
+                                      script_basename, msg)
+            raise UsageExampleImportError
+        except Exception as e:
+            msg = ('Could not load the script %s. Original error '
+                   'message:\n\n%s' % (script_basename, format_exc()))
+            self._record_script_error(self.script_errors['other'][0],
+                                      script_basename, msg)
+            raise UsageExampleImportError
+
+        try:
+            usage_examples = script.script_info['script_usage']
+        except Exception:
+            msg = ('Could not load usage examples in script %s. Original '
+                   'error message:\n\n%s' % (script_basename, format_exc()))
+            self._record_script_error(self.script_errors['usage'][0],
+                                      script_basename, msg)
+            raise UsageExampleImportError
+
+        return usage_examples
+
+    def _record_script_error(self, error_list, script_basename, msg):
+        error_list.append(script_basename)
+
+        if self.verbose:
+            print msg
+        if self.failure_log_f:
+            self.failure_log_f.write(msg + '\n')
 
     def _run_command(self, cmd, timeout):
         if self.verbose:
@@ -864,6 +952,30 @@ class ScriptTester(object):
                 print msg
             if self.failure_log_f:
                 self.failure_log_f.write(cmd + msg)
+
+    def _num_failures(self):
+        return len(self.failures) + len(self.timeouts)
+
+    def _failed_scripts(self):
+        failed = set()
+
+        for failure in self.failures:
+            failed.add(self._parse_script_name(failure[0]))
+        for timeout in self.timeouts:
+            failed.add(self._parse_script_name(timeout))
+
+        return sorted(list(failed))
+
+    def _format_script_error_summary(self, error_list, msg):
+        if error_list:
+            return ('\n%d scripts could not %s. Scripts were: %s' %
+                    (len(error_list), msg, " ".join(error_list)))
+        else:
+            return ''
+
+    def _append_script_extension(self, script_name):
+        return script_name if script_name.endswith('.py') \
+                else script_name + '.py'
 
     def _parse_script_name(self, cmd):
         return split(cmd.split()[0])[1]
