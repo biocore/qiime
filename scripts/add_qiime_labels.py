@@ -9,8 +9,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
-sdflkjs
-
 from os.path import isdir
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
