@@ -104,7 +104,7 @@ def main():
     create_dir(output_dir)
 
     add_qiime_labels(open(mapping_fp, "U"), fasta_dir, filename_column,
-                     output_dir, count_start, foo)
+                     output_dir, count_start)
 
 
 if __name__ == "__main__":
