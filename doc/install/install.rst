@@ -76,6 +76,7 @@ The first are the core scientific python dependencies. The easiest way to instal
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * Numpy 1.5.1 - 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
 * MatPlotLib 1.1.0 - 1.3.1 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+* SciPy >= 0.13.0 (`src_scipy <https://pypi.python.org/packages/source/s/scipy/scipy-0.13.0.tar.gz>`_) (license: BSD)
 
 The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
@@ -85,6 +86,8 @@ The next are python packages not included in Canopy Express. Each of these can b
 * qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
+* pyqi (latest development version) (`src_pyqi <https://github.com/bipy/pyqi>`_) (license: BSD)
+* BiPy (latest development version) (`src_bipy <https://github.com/biocore/bipy>`_) (license: BSD)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions. 
 
