@@ -1,6 +1,6 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
-* SciPy >= 0.13.0 and latest development versions of pyqi and BiPy are now required dependencies for a QIIME base install.
+* SciPy >= 0.13.0, pyqi 0.3.1, and the latest development version of BiPy are now required dependencies for a QIIME base install.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

@@ -259,10 +259,9 @@ setup(name='qiime',
                         'matplotlib >= 1.1.0, <= 1.3.1', 'cogent == 1.5.3',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 1.3.1', 'emperor >= 0.9.3',
-                        'pyqi == 0.3.1-dev', 'bipy == 0.0.0-dev'],
+                        'pyqi == 0.3.1', 'bipy == 0.0.0-dev'],
       dependency_links=[
-          'git+https://github.com/bipy/pyqi.git#egg=pyqi-0.3.1-dev',
-          'git+https://github.com/biocore/bipy.git#egg=bipy-0.0.0-dev'
+          'https://github.com/biocore/bipy/archive/master.zip#egg=bipy-0.0.0-dev'
       ],
       extras_require={'all': ['ipython', 'sphinx >= 0.3']}
       )

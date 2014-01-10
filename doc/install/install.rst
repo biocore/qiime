@@ -86,7 +86,7 @@ The next are python packages not included in Canopy Express. Each of these can b
 * qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
-* pyqi (latest development version) (`src_pyqi <https://github.com/bipy/pyqi>`_) (license: BSD)
+* pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
 * BiPy (latest development version) (`src_bipy <https://github.com/biocore/bipy>`_) (license: BSD)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions. 
