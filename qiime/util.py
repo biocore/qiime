@@ -119,6 +119,11 @@ class FileFormatError(IOError):
     pass
 
 
+class ScriptsDirError(IOError):
+    """Exception for when the QIIME scripts directory cannot be found."""
+    pass
+
+
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
     def inner(*args, **kwargs):
@@ -323,26 +328,39 @@ def get_qiime_project_dir():
 
 
 def get_qiime_scripts_dir():
-    """ Returns the QIIME scripts directory
+    """Return the directory containing QIIME scripts.
 
-        This value must be stored in qiime_config if the user
-        has installed qiime using setup.py. If it is not in
-        qiime_config, it is inferred from the qiime_project_dir.
+    The scripts directory is inferred from the location of
+    print_qiime_config.py (equivalent to running ``which
+    print_qiime_config.py``). Will raise a ``ScriptsDirError`` if the scripts
+    directory cannot be determined.
+
+    Note: this function will likely not work on Windows.
+
+    Code taken and modified from:
+        http://www.velocityreviews.com/forums/t689526-python-library-call-equivalent-to-which-command.html
 
     """
-    qiime_config = load_qiime_config()
-    qiime_config_value = qiime_config['qiime_scripts_dir']
-    if qiime_config_value is not None:
-        result = qiime_config_value
-    else:
-        result = join(get_qiime_project_dir(), 'scripts')
+    scripts_dir = None
 
-    # assert exists(result),\
-    # "qiime_scripts_dir does not exist: %s." % result +\
-    # " Have you defined it correctly in your qiime_config?"
+    if 'PATH' in os.environ:
+        paths = os.environ['PATH']
 
-    return result
+        for path in paths.split(os.pathsep):
+            if os.access(os.path.join(path, 'print_qiime_config.py'), os.X_OK):
+                scripts_dir = path
+                break
 
+    if scripts_dir is None:
+        raise ScriptsDirError("Could not find the directory containing QIIME "
+                              "scripts. QIIME scripts must be accessible via "
+                              "the PATH environment variable, and they must "
+                              "be executable. Please ensure that you have a "
+                              "valid QIIME installation (see the QIIME "
+                              "Installation Guide: "
+                              "http://qiime.org/install/install.html).")
+
+    return scripts_dir
 
 def get_qiime_temp_dir():
     """ Returns the temp directory that should be used by QIIME scripts
