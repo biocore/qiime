@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,8 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 import os
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 from qiime.parse import parse_mapping_file
-from qiime.util import (create_dir,
-                        get_qiime_scripts_dir)
+from qiime.util import create_dir
 from qiime.workflow.util import (print_to_stdout,
                                  generate_log_fp,
                                  WorkflowLogger,
@@ -91,8 +91,6 @@ def run_ampliconnoise(mapping_fp,
     one_primer = primer_seqs[0]
 
     commands = []
-    python_exe_fp = qiime_config['python_exe_fp']
-    script_dir = get_qiime_scripts_dir()
 
     if logger is None:
         logger = WorkflowLogger(generate_log_fp(output_dir),
@@ -225,9 +223,8 @@ def run_ampliconnoise(mapping_fp,
                 sample_name + '_Good.fa'
             commands.append([('FilterGoodClass ' + sample_name, cmd)])
 
-        cmd = '%s %s/unweight_fasta.py -i %s -o %s -l %s' %\
-            (python_exe_fp, script_dir, fasta_result_names[i],
-             sample_name + '_unw.fna', sample_name)
+        cmd = 'unweight_fasta.py -i %s -o %s -l %s' %\
+            (fasta_result_names[i], sample_name + '_unw.fna', sample_name)
         commands.append([('unweight fasta ' + sample_name, cmd)])
 
     cmd = 'cat ' +\

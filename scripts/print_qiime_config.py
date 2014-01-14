@@ -564,9 +564,11 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         except (ApplicationNotFoundError, ApplicationError):
             pass_test = False
 
-        self.assertTrue(pass_test, "Denoiser flowgram aligner not found or not executable." +
-                        "This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
+        self.assertTrue(pass_test,
+                        "Denoiser flowgram aligner not found or not "
+                        "executable. This may or may not be a problem "
+                        "depending on which components of QIIME you plan to "
+                        "use.")
 
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """

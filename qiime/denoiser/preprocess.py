@@ -5,7 +5,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -23,7 +23,7 @@ from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
-from qiime.util import load_qiime_config, get_qiime_scripts_dir
+from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs
 from qiime.denoiser.flowgram_filter import cleanup_sff,\
     truncate_flowgrams_in_SFF, extract_barcodes_from_mapping
@@ -285,13 +285,8 @@ def preprocess_on_cluster(sff_fps, log_fp, fasta_fp=None, out_fp="/tmp/",
     primer: The primer sequences of the amplification process. This seq will be
             removed from all reads during the preprocessing
     """
-
-    qiime_config = load_qiime_config()
-    python_bin = qiime_config['python_exe_fp']
-
-    cmd = "%s %s/denoiser_preprocess.py -i %s -l %s -o %s" %\
-        (python_bin, get_qiime_scripts_dir(),
-         ",".join(sff_fps), log_fp, out_fp)
+    cmd = "denoiser_preprocess.py -i %s -l %s -o %s" %\
+        (",".join(sff_fps), log_fp, out_fp)
     if (fasta_fp):
         cmd += " -f %s" % fasta_fp
     if(squeeze):

@@ -29,7 +29,7 @@ from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          QiimeParseError)
 from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         extract_seqs_by_sample_id, get_qiime_project_dir,
-                        get_qiime_scripts_dir, matrix_stats,
+                        get_qiime_scripts_dir, which, matrix_stats,
                         raise_error_on_parallel_unavailable,
                         convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
                         summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
@@ -310,6 +310,15 @@ o4	seq6	seq7""".split('\n')
         # We can't do much testing of the observed value, but let's at least
         # check that the directory exists.
         self.assertTrue(isdir(obs))
+
+    def test_which(self):
+        """Test finding executable filepath based on ``PATH``."""
+        obs = which('ls')
+        self.assertTrue(obs is not None)
+        self.assertTrue(exists(obs))
+
+        obs = which('thiscommandhadbetternotexist')
+        self.assertTrue(obs is None)
 
     def test_matrix_stats1(self):
         """ matrix_stats should match mean, median, stdev calc'd by hand"""
