@@ -4,11 +4,11 @@
 Scripts - Analyses and Parameters
 ==================================
 
-All QIIME analyses are performed using python (.py) scripts, which are located in the your QIIME scripts directory. To access QIIME python scripts, this directory should be in your ``$PATH`` environment variable. You should have `set this up during installation <../install/install.html#set-script-dir>`_ (unless you're using the virtual box, in which case it was already set up).
+All QIIME analyses are performed using python (.py) scripts, which must be in a directory in your ``$PATH`` environment variable (see `the install guide <../install/install.html>`_ for more details).
 
-You can then call QIIME scripts as::
+You can run QIIME scripts as::
 
-	python align_seqs.py -h
+	align_seqs.py -h
 
 All QIIME scripts can take the ``-h`` option to provide usage information.
 

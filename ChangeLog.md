@@ -1,5 +1,7 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
+* QIIME is now even easier to install! Removed ``qiime_scripts_dir`` and ``python_exe_fp`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable.
+* Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
