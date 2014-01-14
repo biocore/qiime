@@ -4,15 +4,15 @@ from __future__ import division
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Daniel McDonald", "Greg Caporaso"]
+__credits__ = ["Daniel McDonald", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
 from qiime.util import make_option
-from qiime.util import parse_command_line_parameters,\
-    load_qiime_config, get_options_lookup, get_qiime_scripts_dir
+from qiime.util import (parse_command_line_parameters, load_qiime_config,
+                        get_options_lookup)
 from os import popen, system, makedirs, mkdir
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
@@ -48,10 +48,9 @@ script_info['optional_options'] = [
     make_option('-C', '--cluster', action='store_true', default=False,
                 help="Submit to a torque cluster"),
     make_option('-N', '--merge_otus_fp', action='store',
-                type='existing_filepath', help='full path to ' +
+                type='existing_filepath', help='path to ' +
                 'scripts/merge_otu_tables.py [default: %default]',
-                default=join(get_qiime_scripts_dir(), 'merge_otu_tables.py')),
-    options_lookup['python_exe_fp'],
+                default='merge_otu_tables.py'),
     options_lookup['seconds_to_sleep'],
     options_lookup['job_prefix']]
 script_info['version'] = __version__
@@ -82,7 +81,6 @@ def main():
         parse_command_line_parameters(**script_info)
 
     input_fps = opts.input_fps
-    python_exe_fp = opts.python_exe_fp
     output_dir = opts.output_dir
     merge_otus_fp = opts.merge_otus_fp
     seconds_to_sleep = opts.seconds_to_sleep
@@ -140,11 +138,11 @@ def main():
         # check if we have nodes to process, if so, shoot them off
         for node in to_process:
             if opts.cluster:
-                start_job(node, python_exe_fp, merge_otus_fp,
-                          qiime_config['torque_queue'], wrap_call=torque_job)
+                start_job(node, merge_otus_fp, qiime_config['torque_queue'],
+                          wrap_call=torque_job)
             else:
-                start_job(node, python_exe_fp, merge_otus_fp,
-                          qiime_config['torque_queue'], wrap_call=local_job)
+                start_job(node, merge_otus_fp, qiime_config['torque_queue'],
+                          wrap_call=local_job)
 
             wrapper_log_output.write(node.FullCommand)
             wrapper_log_output.write('\n')

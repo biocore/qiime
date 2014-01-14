@@ -698,9 +698,8 @@ def get_options_lookup():
                     default=qiime_config['jobs_to_start'])
     result['poller_fp'] =\
         make_option('-P', '--poller_fp', action='store',
-                    help='full path to ' +
-                    'qiime/parallel/poller.py [default: %default]',
-                    default=join(get_qiime_scripts_dir(), 'poller.py'))
+                    help='path to qiime/parallel/poller.py '
+                    '[default: %default]', default='poller.py')
     result['retain_temp_files'] =\
         make_option('-R', '--retain_temp_files', action='store_true',
                     help='retain temporary files after runs complete ' +
@@ -721,7 +720,7 @@ def get_options_lookup():
                     help='path to cluster jobs script (defined in qiime_config) ' +
                     ' [default: %default]',
                     default=qiime_config['cluster_jobs_fp'] or
-                    join(get_qiime_scripts_dir(), 'start_parallel_jobs.py'))
+                    'start_parallel_jobs.py')
     result['suppress_polling'] =\
         make_option('-W', '--suppress_polling', action='store_true',
                     help='suppress polling of jobs and merging of results ' +
@@ -730,10 +729,6 @@ def get_options_lookup():
     result['job_prefix'] =\
         make_option('-X', '--job_prefix', help='job prefix ' +
                     '[default: descriptive prefix + random chars]')
-    result['python_exe_fp'] =\
-        make_option('-Y', '--python_exe_fp',
-                    help='full path to python executable [default: %default]',
-                    default=qiime_config['python_exe_fp'])
     result['seconds_to_sleep'] =\
         make_option('-Z', '--seconds_to_sleep', type='int',
                     help='Number of seconds to sleep between checks for run ' +
