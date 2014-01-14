@@ -47,10 +47,6 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-C', '--cluster', action='store_true', default=False,
                 help="Submit to a torque cluster"),
-    make_option('-N', '--merge_otus_fp', action='store',
-                type='existing_filepath', help='path to ' +
-                'scripts/merge_otu_tables.py [default: %default]',
-                default='merge_otu_tables.py'),
     options_lookup['seconds_to_sleep'],
     options_lookup['job_prefix']]
 script_info['version'] = __version__
@@ -82,10 +78,10 @@ def main():
 
     input_fps = opts.input_fps
     output_dir = opts.output_dir
-    merge_otus_fp = opts.merge_otus_fp
     seconds_to_sleep = opts.seconds_to_sleep
     verbose = opts.verbose
 
+    merge_otus_serial_script = 'merge_otu_tables.py'
     created_temp_paths = []
 
     # set the job_prefix either based on what the user passed in,
@@ -138,11 +134,11 @@ def main():
         # check if we have nodes to process, if so, shoot them off
         for node in to_process:
             if opts.cluster:
-                start_job(node, merge_otus_fp, qiime_config['torque_queue'],
-                          wrap_call=torque_job)
+                start_job(node, merge_otus_serial_script,
+                          qiime_config['torque_queue'], wrap_call=torque_job)
             else:
-                start_job(node, merge_otus_fp, qiime_config['torque_queue'],
-                          wrap_call=local_job)
+                start_job(node, merge_otus_serial_script,
+                          qiime_config['torque_queue'], wrap_call=local_job)
 
             wrapper_log_output.write(node.FullCommand)
             wrapper_log_output.write('\n')

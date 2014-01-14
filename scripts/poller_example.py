@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jesse Stombaugh"]
+__credits__ = ["Greg Caporaso", "Jesse Stombaugh", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -51,7 +51,6 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     options_lookup['poller_fp'],
-    options_lookup['python_exe_fp'],
     make_option('-c', '--suppress_custom_functions',
                 action='store_true', help='use the default functions for ' +
                 'checking run completion, processing results, and ' +
@@ -102,7 +101,6 @@ def write_poller_files(polled_dir):
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     poller_fp = opts.poller_fp
-    python_exe_fp = opts.python_exe_fp
     polled_dir = opts.polled_dir
     suppress_custom_functions = opts.suppress_custom_functions
 
@@ -111,9 +109,8 @@ def main():
 
     if not suppress_custom_functions:
         print 'Polling directory:\n %s' % polled_dir
-        command = '%s %s -r %s -f %s -p %s -m %s -c %s -d %s -t 5' %\
-            (python_exe_fp,
-             poller_fp,
+        command = '%s -r %s -f %s -p %s -m %s -c %s -d %s -t 5' %\
+            (poller_fp,
              'qiime.parallel.poller.verbose_check_run_complete_f',
              check_run_complete_fp,
              'qiime.parallel.poller.verbose_process_run_results_f',
@@ -124,9 +121,8 @@ def main():
         system(command)
     else:
         print 'Polling directory:\n %s' % polled_dir
-        command = '%s %s -f %s -m %s -d %s -t 5' %\
-            (python_exe_fp,
-             poller_fp,
+        command = '%s -f %s -m %s -d %s -t 5' %\
+            (poller_fp,
              check_run_complete_fp,
              process_run_results_fp,
              clean_up_fp)
