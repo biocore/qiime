@@ -256,10 +256,10 @@ setup(name='qiime',
       keywords=['bioinformatics', 'microbiome', 'microbiology', 'qiime'],
       platforms=['MacOS', 'Linux'],
       install_requires=['numpy >= 1.5.1, <= 1.7.1',
-                        'matplotlib >= 1.1.0, <= 1.3.1', 'cogent == 1.5.3',
+                        'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 1.3.1', 'emperor >= 0.9.3',
-                        'pyqi == 0.3.1', 'bipy == 0.0.0-dev'],
+                        'bipy == 0.0.0-dev'],
       dependency_links=[
           'https://github.com/biocore/bipy/archive/master.zip#egg=bipy-0.0.0-dev'
       ],

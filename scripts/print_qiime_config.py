@@ -861,7 +861,7 @@ def main():
         ("biom-format version", biom_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
-        ("BiPy version", bipy_lib_version),
+        ("bipy version", bipy_lib_version),
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
         ("PyNAST version (if installed)", pynast_lib_version),
