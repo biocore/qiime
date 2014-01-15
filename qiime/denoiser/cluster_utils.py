@@ -5,7 +5,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -21,7 +21,7 @@ from asynchat import async_chat
 from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
 from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_qiime_temp_dir
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 
 
 def submit_jobs(commands, prefix):
@@ -65,13 +65,7 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
     error_profile: filepath to the error profiles, passed to workers
 
 """
-
-    qiime_config = load_qiime_config()
-    DENOISE_WORKER = join(get_qiime_scripts_dir(), "denoiser_worker.py")
-    CLOUD_DISPATCH = join(get_qiime_scripts_dir(), "ec2Dispatch")
-    CLOUD_ENV = qiime_config['cloud_environment']
-    CLOUD = not CLOUD_ENV == "False"
-
+    DENOISE_WORKER = "denoiser_worker.py"
     workers = []
     client_sockets = []
     # somewhat unique id for cluster job
@@ -83,12 +77,7 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
     for i in range(num_cpus):
         name = outdir + ("/%sworker%d" % (tmpname, i))
         workers.append(name)
-        if CLOUD:
-            cmd = "%s %d %s %s -f %s -s %s -p %s" % (CLOUD_DISPATCH, i + 1, qiime_config['python_exe_fp'],
-                                                     DENOISE_WORKER, name, host, port)
-        else:
-            cmd = "%s %s -f %s -s %s -p %s" % (qiime_config['python_exe_fp'],
-                                               DENOISE_WORKER, name, host, port)
+        cmd = "%s -f %s -s %s -p %s" % (DENOISE_WORKER, name, host, port)
 
         if verbose:
             cmd += " -v"

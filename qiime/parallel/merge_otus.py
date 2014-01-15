@@ -8,7 +8,7 @@ import os
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Daniel McDonald", "Greg Caporaso"]
+__credits__ = ["Daniel McDonald", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -148,15 +148,14 @@ def local_job(cmd, pollpath, name, queue):
     return to_submit
 
 
-def start_job(node, python_exe_fp, merge_otus_fp, queue,
-              wrap_call=torque_job, submit=True):
+def start_job(node, merge_otus_fp, queue, wrap_call=torque_job, submit=True):
     """Starts a process"""
-    strfmt = {'Python': python_exe_fp, 'MergeOTUs': merge_otus_fp,
+    strfmt = {'MergeOTUs': merge_otus_fp,
               'Output': node.FilePath,
               'BIOM_A': node.Children[0].FilePath,
               'BIOM_B': node.Children[1].FilePath}
 
-    cmd = "%(Python)s %(MergeOTUs)s -i %(BIOM_A)s,%(BIOM_B)s -o %(Output)s"
+    cmd = "%(MergeOTUs)s -i %(BIOM_A)s,%(BIOM_B)s -o %(Output)s"
     wrapped = wrap_call(cmd % strfmt, node.PollPath, node.Name, queue)
 
     if submit:

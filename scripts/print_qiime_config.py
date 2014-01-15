@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# File created on 09 Feb 2010
 from __future__ import division
 
 __author__ = "Jens Reeder"
@@ -40,6 +39,7 @@ try:
                             get_qiime_project_dir,
                             parse_command_line_parameters,
                             get_qiime_library_version,
+                            get_qiime_scripts_dir,
                             get_rdp_jarpath,
                             get_java_version,
                             get_pynast_version,
@@ -162,56 +162,34 @@ class QIIMEConfig(TestCase):
         test_qiime_config_variable("template_alignment_lanemask_fp",
                                    self.config, self)
 
-    def test_qiime_scripts_dir(self):
-        """qiime_scripts_dir, if set, is set to a valid path"""
-
-        scripts_dir = self.config["qiime_scripts_dir"]
-
-        if scripts_dir:
-            self.assertTrue(exists(scripts_dir),
-                            "qiime_scripts_dir does not exist: %s" % scripts_dir)
-            self.assertTrue(isdir(scripts_dir),
-                            "qiime_scripts_dir is not a directory: %s" % scripts_dir)
-        else:
-            pass
-            #self.fail("scripts_dir is not set.")
+    def test_get_qiime_scripts_dir(self):
+        """Test that we can find the directory containing QIIME scripts."""
+        # get_qiime_scripts_dir will raise an error if it can't find a scripts
+        # directory.
+        scripts_dir = get_qiime_scripts_dir()
+        self.assertTrue(isdir(scripts_dir), "The QIIME scripts directory does "
+                        "not exist: %s" % scripts_dir)
 
     def test_temp_dir(self):
-        """temp_dir, if set, is set to a valid path"""
+        """temp_dir is set to a valid path"""
+        temp_dir = get_qiime_temp_dir()
 
-        temp_dir = self.config["temp_dir"]
-
-        if temp_dir:
-            self.assertTrue(exists(temp_dir),
-                            "temp_dir does not exist: %s" % temp_dir)
-            self.assertTrue(isdir(temp_dir),
-                            "temp_dir is not a directory: %s" % temp_dir)
-        else:
-            pass
-            #self.fail("temp_dir is not set.")
-
-    def test_working_dir(self):
-        """working_dir, if set, is set to a valid path"""
-
-        working_dir = self.config["working_dir"]
-
-        if working_dir:
-            self.assertTrue(exists(working_dir),
-                            "working dir does not exist: %s" % working_dir)
-            self.assertTrue(isdir(working_dir),
-                            "working_dir is not a directory: %s" % working_dir)
-            self.assertTrue(access(working_dir, W_OK),
-                            "working_dir not writable: %s" % working_dir)
-        else:
-            pass
-            #self.fail("working_dir is not set.")
+        self.assertTrue(exists(temp_dir),
+                        "temp_dir does not exist: %s" % temp_dir)
+        self.assertTrue(isdir(temp_dir),
+                        "temp_dir is not a directory: %s" % temp_dir)
+        self.assertTrue(access(temp_dir, W_OK),
+                        "temp_dir is not writable: %s" % temp_dir)
 
     # we are not testing these values from the qiime_config:
     # jobs_to_start   1
     # seconds_to_sleep        60
 
-    def test_for_obsolete_values(self):
-        """local qiime_config has no extra params"""
+    def test_for_unrecognized_values(self):
+        """qiime_config has no extra values"""
+        error_msg_fragment = (" contains unrecognized values:\n%s\nYou can "
+                              "safely remove these values from your QIIME "
+                              "config file as they will be ignored by QIIME.")
 
         qiime_project_dir = get_qiime_project_dir()
         orig_config = parse_qiime_config_file(open(qiime_project_dir +
@@ -227,9 +205,9 @@ class QIIMEConfig(TestCase):
                 if key not in orig_config:
                     extra_vals.append(key)
             if extra_vals:
-                self.fail("The qiime_config file set via QIIME_CONFIG_FP" +
-                          "enviroment variable contains obsolete parameters:\n" +
-                          ", ".join(extra_vals))
+                self.fail("The QIIME config file set via the QIIME_CONFIG_FP "
+                          "environment variable" +
+                          error_msg_fragment % ", ".join(extra_vals))
         # check the qiime_config in $HOME/.qiime_config
         home_dir = getenv('HOME')
         if (exists(home_dir + "/.qiime_config")):
@@ -240,8 +218,8 @@ class QIIMEConfig(TestCase):
                 if key not in orig_config:
                     extra_vals.append(key)
             if extra_vals:
-                self.fail("The .qiime_config in your HOME contains obsolete " +
-                          "parameters:\n" + ", ".join(extra_vals))
+                self.fail("The .qiime_config in your HOME" +
+                          error_msg_fragment % ", ".join(extra_vals))
 
 
 class QIIMEDependencyBase(QIIMEConfig):
@@ -373,25 +351,6 @@ class QIIMEDependencyBase(QIIMEConfig):
 
 
 class QIIMEDependencyFull(QIIMEDependencyBase):
-
-    def test_python_exe_fp(self):
-        """python_exe_fp is set to a working python env"""
-
-        python = self.config["python_exe_fp"]
-        command = "%s --version" % python
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        # Check if callable
-        if proc.wait() != 0:
-            self.fail(
-                "Calling python failed. Check you python_exe_fp:%s" %
-                python)
-
-        # Does it give its version string?
-        out_string = proc.stdout.read()
-        if not out_string:
-            self.fail("Something is wrong with your python\n."
-                      + " Check you python_exe_fp:%s" % python)
 
     def test_ampliconnoise_install(self):
         """ AmpliconNoise install looks sane."""
@@ -586,9 +545,11 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         except (ApplicationNotFoundError, ApplicationError):
             pass_test = False
 
-        self.assertTrue(pass_test, "Denoiser flowgram aligner not found or not executable." +
-                        "This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
+        self.assertTrue(pass_test,
+                        "Denoiser flowgram aligner not found or not "
+                        "executable. This may or may not be a problem "
+                        "depending on which components of QIIME you plan to "
+                        "use.")
 
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """

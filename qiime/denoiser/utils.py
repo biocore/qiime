@@ -28,8 +28,8 @@ from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from qiime.util import (get_qiime_project_dir, get_qiime_scripts_dir,
-                        FileFormatError, get_tmp_filename)
+from qiime.util import (get_qiime_project_dir, FileFormatError,
+                        get_tmp_filename, which)
 
 
 def write_sff_header(header, fh, num=None):
@@ -63,36 +63,34 @@ def get_denoiser_data_dir():
 
 
 def get_flowgram_ali_exe():
-    """Return the path to the flowgram alignment prog
+    """Return the executable name of the flowgram alignment prog
     """
-    fp = get_qiime_scripts_dir() + "/FlowgramAli_4frame"
-    return fp
+    return "FlowgramAli_4frame"
 
 
 def check_flowgram_ali_exe():
     """Check if we have a working FlowgramAligner"""
+    ali_exe = get_flowgram_ali_exe()
 
-    ali_fp = get_flowgram_ali_exe()
-
-    if (not exists(ali_fp)):
-        raise ApplicationNotFoundError(
-            "The alignment program is not where it's supposed to be: %s" %
-            ali_fp)
+    if which(ali_exe) is None:
+        raise ApplicationNotFoundError("The alignment program %s is not "
+                                       "accessible via the PATH environment "
+                                       "variable." % ali_exe)
 
     # test if its callable and actually works
-    command = "%s -h" % ali_fp
+    command = "%s -h" % ali_exe
     proc = Popen(command, shell=True, universal_newlines=True,
                  stdout=PIPE, stderr=STDOUT)
 
     if (proc.wait() != 0):
         raise ApplicationError("Calling %s failed. Check permissions and that it is in fact an executable."
-                               % ali_fp)
+                               % ali_exe)
 
     result = proc.stdout.read()
     # check that the help string looks correct
     if (not result.startswith("Usage")):
         raise ApplicationError("Calling %s failed. Check permissions and that it is in fact an executable."
-                               % ali_fp)
+                               % ali_exe)
     return True
 
 

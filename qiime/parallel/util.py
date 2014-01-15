@@ -17,10 +17,7 @@ from os import makedirs, mkdir
 from random import choice
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.split import split_fasta
-from qiime.util import (load_qiime_config,
-                        get_qiime_scripts_dir,
-                        qiime_system_call,
-                        count_seqs)
+from qiime.util import load_qiime_config, qiime_system_call, count_seqs
 
 qiime_config = load_qiime_config()
 
@@ -35,16 +32,14 @@ class ParallelWrapper(object):
     """
 
     def __init__(self,
-                 python_exe_fp=qiime_config['python_exe_fp'],
                  cluster_jobs_fp=qiime_config['cluster_jobs_fp'],
                  jobs_to_start=int(qiime_config['jobs_to_start']),
-                 poller_fp=join(get_qiime_scripts_dir(), 'poller.py'),
+                 poller_fp='poller.py',
                  retain_temp_files=False,
                  suppress_polling=False,
                  seconds_to_sleep=int(qiime_config['seconds_to_sleep'])):
         """  """
 
-        self._python_exe_fp = python_exe_fp
         self._cluster_jobs_fp = cluster_jobs_fp
         self._jobs_to_start = jobs_to_start
         self._poller_fp = poller_fp

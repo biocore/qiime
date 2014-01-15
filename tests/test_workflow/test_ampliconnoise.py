@@ -118,8 +118,7 @@ class AmpliconNoiseWorkflowTests(TestCase):
         sff_f.close()
         self.files_to_remove.append(self.fasting_subset_qual)
 
-        working_dir = self.qiime_config['working_dir'] or './'
-        jobs_dir = join(working_dir, 'jobs')
+        jobs_dir = join(self.tmp_dir, 'jobs')
         if not exists(jobs_dir):
             # only clean up the jobs dir if it doesn't already exist
             self.dirs_to_remove.append(jobs_dir)
