@@ -45,8 +45,6 @@ Definition of values in qiime_config
 
 ``denoiser_min_per_core`` : minimum number of flowgrams to denoise per core in parallel denoiser runs
 
-``cloud_environment`` : used only by the n3phele system. you should not need to modify this value
-
 ``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
 
 ``torque_queue`` : default queue to submit jobs to when using parallel QIIME with torque

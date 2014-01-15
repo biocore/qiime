@@ -65,13 +65,7 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
     error_profile: filepath to the error profiles, passed to workers
 
 """
-
-    qiime_config = load_qiime_config()
     DENOISE_WORKER = "denoiser_worker.py"
-    CLOUD_DISPATCH = "ec2Dispatch"
-    CLOUD_ENV = qiime_config['cloud_environment']
-    CLOUD = not CLOUD_ENV == "False"
-
     workers = []
     client_sockets = []
     # somewhat unique id for cluster job
@@ -83,12 +77,7 @@ def setup_workers(num_cpus, outdir, server_socket, verbose=True,
     for i in range(num_cpus):
         name = outdir + ("/%sworker%d" % (tmpname, i))
         workers.append(name)
-        if CLOUD:
-            cmd = "%s %d %s -f %s -s %s -p %s" % (CLOUD_DISPATCH, i + 1,
-                                                  DENOISE_WORKER, name, host,
-                                                  port)
-        else:
-            cmd = "%s -f %s -s %s -p %s" % (DENOISE_WORKER, name, host, port)
+        cmd = "%s -f %s -s %s -p %s" % (DENOISE_WORKER, name, host, port)
 
         if verbose:
             cmd += " -v"

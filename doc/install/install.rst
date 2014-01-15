@@ -143,7 +143,6 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
 	            denoiser_min_per_core:	50
 	                      working_dir:	None
 	                         temp_dir:	$HOME/temp
@@ -255,7 +254,6 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
 	            denoiser_min_per_core:	50
 	                      working_dir:	None
 	                         temp_dir:	$HOME/temp
