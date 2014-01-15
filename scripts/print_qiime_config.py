@@ -171,34 +171,15 @@ class QIIMEConfig(TestCase):
                         "not exist: %s" % scripts_dir)
 
     def test_temp_dir(self):
-        """temp_dir, if set, is set to a valid path"""
+        """temp_dir is set to a valid path"""
+        temp_dir = get_qiime_temp_dir()
 
-        temp_dir = self.config["temp_dir"]
-
-        if temp_dir:
-            self.assertTrue(exists(temp_dir),
-                            "temp_dir does not exist: %s" % temp_dir)
-            self.assertTrue(isdir(temp_dir),
-                            "temp_dir is not a directory: %s" % temp_dir)
-        else:
-            pass
-            #self.fail("temp_dir is not set.")
-
-    def test_working_dir(self):
-        """working_dir, if set, is set to a valid path"""
-
-        working_dir = self.config["working_dir"]
-
-        if working_dir:
-            self.assertTrue(exists(working_dir),
-                            "working dir does not exist: %s" % working_dir)
-            self.assertTrue(isdir(working_dir),
-                            "working_dir is not a directory: %s" % working_dir)
-            self.assertTrue(access(working_dir, W_OK),
-                            "working_dir not writable: %s" % working_dir)
-        else:
-            pass
-            #self.fail("working_dir is not set.")
+        self.assertTrue(exists(temp_dir),
+                        "temp_dir does not exist: %s" % temp_dir)
+        self.assertTrue(isdir(temp_dir),
+                        "temp_dir is not a directory: %s" % temp_dir)
+        self.assertTrue(access(temp_dir, W_OK),
+                        "temp_dir is not writable: %s" % temp_dir)
 
     # we are not testing these values from the qiime_config:
     # jobs_to_start   1

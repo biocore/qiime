@@ -5,7 +5,6 @@
 # Find details on this file at http://qiime.org/install/qiime_config.html
 
 cluster_jobs_fp
-working_dir
 blastmat_dir
 blastall_fp	blastall
 pynast_template_alignment_fp

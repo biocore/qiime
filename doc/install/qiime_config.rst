@@ -25,8 +25,6 @@ Definition of values in qiime_config
 
 ``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in :doc:`../tutorials/parallel_qiime`.
 
-``working_dir`` : a directory where work should be performed when running in parallel. You must be able to write to this directory. May be deprecated in favor of ``temp_dir`` in QIIME 1.8.0.
-
 ``blastmat_dir`` : directory where BLAST substitution matrices are stored
 
 ``blastall_fp`` : path to ``blastall`` executable
