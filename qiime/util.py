@@ -713,10 +713,6 @@ def get_options_lookup():
         make_option('-O', '--jobs_to_start', type='int',
                     help='Number of jobs to start [default: %default]',
                     default=qiime_config['jobs_to_start'])
-    result['poller_fp'] =\
-        make_option('-P', '--poller_fp', action='store',
-                    help='path to qiime/parallel/poller.py '
-                    '[default: %default]', default='poller.py')
     result['retain_temp_files'] =\
         make_option('-R', '--retain_temp_files', action='store_true',
                     help='retain temporary files after runs complete ' +
