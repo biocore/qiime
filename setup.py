@@ -263,7 +263,10 @@ setup(name='qiime',
       dependency_links=[
           'https://github.com/biocore/bipy/archive/master.zip#egg=bipy-0.0.0-dev'
       ],
-      extras_require={'all': ['ipython', 'sphinx >= 0.3']}
+      extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
+                              # the following are optional for pycogent, should
+                              # remove when pycogent is no longer a dependency
+                              'MySQL-python', 'SQLAlchemy', 'mpi4py']}
       )
 
 if build_stack:
