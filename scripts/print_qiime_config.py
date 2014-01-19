@@ -292,7 +292,10 @@ class QIIMEDependencyBase(QIIMEConfig):
         max_acceptable_version = (1, 3, 1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
-            version = tuple(map(int, matplotlib_lib_version.split('.')))
+            version = matplotlib_lib_version.split('.')
+            if version[-1].endswith('rc'):
+                version[-1] = version[-1][:-2]
+            version = tuple(map(int, version))
             pass_test = (version >= min_acceptable_version and
                          version <= max_acceptable_version)
             version_string = str(matplotlib_lib_version)
