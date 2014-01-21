@@ -851,28 +851,28 @@ class ScriptTester(object):
         type. Warnings are also included.
 
         """
-        summary = ('Ran %d commands to test %d scripts. %d of these commands '
+        summary = ['Ran %d commands to test %d scripts. %d of these commands '
                    'failed.' % (self.total_commands, self.total_scripts,
-                                self._num_failures()))
+                                self._num_failures())]
 
         if self._num_failures() > 0:
-            summary += ('\nFailed scripts were: %s' %
-                        " ".join(self._failed_scripts()))
+            summary.append('Failed scripts were: %s' %
+                           ' '.join(self._failed_scripts()))
 
         for error_type, error_info in self.script_errors.iteritems():
-            summary += self._format_script_error_summary(*error_info)
+            if len(error_info[0]) > 0:
+                summary.append(self._format_script_error_summary(*error_info))
 
         if self.failure_log_f:
-            summary += ('\nFailures and errors are summarized in %s' %
-                        self.failure_log_f.name)
+            summary.append('Failures and errors are summarized in %s' %
+                           self.failure_log_f.name)
 
         if self.warnings:
-            summary += '\nWarnings:\n'
+            summary.append('Warnings:')
             for warning in self.warnings:
-                summary += ' ' + warning + '\n'
-            summary += '\n'
+                summary.append(' ' + warning)
 
-        return summary
+        return '\n'.join(summary)
 
     def _load_usage_examples(self, scripts_dir, script_name):
         script_basename = self._append_script_extension(script_name)
@@ -967,11 +967,8 @@ class ScriptTester(object):
         return sorted(list(failed))
 
     def _format_script_error_summary(self, error_list, msg):
-        if error_list:
-            return ('\n%d scripts could not %s. Scripts were: %s' %
-                    (len(error_list), msg, " ".join(error_list)))
-        else:
-            return ''
+        return ('%d scripts could not %s. Scripts were: %s' %
+                (len(error_list), msg, ' '.join(error_list)))
 
     def _append_script_extension(self, script_name):
         return script_name if script_name.endswith('.py') \
