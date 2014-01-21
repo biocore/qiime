@@ -133,7 +133,7 @@ def main():
 
     if not opts.suppress_script_usage_tests:
         if qiime_test_data_dir_exists:
-            print "\nScript usage test result summary\n------------------------------------\n"
+            print "\nScript usage test result summary\n--------------------------------\n"
             print script_usage_result_summary
         else:
             print "\nCould not run script usage tests because the directory %s does not exist." % qiime_test_data_dir

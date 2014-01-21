@@ -836,13 +836,7 @@ class ScriptTester(object):
         testing run. Status of warnings is ignored.
 
         """
-        has_errors = False
-        for error_type, error_info in self.script_errors.iteritems():
-            if error_info[0]:
-                has_errors = True
-                break
-
-        return (self._num_failures() > 0) or has_errors
+        return (self._num_failures() > 0) or (self._num_script_errors() > 0)
 
     def result_summary(self):
         """Return a summary string reporting various test results.
@@ -852,14 +846,15 @@ class ScriptTester(object):
 
         """
         summary = ['Ran %d commands to test %d scripts. %d of these commands '
-                   'failed.' % (self.total_commands, self.total_scripts,
-                                self._num_failures())]
+                   'failed and %d scripts could not be tested due to errors.' %
+                   (self.total_commands, self.total_scripts,
+                    self._num_failures(), self._num_script_errors())]
 
         if self._num_failures() > 0:
             summary.append('Failed scripts were: %s' %
                            ' '.join(self._failed_scripts()))
 
-        for error_type, error_info in self.script_errors.iteritems():
+        for error_info in self.script_errors.values():
             if len(error_info[0]) > 0:
                 summary.append(self._format_script_error_summary(*error_info))
 
@@ -955,6 +950,14 @@ class ScriptTester(object):
 
     def _num_failures(self):
         return len(self.failures) + len(self.timeouts)
+
+    def _num_script_errors(self):
+        num_errors = 0
+
+        for error_info in self.script_errors.values():
+            num_errors += len(error_info[0])
+
+        return num_errors
 
     def _failed_scripts(self):
         failed = set()
