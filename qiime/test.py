@@ -18,10 +18,10 @@ from site import addsitedir
 from tempfile import NamedTemporaryFile
 from traceback import format_exc
 from cogent.util.misc import remove_files
+from pyqi.util import pyqi_system_call
 from qcli.test import (TimeExceededError,
                        initiate_timeout,
-                       disable_timeout,
-                       qcli_system_call)
+                       disable_timeout)
 from qiime.util import get_qiime_temp_dir
 
 
@@ -926,7 +926,7 @@ class ScriptTester(object):
         initiate_timeout(timeout)
 
         try:
-            stdout, stderr, return_value = qcli_system_call(cmd)
+            stdout, stderr, return_value = pyqi_system_call(cmd)
         except TimeExceededError:
             timed_out = True
         else:
