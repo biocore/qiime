@@ -738,7 +738,11 @@ class ScriptTester(object):
         self.script_errors = {
             'missing': ([], 'be loaded because they do not exist'),
             'import': ([], 'be imported'),
-            'usage': ([], 'have their usage examples loaded'),
+            'script_info': ([], 'have their usage examples loaded because '
+                                'the script_info dictionary did not exist'),
+            'script_usage': ([], 'have their usage examples loaded because '
+                                 'the script_info dictionary did not have '
+                                 'usage examples'),
             'other': ([], 'be loaded')
         }
 
@@ -893,10 +897,18 @@ class ScriptTester(object):
 
         try:
             usage_examples = script.script_info['script_usage']
-        except Exception:
-            msg = ('Could not load usage examples in script %s. Original '
-                   'error message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error('usage', script_basename, msg)
+        except AttributeError:
+            msg = ('script_info dictionary does not exist in script %s. '
+                   'Original error message:\n\n%s' % (script_basename,
+                                                      format_exc()))
+            self._record_script_error('script_info', script_basename, msg)
+            raise UsageExampleImportError
+        except KeyError:
+            msg = ('script_info dictionary in script %s does not have usage '
+                   'examples that are accessible via key "script_usage". '
+                   'Original error message:\n\n%s' % (script_basename,
+                                                      format_exc()))
+            self._record_script_error('script_usage', script_basename, msg)
             raise UsageExampleImportError
 
         return usage_examples
