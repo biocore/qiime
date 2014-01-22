@@ -875,8 +875,7 @@ class ScriptTester(object):
 
         if not exists(script_fp):
             msg = 'Script %s does not exist.\n' % script_basename
-            self._record_script_error(self.script_errors['missing'][0],
-                                      script_basename, msg)
+            self._record_script_error('missing', script_basename, msg)
             raise UsageExampleImportError
 
         try:
@@ -884,14 +883,12 @@ class ScriptTester(object):
         except ImportError as e:
             msg = ('Could not import the script %s. Original error '
                    'message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error(self.script_errors['import'][0],
-                                      script_basename, msg)
+            self._record_script_error('import', script_basename, msg)
             raise UsageExampleImportError
         except Exception as e:
             msg = ('Could not load the script %s. Original error '
                    'message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error(self.script_errors['other'][0],
-                                      script_basename, msg)
+            self._record_script_error('other', script_basename, msg)
             raise UsageExampleImportError
 
         try:
@@ -899,14 +896,13 @@ class ScriptTester(object):
         except Exception:
             msg = ('Could not load usage examples in script %s. Original '
                    'error message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error(self.script_errors['usage'][0],
-                                      script_basename, msg)
+            self._record_script_error('usage', script_basename, msg)
             raise UsageExampleImportError
 
         return usage_examples
 
-    def _record_script_error(self, error_list, script_basename, msg):
-        error_list.append(script_basename)
+    def _record_script_error(self, error_type, script_basename, msg):
+        self.script_errors[error_type][0].append(script_basename)
 
         if self.verbose:
             print msg
