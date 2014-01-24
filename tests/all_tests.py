@@ -111,7 +111,6 @@ def main():
                 working_dir=qiime_config['temp_dir'],
                 verbose=True,
                 tests=script_usage_tests,
-                failure_log_fp=None,
                 force_overwrite=True,
                 timeout=240)
 

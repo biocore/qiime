@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+import sys
 from os.path import isdir, split, join, abspath, exists
 from os import chdir, getcwd
 from shutil import copytree, rmtree
@@ -654,7 +655,6 @@ def run_script_usage_tests(test_data_dir,
                            working_dir,
                            verbose=False,
                            tests=None,
-                           failure_log_fp=None,
                            force_overwrite=False,
                            timeout=60):
     """ Test script_usage examples when test data is present in test_data_dir
@@ -667,21 +667,15 @@ def run_script_usage_tests(test_data_dir,
     """
     working_dir = join(working_dir, 'script_usage_tests')
 
-    failure_log_f = None
-    if failure_log_fp is not None:
-        failure_log_fp = abspath(failure_log_fp)
-        failure_log_f = open(failure_log_fp, 'w')
+    logger = None
+    if verbose:
+        logger = sys.stdout
 
-    script_tester = ScriptTester(failure_log_f=failure_log_f, verbose=verbose)
+    script_tester = ScriptTester(logger=logger)
     script_tester(scripts_dir, test_data_dir, working_dir, scripts=tests,
                   timeout=timeout, force_overwrite=force_overwrite)
     result_summary = script_tester.result_summary()
     has_failures_or_errors = script_tester.has_failures_or_errors()
-
-    if failure_log_f is not None:
-        if not has_failures_or_errors:
-            failure_log_f.write("All script usage tests passed.\n")
-        failure_log_f.close()
 
     if exists(working_dir):
         rmtree(working_dir)
@@ -690,6 +684,16 @@ def run_script_usage_tests(test_data_dir,
 
 class UsageExampleImportError(ImportError):
     pass
+
+class NullOutputStream(object):
+    """Output stream that mimics writing to /dev/null.
+
+    Taken from http://stackoverflow.com/a/2929954
+
+    """
+
+    def write(self, *_):
+        pass
 
 class ScriptTester(object):
     """Harness for testing command-line scripts.
@@ -710,19 +714,19 @@ class ScriptTester(object):
 
     """
 
-    def __init__(self, failure_log_f=None, verbose=False):
-        """Initialize a script testing harness with the appropriate logging.
+    def __init__(self, logger=None):
+        """Initialize a script testing harness with optional logging.
 
         Arguments:
-        failure_log_f -- open filehandle that failure/error messages will be
-            written to. The user is responsible for opening and closing the
-            file
-        verbose -- if ``True``, information (including successes, failures,
-            errors, and warnings) will be written to stdout
+        logger -- file-like object to have status messages recorded to. Must
+            have a ``write`` method. The user is responsible for opening and
+            closing the "file" (if necessary). Status messages include
+            successes, failures, errors, and warnings
 
         """
-        self.failure_log_f = failure_log_f
-        self.verbose = verbose
+        if logger is None:
+            logger = NullOutputStream()
+        self.logger = logger
 
         self.total_scripts = 0
         self.total_commands = 0
@@ -752,7 +756,7 @@ class ScriptTester(object):
 
         This method may be called multiple times using the same
         ``ScriptTester`` instance. This may be useful, for example, if you want
-        to use the same test harness to collate results for multiple scripts
+        to use the same test harness to collate results for multiple script
         directories and generate a single master report when finished.
 
         This method does not return anything, as all results are recorded in
@@ -779,10 +783,10 @@ class ScriptTester(object):
 
         if scripts is None:
             scripts = [split(d)[1] for d in
-                     sorted(glob(join(test_data_dir, '*'))) if isdir(d)]
+                       sorted(glob(join(test_data_dir, '*'))) if isdir(d)]
 
-        if self.verbose:
-            print 'Scripts to test:\n %s\n' % ' '.join(scripts)
+        self._log('Scripts to test:\n %s' % ' '.join(scripts))
+        self._log('')
 
         addsitedir(scripts_dir)
 
@@ -803,9 +807,8 @@ class ScriptTester(object):
             script_fp = join(scripts_dir,
                              self._append_script_extension(script_name))
 
-            if self.verbose:
-                print ('\nTesting %d usage examples from: %s' %
-                       (len(usage_examples), script_fp))
+            self._log('Testing %d usage examples from: %s' %
+                      (len(usage_examples), script_fp))
 
             # init the test environment
             test_input_dir = join(test_data_dir, script_name)
@@ -813,9 +816,8 @@ class ScriptTester(object):
             copytree(test_input_dir, test_working_dir)
             chdir(test_working_dir)
 
-            if self.verbose:
-                print 'Running tests in: %s' % getcwd()
-                print 'Tests:'
+            self._log('Running tests in: %s' % getcwd())
+            self._log('Tests:')
 
             for usage_example in usage_examples:
                 if '%prog' not in usage_example[2]:
@@ -823,15 +825,13 @@ class ScriptTester(object):
                            'represent the command name. You may not be '
                            'running the version of the command that you think '
                            'you are!' % script_name)
-                    if self.verbose:
-                        print msg
+                    self._log(msg)
                     self.warnings.append(msg)
 
                 cmd = usage_example[2].replace('%prog', script_fp)
                 self._run_command(cmd, timeout)
 
-            if self.verbose:
-                print ''
+            self._log('')
 
     def has_failures_or_errors(self):
         """Return ``True`` if there's failures or errors in testing results.
@@ -861,10 +861,6 @@ class ScriptTester(object):
         for error_info in self.script_errors.values():
             if len(error_info[0]) > 0:
                 summary.append(self._format_script_error_summary(*error_info))
-
-        if self.failure_log_f:
-            summary.append('Failures and errors are summarized in %s' %
-                           self.failure_log_f.name)
 
         if self.warnings:
             summary.append('Warnings:')
@@ -915,15 +911,10 @@ class ScriptTester(object):
 
     def _record_script_error(self, error_type, script_basename, msg):
         self.script_errors[error_type][0].append(script_basename)
-
-        if self.verbose:
-            print msg
-        if self.failure_log_f:
-            self.failure_log_f.write(msg + '\n')
+        self._log(msg)
 
     def _run_command(self, cmd, timeout):
-        if self.verbose:
-            print cmd,
+        self._log(cmd, append_newline=False)
 
         timed_out = False
         initiate_timeout(timeout)
@@ -940,21 +931,14 @@ class ScriptTester(object):
         if timed_out:
             self.timeouts.append(cmd)
             msg = ": Timed out"
-            if self.verbose:
-                print msg
-            if self.failure_log_f:
-                self.failure_log_f.write(cmd + msg + '\n')
         elif return_value == 0:
             self.successes.append(cmd)
-            if self.verbose:
-                print ": Pass"
+            msg = ": Pass"
         else:
             self.failures.append((cmd, stdout, stderr, return_value))
             msg = ": Failed\nStdout:\n%s\nStderr:\n%s\n" % (stdout, stderr)
-            if self.verbose:
-                print msg
-            if self.failure_log_f:
-                self.failure_log_f.write(cmd + msg)
+
+        self._log(msg)
 
     def _num_failures(self):
         return len(self.failures) + len(self.timeouts)
@@ -987,3 +971,9 @@ class ScriptTester(object):
 
     def _parse_script_name(self, cmd):
         return split(cmd.split()[0])[1]
+
+    def _log(self, msg, append_newline=True):
+        self.logger.write(msg)
+
+        if append_newline:
+            self.logger.write('\n')
