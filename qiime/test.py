@@ -736,18 +736,36 @@ class ScriptTester(object):
         self.timeouts = []
         self.warnings = []
 
-        # Maps script error type to a list of scripts that had the error, as
-        # well as a partial error message that is used by the error-reporting
-        # facilities of this class. See _format_script_error_summary.
+        # Maps script error type to a list of scripts that had the error. Each
+        # error type has a partial error message that is used when formatting a
+        # summary (see _format_script_error_summary). Each type also has a
+        # second (generally more verbose) error message that is used when
+        # formatting messages to be written to the logger (see
+        # _record_script_error).
         self.script_errors = {
-            'missing': ([], 'be loaded because they do not exist'),
-            'import': ([], 'be imported'),
-            'script_info': ([], 'have their usage examples loaded because '
-                                'the script_info dictionary did not exist'),
-            'script_usage': ([], 'have their usage examples loaded because '
-                                 'the script_info dictionary did not have '
-                                 'usage examples'),
-            'other': ([], 'be loaded')
+            'missing': ([],
+                        'be loaded because they do not exist',
+                        'Script %s does not exist.\n'),
+            'import': ([],
+                       'be imported',
+                       'Could not import the script %s. Original error '
+                       'message:\n\n%s'),
+            'script_info': ([],
+                            'have their usage examples loaded because the '
+                            'script_info dictionary did not exist',
+                            'script_info dictionary does not exist in script '
+                            '%s. Original error message:\n\n%s'),
+            'script_usage': ([],
+                             'have their usage examples loaded because the '
+                             'script_info dictionary did not have usage '
+                             'examples',
+                             'script_info dictionary in script %s does not '
+                             'have usage examples that are accessible via key '
+                             '"script_usage". Original error message:\n\n%s'),
+            'other': ([],
+                      'be loaded',
+                      'Could not load the script %s. Original error '
+                      'message:\n\n%s')
         }
 
     def __call__(self, scripts_dir, test_data_dir, working_dir, scripts=None,
@@ -860,7 +878,8 @@ class ScriptTester(object):
 
         for error_info in self.script_errors.values():
             if len(error_info[0]) > 0:
-                summary.append(self._format_script_error_summary(*error_info))
+                summary.append(self._format_script_error_summary(
+                    error_info[0], error_info[1]))
 
         if self.warnings:
             summary.append('Warnings:')
@@ -874,43 +893,42 @@ class ScriptTester(object):
         script_fp = join(scripts_dir, script_basename)
 
         if not exists(script_fp):
-            msg = 'Script %s does not exist.\n' % script_basename
-            self._record_script_error('missing', script_basename, msg)
+            self._record_script_error('missing', script_basename)
             raise UsageExampleImportError
 
         try:
             script = __import__(script_name)
         except ImportError as e:
-            msg = ('Could not import the script %s. Original error '
-                   'message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error('import', script_basename, msg)
+            self._record_script_error('import', script_basename, format_exc())
             raise UsageExampleImportError
         except Exception as e:
-            msg = ('Could not load the script %s. Original error '
-                   'message:\n\n%s' % (script_basename, format_exc()))
-            self._record_script_error('other', script_basename, msg)
+            self._record_script_error('other', script_basename, format_exc())
             raise UsageExampleImportError
 
         try:
             usage_examples = script.script_info['script_usage']
         except AttributeError:
-            msg = ('script_info dictionary does not exist in script %s. '
-                   'Original error message:\n\n%s' % (script_basename,
-                                                      format_exc()))
-            self._record_script_error('script_info', script_basename, msg)
+            self._record_script_error('script_info', script_basename,
+                                      format_exc())
             raise UsageExampleImportError
         except KeyError:
-            msg = ('script_info dictionary in script %s does not have usage '
-                   'examples that are accessible via key "script_usage". '
-                   'Original error message:\n\n%s' % (script_basename,
-                                                      format_exc()))
-            self._record_script_error('script_usage', script_basename, msg)
+            self._record_script_error('script_usage', script_basename,
+                                      format_exc())
             raise UsageExampleImportError
 
         return usage_examples
 
-    def _record_script_error(self, error_type, script_basename, msg):
-        self.script_errors[error_type][0].append(script_basename)
+    def _record_script_error(self, error_type, script_basename,
+                             orig_error_msg=None):
+        error_info = self.script_errors[error_type]
+        error_info[0].append(script_basename)
+        msg = error_info[2]
+
+        if orig_error_msg is None:
+            msg = msg % script_basename
+        else:
+            msg = msg % (script_basename, orig_error_msg)
+
         self._log(msg)
 
     def _run_command(self, cmd, timeout):
