@@ -308,13 +308,14 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
             is_phylogenetic = False
         except AttributeError:
             try:
+                #raise
                 metric_f = get_phylogenetic_metric(metric)
                 is_phylogenetic = True
             except AttributeError:
-                stderr.write(
+                raise AttributeError(
                     "Could not find metric %s.\n Known metrics are: %s\n"
                     % (metric, ', '.join(list_known_metrics())))
-                exit(1)
+                
         c = AlphaDiversityCalc(metric_f, is_phylogenetic)
         calcs.append(c)
 
@@ -326,9 +327,8 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
         if result:  # can send to stdout instead of file
             print all_calcs.formatResult(result)
     except IOError as e:
-        stderr.write("Failed because of missing files.\n")
-        stderr.write(str(e) + '\n')
-        exit(1)
+        raise IOError("Failed because of missing files.\n"+str(e) + '\n')
+        
 
 
 def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
@@ -413,10 +413,10 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
         try:
             metric_f = get_cup_metric(metric)
         except AttributeError:
-            stderr.write(
+           raise AttributeError(
                 "Could not find metric %s.\n Known metrics are: %s\n"
                 % (metric, ', '.join(list_known_cup_metrics())))
-            exit(1)
+            
 
         c = AlphaDiversityCalc(metric_f, params=params)
         calcs.append(c)
@@ -429,10 +429,8 @@ def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
         if result:  # can send to stdout instead of file
             print all_calcs.formatResult(result)
     except IOError as e:
-        stderr.write("Failed because of missing files.\n")
-        stderr.write(str(e) + '\n')
-        exit(1)
-
+        raise IOError("Failed because of missing files.\n"+str(e) + '\n')
+        
 
 def get_cup_metric(name):
     """Gets metric by name from list in this module
