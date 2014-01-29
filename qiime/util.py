@@ -119,6 +119,11 @@ class FileFormatError(IOError):
     pass
 
 
+class ScriptsDirError(IOError):
+    """Exception for when the QIIME scripts directory cannot be found."""
+    pass
+
+
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
     def inner(*args, **kwargs):
@@ -323,25 +328,55 @@ def get_qiime_project_dir():
 
 
 def get_qiime_scripts_dir():
-    """ Returns the QIIME scripts directory
+    """Return the directory containing QIIME scripts.
 
-        This value must be stored in qiime_config if the user
-        has installed qiime using setup.py. If it is not in
-        qiime_config, it is inferred from the qiime_project_dir.
+    The scripts directory is inferred from the location of
+    print_qiime_config.py (equivalent to running ``which
+    print_qiime_config.py``). Will raise a ``ScriptsDirError`` if the scripts
+    directory cannot be determined.
+
+    Note: this function will likely not work on Windows.
 
     """
-    qiime_config = load_qiime_config()
-    qiime_config_value = qiime_config['qiime_scripts_dir']
-    if qiime_config_value is not None:
-        result = qiime_config_value
-    else:
-        result = join(get_qiime_project_dir(), 'scripts')
+    script_fp = which('print_qiime_config.py')
 
-    # assert exists(result),\
-    # "qiime_scripts_dir does not exist: %s." % result +\
-    # " Have you defined it correctly in your qiime_config?"
+    if script_fp is None:
+        raise ScriptsDirError("Could not find the directory containing QIIME "
+                              "scripts. QIIME scripts must be accessible via "
+                              "the PATH environment variable, and they must "
+                              "be executable. Please ensure that you have a "
+                              "valid QIIME installation (see the QIIME "
+                              "Installation Guide: "
+                              "http://qiime.org/install/install.html).")
 
-    return result
+    return os.path.dirname(script_fp)
+
+
+def which(executable_name):
+    """Equivalent to ``which executable_name`` in a *nix environment.
+
+    Will return ``None`` if ``executable_name`` cannot be found in ``PATH`` or
+    if ``PATH`` is not set. Otherwise will return the first match in ``PATH``.
+
+    Note: this function will likely not work on Windows.
+
+    Code taken and modified from:
+        http://www.velocityreviews.com/forums/t689526-python-library-call-equivalent-to-which-command.html
+
+    """
+    exec_fp = None
+
+    if 'PATH' in os.environ:
+        paths = os.environ['PATH']
+
+        for path in paths.split(os.pathsep):
+            curr_exec_fp = os.path.join(path, executable_name)
+
+            if os.access(curr_exec_fp, os.X_OK):
+                exec_fp = curr_exec_fp
+                break
+
+    return exec_fp
 
 
 def get_qiime_temp_dir():
@@ -678,11 +713,6 @@ def get_options_lookup():
         make_option('-O', '--jobs_to_start', type='int',
                     help='Number of jobs to start [default: %default]',
                     default=qiime_config['jobs_to_start'])
-    result['poller_fp'] =\
-        make_option('-P', '--poller_fp', action='store',
-                    help='full path to ' +
-                    'qiime/parallel/poller.py [default: %default]',
-                    default=join(get_qiime_scripts_dir(), 'poller.py'))
     result['retain_temp_files'] =\
         make_option('-R', '--retain_temp_files', action='store_true',
                     help='retain temporary files after runs complete ' +
@@ -703,7 +733,7 @@ def get_options_lookup():
                     help='path to cluster jobs script (defined in qiime_config) ' +
                     ' [default: %default]',
                     default=qiime_config['cluster_jobs_fp'] or
-                    join(get_qiime_scripts_dir(), 'start_parallel_jobs.py'))
+                    'start_parallel_jobs.py')
     result['suppress_polling'] =\
         make_option('-W', '--suppress_polling', action='store_true',
                     help='suppress polling of jobs and merging of results ' +
@@ -712,10 +742,6 @@ def get_options_lookup():
     result['job_prefix'] =\
         make_option('-X', '--job_prefix', help='job prefix ' +
                     '[default: descriptive prefix + random chars]')
-    result['python_exe_fp'] =\
-        make_option('-Y', '--python_exe_fp',
-                    help='full path to python executable [default: %default]',
-                    default=qiime_config['python_exe_fp'])
     result['seconds_to_sleep'] =\
         make_option('-Z', '--seconds_to_sleep', type='int',
                     help='Number of seconds to sleep between checks for run ' +

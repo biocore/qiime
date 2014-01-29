@@ -1703,8 +1703,6 @@ class PartialMantel(CorrelationStats):
             rval2 = pearson(dm1_perm_flat, cdm_flat)
             perm_stats.append(corr(rval1, rval2, rval3))
 
-            # Sum the permuted statistics for calculation of the final
-            # statistic.
             if perm_stats[-1] >= orig_stat:
                 numerator += 1
         # Load the final statistics into the result dictionary.

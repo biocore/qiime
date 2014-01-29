@@ -104,14 +104,13 @@ def main():
             script_usage_tests = None
 
         # Run the script usage testing functionality
-        script_usage_result_summary, num_script_usage_example_failures = \
+        script_usage_result_summary, has_script_usage_example_failures = \
             run_script_usage_tests(
                 test_data_dir=qiime_test_data_dir,
                 scripts_dir=get_qiime_scripts_dir(),
                 working_dir=qiime_config['temp_dir'],
                 verbose=True,
                 tests=script_usage_tests,
-                failure_log_fp=None,
                 force_overwrite=True,
                 timeout=240)
 
@@ -133,7 +132,7 @@ def main():
 
     if not opts.suppress_script_usage_tests:
         if qiime_test_data_dir_exists:
-            print "\nScript usage test result summary\n------------------------------------\n"
+            print "\nScript usage test result summary\n--------------------------------\n"
             print script_usage_result_summary
         else:
             print "\nCould not run script usage tests because the directory %s does not exist." % qiime_test_data_dir
@@ -143,7 +142,7 @@ def main():
     # exist and we can't have any failures.
     script_usage_tests_success = (opts.suppress_script_usage_tests or
                                   (qiime_test_data_dir_exists and
-                                   num_script_usage_example_failures == 0))
+                                   not has_script_usage_example_failures))
 
     # If any of the unit tests or script usage tests fail, or if we have any
     # missing application errors, use return code 1 (as python's unittest

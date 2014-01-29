@@ -8,7 +8,7 @@ import os
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Daniel McDonald"]
+__credits__ = ["Daniel McDonald", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -104,9 +104,9 @@ class MergeTests(TestCase):
 
     def test_start_job(self):
         """start a job"""
-        exp = 'echo "x y -i A.biom,B.biom -o foo/0.biom; echo $? > foo/0.biom.poll" | qsub -k oe -N MOTU -q ignored'
+        exp = 'echo "y -i A.biom,B.biom -o foo/0.biom; echo $? > foo/0.biom.poll" | qsub -k oe -N MOTU -q ignored'
         t = mergeorder(['A.biom', 'B.biom', 'C', 'D', 'E'], 'foo')
-        start_job(t.Children[0], 'x', 'y', 'ignored', torque_job, False)
+        start_job(t.Children[0], 'y', 'ignored', torque_job, False)
         self.assertEqual(t.Children[0].FullCommand, exp)
 
     def test_local_job(self):
