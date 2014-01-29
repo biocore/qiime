@@ -45,7 +45,7 @@ import qiime.pycogent_backports.alpha_diversity as alph  # relying on backports
 from qiime.parse import make_envs_dict
 from qiime.util import FunctionWithParams, make_safe_f
 from qiime.format import format_matrix
-from sys import exit, stderr
+#from sys import exit, stderr
 import sys
 import os.path
 #import qiime.alpha_diversity
