@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["Luke Ursell, Will Van Treuren"]
+__credits__ = ["Luke Ursell", "Will Van Treuren", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Luke Ursell"
@@ -843,8 +843,7 @@ class GroupedCorrelationTests(TestCase):
                                   0.045999999999999999,
                                   0.38200000000000001,
                                   0.88200000000000001,
-                                  0.438,
-                                  0.54600000000000004]
+                                  0.438]
 
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'pearson',
                                                   CORRELATION_TEST_CHOICES,
@@ -858,7 +857,17 @@ class GroupedCorrelationTests(TestCase):
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'pearson',
                                                   CORRELATION_TEST_CHOICES, pval_assignment_method='bootstrapped',
                                                   permutations=1000)
-        self.assertFloatEqual(exp_bootstrapped_pvals, obs_pvals)
+
+        # We can use the default epsilon in assertFloatEqual to test all
+        # p-values but the last one. This last one needs a different epsilon
+        # because the 479th permuted correlation coefficient can differ in
+        # equality to the observed correlation coefficient depending on the
+        # platform/numpy installation/configuration. Thus, the count of
+        # more-extreme correlation coefficients can differ by 1. With 1000
+        # permutations used in the test, this difference is 1 / 1000 = 0.001,
+        # hence the larger epsilon used here.
+        self.assertFloatEqual(obs_pvals[:-1], exp_bootstrapped_pvals)
+        self.assertFloatEqual(obs_pvals[-1], 0.54600000000000004, eps=1e-3)
 
         # spearman
         exp_ccs = [0.25714285714285712,
