@@ -28,7 +28,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
-        log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median, nan)
+                   log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median, nan)
 from numpy import argsort, min as np_min, max as np_max, log10
 from numpy.random import permutation
 from cogent.util.misc import combinate, create_dir
@@ -37,7 +37,7 @@ from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
-    pearson, permute_2d, spearman)
+                                           pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import DistanceMatrix, MetadataMap
@@ -46,10 +46,11 @@ from qiime.util import DistanceMatrix, MetadataMap
 
 tail_types = ['low', 'high', 'two-sided']
 tail_type_desc = {
-        'low': ('one-sided (low)', '<'),
-        'high': ('one-sided (high)', '>'),
-        'two-sided': ('two-sided', '!=')
+    'low': ('one-sided (low)', '<'),
+    'high': ('one-sided (high)', '>'),
+    'two-sided': ('two-sided', '!=')
 }
+
 
 def all_pairs_t_test(labels, dists, tail_type='two-sided',
                      num_permutations=999):
@@ -112,12 +113,13 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
     for stat in stats:
         stat = ['N/A' if e is nan else e for e in stat]
         result += '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (stat[0], stat[1], stat[2],
-                stat[3], stat[4],
-                format_p_value_for_num_iters(stat[5], num_permutations) if
-                    stat[5] != 'N/A' else 'N/A',
-                format_p_value_for_num_iters(stat[6], num_permutations) if
-                    stat[6] != 'N/A' else 'N/A')
+                                                    stat[3], stat[4],
+                                                    format_p_value_for_num_iters(stat[5], num_permutations) if
+                                                    stat[5] != 'N/A' else 'N/A',
+                                                    format_p_value_for_num_iters(stat[6], num_permutations) if
+                                                    stat[6] != 'N/A' else 'N/A')
     return result
+
 
 def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
     """Perform t-test for all pairs of distributions.
@@ -139,13 +141,13 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
         for g2_label, g2_dist in zip(
                 labels[(g1_idx + 1):], dists[(g1_idx + 1):]):
             if ((len(g1_dist) == 1 and len(g2_dist) == 1) or
-                (len(g1_dist) < 1 or len(g2_dist) < 1)):
+                    (len(g1_dist) < 1 or len(g2_dist) < 1)):
                 # Not enough data to run the test.
                 obs_t, param_p_val, nonparam_p_val = nan, nan, nan
             else:
                 obs_t, param_p_val, _, nonparam_p_val = mc_t_two_sample(
-                        g1_dist, g2_dist, tails=tail_type,
-                        permutations=num_permutations)
+                    g1_dist, g2_dist, tails=tail_type,
+                    permutations=num_permutations)
             result.append([g1_label, g2_label, obs_t, param_p_val, None,
                            nonparam_p_val, None])
             if obs_t is not nan:
@@ -157,6 +159,7 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
         stat[4] = stat[3] if stat[3] is nan else min(stat[3] * num_tests, 1)
         stat[6] = stat[5] if stat[5] is nan else min(stat[5] * num_tests, 1)
     return result
+
 
 def quantile(data, quantiles):
     """calculates quantiles of a dataset matching a given list of probabilities
@@ -171,17 +174,17 @@ def quantile(data, quantiles):
     the quantiles.
     """
 
-    assert type(data) == list or type(data) == ndarray, "Data must be either"+\
+    assert isinstance(data, list) or isinstance(data, ndarray), "Data must be either" +\
         " a Python list or a NumPy 1-D array"
-    assert type(quantiles) == list or type(quantiles) == ndarray, "Quantiles"+\
+    assert isinstance(quantiles, list) or isinstance(quantiles, ndarray), "Quantiles" +\
         " must be either a Python list or a NumPy 1-D array"
-    assert all(map(lambda x: x>=0 and x<=1, quantiles)), "All the elements "+\
+    assert all(map(lambda x: x >= 0 and x <= 1, quantiles)), "All the elements " +\
         "in the quantiles list must be greater than 0 and lower than one"
 
     # unless the user wanted, do not modify the data
     data = deepcopy(data)
 
-    if type(data) != ndarray:
+    if not isinstance(data, ndarray):
         data = array(data)
     data.sort()
 
@@ -191,6 +194,7 @@ def quantile(data, quantiles):
         output.append(_quantile(data, one_quantile))
 
     return output
+
 
 def _quantile(data, quantile):
     """gets a single quantile value for a dataset using R. type 7 method
@@ -204,16 +208,19 @@ def _quantile(data, quantile):
 
     This function is based on cogent.maths.stats.util.NumbersI
     """
-    index = quantile*(len(data)-1)
+    index = quantile * (len(data) - 1)
     bottom_index = int(floor(index))
     top_index = int(ceil(index))
 
-    difference = index-bottom_index
-    output = (1-difference)*data[bottom_index]+difference*data[top_index]
+    difference = index - bottom_index
+    output = (1 - difference) * \
+        data[bottom_index] + difference * data[top_index]
 
     return output
 
+
 class DistanceMatrixStats(object):
+
     """Base class for distance matrix-based statistical methods.
 
     This class provides an interface to setting and accessing an arbitrary
@@ -250,7 +257,7 @@ class DistanceMatrixStats(object):
         self._num_dms = num_dms
         self._min_dm_size = min_dm_size
         self._suppress_symmetry_and_hollowness_check = \
-                suppress_symmetry_and_hollowness_check
+            suppress_symmetry_and_hollowness_check
         self.DistanceMatrices = dms
 
     @property
@@ -271,7 +278,7 @@ class DistanceMatrixStats(object):
         if self._num_dms >= 0 and len(dms) != self._num_dms:
             raise ValueError("Cannot set %d distance matrices. Must provide "
                              "exactly %d distance matrices." % (len(dms),
-                             self._num_dms))
+                                                                self._num_dms))
         for dm in dms:
             if not isinstance(dm, DistanceMatrix):
                 raise TypeError('Invalid type: %s; expected DistanceMatrix' %
@@ -313,6 +320,7 @@ class DistanceMatrixStats(object):
 
 
 class CorrelationStats(DistanceMatrixStats):
+
     """Base class for distance matrix correlation statistical methods.
 
     It is subclassed by correlation methods such as partial Mantel and Mantel
@@ -354,7 +362,7 @@ class CorrelationStats(DistanceMatrixStats):
                 this check to allow for these types of distance matrices
         """
         super(CorrelationStats, self).__init__(dms, num_dms, min_dm_size,
-                suppress_symmetry_and_hollowness_check)
+                                               suppress_symmetry_and_hollowness_check)
 
     @property
     def DistanceMatrices(self):
@@ -389,6 +397,7 @@ class CorrelationStats(DistanceMatrixStats):
 
 
 class CategoryStats(DistanceMatrixStats):
+
     """Base class for categorical statistical analyses.
 
     It is subclassed by categorical statistical methods such as DB-RDA or BEST.
@@ -456,12 +465,12 @@ class CategoryStats(DistanceMatrixStats):
                 (i.e. there is only one single group of samples)
         """
         super(CategoryStats, self).__init__(dms, num_dms, min_dm_size,
-                suppress_symmetry_and_hollowness_check)
+                                            suppress_symmetry_and_hollowness_check)
         self._suppress_category_uniqueness_check = \
-                suppress_category_uniqueness_check
+            suppress_category_uniqueness_check
         self._suppress_numeric_category_check = suppress_numeric_category_check
         self._suppress_single_category_value_check = \
-                suppress_single_category_value_check
+            suppress_single_category_value_check
         self.MetadataMap = mdmap
         self.Categories = cats
         self.RandomFunction = random_fn
@@ -605,6 +614,7 @@ class CategoryStats(DistanceMatrixStats):
 
 
 class Anosim(CategoryStats):
+
     """Class for the ANOSIM categorical statistical analysis.
 
     Briefly, ANOSIM tests whether two or more groups of samples are
@@ -640,8 +650,8 @@ class Anosim(CategoryStats):
                 matrices
         """
         super(Anosim, self).__init__(mdmap, [dm], [cat], num_dms=1,
-                random_fn=random_fn, suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+                                     random_fn=random_fn, suppress_symmetry_and_hollowness_check=
+                                     suppress_symmetry_and_hollowness_check)
 
     def __call__(self, num_perms=999):
         """Runs ANOSIM on the current distance matrix and sample grouping.
@@ -667,7 +677,7 @@ class Anosim(CategoryStats):
         group_map = {}
         for samp_id in samples:
             group_map[samp_id] = self.MetadataMap.getCategoryValue(
-                    samp_id, category)
+                samp_id, category)
 
         # Calculate the R statistic with the grouping found in the current
         # metadata map.
@@ -728,8 +738,8 @@ class Anosim(CategoryStats):
         sorted_distances = []
         sorted_grouping = []
         for idx in argsort(distances):
-             sorted_distances.append(distances[idx])
-             sorted_grouping.append(grouping[idx])
+            sorted_distances.append(distances[idx])
+            sorted_grouping.append(grouping[idx])
 
         # Account for rank ties, then compute R statistic.
         rank_list = range(1, len(sorted_distances) + 1)
@@ -754,7 +764,7 @@ class Anosim(CategoryStats):
         for i in range(len(sorted_dists) - 1):
             # Store state information.
             curr_dist = sorted_dists[i]
-            next_dist = sorted_dists[i+1]
+            next_dist = sorted_dists[i + 1]
             rank_val = ranks[i]
 
             # A tie has not occured yet.
@@ -781,19 +791,19 @@ class Anosim(CategoryStats):
                     ties.append(rank_val)
                     last_tie_index = i
                     result.extend(self._get_adjusted_vals(ties,
-                            first_tie_index, last_tie_index))
+                                                          first_tie_index, last_tie_index))
                     tie_flag = 0
                     tie_count = 0
                     ties = []
         # If there is a tie that extends to the final position, we must process
         # it here to avoid out of list bounds errors.
         if tie_flag == 1:
-            ties.append(ranks[i+1])
+            ties.append(ranks[i + 1])
             last_tie_index = i + 1
             result.extend(self._get_adjusted_vals(ties, first_tie_index,
                                                   last_tie_index))
         else:
-            result.append(ranks[i+1])
+            result.append(ranks[i + 1])
         return result
 
     def _get_adjusted_vals(self, ties, first_tie_idx, last_tie_idx):
@@ -815,13 +825,14 @@ class Anosim(CategoryStats):
         sorted_groups = array(sorted_groups)
 
         # Compute r_W and r_B.
-        r_W = mean(adjusted_ranks[sorted_groups==1])
-        r_B = mean(adjusted_ranks[sorted_groups==0])
+        r_W = mean(adjusted_ranks[sorted_groups == 1])
+        r_B = mean(adjusted_ranks[sorted_groups == 0])
         divisor = num_samps * ((num_samps - 1) / 4)
         return (r_B - r_W) / divisor
 
 
 class Permanova(CategoryStats):
+
     """Class for the PERMANOVA statistical method.
 
     This is a non-parametric, permutation-based method to determine the
@@ -859,8 +870,8 @@ class Permanova(CategoryStats):
                 matrices
         """
         super(Permanova, self).__init__(mdmap, [dm], [cat], num_dms=1,
-                random_fn=random_fn, suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+                                        random_fn=random_fn, suppress_symmetry_and_hollowness_check=
+                                        suppress_symmetry_and_hollowness_check)
 
     def __call__(self, num_perms=999):
         """Runs PERMANOVA on the current distance matrix and sample grouping.
@@ -886,7 +897,7 @@ class Permanova(CategoryStats):
         group_map = {}
         for samp_id in samples:
             group_map[samp_id] = self.MetadataMap.getCategoryValue(
-                    samp_id, category)
+                samp_id, category)
 
         # Calculate the F statistic with the grouping found in the current
         # metadata map.
@@ -978,18 +989,19 @@ class Permanova(CategoryStats):
         # sizes.
         s_W = 0
         for i in range(number_groups):
-            group_ix = groupings==i
+            group_ix = groupings == i
             diffs = distances[group_ix]
-            s_W = s_W + sum(diffs**2) / unique_n[i]
+            s_W = s_W + sum(diffs ** 2) / unique_n[i]
 
         # Execute the formula.
         s_A = s_T - s_W
-        return (s_A / (a-1)) / (s_W / (N-a))
+        return (s_A / (a - 1)) / (s_W / (N - a))
 
 
 class Best(CategoryStats):
+
     """Class for the BEST/BioEnv statistical analysis.
-    
+
     Based on vegan::bioenv function, which is an implementation of the BEST
     statistical method.
     """
@@ -1021,11 +1033,11 @@ class Best(CategoryStats):
         # BEST doesn't require non-unique categories or non-single value
         # categories, but *does* require only numeric categories.
         super(Best, self).__init__(metadata_map, [dm], cats, num_dms=1,
-              suppress_symmetry_and_hollowness_check=\
-              suppress_symmetry_and_hollowness_check,
-              suppress_category_uniqueness_check=True,
-              suppress_numeric_category_check=False,
-              suppress_single_category_value_check=True)
+                                   suppress_symmetry_and_hollowness_check=
+                                   suppress_symmetry_and_hollowness_check,
+                                   suppress_category_uniqueness_check=True,
+                                   suppress_numeric_category_check=False,
+                                   suppress_single_category_value_check=True)
 
     def __call__(self, num_perms=999):
         """Runs the BEST/BioEnv analysis on a distance matrix using specified
@@ -1049,22 +1061,22 @@ class Best(CategoryStats):
         row_count = dm.Size
         col_count = len(cats)
         sum = 0
-        stats = [(-777777777, '') for c in range(col_count+1)]
-        for i in range(1, col_count+1):
-            combo = list(combinate([j for j in range(1,col_count+1)], i))
+        stats = [(-777777777, '') for c in range(col_count + 1)]
+        for i in range(1, col_count + 1):
+            combo = list(combinate([j for j in range(1, col_count + 1)], i))
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
                 cat_dm_flat = cat_dm.flatten()
                 r = spearman(dm_flat, cat_dm_flat)
-                if r > stats[i-1][0]:
-                    stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
+                if r > stats[i - 1][0]:
+                    stats[i - 1] = (r, ','.join(str(s) for s in combo[c]))
 
         res['method_name'] = 'BEST'
         res['num_vars'] = col_count
-        res['vars'] = ['%s = %d' % (name,val+1)
-                       for val,name in enumerate(cats)]
+        res['vars'] = ['%s = %d' % (name, val + 1)
+                       for val, name in enumerate(cats)]
         res['rho_vals'] = stats[:-1]
 
         return res
@@ -1083,8 +1095,8 @@ class Best(CategoryStats):
 
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors."""
-        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in
-                            zip(vec1,vec2)]))
+        return sqrt(sum([(float(v1) - float(v2)) ** 2 for v1, v2 in
+                         zip(vec1, vec2)]))
 
     def _make_cat_mat(self, cats, combo):
         """Returns a matrix with columns pulled from category values.
@@ -1097,11 +1109,12 @@ class Best(CategoryStats):
         md_map = self.MetadataMap
         res = []
         for i in combo:
-            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i-1]))
+            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i - 1]))
         return zip(*res)
 
 
 class MantelCorrelogram(CorrelationStats):
+
     """Class for the Mantel correlogram statistical method.
 
     This class provides the functionality to run a Mantel correlogram analysis
@@ -1149,8 +1162,8 @@ class MantelCorrelogram(CorrelationStats):
                 differences in the number of distances in each class
         """
         super(MantelCorrelogram, self).__init__([eco_dm, geo_dm], num_dms=2,
-                min_dm_size=3, suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+                                                min_dm_size=3, suppress_symmetry_and_hollowness_check=
+                                                suppress_symmetry_and_hollowness_check)
         self.Alpha = alpha
         self.VariableSizeDistanceClasses = variable_size_distance_classes
 
@@ -1210,7 +1223,7 @@ class MantelCorrelogram(CorrelationStats):
         # the distance class indices, which are the midpoints in each distance
         # class.
         dist_class_matrix, class_indices = self._find_distance_classes(geo_dm,
-            num_classes)
+                                                                       num_classes)
 
         # Start assembling the results.
         results['method_name'] = 'Mantel Correlogram'
@@ -1254,9 +1267,9 @@ class MantelCorrelogram(CorrelationStats):
                                          tail_type='greater')
                     mantel_test_results = mantel_test(num_perms)
                     p_val, orig_stat, perm_stats = (
-                            mantel_test_results['p_value'],
-                            mantel_test_results['r_value'],
-                            mantel_test_results['perm_stats'])
+                        mantel_test_results['p_value'],
+                        mantel_test_results['r_value'],
+                        mantel_test_results['perm_stats'])
 
                     # Negate the Mantel r statistic because we are using
                     # distance matrices, not similarity matrices (this is a
@@ -1268,8 +1281,8 @@ class MantelCorrelogram(CorrelationStats):
                     # (H1: r>0). Here, compute a one-tailed p-value in the
                     # direction of the sign.
                     if orig_stat < 0:
-                        perm_sum = sum([1 for ps in perm_stats \
-                            if ps <= orig_stat]) + 1
+                        perm_sum = sum([1 for ps in perm_stats
+                                        if ps <= orig_stat]) + 1
                         p_val = perm_sum / (num_perms + 1)
                     results['mantel_p'].append(p_val)
                 else:
@@ -1389,7 +1402,7 @@ class MantelCorrelogram(CorrelationStats):
 
     def _find_row_col_indices(self, idx):
         """Returns row, col for idx into flattened lower triangular matrix.
-        
+
         It is assumed that the index points to a matrix that was flattened,
         containing only the lower triangular elements (excluding the diagonal)
         in left-to-right, top-to-bottom order (such as that given by
@@ -1505,6 +1518,7 @@ class MantelCorrelogram(CorrelationStats):
 
 
 class Mantel(CorrelationStats):
+
     """Class for the Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a Mantel analysis on two
@@ -1535,8 +1549,8 @@ class Mantel(CorrelationStats):
                 matrices
         """
         super(Mantel, self).__init__([dm1, dm2], num_dms=2, min_dm_size=3,
-                suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+                                     suppress_symmetry_and_hollowness_check=
+                                     suppress_symmetry_and_hollowness_check)
         self.TailType = tail_type
 
     @property
@@ -1603,6 +1617,7 @@ class Mantel(CorrelationStats):
 
 
 class PartialMantel(CorrelationStats):
+
     """Class for the partial Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a partial Mantel analysis on
@@ -1633,8 +1648,8 @@ class PartialMantel(CorrelationStats):
                 matrices
         """
         super(PartialMantel, self).__init__([dm1, dm2, cdm], num_dms=3,
-                min_dm_size=3, suppress_symmetry_and_hollowness_check=\
-                suppress_symmetry_and_hollowness_check)
+                                            min_dm_size=3, suppress_symmetry_and_hollowness_check=
+                                            suppress_symmetry_and_hollowness_check)
 
     def __call__(self, num_perms=999):
         """Runs a partial Mantel test on the current distance matrices.
@@ -1654,8 +1669,8 @@ class PartialMantel(CorrelationStats):
         res = super(PartialMantel, self).__call__(num_perms)
 
         # Calculate the correlation statistic.
-        corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 -
-                                      rxz**2)*sqrt(1 - ryz**2))
+        corr = lambda rxy, rxz, ryz: (rxy - rxz * ryz) / (sqrt(1 -
+                                                               rxz ** 2) * sqrt(1 - ryz ** 2))
         # Load initial/placeholder values in the results dictionary.
         res['method_name'] = 'Partial Mantel'
         res['mantel_r'] = None
@@ -1688,14 +1703,13 @@ class PartialMantel(CorrelationStats):
             rval2 = pearson(dm1_perm_flat, cdm_flat)
             perm_stats.append(corr(rval1, rval2, rval3))
 
-            # Sum the permuted statistics for calculation of the final
-            # statistic.
             if perm_stats[-1] >= orig_stat:
-              numerator += 1
+                numerator += 1
         # Load the final statistics into the result dictionary.
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (num_perms + 1)
         return res
+
 
 def paired_difference_analyses(personal_ids_to_state_values,
                                analysis_categories,
@@ -1705,25 +1719,25 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                ymin=None,
                                ymax=None):
     """run paired difference analysis one sample t-tests and generate plots
-    
+
        Apply one-sample t-tests and generate plots to test for changes in
-       certain values with a state change. A state change here refers to a 
-       pre/post-type experimental design, such as pre-treatment to 
+       certain values with a state change. A state change here refers to a
+       pre/post-type experimental design, such as pre-treatment to
        post-treatment, and the values that are being tested for change can
-       be things like alpha diversity, abundance of specific taxa, a principal 
-       coordinate value (e.g., PC1 value before and after treatment), and so 
-       on. 
-       
-       The one-sample t-test is applied on each pair of differences. So, if 
+       be things like alpha diversity, abundance of specific taxa, a principal
+       coordinate value (e.g., PC1 value before and after treatment), and so
+       on.
+
+       The one-sample t-test is applied on each pair of differences. So, if
        experiment was based on looking for changes in proteobacteria abundance
-       with treatment, you would have pre- and post-treatment proteobacteria 
+       with treatment, you would have pre- and post-treatment proteobacteria
        abundances for a number of individuals. The difference would be computed
        between those, and the null hypothesis is that the mean of those differences
        is equal to zero (i.e., no change with treatment).
-       
+
        Line plots are also generated to show the change on a per-individual basis.
-    
-     personal_ids_to_state_values: a 2d dictionary mapping personal ids to potential 
+
+     personal_ids_to_state_values: a 2d dictionary mapping personal ids to potential
       analysis categories, which each contain a pre/post value. this might look like
       the following:
        {'firmicutes-abundance':
@@ -1736,84 +1750,88 @@ def paired_difference_analyses(personal_ids_to_state_values,
        examples of functions that can be useful for generating these data are
         qiime.parse.extract_per_individual_state_metadata_from_sample_metadata and
         qiime.parse.extract_per_individual_state_metadata_from_sample_metadata_and_biom
-      
-     analysis_categories: a list of categories to include in analyses (e.g, 
+
+     analysis_categories: a list of categories to include in analyses (e.g,
        ['firmicutes-abundance', 'bacteroidetes-abundace'])
-      
+
      state_values: an ordered list describing each of the states being compared (these
        are the x labels in the resulting plots)
-       
-     output_dir: directory where output should be written (will be created if 
+
+     output_dir: directory where output should be written (will be created if
        it doesn't exist)
-       
-     ymin: minimum y-value in plots (if it should be consistent across 
+
+     ymin: minimum y-value in plots (if it should be consistent across
        plots - by default will be chosen on a per-plot basis)
-       
-     ymax: maximum y-value in plots (if it should be consistent across 
+
+     ymax: maximum y-value in plots (if it should be consistent across
        plots - by default will be chosen on a per-plot basis)
     """
-                                   
+
     if len(state_values) != 2:
-        raise ValueError, ("Only two state values can be provided. "
-        "Support currently exists only for pre/post experimental design.")
-    
+        raise ValueError("Only two state values can be provided. "
+                         "Support currently exists only for pre/post experimental design.")
+
     # create the output directory if it doesn't already exist
     create_dir(output_dir)
-    
+
     num_analysis_categories = len(analysis_categories)
     x_values = range(len(state_values))
-    
+
     paired_difference_output_fp = \
-     join(output_dir,'paired_difference_comparisons.txt')
-    paired_difference_output_f = open(paired_difference_output_fp,'w')
+        join(output_dir, 'paired_difference_comparisons.txt')
+    paired_difference_output_f = open(paired_difference_output_fp, 'w')
     # write header line to output file
     paired_difference_output_f.write(
-     "#Metadata category\tNum differences (i.e., n)\tMean difference\t"
-     "Median difference\tt one sample\tt one sample parametric p-value\t"
-     "t one sample parametric p-value (Bonferroni-corrected)\n")
-    
+        "#Metadata category\tNum differences (i.e., n)\tMean difference\t"
+        "Median difference\tt one sample\tt one sample parametric p-value\t"
+        "t one sample parametric p-value (Bonferroni-corrected)\n")
+
     paired_difference_t_test_results = {}
-    
-    biom_table_fp = join(output_dir,'differences.biom')
-    biom_sids_fp = join(output_dir,'differences_sids.txt')
+
+    biom_table_fp = join(output_dir, 'differences.biom')
+    biom_sids_fp = join(output_dir, 'differences_sids.txt')
     biom_observation_ids = []
     biom_data = []
-    # need a list of personal_ids to build the biom table - 
+    # need a list of personal_ids to build the biom table -
     # ugly, but get it working first
     personal_ids = []
     for c in personal_ids_to_state_values.values():
         personal_ids.extend(c.keys())
     personal_ids = list(set(personal_ids))
-    
-    # initiate list of output file paths to return 
+
+    # initiate list of output file paths to return
     output_fps = [paired_difference_output_fp,
                   biom_table_fp,
                   biom_sids_fp]
-    
+
     num_successful_tests = 0
     for category_number, analysis_category in enumerate(analysis_categories):
-        personal_ids_to_state_metadatum = personal_ids_to_state_values[analysis_category]
-        analysis_category_fn_label = analysis_category.replace(' ','-')
-        plot_output_fp = join(output_dir,'%s.pdf' % analysis_category_fn_label)
+        personal_ids_to_state_metadatum = personal_ids_to_state_values[
+            analysis_category]
+        analysis_category_fn_label = analysis_category.replace(' ', '-')
+        plot_output_fp = join(
+            output_dir,
+            '%s.pdf' %
+            analysis_category_fn_label)
         fig = figure()
         axes = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        
-        # initialize a list to store the distribution of changes 
+
+        # initialize a list to store the distribution of changes
         # with state change
         differences = []
         pre_values = []
         post_values = []
         store_biom_datum = True
-        
+
         for personal_id in personal_ids:
             data = personal_ids_to_state_metadatum[personal_id]
             if None in data:
-                # if any of the data points are missing, don't store 
+                # if any of the data points are missing, don't store
                 # a difference for this individual, and don't store
                 # the category in the BIOM table
                 store_biom_datum = False
                 raise ValueError("Some data points are missing, "
-                                     "cannot create biom file.")
+                                 "cannot create biom file.")
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
@@ -1822,12 +1840,12 @@ def paired_difference_analyses(personal_ids_to_state_values,
                 difference = data[1] - data[0]
                 differences.append(difference)
                 # and plot the start and stop values as a line
-                axes.plot(x_values,data,line_color,linewidth=0.5)
-        
+                axes.plot(x_values, data, line_color, linewidth=0.5)
+
         if store_biom_datum:
             biom_observation_ids.append(analysis_category)
             biom_data.append(differences)
-        
+
         # run stats for current analysis category
         n = len(differences)
         mean_differences = mean(differences)
@@ -1837,59 +1855,60 @@ def paired_difference_analyses(personal_ids_to_state_values,
         p_value = t_one_sample_results[1]
         if p_value is not None:
             num_successful_tests += 1
-        # analysis_category gets stored as the key and the first entry 
-        # in the value to faciliate sorting the values and writing to 
+        # analysis_category gets stored as the key and the first entry
+        # in the value to faciliate sorting the values and writing to
         # file
         paired_difference_t_test_results[analysis_category] = \
-                                       [analysis_category,
-                                        n,
-                                        mean_differences,
-                                        median_differences,
-                                        t,
-                                        p_value]
-        
+            [analysis_category,
+             n,
+             mean_differences,
+             median_differences,
+             t,
+             p_value]
+
         # Finalize plot for current analysis category
         axes.plot(x_values,
-                  [median(pre_values), median(post_values)], 
-                  line_color, 
+                  [median(pre_values), median(post_values)],
+                  line_color,
                   linewidth=3,
                   ls='--')
         axes.set_ylabel(analysis_category)
         axes.set_xticks(range(len(state_values)))
         axes.set_xticklabels(state_values)
-        axes.set_ylim(ymin=ymin,ymax=ymax)
-        fig.savefig(plot_output_fp,transparent=True)
+        axes.set_ylim(ymin=ymin, ymax=ymax)
+        fig.savefig(plot_output_fp, transparent=True)
         output_fps.append(plot_output_fp)
-    
-    # write a biom table based on differences and 
-    # a list of the sample ids that could be converted 
+
+    # write a biom table based on differences and
+    # a list of the sample ids that could be converted
     # to a mapping file for working with this biom table
-    
+
     biom_table = table_factory(biom_data,
                                personal_ids,
                                biom_observation_ids,
                                constructor=DenseOTUTable)
-    biom_table_f = open(biom_table_fp,'w')
+    biom_table_f = open(biom_table_fp, 'w')
     biom_table_f.write(format_biom_table(biom_table))
     biom_table_f.close()
-    biom_sids_f = open(biom_sids_fp,'w')
+    biom_sids_f = open(biom_sids_fp, 'w')
     biom_sids_f.write('#SampleID\n')
     biom_sids_f.write('\n'.join(personal_ids))
     biom_sids_f.close()
-    
+
     # sort stats output by uncorrected p-value, compute corrected p-value,
     # and write results to file
     paired_difference_t_test_lines = \
-     paired_difference_t_test_results.values()
+        paired_difference_t_test_results.values()
     paired_difference_t_test_lines.sort(key=lambda x: x[5])
     for r in paired_difference_t_test_lines:
         p_value = r[5]
         if p_value is None:
             bonferroni_p_value = None
         else:
-            bonferroni_p_value = min([p_value * num_successful_tests,1.0])
-        paired_difference_output_f.write('\t'.join(map(str,r + [bonferroni_p_value])))
+            bonferroni_p_value = min([p_value * num_successful_tests, 1.0])
+        paired_difference_output_f.write(
+            '\t'.join(map(str, r + [bonferroni_p_value])))
         paired_difference_output_f.write('\n')
     paired_difference_output_f.close()
-    
+
     return output_fps, paired_difference_t_test_results

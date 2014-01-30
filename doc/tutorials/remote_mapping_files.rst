@@ -76,7 +76,7 @@ If your spreadsheet has multiple worksheets (i.e. tabs), `load_remote_mapping_fi
 
 You may also specify the entire URL of the Google Spreadsheet (instead of only supplying the key) using the same -k option that we used above. The script will attempt to extract the key from the URL.
 
-**Note:** Now that we have a local copy of our mapping file, it is a good idea to run `check_id_map.py <../scripts/check_id_map.html>`_ on the mapping file to make sure it is a valid mapping file and that there weren't any problems during the export/download process.
+**Note:** Now that we have a local copy of our mapping file, it is a good idea to run `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ on the mapping file to make sure it is a valid mapping file and that there weren't any problems during the export/download process.
 
 Caveats
 -------
@@ -92,6 +92,6 @@ Remote mapping files are very new to QIIME and are thus an experimental feature.
 
 * Seamless integration with existing QIIME scripts to allow a remote mapping file to be specified directly as input (without having to run `load_remote_mapping_file.py <../scripts/load_remote_mapping_file.html>`_ beforehand).
 
-* Option to run `check_id_map.py <../scripts/check_id_map.html>`_ as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.
+* Option to run `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.
 
 * Ability to authenticate users to allow access to spreadsheets that are not "published to the web" and to allow edits.

@@ -15,6 +15,7 @@ __email__ = "kpatnode1@gmail.com"
 from t2t import nlevel
 from cogent.parse.fasta import MinimalFastaParser
 
+
 def clean_output(assigned_constrings, seq_names):
     """Extracts seq_names consensus strings from assigned_constrings"""
     results = {}
@@ -25,17 +26,20 @@ def clean_output(assigned_constrings, seq_names):
 
     return results
 
+
 def expand_constrings(sample_id_map):
     """Adds spaces to the constrings to fix incompatibility with nlevel."""
     new_id_map = dict([x.split('\t') for x in sample_id_map])
 
     for seq_id, constring in new_id_map.iteritems():
-        #nlevel looks for '; ' when separating constrings.
-        #Unfortunately, not all id maps(green genes) have a space so this fixes that.
+        # nlevel looks for '; ' when separating constrings.
+        # Unfortunately, not all id maps(green genes) have a space so this
+        # fixes that.
         if len(constring.split('; ')) == 1:
             new_id_map[seq_id] = '; '.join(new_id_map[seq_id].split(';'))
 
     return new_id_map
+
 
 def generate_constrings(tree, tipname_map, verbose=False):
     """Assigns taxonomy to unidentified sequences in tree.
@@ -62,16 +66,17 @@ def generate_constrings(tree, tipname_map, verbose=False):
 
     return constrings
 
+
 def prep_consensus(sample_id_map, seq_names):
     """Adds representative sequences to the consensus map and marks them to be identified."""
     new_id_map = expand_constrings(sample_id_map)
 
     for duplicate in set(seq_names).intersection(set(new_id_map.keys())):
-        #Resolve duplicate names
+        # Resolve duplicate names
         new_id_map[duplicate + '_R'] = new_id_map.pop(duplicate)
 
     unclassified_map = dict()
-    #Creates a map of placeholders for the sequences to be identified.
+    # Creates a map of placeholders for the sequences to be identified.
     for name in seq_names:
         unclassified_map[name] = 'Unclassified'
 
@@ -79,6 +84,6 @@ def prep_consensus(sample_id_map, seq_names):
 
     result = []
     for seq_id, constring in new_id_map.iteritems():
-        result.append(seq_id+'\t'+constring)
+        result.append(seq_id + '\t' + constring)
 
     return result

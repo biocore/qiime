@@ -16,10 +16,10 @@ import subprocess
 
 from qiime.process_sff import (
     check_sfffile,
-    )
+)
 from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff,
-    )
+)
 
 
 def filter_sff_reads(sff_data, ids_to_keep=None, ids_to_remove=None):
@@ -83,7 +83,7 @@ def make_per_library_sff(sff_fps, id_list_fp, debug=False):
 
 
 def make_per_library_sff_with_sfffile(
-    sff_fps, id_list_fp, sfffile_path=None, debug=False):
+        sff_fps, id_list_fp, sfffile_path=None, debug=False):
     id_list_basepath, _ = os.path.splitext(id_list_fp)
     output_fp = id_list_basepath + '.sff'
 
@@ -96,7 +96,7 @@ def make_per_library_sff_with_sfffile(
 
 
 def make_per_library_sffs(
-    sff_fps, id_list_dir, use_sfftools=False, sfffile_path=None, debug=False):
+        sff_fps, id_list_dir, use_sfftools=False, sfffile_path=None, debug=False):
     for dirpath, dirnames, filenames in os.walk(id_list_dir):
         for filename in filenames:
             if filename.startswith('.'):

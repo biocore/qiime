@@ -9,5 +9,6 @@ __email__ = "william.a.walters@gmail.com"
 
 # Should be part of cogent.parse.fastq
 
+
 class FastqParseError(Exception):
     pass

@@ -10,45 +10,53 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+import sys
 from os.path import isdir, split, join, abspath, exists
 from os import chdir, getcwd
 from shutil import copytree, rmtree
 from glob import glob
 from site import addsitedir
 from tempfile import NamedTemporaryFile
+from traceback import format_exc
 from cogent.util.misc import remove_files
-from qcli.test import (TimeExceededError, 
+from pyqi.util import pyqi_system_call
+from qcli.test import (TimeExceededError,
                        initiate_timeout,
-                       disable_timeout,
-                       qcli_system_call)
+                       disable_timeout)
 from qiime.util import get_qiime_temp_dir
 
+
 class FakeFile(object):
+
     " A class to convert a string into a file-like object"
-    def __init__(self,d=""):
+
+    def __init__(self, d=""):
         self.s = d.split('\n')
-    
+
     def __iter__(self):
         return iter(self.s)
-    
-    def write(self,s):
+
+    def write(self, s):
         self.s += s
+
     def close(self):
         pass
-    def seek(self,seek_position):
+
+    def seek(self, seek_position):
         pass
+
 
 def get_test_data():
     """ return a small data set with properties convenient for testing qiime
-    
+
     Convenient properties of this test data set include:
-    
+
      - Samples form a meaningful pattern in unifrac PCoA space (fecal, L_palm,
        and tongue samples cluster independently).
      - Sample categories differ in alpha diversity (fecal < tongue < L_palm).
      - A small reference collection is included.
-     - When clustered against this reference at 97% identity, some of the 
-       reads hit the reference and some do not. Some of the input reads are <60% 
+     - When clustered against this reference at 97% identity, some of the
+       reads hit the reference and some do not. Some of the input reads are <60%
        similar to any of the reference sequences.
      - Two of the samples (f2, f3) contain identical sequences.
      - One sample (not16S.1) contains seqs that are not 16s and all drop out.
@@ -592,9 +600,9 @@ t1	AGTGAGAGAAGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	21	1	14173	tongue1, contains 
 t2	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	22	1	14174	tongue2
 not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	14174	randomly generated sequence plus some variants, these should not map to 16S
 """
-    
+
     biom = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "QIIME 1.6.0-dev","date": "2013-02-09T09:30:11.550590","matrix_type": "sparse","matrix_element_type": "int","shape": [14, 9],"data": [[0,0,20],[0,1,18],[0,2,18],[0,3,22],[0,4,4],[1,4,1],[2,0,1],[2,4,1],[2,5,1],[3,6,1],[4,4,1],[5,7,20],[6,4,1],[7,4,1],[7,5,1],[8,4,1],[8,6,2],[8,8,3],[9,7,2],[10,5,1],[11,4,9],[11,5,20],[11,6,1],[11,8,4],[12,4,3],[12,6,19],[12,8,15],[13,0,1],[13,1,4],[13,2,4]],"rows": [{"id": "295053", "metadata": {"taxonomy": ["k__Bacteria"]}},{"id": "42684", "metadata": {"taxonomy": ["k__Bacteria", "p__Proteobacteria"]}},{"id": "None11", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None10", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None7", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None6", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None5", "metadata": {"taxonomy": ["k__Bacteria"]}},{"id": "None4", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None3", "metadata": {"taxonomy": ["k__Bacteria"]}},{"id": "None2", "metadata": {"taxonomy": ["k__Bacteria"]}},{"id": "None1", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "879972", "metadata": {"taxonomy": ["k__Bacteria"]}},{"id": "None9", "metadata": {"taxonomy": ["Unclassified"]}},{"id": "None8", "metadata": {"taxonomy": ["k__Bacteria"]}}],"columns": [{"id": "f2", "metadata": null},{"id": "f1", "metadata": null},{"id": "f3", "metadata": null},{"id": "f4", "metadata": null},{"id": "p2", "metadata": null},{"id": "p1", "metadata": null},{"id": "t1", "metadata": null},{"id": "not16S.1", "metadata": null},{"id": "t2", "metadata": null}]}"""
-    
+
     tree = """(None8:0.09606,((879972:0.05039,None3:0.00778)0.980:0.15948,((None11:0.07161,None4:0.06965)0.917:0.09643,(295053:0.06096,42684:0.15599)0.910:0.08898)0.899:0.09227)0.958:0.13976,(None7:0.10435,(None5:0.02626,None9:0.00014)1.000:0.25335)0.753:0.0465);"""
 
     result['seqs'] = seqs.split('\n')
@@ -606,165 +614,384 @@ not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	14174	randomly gene
     result['refseqs_tax'] = refseqs_tax.split('\n')
     result['refseqs_aligned'] = refseqs_aligned.split('\n')
     result['refseqs_aligned_lanemask'] = refseqs_aligned_lanemask.split('\n')
-    
+
     return result
 
+
 def write_test_data(output_dir):
-    """ write small test data set files to output_dir 
-    
-        This function is convenient for interactive testing. If you need 
+    """ write small test data set files to output_dir
+
+        This function is convenient for interactive testing. If you need
         some test files to work with, you can just run:
-        
+
         python -c "from qiime.test import write_test_data; write_test_data('.')"
     """
     test_data = get_test_data()
     for k, v in test_data.items():
-        f = open(join(output_dir,k),'w')
+        f = open(join(output_dir, k), 'w')
         f.write('\n'.join(v))
         f.close()
-    
+
+
 def get_test_data_fps():
-    """ Returns test data as dict of filepaths. 
-    
-    Filepaths are created with the tempfile module, and therefore do not 
+    """ Returns test data as dict of filepaths.
+
+    Filepaths are created with the tempfile module, and therefore do not
     explcitly need to be cleaned up.
     """
     test_data = get_test_data()
     temp_dir = get_qiime_temp_dir()
     result = {}
     for k, v in test_data.items():
-        f = NamedTemporaryFile(prefix=k,dir=temp_dir)
+        f = NamedTemporaryFile(prefix=k, dir=temp_dir)
         f.write('\n'.join(v))
         f.flush()
         result[k] = (f.name, f)
     return result
+
 
 def run_script_usage_tests(test_data_dir,
                            scripts_dir,
                            working_dir,
                            verbose=False,
                            tests=None,
-                           failure_log_fp=None,
                            force_overwrite=False,
                            timeout=60):
     """ Test script_usage examples when test data is present in test_data_dir
 
-        Returns a result summary string and the number of script usage
-        examples (i.e. commands) that failed.
-        
-        This code was derived from qcli-0.1.0. The author of this function, 
-         Greg Caporaso, gives permission to include this GPL code in QIIME. 
+        Returns a result summary string and a boolean indicating whether there
+        were any errors or failures while running the commands.
+
+        This code was derived from qcli-0.1.0. The author of this function,
+         Greg Caporaso, gives permission to include this GPL code in QIIME.
     """
-    # process input filepaths and directories
-    test_data_dir = abspath(test_data_dir)
-    working_dir = join(working_dir,'script_usage_tests')
-    if force_overwrite and exists(working_dir):
-        rmtree(working_dir)
-    if failure_log_fp != None:
-        failure_log_fp = abspath(failure_log_fp)
+    working_dir = join(working_dir, 'script_usage_tests')
 
-    if tests == None:
-        tests = [split(d)[1] for d in sorted(glob('%s/*' % test_data_dir)) if isdir(d)]
-    
+    logger = None
     if verbose:
-        print 'Tests to run:\n %s' % ' '.join(tests)
-    
-    addsitedir(scripts_dir)
-    
-    failed_tests = []
-    warnings = []
-    total_tests = 0
-    for test in tests:
-        
-        # import the usage examples - this is possible because we added 
-        # scripts_dir to the PYTHONPATH above
-        script_fn = '%s/%s.py' % (scripts_dir,test)
-        script = __import__(test)
-        usage_examples = script.script_info['script_usage']
-        
-        if verbose:
-            print '\nTesting %d usage examples from: %s' % (len(usage_examples),script_fn)
-        
-        # init the test environment
-        test_input_dir = '%s/%s' % (test_data_dir,test)
-        test_working_dir = '%s/%s' % (working_dir,test)
-        copytree(test_input_dir,test_working_dir)
-        chdir(test_working_dir)
-        
-        # remove pre-exisitng output files if any
-        try:
-            script_usage_output_to_remove = script.script_info['script_usage_output_to_remove']
-        except KeyError:
-            script_usage_output_to_remove = []
-        for e in script_usage_output_to_remove:
-            rmtree(e.replace('$PWD',getcwd()),ignore_errors=True)
-            remove_files([e.replace('$PWD',getcwd())],error_on_missing=False)
-        
-        if verbose:
-            print 'Running tests in: %s' % getcwd()
-            print 'Tests:'
-        
-        for usage_example in usage_examples:
-            if '%prog' not in usage_example[2]:
-                warnings.append('%s usage examples do not all use %%prog to represent the command name. You may not be running the version of the command that you think you are!' % test)
-            cmd = usage_example[2].replace('%prog',script_fn)
-            if verbose:
-                print '%s' % cmd,
-            
-            timed_out = False
-            initiate_timeout(timeout)
-            try:
-                stdout, stderr, return_value = qcli_system_call(cmd)
-            except TimeExceededError:
-                timed_out = True
-            else:
-                disable_timeout()
-            
-            total_tests += 1
-            if timed_out:
-                # Add a string instead of return_value - if fail_tests ever ends
-                # up being returned from this function we'll want to code this as 
-                # an int for consistency in the return value type.
-                failed_tests.append((cmd, "", "", "None, time exceeded"))
-                if verbose: print ": Timed out"
-            elif return_value != 0:
-                failed_tests.append((cmd, stdout, stderr, return_value))
-                if verbose: 
-                    print ": Failed\nStdout:\n%s\nStderr:\n%s\n" % \
-                     (stdout, stderr)
-            else:
-                pass
-                if verbose: print ": Pass"
-        
-        if verbose:
-            print ''
-            
-    if failure_log_fp:
-        failure_log_f = open(failure_log_fp,'w')
-        if len(failed_tests) == 0:
-            failure_log_f.write('All script interface tests passed.\n')
-        else:
-            i = 1
-            for cmd, stdout, stderr, return_value in failed_tests:
-                failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %s\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,str(return_value), stdout, stderr))
-                i += 1
-        failure_log_f.close()
-    
-    
-    if warnings:
-        print 'Warnings:'
-        for warning in warnings:
-            print ' ' + warning
-        print ''
-    
-    result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (total_tests,len(tests),len(failed_tests))
-    if len(failed_tests) > 0:
-        failed_scripts = set([split(e[0].split()[0])[1] for e in failed_tests])
-        result_summary += '\nFailed scripts were: %s' % " ".join(failed_scripts)
-    if failure_log_fp:
-        result_summary += "\nFailures are summarized in %s" % failure_log_fp
-    
-    rmtree(working_dir)
-    
-    return result_summary, len(failed_tests)
+        logger = sys.stdout
 
+    script_tester = ScriptTester(logger=logger)
+    script_tester(scripts_dir, test_data_dir, working_dir, scripts=tests,
+                  timeout=timeout, force_overwrite=force_overwrite)
+    result_summary = script_tester.result_summary()
+    has_failures_or_errors = script_tester.has_failures_or_errors()
+
+    if exists(working_dir):
+        rmtree(working_dir)
+
+    return result_summary, has_failures_or_errors
+
+class UsageExampleImportError(ImportError):
+    pass
+
+class NullOutputStream(object):
+    """Output stream that mimics writing to /dev/null.
+
+    Taken from http://stackoverflow.com/a/2929954
+
+    """
+
+    def write(self, *_):
+        pass
+
+class ScriptTester(object):
+    """Harness for testing command-line scripts.
+
+    Given a directory of test data and a directory of scripts, this class
+    attempts to import usage examples from each script and run the example
+    commands using the corresponding test data.
+
+    Basic stats are collected, including script errors and failures. In this
+    context, a script error means that a problem has occurred while attempting
+    to load the script and its usage examples (for example, an ``ImportError``,
+    or an improperly-formatted script file). A failure means that a script was
+    successfully loaded, but when running a usage example, the command returned
+    an exit code that was not 0.
+
+    The class also imposes time limits for how long a command can be run; if a
+    command exceeds the allotted time, this is counted as a failure too.
+
+    """
+
+    def __init__(self, logger=None):
+        """Initialize a script testing harness with optional logging.
+
+        Arguments:
+        logger -- file-like object to have status messages recorded to. Must
+            have a ``write`` method. The user is responsible for opening and
+            closing the "file" (if necessary). Status messages include
+            successes, failures, errors, and warnings
+
+        """
+        if logger is None:
+            logger = NullOutputStream()
+        self.logger = logger
+
+        self.total_scripts = 0
+        self.total_commands = 0
+
+        self.successes = []
+        self.failures = []
+        self.timeouts = []
+        self.warnings = []
+
+        # Maps script error type to a list of scripts that had the error. Each
+        # error type has a partial error message that is used when formatting a
+        # summary (see _format_script_error_summary). Each type also has a
+        # second (generally more verbose) error message that is used when
+        # formatting messages to be written to the logger (see
+        # _record_script_error).
+        self.script_errors = {
+            'missing': ([],
+                        'be loaded because they do not exist',
+                        'Script %s does not exist.\n'),
+            'import': ([],
+                       'be imported',
+                       'Could not import the script %s. Original error '
+                       'message:\n\n%s'),
+            'script_info': ([],
+                            'have their usage examples loaded because the '
+                            'script_info dictionary did not exist',
+                            'script_info dictionary does not exist in script '
+                            '%s. Original error message:\n\n%s'),
+            'script_usage': ([],
+                             'have their usage examples loaded because the '
+                             'script_info dictionary did not have usage '
+                             'examples',
+                             'script_info dictionary in script %s does not '
+                             'have usage examples that are accessible via key '
+                             '"script_usage". Original error message:\n\n%s'),
+            'other': ([],
+                      'be loaded',
+                      'Could not load the script %s. Original error '
+                      'message:\n\n%s')
+        }
+
+    def __call__(self, scripts_dir, test_data_dir, working_dir, scripts=None,
+                 timeout=60, force_overwrite=False):
+        """Run the test harness over the scripts in the provided directory.
+
+        This method may be called multiple times using the same
+        ``ScriptTester`` instance. This may be useful, for example, if you want
+        to use the same test harness to collate results for multiple script
+        directories and generate a single master report when finished.
+
+        This method does not return anything, as all results are recorded in
+        instance variables. Use ``ScriptTester.result_summary`` to generate a
+        summary report.
+
+        Arguments:
+        scripts_dir -- dirpath of scripts directory
+        test_data_dir -- dirpath of corresponding test data directory
+        working_dir -- dirpath where the tests will be run
+        scripts -- list of script names to test (without the ``.py``
+            extension). If not provided, all scripts that have test data in
+            ``test_data_dir`` will be tested
+        timeout -- time limit in seconds that a single script usage example
+            (command) can run before being halted as a failure
+        force_overwrite -- if ``True``, ``working_dir`` will be removed if it
+            already exists
+
+        """
+        test_data_dir = abspath(test_data_dir)
+
+        if force_overwrite and exists(working_dir):
+            rmtree(working_dir)
+
+        if scripts is None:
+            scripts = [split(d)[1] for d in
+                       sorted(glob(join(test_data_dir, '*'))) if isdir(d)]
+
+        self._log('Scripts to test:\n %s' % ' '.join(scripts))
+        self._log('')
+
+        addsitedir(scripts_dir)
+
+        for script_name in scripts:
+            self.total_scripts += 1
+
+            # import the usage examples - this is possible because we added
+            # scripts_dir to the PYTHONPATH above
+            try:
+                usage_examples = self._load_usage_examples(scripts_dir,
+                                                           script_name)
+            except UsageExampleImportError:
+                # _load_usage_examples has already taken care of
+                # recording/reporting the errors, so skip to the next script to
+                # test.
+                continue
+
+            script_fp = join(scripts_dir,
+                             self._append_script_extension(script_name))
+
+            self._log('Testing %d usage examples from: %s' %
+                      (len(usage_examples), script_fp))
+
+            # init the test environment
+            test_input_dir = join(test_data_dir, script_name)
+            test_working_dir = join(working_dir, script_name)
+            copytree(test_input_dir, test_working_dir)
+            chdir(test_working_dir)
+
+            self._log('Running tests in: %s' % getcwd())
+            self._log('Tests:')
+
+            for usage_example in usage_examples:
+                if '%prog' not in usage_example[2]:
+                    msg = ('%s usage examples do not all use %%prog to '
+                           'represent the command name. You may not be '
+                           'running the version of the command that you think '
+                           'you are!' % script_name)
+                    self._log(msg)
+                    self.warnings.append(msg)
+
+                cmd = usage_example[2].replace('%prog', script_fp)
+                self._run_command(cmd, timeout)
+
+            self._log('')
+
+    def has_failures_or_errors(self):
+        """Return ``True`` if there's failures or errors in testing results.
+
+        Useful as an overall check to see if there were any problems with a
+        testing run. Status of warnings is ignored.
+
+        """
+        return (self._num_failures() > 0) or (self._num_script_errors() > 0)
+
+    def result_summary(self):
+        """Return a summary string reporting various test results.
+
+        Includes failed scripts, as well as script errors stratified by error
+        type. Warnings are also included.
+
+        """
+        summary = ['Ran %d commands to test %d scripts. %d of these commands '
+                   'failed and %d scripts could not be tested due to errors.' %
+                   (self.total_commands, self.total_scripts,
+                    self._num_failures(), self._num_script_errors())]
+
+        if self._num_failures() > 0:
+            summary.append('Failed scripts were: %s' %
+                           ' '.join(self._failed_scripts()))
+
+        for error_info in self.script_errors.values():
+            if len(error_info[0]) > 0:
+                summary.append(self._format_script_error_summary(
+                    error_info[0], error_info[1]))
+
+        if self.warnings:
+            summary.append('Warnings:')
+            for warning in self.warnings:
+                summary.append(' ' + warning)
+
+        return '\n'.join(summary)
+
+    def _load_usage_examples(self, scripts_dir, script_name):
+        script_basename = self._append_script_extension(script_name)
+        script_fp = join(scripts_dir, script_basename)
+
+        if not exists(script_fp):
+            self._record_script_error('missing', script_basename)
+            raise UsageExampleImportError
+
+        try:
+            script = __import__(script_name)
+        except ImportError as e:
+            self._record_script_error('import', script_basename, format_exc())
+            raise UsageExampleImportError
+        except Exception as e:
+            self._record_script_error('other', script_basename, format_exc())
+            raise UsageExampleImportError
+
+        try:
+            usage_examples = script.script_info['script_usage']
+        except AttributeError:
+            self._record_script_error('script_info', script_basename,
+                                      format_exc())
+            raise UsageExampleImportError
+        except KeyError:
+            self._record_script_error('script_usage', script_basename,
+                                      format_exc())
+            raise UsageExampleImportError
+
+        return usage_examples
+
+    def _record_script_error(self, error_type, script_basename,
+                             orig_error_msg=None):
+        error_info = self.script_errors[error_type]
+        error_info[0].append(script_basename)
+        msg = error_info[2]
+
+        if orig_error_msg is None:
+            msg = msg % script_basename
+        else:
+            msg = msg % (script_basename, orig_error_msg)
+
+        self._log(msg)
+
+    def _run_command(self, cmd, timeout):
+        self._log(cmd, append_newline=False)
+
+        timed_out = False
+        initiate_timeout(timeout)
+
+        try:
+            stdout, stderr, return_value = pyqi_system_call(cmd)
+        except TimeExceededError:
+            timed_out = True
+        else:
+            disable_timeout()
+
+        self.total_commands += 1
+
+        if timed_out:
+            self.timeouts.append(cmd)
+            msg = ": Timed out"
+        elif return_value == 0:
+            self.successes.append(cmd)
+            msg = ": Pass"
+        else:
+            self.failures.append((cmd, stdout, stderr, return_value))
+            msg = ": Failed\nStdout:\n%s\nStderr:\n%s\n" % (stdout, stderr)
+
+        self._log(msg)
+
+    def _num_failures(self):
+        return len(self.failures) + len(self.timeouts)
+
+    def _num_script_errors(self):
+        num_errors = 0
+
+        for error_info in self.script_errors.values():
+            num_errors += len(error_info[0])
+
+        return num_errors
+
+    def _failed_scripts(self):
+        failed = set()
+
+        for failure in self.failures:
+            failed.add(self._parse_script_name(failure[0]))
+        for timeout in self.timeouts:
+            failed.add(self._parse_script_name(timeout))
+
+        return sorted(list(failed))
+
+    def _format_script_error_summary(self, error_list, msg):
+        return ('%d scripts could not %s. Scripts were: %s' %
+                (len(error_list), msg, ' '.join(error_list)))
+
+    def _append_script_extension(self, script_name):
+        return script_name if script_name.endswith('.py') \
+                else script_name + '.py'
+
+    def _parse_script_name(self, cmd):
+        return split(cmd.split()[0])[1]
+
+    def _log(self, msg, append_newline=True):
+        self.logger.write(msg)
+
+        if append_newline:
+            self.logger.write('\n')

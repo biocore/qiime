@@ -4,8 +4,8 @@ from cogent.util.unit_test import TestCase, main
 from os.path import join, exists
 from os import remove, getcwd
 from cogent.app.bwa import BWA, BWA_index, BWA_aln, BWA_samse, \
-                BWA_sampe, BWA_bwasw, create_bwa_index_from_fasta_file, \
-                assign_reads_to_database
+    BWA_sampe, BWA_bwasw, create_bwa_index_from_fasta_file, \
+    assign_reads_to_database
 from cogent.app.util import get_tmp_filename, ApplicationError
 
 __author__ = "Adam Robbins-Pianka"
@@ -17,7 +17,9 @@ __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
 __status__ = "Production"
 
+
 class BWAtests(TestCase):
+
     """Tests for the BWA app controller
     """
 
@@ -32,7 +34,7 @@ class BWAtests(TestCase):
         """
 
         pass
-        
+
     def tearDown(self):
         """Properly and politely terminates the test.
 
@@ -68,13 +70,13 @@ class BWAtests(TestCase):
         index_is = BWA_index(params=index_params_is, HALT_EXEC=True)
         index_bwtsw = BWA_index(params=index_params_bwtsw, HALT_EXEC=True)
         index_invalid = BWA_index(params=index_params_invalid, HALT_EXEC=True)
-        index_invalid_prefix = BWA_index(params=index_params_invalid_prefix, \
-        HALT_EXEC=True)
-        index_valid_prefix = BWA_index(params=index_params_valid_prefix, \
-        HALT_EXEC=True)
+        index_invalid_prefix = BWA_index(params=index_params_invalid_prefix,
+                                         HALT_EXEC=True)
+        index_valid_prefix = BWA_index(params=index_params_valid_prefix,
+                                       HALT_EXEC=True)
 
         # Should not be allowed
-        self.assertRaisesRegexp(ApplicationError, "Invalid argument", 
+        self.assertRaisesRegexp(ApplicationError, "Invalid argument",
                                 index_invalid.check_arguments)
         self.assertRaisesRegexp(ApplicationError, "Invalid argument",
                                 index_invalid_prefix.check_arguments)
@@ -91,11 +93,11 @@ class BWAtests(TestCase):
         # -n must be a float (expressed either as a float or as a string)
         # -o must be an int (expressed either as an int or as a string)
         # pass, both valid
-        aln_params_valid = {'-n': 3.0, '-o': 5, '-f':'/sai_out'} 
+        aln_params_valid = {'-n': 3.0, '-o': 5, '-f': '/sai_out'}
         # fail, second invalid
-        aln_params_invalid1 = {'-n': 3.0, '-o': 'nope', '-f':'/sai_out'} 
+        aln_params_invalid1 = {'-n': 3.0, '-o': 'nope', '-f': '/sai_out'}
         # fail, first invalid
-        aln_params_invalid2 = {'-n': '3.5.1', '-o': 4, '-f':'/sai_out'} 
+        aln_params_invalid2 = {'-n': '3.5.1', '-o': 4, '-f': '/sai_out'}
         # fail, did not specify -f
         aln_params_invalid3 = {'-n': 3.0, '-o': 5}
 
@@ -108,22 +110,22 @@ class BWAtests(TestCase):
         test_paths = {'prefix': '/fa_in', 'fastq_in': '/fq_in'}
 
         # Should Halt Exec (AssertionError) right before execution
-        self.assertRaisesRegexp(AssertionError, 'Halted exec', aln_valid, 
+        self.assertRaisesRegexp(AssertionError, 'Halted exec', aln_valid,
                                 test_paths)
         # also need to make sure the base command is correct
         self.assertIn('; bwa aln -f /sai_out -n 3.0 -o 5 /fa_in /fq_in',
-                     aln_valid.BaseCommand)
+                      aln_valid.BaseCommand)
 
         # Should fail
-        self.assertRaisesRegexp(ApplicationError, 
+        self.assertRaisesRegexp(ApplicationError,
                                 "Invalid argument", aln_invalid1,
                                 test_paths)
 
-        self.assertRaisesRegexp(ApplicationError, 
+        self.assertRaisesRegexp(ApplicationError,
                                 "Invalid argument", aln_invalid2,
                                 test_paths)
 
-        self.assertRaisesRegexp(ApplicationError, 
+        self.assertRaisesRegexp(ApplicationError,
                                 "Please specify an output file",
                                 aln_invalid3, test_paths)
 
@@ -138,16 +140,16 @@ class BWAtests(TestCase):
         # Arguments for BWA_bwasw, which was chosen since it is the only one
         # that also has an optional argument (optional arguments are denoted
         # by a leading underscore)
-        missing = {'prefix':'/fa_in', '_query_fasta_2': '/mate'}
-        extra = {'prefix':'/fa_in', 'query_fasta':'/query_fasta', 
-                 'extra':'/param'}
-        rel_fp = {'prefix':'fa_in', 'query_fasta':'/query_fasta'}
-        valid = {'prefix':'/fa_in', 'query_fasta':'/query_fasta'}
-        valid_with_mate = {'prefix':'/fa_in', 'query_fasta':'/query_fasta', 
-                           '_query_fasta_2':'/mate'}
+        missing = {'prefix': '/fa_in', '_query_fasta_2': '/mate'}
+        extra = {'prefix': '/fa_in', 'query_fasta': '/query_fasta',
+                 'extra': '/param'}
+        rel_fp = {'prefix': 'fa_in', 'query_fasta': '/query_fasta'}
+        valid = {'prefix': '/fa_in', 'query_fasta': '/query_fasta'}
+        valid_with_mate = {'prefix': '/fa_in', 'query_fasta': '/query_fasta',
+                           '_query_fasta_2': '/mate'}
 
         # instantiate the object
-        bwasw = BWA_bwasw(params={'-f':'/sam_out'}, HALT_EXEC=True)
+        bwasw = BWA_bwasw(params={'-f': '/sam_out'}, HALT_EXEC=True)
 
         # should raise ApplicationError for wrong I/O files; failure
         self.assertRaisesRegexp(ApplicationError, "Missing required input",
@@ -158,10 +160,10 @@ class BWAtests(TestCase):
                                 bwasw, rel_fp)
 
         # should raise AssertionError (Halt Exec); success
-        # tests valid arguments with and without the optional 
+        # tests valid arguments with and without the optional
         # _query_fasta_2 argument
         self.assertRaisesRegexp(AssertionError, 'Halted exec', bwasw, valid)
-        self.assertRaisesRegexp(AssertionError, 'Halted exec', bwasw, 
+        self.assertRaisesRegexp(AssertionError, 'Halted exec', bwasw,
                                 valid_with_mate)
 
     def test_get_base_command(self):
@@ -176,15 +178,14 @@ class BWAtests(TestCase):
         """
 
         # instantiate one instance
-        aln = BWA_aln(params = {'-n': 1.0, '-f':'/sai_out'}, HALT_EXEC=True)
+        aln = BWA_aln(params={'-n': 1.0, '-f': '/sai_out'}, HALT_EXEC=True)
 
         # set up two different sets of files
-        first_files = {'prefix':'/fa_in1', 'fastq_in':'/fq_in1'}
-        second_files = {'prefix':'/fa_in2', 'fastq_in':'/fq_in2'}
-        
+        first_files = {'prefix': '/fa_in1', 'fastq_in': '/fq_in1'}
+        second_files = {'prefix': '/fa_in2', 'fastq_in': '/fq_in2'}
 
         # make sure both sets run, and that the command appears to be correct
-        self.assertRaisesRegexp(AssertionError, 
+        self.assertRaisesRegexp(AssertionError,
                                 'Halted exec', aln, first_files)
         self.assertIn('; bwa aln -f /sai_out -n 1.0 /fa_in1 /fq_in1',
                       aln.BaseCommand)
@@ -196,13 +197,13 @@ class BWAtests(TestCase):
 
         # instantiate another object, to test that there is no cross-talk
         # between instances with the same baseclass
-        aln2 = BWA_aln(params = {'-n': 2.5, '-o': 7, '-f':'/sai_out'},
-                                HALT_EXEC=True)
+        aln2 = BWA_aln(params={'-n': 2.5, '-o': 7, '-f': '/sai_out'},
+                       HALT_EXEC=True)
 
-        self.assertRaisesRegexp(AssertionError, 'Halted exec', aln2, 
+        self.assertRaisesRegexp(AssertionError, 'Halted exec', aln2,
                                 first_files)
         self.assertIn('; bwa aln -f /sai_out -n 2.5 -o 7 /fa_in1 /fq_in1',
-        aln2.BaseCommand)
+                      aln2.BaseCommand)
 
     def test_get_result_paths(self):
         """Tests the function that retrieves the result paths.
@@ -213,16 +214,16 @@ class BWAtests(TestCase):
         """
 
         # instantiate objects
-        index = BWA_index(params = {}, HALT_EXEC=True)
-        index2 = BWA_index(params = {'-p':'/prefix'}, HALT_EXEC=True)
-        aln = BWA_aln(params = {'-f':'/sai_out'}, HALT_EXEC=True)
-        samse = BWA_samse(params = {'-f':'/sam_out'}, HALT_EXEC=True)
-        sampe = BWA_sampe(params = {'-f':'/sam_out'}, HALT_EXEC=True)
-        bwasw = BWA_bwasw(params = {'-f':'/sam_out'}, HALT_EXEC=True)
+        index = BWA_index(params={}, HALT_EXEC=True)
+        index2 = BWA_index(params={'-p': '/prefix'}, HALT_EXEC=True)
+        aln = BWA_aln(params={'-f': '/sai_out'}, HALT_EXEC=True)
+        samse = BWA_samse(params={'-f': '/sam_out'}, HALT_EXEC=True)
+        sampe = BWA_sampe(params={'-f': '/sam_out'}, HALT_EXEC=True)
+        bwasw = BWA_bwasw(params={'-f': '/sam_out'}, HALT_EXEC=True)
 
         # pass in the data, and make sure the output paths are as expected.
         # -p is off here
-        index_data = {'fasta_in':'/fa_in'}
+        index_data = {'fasta_in': '/fa_in'}
         results = index._get_result_paths(index_data)
         self.assertEqual(results['.amb'].Path, '/fa_in.amb')
         self.assertEqual(results['.ann'].Path, '/fa_in.ann')
@@ -240,18 +241,18 @@ class BWAtests(TestCase):
         self.assertEqual(results['.sa'].Path, '/prefix.sa')
 
         # pass in the data, and make sure the output path is as expected
-        aln_data = {'prefix':'/fa_in', 'fastq_in':'/fq_in'}
+        aln_data = {'prefix': '/fa_in', 'fastq_in': '/fq_in'}
         results = aln._get_result_paths(aln_data)
         self.assertEqual(results['output'].Path, '/sai_out')
 
-        samse_data = {'prefix':'/fa_in', 'sai_in':'/sai_in', 
-                      'fastq_in':'/fq_in'}
+        samse_data = {'prefix': '/fa_in', 'sai_in': '/sai_in',
+                      'fastq_in': '/fq_in'}
         results = samse._get_result_paths(samse_data)
         self.assertEqual(results['output'].Path, '/sam_out')
 
-        sampe_data = {'prefix':'/fa_in', 'sai1_in':'/sai1_in',
-                      'sai2_in':'/sai2_in', 'fastq1_in':'/fq1_in',
-                      'fastq2_in':'/fq2_in'}
+        sampe_data = {'prefix': '/fa_in', 'sai1_in': '/sai1_in',
+                      'sai2_in': '/sai2_in', 'fastq1_in': '/fq1_in',
+                      'fastq2_in': '/fq2_in'}
         results = sampe._get_result_paths(sampe_data)
         self.assertEqual(results['output'].Path, '/sam_out')
 
@@ -273,7 +274,7 @@ class BWAtests(TestCase):
 
         # run the function
         results = create_bwa_index_from_fasta_file(fasta_in, {})
-        
+
         # for each of the 5 output files (not counting stdout, stderr, and
         # the exitStatus), make sure the file paths are as expcted.
         for filetype, result in results.iteritems():
@@ -298,19 +299,19 @@ class BWAtests(TestCase):
         query = '/query'
         out = '/sam'
 
-        self.assertRaisesRegexp(ApplicationError, 
-                            "Must specify which algorithm",
-                            assign_reads_to_database, query, database, out, 
-                            no_alg)
+        self.assertRaisesRegexp(ApplicationError,
+                                "Must specify which algorithm",
+                                assign_reads_to_database, query, database, out,
+                                no_alg)
 
         self.assertRaisesRegexp(ApplicationError, "Unknown algorithm",
-                            assign_reads_to_database, query, database, out,
-                            wrong_alg)
+                                assign_reads_to_database, query, database, out,
+                                wrong_alg)
 
         self.assertRaisesRegexp(ApplicationError,
-                            "aln is an intermediate step",
-                            assign_reads_to_database, query, database, out,
-                            no_aln_params)
+                                "aln is an intermediate step",
+                                assign_reads_to_database, query, database, out,
+                                no_aln_params)
 
 test_fasta = '''>NZ_GG770509_647533119
 UACUUGGAGUUUGAUCCUGGCUCAGAACGAACGCUGGCGGCAGGCUUAACACAUGCAAGUCGAGCGAGCGGCAGACGGGUGAGUAACGCGUGGGAACGUACCAUUUGCUACGGAAUAACUCAGGGAAACUUGUGCUAAUACCGUAUGUGGAAAGUCGGCAAAUGAUCGGCCCGCGUUGGAUUAGCUAGUUGGUGGGGUAAAGGCUCACCAAGGCGACGAUCCAUAGCUGGUCUGAGAGGAUGAUCAGCCACACUGGGACUGAGACACGGCCCAGACUCCUACGGGAGGCAGCAGUGGGGAAUAUUGGACAAUGGGCGCAAGCCUGAUCCAGCCAUGCCGCGUGAGUGAUGAAGGCCCUAGGGUUGUAAAGCUCUUUCACCGGUGAAGAUGACGGUAACCGGAGAAGAAGCCCCGGCUAACUUCGUGCCAGCAGCCGCGGUAAUACGAAGGGGGCUAGCGUUGUUCGGAUUUACUGGGCGUAAAGCGCACGUAGGCGGACUUUUAAGUCAGGGGUGAAAUCCCGGGGCUCAACCCCGGAACUGCCUUUGAUACUGGAAGUCUUGAGUAUGGUAGAGGUGAGUGGAAUUCCGAGUGUAGAGGUGAAAUUCGUAGAUAUUCGGAGGAACACCAGUGGCGAAGGCGGCUCACUGGACCAACUGACGCUGAGGUGCGAAAGCGUGGGGAGCAAACAGGAUUAGAUACCCUGGUAGUCCACGCCGUAAACGAUGAAUGUUAGCCGUCGGGGCUUCGGUGGCGCAGCUAACGCAUUAAACAUUCCGCCUGGGGAGUGCGGUCGCAAGAUUAAAACUCAAAGGAAUUGACGGGGGCCCGCACAAGCGGUGGAGCAUGUGGUUUAAUUCGAAGCAACGCGCAGAACCUUACCAGCCCUUGACAUCGACAGGUGCUGCAUGGCUGUCGUCAGCUCGUGUCGUGAGAUGUUGGGUUAAGUCCCGCAACGAGCGCAACCCUCGCCCUUAGUUGCCAGCAUGGGCACUCUAAGGGGACUGCCGGUGAUAAGCCGGAGGAAGGUGGGGAUGACGUCAAGUCCUCAUGGCCCUUACGGGCUGGGCUACACACGUGCUACAAUGGUGGUCAGUGGGCAGCGAGCACGCGAGUGUGAGCUAAUCUCCGCCAUCUCAGUUCGGAUGCACUCUGCAACUCGAGUGCAGAAGUUGGAAUCGCUAGUAAUCGCGGAUCAGCAUGCCGCGGUGAAUACGUUCCCGGGCCUUGUACACACCGCCCGUCACACCAUGGGAGUUGGUUUUACCCGAAGGCGCUUGCUAGGCAGGCGACCACGGUAGGGUCAGCGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUUUCU

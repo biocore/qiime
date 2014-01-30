@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 __author__ = "Daniel McDonald"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
-               "Will Van Treuren"] #remember to add yourself if you make changes
+               "Will Van Treuren"]  # remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -36,15 +36,15 @@ from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
-from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
-        float, where, isnan, mean, std, sqrt, ravel
+from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
+    float, where, isnan, mean, std, sqrt, ravel
 
 from biom.table import DenseTable
 from biom.parse import parse_biom_table
 import biom
-        
+
 from cogent.util.dict2d import Dict2D
-from cogent import LoadSeqs, Sequence,DNA
+from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
@@ -55,7 +55,7 @@ from cogent.data.molecular_weight import DnaMW
 from cogent.core.sequence import DnaSequence
 from cogent.app.blast import Blastall
 from cogent.app.util import (ApplicationError, CommandLineApplication,
-    get_tmp_filename as cogent_get_tmp_filename, FilePath)
+                             get_tmp_filename as cogent_get_tmp_filename, FilePath)
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
@@ -63,13 +63,13 @@ from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
     build_blast_db_from_fasta_file
 from cogent import LoadSeqs
-from cogent.util.misc import (create_dir, 
+from cogent.util.misc import (create_dir,
                               handle_error_codes)
-                              
+
 from qcli import (parse_command_line_parameters,
                   make_option,
                   qcli_system_call)
-                                 
+
 from qiime.pycogent_backports.test import is_symmetric_and_hollow
 from qiime import __version__ as qiime_library_version
 from qiime.parse import (parse_distmat,
@@ -86,29 +86,43 @@ from qiime.parse import (parse_distmat,
 
 # for backward compatibility - compute_seqs_per_library_stats has
 # been removed in favor of biom.util.compute_counts_per_sample_stats,
-# which has the same interface as the former 
+# which has the same interface as the former
 # qiime.util.compute_seqs_per_library_stats
 compute_seqs_per_library_stats = compute_counts_per_sample_stats
 
+
 class TreeMissingError(IOError):
+
     """Exception for missing tree file"""
     pass
 
+
 class OtuMissingError(IOError):
+
     """Exception for missing OTU file"""
     pass
 
+
 class AlignmentMissingError(IOError):
+
     """Exception for missing alignment file"""
     pass
+
 
 class MissingFileError(IOError):
     pass
 
+
 class FileFormatError(IOError):
+
     """Exception for wrong file format"""
     pass
-    
+
+
+class ScriptsDirError(IOError):
+    """Exception for when the QIIME scripts directory cannot be found."""
+    pass
+
 
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
@@ -122,9 +136,11 @@ def make_safe_f(f, allowed_params):
         return f(*args, **kwargs)
     return inner
 
+
 class FunctionWithParams(object):
+
     """A FunctionWithParams is a replacement for the function factory.
-    
+
     Specifically, the params that will be used in the __call__ method are
     available in a dict so you can keep track of them with the object
     itself.
@@ -133,22 +149,23 @@ class FunctionWithParams(object):
     Algorithm = None
     Citation = None
     Params = {}
-    Name = 'FunctionWithParams' #override in subclasses
-    _tracked_properties = []    #properties tracked like params
+    Name = 'FunctionWithParams'  # override in subclasses
+    _tracked_properties = []  # properties tracked like params
 
     def __init__(self, params):
         """Return new FunctionWithParams object with specified params.
-        
+
         Note: expect params to contain both generic and per-method (e.g. for
         cdhit) params, so leaving it as a dict rather than setting
-        attributes. 
-        
+        attributes.
+
         Some standard entries in params are:
 
         [fill in on a per-application basis]
         """
         self.Params.update(params)
-        self._tracked_properties.extend(['Application','Algorithm','Citation'])
+        self._tracked_properties.extend(
+            ['Application', 'Algorithm', 'Citation'])
 
     def __str__(self):
         """Returns formatted key-value pairs from params."""
@@ -161,7 +178,7 @@ class FunctionWithParams(object):
 
     def writeLog(self, log_path):
         """Writes self.Params and other relevant info to supplied path."""
-        f=open(log_path, 'w')
+        f = open(log_path, 'w')
         f.write(str(self))
         f.close()
 
@@ -182,18 +199,19 @@ class FunctionWithParams(object):
     def getTree(self, tree_source):
         """Returns parsed tree from putative tree source"""
         if isinstance(tree_source, PhyloNode):
-            tree = tree_source    #accept tree object directly for tests
+            tree = tree_source  # accept tree object directly for tests
         elif tree_source:
             try:
                 f = open(tree_source, 'U')
             except (TypeError, IOError):
-                raise TreeMissingError, \
-                    "Couldn't read tree file at path: %s" % tree_source
+                raise TreeMissingError(
+                    "Couldn't read tree file at path: %s" %
+                    tree_source)
             tree = parse_newick(f, PhyloNode)
             f.close()
         else:
-            raise TreeMissingError, str(self.Name) + \
-                " is a phylogenetic metric, but no tree was supplied."
+            raise TreeMissingError(str(self.Name) +
+                                   " is a phylogenetic metric, but no tree was supplied.")
         return tree
 
     def getData(self, data_source):
@@ -213,45 +231,45 @@ class FunctionWithParams(object):
                     return data
                 except (IOError, NameError, TypeError):
                     pass
-        #if we got here, either we didn't get a string or we couldn't read
-        #the data source into any other kind of object
+        # if we got here, either we didn't get a string or we couldn't read
+        # the data source into any other kind of object
         return data_source
 
     def getBiomData(self, data):
         """returns a biom object regardless of whether path or object given"""
         try:
             if os.path.isfile(data):
-                otu_table = parse_biom_table(qiime_open(data,'U'))
+                otu_table = parse_biom_table(qiime_open(data, 'U'))
                 return otu_table
         except TypeError:
-            if any([type(data) in \
-                [biom.table.DenseFunctionTable,
-                biom.table.DenseGeneTable,
-                biom.table.DenseMetaboliteTable,
-                biom.table.DenseOTUTable,
-                biom.table.DenseOrthologTable,
-                biom.table.DensePathwayTable,
-                biom.table.DenseTable,
-                biom.table.DenseTaxonTable,
-                biom.table.FunctionTable,
-                biom.table.GeneTable,
-                biom.table.MetaboliteTable,
-                biom.table.OTUTable,
-                biom.table.OrthologTable,
-                biom.table.PathwayTable,
-                biom.table.SparseFunctionTable,
-                biom.table.SparseGeneTable,
-                biom.table.SparseMetaboliteTable,
-                biom.table.SparseOTUTable,
-                biom.table.SparseOrthologTable,
-                biom.table.SparsePathwayTable,
-                biom.table.SparseTable,
-                biom.table.SparseTaxonTable]]):
-                    otu_table = data
-                    return otu_table
-            else: 
-                raise TypeError('Data is neither a path to a biom table or a'+\
-                ' biom table object.')
+            if any([type(data) in
+                    [biom.table.DenseFunctionTable,
+                     biom.table.DenseGeneTable,
+                     biom.table.DenseMetaboliteTable,
+                     biom.table.DenseOTUTable,
+                     biom.table.DenseOrthologTable,
+                     biom.table.DensePathwayTable,
+                     biom.table.DenseTable,
+                     biom.table.DenseTaxonTable,
+                     biom.table.FunctionTable,
+                     biom.table.GeneTable,
+                     biom.table.MetaboliteTable,
+                     biom.table.OTUTable,
+                     biom.table.OrthologTable,
+                     biom.table.PathwayTable,
+                     biom.table.SparseFunctionTable,
+                     biom.table.SparseGeneTable,
+                     biom.table.SparseMetaboliteTable,
+                     biom.table.SparseOTUTable,
+                     biom.table.SparseOrthologTable,
+                     biom.table.SparsePathwayTable,
+                     biom.table.SparseTable,
+                     biom.table.SparseTaxonTable]]):
+                otu_table = data
+                return otu_table
+            else:
+                raise TypeError('Data is neither a path to a biom table or a' +
+                                ' biom table object.')
 
     def getAlignment(self, aln_source):
         """Returns parsed alignment from putative alignment source"""
@@ -261,17 +279,18 @@ class FunctionWithParams(object):
             try:
                 aln = LoadSeqs(aln_source, Aligned=True)
             except (TypeError, IOError, AssertionError):
-                raise AlignmentMissingError, \
-                    "Couldn't read alignment file at path: %s" % aln_source
+                raise AlignmentMissingError(
+                    "Couldn't read alignment file at path: %s" %
+                    aln_source)
         else:
-            raise AlignmentMissingError, str(self.Name) + \
-                " requires an alignment, but no alignment was supplied."
+            raise AlignmentMissingError(str(self.Name) +
+                                        " requires an alignment, but no alignment was supplied.")
         return aln
 
-    def __call__ (self, result_path=None, log_path=None,\
-        *args, **kwargs):
+    def __call__(self, result_path=None, log_path=None,
+                 *args, **kwargs):
         """Returns the result of calling the function using the params dict.
-        
+
         Parameters:
         [fill in on a per-application basis]
         """
@@ -283,16 +302,19 @@ class FunctionWithParams(object):
         else:
             return result
 
-def trim_fastq(fastq_lines,output_length):
+
+def trim_fastq(fastq_lines, output_length):
     """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in MinimalFastqParser(fastq_lines,strict=False):
-        yield '@%s\n%s\n+\n%s\n' % (seq_id,seq[:output_length],
-                                      qual[:output_length])
-                                      
-def trim_fasta(fasta_lines,output_length):
+    for seq_id, seq, qual in MinimalFastqParser(fastq_lines, strict=False):
+        yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
+                                    qual[:output_length])
+
+
+def trim_fasta(fasta_lines, output_length):
     """trim fasta seqs to output_length bases """
     for seq_id, seq in MinimalFastaParser(fasta_lines):
-        yield '>%s\n%s\n' % (seq_id,seq[:output_length])
+        yield '>%s\n%s\n' % (seq_id, seq[:output_length])
+
 
 def get_qiime_project_dir():
     """ Returns the top-level QIIME directory
@@ -303,86 +325,121 @@ def get_qiime_project_dir():
     current_dir_path = dirname(current_file_path)
     # Return the directory containing the directory containing util.py
     return dirname(current_dir_path)
-    
+
+
 def get_qiime_scripts_dir():
-    """ Returns the QIIME scripts directory 
-    
-        This value must be stored in qiime_config if the user
-        has installed qiime using setup.py. If it is not in
-        qiime_config, it is inferred from the qiime_project_dir.
-    
+    """Return the directory containing QIIME scripts.
+
+    The scripts directory is inferred from the location of
+    print_qiime_config.py (equivalent to running ``which
+    print_qiime_config.py``). Will raise a ``ScriptsDirError`` if the scripts
+    directory cannot be determined.
+
+    Note: this function will likely not work on Windows.
+
     """
-    qiime_config = load_qiime_config()
-    qiime_config_value = qiime_config['qiime_scripts_dir']
-    if qiime_config_value != None:
-        result = qiime_config_value
-    else:
-        result = join(get_qiime_project_dir(),'scripts')
-    
-    #assert exists(result),\
-    # "qiime_scripts_dir does not exist: %s." % result +\
-    # " Have you defined it correctly in your qiime_config?"
-    
-    return result
-    
+    script_fp = which('print_qiime_config.py')
+
+    if script_fp is None:
+        raise ScriptsDirError("Could not find the directory containing QIIME "
+                              "scripts. QIIME scripts must be accessible via "
+                              "the PATH environment variable, and they must "
+                              "be executable. Please ensure that you have a "
+                              "valid QIIME installation (see the QIIME "
+                              "Installation Guide: "
+                              "http://qiime.org/install/install.html).")
+
+    return os.path.dirname(script_fp)
+
+
+def which(executable_name):
+    """Equivalent to ``which executable_name`` in a *nix environment.
+
+    Will return ``None`` if ``executable_name`` cannot be found in ``PATH`` or
+    if ``PATH`` is not set. Otherwise will return the first match in ``PATH``.
+
+    Note: this function will likely not work on Windows.
+
+    Code taken and modified from:
+        http://www.velocityreviews.com/forums/t689526-python-library-call-equivalent-to-which-command.html
+
+    """
+    exec_fp = None
+
+    if 'PATH' in os.environ:
+        paths = os.environ['PATH']
+
+        for path in paths.split(os.pathsep):
+            curr_exec_fp = os.path.join(path, executable_name)
+
+            if os.access(curr_exec_fp, os.X_OK):
+                exec_fp = curr_exec_fp
+                break
+
+    return exec_fp
+
+
 def get_qiime_temp_dir():
     """ Returns the temp directory that should be used by QIIME scripts
-    
+
     """
     qiime_config = load_qiime_config()
     qiime_config_value = qiime_config['temp_dir']
-    if qiime_config_value != None:
+    if qiime_config_value is not None:
         result = qiime_config_value
     else:
         result = '/tmp/'
     return result
-    
+
+
 def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
-    result_constructor=FilePath):
+                     result_constructor=FilePath):
     """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
-    if tmp_dir == None:
+    if tmp_dir is None:
         tmp_dir = get_qiime_temp_dir()
     return cogent_get_tmp_filename(tmp_dir=tmp_dir,
                                    prefix=prefix,
                                    suffix=suffix,
                                    result_constructor=result_constructor)
-    
+
+
 def load_qiime_config():
     """Return default parameters read in from file"""
-    
+
     qiime_config_filepaths = []
     qiime_project_dir = get_qiime_project_dir()
-    qiime_config_filepaths.append(\
-     qiime_project_dir + '/qiime/support_files/qiime_config')
-    
+    qiime_config_filepaths.append(
+        qiime_project_dir + '/qiime/support_files/qiime_config')
+
     qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
     if qiime_config_env_filepath:
         qiime_config_filepaths.append(qiime_config_env_filepath)
-    
+
     home_dir = getenv('HOME')
     if home_dir:
         qiime_config_home_filepath = home_dir + '/.qiime_config'
         qiime_config_filepaths.append(qiime_config_home_filepath)
-    
+
     qiime_config_files = []
     for qiime_config_filepath in qiime_config_filepaths:
         if exists(qiime_config_filepath):
             qiime_config_files.append(open(qiime_config_filepath))
-        
+
     return parse_qiime_config_files(qiime_config_files)
 
+
 def qiime_blast_seqs(seqs,
-     blast_constructor=Blastall,
-     blast_program='blastn',
-     blast_db=None,
-     refseqs=None,
-     refseqs_fp=None,
-     blast_mat_root=None,
-     params=None,
-     WorkingDir=None,
-     seqs_per_blast_run=1000,
-     is_protein=False,
-     HALT_EXEC=False):
+                     blast_constructor=Blastall,
+                     blast_program='blastn',
+                     blast_db=None,
+                     refseqs=None,
+                     refseqs_fp=None,
+                     blast_mat_root=None,
+                     params=None,
+                     WorkingDir=None,
+                     seqs_per_blast_run=1000,
+                     is_protein=False,
+                     HALT_EXEC=False):
     """Blast list of sequences.
 
     seqs: a list (or object with list-like interace) of (seq_id, seq)
@@ -391,33 +448,34 @@ def qiime_blast_seqs(seqs,
     """
 
     assert blast_db or refseqs_fp or refseqs, \
-     'Must provide either a blast_db or a fasta '+\
-     'filepath containing sequences to build one.'
+        'Must provide either a blast_db or a fasta ' +\
+        'filepath containing sequences to build one.'
 
     if refseqs_fp:
         blast_db, db_files_to_remove =\
-         build_blast_db_from_fasta_path(refseqs_fp,
-                                        output_dir=WorkingDir,
-                                        is_protein=is_protein)
+            build_blast_db_from_fasta_path(refseqs_fp,
+                                           output_dir=WorkingDir,
+                                           is_protein=is_protein)
     elif refseqs:
         blast_db, db_files_to_remove =\
-         build_blast_db_from_fasta_file(refseqs,
-                                        output_dir=WorkingDir,
-                                        is_protein=is_protein)
+            build_blast_db_from_fasta_file(refseqs,
+                                           output_dir=WorkingDir,
+                                           is_protein=is_protein)
     else:
         db_files_to_remove = []
 
-    if params is None: params = {}
+    if params is None:
+        params = {}
     params["-d"] = blast_db
     params["-p"] = blast_program
 
     blast_app = blast_constructor(
-                   params=params,
-                   blast_mat_root=blast_mat_root,
-                   InputHandler='_input_as_seq_id_seq_pairs',
-                   WorkingDir=WorkingDir,
-                   SuppressStderr=True,
-                   HALT_EXEC=HALT_EXEC)
+        params=params,
+        blast_mat_root=blast_mat_root,
+        InputHandler='_input_as_seq_id_seq_pairs',
+        WorkingDir=WorkingDir,
+        SuppressStderr=True,
+        HALT_EXEC=HALT_EXEC)
 
     current_seqs = []
     blast_results = BlastResult([])
@@ -425,48 +483,50 @@ def qiime_blast_seqs(seqs,
         current_seqs.append(seq)
         if len(current_seqs) % seqs_per_blast_run == 0:
             if blast_results:
-                blast_results.update(\
-                 BlastResult(blast_app(current_seqs)['StdOut']))
+                blast_results.update(
+                    BlastResult(blast_app(current_seqs)['StdOut']))
             else:
                 blast_results = BlastResult(blast_app(current_seqs)['StdOut'])
             current_seqs = []
-    
+
     # clean-up run: blast the remaining sequences
-    blast_results.update(\
-     BlastResult(blast_app(current_seqs)['StdOut']))
+    blast_results.update(
+        BlastResult(blast_app(current_seqs)['StdOut']))
 
     remove_files(db_files_to_remove)
-    
+
     return blast_results
 
+
 def qiime_blastx_seqs(seqs,
-     blast_constructor=Blastall,
-     blast_db=None,
-     refseqs=None,
-     refseqs_fp=None,
-     blast_mat_root=None,
-     params={},
-     WorkingDir=None,
-     seqs_per_blast_run=1000,
-     HALT_EXEC=False):
+                      blast_constructor=Blastall,
+                      blast_db=None,
+                      refseqs=None,
+                      refseqs_fp=None,
+                      blast_mat_root=None,
+                      params={},
+                      WorkingDir=None,
+                      seqs_per_blast_run=1000,
+                      HALT_EXEC=False):
     """Blast list of sequences.
 
-    seqs: a list (or object with list-like interace) of (seq_id, seq) 
+    seqs: a list (or object with list-like interace) of (seq_id, seq)
      tuples (e.g., the output of MinimalFastaParser)
-    
+
     """
     return qiime_blast_seqs(seqs,
-     blast_constructor=blast_constructor,
-     blast_program='blastx',
-     blast_db=blast_db,
-     refseqs=refseqs,
-     refseqs_fp=refseqs_fp,
-     blast_mat_root=blast_mat_root,
-     params={},
-     WorkingDir=WorkingDir,
-     seqs_per_blast_run=seqs_per_blast_run,
-     is_protein=True,
-     HALT_EXEC=HALT_EXEC)
+                            blast_constructor=blast_constructor,
+                            blast_program='blastx',
+                            blast_db=blast_db,
+                            refseqs=refseqs,
+                            refseqs_fp=refseqs_fp,
+                            blast_mat_root=blast_mat_root,
+                            params={},
+                            WorkingDir=WorkingDir,
+                            seqs_per_blast_run=seqs_per_blast_run,
+                            is_protein=True,
+                            HALT_EXEC=HALT_EXEC)
+
 
 def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
     """ Returns (seq id, seq) pairs if sample_id is in sample_ids """
@@ -483,85 +543,89 @@ def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
         sample_id = seq_id.split('_')[0]
         if f(sample_id):
             yield seq_id, seq
-            
+
+
 def split_fasta_on_sample_ids(seqs):
-    """ yields (sample_id, seq_id, seq) for each entry in seqs 
-    
+    """ yields (sample_id, seq_id, seq) for each entry in seqs
+
         seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
-    
+
     """
     for seq_id, seq in seqs:
-        yield (seq_id.split()[0].rsplit('_',1)[0], seq_id, seq)
+        yield (seq_id.split()[0].rsplit('_', 1)[0], seq_id, seq)
     return
-        
+
+
 def split_fasta_on_sample_ids_to_dict(seqs):
     """ return split_fasta_on_sample_ids as {sample_id: [(seq_id, seq), ], }
-    
+
         seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
-    
+
     """
     result = {}
-    for sample_id,seq_id,seq in split_fasta_on_sample_ids(seqs):
+    for sample_id, seq_id, seq in split_fasta_on_sample_ids(seqs):
         try:
-            result[sample_id].append((seq_id,seq))
+            result[sample_id].append((seq_id, seq))
         except KeyError:
-            result[sample_id] = [(seq_id,seq)]
+            result[sample_id] = [(seq_id, seq)]
     return result
 
-def write_seqs_to_fasta(fp,seqs,write_mode='w'):
+
+def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     """Write seqs to fp with specified write mode ('a' or 'w')
-    
+
         seqs: list of (seq_id,seq) tuples, as obtained from
          MinimalFastaParser
     """
-    f = open(fp,write_mode)
+    f = open(fp, write_mode)
     for s in seqs:
         f.write('>%s\n%s\n' % (s))
     f.close()
+
 
 def split_fasta_on_sample_ids_to_files(seqs,
                                        output_dir,
                                        per_sample_buffer_size=500):
     """ output of split_fasta_on_sample_ids to fasta in specified output_dir
-    
+
         seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
-        output_dir: string defining directory where output should be 
+        output_dir: string defining directory where output should be
          written, will be created if it doesn't exist
-         
-        This function takes a buffered approach to writing files to 
+
+        This function takes a buffered approach to writing files to
         avoid hitting errors arising from too many files being open
         when working with large numbers of samples ids (e.g. > 1024 on linux)
     """
     create_dir(output_dir)
     file_lookup = {}
     all_fps = []
-    for sample_id,seq_id,seq in split_fasta_on_sample_ids(seqs):
+    for sample_id, seq_id, seq in split_fasta_on_sample_ids(seqs):
         # grab or create the list corresponding to the current sample id
         try:
             current_seqs = file_lookup[sample_id][1]
         except KeyError:
-            current_fp = '%s/%s.fasta' % (output_dir,sample_id)
+            current_fp = '%s/%s.fasta' % (output_dir, sample_id)
             all_fps.append(current_fp)
             if exists(current_fp):
-                raise IOError,\
-                 (" %s already exists. Will not perform split -- remove this"
-                  " file or specify a different output directory." % current_fp)
+                raise IOError(" %s already exists. Will not perform split -- remove this"
+                              " file or specify a different output directory." % current_fp)
             current_seqs = list()
-            file_lookup[sample_id] = [current_fp,current_seqs]
-        
+            file_lookup[sample_id] = [current_fp, current_seqs]
+
         # append the current sequence to the current seqs list
-        current_seqs.append((seq_id,seq))
+        current_seqs.append((seq_id, seq))
         # compare current_seqs length to the buffer size, and write
         # if it has hit the buffer size
         if len(current_seqs) == per_sample_buffer_size:
             current_fp = file_lookup[sample_id][0]
-            write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
+            write_seqs_to_fasta(current_fp, current_seqs, write_mode='a')
             # reset the current seqs buffer
             file_lookup[sample_id][1] = list()
-    
-    for current_fp,current_seqs in file_lookup.values():
-        write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
+
+    for current_fp, current_seqs in file_lookup.values():
+        write_seqs_to_fasta(current_fp, current_seqs, write_mode='a')
     return all_fps
+
 
 def median_absolute_deviation(x):
     """ compute the median of the absolute deviations from the median """
@@ -570,39 +634,37 @@ def median_absolute_deviation(x):
     median_abs_deviation = median(abs(x - median_x))
     return median_abs_deviation, median_x
 
-def guess_even_sampling_depth(counts_per_sample,num_deviations=2.25):
-    """ guess a depth for even sampling 
-    
-        this is currently computed as the smallest seqs per sample 
-         count >= the median seqs per sample count - (2.25 * the median absolute 
+
+def guess_even_sampling_depth(counts_per_sample, num_deviations=2.25):
+    """ guess a depth for even sampling
+
+        this is currently computed as the smallest seqs per sample
+         count >= the median seqs per sample count - (2.25 * the median absolute
          deviation). 2.25 was chosen emprically by seeing how different values
          of num_deviations resulted in a choice that was similar to what
          I've chosen on several real OTU tables.
     """
     counts_per_sample.sort()
     median_abs_dev, median_count = \
-     median_absolute_deviation(counts_per_sample)
+        median_absolute_deviation(counts_per_sample)
     min_threshold = median_count - (num_deviations * median_abs_dev)
     for e in counts_per_sample:
         if e >= min_threshold:
             return e
-    raise ValueError,\
-     "No acceptable even sampling depth identified. "+\
-     "It shouldn't be possible to get here, but just in case here's the " +\
-     "counts per sample: %s" ' '.join(map(str,counts_per_sample)) 
-    
-    
+    raise ValueError("No acceptable even sampling depth identified. " +
+                     "It shouldn't be possible to get here, but just in case here's the " +
+                     "counts per sample: %s" ' '.join(map(str, counts_per_sample)))
+
+
 def raise_error_on_parallel_unavailable(qiime_config=None):
     """Raise error if no parallel QIIME bc user hasn't set jobs_to_start
     """
-    if qiime_config == None:
+    if qiime_config is None:
         qiime_config = load_qiime_config()
     if 'jobs_to_start' not in qiime_config or \
        int(qiime_config['jobs_to_start']) < 2:
-       raise RuntimeError,\
-        "Parallel QIIME is not available. (Have you set"+\
-        " jobs_to_start to greater than 1 in your qiime_config?"
-        
+        raise RuntimeError("Parallel QIIME is not available. (Have you set" +
+                           " jobs_to_start to greater than 1 in your qiime_config?")
 
 
 def get_options_lookup():
@@ -610,111 +672,104 @@ def get_options_lookup():
     qiime_config = load_qiime_config()
     result = {}
     result['fasta_as_primary_input'] =\
-     make_option('-i','--input_fasta_fp',type="existing_filepath",
-      help='path to the input fasta file')
+        make_option('-i', '--input_fasta_fp', type="existing_filepath",
+                    help='path to the input fasta file')
     result['otu_table_as_primary_input'] =\
-     make_option('-i','--otu_table_fp',type="existing_filepath",
-      help='path to the input OTU table (i.e., the output from make_otu_table.py)')
+        make_option('-i', '--otu_table_fp', type="existing_filepath",
+                    help='path to the input OTU table (i.e., the output from make_otu_table.py)')
     result['otu_map_as_primary_input'] =\
-     make_option('-i','--otu_map_fp',type="existing_filepath",
-      help='path to the input OTU map (i.e., the output from pick_otus.py)')
+        make_option('-i', '--otu_map_fp', type="existing_filepath",
+                    help='path to the input OTU map (i.e., the output from pick_otus.py)')
     result['log_fp'] =\
-     make_option('-l','--log_fp',type="new_filepath",
-     help='path to write the log file')
+        make_option('-l', '--log_fp', type="new_filepath",
+                    help='path to write the log file')
     result['input_fasta'] =\
-     make_option('-f','--input_fasta_fp',type="existing_filepath",
-      help='path to the input fasta file')
+        make_option('-f', '--input_fasta_fp', type="existing_filepath",
+                    help='path to the input fasta file')
     result['output_dir'] =\
-     make_option('-o','--output_dir',type="new_dirpath",
-     help='path to the output directory')
+        make_option('-o', '--output_dir', type="new_dirpath",
+                    help='path to the output directory')
     result['output_fp'] =\
-     make_option('-o','--output_fp',type="new_filepath",
-     help='the output filepath')
+        make_option('-o', '--output_fp', type="new_filepath",
+                    help='the output filepath')
     result['output_biom_fp'] =\
-     make_option('-o','--output_biom_fp',type="new_filepath",
-     help='the output otu table in biom format (recommended extension: .biom)')
+        make_option('-o', '--output_biom_fp', type="new_filepath",
+                    help='the output otu table in biom format (recommended extension: .biom)')
     result['mapping_fp'] =\
-     make_option('-m','--mapping_fp',type="existing_filepath",
-     help='the mapping filepath')
-     
-    ## Define options used by the workflow scripts
+        make_option('-m', '--mapping_fp', type="existing_filepath",
+                    help='the mapping filepath')
+
+    # Define options used by the workflow scripts
     result['jobs_to_start_workflow'] =\
-     make_option('-O','--jobs_to_start',type='int',
-       help='Number of jobs to start. NOTE: you must also'
-       ' pass -a to run in parallel, this defines the number of'
-       ' jobs to be started if and only if -a is passed'
-       ' [default: %default]',
-       default=qiime_config['jobs_to_start'])
-    
-    ## Define options used by the parallel scripts
+        make_option('-O', '--jobs_to_start', type='int',
+                    help='Number of jobs to start. NOTE: you must also'
+                    ' pass -a to run in parallel, this defines the number of'
+                    ' jobs to be started if and only if -a is passed'
+                    ' [default: %default]',
+                    default=qiime_config['jobs_to_start'])
+
+    # Define options used by the parallel scripts
     result['jobs_to_start'] =\
-     make_option('-O','--jobs_to_start',type='int',\
-       help='Number of jobs to start [default: %default]',\
-       default=qiime_config['jobs_to_start'])
-    result['poller_fp'] =\
-     make_option('-P','--poller_fp',action='store',\
-       help='full path to '+\
-       'qiime/parallel/poller.py [default: %default]',\
-       default=join(get_qiime_scripts_dir(),'poller.py'))
+        make_option('-O', '--jobs_to_start', type='int',
+                    help='Number of jobs to start [default: %default]',
+                    default=qiime_config['jobs_to_start'])
     result['retain_temp_files'] =\
-     make_option('-R','--retain_temp_files',action='store_true',\
-       help='retain temporary files after runs complete '+\
-       '(useful for debugging) [default: %default]',\
-       default=False)
+        make_option('-R', '--retain_temp_files', action='store_true',
+                    help='retain temporary files after runs complete ' +
+                    '(useful for debugging) [default: %default]',
+                    default=False)
     result['suppress_submit_jobs'] =\
-     make_option('-S','--suppress_submit_jobs',action='store_true',\
-       help='Only split input and write commands file - don\'t submit '+\
-       'jobs [default: %default]',default=False)
+        make_option('-S', '--suppress_submit_jobs', action='store_true',
+                    help='Only split input and write commands file - don\'t submit ' +
+                    'jobs [default: %default]', default=False)
     result['poll_directly'] =\
-     make_option('-T','--poll_directly',action='store_true',\
-        help='Poll directly for job completion rather than running '+\
-        'poller as a separate job. If -T is specified this script will '+\
-        'not return until all jobs have completed. [default: %default]',\
-        default=False)
+        make_option('-T', '--poll_directly', action='store_true',
+                    help='Poll directly for job completion rather than running ' +
+                    'poller as a separate job. If -T is specified this script will ' +
+                    'not return until all jobs have completed. [default: %default]',
+                    default=False)
     result['cluster_jobs_fp'] =\
-     make_option('-U','--cluster_jobs_fp',
-        help='path to cluster jobs script (defined in qiime_config) ' +\
-        ' [default: %default]',\
-        default=qiime_config['cluster_jobs_fp'] or\
-         join(get_qiime_scripts_dir(),'start_parallel_jobs.py'))
+        make_option('-U', '--cluster_jobs_fp',
+                    help='path to cluster jobs script (defined in qiime_config) ' +
+                    ' [default: %default]',
+                    default=qiime_config['cluster_jobs_fp'] or
+                    'start_parallel_jobs.py')
     result['suppress_polling'] =\
-     make_option('-W','--suppress_polling',action='store_true',
-        help='suppress polling of jobs and merging of results '+\
-        'upon completion [default: %default]',\
-        default=False)
+        make_option('-W', '--suppress_polling', action='store_true',
+                    help='suppress polling of jobs and merging of results ' +
+                    'upon completion [default: %default]',
+                    default=False)
     result['job_prefix'] =\
-     make_option('-X','--job_prefix',help='job prefix '+\
-           '[default: descriptive prefix + random chars]')
-    result['python_exe_fp'] =\
-     make_option('-Y','--python_exe_fp',
-        help='full path to python executable [default: %default]',\
-        default=qiime_config['python_exe_fp'])
+        make_option('-X', '--job_prefix', help='job prefix ' +
+                    '[default: descriptive prefix + random chars]')
     result['seconds_to_sleep'] =\
-     make_option('-Z','--seconds_to_sleep',type='int',\
-        help='Number of seconds to sleep between checks for run '+\
-        ' completion when polling runs [default: %default]',\
-        default=qiime_config['seconds_to_sleep'] or 60)
-     
+        make_option('-Z', '--seconds_to_sleep', type='int',
+                    help='Number of seconds to sleep between checks for run ' +
+                    ' completion when polling runs [default: %default]',
+                    default=qiime_config['seconds_to_sleep'] or 60)
+
     return result
+
 
 def matrix_stats(headers_list, distmats):
     """does, mean, median, stdev on a series of (dis)similarity matrices
-    
+
     takes a series of parsed matrices (list of headers, list of numpy 2d arrays)
     headers must are either row or colunm headers (those must be identical)
     outputs headers (list), means, medians, stdevs (all numpy 2d arrays)
     """
-    
-    if len(set(map(tuple,headers_list))) > 1:
-        raise ValueError("error, not all input matrices have"+\
-          " identical column/row headers")
-        
-    all_mats = numpy.array(distmats) # 3d numpy array: mtx, row, col
+
+    if len(set(map(tuple, headers_list))) > 1:
+        raise ValueError("error, not all input matrices have" +
+                         " identical column/row headers")
+
+    all_mats = numpy.array(distmats)  # 3d numpy array: mtx, row, col
     means = numpy.mean(all_mats, axis=0)
     medians = numpy.median(all_mats, axis=0)
     stdevs = numpy.std(all_mats, axis=0)
-    
+
     return deepcopy(headers_list[0]), means, medians, stdevs
+
 
 def convert_otu_table_relative(otu_table):
     """Convert the OTU table to relative abundances
@@ -727,6 +782,7 @@ def convert_otu_table_relative(otu_table):
     otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
     return (sample_ids, otu_ids, otu_counts, consensus)
 
+
 def convert_OTU_table_relative_abundance(otu_table):
     """convert the OTU table to have relative abundances rather than raw counts
     """
@@ -734,13 +790,13 @@ def convert_OTU_table_relative_abundance(otu_table):
     data_lines = []
     otu_ids = []
     tax_strings = []
-    taxonomy=False
+    taxonomy = False
     for line in otu_table:
         line = line.strip().split('\t')
         if line[0].startswith('#OTU ID'):
             output.append('\t'.join(line))
             if line[-1] == 'Consensus Lineage':
-                taxonomy=True
+                taxonomy = True
         elif line[0].startswith('#'):
             output.append('\t'.join(line))
         else:
@@ -757,7 +813,7 @@ def convert_OTU_table_relative_abundance(otu_table):
     totals = sum(data_lines)
     new_values = []
     for i in data_lines:
-        new_values.append(i/totals)
+        new_values.append(i / totals)
     for index, i in enumerate(new_values):
         line = [otu_ids[index]]
         line.extend([str(j) for j in i])
@@ -767,16 +823,14 @@ def convert_OTU_table_relative_abundance(otu_table):
     return output
 
 
-
-
 def load_pcoa_files(pcoa_dir):
     """loads PCoA files from filepaths
     """
     support_pcoas = []
     pcoa_filenames = os.listdir(pcoa_dir)
-    #ignore invisible files like .DS_Store
-    pcoa_filenames = [fname for fname in pcoa_filenames if not \
-        fname.startswith('.')]
+    # ignore invisible files like .DS_Store
+    pcoa_filenames = [fname for fname in pcoa_filenames if not
+                      fname.startswith('.')]
     master_pcoa = open(os.path.join(pcoa_dir, pcoa_filenames[0]), 'U')
     master_pcoa = parse_coords(master_pcoa)
     for fname in pcoa_filenames:
@@ -785,12 +839,14 @@ def load_pcoa_files(pcoa_dir):
             pcoa_res = parse_coords(f)
             support_pcoas.append(pcoa_res)
             f.close()
-        except IOError, err:
+        except IOError as err:
             sys.stderr.write('error loading support pcoa ' + fname + '\n')
             exit(1)
     return master_pcoa, support_pcoas
 
-def summarize_pcoas(master_pcoa, support_pcoas, method='IQR', apply_procrustes=True):
+
+def summarize_pcoas(master_pcoa, support_pcoas,
+                    method='IQR', apply_procrustes=True):
     """returns the average PCoA vector values for the support pcoas
 
     Also returns the ranges as calculated with the specified method.
@@ -803,7 +859,8 @@ def summarize_pcoas(master_pcoa, support_pcoas, method='IQR', apply_procrustes=T
         support_pcoas = [list(sp) for sp in support_pcoas]
         master_pcoa = list(master_pcoa)
         for i, pcoa in enumerate(support_pcoas):
-            master_std, pcoa_std, m_squared = procrustes(master_pcoa[1],pcoa[1])
+            master_std, pcoa_std, m_squared = procrustes(
+                master_pcoa[1], pcoa[1])
             support_pcoas[i][1] = pcoa_std
         master_pcoa[1] = master_std
 
@@ -817,13 +874,14 @@ def summarize_pcoas(master_pcoa, support_pcoas, method='IQR', apply_procrustes=T
         eigvals = rep[2]
         all_eigvals.append(eigvals)
         jn_flipped_matrices.append(_flip_vectors(matrix, m_matrix))
-    matrix_average, matrix_low, matrix_high = _compute_jn_pcoa_avg_ranges(\
-            jn_flipped_matrices, method)
-    #compute average eigvals
+    matrix_average, matrix_low, matrix_high = _compute_jn_pcoa_avg_ranges(
+        jn_flipped_matrices, method)
+    # compute average eigvals
     all_eigvals_stack = vstack(all_eigvals)
     eigval_sum = numpy.sum(all_eigvals_stack, axis=0)
     eigval_average = eigval_sum / float(len(all_eigvals))
     return matrix_average, matrix_low, matrix_high, eigval_average, m_names
+
 
 def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     """Computes PCoA average and ranges for jackknife plotting
@@ -836,43 +894,43 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
         IQR: Interquartile Range
         ideal fourths: Ideal fourths method as implemented in scipy
     """
-    x,y = shape(jn_flipped_matrices[0])
+    x, y = shape(jn_flipped_matrices[0])
     all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
     summary_matrix = vstack(all_flat_matrices)
     matrix_sum = numpy.sum(summary_matrix, axis=0)
     matrix_average = matrix_sum / float(len(jn_flipped_matrices))
-    matrix_average = matrix_average.reshape(x,y)
+    matrix_average = matrix_average.reshape(x, y)
     if method == 'IQR':
         result = matrix_IQR(summary_matrix)
-        matrix_low = result[0].reshape(x,y)
-        matrix_high = result[1].reshape(x,y)
+        matrix_low = result[0].reshape(x, y)
+        matrix_high = result[1].reshape(x, y)
     elif method == 'ideal_fourths':
         result = idealfourths(summary_matrix, axis=0)
-        matrix_low = result[0].reshape(x,y)
-        matrix_high = result[1].reshape(x,y)
+        matrix_low = result[0].reshape(x, y)
+        matrix_high = result[1].reshape(x, y)
     elif method == "sdev":
         # calculate std error for each sample in each dimension
-        sdevs = zeros(shape=[x,y])
+        sdevs = zeros(shape=[x, y])
         for j in xrange(y):
             for i in xrange(x):
                 vals = array([pcoa[i][j] for pcoa in jn_flipped_matrices])
-                sdevs[i,j] = vals.std(ddof=1)
-        matrix_low = -sdevs/2
-        matrix_high = sdevs/2
-
+                sdevs[i, j] = vals.std(ddof=1)
+        matrix_low = -sdevs / 2
+        matrix_high = sdevs / 2
 
     return matrix_average, matrix_low, matrix_high
+
 
 def _flip_vectors(jn_matrix, m_matrix):
     """transforms PCA vectors so that signs are correct"""
     m_matrix_trans = m_matrix.transpose()
     jn_matrix_trans = jn_matrix.transpose()
-    new_matrix= zeros(jn_matrix_trans.shape, float)
+    new_matrix = zeros(jn_matrix_trans.shape, float)
     for i, m_vector in enumerate(m_matrix_trans):
         jn_vector = jn_matrix_trans[i]
         disT = list(m_vector - jn_vector)
         disT = sum(map(abs, disT))
-        jn_flip = jn_vector*[-1]
+        jn_flip = jn_vector * [-1]
         disF = list(m_vector - jn_flip)
         disF = sum(map(abs, disF))
         if disT > disF:
@@ -881,27 +939,29 @@ def _flip_vectors(jn_matrix, m_matrix):
             new_matrix[i] = jn_vector
     return new_matrix.transpose()
 
+
 def IQR(x):
     """calculates the interquartile range of x
 
     x can be a list or an array
-    
+
     returns min_val and  max_val of the IQR"""
 
     x.sort()
-    #split values into lower and upper portions at the median
+    # split values into lower and upper portions at the median
     odd = len(x) % 2
-    midpoint = int(len(x)/2)
+    midpoint = int(len(x) / 2)
     if odd:
         low_vals = x[:midpoint]
-        high_vals = x[midpoint+1:]
-    else: #if even
+        high_vals = x[midpoint + 1:]
+    else:  # if even
         low_vals = x[:midpoint]
         high_vals = x[midpoint:]
-    #find the median of the low and high values
+    # find the median of the low and high values
     min_val = median(low_vals)
     max_val = median(high_vals)
     return min_val, max_val
+
 
 def matrix_IQR(x):
     """calculates the IQR for each column in an array
@@ -914,6 +974,7 @@ def matrix_IQR(x):
         min_vals[i], max_vals[i] = IQR(col)
     return min_vals, max_vals
 
+
 def idealfourths(data, axis=None):
     """This function returns an estimate of the lower and upper quartiles of the data along
     the given axis, as computed with the ideal fourths. This function was taken
@@ -923,11 +984,11 @@ def idealfourths(data, axis=None):
         x = data.compressed()
         n = len(x)
         if n < 3:
-            return [numpy.nan,numpy.nan]
-        (j,h) = divmod(n/4. + 5/12.,1)
-        qlo = (1-h)*x[j-1] + h*x[j]
+            return [numpy.nan, numpy.nan]
+        (j, h) = divmod(n / 4. + 5 / 12., 1)
+        qlo = (1 - h) * x[j - 1] + h * x[j]
         k = n - j
-        qup = (1-h)*x[k] + h*x[k-1]
+        qup = (1 - h) * x[k] + h * x[k - 1]
         return [qlo, qup]
     data = numpy.sort(data, axis=axis).view(MaskedArray)
     if (axis is None):
@@ -935,51 +996,57 @@ def idealfourths(data, axis=None):
     else:
         return apply_along_axis(_idf, axis, data)
 
+
 def isarray(a):
     """
     This function tests whether an object is an array
     """
     try:
-        validity=isinstance(a,ndarray)
+        validity = isinstance(a, ndarray)
     except:
-        validity=False
+        validity = False
 
     return validity
 
-#make an alphabet that allows '.' as additional gaps
+# make an alphabet that allows '.' as additional gaps
 DNA_with_more_gaps = MolType(
-    Sequence = DnaSequence,
-    motifset = IUPAC_DNA_chars,
-    Ambiguities = IUPAC_DNA_ambiguities,
-    label = "dna",
-    Gaps = ".",
-    MWCalculator = DnaMW,
-    Complements = IUPAC_DNA_ambiguities_complements,
-    Pairs = DnaStandardPairs,
+    Sequence=DnaSequence,
+    motifset=IUPAC_DNA_chars,
+    Ambiguities=IUPAC_DNA_ambiguities,
+    label="dna",
+    Gaps=".",
+    MWCalculator=DnaMW,
+    Complements=IUPAC_DNA_ambiguities_complements,
+    Pairs=DnaStandardPairs,
     make_alphabet_group=True,
-    ModelSeq = ModelDnaSequence,
-    )
+    ModelSeq=ModelDnaSequence,
+)
+
 
 def degap_fasta_aln(seqs):
     """degap a Fasta aligment.
 
     seqs: list of label,seq pairs
     """
-    
-    for (label,seq) in seqs:
+
+    for (label, seq) in seqs:
         degapped_seq = Sequence(moltype=DNA_with_more_gaps,
                                 seq=seq, name=label).degap()
         degapped_seq.Name = label
         yield degapped_seq
 
+
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
 
-    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_", suffix=".fasta")
-    fh = open(tmp_filename,"w")
-    
+    tmp_filename = get_tmp_filename(
+        tmp_dir=tmp_dir,
+        prefix="degapped_",
+        suffix=".fasta")
+    fh = open(tmp_filename, "w")
+
     for seq in degap_fasta_aln(seqs):
-        fh.write(seq.toFasta()+"\n")
+        fh.write(seq.toFasta() + "\n")
     fh.close()
     return tmp_filename
 
@@ -989,16 +1056,17 @@ def get_diff_for_otu_maps(otu_map1, otu_map2):
 
     otu_map1, otu_map2: OTU to seqID mapping as dict of lists
     """
- 
+
     otus1 = set(otu_map1.keys())
     otus2 = set(otu_map2.keys())
     ids1 = set([x for otu in otus1 for x in otu_map1[otu]])
     ids2 = set([x for otu in otus2 for x in otu_map2[otu]])
-        
-    return ids1-ids2, ids2-ids1
+
+    return ids1 - ids2, ids2 - ids1
+
 
 def compare_otu_maps(otu_map1, otu_map2, verbose=False):
-    """compare two otu maps and compute fraction of 
+    """compare two otu maps and compute fraction of
 
     otu_map1, otu_map2: OTU to seqID mapping as dict of lists
     """
@@ -1013,14 +1081,14 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
     for otu in shared_otus:
         members1 = set(otu_map1[otu])
         members2 = set(otu_map2[otu])
-        
+
         right += len(members1 & members2)
-        missing_in_2  = members1 - members2
+        missing_in_2 = members1 - members2
         wrong += len(missing_in_2)
-        if (verbose and len(missing_in_2)>0):
+        if (verbose and len(missing_in_2) > 0):
             print "OTU id: %s" % otu
             print list(missing_in_2)
-            print 
+            print
 
     # process OTUs in 1 not in 2
     for otu in otus1 - shared_otus:
@@ -1029,24 +1097,26 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
             print "OTU id: %s" % otu
             print list(otu_map1[otu])
 
-    return float(wrong)/(right+wrong)
-    
-def compute_days_since_epoch(day,month,year):
-    """ pass day, month, year to compute days since epoch (1/1/1970) 
-        
-        Note that full years should always be provided: 09 is a 
+    return float(wrong) / (right + wrong)
+
+
+def compute_days_since_epoch(day, month, year):
+    """ pass day, month, year to compute days since epoch (1/1/1970)
+
+        Note that full years should always be provided: 09 is a
         different year than 2009!
     """
-    d = datetime(int(year),int(month),int(day))
+    d = datetime(int(year), int(month), int(day))
     epoch = datetime.utcfromtimestamp(0)
     return (d - epoch).days
-    
-def get_interesting_mapping_fields(mapping_data,mapping_headers):
-    """ Returns headers for fields that are useful to color by in plots 
-    
-        These fields are the ones that contain greater than one value 
-         and less values than the number of entries (so for example 
-         not SampleID) 
+
+
+def get_interesting_mapping_fields(mapping_data, mapping_headers):
+    """ Returns headers for fields that are useful to color by in plots
+
+        These fields are the ones that contain greater than one value
+         and less values than the number of entries (so for example
+         not SampleID)
     """
     result = []
     num_samples = len(mapping_data)
@@ -1058,7 +1128,8 @@ def get_interesting_mapping_fields(mapping_data,mapping_headers):
         if len_d > 1 and len_d < num_samples:
             result.append(header)
     return result
-    
+
+
 def flowgram_id_to_seq_id_map(seqs):
     """Map flowgram ids to sequence ids from a post-split_libraries fasta file
     """
@@ -1070,12 +1141,13 @@ def flowgram_id_to_seq_id_map(seqs):
         result[flowgram_id] = seq_id
     return result
 
+
 def get_java_version():
     """Returns the Java version, or None if not installed"""
     o, e, exit_status = qiime_system_call("java -version")
     if exit_status != 0:
         return None
-    
+
     # expect the first line of stderr to be 'java version "x.y.z_build"'
     e = e.strip().splitlines()
     version_line = e[0]
@@ -1086,6 +1158,7 @@ def get_java_version():
 
 # retain qiime_system_call function name for backward compatibility
 qiime_system_call = qcli_system_call
+
 
 def get_qiime_library_version():
     """get QIIME version and the git SHA + current branch (if applicable)"""
@@ -1108,6 +1181,7 @@ def get_qiime_library_version():
     else:
         return '%s' % __version__
 
+
 def is_valid_git_refname(refname):
     """check if a string is a valid branch-name/ref-name for git
 
@@ -1124,12 +1198,13 @@ def is_valid_git_refname(refname):
     if len(refname) == 0:
         return False
 
-    # git imposes a few requirements to accept a string as a refname/branch-name
+    # git imposes a few requirements to accept a string as a
+    # refname/branch-name
 
     # They can include slash / for hierarchical (directory) grouping, but no
     # slash-separated component can begin with a dot . or end with the sequence
     # .lock
-    if (len([True for element in refname.split('/')\
+    if (len([True for element in refname.split('/')
             if element.startswith('.') or element.endswith('.lock')]) != 0):
         return False
 
@@ -1139,8 +1214,8 @@ def is_valid_git_refname(refname):
 
     # They cannot have ASCII control characters (i.e. bytes whose values are
     # lower than \040, or \177 DEL), space, tilde, caret ^, or colon : anywhere
-    if len([True for refname_char in refname if ord(refname_char) < 40 or\
-            ord(refname_char) == 177 ]) != 0:
+    if len([True for refname_char in refname if ord(refname_char) < 40 or
+            ord(refname_char) == 177]) != 0:
         return False
     if ' ' in refname or '~' in refname or '^' in refname or ':' in refname:
         return False
@@ -1167,6 +1242,7 @@ def is_valid_git_refname(refname):
         return False
 
     return True
+
 
 def is_valid_git_sha1(hash):
     """check if a string is a valid git sha1 string
@@ -1198,50 +1274,54 @@ def get_pynast_version():
     except ImportError:
         return None
 
-def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
+
+def inflate_denoiser_output(
+        centroid_seqs, singleton_seqs, denoiser_map, raw_seqs):
     """Expand denoiser fasta files based on denoiser map
-    
-        The inflation process works as follows: write each centroid 
-         sequence n times, where n is the number of reads in that 
-         cluster, and write each singleton once. While writing these 
+
+        The inflation process works as follows: write each centroid
+         sequence n times, where n is the number of reads in that
+         cluster, and write each singleton once. While writing these
          out map back to original sequence identifiers.
-         
+
         The seqs objects passed in are lists of (seq_id, seq) tuples,
          as returned from MinimalFastaParser.
 
-    
+
     """
     id_lookup = parse_denoiser_mapping(denoiser_map)
     flowgram_to_seq_id_lookup = flowgram_id_to_seq_id_map(raw_seqs)
     for id_, seq in centroid_seqs:
-        #centroid headers look like
+        # centroid headers look like
         #>FZTHQMS01E140G | cluster size: 4353
         id, cluster_size_str = id_.split(' | ')
         cluster_member_ids = id_lookup[id]
         for c in cluster_member_ids:
             yield flowgram_to_seq_id_lookup[c], seq
-    
+
     for id_, seq in singleton_seqs:
         yield flowgram_to_seq_id_lookup[id_], seq
-    
-    return
-    
-## Functions for counting sequences in fasta files
 
-def count_seqs(fasta_filepath,parser=MinimalFastaParser):
-    """ Count the sequences in fasta_filepath 
-    
+    return
+
+# Functions for counting sequences in fasta files
+
+
+def count_seqs(fasta_filepath, parser=MinimalFastaParser):
+    """ Count the sequences in fasta_filepath
+
         fasta_filepath: string indicating the full path to the file
     """
     # Open the file and pass it to py_count_seqs_from_file -- wrapping
     # this makes for easier unit testing
-    return count_seqs_from_file(open(fasta_filepath,'U'),parser=parser)
+    return count_seqs_from_file(open(fasta_filepath, 'U'), parser=parser)
 
-def count_seqs_from_file(fasta_file,parser=MinimalFastaParser):
+
+def count_seqs_from_file(fasta_file, parser=MinimalFastaParser):
     """Return number of sequences in fasta_file (no format checking performed)
-    
+
         fasta_file: an open file object
-    
+
     """
     result = 0
     lens = []
@@ -1252,13 +1332,13 @@ def count_seqs_from_file(fasta_file,parser=MinimalFastaParser):
         return result, None, None
     else:
         return result, mean(lens), std(lens)
-        
 
-def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
+
+def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
     """ Wrapper to apply seq_counter to fasta_filepaths
-    
+
         fasta_filepaths: list of one or more fasta filepaths
-        seq_counter: a function which takes a single filepath 
+        seq_counter: a function which takes a single filepath
          and returns the count of the number of sequences
          (default: count_seqs) -- this is parameterized to
          facilitate unit testing
@@ -1268,35 +1348,36 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
     inaccessible_filepaths = []
     # iterate over the input files
     for fasta_filepath in fasta_filepaths:
-        # if the file is actually fastq, use the fastq parser. 
+        # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
             parser = MinimalFastqParser
         elif fasta_filepath.endswith('.tre') or \
-             fasta_filepath.endswith('.ph') or \
-             fasta_filepath.endswith('.ntree'):
-             # This is clunky, but really convenient bc 
+                fasta_filepath.endswith('.ph') or \
+                fasta_filepath.endswith('.ntree'):
+             # This is clunky, but really convenient bc
              # it lets us count tree tips with count_seqs.py
             def parser(f):
-                t = DndParser(f,constructor=PhyloNode)
-                return zip(t.iterTips(),repeat(''))
+                t = DndParser(f, constructor=PhyloNode)
+                return zip(t.iterTips(), repeat(''))
         else:
             parser = MinimalFastaParser
-        
+
         try:
             # get the count of sequences in the current file
-            current_count = seq_counter(fasta_filepath,parser=parser)
+            current_count = seq_counter(fasta_filepath, parser=parser)
             # store it
-            counts.append((current_count,fasta_filepath))
+            counts.append((current_count, fasta_filepath))
             # and increment the total count
             total += current_count[0]
         except IOError:
             # if the file couldn't be open, keep track of the filepath
             inaccessible_filepaths.append(fasta_filepath)
-    
+
     return counts, total, inaccessible_filepaths
-    
-## End functions for counting sequences in fasta files
+
+# End functions for counting sequences in fasta files
+
 
 def get_top_fastq_two_lines(open_file):
     """ This function returns the first 4 lines of the open fastq file
@@ -1307,130 +1388,134 @@ def get_top_fastq_two_lines(open_file):
     line4 = open_file.readline()
     open_file.seek(0)
     return line1, line2, line3, line4
-    
 
-def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
-    """ The function takes a list of open fastq files and a mapping file, then 
+
+def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
+    """ The function takes a list of open fastq files and a mapping file, then
         returns a recommended parameters string for split_libraries_fastq
     """
-    #parse the mapping
-    data, headers, run_description= parse_mapping_file(open(mapping_fp,'U'))
-    
-    #determine the which column of mapping file is the BarcodeSequence
-    for i,col_head in enumerate(headers):
-        if col_head=='BarcodeSequence':
-            barcode_column=i
-            
-    #create a set of barcodes for easier lookup
-    barcode_mapping_column=set(zip(*data)[barcode_column])
-    
-    #create set of reverse complement barcodes from mapping file
-    revcomp_barcode_mapping_column=[]
+    # parse the mapping
+    data, headers, run_description = parse_mapping_file(open(mapping_fp, 'U'))
+
+    # determine the which column of mapping file is the BarcodeSequence
+    for i, col_head in enumerate(headers):
+        if col_head == 'BarcodeSequence':
+            barcode_column = i
+
+    # create a set of barcodes for easier lookup
+    barcode_mapping_column = set(zip(*data)[barcode_column])
+
+    # create set of reverse complement barcodes from mapping file
+    revcomp_barcode_mapping_column = []
     for i in barcode_mapping_column:
         revcomp_barcode_mapping_column.append(DNA.rc(i))
-        barcode_len=len(i)
-    revcomp_barcode_mapping_column=set(revcomp_barcode_mapping_column)
-    
+        barcode_len = len(i)
+    revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
+
     # get the filenames and sort them, so the file1 corresponds to file2
     fastq_fps.sort()
-    
+
     # get the len of the sequence in each of the files, so we can determine
     # which file is the sequence file and which is the barcode sequence
-    get_file_type_info={}
+    get_file_type_info = {}
     for fastq_file in fastq_fps:
         # allow for gzipped files to be used
         if fastq_file.endswith('.gz'):
             fastq_fp = gzip_open(fastq_file)
         else:
-            fastq_fp = open(fastq_file,'U')
-            
-        file_lines=get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq=MinimalFastqParser(file_lines,strict=False)
-        for i,seq_data in enumerate(parsed_fastq):
-            if i==0:
-                get_file_type_info[fastq_file]=len(seq_data[1])
+            fastq_fp = open(fastq_file, 'U')
+
+        file_lines = get_top_fastq_two_lines(fastq_fp)
+        parsed_fastq = MinimalFastqParser(file_lines, strict=False)
+        for i, seq_data in enumerate(parsed_fastq):
+            if i == 0:
+                get_file_type_info[fastq_file] = len(seq_data[1])
             else:
                 break
         fastq_fp.close()
 
-    # iterate over the sequence lengths and assign each file to either 
+    # iterate over the sequence lengths and assign each file to either
     # a sequence list or barcode list
-    barcode_files=[]
-    sequence_files=[]
-    for i in range(0,len(fastq_fps),2):
-        if get_file_type_info[fastq_fps[i]]<get_file_type_info[fastq_fps[i+1]]:
+    barcode_files = []
+    sequence_files = []
+    for i in range(0, len(fastq_fps), 2):
+        if get_file_type_info[fastq_fps[i]] < get_file_type_info[fastq_fps[i + 1]]:
             barcode_files.append(fastq_fps[i])
-            sequence_files.append(fastq_fps[i+1])
+            sequence_files.append(fastq_fps[i + 1])
         else:
-            barcode_files.append(fastq_fps[i+1])
+            barcode_files.append(fastq_fps[i + 1])
             sequence_files.append(fastq_fps[i])
-    
+
     # count the number of barcode matches in the forward and reverse direction
     # to determine if the rev_comp_barcode option needs passed
-    fwd_count=0
-    rev_count=0
+    fwd_count = 0
+    rev_count = 0
     for bfile in barcode_files:
         # allow for gzipped files to be used
         if fastq_file.endswith('.gz'):
             fastq_fp = gzip_open(bfile)
         else:
-            fastq_fp = open(bfile,'U')
-            
-        parsed_fastq=MinimalFastqParser(fastq_fp,strict=False)
+            fastq_fp = open(bfile, 'U')
+
+        parsed_fastq = MinimalFastqParser(fastq_fp, strict=False)
         for bdata in parsed_fastq:
             if bdata[1][:barcode_len] in barcode_mapping_column:
-                fwd_count+=1
+                fwd_count += 1
             elif bdata[1][:barcode_len] in revcomp_barcode_mapping_column:
-                rev_count+=1
+                rev_count += 1
         fastq_fp.close()
-    
+
     # determine which barcode direction is correct
     if rev_count > fwd_count:
-        barcode_orientation='--rev_comp_mapping_barcodes'
+        barcode_orientation = '--rev_comp_mapping_barcodes'
     else:
-        barcode_orientation=''
-    
-    #generate the string to use in command call to split_libraries_fastq
-    split_lib_str='-i %s -b %s %s' % (','.join(sequence_files),
-                                      ','.join(barcode_files),
-                                      barcode_orientation)
+        barcode_orientation = ''
+
+    # generate the string to use in command call to split_libraries_fastq
+    split_lib_str = '-i %s -b %s %s' % (','.join(sequence_files),
+                                        ','.join(barcode_files),
+                                        barcode_orientation)
     return split_lib_str
 
 
-def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'):
+def iseq_to_qseq_fields(line, barcode_in_header,
+                        barcode_length, barcode_qual_c='b'):
     """ Split an Illumina sequence line into qseq fields"""
     record = line.strip().split(':')
     rec_0_1, rec_0_2 = record[0].split('_')
     rec_4_1, rec_4_23 = record[4].split('#')
     rec_4_2, rec_4_3 = rec_4_23.split('/')
-    if barcode_in_header:   
+    if barcode_in_header:
         barcode = rec_4_2[:barcode_length]
         sequence = record[5]
-        barcode_qual = barcode_qual_c*barcode_length
+        barcode_qual = barcode_qual_c * barcode_length
         sequence_qual = record[6]
     else:
         barcode = record[5][:barcode_length]
         sequence = record[5][barcode_length:]
         barcode_qual = record[6][:barcode_length]
         sequence_qual = record[6][barcode_length:]
-    return (rec_0_1,rec_0_2,record[1],record[2],record[3],\
-            rec_4_1,rec_4_2,rec_4_3), sequence, sequence_qual,\
-            barcode,barcode_qual
+    return (rec_0_1, rec_0_2, record[1], record[2], record[3],
+            rec_4_1, rec_4_2, rec_4_3), sequence, sequence_qual,\
+        barcode, barcode_qual
+
 
 def is_gzip(fp):
     """Checks the first two bytes of the file for the gzip magic number
 
-    If the first two bytes of the file are 1f 8b (the "magic number" of a 
+    If the first two bytes of the file are 1f 8b (the "magic number" of a
     gzip file), return True; otherwise, return false.
     """
     return open(fp, 'rb').read(2) == '\x1f\x8b'
-            
+
+
 def gzip_open(fp):
-    return gzip.open(fp,'rb')
+    return gzip.open(fp, 'rb')
+
 
 def qiime_open(fp, permission='U'):
     """Wrapper to allow opening of gzipped or non-compressed files
-    
+
     Read or write the contents of a file
 
     file_fp : file path
@@ -1444,8 +1529,9 @@ def qiime_open(fp, permission='U'):
         return gzip_open(fp)
     else:
         return open(fp, permission)
-    
-def make_compatible_distance_matrices(dm1,dm2,lookup=None):
+
+
+def make_compatible_distance_matrices(dm1, dm2, lookup=None):
     """ Intersect distance matrices and sort the values """
     dm1_ids = dm1[0]
     dm1_data = dm1[1]
@@ -1455,43 +1541,44 @@ def make_compatible_distance_matrices(dm1,dm2,lookup=None):
         try:
             dm1_ids = [lookup[e] for e in dm1_ids]
             dm2_ids = [lookup[e] for e in dm2_ids]
-        except KeyError,e:
-            raise KeyError,\
-             ("All entries in both DMs must be in "
-              "lookup if a lookup is provided. Missing: %s" % str(e))
+        except KeyError as e:
+            raise KeyError("All entries in both DMs must be in "
+                           "lookup if a lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
-    
+
     # create Dict2D from dm1
     d1 = {}
-    for i,r in enumerate(dm1_ids):
+    for i, r in enumerate(dm1_ids):
         d1[r] = {}
-        for j,c in enumerate(dm1_ids):
-            d1[r][c] = dm1_data[i,j]
-    result1 = Dict2D(data=d1,RowOrder=order,ColOrder=order)
+        for j, c in enumerate(dm1_ids):
+            d1[r][c] = dm1_data[i, j]
+    result1 = Dict2D(data=d1, RowOrder=order, ColOrder=order)
     # remove entries not in order
     result1.purge()
     # return 2d list in order
     result1 = array(result1.toLists())
-    
+
     # create Dict2D from dm2
     d2 = {}
-    for i,r in enumerate(dm2_ids):
+    for i, r in enumerate(dm2_ids):
         d2[r] = {}
-        for j,c in enumerate(dm2_ids):
-            d2[r][c] = dm2_data[i,j]
-    result2 = Dict2D(data=d2,RowOrder=order,ColOrder=order)
+        for j, c in enumerate(dm2_ids):
+            d2[r][c] = dm2_data[i, j]
+    result2 = Dict2D(data=d2, RowOrder=order, ColOrder=order)
     # remove entries not in order
     result2.purge()
     # return 2d list in order
     result2 = array(result2.toLists())
-    
-    return (order,result1), (order,result2)
-    
+
+    return (order, result1), (order, result2)
+
+
 def get_rdp_jarpath():
     """ Return jar file name for RDP classifier ($RDP_JAR_PATH)"""
     return getenv('RDP_JAR_PATH')
-    
-def expand_otu_ids(otu_map,otus_to_expand,ignore_missing=False):
+
+
+def expand_otu_ids(otu_map, otus_to_expand, ignore_missing=False):
     """From OTU map and otu ids, return seq ids represented by the OTUs
     """
     result = []
@@ -1503,23 +1590,26 @@ def expand_otu_ids(otu_map,otus_to_expand,ignore_missing=False):
             if ignore_missing:
                 continue
             else:
-                raise KeyError,\
-                 "OTU id not in OTU map: %s" % o.split()[0]
+                raise KeyError("OTU id not in OTU map: %s" % o.split()[0])
     return result
-# This function (stderr) was pulled from the following website: 
+# This function (stderr) was pulled from the following website:
 # http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
 # then modified to fit the purpose needed. Originally from Scipy.
+
+
 def stderr(a, axis=0, ddof=1):
     """ Returns the estimated population standard error of the values in the
         passed array (i.e., N-1).  Axis can equal None (ravel array
         first), or an integer (the axis over which to operate).
     """
     a, axis = _chk_asarray(a, axis)
-    return std(a,axis,ddof=1) / float(sqrt(a.shape[axis]))
+    return std(a, axis, ddof=1) / float(sqrt(a.shape[axis]))
 
-# This function (_chk_asarray) was pulled from the following website: 
+# This function (_chk_asarray) was pulled from the following website:
 # http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
 # then modified to fit the purpose needed. Originally from Scipy.
+
+
 def _chk_asarray(a, axis):
     """ Converts a list into an numpy array """
     if axis is None:
@@ -1535,22 +1625,23 @@ def subsample_fasta(input_fasta_fp,
                     output_fp,
                     percent_subsample):
     """ Writes random percent_sample of sequences from input fasta filepath
-    
+
     input_fasta_fp: input fasta filepath
     output_fp: output fasta filepath
     percent_subsample: percent of sequences to write
     """
-    
+
     input_fasta = open(input_fasta_fp, "U")
-    
+
     output_fasta = open(output_fp, "w")
 
     for label, seq in MinimalFastaParser(input_fasta):
         if random() < percent_subsample:
             output_fasta.write('>%s\n%s\n' % (label, seq))
-    
+
     input_fasta.close()
     output_fasta.close()
+
 
 def subsample_fastq(input_fastq_fp,
                     output_fp,
@@ -1565,18 +1656,21 @@ def subsample_fastq(input_fastq_fp,
     input_fastq = open(input_fastq_fp, "U")
     output_fastq = open(output_fp, "w")
 
-    for label, seq, qual in MinimalFastqParser(input_fastq,strict=False):
+    for label, seq, qual in MinimalFastqParser(input_fastq, strict=False):
         if random() < percent_subsample:
-            output_fastq.write('@%s\n%s\n+%s\n%s\n' % (label, seq, label, qual))
+            output_fastq.write(
+                '@%s\n%s\n+%s\n%s\n' %
+                (label, seq, label, qual))
 
     input_fastq.close()
     output_fastq.close()
 
+
 def subsample_fastqs(input_fastq1_fp,
-                    output_fastq1_fp,
-                    input_fastq2_fp,
-                    output_fastq2_fp,
-                    percent_subsample):
+                     output_fastq1_fp,
+                     input_fastq2_fp,
+                     output_fastq2_fp,
+                     percent_subsample):
     """ Writes random percent_sample of sequences from input fastq filepath
     """
 
@@ -1585,13 +1679,17 @@ def subsample_fastqs(input_fastq1_fp,
     input_fastq2 = open(input_fastq2_fp, "U")
     output_fastq2 = open(output_fastq2_fp, "w")
 
-    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1,strict=False),
-                               MinimalFastqParser(input_fastq2,strict=False)):
+    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1, strict=False),
+                               MinimalFastqParser(input_fastq2, strict=False)):
         label1, seq1, qual1 = fastq1
         label2, seq2, qual2 = fastq2
         if random() < percent_subsample:
-            output_fastq1.write('@%s\n%s\n+%s\n%s\n' % (label1, seq1, label1, qual1))
-            output_fastq2.write('@%s\n%s\n+%s\n%s\n' % (label2, seq2, label2, qual2))
+            output_fastq1.write(
+                '@%s\n%s\n+%s\n%s\n' %
+                (label1, seq1, label1, qual1))
+            output_fastq2.write(
+                '@%s\n%s\n+%s\n%s\n' %
+                (label2, seq2, label2, qual2))
 
     input_fastq1.close()
     output_fastq1.close()
@@ -1601,7 +1699,7 @@ def subsample_fastqs(input_fastq1_fp,
 
 def summarize_otu_sizes_from_otu_map(otu_map_f):
     """ Given an otu map file handle, summarizes the sizes of the OTUs
-    
+
         This is useful for determining number of singletons, doubletons, etc
          from an OTU map.
     """
@@ -1612,15 +1710,15 @@ def summarize_otu_sizes_from_otu_map(otu_map_f):
             result[otu_size] += 1
         except KeyError:
             result[otu_size] = 1
-    
-    result = result.items()
-    result.sort()
+
+    result = sorted(result.items())
     return result
 
 
 class DistanceMatrix(DenseTable):
+
     """This class represents a QIIME distance matrix.
-    
+
     Public attributes:
         SampleIds - the list of sample ID strings (i.e. row/column headers)
     """
@@ -1630,7 +1728,7 @@ class DistanceMatrix(DenseTable):
     @staticmethod
     def parseDistanceMatrix(lines):
         """Parses a QIIME distance matrix file into a DistanceMatrix object.
-        
+
         This static method is basically a factory that reads in the given
         distance matrix file contents and returns a DistanceMatrix instance.
         This method is provided for convenience.
@@ -1653,7 +1751,7 @@ class DistanceMatrix(DenseTable):
         Please refer to the biom.table.Table class documentation for a list of
         acceptable arguments to the constructor. The data matrix argument (the
         first argument) is expected to be a numpy array.
-        
+
         We have to match the parent class constructor exactly in this case due
         to how several of the parent class methods are implemented (they assume
         all subclasses have the same constructor signature). Otherwise, I would
@@ -1684,7 +1782,7 @@ class DistanceMatrix(DenseTable):
     @property
     def DataMatrix(self):
         """Returns the matrix of distances as a numpy array.
-        
+
         The returned matrix is not a copy of the matrix stored in this object.
         """
         return asarray(self._data)
@@ -1727,9 +1825,11 @@ class DistanceMatrix(DenseTable):
         """Returns True if the distance matrix is symmetric and hollow."""
         return is_symmetric_and_hollow(self._data)
 
+
 class MetadataMap():
+
     """This class represents a QIIME metadata mapping file.
-    
+
     Public attributes:
         Comments - the comments associated with this metadata map (a list of
             strings)
@@ -1907,16 +2007,17 @@ class MetadataMap():
 
 
 class RExecutor(CommandLineApplication):
+
     """RExecutor application controller
        Runs R with a source script (from qiime/support_files/R)
     """
     _input_handler = '_input_as_path'
     _command = "R"
-    _options ={}
+    _options = {}
 
     _R_parameters = {
         'flags': '--slave'
-        }
+    }
 
     # The name of the R script (located under qiime/support_files/R/)
     _R_script = ''
@@ -1928,9 +2029,9 @@ class RExecutor(CommandLineApplication):
     def getHelp(self):
         """Returns documentation string"""
         help_str =\
-        """
+            """
         Runs the specified r script using the specified command
-        
+
         Outputs:
             The results of the r script that is ran
         """
@@ -1939,7 +2040,7 @@ class RExecutor(CommandLineApplication):
     def __call__(self, command_args, script_name, output_dir=None,
                  verbose=False):
         """Run the specified r script using the commands_args
-            
+
             returns a CommandLineAppResult object
         """
         input_handler = self.InputHandler
@@ -1948,12 +2049,12 @@ class RExecutor(CommandLineApplication):
         if suppress_stdout:
             outfile = devnull
         else:
-            outfilepath = FilePath(join(self.TmpDir,'R.stdout'))
-            outfile = open(outfilepath,'w')
+            outfilepath = FilePath(join(self.TmpDir, 'R.stdout'))
+            outfile = open(outfilepath, 'w')
         if suppress_stderr:
             errfile = devnull
         else:
-            errfilepath = FilePath(join(self.TmpDir,'R.stderr'))
+            errfilepath = FilePath(join(self.TmpDir, 'R.stderr'))
             errfile = open(errfilepath, 'w')
 
         self._R_script = script_name
@@ -1966,51 +2067,49 @@ class RExecutor(CommandLineApplication):
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
         command = self._commandline_join(
-            [   cd_command, base_command,
+            [cd_command, base_command,
                 '--args',
                 '--source_dir', R_source_dir,
-            ] + command_args + [' < %s ' %(rscript)]
-            )
+             ] + command_args + [' < %s ' % (rscript)]
+        )
 
-        if self.HaltExec: 
-            raise AssertionError, "Halted exec with command:\n" + command
+        if self.HaltExec:
+            raise AssertionError("Halted exec with command:\n" + command)
 
         # run command, wait for output, get exit status
         proc = Popen(command, shell=True, stdout=outfile, stderr=errfile)
         proc.wait()
         exit_status = proc.returncode
 
-        # Determine if error should be raised due to exit status of 
+        # Determine if error should be raised due to exit status of
         # appliciation
         if not self._accept_exit_status(exit_status):
             if exit_status == 2:
-                raise ApplicationError, \
-                    'R library not installed: \n' + \
-                    ''.join(open(errfilepath,'r').readlines()) + '\n'
+                raise ApplicationError('R library not installed: \n' +
+                                       ''.join(open(errfilepath, 'r').readlines()) + '\n')
             else:
-                raise ApplicationError, \
-                    'Unacceptable application exit status: %s, command: %s'\
-                    % (str(exit_status),command) +\
-                    ' Program output: \n\n%s\n'\
-                     %(''.join(open(errfilepath,'r').readlines()))
+                raise ApplicationError('Unacceptable application exit status: %s, command: %s'
+                                       % (str(exit_status), command) +
+                                       ' Program output: \n\n%s\n'
+                                       % (''.join(open(errfilepath, 'r').readlines())))
         # open the stdout and stderr if not being suppressed
         out = None
         if not suppress_stdout:
-            out = open(outfilepath,"r")
+            out = open(outfilepath, "r")
         err = None
         if not suppress_stderr:
-            err = open(errfilepath,"r")
+            err = open(errfilepath, "r")
         if verbose:
             msg = '\n\nCommand Executed: %s' % command + \
                   ' \n\nR Command Output:\n%s' % \
-                  (''.join(open(errfilepath,'r').readlines()))
+                  (''.join(open(errfilepath, 'r').readlines()))
             print(msg)
 
     # The methods below were taken from supervised_learning.py
     def _get_R_script_dir(self):
         """Returns the path to the qiime R source directory."""
         qiime_dir = get_qiime_project_dir()
-        script_dir = join(qiime_dir,'qiime','support_files','R')
+        script_dir = join(qiime_dir, 'qiime', 'support_files', 'R')
         return script_dir
 
     def _get_R_script_path(self):
@@ -2022,7 +2121,7 @@ class RExecutor(CommandLineApplication):
         commands = filter(None, map(str, tokens))
         return self._command_delimiter.join(commands).strip()
 
-    def _accept_exit_status(self,exit_status):
+    def _accept_exit_status(self, exit_status):
         """ Return False to raise an error due to exit_status !=0."""
         if exit_status != 0:
             return False
@@ -2038,7 +2137,7 @@ class RExecutor(CommandLineApplication):
         Allows the program to conveniently access a subset of user-
         adjusted parameters, which are stored in the Parameters
         attribute.
-        
+
         Relies on the convention of providing dicts named according to
         "_<name>_parameters" and "_<name>_synonyms".  The main
         parameters object is expected to be initialized with the
@@ -2054,37 +2153,41 @@ class RExecutor(CommandLineApplication):
 
 def get_duplicates(fields):
     """ Returns duplicates out of a list
-    
+
     Modified from stackoverflow.com example duplicate detection code
     http://stackoverflow.com/a/5420328
-    
+
     fields:  list of elements to check for duplicates
     """
-    cnt = {} 
+    cnt = {}
     for field in fields:
         try:
             cnt[field] += 1
         except KeyError:
             cnt[field] = 1
-    return [key for key in cnt.keys() if cnt[key]> 1]
+    return [key for key in cnt.keys() if cnt[key] > 1]
+
 
 def duplicates_indices(fields):
     """ Gets dictionary of duplicates:locations in a list
-    
+
     Modified from stackoverflow.com example duplicate detection code
     http://stackoverflow.com/a/5420328
-    
+
     fields:  list of elements to check for duplicates
     """
     dup, ind = get_duplicates(fields), defaultdict(list)
     for i, v in enumerate(fields):
-        if v in dup: ind[v].append(i)
+        if v in dup:
+            ind[v].append(i)
     return ind
 
-def head_gzip(fp,n=10):
+
+def head_gzip(fp, n=10):
     f = gzip_open(fp)
     for i in range(n):
         print f.readline(),
+
 
 def add_filename_suffix(filepath, suffix):
     """Adds a suffix to the filepath, inserted before the file extension.
@@ -2101,50 +2204,53 @@ def add_filename_suffix(filepath, suffix):
     root, extension = splitext(basename(filepath))
     return root + suffix + extension
 
+
 def sync_biom_and_mf(pmf, bt):
     """Reduce mapping file dict and biom table to shared samples.
 
-    Inputs: 
+    Inputs:
      pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
      bt - parse biom table from parse_biom_table (biom table object).
-    Outputs are a bt and pmf that contain only shared samples and a set of 
+    Outputs are a bt and pmf that contain only shared samples and a set of
     samples that are not shared. If no samples are unshared this final output
-    will be an empty set. 
+    will be an empty set.
     """
     mf_samples = set(pmf)
     bt_samples = set(bt.SampleIds)
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()
-    else: 
+    else:
         shared_samples = mf_samples.intersection(bt_samples)
         # check that we shared something
-        assert len(shared_samples)!=0, \
+        assert len(shared_samples) != 0, \
             "sync_biom_and_mf: No shared samples, no point in continuing."
-        nonshared_samples = mf_samples.union(bt_samples)-shared_samples
+        nonshared_samples = mf_samples.union(bt_samples) - shared_samples
         # remove samples that were in the mapping file but not biom file
-        npmf = {k:v for k,v in pmf.items() if k in shared_samples}
+        npmf = {k: v for k, v in pmf.items() if k in shared_samples}
         # remove samples in the biom table that were not in the mapping file
+
         def _f(sv, sid, smd):
             return sid in shared_samples
         nbt = bt.filterSamples(_f)
     return npmf, nbt, nonshared_samples
 
+
 def biom_taxonomy_formatter(bt, md_key):
     """Return md strings from bt using md_key in order of bt.ObservationMetadata
-    
-    There are multiple legacy formats for metadata encoding in biom formats 
+
+    There are multiple legacy formats for metadata encoding in biom formats
     including as lists, dicts, and strings. This function attempts to figure out
-    what form the metadata is in and convert it into a single string. This 
-    function assumes that the metadata is encoded as a single format. It will 
+    what form the metadata is in and convert it into a single string. This
+    function assumes that the metadata is encoded as a single format. It will
     break if some of the metadata is e.g., encoded as a dict and some as a list.
 
     Inputs:
      bt - biom table object
-     md_key - string, the key to return the metadata from the biom table. 
-    Outputs a list of strings (in order of bt.ObservationMetadata entries) of 
-    metadata. If no metadata could be found using the given key the function 
-    will print a warning and return None. 
+     md_key - string, the key to return the metadata from the biom table.
+    Outputs a list of strings (in order of bt.ObservationMetadata entries) of
+    metadata. If no metadata could be found using the given key the function
+    will print a warning and return None.
     """
     if bt.ObservationMetadata is None:
         print 'No metadata in biom table.'
@@ -2155,17 +2261,19 @@ def biom_taxonomy_formatter(bt, md_key):
         data = []
         for md in bt.ObservationMetadata:
             tmp = []
-            for k,v in md[md_key].iteritems():
-                tmp.append('%s_%s' % (k,v))
+            for k, v in md[md_key].iteritems():
+                tmp.append('%s_%s' % (k, v))
             data.append(' '.join(tmp))
         # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
         #     md in bt.ObservationMetadata]
         return map(str, data)
     elif isinstance(dtype, list):
-        return map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+        return (
+            map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+        )
     elif isinstance(dtype, (str, unicode)):
         return map(str, [md[md_key] for md in bt.ObservationMetadata])
     else:
-        print ('Metadata format could not be determined or metadata key (%s) '+\
-            'was incorrect. Metadata will not be returned.') % md_key
+        print ('Metadata format could not be determined or metadata key (%s) ' +
+               'was incorrect. Metadata will not be returned.') % md_key
         return None

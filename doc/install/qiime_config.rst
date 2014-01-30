@@ -20,18 +20,10 @@ To see the qiime_config values as read by QIIME, and to test your settings, you 
 
 	print_qiime_config.py -t
 
-Setting qiime_scripts_dir
---------------------------
-If you have installed QIIME using its ``setup.py`` script, you will need to set the ``qiime_scripts_dir`` value in your ``qiime_config`` file to the directory containing the QIIME scripts. By default, this will likely be ``/usr/local/bin/``. If you specified a different location by passing ``--install-scripts=`` to ``setup.py``, you should set ``qiime_scripts_dir`` to this value.
-
 Definition of values in qiime_config
 ------------------------------------
 
 ``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in :doc:`../tutorials/parallel_qiime`.
-
-``python_exe_fp`` : path to ``python`` executable
-
-``working_dir`` : a directory where work should be performed when running in parallel. You must be able to write to this directory. May be deprecated in favor of ``temp_dir`` in QIIME 1.8.0.
 
 ``blastmat_dir`` : directory where BLAST substitution matrices are stored
 
@@ -47,13 +39,9 @@ Definition of values in qiime_config
 
 ``seconds_to_sleep`` : number of seconds to wait when checking whether parallel jobs have completed
 
-``qiime_scripts_dir`` : directory where QIIME scripts can be found
-
 ``temp_dir`` : directory for storing temporary files created by QIIME scripts. when a script completes successfully, any temporary files that it created are cleaned up (if you notice this isn't the case for some script, please let us know)
 
 ``denoiser_min_per_core`` : minimum number of flowgrams to denoise per core in parallel denoiser runs
-
-``cloud_environment`` : used only by the n3phele system. you should not need to modify this value
 
 ``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
 

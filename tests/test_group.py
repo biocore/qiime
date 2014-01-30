@@ -17,18 +17,21 @@ from biom.parse import parse_biom_table
 from biom.exception import UnknownID
 from cogent.util.unit_test import TestCase, main
 
-from qiime.parse import (parse_mapping_file, parse_distmat, 
-                         group_by_field, parse_coords, 
+from qiime.parse import (parse_mapping_file, parse_distmat,
+                         group_by_field, parse_coords,
                          parse_mapping_file_to_dict)
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
-    get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
-    get_adjacent_distances, get_ordered_coordinates,
-    extract_per_individual_states_from_sample_metadata,
-    extract_per_individual_state_metadatum_from_sample_metadata,
-    extract_per_individual_state_metadata_from_sample_metadata_and_biom)
+                         get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
+                         get_adjacent_distances, get_ordered_coordinates,
+                         extract_per_individual_states_from_sample_metadata,
+                         extract_per_individual_state_metadatum_from_sample_metadata,
+                         extract_per_individual_state_metadata_from_sample_metadata_and_biom)
+
 
 class GroupTests(TestCase):
+
     """Tests of the group module."""
+
     def setUp(self):
         """Create some data to be used in the tests."""
         # Create the mapping file/distance matrix combo from the overview
@@ -72,68 +75,70 @@ class GroupTests(TestCase):
         # additional testing.
         self.tiny_dist_matrix_string = ["\tSamp.1", "Samp.1\t0"]
         self.tiny_mapping_string = ["#SampleID\tBarcodeSequence\tSampleField",
-                               "Samp.1\tAGCACGAGCCTA\tSampleFieldState1"]
+                                    "Samp.1\tAGCACGAGCCTA\tSampleFieldState1"]
         self.tiny_field = 'SampleField'
 
         self.small_dist_matrix_string = ["\tSamp.1\tSamp.2", "Samp.1\t0\t0.5",
                                          "Samp.2\t0.5\t0"]
         self.small_mapping_string = ["#SampleID\tBarcodeSequence\tSampleField",
-                               "Samp.1\tAGCACGAGCCTA\tSampleFieldState1",
-                               "Samp.2\tAGCACGAGCCTG\tSampleFieldState2"]
+                                     "Samp.1\tAGCACGAGCCTA\tSampleFieldState1",
+                                     "Samp.2\tAGCACGAGCCTG\tSampleFieldState2"]
         self.small_field = 'SampleField'
 
         # Parse mapping "files" (faked here).
         self.mapping, self.mapping_header, self.comments = parse_mapping_file(
-                self.mapping_string)
+            self.mapping_string)
         mapping_data = [self.mapping_header]
         mapping_data.extend(self.mapping)
         self.groups = group_by_field(mapping_data, self.field)
 
         self.tiny_mapping, self.tiny_mapping_header, self.tiny_comments = \
-                parse_mapping_file(self.tiny_mapping_string)
+            parse_mapping_file(self.tiny_mapping_string)
         tiny_mapping_data = [self.tiny_mapping_header]
         tiny_mapping_data.extend(self.tiny_mapping)
         self.tiny_groups = group_by_field(tiny_mapping_data, self.tiny_field)
 
         self.small_mapping, self.small_mapping_header, self.small_comments = \
-                parse_mapping_file(self.small_mapping_string)
+            parse_mapping_file(self.small_mapping_string)
         small_mapping_data = [self.small_mapping_header]
         small_mapping_data.extend(self.small_mapping)
         self.small_groups = group_by_field(small_mapping_data,
-                self.small_field)
+                                           self.small_field)
 
         # Parse distance matrix "files" (faked here).
         self.dist_matrix_header, self.dist_matrix = parse_distmat(
-                self.dist_matrix_string)
+            self.dist_matrix_string)
 
         self.tiny_dist_matrix_header, self.tiny_dist_matrix = parse_distmat(
-                self.tiny_dist_matrix_string)
+            self.tiny_dist_matrix_string)
 
         self.small_dist_matrix_header, self.small_dist_matrix = parse_distmat(
-                self.small_dist_matrix_string)
-        
+            self.small_dist_matrix_string)
+
         # extract_per_individual* input data
         self.individual_states_and_responses_map_f1 = \
-         parse_mapping_file_to_dict(individual_states_and_responses_map_f1.split('\n'))[0]
+            parse_mapping_file_to_dict(
+                individual_states_and_responses_map_f1.split('\n'))[0]
         self.individual_states_and_responses_map_f2 = \
-         parse_mapping_file_to_dict(individual_states_and_responses_map_f2.split('\n'))[0]
+            parse_mapping_file_to_dict(
+                individual_states_and_responses_map_f2.split('\n'))[0]
         self.paired_difference_biom1 = \
-         parse_biom_table(paired_difference_biom_f1.split('\n'))
+            parse_biom_table(paired_difference_biom_f1.split('\n'))
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
         groupings."""
         groupings = get_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=True)
+                                          self.dist_matrix, self.mapping_header, self.mapping,
+                                          self.field, within=True)
         expected = [
-            ('Control', 'Control', [0.625, 0.623, 0.60999999999999999, \
-                                    0.57699999999999996, 0.61499999999999999, \
-                                    0.64200000000000002, 0.67300000000000004, \
-                                    0.68200000000000005, 0.73699999999999999, \
+            ('Control', 'Control', [0.625, 0.623, 0.60999999999999999,
+                                    0.57699999999999996, 0.61499999999999999,
+                                    0.64200000000000002, 0.67300000000000004,
+                                    0.68200000000000005, 0.73699999999999999,
                                     0.70399999999999996]),
-            ('Fast', 'Fast', [0.71799999999999997, 0.66600000000000004, \
-                              0.72699999999999998, 0.59999999999999998, \
+            ('Fast', 'Fast', [0.71799999999999997, 0.66600000000000004,
+                              0.72699999999999998, 0.59999999999999998,
                               0.57799999999999996, 0.623])]
         self.assertEqual(groupings, expected)
 
@@ -141,18 +146,18 @@ class GroupTests(TestCase):
         """get_grouped_distances() should return a list of between distance
         groupings."""
         groupings = get_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=False)
+                                          self.dist_matrix, self.mapping_header, self.mapping,
+                                          self.field, within=False)
         expected = [
-            ('Control', 'Fast', [0.72899999999999998, 0.80000000000000004, \
-                                 0.72099999999999997, 0.76500000000000001, \
-                                 0.77600000000000002, 0.74399999999999999, \
-                                 0.749, 0.67700000000000005, \
-                                 0.73399999999999999, 0.77700000000000002, \
-                                 0.73299999999999998, 0.72399999999999998, \
-                                 0.69599999999999995, 0.67500000000000004, \
-                                 0.65400000000000003, 0.69599999999999995, \
-                                 0.73099999999999998, 0.75800000000000001, \
+            ('Control', 'Fast', [0.72899999999999998, 0.80000000000000004,
+                                 0.72099999999999997, 0.76500000000000001,
+                                 0.77600000000000002, 0.74399999999999999,
+                                 0.749, 0.67700000000000005,
+                                 0.73399999999999999, 0.77700000000000002,
+                                 0.73299999999999998, 0.72399999999999998,
+                                 0.69599999999999995, 0.67500000000000004,
+                                 0.65400000000000003, 0.69599999999999995,
+                                 0.73099999999999998, 0.75800000000000001,
                                  0.73799999999999999, 0.73699999999999999])]
         self.assertEqual(groupings, expected)
 
@@ -160,23 +165,23 @@ class GroupTests(TestCase):
         """get_all_grouped_distances() should return a list of distances for
         all samples with the same field value."""
         groupings = get_all_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=True)
-        expected =  [0.625, 0.623, 0.60999999999999999, 0.57699999999999996,
-                     0.61499999999999999, 0.64200000000000002,
-                     0.67300000000000004, 0.68200000000000005,
-                     0.73699999999999999, 0.70399999999999996,
-                     0.71799999999999997, 0.66600000000000004,
-                     0.72699999999999998, 0.59999999999999998,
-                     0.57799999999999996, 0.623]
+                                              self.dist_matrix, self.mapping_header, self.mapping,
+                                              self.field, within=True)
+        expected = [0.625, 0.623, 0.60999999999999999, 0.57699999999999996,
+                    0.61499999999999999, 0.64200000000000002,
+                    0.67300000000000004, 0.68200000000000005,
+                    0.73699999999999999, 0.70399999999999996,
+                    0.71799999999999997, 0.66600000000000004,
+                    0.72699999999999998, 0.59999999999999998,
+                    0.57799999999999996, 0.623]
         self.assertEqual(groupings, expected)
 
     def test_get_all_grouped_distances_between(self):
         """get_all_grouped_distances() should return a list of distances
         between samples of all different field values."""
         groupings = get_all_grouped_distances(self.dist_matrix_header,
-            self.dist_matrix, self.mapping_header, self.mapping,
-            self.field, within=False)
+                                              self.dist_matrix, self.mapping_header, self.mapping,
+                                              self.field, within=False)
         expected = [0.72899999999999998, 0.80000000000000004,
                     0.72099999999999997, 0.76500000000000001,
                     0.77600000000000002, 0.74399999999999999, 0.749,
@@ -193,129 +198,135 @@ class GroupTests(TestCase):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
         comparison_groupings = get_field_state_comparisons(
-                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
-                self.mapping, self.field, ['Control'])
+            self.dist_matrix_header, self.dist_matrix, self.mapping_header,
+            self.mapping, self.field, ['Control'])
         expected = {'Fast': {'Control': [0.72899999999999998,
-            0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
-            0.77600000000000002, 0.74399999999999999, 0.749,
-            0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
-            0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
-            0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
-            0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
-            0.73699999999999999]}}
+                                         0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
+                                         0.77600000000000002, 0.74399999999999999, 0.749,
+                                         0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
+                                         0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
+                                         0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
+                                         0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
+                                         0.73699999999999999]}}
         self.assertFloatEqual(comparison_groupings, expected)
 
         comparison_groupings = get_field_state_comparisons(
-                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
-                self.mapping, self.field, ['Fast'])
+            self.dist_matrix_header, self.dist_matrix, self.mapping_header,
+            self.mapping, self.field, ['Fast'])
         expected = {'Control': {'Fast': [0.72899999999999998,
-            0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
-            0.77600000000000002, 0.74399999999999999, 0.749,
-            0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
-            0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
-            0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
-            0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
-            0.73699999999999999]}}
+                                         0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
+                                         0.77600000000000002, 0.74399999999999999, 0.749,
+                                         0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
+                                         0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
+                                         0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
+                                         0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
+                                         0.73699999999999999]}}
         self.assertFloatEqual(comparison_groupings, expected)
 
     def test_get_field_state_comparisons_small(self):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
         comparison_groupings = get_field_state_comparisons(
-                self.small_dist_matrix_header, self.small_dist_matrix,
-                self.small_mapping_header, self.small_mapping,
-                self.small_field, ['SampleFieldState1'])
+            self.small_dist_matrix_header, self.small_dist_matrix,
+            self.small_mapping_header, self.small_mapping,
+            self.small_field, ['SampleFieldState1'])
         expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
         self.assertFloatEqual(comparison_groupings, expected)
 
     def test_get_field_state_comparisons_tiny(self):
         """get_field_state_comparisons() should return an empty dictionary."""
         comparison_groupings = get_field_state_comparisons(
-                self.tiny_dist_matrix_header, self.tiny_dist_matrix,
-                self.tiny_mapping_header, self.tiny_mapping, self.tiny_field,
-                ['SampleFieldState1'])
+            self.tiny_dist_matrix_header, self.tiny_dist_matrix,
+            self.tiny_mapping_header, self.tiny_mapping, self.tiny_field,
+            ['SampleFieldState1'])
         self.assertEqual(comparison_groupings, {})
 
     def test_get_field_state_comparisons_no_comp_states(self):
         """get_field_state_comparisons() should raise a ValueError if no
         comparison field states are provided."""
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                [])
+                          self.dist_matrix_header, self.dist_matrix,
+                          self.mapping_header, self.mapping, self.field,
+                          [])
 
     def test_get_field_state_comparisons_bad_comp_state(self):
         """get_field_state_comparisons() should raise a ValueError if a
         non-existent comparison field state is provided."""
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                ['T0', 'Fast'])
+                          self.dist_matrix_header, self.dist_matrix,
+                          self.mapping_header, self.mapping, self.field,
+                          ['T0', 'Fast'])
         self.assertRaises(ValueError, get_field_state_comparisons,
-                self.dist_matrix_header, self.dist_matrix,
-                self.mapping_header, self.mapping, self.field,
-                ['Fast', 'T0'])
+                          self.dist_matrix_header, self.dist_matrix,
+                          self.mapping_header, self.mapping, self.field,
+                          ['Fast', 'T0'])
 
     def test_get_field_state_comparisons_invalid_distance_matrix(self):
         """Handles invalid distance matrix."""
         self.assertRaises(ValueError, get_field_state_comparisons,
-                ['Samp.1', 'Samp.2'],
-                array([[10.0, 0.0003], [0.0003, 0.0]]),
-                self.small_mapping_header, self.small_mapping,
-                self.small_field, ['SampleFieldState1'])
+                          ['Samp.1', 'Samp.2'],
+                          array([[10.0, 0.0003], [0.0003, 0.0]]),
+                          self.small_mapping_header, self.small_mapping,
+                          self.small_field, ['SampleFieldState1'])
 
     def test_get_adjacent_distances(self):
         """ extracting adjacent distances works as expected
         """
         dm_str = ["\ts1\ts2\ts3", "s1\t0\t2\t4", "s2\t2\t0\t3.2",
-                        "s3\t4\t3.2\t0"]
+                  "s3\t4\t3.2\t0"]
         dm_header, dm = parse_distmat(dm_str)
         # error cases: fewer than 2 valid sample ids
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
+                          get_adjacent_distances, dm_header, dm,
                           [])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
+                          get_adjacent_distances, dm_header, dm,
                           ['s1'])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          ['s0','s1'])
+                          get_adjacent_distances, dm_header, dm,
+                          ['s0', 's1'])
         self.assertRaises(ValueError,
-                          get_adjacent_distances,dm_header, dm,
-                          ['s1','s4'])
-        
+                          get_adjacent_distances, dm_header, dm,
+                          ['s1', 's4'])
+
         # one pair of valid distances
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s2']),
-                         ([2],[('s1','s2')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s1']),
-                         ([0],[('s1','s1')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1','s3']),
-                         ([4],[('s1','s3')]))
-        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s2','s3']),
-                         ([3.2],[('s2','s3')]))
-        
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1', 's2']),
+                         ([2], [('s1', 's2')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1', 's1']),
+                         ([0], [('s1', 's1')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s1', 's3']),
+                         ([4], [('s1', 's3')]))
+        self.assertEqual(get_adjacent_distances(dm_header, dm, ['s2', 's3']),
+                         ([3.2], [('s2', 's3')]))
+
         # multiple valid distances
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s2','s3']),
-                         ([2,3.2],[('s1','s2'),('s2','s3')]))
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s3','s2','s1']),
-                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
-        
+        self.assertEqual(get_adjacent_distances(dm_header,
+                                                dm,
+                                                ['s1', 's2', 's3']),
+                         ([2, 3.2], [('s1', 's2'), ('s2', 's3')]))
+        self.assertEqual(get_adjacent_distances(dm_header,
+                                                dm,
+                                                ['s1', 's3', 's2', 's1']),
+                         ([4, 3.2, 2], [('s1', 's3'), ('s3', 's2'), ('s2', 's1')]))
+
         # mixed valid and invalid distances ignores invalid distances
-        self.assertEqual(get_adjacent_distances(dm_header, 
-                                                dm, 
-                                                ['s1','s3','s4','s5','s6','s2','s1']),
-                         ([4,3.2,2],[('s1','s3'),('s3','s2'),('s2','s1')]))
+        self.assertEqual(get_adjacent_distances(dm_header,
+                                                dm,
+                                                ['s1', 's3', 's4', 's5', 's6', 's2', 's1']),
+                         ([4, 3.2, 2], [('s1', 's3'), ('s3', 's2'), ('s2', 's1')]))
         # strict=True results in missing sample ids raising an error
-        self.assertRaises(ValueError,get_adjacent_distances,
-                                     dm_header, 
-                                     dm,
-                                     ['s1','s3','s4','s5','s6','s2','s1'],
-                                     strict=True)
-                                     
+        self.assertRaises(ValueError, get_adjacent_distances,
+                          dm_header,
+                          dm,
+                          ['s1',
+                           's3',
+                           's4',
+                           's5',
+                           's6',
+                           's2',
+                           's1'],
+                          strict=True)
+
     def test_get_ordered_coordinates(self):
         """get_ordered_coordinates functions as expected """
         pc_lines = ["pc vector number\t1\t2\t3\t4",
@@ -335,38 +346,36 @@ class GroupTests(TestCase):
                            [-0.285, -0.260, -0.017, -0.070],
                            [-0.328, -0.299, -0.025, 0.051],
                            [-0.267, -0.228, -0.024, -0.095]]
-        expected_sids = ['s1','s2','s3','s4','s5']
+        expected_sids = ['s1', 's2', 's3', 's4', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
-         pc[0],pc[1],['s1','s2','s3','s4','s5'])
-        self.assertEqual(actual_coords,expected_coords)
-        self.assertEqual(actual_sids,expected_sids)
+            pc[0], pc[1], ['s1', 's2', 's3', 's4', 's5'])
+        self.assertEqual(actual_coords, expected_coords)
+        self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
-        expected_sids = ['s1','s5']
+        expected_sids = ['s1', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
-         pc[0],pc[1],['s1','s5'])
-        self.assertEqual(actual_coords,expected_coords)
-        self.assertEqual(actual_sids,expected_sids)
+            pc[0], pc[1], ['s1', 's5'])
+        self.assertEqual(actual_coords, expected_coords)
+        self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
-        expected_sids = ['s1','s5']
+        expected_sids = ['s1', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
-         pc[0],pc[1],['s1','s6','s5'])
-        self.assertEqual(actual_coords,expected_coords)
-        self.assertEqual(actual_sids,expected_sids)
+            pc[0], pc[1], ['s1', 's6', 's5'])
+        self.assertEqual(actual_coords, expected_coords)
+        self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
-        expected_sids = ['s1','s5']
-        self.assertRaises(ValueError,get_ordered_coordinates,
-                          pc[0],pc[1],['s1','s6','s5'],strict=True)
-        
-        
+        expected_sids = ['s1', 's5']
+        self.assertRaises(ValueError, get_ordered_coordinates,
+                          pc[0], pc[1], ['s1', 's6', 's5'], strict=True)
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""
@@ -388,20 +397,20 @@ class GroupTests(TestCase):
     def test_validate_input_good_input(self):
         """_validate_input() should not raise any errors on good input."""
         _validate_input(self.dist_matrix_header, self.dist_matrix,
-                          self.mapping_header, self.mapping, "Treatment")
+                        self.mapping_header, self.mapping, "Treatment")
 
     def test_get_indices_several_existing_items(self):
         """_get_indices() should return a list of valid indices for several
         existing items."""
         control_ids = ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']
-        exp_control_indices = [0,1,2,3,4]
-        
+        exp_control_indices = [0, 1, 2, 3, 4]
+
         fast_ids = ['PC.607', 'PC.634', 'PC.635', 'PC.636']
-        exp_fast_indices = [5,6,7,8]
-        
+        exp_fast_indices = [5, 6, 7, 8]
+
         obs_control = _get_indices(self.dist_matrix_header, control_ids)
         self.assertEqual(obs_control, exp_control_indices)
-        
+
         obs_fast = _get_indices(self.dist_matrix_header, fast_ids)
         self.assertEqual(obs_fast, exp_fast_indices)
 
@@ -458,245 +467,246 @@ class GroupTests(TestCase):
         search_list = []
         self.assertEqual(_get_indices(search_list, 'item'), [])
 
-        search_list = '' 
+        search_list = ''
         self.assertEqual(_get_indices(search_list, 'item'), [])
 
     def test_get_groupings_no_field_states(self):
         """_get_groupings() should return an empty list if there are no field
         states in the groupings dictionary."""
         self.assertEqual(_get_groupings(self.dist_matrix_header,
-            self.dist_matrix, {}, within=True), [])
+                                        self.dist_matrix, {}, within=True), [])
 
         self.assertEqual(_get_groupings(self.dist_matrix_header,
-            self.dist_matrix, {}, within=False), [])
+                                        self.dist_matrix, {}, within=False), [])
 
     def test_get_groupings_within_tiny_dataset(self):
         """_get_groupings() should return an empty list for a single-sample
         dataset as the diagonal is omitted for within distances."""
         self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
-            self.tiny_dist_matrix, self.tiny_groups, within=True), [])
+                                        self.tiny_dist_matrix, self.tiny_groups, within=True), [])
 
     def test_get_groupings_between_tiny_dataset(self):
         """_get_groupings() should return an empty list for a single-sample
         dataset as there is only one field state, so no between distances can
         be computed."""
         self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
-            self.tiny_dist_matrix, self.tiny_groups, within=False), [])
+                                        self.tiny_dist_matrix, self.tiny_groups, within=False), [])
 
     def test_get_groupings_invalid_distance_matrix(self):
         """Handles asymmetric and/or hollow distance matrices correctly."""
         self.assertRaises(ValueError, _get_groupings, ['foo', 'bar'],
-                matrix([[0.0, 0.7], [0.7, 0.01]]), self.tiny_groups)
+                          matrix([[0.0, 0.7], [0.7, 0.01]]), self.tiny_groups)
 
         # Should not raise error if we suppress the check.
         _get_groupings(['foo', 'bar'], matrix([[0.0, 0.7], [0.7, 0.01]]),
                        self.tiny_groups,
                        suppress_symmetry_and_hollowness_check=True)
 
-    
     def test_extract_per_individual_states_from_sample_metadata(self):
         """extract_per_individual_states_from_sample_metadata functions as expected
         """
-        expected = {'001':['001A','001B'],
-                    '006':['006A','006B'],
-                    '007':['007A','007B'],
-                    '008':['008A','008B']}
+        expected = {'001': ['001A', '001B'],
+                    '006': ['006A', '006B'],
+                    '007': ['007A', '007B'],
+                    '008': ['008A', '008B']}
         actual = extract_per_individual_states_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID")
-        self.assertEqual(actual,expected)
-        
-        # change to state_values order is reflected in order 
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID")
+        self.assertEqual(actual, expected)
+
+        # change to state_values order is reflected in order
         # of output sample ids
-        expected = {'001':['001B','001A'],
-                    '006':['006B','006A'],
-                    '007':['007B','007A'],
-                    '008':['008B','008A']}
+        expected = {'001': ['001B', '001A'],
+                    '006': ['006B', '006A'],
+                    '007': ['007B', '007A'],
+                    '008': ['008B', '008A']}
         actual = extract_per_individual_states_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Post","Pre"],
-                   individual_identifier_category="PersonalID")
-        self.assertEqual(actual,expected)
-        
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Post", "Pre"],
+            individual_identifier_category="PersonalID")
+        self.assertEqual(actual, expected)
+
         # don't filter missing data
-        expected = {'001':['001A','001B'],
-                    '006':['006A','006B'],
-                    '007':['007A','007B'],
-                    '008':['008A','008B'],
-                    '009':[None,'post.only'],
-                    '010':['pre.only',None]}
+        expected = {'001': ['001A', '001B'],
+                    '006': ['006A', '006B'],
+                    '007': ['007A', '007B'],
+                    '008': ['008A', '008B'],
+                    '009': [None, 'post.only'],
+                    '010': ['pre.only', None]}
         actual = extract_per_individual_states_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   filter_missing_data=False)
-        self.assertEqual(actual,expected)
-        
-        ## alt input file with more states
-        expected = {'001':['001A','001B','001C']}
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            filter_missing_data=False)
+        self.assertEqual(actual, expected)
+
+        # alt input file with more states
+        expected = {'001': ['001A', '001B', '001C']}
         actual = extract_per_individual_states_from_sample_metadata(
-                   self.individual_states_and_responses_map_f2,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post","PostPost"],
-                   individual_identifier_category="PersonalID")
-        self.assertEqual(actual,expected)
+            self.individual_states_and_responses_map_f2,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post", "PostPost"],
+            individual_identifier_category="PersonalID")
+        self.assertEqual(actual, expected)
 
         # unlisted states are ignored
-        expected = {'001':['001A','001B']}
+        expected = {'001': ['001A', '001B']}
         actual = extract_per_individual_states_from_sample_metadata(
-                   self.individual_states_and_responses_map_f2,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID")
-        self.assertEqual(actual,expected)
+            self.individual_states_and_responses_map_f2,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID")
+        self.assertEqual(actual, expected)
 
     def test_extract_per_individual_states_from_sample_metadata_invalid(self):
         """extract_per_individual_states_from_sample_metadata handles invalid input
         """
         self.assertRaises(KeyError,
-                   extract_per_individual_states_from_sample_metadata,
-                   self.individual_states_and_responses_map_f1,
-                   state_category="some-invalid-category",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID")
+                          extract_per_individual_states_from_sample_metadata,
+                          self.individual_states_and_responses_map_f1,
+                          state_category="some-invalid-category",
+                          state_values=["Pre", "Post"],
+                          individual_identifier_category="PersonalID")
         self.assertRaises(KeyError,
-                   extract_per_individual_states_from_sample_metadata,
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="some-other-invalid-category")
+                          extract_per_individual_states_from_sample_metadata,
+                          self.individual_states_and_responses_map_f1,
+                          state_category="TreatmentState",
+                          state_values=["Pre", "Post"],
+                          individual_identifier_category="some-other-invalid-category")
 
     def test_extract_per_individual_state_metadatum_from_sample_metadata(self):
         """extract_per_individual_state_metadatum_from_sample_metadata functions as expected
         """
-        veil_expected = {'001':[6.9,9.3],
-                    '006':[4.2,5.1],
-                    '007':[12.0,1.8],
-                    '008':[10.0,None]}
+        veil_expected = {'001': [6.9, 9.3],
+                         '006': [4.2, 5.1],
+                         '007': [12.0, 1.8],
+                         '008': [10.0, None]}
         actual = extract_per_individual_state_metadatum_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="VeillonellaAbundance",
-                   process_f=float)
-        self.assertEqual(actual,veil_expected)
-        
-        # different metadata_category yields different result
-        strep_expected = {'001':[57.4,26],
-                    '006':[19,15.2],
-                    '007':[33.2,50],
-                    '008':[3.2,20]}
-        actual = extract_per_individual_state_metadatum_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="StreptococcusAbundance",
-                   process_f=float)
-        self.assertEqual(actual,strep_expected)
-        
-        # different metadata_category yields different result
-        response_expected = {'001':["Improved","Improved"],
-                    '006':["Improved","Improved"],
-                    '007':["Worsened","Worsened"],
-                    '008':["Worsened","Worsened"]}
-        actual = extract_per_individual_state_metadatum_from_sample_metadata(
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="Response",
-                   process_f=str)
-        self.assertEqual(actual,response_expected)
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            metadata_category="VeillonellaAbundance",
+            process_f=float)
+        self.assertEqual(actual, veil_expected)
 
-        ## alt input file with more states
-        expected = {'001':[6.9,9.3,10.1]}
+        # different metadata_category yields different result
+        strep_expected = {'001': [57.4, 26],
+                          '006': [19, 15.2],
+                          '007': [33.2, 50],
+                          '008': [3.2, 20]}
         actual = extract_per_individual_state_metadatum_from_sample_metadata(
-                   self.individual_states_and_responses_map_f2,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post","PostPost"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="VeillonellaAbundance",
-                   process_f=float)
-        self.assertEqual(actual,expected)
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            metadata_category="StreptococcusAbundance",
+            process_f=float)
+        self.assertEqual(actual, strep_expected)
+
+        # different metadata_category yields different result
+        response_expected = {'001': ["Improved", "Improved"],
+                             '006': ["Improved", "Improved"],
+                             '007': ["Worsened", "Worsened"],
+                             '008': ["Worsened", "Worsened"]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+            self.individual_states_and_responses_map_f1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            metadata_category="Response",
+            process_f=str)
+        self.assertEqual(actual, response_expected)
+
+        # alt input file with more states
+        expected = {'001': [6.9, 9.3, 10.1]}
+        actual = extract_per_individual_state_metadatum_from_sample_metadata(
+            self.individual_states_and_responses_map_f2,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post", "PostPost"],
+            individual_identifier_category="PersonalID",
+            metadata_category="VeillonellaAbundance",
+            process_f=float)
+        self.assertEqual(actual, expected)
 
         # unlisted states are ignored
-        expected = {'001':[6.9,9.3]}
+        expected = {'001': [6.9, 9.3]}
         actual = extract_per_individual_state_metadatum_from_sample_metadata(
-                   self.individual_states_and_responses_map_f2,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="VeillonellaAbundance",
-                   process_f=float)
-        self.assertEqual(actual,expected)
+            self.individual_states_and_responses_map_f2,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            metadata_category="VeillonellaAbundance",
+            process_f=float)
+        self.assertEqual(actual, expected)
 
-    def test_extract_per_individual_state_metadatum_from_sample_metadata_invalid(self):
+    def test_extract_per_individual_state_metadatum_from_sample_metadata_invalid(
+            self):
         """extract_per_individual_state_metadatum_from_sample_metadata handles invalid column header
         """
         self.assertRaises(KeyError,
-                   extract_per_individual_state_metadatum_from_sample_metadata,
-                   self.individual_states_and_responses_map_f1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   metadata_category="some-non-existant-category",
-                   process_f=float)
+                          extract_per_individual_state_metadatum_from_sample_metadata,
+                          self.individual_states_and_responses_map_f1,
+                          state_category="TreatmentState",
+                          state_values=["Pre", "Post"],
+                          individual_identifier_category="PersonalID",
+                          metadata_category="some-non-existant-category",
+                          process_f=float)
 
-    def test_extract_per_individual_state_metadata_from_sample_metadata_and_biom(self):
+    def test_extract_per_individual_state_metadata_from_sample_metadata_and_biom(
+            self):
         """extract_per_individual_state_metadata_from_sample_metadata_and_biom functions as expected
         """
         # single observations
-        o1_expected = {'o1':{'001':[22,10],
-                             '006':[25,4],
-                             '007':[33,26],
-                             '008':[99,75]}}
+        o1_expected = {'o1': {'001': [22, 10],
+                              '006': [25, 4],
+                              '007': [33, 26],
+                              '008': [99, 75]}}
         actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
-                   self.individual_states_and_responses_map_f1,
-                   self.paired_difference_biom1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   observation_ids=['o1'])
-        self.assertEqual(actual,o1_expected)
-        
+            self.individual_states_and_responses_map_f1,
+            self.paired_difference_biom1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            observation_ids=['o1'])
+        self.assertEqual(actual, o1_expected)
+
         # all observations
-        all_expected = {'o1':{'001':[22,10],
-                              '006':[25,4],
-                              '007':[33,26],
-                              '008':[99,75]},
-                        'o2':{'001':[10,44],
-                              '006':[3,99],
-                              '007':[8,18],
-                              '008':[64,164]},
-                        'o3':{'001':[10,50],
-                              '006':[50,10],
-                              '007':[10,50],
-                              '008':[50,10]}}
+        all_expected = {'o1': {'001': [22, 10],
+                               '006': [25, 4],
+                               '007': [33, 26],
+                               '008': [99, 75]},
+                        'o2': {'001': [10, 44],
+                               '006': [3, 99],
+                               '007': [8, 18],
+                               '008': [64, 164]},
+                        'o3': {'001': [10, 50],
+                               '006': [50, 10],
+                               '007': [10, 50],
+                               '008': [50, 10]}}
         actual = extract_per_individual_state_metadata_from_sample_metadata_and_biom(
-                   self.individual_states_and_responses_map_f1,
-                   self.paired_difference_biom1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   observation_ids=None)
-        self.assertEqual(actual,all_expected)
-        
+            self.individual_states_and_responses_map_f1,
+            self.paired_difference_biom1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            observation_ids=None)
+        self.assertEqual(actual, all_expected)
+
         # invalid observation id
         self.assertRaises(
-                   UnknownID,
-                   extract_per_individual_state_metadata_from_sample_metadata_and_biom,
-                   self.individual_states_and_responses_map_f1,
-                   self.paired_difference_biom1,
-                   state_category="TreatmentState",
-                   state_values=["Pre","Post"],
-                   individual_identifier_category="PersonalID",
-                   observation_ids=['o1','bad.obs.id'])
+            UnknownID,
+            extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+            self.individual_states_and_responses_map_f1,
+            self.paired_difference_biom1,
+            state_category="TreatmentState",
+            state_values=["Pre", "Post"],
+            individual_identifier_category="PersonalID",
+            observation_ids=['o1', 'bad.obs.id'])
 
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
@@ -718,7 +728,6 @@ individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	Treatm
 001B	001	Improved	Post	26	9.3
 001C	001	Improved	PostPost	22	10.1
 """
-
 
 
 if __name__ == '__main__':
