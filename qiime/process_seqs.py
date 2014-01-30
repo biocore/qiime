@@ -173,7 +173,15 @@ def _has_qual(item):
     return item['Qual'] is not None
 
 class SequenceWorkflow(Workflow):
-    """Implement the sequence processing workflow"""
+    """Implement the sequence processing workflow
+    
+    All workflow methods expect an item that is dict-like with the following
+    keys and value types:
+        SequenceID : str
+        Sequence   : str 
+        Qual       : np.array or None
+        Barcode    : str or None
+    """
     FinalState = {'Forward primer':None,
                   'Reverse primer':None,
                   'Sequence':None,
@@ -212,26 +220,45 @@ class SequenceWorkflow(Workflow):
             raise AttributeError("self.Mapping is not of type MetadataMap")
 
     ### Start Workflow methods
+    ### NEED TO ADD STRONG DEFINITIONS OF EXPECTED STATE CHANGES
 
     @priority(1000)
     @no_requirements
     def wf_init(self, item):
-        """Perform per sequence state initialization"""
+        """Perform per sequence state initialization
+        
+        This workflow group will reset FinalState. 
+        """
         self._init_final_state(item)
 
     @priority(200)
     @requires(ValidData=_has_qual)
-    def wf_read_quality(self, item):
+    def wf_quality(self, item):
         """Check sequence quality"""
         pass
 
-    @priority(100)
-    @requires(Option='max_bc_errors')
-    @requires(Option='barcode_type', Values=['hamming_8', 'golay_12'])
-    def wf_demultiplex_fixed(self, item):
-        """Demultiplex fixed length barcodes"""
-        self._correct_golay12(item)
-        self._correct_hamming8(item)
+    @priority(150)
+    @requires(Option='demultiplex', Values=True)
+    def wf_demultiplex(self, item):
+        """Demultiplex a sequence
+
+        If the sequence has not Failed, the following fields in FinalState will
+        be set:
+
+            Sample
+            Original barcode
+            Final barcode
+        
+        In addition, the following field may be set:
+
+            Corrected barcode
+            Corrected barcode errors
+        
+        This workflow group can trigger Failed and update Stats
+        """
+        self._demultiplex_golay12(item)
+        self._demultiplex_hamming8(item)
+        self._demultiplex_other(item)
 
         bc_errors = self.Options['max_bc_errors']
         if self.FinalState['Corrected barcode errors'] > bc_errors:
@@ -239,41 +266,48 @@ class SequenceWorkflow(Workflow):
             self.Stats['exceeds_bc_errors'] += 1
 
     @priority(100)
-    @requires(Option='barcode_type', Values='variable')
-    def wf_demultiplex_variable(self, item):
-        """Demultiplex variable length barcodes"""
-        raise NotImplementedError("variable length barcodes not supported yet")
-        self._correct_variable(item)
+    @requires(Option='check_primer', Values=True)
+    def wf_primer(self, item):
+        """Perform primer validation
 
-    @priority(90)
-    @requires(Option='min_seq_len', ValidData=_has_qual)
-    def wf_length_check(self, item):
-        """Checks minimum sequence length"""
-        if len(item['Qual']) < self.Options['min_seq_len']:
-            self.Failed = True
-            self.Stats['min_seq_len'] += 1
+        Primer validation may update the following keys in FinalState:
 
-    @priority(89)
-    @requires(Option='instrument_type', Values='454')
-    @requires(Option='disable_primer_check', Values=False)
-    def wf_check_primer(self, item):
-        """Check for a valid primer"""
-        self._count_primer_mismatches(item)
-        #self._local_align_forward_primer(item)
+            Forward primer
+            Reverse primer
+
+        This workflow group can trigger Failed and update Stats
+        """
+        self._primer_instrument_454(item)
+
+    @priority(50)
+    @no_requirements
+    def wf_sequence(self, item):
+        """Final sequence level checks
+        
+        Sequence level checks will not alter FinalState but may trigger Failed
+        and update Stats
+        """
+        self._sequence_ambiguous_count(item)
+        self._sequence_length_check(item)
 
     ### End Workflow methods
 
     @requires(Option='barcode_type', Values='golay_12')
-    def _correct_golay12(self, item):
+    def _demultiplex_golay12(self, item):
         """Correct and decode a Golay 12nt barcode"""
-        self._correct_encoded_barcode(item, decode_golay_12, 12)
+        self._demultiplex_encoded_barcode(item, decode_golay_12, 12)
 
     @requires(Option='barcode_type', Values='hamming_8')
-    def _correct_hamming8(self, item):
+    def _demultiplex_hamming8(self, item):
         """Correct and decode a Hamming 8nt barcode"""
-        self._correct_encoded_barcode(item, decode_hamming_8, 8)
+        self._demultiplex_encoded_barcode(item, decode_hamming_8, 8)
 
-    def _correct_encoded_barcode(self, item, method, bc_length):
+    @requires(Option='barcode_type', Values='variable')
+    def _demultiplex_other(self, item):
+        """Decode a variable length barcode"""
+        raise NotImplementedError
+
+    def _demultiplex_encoded_barcode(self, item, method, bc_length):
         """Correct and decode an encoded barcode"""
         if item['Barcode'] is not None:
             putative_bc = item['Barcode']
@@ -306,8 +340,14 @@ class SequenceWorkflow(Workflow):
         for k in self.FinalState:
             self.FinalState[k] = None
 
+    @requires(Option='instrument_type', Values='454')
+    def wf_check_primer(self, item):
+        """Check for a valid primer"""
+        self._count_primer_mismatches(item)
+        #self._local_align_forward_primer(item)
+
     @requires(Option='max_primer_mismatch')
-    def _count_primer_mismatches(self, item):
+    def _primer_count_mismatches(self, item):
         """Assess primer mismatches"""
         seq = item['Sequence']
         qual = item['Qual']
@@ -342,7 +382,7 @@ class SequenceWorkflow(Workflow):
     ### THIS IS STILL IN PROGRESS
     @requires(Option='local_align_forward_primer', Values=True)
     @requires(Option='max_primer_mismatch')
-    def _local_align_forward_primer(self, item):
+    def _primer_local_align_forward(self, item):
         """ """
         seq = item['Sequence']
         qual = item['Qual']
@@ -364,3 +404,11 @@ class SequenceWorkflow(Workflow):
             self.FinalState['Forward primer'] = primer
             self.FinalState['Sequence'] = seq
             self.FinalState['Qual'] = qual
+    
+    @requires(Option='min_seq_len')
+    def _sequence_length_check(self, item):
+        """Checks minimum sequence length"""
+        if len(item['Sequence']) < self.Options['min_seq_len']:
+            self.Failed = True
+            self.Stats['min_seq_len'] += 1
+
