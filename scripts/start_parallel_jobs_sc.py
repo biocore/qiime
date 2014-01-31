@@ -16,7 +16,7 @@ from shutil import rmtree
 from stat import S_IRWXU
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
-from qiime.util import load_qiime_config, qiime_system_call
+from qiime.util import load_qiime_config, qiime_system_call, get_qiime_temp_dir
 
 qiime_config = load_qiime_config()
 
@@ -65,7 +65,7 @@ def write_job_files(output_dir, commands, run_id, queue_name):
         try:
             makedirs(jobs_dir)
         except OSError as e:
-            raise OSError("Error creating jobs directory in working dir: %s" % output_dir +
+            raise OSError("Error creating jobs directory in temp dir: %s" % output_dir +
                           " (specified in qiime_config). Do you have write access?. " +
                           "Original error message follows:\n%s" % str(e))
         paths_to_remove = [jobs_dir]
@@ -119,7 +119,7 @@ def main():
     if len(args) < min_args:
         option_parser.error('Exactly two arguments are required.')
 
-    output_dir = qiime_config['working_dir'] or './'
+    output_dir = get_qiime_temp_dir()
     run_commands(output_dir,
                  open(args[0]),
                  args[1],

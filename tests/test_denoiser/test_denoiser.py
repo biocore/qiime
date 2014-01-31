@@ -6,7 +6,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -22,7 +22,7 @@ from subprocess import Popen, PIPE, STDOUT
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 
-from qiime.util import get_qiime_project_dir, get_qiime_scripts_dir
+from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import check_flowgram_ali_exe
 from qiime.denoiser.preprocess import make_tmp_name
 
@@ -103,7 +103,7 @@ FS8APND01DCIOO:
 FS8APND01CKOMZ:
 """
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "--force", "-o", self.test_dir, "-i",
                             "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME])
 
@@ -125,7 +125,7 @@ FS8APND01CKOMZ:
     def test_main_with_fasta(self):
         """Denoiser with fasta file should always give same result on test data"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "--force", "-o", self.test_dir,
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME])
@@ -144,7 +144,7 @@ FS8APND01CKOMZ:
     def test_main_with_titanium_error(self):
         """Denoiser with titanium error should always give same result on test data"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "--force", "-o", self.test_dir,
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
@@ -164,7 +164,7 @@ FS8APND01CKOMZ:
     def test_main_on_cluster(self):
         """Denoiser works in a cluster environment"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "--force", "-o", self.test_dir, "-c", "-n", "2",
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME])
@@ -179,7 +179,7 @@ FS8APND01CKOMZ:
     def test_main_low_mem(self):
         """Denoiser works using low_memory"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-o", self.test_dir, "--low_memory"])
@@ -194,7 +194,7 @@ FS8APND01CKOMZ:
     def test_main_split(self):
         """Denoiser in split mode should always give same result on test data"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "-S", "--force",
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
@@ -216,7 +216,7 @@ FS8APND01CKOMZ:
     def test_main_split_cluster(self):
         """Denoiser on cluster in split mode should always give same result on test data"""
 
-        command = " ".join(["%s/denoiser.py" % get_qiime_scripts_dir(),
+        command = " ".join(["denoiser.py",
                             "-S", "--force", '-c', '-n 2',
                             "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                             "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,

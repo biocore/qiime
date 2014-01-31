@@ -5,7 +5,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -133,7 +133,6 @@ def get_flowgram_distances_on_cluster(
 
     qiime_config = load_qiime_config()
     min_per_core = int(qiime_config['denoiser_min_per_core'])
-    CLOUD = not qiime_config['cloud_environment'] == "False"
     # if using from future import division this has to be checked,
     # as we want true integer division here
 

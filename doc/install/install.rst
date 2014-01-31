@@ -58,6 +58,8 @@ The easiest way to install the latest QIIME release and its base dependencies is
 
 That's it!
 
+You should next `write your QIIME config file <./qiime_config.html>`_.
+
 Installing QIIME on Mac OS X (Using MacQIIME)
 +++++++++++++++++++++++++++++++++++++++++++++
 
@@ -144,11 +146,7 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
-	                qiime_scripts_dir:	$HOME/code/Qiime/scripts
 	            denoiser_min_per_core:	50
-	                      working_dir:	None
-	                    python_exe_fp:	python
 	                         temp_dir:	$HOME/temp
 	                      blastall_fp:	blastall
 	                 seconds_to_sleep:	1
@@ -258,11 +256,7 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
-	                qiime_scripts_dir:	$HOME/code/Qiime/scripts
 	            denoiser_min_per_core:	50
-	                      working_dir:	None
-	                    python_exe_fp:	python
 	                         temp_dir:	$HOME/temp
 	                      blastall_fp:	blastall
 	                 seconds_to_sleep:	1
@@ -318,7 +312,7 @@ If you have downloaded the development version from GitHub, QIIME is already unp
 
 Installing QIIME
 ----------------
-QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), example script input and output (in ``Qiime/qiime_test_data``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files, and running the tests (optional, but highly recommended).
+QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), example script input (in ``Qiime/qiime_test_data``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files, and running the tests (optional, but highly recommended).
 
 .. _python-setup:
 
@@ -345,21 +339,11 @@ If you specified an alternate value for ``--install-purelib``, you'll need to be
 
 	echo "export PYTHONPATH=$HOME/lib/:$PYTHONPATH" >> $HOME/.bashrc
 
-The source your ``.bashrc``::
+Then source your ``.bashrc``::
 
 	source $HOME/.bashrc
 
-.. _set-script-dir:
-
-Finally, you'll need to create and edit a custom ``qiime_config`` file to tell QIIME where to look for the QIIME scripts. Create a custom ``qiime_config`` file by copying the default ``qiime_config`` packaged with QIIME::
-
-	cp $HOME/Qiime/qiime/support_files/qiime_config $HOME/.qiime_config
-
-Open the new file, ``$HOME/.qiime_config``, in a text editor such as TextEdit (on Mac), gedit (on Linux), vim, or emacs (but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_!). Find the line beginning ``qiime_scripts_dir`` and add a tab, followed by the QIIME scripts directory. If you've used the default value (i.e., you didn't specify ``--install-scripts``) the value you add will be ``/usr/local/bin/``. Otherwise, specify the value that you provided for ``--install-scripts``. In the example above, this would look like::
-
-	qiime_scripts_dir	$HOME/bin/
-
-Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, `see this document <./qiime_config.html>`_.
+Finally, you should `write your QIIME config file <./qiime_config.html>`_.
 
 .. _run-test-suite:
 

@@ -18,11 +18,8 @@ from cogent.parse.tree import DndParser
 from biom.parse import parse_biom_table
 from biom.table import table_factory
 from qiime.parse import parse_mapping_file
-from qiime.util import (get_qiime_scripts_dir,
-                        load_qiime_config,
-                        get_tmp_filename,
-                        get_qiime_temp_dir,
-                        create_dir)
+from qiime.util import (load_qiime_config, get_tmp_filename,
+                        get_qiime_temp_dir, create_dir)
 import qiime.simsam
 
 import tempfile
@@ -80,11 +77,9 @@ class SimsamTests(TestCase):
         treefh.write(tutorial_tree)
         treefh.close()
 
-        scripts_dir = get_qiime_scripts_dir()
         out_dir = os.path.join(maindir, 'simsam_out')
-        cmd = os.path.join(scripts_dir,
-                           'simsam.py -i %s -t %s -o %s -d .003 -n 3  ' %
-                           (otuf, treef, out_dir))
+        cmd = 'simsam.py -i %s -t %s -o %s -d .003 -n 3  ' % (otuf, treef,
+                                                              out_dir)
         proc = subprocess.Popen(cmd, shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         scriptout, scripterr = proc.communicate()
@@ -152,11 +147,9 @@ class SimsamTests(TestCase):
         treefh.write(tutorial_tree)
         treefh.close()
 
-        scripts_dir = get_qiime_scripts_dir()
         out_dir = os.path.join(maindir, 'simsam_out')
-        cmd = os.path.join(scripts_dir,
-                           'simsam.py -i %s -t %s -o %s -d 0 -n 3  ' %
-                           (otuf, treef, out_dir))
+        cmd = 'simsam.py -i %s -t %s -o %s -d 0 -n 3  ' % (otuf, treef,
+                                                           out_dir)
 
         proc = subprocess.Popen(cmd, shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)

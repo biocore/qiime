@@ -5,8 +5,6 @@
 # Find details on this file at http://qiime.org/install/qiime_config.html
 
 cluster_jobs_fp
-python_exe_fp	python
-working_dir
 blastmat_dir
 blastall_fp	blastall
 pynast_template_alignment_fp
@@ -14,10 +12,8 @@ pynast_template_alignment_blastdb
 template_alignment_lanemask_fp
 jobs_to_start	1
 seconds_to_sleep	2
-qiime_scripts_dir
 temp_dir	/tmp/
 denoiser_min_per_core	50
-cloud_environment	False
 topiaryexplorer_project_dir
 torque_queue	friendlyq
 assign_taxonomy_reference_seqs_fp

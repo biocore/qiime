@@ -13,8 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import getenv
 from os.path import join
-from qiime.util import (get_options_lookup, get_qiime_scripts_dir,
-                        load_qiime_config, make_option,
+from qiime.util import (get_options_lookup, load_qiime_config, make_option,
                         parse_command_line_parameters)
 from qiime.parallel.assign_taxonomy import ParallelRdpTaxonomyAssigner
 
