@@ -240,12 +240,15 @@ class ProcessSeqsWorkflowTests(TestCase):
                  'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
         exp3 = {'Sequence':'AATTGGCC', 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
 
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._quality_min_per_read_length_fraction(item1)
         self.assertFalse(wf_obj.Failed)
 
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._quality_min_per_read_length_fraction(item2)
         self.assertFalse(wf_obj.Failed)
 
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._quality_min_per_read_length_fraction(item3)
         self.assertTrue(wf_obj.Failed)
 
@@ -271,6 +274,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         unknown_barcode = {'Barcode':'ACACCTGGTGAT', 'Sequence':'AATTGGCC'}
 
         wf_obj.wf_init(needs_a_fix)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(needs_a_fix)
         self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGT')
         self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 1)
@@ -279,6 +283,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(exact)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(exact)
         self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
         self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
@@ -287,6 +292,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
         
         wf_obj.wf_init(from_sequence)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(from_sequence)
         self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
         self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
@@ -295,6 +301,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(unknown_barcode)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(unknown_barcode)
         self.assertEqual(wf_obj.FinalState['Original barcode'], 'ACACCTGGTGAT')
         self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
@@ -315,8 +322,10 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(needs_a_fix)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(needs_a_fix)
         self.assertFalse(wf_obj.Failed)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_max_barcode_error(needs_a_fix)
         self.assertTrue(wf_obj.Failed)
 
@@ -343,6 +352,7 @@ class ProcessSeqsWorkflowTests(TestCase):
 
         # item is modified in place in these operations as retain_primer is False
         wf_obj.wf_init(item1)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item1)
         self.assertEqual(item1, exp_item1)
@@ -352,6 +362,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(item2)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item2)
         self.assertEqual(item2, exp_item2)
@@ -361,6 +372,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(item3)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item3)
         self.assertEqual(item3, exp_item3)
@@ -386,6 +398,7 @@ class ProcessSeqsWorkflowTests(TestCase):
                  'Qual':array([1,2,3,4,5,6,7,8])}
 
         wf_obj.wf_init(item1)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item1)
         self.assertEqual(item1, exp_item1)
@@ -395,6 +408,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(item2)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item2)
         self.assertEqual(item2, exp_item2)
@@ -404,6 +418,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertFalse(wf_obj.Failed)
 
         wf_obj.wf_init(item3)
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
         wf_obj._primer_check_forward(item3)
         self.assertEqual(item3, exp_item3)
@@ -418,14 +433,31 @@ class ProcessSeqsWorkflowTests(TestCase):
         item1 = {'Sequence':'AATTGGCC'}
         item2 = {'Sequence':'AATT'}
 
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._sequence_length_check(item1)
         self.assertFalse(wf_obj.Failed)
 
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._sequence_length_check(item2)
         self.assertTrue(wf_obj.Failed)
 
     def test_sequence_ambiguous_count(self):
-        pass
+        wf_obj = self._make_workflow_obj({'ambiguous_count':2})
+        item1 = {'Sequence':'AATTGGCC'}
+        item2 = {'Sequence':'AANNNTT'}
+        item3 = {'Sequence':'AANTT'}
+
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
+        wf_obj._sequence_ambiguous_count(item1)
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
+        wf_obj._sequence_ambiguous_count(item2)
+        self.assertTrue(wf_obj.Failed)
+
+        wf_obj.Failed = False # note, normally handled by Workflow.__call__
+        wf_obj._sequence_ambiguous_count(item3)
+        self.assertFalse(wf_obj.Failed)
 
 fasta1_simple = """>a
 abcde
