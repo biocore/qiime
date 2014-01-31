@@ -200,11 +200,11 @@ def _has_qual(item):
 
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
-    
+
     All workflow methods expect an item that is dict-like with the following
     keys and value types:
         SequenceID : str
-        Sequence   : str 
+        Sequence   : str
         Qual       : np.array or None
         Barcode    : str or None
     """
@@ -368,7 +368,7 @@ class SequenceWorkflow(Workflow):
         bad_bases = item['Qual'] < self.Options['phred_quality_threshold']
         bad_bases_count = bad_bases.sum(dtype=float)
         threshold = 1 - self.Options['min_per_read_length_fraction']
-        
+
         if (bad_bases_count / len(item['Sequence'])) > threshold:
             self.Failed = True
             self.Stats['min_per_read_length_fraction'] += 1
@@ -423,12 +423,12 @@ class SequenceWorkflow(Workflow):
             self.Stats['Unknown barcode'] += 1
         else:
             self.FinalState['Sample'] = sample
-   
+
     ### really need the requires to be a nonnone value:
     # @requires(Option='max_barcode_error', Values=_not_none)
     @requires(Option='max_barcode_error')
     def _demultiplex_max_barcode_error(self, item):
-        """ """
+        """Fail a sequence if it exceeds a max number of barcode errors"""
         bc_errors = self.Options['max_barcode_error']
         if self.FinalState['Corrected barcode errors'] > bc_errors:
             self.Failed = True
