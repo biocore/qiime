@@ -172,6 +172,32 @@ def _has_qual(item):
     """Check if an item has Qual"""
     return item['Qual'] is not None
 
+### notes on splitlib fastq options:
+# barcode_read_fps: via Command
+# store_qual_scores: via Command
+# sample_ids: via Command
+# store_demultiplexed_fastq: via Command
+# retain_unassigned_reads: via Command (Failed == False, Sample == None)
+# max_bad_run_length: via wf_quality, 
+#       UNTESTED
+# min_per_read_length_fraction: via wf_quality, if truncation happens, do
+#       in place update on item
+#       STUBBED OUT
+# sequence_max_n: via wf_sequence
+#        STUBBED OUT (ambiguous_count), UNTESTED
+# start_seq_id: via Command, but also hopefully deprecated in favor of 
+#       HDF5 format
+# rev_comp_barcode: via Command and iterators? only if the barcodes are separate
+#       then it is possible to do at the iterator level...
+# rev_comp_mapping_barcodes: via Command
+# rev_comp: via Command and iterators
+# phred_quality_threshold: via wf_quality
+#       STUBBED OUT, basically implemented? split_libraries_fastq is difficult to read...
+# barcode_type: via wf_demultiplex
+#       DONE
+# max_barcode_error: via wf_demultiplex
+# phred_offset: via Command and iterators
+
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
     
@@ -220,22 +246,30 @@ class SequenceWorkflow(Workflow):
             raise AttributeError("self.Mapping is not of type MetadataMap")
 
     ### Start Workflow methods
-    ### NEED TO ADD STRONG DEFINITIONS OF EXPECTED STATE CHANGES
 
     @priority(1000)
     @no_requirements
     def wf_init(self, item):
         """Perform per sequence state initialization
-        
-        This workflow group will reset FinalState. 
+
+        This workflow group will reset FinalState and will set the following in
+        FinalState:
+
+            Sequence
         """
         self._init_final_state(item)
 
     @priority(200)
     @requires(ValidData=_has_qual)
     def wf_quality(self, item):
-        """Check sequence quality"""
-        pass
+        """Check sequence quality
+
+        This workflow group may update _item_ in the event of a sequence
+        truncation due to quality!
+
+        """
+        self._quality_max_bad_run_length(item)
+        self._quality_min_per_read_length_fraction(item)
 
     @priority(150)
     @requires(Option='demultiplex', Values=True)
@@ -248,23 +282,20 @@ class SequenceWorkflow(Workflow):
             Sample
             Original barcode
             Final barcode
-        
+
         In addition, the following field may be set:
 
             Corrected barcode
             Corrected barcode errors
-        
+
         This workflow group can trigger Failed and update Stats
         """
         self._demultiplex_golay12(item)
         self._demultiplex_hamming8(item)
         self._demultiplex_other(item)
+        self._demultiplex_max_barcode_error(item)
 
-        bc_errors = self.Options['max_bc_errors']
-        if self.FinalState['Corrected barcode errors'] > bc_errors:
-            self.Failed = True
-            self.Stats['exceeds_bc_errors'] += 1
-
+    ### should this be wf_instrument for instriument specific checks?
     @priority(100)
     @requires(Option='check_primer', Values=True)
     def wf_primer(self, item):
@@ -272,6 +303,7 @@ class SequenceWorkflow(Workflow):
 
         Primer validation may update the following keys in FinalState:
 
+            Sequence
             Forward primer
             Reverse primer
 
@@ -283,15 +315,62 @@ class SequenceWorkflow(Workflow):
     @no_requirements
     def wf_sequence(self, item):
         """Final sequence level checks
-        
+
         Sequence level checks will not alter FinalState but may trigger Failed
         and update Stats
         """
-        self._sequence_ambiguous_count(item)
         self._sequence_length_check(item)
+        self._sequence_ambiguous_count(item)
 
     ### End Workflow methods
 
+    ### Start quality methods
+
+    @requires(Option='phred_quality_threshold')
+    @requires(Option='max_bad_run_length')
+    def _quality_max_bad_run_length(self, item):
+        """Fail sequence if there is a poor quality run
+
+        Warning: this method can modify item in place
+        """
+        max_bad_run_length = self.Options['max_bad_run_length']
+        phred_quality_threshold = self.Options['phred_quality_threshold']
+
+        # can cythonize
+        run_length = 0
+        max_run_length = 0
+        run_start_idx = 0
+        max_run_start_idx = 0
+        for idx, v in enumerate(item['Qual']):
+            if v <= phred_quality_threshold:
+                max_run_length += 1
+            else:
+                if run_length > max_run_length:
+                    max_run_length = run_length
+                    max_run_start_idx = run_start_idx
+                run_length = 0
+                run_start_idx = idx
+
+        if max_run_length > max_bad_run_length:
+            item['Qual'] = item['Qual'][:max_run_start_idx]
+            item['Seq'] = item['Sequence'][:max_run_start_idx]
+            self.Stats['_quality_max_bad_run_length'] += 1
+
+    @requires(Option='phred_quality_threshold')
+    @requires(Option='min_per_read_length_fraction')
+    def _quality_min_per_read_length_fraction(self, item):
+        """Fail a sequence if a percentage of bad quality calls exist"""
+        bad_bases = item['Qual'] < self.Options['phred_quality_threshold']
+        bad_bases_count = bad_bases.sum(dtype=float)
+        threshold = self.Options['min_per_read_length_fraction']
+
+        if (bad_bases_count / len(item['Sequence'])) < threshold:
+            self.Failed = True
+            self.Stats['min_per_read_length_fraction'] += 1
+
+    ### End quality methods
+
+    ### Start demultiplex methods
     @requires(Option='barcode_type', Values='golay_12')
     def _demultiplex_golay12(self, item):
         """Correct and decode a Golay 12nt barcode"""
@@ -307,7 +386,9 @@ class SequenceWorkflow(Workflow):
         """Decode a variable length barcode"""
         raise NotImplementedError
 
-    def _demultiplex_encoded_barcode(self, item, method, bc_length):
+    #### use kwargs for method and bc_length
+    def _demultiplex_encoded_barcode(self, item, method=decode_golay_12,
+                                     bc_length=12):
         """Correct and decode an encoded barcode"""
         if item['Barcode'] is not None:
             putative_bc = item['Barcode']
@@ -334,17 +415,33 @@ class SequenceWorkflow(Workflow):
             self.Failed = True
         else:
             self.FinalState['Sample'] = sample
+   
+    @requires(Option='max_barcode_error')
+    def _demultiplex_max_barcode_error(self, item):
+        """ """
+        bc_errors = self.Options['max_bc_errors']
+        if self.FinalState['Corrected barcode errors'] > bc_errors:
+            self.Failed = True
+            self.Stats['exceeds_bc_errors'] += 1
+
+    ### End demultiplex methods
+
+    ### Start init methods
 
     def _init_final_state(self, item):
         """Reset per sequence state"""
         for k in self.FinalState:
             self.FinalState[k] = None
+        self.FinalState['Sequence'] = item['Sequence']
+
+    ### End init methods
+
+    ### Start primer methods
 
     @requires(Option='instrument_type', Values='454')
-    def wf_check_primer(self, item):
+    def _primer_instrument_454(self, item):
         """Check for a valid primer"""
-        self._count_primer_mismatches(item)
-        #self._local_align_forward_primer(item)
+        self._primer_count_mismatches(item)
 
     @requires(Option='max_primer_mismatch')
     def _primer_count_mismatches(self, item):
@@ -376,35 +473,10 @@ class SequenceWorkflow(Workflow):
         self.FinalState['Forward primer'] = obs_primer
         self.FinalState['Sequence'] = seq
 
-    ##### for truncating i believe, but isn't clear why we need to attempt to 
-    ##### align against all possible primers instead of just the one we expect
+    ### End primer methods
 
-    ### THIS IS STILL IN PROGRESS
-    @requires(Option='local_align_forward_primer', Values=True)
-    @requires(Option='max_primer_mismatch')
-    def _primer_local_align_forward(self, item):
-        """ """
-        seq = item['Sequence']
-        qual = item['Qual']
-        
-        failed = True
-        max_primer_mismatch = self.Options['max_primer_mismatch']
-        for primer in self._primers:
-            mismatches, hit_start = local_align_primer_seq(primer, seq)
-            if mismatches <= max_primer_mismatch:
-                seq = seq[hit_start + len(primer):]
-                qual = seq[hit_start + len(primer):]
-                failed = False
-                break
+    ### Start sequence methods
 
-        if failed:
-            self.Stats['max_primer_mismatch'] += 1
-            self.Stats['exceeds_max_primer_mismatch'] = 1
-        else:
-            self.FinalState['Forward primer'] = primer
-            self.FinalState['Sequence'] = seq
-            self.FinalState['Qual'] = qual
-    
     @requires(Option='min_seq_len')
     def _sequence_length_check(self, item):
         """Checks minimum sequence length"""
@@ -412,3 +484,12 @@ class SequenceWorkflow(Workflow):
             self.Failed = True
             self.Stats['min_seq_len'] += 1
 
+    @requires(Option='ambiguous_count')
+    def _sequence_ambiguous_count(self, item):
+        """Fail if the number of N characters is greater than threshold"""
+        count = item['Sequence'].count('N')
+        if count > self.Options['ambiguous_count']:
+            self.Failed = True
+            self.Stats['ambiguous_count'] += 1
+
+    ### End sequence methods
