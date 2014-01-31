@@ -238,7 +238,55 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(item1, exp1)
         self.assertEqual(item2, exp2)
         self.assertEqual(item3, exp3)
+       
+    def test_demultiplex_golay12(self):
+        # this is a wrapper, tested in test_deultiplex_encoded_barcode
+        pass
+
+    def test_demultiplex_hamming8(self):
+        # this is a wrapper, tested in test_deultiplex_encoded_barcode
+        pass
+
+    def test_demultiplex_encoded_barcode(self):
+        wf_obj = self._make_workflow_obj({})
         
+        needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
+        exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
+        from_sequence = {'Barcode':None, 'Sequence':'GGAGACAAGGGAAATTAATT'}
+        unknown_barcode = {'Barcode':'ACACCTGGTGAT', 'Sequence':'AATTGGCC'}
+
+        wf_obj.wf_init(needs_a_fix)
+        wf_obj._demultiplex_encoded_barcode(needs_a_fix)
+        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGT')
+        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 1)
+        self.assertEqual(wf_obj.FinalState['Corrected barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(exact)
+        wf_obj._demultiplex_encoded_barcode(exact)
+        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
+        self.assertEqual(wf_obj.FinalState['Corrected barcode'], None)
+        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
+        self.assertFalse(wf_obj.Failed)
+        
+        wf_obj.wf_init(from_sequence)
+        wf_obj._demultiplex_encoded_barcode(from_sequence)
+        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
+        self.assertEqual(wf_obj.FinalState['Corrected barcode'], None)
+        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(unknown_barcode)
+        wf_obj._demultiplex_encoded_barcode(unknown_barcode)
+        self.assertEqual(wf_obj.FinalState['Original barcode'], 'ACACCTGGTGAT')
+        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
+        self.assertEqual(wf_obj.FinalState['Corrected barcode'], 'ACACCTGGTGAT')
+        self.assertEqual(wf_obj.FinalState['Sample'], None)
+        self.assertTrue(wf_obj.Failed)
+
 fasta1_simple = """>a
 abcde
 >b
@@ -325,7 +373,8 @@ mapping = MetadataMap(
     {'s1':{'BarcodeSequence':'AAAAAAAAAAAA', 'LinkerPrimerSequence':''},
      's2':{'BarcodeSequence':'AAAAAAAAAAAC', 'LinkerPrimerSequence':''},
      's3':{'BarcodeSequence':'AAAAAAAAAAAG', 'LinkerPrimerSequence':''},
-     's4':{'BarcodeSequence':'AAAAAAAAAAAT', 'LinkerPrimerSequence':''}
+     's4':{'BarcodeSequence':'AAAAAAAAAAAT', 'LinkerPrimerSequence':''},
+     's5':{'BarcodeSequence':'GGAGACAAGGGA', 'LinkerPrimerSequence':''}
     }, [])
 
 fastq1 = """@990:2:4:11271:5323#1/1

@@ -418,6 +418,7 @@ class SequenceWorkflow(Workflow):
 
         if sample is None:
             self.Failed = True
+            self.Stats['Unknown barcode'] += 1
         else:
             self.FinalState['Sample'] = sample
    
