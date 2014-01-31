@@ -8,7 +8,7 @@ from cogent.parse.fastq import MinimalFastqParser
 from qiime.parse import MinimalQualParser
 from qiime.process_seqs import (_fasta_qual_gen,
         fasta_iterator, _fastq_barcode_gen, fastq_iterator, _fastq_gen,
-        SequenceWorkflow)
+        SequenceWorkflow, _count_mismatches)
 from qiime.quality import ascii_to_phred64
 from qiime.util import MetadataMap
 
@@ -171,6 +171,19 @@ class FastaIteratorTests(TestCase):
             self.assertEqual(o['Sequence'], e['Sequence'])
             self.assertTrue((o['Qual'] == e['Qual']).all())
 
+class SupportTests(TestCase):
+    def setUp(self):
+        pass
+
+    def test_count_mismatches(self):
+        """Count mismatches in sequences"""
+        s1 = "AATTGGCC"
+        s2 = "AATTCCCC"
+
+        self.assertEqual(_count_mismatches(s1, s1), 0)
+        self.assertEqual(_count_mismatches(s1, s2), 2)
+        self.assertEqual(_count_mismatches(s2, s1), 2)
+        self.assertEqual(_count_mismatches(s2, s2), 0)
 
 class ProcessSeqsWorkflowTests(TestCase):
     """Basing structure off of test_split_libraries_fastq.py"""
