@@ -25,6 +25,7 @@ class FastqIteratorTests(TestCase):
         self.reversed_fastq_gen = chain(fastq2_gen, fastq1_gen)
 
     def test_fastq_barcode_gen_simple(self):
+        """Test simple fastq/barcode generation"""
         exp_data = [('a', 'abcde', 'test1', array([33,34,35,36,37])),
                     ('b', 'asdasdasd', 'test2', array([33,51,36] * 3)),
                     ('c', '123123', 'test3', array([-15, -14, -13] * 2)),
@@ -43,12 +44,14 @@ class FastqIteratorTests(TestCase):
             self.assertTrue((o['Qual'] == e['Qual']).all())
             self.assertEqual(o['Barcode'], e['Barcode'])
 
-    def test_fasta_barcode_gen_mismatch_ids(self):
+    def test_fastq_barcode_gen_mismatch_ids(self):
+        """Verify fastq barcode mismatch error"""
         with self.assertRaises(ValueError):
             g = _fasta_qual_gen(self.reversed_fastq_gen, self.barcodes_gen)
             _ = list(g)
     
     def test_fastq_iterators_just_fastq(self):
+        """Test iterating fastq without barcodes"""
         exp_data = [('a', 'abcde', array([33,34,35,36,37])),
                     ('b', 'asdasdasd', array([33,51,36] * 3)),
                     ('c', '123123', array([-15, -14, -13] * 2)),
@@ -64,6 +67,7 @@ class FastqIteratorTests(TestCase):
         self.assertEqual(obs, exp)
 
     def test_fastq_iterators_barcodes(self):
+        """Test iterating fastq with barcodes"""
         exp_data = [('a', 'abcde', 'test1', array([33,34,35,36,37])),
                     ('b', 'asdasdasd', 'test2', array([33,51,36] * 3)),
                     ('c', '123123', 'test3', array([-15, -14, -13] * 2)),
@@ -100,6 +104,7 @@ class FastaIteratorTests(TestCase):
         self.qual_bad_gen = chain(qual1_gen, qual2_bad_gen)
 
     def test_fasta_qual_gen_simple(self):
+        """Test fasta/qual gen"""
         exp_data = [('a', 'abcde', array([1, 2, 3, 4, 5])),
                     ('b', 'asdasdasd', array([1,1,1,1,1,1,1,1,1])),
                     ('c', '123123', array([2, 2, 2, 2, 2, 2])),
@@ -117,15 +122,18 @@ class FastaIteratorTests(TestCase):
             self.assertTrue((o['Qual'] == e['Qual']).all())
 
     def test_fasta_qual_gen_mismatch_ids(self):
+        """Verify fasta/qual id mismatch error"""
         with self.assertRaises(ValueError):
             g = _fasta_qual_gen(self.reversed_fasta_gen, self.qual_gen)
             _ = list(g)
     
     def test_fasta_qual_gen_mismatch_length(self):
+        """Verify fasta/qual mismatch error"""
         with self.assertRaises(ValueError):
             _ = list(_fasta_qual_gen(self.fasta_gen, self.qual_bad_gen))
 
     def test_fasta_iterators_just_fasta(self):
+        """Test that we can iterate over just fasta"""
         exp_data = [('a', 'abcde', None),
                     ('b', 'asdasdasd', None),
                     ('c', '123123', None),
@@ -142,6 +150,7 @@ class FastaIteratorTests(TestCase):
         self.assertEqual(obs, exp)
 
     def test_fasta_iterators_fasta_qual(self):
+        """Test that we can iterate over fasta with qual"""
         exp_data = [('a', 'abcde', array([1, 2, 3, 4, 5])),
                     ('b', 'asdasdasd', array([1,1,1,1,1,1,1,1,1])),
                     ('c', '123123', array([2, 2, 2, 2, 2, 2])),
@@ -177,18 +186,22 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.mapping = mapping
 
     def _make_workflow_obj(self, options):
+        """Helper method for creating workflows"""
         return SequenceWorkflow(Options=options, Mapping=self.mapping)
 
     def test_workflow_construction(self):
+        """Make sure we can construct using our helper method"""
         x = self._make_workflow_obj({'foo':'bar'})
     
     def test_wf_init(self):
+        """Check the initialization method"""
         wf_obj = self._make_workflow_obj({'foo':'bar'})
         wf_obj.FinalState['Sequence'] = 'w00t'
         wf_obj.wf_init({'Sequence':'foo'})
         self.assertEqual(set(wf_obj.FinalState.values()), set([None, 'foo']))
 
     def test_quality_max_bad_run_length(self):
+        """Verify max bad run length quality trimming"""
         wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
                                           'max_bad_run_length':3})
         item1 = {'Sequence':'AATTGGCC',
@@ -212,6 +225,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(item3, exp3)
 
     def test_quality_min_per_read_length_fraction(self):
+        """Verify minimum quality per read length"""
         wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
                                           'min_per_read_length_fraction':0.6})
         item1 = {'Sequence':'AATTGGCC',
@@ -248,6 +262,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         pass
 
     def test_demultiplex_encoded_barcode(self):
+        """Verify decoding barcodes"""
         wf_obj = self._make_workflow_obj({})
         
         needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
@@ -288,6 +303,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertTrue(wf_obj.Failed)
 
     def test_demultiplex_max_barcode_error(self):
+        """Verify failing max_barcode_error checking"""
         wf_obj = self._make_workflow_obj({'max_barcode_error':0})
 
         needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
