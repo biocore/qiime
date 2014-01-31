@@ -320,6 +320,98 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._demultiplex_max_barcode_error(needs_a_fix)
         self.assertTrue(wf_obj.Failed)
 
+    def test_primer_instrument_454(self):
+        # individual tests for each method call by this function
+        pass
+
+    def test_primer_check_forward(self):
+        """ """
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2, 
+                                          'retain_primer':False})
+        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC', 
+                 'Qual':array([7,8])}
+        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC', 
+                 'Qual':array([7,8])}
+        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+
+        # item is modified in place in these operations as retain_primer is False
+        wf_obj.wf_init(item1)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item1)
+        self.assertEqual(item1, exp_item1)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'CC')
+        self.assertEqual(wf_obj.FinalState['Qual'], array([7,8]))
+        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGG')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(item2)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item2)
+        self.assertEqual(item2, exp_item2)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'CC')
+        self.assertEqual(wf_obj.FinalState['Qual'], array([7,8]))
+        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGC')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(item3)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item3)
+        self.assertEqual(item3, exp_item3)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
+        self.assertEqual(wf_obj.FinalState['Qual'], None) 
+        self.assertEqual(wf_obj.FinalState['Forward primer'], None)
+        self.assertTrue(wf_obj.Failed)
+
+        # item is not modified in place as retain priemr is True
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2, 
+                                          'retain_primer':True})
+        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+                 'Qual':array([1,2,3,4,5,6,7,8])}
+
+        wf_obj.wf_init(item1)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item1)
+        self.assertEqual(item1, exp_item1)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'AATTGGCC')
+        self.assertEqual(wf_obj.FinalState['Qual'], array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGG')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(item2)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item2)
+        self.assertEqual(item2, exp_item2)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'AATTGCCC')
+        self.assertEqual(wf_obj.FinalState['Qual'], array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGC')
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(item3)
+        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
+        wf_obj._primer_check_forward(item3)
+        self.assertEqual(item3, exp_item3)
+        self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
+        self.assertEqual(wf_obj.FinalState['Qual'], None) 
+        self.assertEqual(wf_obj.FinalState['Forward primer'], None)
+        self.assertTrue(wf_obj.Failed)
+    
 fasta1_simple = """>a
 abcde
 >b
@@ -403,7 +495,7 @@ test5
 """
 
 mapping = MetadataMap(
-    {'s1':{'BarcodeSequence':'AAAAAAAAAAAA', 'LinkerPrimerSequence':''},
+    {'s1':{'BarcodeSequence':'AAAAAAAAAAAA', 'LinkerPrimerSequence':'AATTGG,AATTCC'},
      's2':{'BarcodeSequence':'AAAAAAAAAAAC', 'LinkerPrimerSequence':''},
      's3':{'BarcodeSequence':'AAAAAAAAAAAG', 'LinkerPrimerSequence':''},
      's4':{'BarcodeSequence':'AAAAAAAAAAAT', 'LinkerPrimerSequence':''},

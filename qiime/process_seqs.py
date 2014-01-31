@@ -399,6 +399,8 @@ class SequenceWorkflow(Workflow):
             putative_bc = item['Barcode']
         else:
             putative_bc = item['Sequence'][:bc_length]
+            ### if this case happens, need to update item['Sequence'] to
+            ### trim off the barcode!
 
         self.FinalState['Original barcode'] = putative_bc
 
@@ -422,6 +424,8 @@ class SequenceWorkflow(Workflow):
         else:
             self.FinalState['Sample'] = sample
    
+    ### really need the requires to be a nonnone value:
+    # @requires(Option='max_barcode_error', Values=_not_none)
     @requires(Option='max_barcode_error')
     def _demultiplex_max_barcode_error(self, item):
         """ """
@@ -447,21 +451,30 @@ class SequenceWorkflow(Workflow):
     @requires(Option='instrument_type', Values='454')
     def _primer_instrument_454(self, item):
         """Check for a valid primer"""
-        self._primer_count_mismatches(item)
+        self._primer_check_forward(item)
 
+    @requires(Option='retain_primer')
     @requires(Option='max_primer_mismatch')
-    def _primer_count_mismatches(self, item):
-        """Assess primer mismatches"""
+    def _primer_check_forward(self, item):
+        """Attempt to determine if the forward primer exists and trim if there
+        
+        Warning: this method may do an in place update on item if retain primer
+        False.
+        """
         seq = item['Sequence']
         qual = item['Qual']
 
         obs_barcode = self.FinalState['Final barcode']
-        len_barcode = len(obs_barcode)
+        exp_primers = self.Primers.get(obs_barcode, None)
 
-        exp_primers = self.Primers[obs_barcode]
+        if exp_primers is None:
+            self.Stats['unknown_primer_barcode_pair'] += 1
+            self.Failed = True
+            return
+
         len_primer = len(exp_primers[0])
 
-        obs_primer = seq[len_barcode:len_barcode + len_primer]
+        obs_primer = seq[:len_primer]
 
         mm = array([_count_mismatches(obs_primer, p) for p in exp_primers])
 
@@ -469,15 +482,19 @@ class SequenceWorkflow(Workflow):
             self.Failed = True
             self.Stats['max_primer_mismatch'] += 1
             self.Stats['exceeds_max_primer_mismatch'] += 1
+            return
 
         ### should decompose
         if not self.Options['retain_primer']:
             seq = seq[len_primer:]
+            item['Sequence'] = seq
             if qual is not None:
                 qual = qual[len_primer:]
+                item['Qual'] = qual
 
         self.FinalState['Forward primer'] = obs_primer
         self.FinalState['Sequence'] = seq
+        self.FinalState['Qual'] = qual
 
     ### End primer methods
 
