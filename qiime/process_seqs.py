@@ -178,24 +178,12 @@ def _has_qual(item):
 # sample_ids: via Command
 # store_demultiplexed_fastq: via Command
 # retain_unassigned_reads: via Command (Failed == False, Sample == None)
-# max_bad_run_length: via wf_quality, 
-#       UNTESTED
-# min_per_read_length_fraction: via wf_quality, if truncation happens, do
-#       in place update on item
-#       STUBBED OUT
-# sequence_max_n: via wf_sequence
-#        STUBBED OUT (ambiguous_count), UNTESTED
 # start_seq_id: via Command, but also hopefully deprecated in favor of 
 #       HDF5 format
 # rev_comp_barcode: via Command and iterators? only if the barcodes are separate
 #       then it is possible to do at the iterator level...
 # rev_comp_mapping_barcodes: via Command
 # rev_comp: via Command and iterators
-# phred_quality_threshold: via wf_quality
-#       STUBBED OUT, basically implemented? split_libraries_fastq is difficult to read...
-# barcode_type: via wf_demultiplex
-#       DONE
-# max_barcode_error: via wf_demultiplex
 # phred_offset: via Command and iterators
 
 class SequenceWorkflow(Workflow):
