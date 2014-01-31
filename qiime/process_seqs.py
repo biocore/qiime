@@ -341,6 +341,7 @@ class SequenceWorkflow(Workflow):
         max_run_length = 0
         run_start_idx = 0
         max_run_start_idx = 0
+
         for idx, v in enumerate(item['Qual']):
             if v <= phred_quality_threshold:
                 max_run_length += 1
@@ -348,12 +349,16 @@ class SequenceWorkflow(Workflow):
                 if run_length > max_run_length:
                     max_run_length = run_length
                     max_run_start_idx = run_start_idx
+
                 run_length = 0
                 run_start_idx = idx
 
+                if max_run_length == 0:
+                    max_run_start_idx = run_start_idx
+
         if max_run_length > max_bad_run_length:
-            item['Qual'] = item['Qual'][:max_run_start_idx]
-            item['Seq'] = item['Sequence'][:max_run_start_idx]
+            item['Qual'] = item['Qual'][:max_run_start_idx+1]
+            item['Sequence'] = item['Sequence'][:max_run_start_idx+1]
             self.Stats['_quality_max_bad_run_length'] += 1
 
     @requires(Option='phred_quality_threshold')

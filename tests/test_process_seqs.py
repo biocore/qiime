@@ -177,17 +177,39 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.mapping = mapping
 
     def _make_workflow_obj(self, options):
-        return SequenceWorkflow(options, Mapping=self.mapping)
+        return SequenceWorkflow(Options=options, Mapping=self.mapping)
 
     def test_workflow_construction(self):
         x = self._make_workflow_obj({'foo':'bar'})
-        self.assertEqual(x.Stats, {})
     
     def test_wf_init(self):
         wf_obj = self._make_workflow_obj({'foo':'bar'})
         wf_obj.FinalState['Sequence'] = 'w00t'
-        wf_obj.wf_init(None)
-        self.assertEqual(set(wf_obj.FinalState.values()), set([None]))
+        wf_obj.wf_init({'Sequence':'foo'})
+        self.assertEqual(set(wf_obj.FinalState.values()), set([None, 'foo']))
+
+    def test_quality_max_bad_run_length(self):
+        wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
+                                          'max_bad_run_length':3})
+        item1 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
+        exp1 = item1.copy()
+        
+        item2 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 6, 6, 1, 1, 6, 6, 6])}
+        exp2 = item2.copy()
+
+        item3 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
+        exp3 = {'Sequence':'AA', 'Qual':array([6, 6])}
+
+        wf_obj._quality_max_bad_run_length(item1)
+        wf_obj._quality_max_bad_run_length(item2)
+        wf_obj._quality_max_bad_run_length(item3)
+
+        self.assertEqual(item1, exp1)
+        self.assertEqual(item2, exp2)
+        self.assertEqual(item3, exp3)
 
 fasta1_simple = """>a
 abcde
