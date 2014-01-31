@@ -211,6 +211,34 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(item2, exp2)
         self.assertEqual(item3, exp3)
 
+    def test_quality_min_per_read_length_fraction(self):
+        wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
+                                          'min_per_read_length_fraction':0.6})
+        item1 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
+        exp1 = item1.copy()
+        
+        item2 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 1, 6, 1, 1, 6, 6, 6])}
+        exp2 = item2.copy()
+
+        item3 = {'Sequence':'AATTGGCC',
+                 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
+        exp3 = {'Sequence':'AATTGGCC', 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
+
+        wf_obj._quality_min_per_read_length_fraction(item1)
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj._quality_min_per_read_length_fraction(item2)
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj._quality_min_per_read_length_fraction(item3)
+        self.assertTrue(wf_obj.Failed)
+
+        self.assertEqual(item1, exp1)
+        self.assertEqual(item2, exp2)
+        self.assertEqual(item3, exp3)
+        
 fasta1_simple = """>a
 abcde
 >b

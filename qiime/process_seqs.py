@@ -367,9 +367,9 @@ class SequenceWorkflow(Workflow):
         """Fail a sequence if a percentage of bad quality calls exist"""
         bad_bases = item['Qual'] < self.Options['phred_quality_threshold']
         bad_bases_count = bad_bases.sum(dtype=float)
-        threshold = self.Options['min_per_read_length_fraction']
-
-        if (bad_bases_count / len(item['Sequence'])) < threshold:
+        threshold = 1 - self.Options['min_per_read_length_fraction']
+        
+        if (bad_bases_count / len(item['Sequence'])) > threshold:
             self.Failed = True
             self.Stats['min_per_read_length_fraction'] += 1
 
