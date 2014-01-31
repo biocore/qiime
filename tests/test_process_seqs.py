@@ -325,7 +325,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         pass
 
     def test_primer_check_forward(self):
-        """ """
+        """Pull the forward primer as expected"""
         wf_obj = self._make_workflow_obj({'max_primer_mismatch':2, 
                                           'retain_primer':False})
         item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
@@ -411,7 +411,22 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(wf_obj.FinalState['Qual'], None) 
         self.assertEqual(wf_obj.FinalState['Forward primer'], None)
         self.assertTrue(wf_obj.Failed)
-    
+   
+    def test_sequence_length_check(self):
+        """Check the length of the sequence"""
+        wf_obj = self._make_workflow_obj({'min_seq_len':5})
+        item1 = {'Sequence':'AATTGGCC'}
+        item2 = {'Sequence':'AATT'}
+
+        wf_obj._sequence_length_check(item1)
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj._sequence_length_check(item2)
+        self.assertTrue(wf_obj.Failed)
+
+    def test_sequence_ambiguous_count(self):
+        pass
+
 fasta1_simple = """>a
 abcde
 >b
