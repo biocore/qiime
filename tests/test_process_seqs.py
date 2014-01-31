@@ -287,6 +287,23 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(wf_obj.FinalState['Sample'], None)
         self.assertTrue(wf_obj.Failed)
 
+    def test_demultiplex_max_barcode_error(self):
+        wf_obj = self._make_workflow_obj({'max_barcode_error':0})
+
+        needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
+        exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
+
+        wf_obj.wf_init(exact)
+        wf_obj._demultiplex_encoded_barcode(exact)
+        wf_obj._demultiplex_max_barcode_error(exact)
+        self.assertFalse(wf_obj.Failed)
+
+        wf_obj.wf_init(needs_a_fix)
+        wf_obj._demultiplex_encoded_barcode(needs_a_fix)
+        self.assertFalse(wf_obj.Failed)
+        wf_obj._demultiplex_max_barcode_error(needs_a_fix)
+        self.assertTrue(wf_obj.Failed)
+
 fasta1_simple = """>a
 abcde
 >b

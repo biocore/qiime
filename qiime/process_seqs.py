@@ -425,7 +425,7 @@ class SequenceWorkflow(Workflow):
     @requires(Option='max_barcode_error')
     def _demultiplex_max_barcode_error(self, item):
         """ """
-        bc_errors = self.Options['max_bc_errors']
+        bc_errors = self.Options['max_barcode_error']
         if self.FinalState['Corrected barcode errors'] > bc_errors:
             self.Failed = True
             self.Stats['exceeds_bc_errors'] += 1
