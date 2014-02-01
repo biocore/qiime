@@ -27,6 +27,11 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
+    from scipy import __version__ as scipy_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
     from cogent.util.misc import app_path, get_random_directory_name, remove_files
     from cogent.app.util import ApplicationNotFoundError, ApplicationError
     from cogent import __version__ as pycogent_lib_version
@@ -52,12 +57,22 @@ except ImportError as e:
 
 try:
     from biom import __version__ as biom_lib_version
-except ImportError:
+except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
     from qcli import __version__ as qcli_lib_version
-except ImportError:
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from pyqi import __version__ as pyqi_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from bipy import __version__ as bipy_lib_version
+except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
@@ -267,7 +282,7 @@ class QIIMEDependencyBase(QIIMEConfig):
                         "Unsupported python version. %s is required, but running %s."
                         % ('.'.join(map(str, acceptable_version)), version_string))
 
-    def test_numpy_suported_version(self):
+    def test_numpy_supported_version(self):
         """numpy version is supported """
         min_acceptable_version = (1, 5, 1)
         max_acceptable_version = (1, 7, 1)
@@ -285,6 +300,22 @@ class QIIMEDependencyBase(QIIMEConfig):
                         % ('.'.join(map(str, min_acceptable_version)),
                            '.'.join(map(str, max_acceptable_version)),
                             version_string))
+
+    def test_scipy_supported_version(self):
+        """scipy version is supported """
+        min_acceptable_version = (0, 13, 0)
+        try:
+            from scipy import __version__ as scipy_lib_version
+            version = tuple(map(int, scipy_lib_version.split('.')))
+            pass_test = version >= min_acceptable_version
+            version_string = str(scipy_lib_version)
+        except ImportError:
+            pass_test = False
+            version_string = "Not installed"
+        self.assertTrue(
+            pass_test,
+            "Unsupported scipy version. Must be >= %s, but running %s." %
+            ('.'.join(map(str, min_acceptable_version)), version_string))
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
@@ -789,9 +820,12 @@ def main():
     version_info = [
         ("PyCogent version", pycogent_lib_version),
         ("NumPy version", numpy_lib_version),
+        ("SciPy version", scipy_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
         ("qcli version", qcli_lib_version),
+        ("pyqi version", pyqi_lib_version),
+        ("bipy version", bipy_lib_version),
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
         ("PyNAST version (if installed)", pynast_lib_version),

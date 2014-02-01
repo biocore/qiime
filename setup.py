@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # File created on 17 Feb 2010
 from __future__ import division
-from distutils.core import setup
-from distutils.sysconfig import get_python_lib
+from setuptools import setup
 from stat import S_IEXEC
 from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
                 stat, devnull)
@@ -257,10 +256,17 @@ setup(name='qiime',
       keywords=['bioinformatics', 'microbiome', 'microbiology', 'qiime'],
       platforms=['MacOS', 'Linux'],
       install_requires=['numpy >= 1.5.1, <= 1.7.1',
-                        'matplotlib >= 1.1.0, <= 1.3.1', 'cogent == 1.5.3',
+                        'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
-                        'biom-format == 1.3.1', 'emperor >= 0.9.3'],
-      extras_require={'all': ['ipython', 'sphinx >= 0.3']}
+                        'biom-format == 1.3.1', 'emperor >= 0.9.3',
+                        'bipy == 0.0.0-dev'],
+      dependency_links=[
+          'https://github.com/biocore/bipy/archive/master.zip#egg=bipy-0.0.0-dev'
+      ],
+      extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
+                              # the following are optional for pycogent, should
+                              # remove when pycogent is no longer a dependency
+                              'MySQL-python', 'SQLAlchemy', 'mpi4py']}
       )
 
 if build_stack:
