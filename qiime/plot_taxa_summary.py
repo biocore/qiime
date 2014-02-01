@@ -23,7 +23,6 @@ matplotlib.use('Agg', warn=False)
 from matplotlib.font_manager import FontProperties
 from pylab import rc, axis, title, axes, pie, figlegend, clf, savefig, figure\
     , close
-from commands import getoutput
 from string import strip
 from numpy import array
 import numpy as numpy
