@@ -5,7 +5,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -15,8 +15,11 @@ from os.path import exists
 from os import remove, rename, rmdir, makedirs
 from subprocess import Popen, PIPE, STDOUT
 
-from cogent.util.misc import app_path, create_dir
+from cogent.util.misc import create_dir
 from cogent.app.util import ApplicationNotFoundError
+
+from bipy.app.util import which
+
 from qiime.util import get_tmp_filename
 
 # qsub template
@@ -102,7 +105,7 @@ def submit_jobs(filenames, verbose=False):
 
     verbose: a binary verbose flag
     """
-    if(not app_path("qsub")):
+    if not which("qsub"):
         raise ApplicationNotFoundError("qsub not found. Can't submit jobs.")
 
     for file in filenames:

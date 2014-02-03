@@ -4,7 +4,7 @@
 
 __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
-__credits__ = ["Kyle Bittinger", "Greg Caporaso"]
+__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -24,7 +24,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, guess_input_handler, system,\
     ApplicationNotFoundError, ApplicationError
-from cogent.util.misc import app_path
+from bipy.app.util import which
 
 
 class RdpClassifier(CommandLineApplication):
@@ -133,7 +133,7 @@ class RdpClassifier(CommandLineApplication):
 
         In this case, checks for the java runtime and the RDP jar file.
         """
-        if not (os.path.exists('java') or app_path('java')):
+        if not (os.path.exists('java') or which('java')):
             raise ApplicationNotFoundError(
                 "Cannot find java runtime. Is it installed? Is it in your "
                 "path?")

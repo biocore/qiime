@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder", "Greg Caporaso"]
+__credits__ = ["Jens Reeder", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -17,7 +17,6 @@ from re import search
 from itertools import chain
 from qiime.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files, app_path
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError

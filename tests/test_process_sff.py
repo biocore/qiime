@@ -4,7 +4,6 @@ import shutil
 import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationNotFoundError
-from cogent.util.misc import app_path
 from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
     adjust_sff_cycles, check_sffinfo)
@@ -22,7 +21,8 @@ __credits__ = [
     "Greg Caporaso",
     "Kyle Bittinger",
     "Jesse Stombaugh",
-    "Adam Robbins-Pianka"]
+    "Adam Robbins-Pianka",
+    "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"

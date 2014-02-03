@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # file process_sff.py
-from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
 )
+from bipy.app.util import which
 from qiime.util import qiime_open, is_gzip
 from os import listdir
 from os.path import splitext, join, isfile, isdir, split
@@ -23,7 +23,8 @@ __credits__ = [
     "Greg Caporaso",
     "Jesse Stombaugh",
     "Kyle Bittinger",
-    "Adam Robbins-Pianka"]
+    "Adam Robbins-Pianka",
+    "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -169,13 +170,13 @@ _MISSING_APP_MESSAGE = (
 
 def check_sffinfo():
     """Raise error if sffinfo is not in $PATH """
-    if not app_path('sffinfo'):
+    if not which('sffinfo'):
         raise ApplicationNotFoundError(_MISSING_APP_MESSAGE % 'sffinfo')
 
 
 def check_sfffile():
     """Raise error if sfffile is not in $PATH """
-    if not app_path('sfffile'):
+    if not which('sfffile'):
         raise ApplicationNotFoundError(_MISSING_APP_MESSAGE % 'sfffile')
 
 

@@ -66,6 +66,8 @@ from cogent import LoadSeqs
 from cogent.util.misc import (create_dir,
                               handle_error_codes)
 
+from bipy.app.util import which
+
 from qcli import (parse_command_line_parameters,
                   make_option,
                   qcli_system_call)
@@ -350,33 +352,6 @@ def get_qiime_scripts_dir():
                               "http://qiime.org/install/install.html).")
 
     return os.path.dirname(script_fp)
-
-
-def which(executable_name):
-    """Equivalent to ``which executable_name`` in a *nix environment.
-
-    Will return ``None`` if ``executable_name`` cannot be found in ``PATH`` or
-    if ``PATH`` is not set. Otherwise will return the first match in ``PATH``.
-
-    Note: this function will likely not work on Windows.
-
-    Code taken and modified from:
-        http://www.velocityreviews.com/forums/t689526-python-library-call-equivalent-to-which-command.html
-
-    """
-    exec_fp = None
-
-    if 'PATH' in os.environ:
-        paths = os.environ['PATH']
-
-        for path in paths.split(os.pathsep):
-            curr_exec_fp = os.path.join(path, executable_name)
-
-            if os.access(curr_exec_fp, os.X_OK):
-                exec_fp = curr_exec_fp
-                break
-
-    return exec_fp
 
 
 def get_qiime_temp_dir():
