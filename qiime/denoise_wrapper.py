@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder", "Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Jens Reeder", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"

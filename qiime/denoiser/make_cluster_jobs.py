@@ -17,7 +17,6 @@ from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.misc import create_dir
 from cogent.app.util import ApplicationNotFoundError
-
 from bipy.app.util import which
 
 from qiime.util import get_tmp_filename

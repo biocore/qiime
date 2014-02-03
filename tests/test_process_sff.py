@@ -21,8 +21,7 @@ __credits__ = [
     "Greg Caporaso",
     "Kyle Bittinger",
     "Jesse Stombaugh",
-    "Adam Robbins-Pianka",
-    "Jai Ram Rideout"]
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"

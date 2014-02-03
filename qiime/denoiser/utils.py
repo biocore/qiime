@@ -27,7 +27,6 @@ from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.util.misc import create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-
 from bipy.app.util import which
 
 from qiime.util import (get_qiime_project_dir, FileFormatError,

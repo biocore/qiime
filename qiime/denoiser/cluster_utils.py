@@ -20,9 +20,7 @@ from random import sample
 from asynchat import async_chat
 from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
 from cogent.app.util import ApplicationNotFoundError
-
 from bipy.app.util import which
-
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 
 
