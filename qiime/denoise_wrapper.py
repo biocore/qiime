@@ -17,7 +17,6 @@ from re import search
 from itertools import chain
 from qiime.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files, app_path
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError

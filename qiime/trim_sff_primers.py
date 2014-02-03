@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", 'Kyle Bittinger']
+__credits__ = ["Rob Knight", 'Kyle Bittinger', "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -21,7 +21,7 @@ import subprocess
 import sys
 import tempfile
 
-from cogent.util.misc import app_path
+from bipy.app.util import which
 from cogent.app.util import ApplicationNotFoundError
 from qiime.parse import parse_mapping_file
 from cogent.parse.binary_sff import (
@@ -116,10 +116,10 @@ def set_sff_trimpoints_with_sfftools(
     This function essentially provides the reference implementation.
     It uses the official sfftools from Roche to process the SFF files.
     """
-    if not (os.path.exists(sffinfo_path) or app_path(sffinfo_path)):
+    if not (os.path.exists(sffinfo_path) or which(sffinfo_path)):
         raise ApplicationNotFoundError(
             'sffinfo executable not found. Is it installed and in your $PATH?')
-    if not (os.path.exists(sfffile_path) or app_path(sfffile_path)):
+    if not (os.path.exists(sfffile_path) or which(sfffile_path)):
         raise ApplicationNotFoundError(
             'sfffile executable not found. Is it installed and in your $PATH?')
 

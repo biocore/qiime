@@ -32,7 +32,7 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
-    from cogent.util.misc import app_path, get_random_directory_name, remove_files
+    from cogent.util.misc import get_random_directory_name, remove_files
     from cogent.app.util import ApplicationNotFoundError, ApplicationError
     from cogent import __version__ as pycogent_lib_version
 except ImportError as e:
@@ -72,6 +72,7 @@ except ImportError as e:
 
 try:
     from bipy import __version__ as bipy_lib_version
+    from bipy.app.util import which
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -133,7 +134,7 @@ class QIIMEConfig(TestCase):
         fp = self.config["cluster_jobs_fp"]
 
         if fp:
-            full_path = app_path(fp)
+            full_path = which(fp)
             if full_path:
                 fp = full_path
 
@@ -242,7 +243,7 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_uclust_supported_version(self):
         """uclust is in path and version is supported """
         acceptable_version = (1, 2, 22)
-        self.assertTrue(app_path('uclust'),
+        self.assertTrue(which('uclust'),
                         "uclust not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = 'uclust --version'
@@ -365,7 +366,7 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
         acceptable_version = (2, 1, 3)
-        self.assertTrue(app_path('FastTree'),
+        self.assertTrue(which('FastTree'),
                         "FastTree not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "FastTree 2>&1 > %s | grep version" % devnull
@@ -402,17 +403,17 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         self.assertTrue(exists(seq_lookup_file),
                         "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
 
-        self.assertTrue(app_path("SplitKeys.pl"),
+        self.assertTrue(which("SplitKeys.pl"),
                         "Couldn't find SplitKeys.pl. " +
                         "Perhaps AmpliconNoise Scripts directory isn't in $PATH?" +
                         " See %s for help." % url)
 
-        self.assertTrue(app_path("FCluster"),
+        self.assertTrue(which("FCluster"),
                         "Couldn't find FCluster. " +
                         "Perhaps the AmpliconNoise bin directory isn't in $PATH?" +
                         " See %s for help." % url)
 
-        self.assertTrue(app_path("Perseus"),
+        self.assertTrue(which("Perseus"),
                         "Couldn't find Perseus. " +
                         "Perhaps the AmpliconNoise bin directory isn't in $PATH?" +
                         " See %s for help." % url)
@@ -438,7 +439,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         # likely fail as well and need to be updated.
         # Tested with the version of microbiomeutil_2010-04-29
 
-        chim_slay = app_path("ChimeraSlayer.pl")
+        chim_slay = which("ChimeraSlayer.pl")
         self.assertTrue(chim_slay, "ChimeraSlayer was not found in your $PATH")
         dir, app_name = split(chim_slay)
         self.assertTrue(
@@ -452,7 +453,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         blastall = self.config["blastall_fp"]
         if not self.config["blastall_fp"].startswith("/"):
             # path is relative, figure out absolute path
-            blast_all = app_path(blastall)
+            blast_all = which(blastall)
             if not blast_all:
                 raise ApplicationNotFoundError(
                     "blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." %
@@ -464,7 +465,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
         acceptable_version = (2, 2, 22)
-        self.assertTrue(app_path('blastall'),
+        self.assertTrue(which('blastall'),
                         "blast not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = 'blastall | grep blastall'
@@ -485,7 +486,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_cdbtools_supported_version(self):
         """cdbtools is in path and version is supported """
         acceptable_version = (0, 99)
-        self.assertTrue(app_path('cdbfasta'),
+        self.assertTrue(which('cdbfasta'),
                         "cdbtools not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "cdbfasta -v"
@@ -506,7 +507,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_INFERNAL_supported_version(self):
         """INFERNAL is in path and version is supported """
         acceptable_version = (1, 0, 2)
-        self.assertTrue(app_path('cmbuild'),
+        self.assertTrue(which('cmbuild'),
                         "Infernal not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "cmbuild -h | grep INF"
@@ -527,7 +528,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_muscle_supported_version(self):
         """muscle is in path and version is supported """
         acceptable_version = (3, 8, 31)
-        self.assertTrue(app_path('muscle'),
+        self.assertTrue(which('muscle'),
                         "muscle not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "muscle -version"
@@ -548,7 +549,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
         acceptable_version = (1, 25, 0)
-        self.assertTrue(app_path('mothur'),
+        self.assertTrue(which('mothur'),
                         "mothur not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
@@ -588,7 +589,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
         acceptable_version = [(7, 3, 0), (7, 3, 0)]
-        self.assertTrue(app_path('raxmlHPC'),
+        self.assertTrue(which('raxmlHPC'),
                         "raxmlHPC not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "raxmlHPC -v | grep version"
@@ -609,7 +610,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_clearcut_supported_version(self):
         """clearcut is in path and version is supported """
         acceptable_version = (1, 0, 9)
-        self.assertTrue(app_path('clearcut'),
+        self.assertTrue(which('clearcut'),
                         "clearcut not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "clearcut -V"
@@ -629,7 +630,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
 
     def test_cdhit_supported_version(self):
         """cd-hit is in path and version is supported """
-        self.assertTrue(app_path('cd-hit'),
+        self.assertTrue(which('cd-hit'),
                         "cd-hit not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         # cd-hit does not have a version print in their program
@@ -637,7 +638,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
         acceptable_version = [(0, 984)]
-        self.assertTrue(app_path('rtax'),
+        self.assertTrue(which('rtax'),
                         "rtax not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "rtax 2>&1 > %s | grep Version | awk '{print $2}'" % devnull
@@ -658,7 +659,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_pplacer_supported_version(self):
         """pplacer is in path and version is supported """
         acceptable_version = [(1, 1), (1, 1)]
-        self.assertTrue(app_path('pplacer'),
+        self.assertTrue(which('pplacer'),
                         "pplacer not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "pplacer --version"
@@ -679,7 +680,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_ParsInsert_supported_version(self):
         """ParsInsert is in path and version is supported """
         acceptable_version = ["1.04"]
-        self.assertTrue(app_path('ParsInsert'),
+        self.assertTrue(which('ParsInsert'),
                         "ParsInsert not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "ParsInsert -v | grep App | awk '{print $3}'"
@@ -703,7 +704,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_usearch_supported_version(self):
         """usearch is in path and version is supported """
         acceptable_version = [(5, 2, 236), (5, 2, 236)]
-        self.assertTrue(app_path('usearch'),
+        self.assertTrue(which('usearch'),
                         "usearch not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "usearch --version"
@@ -724,7 +725,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_R_supported_version(self):
         """R is in path and version is supported """
         minimum_version = (2, 12, 0)
-        self.assertTrue(app_path('R'),
+        self.assertTrue(which('R'),
                         "R not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "R --version | grep 'R version' | awk '{print $3}'"

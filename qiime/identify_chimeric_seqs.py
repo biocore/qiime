@@ -9,13 +9,14 @@ from os.path import (split, splitext, basename, isdir, abspath, isfile, exists,
 from subprocess import PIPE, Popen
 from datetime import datetime
 
-from cogent.util.misc import remove_files, app_path
+from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
     ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
+from bipy.app.util import which
 
 from qiime.util import (FunctionWithParams, degap_fasta_aln,
                         write_degapped_fasta_to_file, get_tmp_filename, create_dir,
@@ -27,7 +28,8 @@ from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -573,7 +575,7 @@ def make_cidx_file(fp):
     environment it mkaes sense to manually make and delete the file.
     """
 
-    if app_path("cdbfasta"):
+    if which("cdbfasta"):
         # cdbfasta comes with the microbiometools/CS
         # should always be installed when using CS
         args = ["cdbfasta", fp]

@@ -24,12 +24,13 @@ from subprocess import Popen, PIPE, STDOUT
 import pickle
 
 from cogent import Sequence
-
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent.util.misc import app_path, create_dir
+from cogent.util.misc import create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
+from bipy.app.util import which
+
 from qiime.util import (get_qiime_project_dir, FileFormatError,
-                        get_tmp_filename, which)
+                        get_tmp_filename)
 
 
 def write_sff_header(header, fh, num=None):
@@ -300,7 +301,7 @@ def wait_for_cluster_ids(ids, interval=10):
 
     NOT USED ANYMORE
     """
-    if (app_path("qstat")):
+    if which("qstat"):
         for id in ids:
             while(getoutput("qstat %s" % id).startswith("Job")):
                 sleep(interval)
