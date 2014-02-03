@@ -370,7 +370,13 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(which('FastTree'),
                         "FastTree not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
-        command = "FastTree 2>&1 > %s | grep version" % devnull
+
+        # If FastTree is run interactively, it outputs the following line:
+        #     Usage for FastTree version 2.1.3 SSE3:
+        #
+        # If run non-interactively:
+        #     FastTree Version 2.1.3 SSE3
+        command = "FastTree 2>&1 > %s | grep -i version" % devnull
         proc = Popen(command, shell=True, universal_newlines=True,
                      stdout=PIPE, stderr=STDOUT)
         stdout = proc.stdout.read().strip()
