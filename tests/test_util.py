@@ -12,9 +12,7 @@ from tempfile import mkdtemp
 from collections import defaultdict
 import gzip
 
-from biom import __version__ as __biom_version__, __url__ as __biom_url__
 from biom.parse import parse_biom_table_str, parse_biom_table
-from biom.util import get_biom_format_version_string
 
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main

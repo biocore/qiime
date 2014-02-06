@@ -39,7 +39,6 @@ from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
 
-from biom.table import DenseTable
 from biom.parse import parse_biom_table
 import biom
 

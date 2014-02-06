@@ -659,7 +659,7 @@ class Anosim(CategoryStats):
         Returns a dict containing the results. The following keys are set:
             method_name - name of the statistical method
             r_value - the ANOSIM R statistic computed by the test
-            p_value - the p-value computed by the test, or 'NA' if the number
+            p_value - the p-value computed by the test, or 1.0 if the number
                 of permutations was zero
             num_perms - the number of permutations used when calculating the
                 p-value
@@ -879,7 +879,7 @@ class Permanova(CategoryStats):
         Returns a dict containing the results. The following keys are set:
             method_name - name of the statistical method
             f_value - the PERMANOVA F statistic computed by the test
-            p_value - the p-value computed by the test, or 'NA' if the number
+            p_value - the p-value computed by the test, or 1.0 if the number
                 of permutations was zero
             num_perms - the number of permutations used when calculating the
                 p-value

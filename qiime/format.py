@@ -989,10 +989,9 @@ def format_anosim_results(anosim_results):
                                            num_perms)
 
     result = 'Method name\tR statistic\tp-value\tNumber of permutations\n'
-    result += '%s\t%.4f\t%s\t%d\n' % (anosim_results['method_name'],
-                                      anosim_results['r_value'],
-                                      p_value,
-                                      num_perms)
+    result += '%s\t%s\t%s\t%d\n' % (anosim_results['method_name'],
+                                    anosim_results['r_value'], p_value,
+                                    num_perms)
     return result
 
 
@@ -1009,10 +1008,9 @@ def format_permanova_results(permanova_results):
 
     result = 'Method name\tPseudo-F statistic\tp-value\t' + \
              'Number of permutations\n'
-    result += '%s\t%.4f\t%s\t%d\n' % (permanova_results['method_name'],
-                                      permanova_results['f_value'],
-                                      p_value,
-                                      num_perms)
+    result += '%s\t%s\t%s\t%d\n' % (permanova_results['method_name'],
+                                    permanova_results['f_value'], p_value,
+                                    num_perms)
     return result
 
 
