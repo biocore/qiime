@@ -136,9 +136,9 @@ def main():
     else:
         for _, _, md in otu_table.iterObservations():
             current_md = md[observation_metadata_category]
-            try:
+            if observation_metadata_level < len(current_md):
                 current_md_at_level = current_md[observation_metadata_level]
-            except IndexError:
+            else:
                 current_md_at_level = ''
             observation_metadata_labels.append([current_md_at_level])
 
