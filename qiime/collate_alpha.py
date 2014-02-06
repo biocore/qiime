@@ -4,10 +4,9 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 """takes as input alpha diveristy files, format:
 file: one rarefaction depth/iteration
@@ -33,21 +32,24 @@ from qiime.parse import filter_otus_by_lineage, parse_matrix,\
     parse_rarefaction_fname
 from qiime.format import format_matrix
 from qiime.util import FunctionWithParams
-       
+
+
 def write_output_file(metric_file_data, output_dir, metric, all_samples):
     # now have matrix where output_row is rarefaction analysis
-    metric_file_data = sorted(metric_file_data,key=operator.itemgetter(1,2))
+    metric_file_data = sorted(metric_file_data, key=operator.itemgetter(1, 2))
     row_names = [row.pop(0) for row in metric_file_data]
     col_names = ['sequences per sample', 'iteration'] + all_samples
-    #Numpy shows weird behaviour when converting metric_file_data to array
-    #it truncates some values, so better go with straight list of lists
+    # Numpy shows weird behaviour when converting metric_file_data to array
+    # it truncates some values, so better go with straight list of lists
     # format_matrix() now takes 2d lists as well as arrays.
     out_str = format_matrix(metric_file_data, row_names, col_names)
-    f = open(os.path.join(output_dir,metric+'.txt'),'w')
+    f = open(os.path.join(output_dir, metric + '.txt'), 'w')
     f.write(out_str)
     f.close()
-        
-def make_output_row(f_metrics, metric, f_samples, f_data, fname, num_cols, all_samples):
+
+
+def make_output_row(f_metrics, metric, f_samples, f_data,
+                    fname, num_cols, all_samples):
     f_col = f_metrics.index(metric)
 
     # first 3 cols are fname, seqs/sample, iteration
@@ -55,18 +57,16 @@ def make_output_row(f_metrics, metric, f_samples, f_data, fname, num_cols, all_s
         base, seqs, iter, ext = parse_rarefaction_fname(fname)
     except:
         seqs, iter = 'n/a', 'n/a'
-    output_row = [fname] + ['n/a']*num_cols
+    output_row = [fname] + ['n/a'] * num_cols
     for f_row, sample in enumerate(f_samples):
         try:
-            output_row[all_samples.index(sample)+1] = \
-                str(f_data[f_row,f_col])
+            output_row[all_samples.index(sample) + 1] = \
+                str(f_data[f_row, f_col])
         except IndexError:
-            print("warning, didn't find sample in example file."+\
-             "exiting", sample, fname, metric)
-            raise # re-raise error
-            
+            print("warning, didn't find sample in example file." +
+                  "exiting", sample, fname, metric)
+            raise  # re-raise error
 
     output_row.insert(1, seqs)
     output_row.insert(2, iter)
     return output_row
-

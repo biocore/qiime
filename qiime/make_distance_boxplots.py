@@ -5,10 +5,9 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 """Contains functions used in the make_distance_boxplots.py script."""
 
@@ -21,6 +20,7 @@ from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
 from qiime.util import MetadataMap
+
 
 def make_distance_boxplots(dm_f,
                            map_f,
@@ -119,9 +119,9 @@ def make_distance_boxplots(dm_f,
             # list of colors and a legend.
             if color_individual_within_by_field is not None:
                 colors, color_mapping = _color_field_states(
-                        format_mapping_file(map_header, map_data).split('\n'),
-                        dm_header, field, field_states,
-                        color_individual_within_by_field)
+                    format_mapping_file(map_header, map_data).split('\n'),
+                    dm_header, field, field_states,
+                    color_individual_within_by_field)
                 plot_colors.extend(colors)
                 legend = (color_mapping.values(), color_mapping.keys())
             else:
@@ -129,7 +129,7 @@ def make_distance_boxplots(dm_f,
 
         if not suppress_individual_between:
             between_dists = get_grouped_distances(dm_header, dm_data,
-                    map_header, map_data, field, within=False)
+                                                  map_header, map_data, field, within=False)
 
             for grouping in between_dists:
                 plot_data.append(grouping[2])
@@ -142,15 +142,15 @@ def make_distance_boxplots(dm_f,
 
         assert (len(plot_data) == len(plot_labels) and
                 len(plot_labels) == len(plot_colors)), "The number " +\
-                "of boxplot labels and colors do not match the number of " +\
-                "boxplots."
+            "of boxplot labels and colors do not match the number of " +\
+            "boxplots."
 
         # We now have our data and labels ready, so plot them!
         if plot_data:
             if sort:
                 plot_data, plot_labels, plot_colors = \
-                        _sort_distributions_by_median(plot_data, plot_labels,
-                                                      plot_colors)
+                    _sort_distributions_by_median(plot_data, plot_labels,
+                                                  plot_colors)
 
             if width is None:
                 width = len(plot_data) * box_width + 2
@@ -159,12 +159,12 @@ def make_distance_boxplots(dm_f,
                                  "must be greater than zero.")
 
             plot_figure = generate_box_plots(plot_data,
-                    x_tick_labels=plot_labels, title="%s Distances" % field,
-                    x_label="Grouping", y_label="Distance",
-                    x_tick_labels_orientation='vertical', y_min=y_min,
-                    y_max=y_max, whisker_length=whisker_length,
-                    box_width=box_width, box_colors=plot_colors,
-                    figure_width=width, figure_height=height, legend=legend)
+                                             x_tick_labels=plot_labels, title="%s Distances" % field,
+                                             x_label="Grouping", y_label="Distance",
+                                             x_tick_labels_orientation='vertical', y_min=y_min,
+                                             y_max=y_max, whisker_length=whisker_length,
+                                             box_width=box_width, box_colors=plot_colors,
+                                             figure_width=width, figure_height=height, legend=legend)
 
             results.append((field, plot_figure, plot_data, plot_labels,
                             plot_colors))
@@ -173,6 +173,7 @@ def make_distance_boxplots(dm_f,
                              "least one type of plot must be unsuppressed.")
 
     return results
+
 
 def _cast_y_axis_extrema(y_axis_extrema):
     """Casts to float; handles 'auto' value as well."""
@@ -186,6 +187,7 @@ def _cast_y_axis_extrema(y_axis_extrema):
                              "or 'auto'. Couldn't handle the value %r." %
                              y_axis_extrema)
     return y_axis_extrema
+
 
 def _sort_distributions_by_median(plot_data, plot_labels, plot_colors):
     """Sorts plot data, labels, and colors in order of increasing median."""
@@ -205,6 +207,7 @@ def _sort_distributions_by_median(plot_data, plot_labels, plot_colors):
         plot_colors.append(color)
 
     return plot_data, plot_labels, plot_colors
+
 
 def _color_field_states(map_f, samp_ids, field, field_states, color_by_field):
     """Colors one field by another.

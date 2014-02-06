@@ -5,10 +5,9 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 from shutil import rmtree
 from glob import glob
@@ -25,15 +24,17 @@ from qiime.parse import fields_to_dict
 
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
 
+
 class ParallelChimericSequenceIdentifierTests(TestCase):
+
     def setUp(self):
         """ """
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
         self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
-                suffix='', result_constructor=str)
+                                         prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
+                                         suffix='', result_constructor=str)
         self.dirs_to_remove.append(self.test_out)
         create_dir(self.test_out)
 
@@ -73,14 +74,14 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
     def test_parallel_chimeric_sequence_identifier_blast_fragments(self):
         """Test ParallelChimericSequenceIdentifier using blast_fragments."""
         params = {
-                'id_to_taxonomy_fp':self.id_to_tax_f.name,
-                'reference_seqs_fp':self.reference_seqs_f.name,
-                'chimera_detection_method':'blast_fragments',
-                'num_fragments':3,
-                'taxonomy_depth':4,
-                'max_e_value':1e-30,
-                'min_div_ratio':None,
-                'output_fp':self.test_out + '/blast_fragments_out.txt'
+            'id_to_taxonomy_fp': self.id_to_tax_f.name,
+            'reference_seqs_fp': self.reference_seqs_f.name,
+            'chimera_detection_method': 'blast_fragments',
+            'num_fragments': 3,
+            'taxonomy_depth': 4,
+            'max_e_value': 1e-30,
+            'min_div_ratio': None,
+            'output_fp': self.test_out + '/blast_fragments_out.txt'
         }
 
         app = ParallelChimericSequenceIdentifier()
@@ -100,15 +101,15 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         """Test ParallelChimericSequenceIdentifier using ChimeraSlayer."""
         qiime_config = load_qiime_config()
         params = {
-                'reference_seqs_fp':None,
-                'aligned_reference_seqs_fp':qiime_config[
-                    'pynast_template_alignment_fp'],
-                'chimera_detection_method':'ChimeraSlayer',
-                'num_fragments':3,
-                'taxonomy_depth':4,
-                'max_e_value':1e-30,
-                'min_div_ratio':None,
-                'output_fp':self.test_out + '/ChimeraSlayer_out.txt'
+            'reference_seqs_fp': None,
+            'aligned_reference_seqs_fp': qiime_config[
+                'pynast_template_alignment_fp'],
+            'chimera_detection_method': 'ChimeraSlayer',
+            'num_fragments': 3,
+            'taxonomy_depth': 4,
+            'max_e_value': 1e-30,
+            'min_div_ratio': None,
+            'output_fp': self.test_out + '/ChimeraSlayer_out.txt'
         }
 
         app = ParallelChimericSequenceIdentifier()

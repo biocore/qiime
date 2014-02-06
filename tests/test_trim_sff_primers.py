@@ -7,13 +7,12 @@ isn't in the main block: this needs to be refactored.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-#remember to add yourself if you make changes
+# remember to add yourself if you make changes
 __credits__ = ["Rob Knight", 'Kyle Bittinger']
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
 
 from cStringIO import StringIO
 import os
@@ -23,20 +22,25 @@ import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff,
-    )
+)
 from qiime.trim_sff_primers import (
     get_technical_lengths, set_sff_trimpoints, set_sff_trimpoints_with_sfftools,
     set_clip_qual_left, get_per_lib_sff_fps
-    )
+)
 
 
 class TopLevelTests(TestCase):
+
     """Top-level tests of functions in trim_sff_primers"""
 
     def setUp(self):
         test_dir = os.path.dirname(os.path.abspath(__file__))
         self.sff_fn = 'F6AVWTA01.sff'
-        orig_sff_fp = os.path.join(test_dir, 'test_support_files', 'F6AVWTA', self.sff_fn)
+        orig_sff_fp = os.path.join(
+            test_dir,
+            'test_support_files',
+            'F6AVWTA',
+            self.sff_fn)
         self.sff_dir = tempfile.mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, self.sff_fn)
         shutil.copy(orig_sff_fp, self.sff_fp)
@@ -47,9 +51,9 @@ class TopLevelTests(TestCase):
     def test_get_technical_lengths(self):
         """get_technical_lengths should return correct dict of sample:length"""
         self.assertEqual(
-            get_technical_lengths(mapping_with_linker), {'a':12, 'b':11})
+            get_technical_lengths(mapping_with_linker), {'a': 12, 'b': 11})
         self.assertEqual(
-            get_technical_lengths(mapping_without_linker), {'a':11, 'b':8})
+            get_technical_lengths(mapping_without_linker), {'a': 11, 'b': 8})
 
     def test_set_sff_trimpoints_with_sfftools(self):
         _, orig_reads = parse_binary_sff(open(self.sff_fp), True)
@@ -92,7 +96,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(
             list(get_per_lib_sff_fps(self.sff_dir)),
             [('F6AVWTA01', self.sff_fp)],
-            )
+        )
 
     def test_set_clip_qual_left(self):
         orig_header, orig_reads = parse_binary_sff(open(self.sff_fp), True)

@@ -18,15 +18,18 @@ import matplotlib.colors as colors
 from matplotlib.pyplot import boxplot
 from numpy import array
 from qiime.pycogent_backports.distribution_plots import (_validate_input,
-      _get_distribution_markers, _validate_x_values, _create_plot,
-      _calc_data_point_locations, _set_axes_options, generate_box_plots,
-      generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,
-      _plot_scatter_data, _plot_box_data, _color_box_plot,
-      _is_single_matplotlib_color, _create_legend, _set_figure_size)
+                                                         _get_distribution_markers, _validate_x_values, _create_plot,
+                                                         _calc_data_point_locations, _set_axes_options, generate_box_plots,
+                                                         generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,
+                                                         _plot_scatter_data, _plot_box_data, _color_box_plot,
+                                                         _is_single_matplotlib_color, _create_legend, _set_figure_size)
 from cogent.util.unit_test import TestCase, main
 
+
 class DistributionPlotsTests(TestCase):
+
     """Tests of the distribution_plots module."""
+
     def setUp(self):
         """Create some data to be used in the tests."""
         # Test null data list.
@@ -111,7 +114,7 @@ class DistributionPlotsTests(TestCase):
         """_validate_x_values() should raise a ValueError on x_values that
         aren't numbers."""
         self.assertRaises(ValueError, _validate_x_values,
-                ["foo", 2, 3], None, len(self.ValidSingleSampleData))
+                          ["foo", 2, 3], None, len(self.ValidSingleSampleData))
 
     def test_validate_x_values_valid_x_values(self):
         """_validate_x_values() should not throw an exception."""
@@ -121,13 +124,13 @@ class DistributionPlotsTests(TestCase):
         """_validate_input() should raise a ValueError on data_point_names that
         are an invalid length."""
         self.assertRaises(ValueError, _validate_input,
-                self.ValidSingleSampleData, None, ["T0", "T1"], None)
+                          self.ValidSingleSampleData, None, ["T0", "T1"], None)
 
     def test_validate_input_invalid_sample_names(self):
         """_validate_input() should raise a ValueError on sample_names that are
         an invalid length."""
         self.assertRaises(ValueError, _validate_input,
-                self.ValidSingleSampleData, None, None, ["Men", "Women"])
+                          self.ValidSingleSampleData, None, None, ["Men", "Women"])
 
     def test_validate_input_all_valid_input(self):
         """_validate_input() should return valid information about the data
@@ -135,19 +138,19 @@ class DistributionPlotsTests(TestCase):
         self.assertEqual(_validate_input(self.ValidTypicalData, [1, 3, 4, 8],
                                          ["T0", "T1", "T2", "T3"],
                                          ["Infants", "Children", "Teens"]),
-                                         (4, 3))
+                         (4, 3))
 
     def test_get_distribution_markers_null_marker_list(self):
         """_get_distribution_markers() should return a list of predefined
         matplotlib markers."""
         self.assertEqual(_get_distribution_markers('colors', None, 5),
-                ['b', 'g', 'r', 'c', 'm'])
+                         ['b', 'g', 'r', 'c', 'm'])
 
     def test_get_distribution_markers_empty_marker_list(self):
         """_get_distribution_markers() should return a list of predefined
         matplotlib markers."""
         self.assertEqual(_get_distribution_markers('colors', None, 4),
-                ['b', 'g', 'r', 'c'])
+                         ['b', 'g', 'r', 'c'])
 
     def test_get_distribution_markers_insufficient_markers(self):
         """_get_distribution_markers() should return a wrapped list of
@@ -155,32 +158,32 @@ class DistributionPlotsTests(TestCase):
         # Save stdout and replace it with something that will capture the print
         # statement. Note: this code was taken from here:
         # http://stackoverflow.com/questions/4219717/how-to-assert-output-
-        #     with-nosetest-unittest-in-python/4220278#4220278
+        # with-nosetest-unittest-in-python/4220278#4220278
         saved_stdout = sys.stdout
         try:
             out = StringIO()
             sys.stdout = out
             self.assertEqual(_get_distribution_markers('colors', None, 10),
-                ['b', 'g', 'r', 'c', 'm', 'y', 'w', 'b', 'g', 'r'])
+                             ['b', 'g', 'r', 'c', 'm', 'y', 'w', 'b', 'g', 'r'])
             self.assertEqual(_get_distribution_markers('symbols',
-                ['^', '>', '<'], 5), ['^', '>', '<', '^', '>'])
+                                                       ['^', '>', '<'], 5), ['^', '>', '<', '^', '>'])
             output = out.getvalue().strip()
             self.assertEqual(output, "There are not enough markers to "
-                    "uniquely represent each distribution in your dataset. "
-                    "You may want to provide a list of markers that is at "
-                    "least as large as the number of distributions in your "
-                    "dataset.\nThere are not enough markers to "
-                    "uniquely represent each distribution in your dataset. "
-                    "You may want to provide a list of markers that is at "
-                    "least as large as the number of distributions in your "
-                    "dataset.")
+                             "uniquely represent each distribution in your dataset. "
+                             "You may want to provide a list of markers that is at "
+                             "least as large as the number of distributions in your "
+                             "dataset.\nThere are not enough markers to "
+                             "uniquely represent each distribution in your dataset. "
+                             "You may want to provide a list of markers that is at "
+                             "least as large as the number of distributions in your "
+                             "dataset.")
         finally:
             sys.stdout = saved_stdout
 
     def test_get_distribution_markers_bad_marker_type(self):
         """_get_distribution_markers() should raise a ValueError."""
         self.assertRaises(ValueError, _get_distribution_markers, 'shapes', [],
-                3)
+                          3)
 
     def test_get_distribution_markers_zero_markers(self):
         """_get_distribution_markers() should return an empty list."""
@@ -216,7 +219,7 @@ class DistributionPlotsTests(TestCase):
         """_plot_bar_data() should raise an exception on bad error bar type."""
         fig, ax = _create_plot()
         self.assertRaises(ValueError, _plot_bar_data, ax, [1, 2, 3], 'red',
-                0.5, 3.75, 1.5, 'var')
+                          0.5, 3.75, 1.5, 'var')
 
     def test_plot_bar_data_empty(self):
         """_plot_bar_data() should not error when given empty list of data,
@@ -246,7 +249,7 @@ class DistributionPlotsTests(TestCase):
         """_plot_box_data() should return a dictionary for Line2D's."""
         fig, ax = _create_plot()
         result = _plot_box_data(ax, [0, 0, 7, 8, -3, 44], 'blue', 0.33, 55,
-                1.5, 'stdv')
+                                1.5, 'stdv')
         self.assertEqual(result.__class__.__name__, "dict")
         self.assertEqual(len(result['boxes']), 1)
         self.assertEqual(len(result['medians']), 1)
@@ -331,16 +334,16 @@ class DistributionPlotsTests(TestCase):
 
         fig, ax = _create_plot()
         _create_legend(ax, ['^', '<', '>'], ['dist1', 'dist2', 'dist3'],
-                'symbols')
+                       'symbols')
         self.assertEqual(len(ax.get_legend().get_texts()), 3)
 
     def test_create_legend_invalid_input(self):
         """Test raises error on bad input."""
         fig, ax = _create_plot()
         self.assertRaises(ValueError, _create_legend, ax,
-                ['^', '<', '>'], ['dist1', 'dist2'], 'symbols')
+                          ['^', '<', '>'], ['dist1', 'dist2'], 'symbols')
         self.assertRaises(ValueError, _create_legend, ax, ['^', '<', '>'],
-                ['dist1', 'dist2', 'dist3'], 'foo')
+                          ['dist1', 'dist2', 'dist3'], 'foo')
 
     def test_generate_box_plots(self):
         """generate_box_plots() should return a valid Figure object."""
@@ -411,9 +414,11 @@ class DistributionPlotsTests(TestCase):
     def test_generate_comparative_plots_bar(self):
         """Should return a valid barchart Figure object."""
         fig = generate_comparative_plots('bar', self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], ['b', 'r', 'g'],
-                "x-axis label", "y-axis label", "Test")
+                                         [1, 4, 10, 11], ["T0",
+                                                          "T1", "T2", "T3"],
+                                         ["Infants", "Children",
+                                             "Teens"], ['b', 'r', 'g'],
+                                         "x-axis label", "y-axis label", "Test")
         ax = fig.get_axes()[0]
         self.assertEqual(ax.get_title(), "Test")
         self.assertEqual(ax.get_xlabel(), "x-axis label")
@@ -431,24 +436,28 @@ class DistributionPlotsTests(TestCase):
             out = StringIO()
             sys.stdout = out
             generate_comparative_plots('bar', self.ValidTypicalData,
-                    [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                    ["Infants", "Children", "Teens"], ['b', 'r'],
-                    "x-axis label", "y-axis label", "Test")
+                                       [1, 4, 10, 11], ["T0",
+                                                        "T1", "T2", "T3"],
+                                       ["Infants", "Children",
+                                           "Teens"], ['b', 'r'],
+                                       "x-axis label", "y-axis label", "Test")
             output = out.getvalue().strip()
             self.assertEqual(output, "There are not enough markers to "
-                    "uniquely represent each distribution in your dataset. "
-                    "You may want to provide a list of markers that is at "
-                    "least as large as the number of distributions in your "
-                    "dataset.")
+                             "uniquely represent each distribution in your dataset. "
+                             "You may want to provide a list of markers that is at "
+                             "least as large as the number of distributions in your "
+                             "dataset.")
         finally:
             sys.stdout = saved_stdout
 
     def test_generate_comparative_plots_scatter(self):
         """Should return a valid scatterplot Figure object."""
         fig = generate_comparative_plots('scatter', self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], ['^', '>', '<'],
-                "x-axis label", "y-axis label", "Test")
+                                         [1, 4, 10, 11], ["T0",
+                                                          "T1", "T2", "T3"],
+                                         ["Infants", "Children",
+                                             "Teens"], ['^', '>', '<'],
+                                         "x-axis label", "y-axis label", "Test")
         ax = fig.get_axes()[0]
         self.assertEqual(ax.get_title(), "Test")
         self.assertEqual(ax.get_xlabel(), "x-axis label")
@@ -465,15 +474,16 @@ class DistributionPlotsTests(TestCase):
             out = StringIO()
             sys.stdout = out
             generate_comparative_plots('scatter', self.ValidTypicalData,
-                    [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                    ["Infants", "Children", "Teens"], ['^'],
-                    "x-axis label", "y-axis label", "Test")
+                                       [1, 4, 10, 11], ["T0",
+                                                        "T1", "T2", "T3"],
+                                       ["Infants", "Children", "Teens"], ['^'],
+                                       "x-axis label", "y-axis label", "Test")
             output = out.getvalue().strip()
             self.assertEqual(output, "There are not enough markers to "
-                    "uniquely represent each distribution in your dataset. "
-                    "You may want to provide a list of markers that is at "
-                    "least as large as the number of distributions in your "
-                    "dataset.")
+                             "uniquely represent each distribution in your dataset. "
+                             "You may want to provide a list of markers that is at "
+                             "least as large as the number of distributions in your "
+                             "dataset.")
         finally:
             sys.stdout = saved_stdout
 
@@ -481,16 +491,18 @@ class DistributionPlotsTests(TestCase):
         """generate_comparative_plots() should use the predefined list of
         markers if an empty list is provided by the user."""
         generate_comparative_plots('scatter', self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], [],
-                "x-axis label", "y-axis label", "Test")
+                                   [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
+                                   ["Infants", "Children", "Teens"], [],
+                                   "x-axis label", "y-axis label", "Test")
 
     def test_generate_comparative_plots_box(self):
         """Should return a valid boxplot Figure object."""
         fig = generate_comparative_plots('box', self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
-                "x-axis label", "y-axis label", "Test")
+                                         [1, 4, 10, 11], ["T0",
+                                                          "T1", "T2", "T3"],
+                                         ["Infants", "Children",
+                                             "Teens"], ['b', 'g', 'y'],
+                                         "x-axis label", "y-axis label", "Test")
         ax = fig.get_axes()[0]
         self.assertEqual(ax.get_title(), "Test")
         self.assertEqual(ax.get_xlabel(), "x-axis label")
@@ -502,10 +514,10 @@ class DistributionPlotsTests(TestCase):
         """generate_comparative_plots() should raise a ValueError for an
         invalid plot type."""
         self.assertRaises(ValueError, generate_comparative_plots, 'pie',
-                self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
-                "x-axis label", "y-axis label", "Test")
+                          self.ValidTypicalData,
+                          [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
+                          ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
+                          "x-axis label", "y-axis label", "Test")
 
     def test_color_box_plot(self):
         """Should not throw an exception when passed the proper input."""
@@ -595,18 +607,18 @@ class DistributionPlotsTests(TestCase):
             fig, ax = _create_plot()
             _set_axes_options(ax, 'foo', 'x_foo', 'y_foo',
                               x_tick_labels=['foofoofooooooooooooooooooooooooo'
-                              'ooooooooooooooooooooooooooooooooooooooooooooooo'
-                              'ooooooooooooooooooooo', 'barbarbar'],
+                                             'ooooooooooooooooooooooooooooooooooooooooooooooo'
+                                             'ooooooooooooooooooooo', 'barbarbar'],
                               x_tick_labels_orientation='vertical')
             _set_figure_size(fig, 3, 3)
             self.assertFloatEqual(fig.get_size_inches(), (3, 3))
             output = out.getvalue().strip()
             self.assertEqual(output,
-            "Warning: could not automatically resize plot to make room for "
-            "axes labels and plot title. This can happen if the labels or "
-            "title are extremely long and the plot size is too small. Your "
-            "plot may have its labels and/or title cut-off. To fix this, "
-            "try increasing the plot's size (in inches) and try again.")
+                             "Warning: could not automatically resize plot to make room for "
+                             "axes labels and plot title. This can happen if the labels or "
+                             "title are extremely long and the plot size is too small. Your "
+                             "plot may have its labels and/or title cut-off. To fix this, "
+                             "try increasing the plot's size (in inches) and try again.")
         finally:
             sys.stdout = saved_stdout
 

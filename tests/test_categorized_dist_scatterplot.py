@@ -6,16 +6,17 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_distmat_to_dict, parse_mapping_file
 from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 import StringIO
+
+
 class FunctionTests(TestCase):
 
     def setUp(self):
@@ -23,7 +24,7 @@ class FunctionTests(TestCase):
 
     def tearDown(self):
         pass
-        
+
     def test_get_avg_dists(self):
         """get_avg_dists functions as expected """
         dmtx_str = StringIO.StringIO("""\ts1\ts2\ts3
@@ -32,13 +33,13 @@ s2\t.5\t0\t.7
 s3\t.6\t.7\t0.0
 """)
         distdict1 = parse_distmat_to_dict(dmtx_str)
-        distdict2 = {'s1':{'s2':.5,'s3':.6},'s2':{'s1':.5,'s3':.7},
-            's3':{'s2':.7,'s1':.6}}
-        state1_samids = ['s1','s2']
-        state2_samids = ['s3','s2']
+        distdict2 = {'s1': {'s2': .5, 's3': .6}, 's2': {'s1': .5, 's3': .7},
+                     's3': {'s2': .7, 's1': .6}}
+        state1_samids = ['s1', 's2']
+        state2_samids = ['s3', 's2']
         # note s2 in both
         exp_avgs = [.55, .7]
-        obs_avgs = get_avg_dists(state1_samids,state2_samids,distdict1)
+        obs_avgs = get_avg_dists(state1_samids, state2_samids, distdict1)
         self.assertFloatEqual(exp_avgs, obs_avgs)
 
     def test_get_sam_ids(self):
@@ -59,11 +60,11 @@ s3\t.6\t.7\t0.0
         colorby = 'Country'
         cat = 'USA'
         primary_state = 'AgeCat:Child'
-        ids1, ids2 = get_sam_ids(map_data, map_header, colorby, cat, 
-                primary_state, secondary_state=None)
+        ids1, ids2 = get_sam_ids(map_data, map_header, colorby, cat,
+                                 primary_state, secondary_state=None)
         self.assertEqual(set(ids1),
-            set(['USinfTw20.1','USinfTw20.2','USinfTw1.1']))
-        self.assertEqual(set(ids2), set(['TS25','TS26']))
+                         set(['USinfTw20.1', 'USinfTw20.2', 'USinfTw1.1']))
+        self.assertEqual(set(ids2), set(['TS25', 'TS26']))
 
 if __name__ == "__main__":
     main()

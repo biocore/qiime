@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Daniel McDonald", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
@@ -20,8 +19,9 @@ from qiime.sort import (sort_sample_ids_by_mapping_value,
                         natsort_case_insensitive, sort_otu_table,
                         sort_otu_table_by_mapping_field, signed_natsort)
 
+
 class SortTests(TestCase):
-    
+
     def setUp(self):
         self.mapping_f1 = mapping_f1.split('\n')
         self.otu_table1 = otu_table1
@@ -34,20 +34,20 @@ class SortTests(TestCase):
         self.files_to_remove = []
 
     def tearDown(self):
-        for dir in  self.dirs_to_remove:
+        for dir in self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
         remove_files(self.files_to_remove)
-    
+
     def test_sort_sample_ids_by_mapping_value(self):
         """ sort_sample_ids_by_mapping_value functions as expected """
         actual = sort_sample_ids_by_mapping_value(mapping_file=self.mapping_f1,
-                                         field='days_since_epoch',
-                                         field_type_f=float)
-        expected = zip(['NotInOtuTable','1','Z2','Z1','A'],
-                       [0.0,5.7,10,23,400000])
-        self.assertEqual(actual,expected)
-        
+                                                  field='days_since_epoch',
+                                                  field_type_f=float)
+        expected = zip(['NotInOtuTable', '1', 'Z2', 'Z1', 'A'],
+                       [0.0, 5.7, 10, 23, 400000])
+        self.assertEqual(actual, expected)
+
     def test_sort_sample_ids_by_mapping_value_error(self):
         """ sort_sample_ids_by_mapping_value handles errors """
         self.assertRaises(ValueError,
@@ -55,166 +55,186 @@ class SortTests(TestCase):
                           mapping_file=self.mapping_f1,
                           field='years_since_spoch',
                           field_type_f=float)
-                          
+
         self.assertRaises(ValueError,
                           sort_sample_ids_by_mapping_value,
                           mapping_file=self.mapping_f1,
                           field='Something',
                           field_type_f=float)
-                          
+
     def test_sort_fasta_by_abundance(self):
         """sort_fasta_by_abundance functions as expected"""
         class FakeOutF(object):
-          def __init__(self):
-              self.s = ""
-          def write(self,s):
-              self.s += s
+
+            def __init__(self):
+                self.s = ""
+
+            def write(self, s):
+                self.s += s
 
         actual = FakeOutF()
         expected = ""
-        sort_fasta_by_abundance([],actual)
-        self.assertEqual(actual.s,expected)
+        sort_fasta_by_abundance([], actual)
+        self.assertEqual(actual.s, expected)
 
         # no sorting necessary
         actual = FakeOutF()
-        expected1 = "\n".join(['>s1','ACCGT','>s2 comment','ATTGC',''])
-        expected2 = "\n".join(['>s2 comment','ATTGC','>s1','ACCGT',''])
-        sort_fasta_by_abundance(['>s1','ACCGT','>s2 comment','ATTGC'],actual)
+        expected1 = "\n".join(['>s1', 'ACCGT', '>s2 comment', 'ATTGC', ''])
+        expected2 = "\n".join(['>s2 comment', 'ATTGC', '>s1', 'ACCGT', ''])
+        sort_fasta_by_abundance(
+            ['>s1',
+             'ACCGT',
+             '>s2 comment',
+             'ATTGC'],
+            actual)
         # order is unimportant here
         self.assertTrue(actual.s == expected1 or actual.s == expected2)
 
         # sorting necessary
         actual = FakeOutF()
-        inseqs = ['>s1','ACCGT',
-                 '>s2 comment','ATTGC',
-                 '>s3 blah','ATTGC']
-        expected = "\n".join(['>s2 comment','ATTGC',
-                            '>s3 blah','ATTGC',
-                            '>s1','ACCGT',''])
-        sort_fasta_by_abundance(inseqs,actual)
-        self.assertEqual(actual.s,expected)
-
+        inseqs = ['>s1', 'ACCGT',
+                  '>s2 comment', 'ATTGC',
+                  '>s3 blah', 'ATTGC']
+        expected = "\n".join(['>s2 comment', 'ATTGC',
+                              '>s3 blah', 'ATTGC',
+                              '>s1', 'ACCGT', ''])
+        sort_fasta_by_abundance(inseqs, actual)
+        self.assertEqual(actual.s, expected)
 
     def test_natsort(self):
         """natsort should perform numeric comparisons on strings"""
         # string with alpha and numerics sort correctly
         s = 'sample1 sample2 sample11 sample12'.split()
-        self.assertEqual(natsort(s), 
-          'sample1 sample2 sample11 sample12'.split())
+        self.assertEqual(natsort(s),
+                         'sample1 sample2 sample11 sample12'.split())
         s.reverse()
-        self.assertEqual(natsort(s), 
-          'sample1 sample2 sample11 sample12'.split())
-        self.assertEqual(natsort(list('cba321')),list('123abc'))
+        self.assertEqual(natsort(s),
+                         'sample1 sample2 sample11 sample12'.split())
+        self.assertEqual(natsort(list('cba321')), list('123abc'))
 
         # strings with alpha only sort correctly
-        self.assertEqual(natsort(list('cdba')),list('abcd'))
+        self.assertEqual(natsort(list('cdba')), list('abcd'))
 
         # string of ints sort correctly
-        self.assertEqual(natsort(['11','2','1','0']),
-                               ['0','1','2','11'])
+        self.assertEqual(natsort(['11', '2', '1', '0']),
+                         ['0', '1', '2', '11'])
 
         # strings of floats sort correctly
-        self.assertEqual(natsort(['1.11','1.12','1.00','0.009']),
-                               ['0.009','1.00','1.11','1.12'])
+        self.assertEqual(natsort(['1.11', '1.12', '1.00', '0.009']),
+                         ['0.009', '1.00', '1.11', '1.12'])
 
         # string of ints sort correctly
-        self.assertEqual(natsort([('11','A'),('2','B'),('1','C'),('0','D')]),
-                            [('0','D'),('1','C'),('2','B'),('11','A')])
+        self.assertEqual(
+            natsort([('11', 'A'), ('2', 'B'), ('1', 'C'), ('0', 'D')]),
+            [('0', 'D'), ('1', 'C'), ('2', 'B'), ('11', 'A')])
 
     #
     def test_natsort_case_insensitive(self):
-        """natsort should perform numeric comparisons on strings and is 
+        """natsort should perform numeric comparisons on strings and is
            _not_ case-sensitive"""
-           
+
         # string with alpha and numerics sort correctly
-        s = ['sample1', 'sample2', 'sample11', 'sample12', 'SAmple1', 'Sample2']
-        
+        s = [
+            'sample1',
+            'sample2',
+            'sample11',
+            'sample12',
+            'SAmple1',
+            'Sample2']
+
         # expected values
-        exp_natsort=['SAmple1','Sample2', 'sample1', 'sample2', 'sample11', 
-                     'sample12']
-        exp_natsort_case_insensitive=['sample1','SAmple1','sample2', 
-                                      'Sample2','sample11', 'sample12']
-        
+        exp_natsort = ['SAmple1', 'Sample2', 'sample1', 'sample2', 'sample11',
+                       'sample12']
+        exp_natsort_case_insensitive = ['sample1', 'SAmple1', 'sample2',
+                                        'Sample2', 'sample11', 'sample12']
+
         # test natsort
-        self.assertEqual(natsort(s),exp_natsort)
+        self.assertEqual(natsort(s), exp_natsort)
         # test natsort_case_insensitive
-        self.assertEqual(natsort_case_insensitive(s), 
+        self.assertEqual(natsort_case_insensitive(s),
                          exp_natsort_case_insensitive)
-          
+
         s.reverse()
         # test natsort
         self.assertEqual(natsort(s), exp_natsort)
         # test natsort_case_insensitive
-        self.assertEqual(natsort(list('cbaA321')),list('123Aabc'))
+        self.assertEqual(natsort(list('cbaA321')), list('123Aabc'))
 
         # strings with alpha only sort correctly
-        self.assertEqual(natsort_case_insensitive(list('cdBa')),list('aBcd'))
+        self.assertEqual(natsort_case_insensitive(list('cdBa')), list('aBcd'))
 
         # string of ints sort correctly
-        self.assertEqual(natsort_case_insensitive(['11','2','1','0']),
-                               ['0','1','2','11'])
+        self.assertEqual(natsort_case_insensitive(['11', '2', '1', '0']),
+                         ['0', '1', '2', '11'])
 
         # strings of floats sort correctly
-        self.assertEqual(natsort_case_insensitive(['1.11','1.12','1.00',
-                                                  '0.009']),['0.009','1.00',
-                                                  '1.11','1.12'])
+        self.assertEqual(natsort_case_insensitive(['1.11', '1.12', '1.00',
+                                                  '0.009']), ['0.009', '1.00',
+                                                              '1.11', '1.12'])
 
         # string of ints sort correctly
-        self.assertEqual(natsort_case_insensitive([('11','A'),('2','B'),
-                                                  ('1','C'),('0','D')]),
-                                                  [('0','D'),('1','C'),
-                                                  ('2','B'),('11','A')])
-                            
+        self.assertEqual(natsort_case_insensitive([('11', 'A'), ('2', 'B'),
+                                                  ('1', 'C'), ('0', 'D')]),
+                         [('0', 'D'), ('1', 'C'),
+                          ('2', 'B'), ('11', 'A')])
+
     def test_sort_otu_table_by_mapping_field_all_values_differ(self):
         """ sort_otu_table_by_mapping_field fns when all values differ"""
 
-        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
-                                parse_mapping_file(self.mapping_f2),
-                                sort_field = "Age")
+        actual = sort_otu_table_by_mapping_field(
+            parse_biom_table_str(self.otu_table1),
+            parse_mapping_file(
+                self.mapping_f2),
+            sort_field="Age")
         expected = parse_biom_table_str(self.age_sorted_otu_table1)
         self.assertEqual(actual, expected)
-        
+
     def test_sort_otu_table(self):
         """ sort_otu_table fns as expected """
 
         actual = sort_otu_table(parse_biom_table_str(self.otu_table1),
-                                ['NA','Key','Fing'])
+                                ['NA', 'Key', 'Fing'])
         expected = parse_biom_table_str(self.age_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_error(self):
         """ sort_otu_table handles errors """
 
-        self.assertRaises(ValueError,sort_otu_table,
-            parse_biom_table_str(self.otu_table1),['NA','Key','Fing','Key'])
-        self.assertRaises(KeyError,sort_otu_table,
-            parse_biom_table_str(self.otu_table1),['NA','Key'])
+        self.assertRaises(ValueError, sort_otu_table,
+                          parse_biom_table_str(self.otu_table1), ['NA', 'Key', 'Fing', 'Key'])
+        self.assertRaises(KeyError, sort_otu_table,
+                          parse_biom_table_str(self.otu_table1), ['NA', 'Key'])
 
     def test_sort_otu_table_by_mapping_field_some_values_differ(self):
         """ sort_otu_table fns when some values differ"""
 
-        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
-                              parse_mapping_file(self.mapping_f2),
-                              sort_field = "Nothing")
+        actual = sort_otu_table_by_mapping_field(
+            parse_biom_table_str(self.otu_table1),
+            parse_mapping_file(
+                self.mapping_f2),
+            sort_field="Nothing")
         expected = parse_biom_table_str(self.nothing_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_some_values_same(self):
         """ sort_otu_table_by_mapping_field fns when all values are the same"""
 
-        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
-                              parse_mapping_file(self.mapping_f2),
-                              sort_field = "Name")
+        actual = sort_otu_table_by_mapping_field(
+            parse_biom_table_str(self.otu_table1),
+            parse_mapping_file(
+                self.mapping_f2),
+            sort_field="Name")
         expected = parse_biom_table_str(self.name_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_error(self):
         """ sort_otu_table_by_mapping_field fails on samples in otu table but not mapping"""
 
-        self.assertRaises(KeyError,sort_otu_table_by_mapping_field,
-                                   parse_biom_table_str(self.otu_table1_bad_sampleID),
-                                   parse_mapping_file(self.mapping_f2),
-                                   sort_field = "Age")
+        self.assertRaises(KeyError, sort_otu_table_by_mapping_field,
+                          parse_biom_table_str(
+                              self.otu_table1_bad_sampleID),
+                          parse_mapping_file(self.mapping_f2),
+                          sort_field="Age")
 
     def test_signed_sort(self):
         """Test correct sorting of different data types"""
@@ -224,33 +244,39 @@ class SortTests(TestCase):
 
         # tuples that can be sorted by type-casting the first element
         test_list = [('9', 'SampleA'), ('-1', 'SampleD'), ('7', 'SampleC'),
-            ('-2', 'SampleE'), ('-0.11', 'SampleF'), ('17.11', 'SampleB'),
-            ('100', 'SampleG'), ('13', 'SampleH')]
+                     ('-2', 'SampleE'), ('-0.11',
+                                         'SampleF'), ('17.11', 'SampleB'),
+                     ('100', 'SampleG'), ('13', 'SampleH')]
         expected_result = [('-2', 'SampleE'), ('-1', 'SampleD'),
-            ('-0.11', 'SampleF'), ('7', 'SampleC'), ('9', 'SampleA'),
-            ('13', 'SampleH'), ('17.11', 'SampleB'), ('100', 'SampleG')]
+                           ('-0.11', 'SampleF'), ('7',
+                                                  'SampleC'), ('9', 'SampleA'),
+                           ('13', 'SampleH'), ('17.11', 'SampleB'), ('100', 'SampleG')]
 
         output = signed_natsort(test_list)
         self.assertEquals(output, expected_result)
 
         # tuples that must be sorted alphabetically
         test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
-            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('Hydra', 'SampleF'),
-            ('Carina', 'SampleB'), ('Orion', 'SampleG'), ('Lynx', 'SampleH')]
+                     ('Auriga', 'SampleC'), ('Grus',
+                                             'SampleE'), ('Hydra', 'SampleF'),
+                     ('Carina', 'SampleB'), ('Orion', 'SampleG'), ('Lynx', 'SampleH')]
         expected_result = [('Auriga', 'SampleC'), ('Carina', 'SampleB'),
-            ('Cepheus', 'SampleD'), ('Cygnus', 'SampleA'), ('Grus', 'SampleE'),
-            ('Hydra', 'SampleF'), ('Lynx', 'SampleH'), ('Orion', 'SampleG')]
+                           ('Cepheus', 'SampleD'), ('Cygnus',
+                                                    'SampleA'), ('Grus', 'SampleE'),
+                           ('Hydra', 'SampleF'), ('Lynx', 'SampleH'), ('Orion', 'SampleG')]
 
         output = signed_natsort(test_list)
         self.assertEquals(output, expected_result)
 
         # mixed case, tuples will be sorted alpha-numerically
         test_list = [('Cygnus', 'SampleA'), ('Cepheus', 'SampleD'),
-            ('Auriga', 'SampleC'), ('Grus', 'SampleE'), ('-0.11', 'SampleF'),
-            ('17.11', 'SampleB'), ('100', 'SampleG'), ('Lynx', 'SampleH')]
+                     ('Auriga', 'SampleC'), ('Grus',
+                                             'SampleE'), ('-0.11', 'SampleF'),
+                     ('17.11', 'SampleB'), ('100', 'SampleG'), ('Lynx', 'SampleH')]
         expected_result = [('17.11', 'SampleB'), ('100', 'SampleG'),
-            ('-0.11', 'SampleF'), ('Auriga', 'SampleC'), ('Cepheus', 'SampleD'),
-            ('Cygnus', 'SampleA'), ('Grus', 'SampleE'), ('Lynx', 'SampleH')]
+                           ('-0.11', 'SampleF'), ('Auriga',
+                                                  'SampleC'), ('Cepheus', 'SampleD'),
+                           ('Cygnus', 'SampleA'), ('Grus', 'SampleE'), ('Lynx', 'SampleH')]
 
         output = signed_natsort(test_list)
         self.assertEquals(output, expected_result)
@@ -270,16 +296,18 @@ class SortTests(TestCase):
         self.assertEquals(output, expected_result)
 
         # mixed dict case
-        test_dict = {'foo':'a', 'bar':'b', '-100':'1', '12':'11', 'spam':'q',
-            '4':'11', '-1':'e'}
+        test_dict = {
+            'foo': 'a', 'bar': 'b', '-100': '1', '12': '11', 'spam': 'q',
+            '4': '11', '-1': 'e'}
         expected_result = ['4', '12', '-1', '-100', 'bar', 'foo', 'spam']
 
         output = signed_natsort(test_dict)
         self.assertEquals(output, expected_result)
 
         # dict where the keys can be type-casted
-        test_dict = {'0':'foo', '1':'bar', '14':'stand', '12':'eggs', '-15':'q',
-            '4':'b', '-1':'h'}
+        test_dict = {
+            '0': 'foo', '1': 'bar', '14': 'stand', '12': 'eggs', '-15': 'q',
+            '4': 'b', '-1': 'h'}
         expected_result = ['-15', '-1', '0', '1', '4', '12', '14']
 
         output = signed_natsort(test_dict)

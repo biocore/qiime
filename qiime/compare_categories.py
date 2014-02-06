@@ -6,10 +6,9 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 """Contains functions used in the compare_categories.py script."""
 
@@ -24,6 +23,7 @@ from qiime.util import (get_qiime_temp_dir, DistanceMatrix, MetadataMap,
 
 methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
            'permdisp', 'dbrda']
+
 
 def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
     """Runs the specified statistical method using the category of interest.

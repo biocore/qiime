@@ -4,7 +4,7 @@
 
 __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
-__credits__ = ["Kyle Bittinger","Greg Caporaso"]
+__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -24,9 +24,11 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, guess_input_handler, system,\
     ApplicationNotFoundError, ApplicationError
-from cogent.util.misc import app_path
+from bipy.app.util import which
+
 
 class RdpClassifier(CommandLineApplication):
+
     """RDP Classifier application controller
 
     The RDP Classifier program is distributed as a java archive (.jar)
@@ -72,7 +74,7 @@ class RdpClassifier(CommandLineApplication):
         #   db: outputs the seqname, trainset_no, tax_id, conf. This
         #   is good for storing in a database
         '-f': ValuedParameter('-', Name='f', Delimiter=' '),
-        }
+    }
 
     # The following are available in the attributes JvmParameters,
     # JarParameters, and PositionalParameters
@@ -81,7 +83,7 @@ class RdpClassifier(CommandLineApplication):
     _jvm_parameters = {
         # Maximum heap size for JVM.
         '-Xmx': ValuedParameter('-', Name='Xmx', Delimiter='', Value='1000m'),
-        }
+    }
 
     _parameters = {}
     _parameters.update(_options)
@@ -115,7 +117,7 @@ class RdpClassifier(CommandLineApplication):
 
         -t,--train_propfile <arg> a property file contains the mapping
         of the training files.
-        
+
         Note: the training files and the property file should be in
         the same directory. The default property file is set to
         data/classifier/rRNAClassifier.properties."""
@@ -126,12 +128,12 @@ class RdpClassifier(CommandLineApplication):
         """
         return (status == 0)
 
-    def _error_on_missing_application(self,params):
+    def _error_on_missing_application(self, params):
         """Raise an ApplicationNotFoundError if the app is not accessible
 
         In this case, checks for the java runtime and the RDP jar file.
         """
-        if not (os.path.exists('java') or app_path('java')):
+        if not (os.path.exists('java') or which('java')):
             raise ApplicationNotFoundError(
                 "Cannot find java runtime. Is it installed? Is it in your "
                 "path?")
@@ -180,19 +182,19 @@ class RdpClassifier(CommandLineApplication):
             cd_command, jvm_command, jvm_arguments, jar_arguments,
             rdp_arguments, '-q']
         return self._commandline_join(command_parts).strip()
-    
+
     BaseCommand = property(_get_base_command)
 
     def _commandline_join(self, tokens):
         """Formats a list of tokens as a shell command
- 
+
         This seems to be a repeated pattern; may be useful in
         superclass.
         """
         commands = filter(None, map(str, tokens))
         return self._command_delimiter.join(commands).strip()
 
-    def _get_result_paths(self,data):
+    def _get_result_paths(self, data):
         """ Return a dict of ResultPath objects representing all possible output
         """
         assignment_fp = str(self.Parameters['-o'].Value).strip('"')
@@ -212,11 +214,11 @@ class RdpTrainer(RdpClassifier):
         'training_set_id': ValuedParameter(None, None, Value='1'),
         'taxonomy_version': ValuedParameter(None, None, Value='version1'),
         'modification_info': ValuedParameter(None, None, Value='cogent'),
-        }
+    }
     _jvm_parameters = {
         # Maximum heap size for JVM.
         '-Xmx': ValuedParameter('-', Name='Xmx', Delimiter='', Value='1000m'),
-        }
+    }
     _parameters.update(_jvm_parameters)
 
     def _get_base_command(self):
@@ -234,7 +236,7 @@ class RdpTrainer(RdpClassifier):
 
         command_parts = [cd_command, jvm_command, jvm_args, cp_args]
         return self._commandline_join(command_parts).strip()
-    
+
     BaseCommand = property(_get_base_command)
 
     def _set_input_handler(self, method_name):
@@ -268,7 +270,7 @@ class RdpTrainer(RdpClassifier):
             self.Parameters['taxonomy_version'],
             self.Parameters['modification_info'],
             self.ModelDir,
-            ]
+        ]
         return self._commandline_join(input_parts)
 
     def _get_result_paths(self, output_dir):
@@ -281,9 +283,9 @@ class RdpTrainer(RdpClassifier):
         properties_fp = os.path.join(self.ModelDir, self.PropertiesFile)
         result_paths = {
             'properties': ResultPath(properties_fp, IsWritten=True,)
-            }
+        }
         return result_paths
-    
+
     def _write_properties_file(self):
         """Write an RDP training properties file manually.
         """
@@ -303,9 +305,9 @@ class RdpTrainer(RdpClassifier):
             "wordPrior=logWordPrior.txt\n"
             "classifierVersion=Naive Bayesian rRNA Classifier Version 1.0, "
             "November 2003\n"
-            )
+        )
         properties_file.close()
-      
+
     def __call__(self, data=None, remove_tmp=True):
         """Run the application with the specified kwargs on data
 
@@ -318,7 +320,11 @@ class RdpTrainer(RdpClassifier):
 
         remove_tmp: if True, removes tmp files
         """
-        result = super(RdpClassifier, self).__call__(data=data, remove_tmp=remove_tmp)
+        result = super(
+            RdpClassifier,
+            self).__call__(
+            data=data,
+            remove_tmp=remove_tmp)
         training_files = {
             'bergeyTree': 'bergeyTrainingTree.xml',
             'probabilityList': 'genus_wordConditionalProbList.txt',
@@ -333,7 +339,7 @@ class RdpTrainer(RdpClassifier):
                     "happen if an error occurred during the RDP training "
                     "process.  More details may be available in the "
                     "standard error, printed below.\n\n" % training_fp
-                    )
+                )
                 stderr_msg = result["StdErr"].read()
                 result["StdErr"].seek(0)
                 raise ApplicationError(exception_msg + stderr_msg)
@@ -342,40 +348,40 @@ class RdpTrainer(RdpClassifier):
             # want to maintain the original exception in that case.
             result[key] = open(training_fp)
         return result
-        
+
 
 def parse_command_line_parameters(argv=None):
     """ Parses command line arguments """
     usage =\
-     'usage: %prog [options] input_sequences_filepath'
-    version = 'Version: %prog ' +  __version__
+        'usage: %prog [options] input_sequences_filepath'
+    version = 'Version: %prog ' + __version__
     parser = OptionParser(usage=usage, version=version)
-          
-    parser.add_option('-o','--output_fp',action='store',\
-          type='string',dest='output_fp',help='Path to store '+\
-          'output file [default: generated from input_sequences_filepath]')
-          
-    parser.add_option('-c','--min_confidence',action='store',\
-          type='float',dest='min_confidence',help='minimum confidence '+\
-          'level to return a classification [default: %default]')
+
+    parser.add_option('-o', '--output_fp', action='store',
+                      type='string', dest='output_fp', help='Path to store ' +
+                      'output file [default: generated from input_sequences_filepath]')
+
+    parser.add_option('-c', '--min_confidence', action='store',
+                      type='float', dest='min_confidence', help='minimum confidence ' +
+                      'level to return a classification [default: %default]')
 
     parser.set_defaults(verbose=False, min_confidence=0.80)
 
     opts, args = parser.parse_args(argv)
     if len(args) != 1:
-       parser.error('Exactly one argument is required.')
+        parser.error('Exactly one argument is required.')
 
     return opts, args
 
 
 def assign_taxonomy(
-    data, min_confidence=0.80, output_fp=None, training_data_fp=None,
-    fixrank=True, max_memory=None, tmp_dir=None):
+        data, min_confidence=0.80, output_fp=None, training_data_fp=None,
+        fixrank=True, max_memory=None, tmp_dir=None):
     """Assign taxonomy to each sequence in data with the RDP classifier
-    
+
         data: open fasta file object or list of fasta lines
         confidence: minimum support threshold to assign taxonomy to a sequence
-        output_fp: path to write output; if not provided, result will be 
+        output_fp: path to write output; if not provided, result will be
          returned in a dict of {seq_id:(taxonomy_assignment,confidence)}
     """
     # Going to iterate through this twice in succession, best to force
@@ -395,7 +401,7 @@ def assign_taxonomy(
 
     if max_memory is not None:
         app.Parameters['-Xmx'].on(max_memory)
-    
+
     temp_output_file = tempfile.NamedTemporaryFile(
         prefix='RdpAssignments_', suffix='.txt', dir=tmp_dir)
     app.Parameters['-o'].on(temp_output_file.name)
@@ -419,7 +425,7 @@ def assign_taxonomy(
             _, rdp_id = excep
             orig_id = seq_id_lookup[rdp_id]
             assignments[orig_id] = ('Unassignable', 1.0)
-    
+
     for line in app_result['Assignments']:
         rdp_id, direction, taxa = parse_rdp_assignment(line)
         if taxa[0][0] == "Root":
@@ -447,8 +453,8 @@ def assign_taxonomy(
 
 
 def train_rdp_classifier(
-    training_seqs_file, taxonomy_file, model_output_dir, max_memory=None,
-    tmp_dir=None):
+        training_seqs_file, taxonomy_file, model_output_dir, max_memory=None,
+        tmp_dir=None):
     """ Train RDP Classifier, saving to model_output_dir
 
         training_seqs_file, taxonomy_file: file-like objects used to
@@ -459,7 +465,7 @@ def train_rdp_classifier(
             necessary to classify sequences according to the training
             data
 
-    Once the model data has been generated, the RDP Classifier may 
+    Once the model data has been generated, the RDP Classifier may
     """
     app_kwargs = {}
     if tmp_dir is not None:
@@ -468,7 +474,7 @@ def train_rdp_classifier(
 
     if max_memory is not None:
         app.Parameters['-Xmx'].on(max_memory)
-    
+
     temp_taxonomy_file = tempfile.NamedTemporaryFile(
         prefix='RdpTaxonomy_', suffix='.txt', dir=tmp_dir)
     temp_taxonomy_file.write(taxonomy_file.read())
@@ -477,12 +483,12 @@ def train_rdp_classifier(
     app.Parameters['taxonomy_file'].on(temp_taxonomy_file.name)
     app.Parameters['model_output_dir'].on(model_output_dir)
     return app(training_seqs_file)
-    
+
 
 def train_rdp_classifier_and_assign_taxonomy(
-    training_seqs_file, taxonomy_file, seqs_to_classify, min_confidence=0.80, 
-    model_output_dir=None, classification_output_fp=None, max_memory=None,
-    tmp_dir=None):
+        training_seqs_file, taxonomy_file, seqs_to_classify, min_confidence=0.80,
+        model_output_dir=None, classification_output_fp=None, max_memory=None,
+        tmp_dir=None):
     """ Train RDP Classifier and assign taxonomy in one fell swoop
 
     The file objects training_seqs_file and taxonomy_file are used to
@@ -510,7 +516,7 @@ def train_rdp_classifier_and_assign_taxonomy(
     training_data_fp = training_results['properties'].name
 
     assignment_results = assign_taxonomy(
-        seqs_to_classify, min_confidence=min_confidence, 
+        seqs_to_classify, min_confidence=min_confidence,
         output_fp=classification_output_fp, training_data_fp=training_data_fp,
         max_memory=max_memory, fixrank=False, tmp_dir=tmp_dir)
 
@@ -576,9 +582,8 @@ def parse_rdp_assignment(line):
     return seq_id, direction, assignments
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     opts, args = parse_command_line_parameters()
     assign_taxonomy(
         open(args[0]), min_confidence=opts.min_confidence,
         output_fp=opts.output_fp)
-

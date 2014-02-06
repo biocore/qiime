@@ -2,297 +2,290 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Dan Knights"]
+__credits__ = ["Greg Caporaso", "Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
 
 from numpy import array
 
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from qiime.filter_alignment import apply_lane_mask, apply_gap_filter,\
- apply_lane_mask_and_gap_filter, remove_outliers, freqs_from_aln_array,\
- generate_lane_mask
+    apply_lane_mask_and_gap_filter, remove_outliers, freqs_from_aln_array,\
+    generate_lane_mask
+
 
 class FilterAlignmentTests(TestCase):
 
     def setUp(self):
         """Init variables for the tests """
-        self.aln1 = [\
-            '>s1','ACC--T',\
-            '>s2','AC---T',\
-            '>s3','TCT--T',\
-            '>s4','ACG--T',\
-            '>s5','---A--'\
-            ]
+        self.aln1 = [
+            '>s1', 'ACC--T',
+            '>s2', 'AC---T',
+            '>s3', 'TCT--T',
+            '>s4', 'ACG--T',
+            '>s5', '---A--'
+        ]
         self.aln2 = aln2_fasta.split('\n')
         self.aln2_lm = aln2_lm
-        
+
     def test_apply_lane_mask_and_gap_filter_real(self):
         """apply_lane_mask_and_gap_filter: no error on full length seqs
         """
         # No error when applying to full-length sequence
-        actual = apply_lane_mask_and_gap_filter(\
-         self.aln2,self.aln2_lm)
-        
+        actual = apply_lane_mask_and_gap_filter(
+            self.aln2, self.aln2_lm)
 
     def test_apply_lane_mask_and_gap_filter(self):
         """apply_lane_mask_and_gap_filter: functions as expected
         """
         lm = '111111'
         expected = self.aln1.__iter__()
-        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
-            self.assertEqual(result,expected.next()+'\n')
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm, 1.0):
+            self.assertEqual(result, expected.next() + '\n')
 
         lm = None
         expected = self.aln1.__iter__()
-        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
-            self.assertEqual(result,expected.next()+'\n')
-         
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm, 1.0):
+            self.assertEqual(result, expected.next() + '\n')
+
         # gap filter only
         lm = '111111'
-        expected = [\
-            '>s1','ACC-T',\
-            '>s2','AC--T',\
-            '>s3','TCT-T',\
-            '>s4','ACG-T',\
-            '>s5','---A-'\
-            ].__iter__()
+        expected = [
+            '>s1', 'ACC-T',
+            '>s2', 'AC--T',
+            '>s3', 'TCT-T',
+            '>s4', 'ACG-T',
+            '>s5', '---A-'
+        ].__iter__()
 
-        for result in apply_lane_mask_and_gap_filter(self.aln1,lm):
-            self.assertEqual(result,expected.next()+'\n')
-         
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm):
+            self.assertEqual(result, expected.next() + '\n')
+
         # lm filter only
         lm = '011111'
-        expected = [\
-         '>s1','CC--T',\
-         '>s2','C---T',\
-         '>s3','CT--T',\
-         '>s4','CG--T',\
-         '>s5','--A--'\
-         ].__iter__()
+        expected = [
+            '>s1', 'CC--T',
+            '>s2', 'C---T',
+            '>s3', 'CT--T',
+            '>s4', 'CG--T',
+            '>s5', '--A--'
+        ].__iter__()
 
-        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
-            self.assertEqual(result,expected.next()+'\n')
-         
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm, 1.0):
+            self.assertEqual(result, expected.next() + '\n')
+
         # gap and lm filter
         lm = '011111'
-        expected = [\
-         '>s1','CC-T',\
-         '>s2','C--T',\
-         '>s3','CT-T',\
-         '>s4','CG-T',\
-         '>s5','--A-'\
-         ].__iter__()
+        expected = [
+            '>s1', 'CC-T',
+            '>s2', 'C--T',
+            '>s3', 'CT-T',
+            '>s4', 'CG-T',
+            '>s5', '--A-'
+        ].__iter__()
 
-        for result in apply_lane_mask_and_gap_filter(self.aln1,lm):
-            self.assertEqual(result,expected.next()+'\n')
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm):
+            self.assertEqual(result, expected.next() + '\n')
 
     def test_apply_lane_mask(self):
         """ apply_lane_mask: functions as expected with varied lane masks
         """
         lm1 = '111111'
         expected = self.aln1.__iter__()
-        for result in apply_lane_mask(self.aln1,lm1):
-            self.assertEqual(result,expected.next()+'\n')
+        for result in apply_lane_mask(self.aln1, lm1):
+            self.assertEqual(result, expected.next() + '\n')
 
         lm2 = '000000'
-        expected = [\
-         '>s1','',\
-         '>s2','',\
-         '>s3','',\
-         '>s4','',\
-         '>s5',''\
-         ].__iter__()
+        expected = [
+            '>s1', '',
+            '>s2', '',
+            '>s3', '',
+            '>s4', '',
+            '>s5', ''
+        ].__iter__()
 
-        for result in apply_lane_mask(self.aln1,lm2):
-            self.assertEqual(result,expected.next()+'\n')
-        
+        for result in apply_lane_mask(self.aln1, lm2):
+            self.assertEqual(result, expected.next() + '\n')
+
         lm3 = '101010'
-        expected = [\
-         '>s1','AC-',\
-         '>s2','A--',\
-         '>s3','TT-',\
-         '>s4','AG-',\
-         '>s5','---'\
-         ].__iter__()
+        expected = [
+            '>s1', 'AC-',
+            '>s2', 'A--',
+            '>s3', 'TT-',
+            '>s4', 'AG-',
+            '>s5', '---'
+        ].__iter__()
 
-        for result in apply_lane_mask(self.aln1,lm3):
-            self.assertEqual(result,expected.next()+'\n')
-
+        for result in apply_lane_mask(self.aln1, lm3):
+            self.assertEqual(result, expected.next() + '\n')
 
         lm4 = '000111'
-        expected = [\
-         '>s1','--T',\
-         '>s2','--T',\
-         '>s3','--T',\
-         '>s4','--T',\
-         '>s5','A--'\
-         ].__iter__()
+        expected = [
+            '>s1', '--T',
+            '>s2', '--T',
+            '>s3', '--T',
+            '>s4', '--T',
+            '>s5', 'A--'
+        ].__iter__()
 
-        for result in apply_lane_mask(self.aln1,lm4):
-            self.assertEqual(result,expected.next()+'\n')
+        for result in apply_lane_mask(self.aln1, lm4):
+            self.assertEqual(result, expected.next() + '\n')
 
-        
     def test_apply_gap_filter(self):
         """ apply_gap_filter: functions as expected with varied allowed_gap_frac
         """
         expected = self.aln1.__iter__()
-                
-        for result in apply_gap_filter(self.aln1,1.0):
-            self.assertEqual(result,expected.next()+'\n')
 
-        expected = [\
-         '>s1','ACC-T',\
-         '>s2','AC--T',\
-         '>s3','TCT-T',\
-         '>s4','ACG-T',\
-         '>s5','---A-'\
-         ].__iter__()
+        for result in apply_gap_filter(self.aln1, 1.0):
+            self.assertEqual(result, expected.next() + '\n')
+
+        expected = [
+            '>s1', 'ACC-T',
+            '>s2', 'AC--T',
+            '>s3', 'TCT-T',
+            '>s4', 'ACG-T',
+            '>s5', '---A-'
+        ].__iter__()
 
         for result in apply_gap_filter(self.aln1):
-            self.assertEqual(result,expected.next()+'\n')
+            self.assertEqual(result, expected.next() + '\n')
 
+        expected = [
+            '>s1', 'ACCT',
+            '>s2', 'AC-T',
+            '>s3', 'TCTT',
+            '>s4', 'ACGT',
+            '>s5', '----'
+        ].__iter__()
 
-        expected = [\
-         '>s1','ACCT',\
-         '>s2','AC-T',\
-         '>s3','TCTT',\
-         '>s4','ACGT',\
-         '>s5','----'\
-         ].__iter__()
+        for result in apply_gap_filter(self.aln1, 0.75):
+            self.assertEqual(result, expected.next() + '\n')
 
-        for result in apply_gap_filter(self.aln1,0.75):
-            self.assertEqual(result,expected.next()+'\n')
+        expected = [
+            '>s1', 'ACCT',
+            '>s2', 'AC-T',
+            '>s3', 'TCTT',
+            '>s4', 'ACGT',
+            '>s5', '----'
+        ].__iter__()
 
-        expected = [\
-         '>s1','ACCT',\
-         '>s2','AC-T',\
-         '>s3','TCTT',\
-         '>s4','ACGT',\
-         '>s5','----'\
-         ].__iter__()
+        for result in apply_gap_filter(self.aln1, 0.40):
+            self.assertEqual(result, expected.next() + '\n')
 
-        for result in apply_gap_filter(self.aln1,0.40):
-            self.assertEqual(result,expected.next()+'\n')
+        expected = [
+            '>s1', 'ACT',
+            '>s2', 'ACT',
+            '>s3', 'TCT',
+            '>s4', 'ACT',
+            '>s5', '---'
+        ].__iter__()
 
+        for result in apply_gap_filter(self.aln1, 0.30):
+            self.assertEqual(result, expected.next() + '\n')
 
-        expected = [\
-         '>s1','ACT',\
-         '>s2','ACT',\
-         '>s3','TCT',\
-         '>s4','ACT',\
-         '>s5','---'\
-         ].__iter__()
+        expected = [
+            '>s1', '',
+            '>s2', '',
+            '>s3', '',
+            '>s4', '',
+            '>s5', ''
+        ].__iter__()
 
-        for result in apply_gap_filter(self.aln1,0.30):
-            self.assertEqual(result,expected.next()+'\n')
-
-        
-        expected = [\
-         '>s1','',\
-         '>s2','',\
-         '>s3','',\
-         '>s4','',\
-         '>s5',''\
-         ].__iter__()
-
-        for result in apply_gap_filter(self.aln1,0.10):
-            self.assertEqual(result,expected.next()+'\n')
+        for result in apply_gap_filter(self.aln1, 0.10):
+            self.assertEqual(result, expected.next() + '\n')
 
         # the following tests were adapted from test_alignment.py in PyCogent
 
-        aln = [\
-            '>a','--A-BC-',\
-            '>b','-CB-A--',\
-            '>c','--D-EF-'\
-            ]
+        aln = [
+            '>a', '--A-BC-',
+            '>b', '-CB-A--',
+            '>c', '--D-EF-'
+        ]
 
-        #default should strip out cols that are 100% gaps
-        expected = [\
-            '>a','-ABC',\
-            '>b','CBA-',\
-            '>c','-DEF'\
-            ].__iter__()
+        # default should strip out cols that are 100% gaps
+        expected = [
+            '>a', '-ABC',
+            '>b', 'CBA-',
+            '>c', '-DEF'
+        ].__iter__()
         for result in apply_gap_filter(aln):
-            self.assertEqual(result,expected.next()+'\n')
+            self.assertEqual(result, expected.next() + '\n')
 
         # if allowed_gap_frac is 1, shouldn't delete anything
-        expected = [\
-            '>a','--A-BC-',\
-            '>b','-CB-A--',\
-            '>c','--D-EF-'\
-            ].__iter__()
-        for result in apply_gap_filter(aln,1):
-            self.assertEqual(result,expected.next()+'\n')
+        expected = [
+            '>a', '--A-BC-',
+            '>b', '-CB-A--',
+            '>c', '--D-EF-'
+        ].__iter__()
+        for result in apply_gap_filter(aln, 1):
+            self.assertEqual(result, expected.next() + '\n')
 
+        # if allowed_gap_frac is 0, should strip out any cols containing gaps
+        expected = [
+            '>a', 'AB',
+            '>b', 'BA',
+            '>c', 'DE'
+        ].__iter__()
+        for result in apply_gap_filter(aln, 0):
+            self.assertEqual(result, expected.next() + '\n')
 
-        #if allowed_gap_frac is 0, should strip out any cols containing gaps
-        expected = [\
-            '>a','AB',\
-            '>b','BA',\
-            '>c','DE'\
-            ].__iter__()
-        for result in apply_gap_filter(aln,0):
-            self.assertEqual(result,expected.next()+'\n')
+        # intermediate numbers should work as expected
+        expected = [
+            '>a', 'ABC',
+            '>b', 'BA-',
+            '>c', 'DEF'
+        ].__iter__()
+        for result in apply_gap_filter(aln, 0.4):
+            self.assertEqual(result, expected.next() + '\n')
+        expected = [
+            '>a', '-ABC',
+            '>b', 'CBA-',
+            '>c', '-DEF'
+        ].__iter__()
+        for result in apply_gap_filter(aln, 0.7):
+            self.assertEqual(result, expected.next() + '\n')
 
-        #intermediate numbers should work as expected
-        expected = [\
-            '>a','ABC',\
-            '>b','BA-',\
-            '>c','DEF'\
-            ].__iter__()
-        for result in apply_gap_filter(aln,0.4):
-            self.assertEqual(result,expected.next()+'\n')
-        expected = [\
-            '>a','-ABC',\
-            '>b','CBA-',\
-            '>c','-DEF'\
-            ].__iter__()
-        for result in apply_gap_filter(aln,0.7):
-            self.assertEqual(result,expected.next()+'\n')
-        
     def test_apply_lane_mask_and_gap_filter_alternate_alignment(self):
         """apply_lane_mask_and_gap_filter: functions as expected with alt aln
         """
-        aln = [\
-         '>ACT009','AACT-',\
-         '>ACT019','AACT-',\
-         '>ACT011','-TCT-'\
-         ]
+        aln = [
+            '>ACT009', 'AACT-',
+            '>ACT019', 'AACT-',
+            '>ACT011', '-TCT-'
+        ]
         expected = aln.__iter__()
-        for result in apply_lane_mask_and_gap_filter(aln,None,1.0):
-            self.assertEqual(result,expected.next()+'\n')
-        
+        for result in apply_lane_mask_and_gap_filter(aln, None, 1.0):
+            self.assertEqual(result, expected.next() + '\n')
+
         lm = '00111'
-        expected = [\
-         '>ACT009','CT',\
-         '>ACT019','CT',\
-         '>ACT011','CT'\
-         ].__iter__()
-        for result in apply_lane_mask_and_gap_filter(aln,lm):
-            self.assertEqual(result,expected.next()+'\n')
-            
+        expected = [
+            '>ACT009', 'CT',
+            '>ACT019', 'CT',
+            '>ACT011', 'CT'
+        ].__iter__()
+        for result in apply_lane_mask_and_gap_filter(aln, lm):
+            self.assertEqual(result, expected.next() + '\n')
+
     def test_remove_outliers(self):
         """ remove outliers returns only seqs similar to consensus"""
-        aln = [\
-         '>ACT009','ACAT-',
-         '>ACT019','GACT-',
-         '>ACT_02','GACT-',
-         '>ACT_03','AACT-',
-         '>ACT_04','AACT-',
-         '>ACT_05','AACT-',
-         '>ACT011','CTGGC',
-         '>hello', 'AACTG',
-         ]
-        # mean errors is 10/9 .  
+        aln = [
+            '>ACT009', 'ACAT-',
+            '>ACT019', 'GACT-',
+            '>ACT_02', 'GACT-',
+            '>ACT_03', 'AACT-',
+            '>ACT_04', 'AACT-',
+            '>ACT_05', 'AACT-',
+            '>ACT011', 'CTGGC',
+            '>hello', 'AACTG',
+        ]
+        # mean errors is 10/9 .
         seqnames = []
         for elem in aln:
             if elem.startswith('>'):
-                seqnames.append (elem[1:])
+                seqnames.append(elem[1:])
         seqs = []
         for elem in aln:
             if not elem.startswith('>'):
@@ -304,7 +297,7 @@ class FilterAlignmentTests(TestCase):
         for seqname_left in res.getSeqNames():
             self.assertContains(seqnames, seqname_left)
         self.assertNotContains(res.getSeqNames(), 'ACT011')
-        
+
         # now remove all that deviate have > 10/9 (2 or more) substitutions:
         res = remove_outliers(aln, 0)
         self.assertEqual(len(res.getSeqNames()), 6)
@@ -312,10 +305,10 @@ class FilterAlignmentTests(TestCase):
             self.assertContains(seqnames, seqname_left)
         self.assertNotContains(res.getSeqNames(), 'ACT011')
         self.assertNotContains(res.getSeqNames(), 'ACT009')
-        
+
     def test_generate_lane_mask(self):
         """ Generates correct lane mask for dynamic entropy filtering """
-        
+
         sample_alignment = """>1
         .ATC-G
         >2
@@ -324,19 +317,19 @@ class FilterAlignmentTests(TestCase):
         .ATC-G
         >4
         .AAC-G""".split('\n')
-        
+
         entropy_threshold = 0.70
-        
+
         expected_lanemask = "110101"
-        
+
         actual_lanemask = generate_lane_mask(sample_alignment,
-         entropy_threshold)
-         
+                                             entropy_threshold)
+
         self.assertEqual(actual_lanemask, expected_lanemask)
-        
+
     def test_freqs_from_aln_array(self):
         """ Returns positional frequences from alignments correctly """
-        
+
         sample_alignment = """>1
         .ATC-G
         >2
@@ -345,22 +338,21 @@ class FilterAlignmentTests(TestCase):
         .ATC-G
         >4
         .AAC-G""".split('\n')
-        
+
         results = freqs_from_aln_array(sample_alignment).Data
-        
+
         t_index = 0
         c_index = 1
         a_index = 2
         g_index = 3
         gap_index = 4
-        
-        t_expected = array([0,0,2,0,0,0])
-        c_expected = array([0,0,0,4,1,0])
-        a_expected = array([0,4,2,0,0,0])
-        g_expected = array([0,0,0,0,0,4])
-        gap_expected = array([4,0,0,0,3,0])
-        
-                                       
+
+        t_expected = array([0, 0, 2, 0, 0, 0])
+        c_expected = array([0, 0, 0, 4, 1, 0])
+        a_expected = array([0, 4, 2, 0, 0, 0])
+        g_expected = array([0, 0, 0, 0, 0, 4])
+        gap_expected = array([4, 0, 0, 0, 3, 0])
+
         self.assertEqual(results[t_index], t_expected)
         self.assertEqual(results[c_index], c_expected)
         self.assertEqual(results[a_index], a_expected)

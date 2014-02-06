@@ -4,10 +4,9 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Development"
 
 from os.path import split, splitext, join, exists
 from os import remove
@@ -16,57 +15,66 @@ from cogent.app.parameters import ValuedParameter, FlagParameter, FilePath
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 
+
 class Detrender(CommandLineApplication):
+
     """ ApplicationController for detrending ordination coordinates
     """
 
     _command = 'R'
     _r_script = 'detrend.r'
-    _parameters = {\
+    _parameters = {
         # input PCoA file
-        '-i':ValuedParameter(Prefix='-',Name='i',Delimiter=' ',IsPath=True),\
+        '-i':
+        ValuedParameter(Prefix='-', Name='i', Delimiter=' ', IsPath=True),
         # metadata table
-        '-m':ValuedParameter(Prefix='-',Name='m',Delimiter=' ',IsPath=True),\
+        '-m':
+        ValuedParameter(Prefix='-', Name='m', Delimiter=' ', IsPath=True),
         # gradient variable column header name
-        '-c':ValuedParameter(Prefix='-',Name='c',Delimiter=' '),\
+        '-c': ValuedParameter(Prefix='-', Name='c', Delimiter=' '),
         # output directory
-        '-o':ValuedParameter(Prefix='-',Name='o',Delimiter=' ',IsPath=True),\
+        '-o':
+        ValuedParameter(Prefix='-', Name='o', Delimiter=' ', IsPath=True),
         # use pre-rotation for optimal alignment with known gradient
-        '-r':FlagParameter(Prefix='-',Name='r'),\
-     }
+        '-r': FlagParameter(Prefix='-', Name='r'),
+    }
     _input_handler = '_input_as_parameter'
     _suppress_stdout = False
     _suppress_stderr = False
 
-    def _input_as_parameter(self,data):
+    def _input_as_parameter(self, data):
         """ Set the input path based on data (data is the filepath)
         """
         self.Parameters['-i'].on(data)
         return ''
 
-    def _get_result_paths(self,data):
+    def _get_result_paths(self, data):
         """ Build the dict of result filepaths
         """
         # access the output dir through self.Parameters so we know it's been cast
         # to a FilePath
         od = self.Parameters['-o'].Value
-        
+
         result = {}
         # the before/after coords plot
-        result['plot'] = ResultPath(Path=join(od, 'PCoA_vs_projection.pdf'),IsWritten=True)
+        result['plot'] = ResultPath(
+            Path=join(od,
+                      'PCoA_vs_projection.pdf'),
+            IsWritten=True)
         # the detrended coords file
-        result['coords'] = ResultPath(Path=join(od, 'detrended_pcoa.txt'), IsWritten=True)
+        result['coords'] = ResultPath(
+            Path=join(od, 'detrended_pcoa.txt'), IsWritten=True)
         # the summary file, only present if metadata was included
         summary_fp = join(od, 'summary.txt')
-        result['summary'] = ResultPath(Path=summary_fp, 
-                    IsWritten=self.Parameters['-c'].isOn())
+        result['summary'] = ResultPath(Path=summary_fp,
+                                       IsWritten=self.Parameters['-c'].isOn())
         return result
 
     def _get_R_script_dir(self):
         """Returns the path to the qiime R source directory
         """
         qiime_dir = get_qiime_project_dir()
-        script_dir = join(qiime_dir,'qiime','support_files','R')
+        script_dir = join(qiime_dir, 'qiime', 'support_files', 'R')
         return script_dir
 
     def _get_R_script_path(self):
@@ -76,15 +84,17 @@ class Detrender(CommandLineApplication):
 
     # Overridden to add R-specific command-line arguments
     # This means:
-    # R --slave --vanilla --args --source_dir $QIIMEDIR/qiime/support/R/ ... <normal params> ... < detrend.r
+    # R --slave --vanilla --args --source_dir $QIIMEDIR/qiime/support/R/ ...
+    # <normal params> ... < detrend.r
     def _get_base_command(self):
         """Returns the base command plus R command-line options.
            Adapted from RDP Classifier app controller
         """
         cd_command = ''.join(['cd ', str(self.WorkingDir), ';'])
-        r_command = self._commandline_join(['R','--slave','--no-restore','--args'])
+        r_command = self._commandline_join(
+            ['R', '--slave', '--no-restore', '--args'])
         source_dir_arg = self._commandline_join(['--source_dir',
-                                                        self._get_R_script_dir()])
+                                                 self._get_R_script_dir()])
         script_arguments = self._commandline_join(
             [self.Parameters[k] for k in self._parameters])
 
@@ -92,27 +102,27 @@ class Detrender(CommandLineApplication):
             cd_command, r_command, source_dir_arg,
             script_arguments, '<', self._get_R_script_path()]
         return self._commandline_join(command_parts).strip()
-    
+
     BaseCommand = property(_get_base_command)
 
     def _commandline_join(self, tokens):
         """Formats a list of tokens as a shell command
-    
+
            Taken from RDP Classifier app controller
         """
         commands = filter(None, map(str, tokens))
         return self._command_delimiter.join(commands).strip()
 
-    def _accept_exit_status(self,exit_status):
+    def _accept_exit_status(self, exit_status):
         """ Return True when the exit status was 0
         """
         return exit_status == 0
 
-    
+
 def detrend_pcoa(input_fp, map_fp=None, gradient_variable=None,
-            suppress_prerotate=False, output_dir='.', HALT_EXEC=False):
+                 suppress_prerotate=False, output_dir='.', HALT_EXEC=False):
     """Detrend PCoA scores in input_fp
-    
+
         input_fp: path to PCOA file
         map_fp: path to metadata table
         gradient_variable: Column header for gradient variable in metadata table
@@ -140,16 +150,17 @@ def detrend_pcoa(input_fp, map_fp=None, gradient_variable=None,
     app_result = dt(input_fp)
     return app_result
 
+
 def validate_metadata(map_fp, gradient_variable):
     """Ensures that gradient variable is indeed present and real-valued
-       
+
        If not, raises an exception
     """
     metadata = parse_mapping_file(map_fp)
     if not gradient_variable in metadata[1]:
-        raise Exception("Header %s not found in metadata headers: " %(gradient_variable) +\
-                ", ".join(metadata[1]))
-    
+        raise Exception("Header %s not found in metadata headers: " % (gradient_variable) +
+                        ", ".join(metadata[1]))
+
     column_ix = metadata[1].index(gradient_variable)
 
     gradient = zip(*metadata[0])[column_ix]
@@ -159,5 +170,5 @@ def validate_metadata(map_fp, gradient_variable):
         except ValueError:
             if gradient[i] != 'NA':
                 raise Exception(
-                    "Non-numeric value %s found in metadata gradient column: " %(gradient[i]) +\
+                    "Non-numeric value %s found in metadata gradient column: " % (gradient[i]) +
                     ", ".join(gradient))

@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2011, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 import numpy
 import qiime.golay as golay
 """ tests the golay DNA barcode decode/encode functionality"""
 
+
 class GolayTests(TestCase):
+
     """Tests of top-level functions"""
 
     def setUp(self):
@@ -24,29 +25,29 @@ class GolayTests(TestCase):
     def test_golay_module1(self):
         """switching the last base, decode() should recover the original barcode
         """
-        sent = golay.encode([0,0,0,0,0,0,0,0,0,1,0,0])
-        rec = sent[:-1] + 'C' # possible error here
+        sent = golay.encode([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0])
+        rec = sent[:-1] + 'C'  # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
         self.assertLessThan(errors, 1.5)
-        rec = sent[:-1] + 'T' # possible error here
+        rec = sent[:-1] + 'T'  # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
         self.assertLessThan(errors, 1.5)
 
     def test_golay_matches_old_code(self):
         """ decode should behave as micah's code did, i.e., same golay encoding
-        
-        this requires 
+
+        this requires
         DEFAULT_NT_TO_BITS = { "A":"11",  "C":"00", "T":"10", "G":"01"}
         """
-        NT_TO_BITS = { "A":"11",  "C":"00", "T":"10", "G":"01"}
+        NT_TO_BITS = {"A": "11", "C": "00", "T": "10", "G": "01"}
         original = 'GCATCGTCAACA'
-        rec =      'GCATCGTCCACA'
+        rec = 'GCATCGTCCACA'
         corr, nt_errs = golay.decode(rec, NT_TO_BITS)
         self.assertEqual(corr, original)
         self.assertEqual(nt_errs, 2)
-    
+
     def test_decode_bits(self):
         """ decode_bits should have correct num_errs, even if corrected = None
         """
@@ -56,7 +57,7 @@ class GolayTests(TestCase):
                 self.assertEqual(num_errs, 4)
             else:
                 self.assertEqual(((corr + bitvec) % 2).sum(), num_errs)
-            
+
     def test_decode(self):
         """ decode should decode barcodes from tutorial"""
         barcodes = ['AGCACGAGCCTA',
@@ -67,130 +68,152 @@ class GolayTests(TestCase):
                     'AACTGTGCGTAC',
                     'ACAGAGTCGGCT',
                     'ACCGCAGAGTCA',
-                    'ACGGTGAGTGTC',]
+                    'ACGGTGAGTGTC', ]
         for bc in barcodes:
-            self.assertEqual(golay.decode(bc),(bc,0))
+            self.assertEqual(golay.decode(bc), (bc, 0))
         for bc in barcodes:
-            err_bc = 'C'+bc[1:]
-            self.assertEqual(golay.decode(err_bc),(bc,2))
+            err_bc = 'C' + bc[1:]
+            self.assertEqual(golay.decode(err_bc), (bc, 2))
 
     def test_G_H(self):
         """ generator and parity check matrices should be s.t. G dot H.T = zeros
         """
-        chkmtx = (numpy.dot(golay.DEFAULT_G,golay.DEFAULT_H.T) % 2)
+        chkmtx = (numpy.dot(golay.DEFAULT_G, golay.DEFAULT_H.T) % 2)
         self.assertTrue((chkmtx == 0).all())
-        
+
     def test_another(self):
         """ decode_bits should fix"""
         def _make_12bits():
-            n=12
-            res = numpy.zeros((2**n,n),dtype="int")
-            for i in range(2**n):
-                res[i] = tuple((0,1)[i>>j & 1] for j in xrange(n-1,-1,-1)) 
+            n = 12
+            res = numpy.zeros((2 ** n, n), dtype="int")
+            for i in range(2 ** n):
+                res[i] = tuple((0, 1)[i >> j & 1]
+                               for j in xrange(n - 1, -1, -1))
             return res
         # all possible 12 bit messages
         all_12bits = _make_12bits()
 
-    
         # test of decode_bits
         trans = numpy.dot(golay.DEFAULT_G.T, all_12bits[666]) % 2
-        err = (0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0)
+        err = (
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0)
         rec = (trans + err) % 2
         corr, num_errs = golay.decode_bits(rec)
 
         self.assertEqual(corr, trans)
-        self.assertEqual(corr, numpy.mod(rec + err,2))
+        self.assertEqual(corr, numpy.mod(rec + err, 2))
         self.assertEqual(num_errs, 2)
-
 
     def test_syndome_LUT(self):
         """default syndrome lookup table should have all syndromes as keys
-        
+
         also tests other things"""
         syns = []
         errvecs = golay._make_3bit_errors()
         for errvec in errvecs:
-            syn = tuple( numpy.mod(numpy.dot(errvec, golay.DEFAULT_H.T), 2) )
+            syn = tuple(numpy.mod(numpy.dot(errvec, golay.DEFAULT_H.T), 2))
             syns.append(syn)
-        self.assertEqual(set(syns),set(golay.DEFAULT_SYNDROME_LUT.keys()))
-        self.assertEqual(len(set(syns)),len(syns))
-        self.assertEqual(len(syns),len(errvecs))
-        self.assertEqual(len(errvecs),2325)
-        
-        
+        self.assertEqual(set(syns), set(golay.DEFAULT_SYNDROME_LUT.keys()))
+        self.assertEqual(len(set(syns)), len(syns))
+        self.assertEqual(len(syns), len(errvecs))
+        self.assertEqual(len(errvecs), 2325)
+
     def test_make_3bit_errors(self):
         """ 3 bit errors should have all <= 3 bit errs, no >3 bit errors"""
         bitvecs = golay._make_3bit_errors()
-        self.assertTrue( list([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]) in map(list, bitvecs) )
+        self.assertTrue(list([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]) in map(list, bitvecs))
         self.assertFalse(list([0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0]) in map(list, bitvecs) )
-         
+                               0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0]) in map(list, bitvecs))
+
     def test_golay600_codes(self):
         """ all 600 codes should be left uncorrected, 0 errors"""
         for bc in golay600:
             corr, num_errs = golay.decode(bc)
             self.assertEqual(corr, bc)
             self.assertEqual(num_errs, 0)
-            
+
     def test_golay600_2bit_errors(self):
         """ A->C, G->T errors should be 2 bit errors for all 600 barcodes """
         for bc in golay600:
             if bc.count('A') == 0:
-                continue # only check those with A's
-            err_bc = bc.replace('A','C',1)
+                continue  # only check those with A's
+            err_bc = bc.replace('A', 'C', 1)
             corr, num_errs = golay.decode(err_bc)
             self.assertEqual(corr, bc)
             self.assertEqual(num_errs, 2)
-            
+
         for bc in golay600:
             if bc.count('G') == 0:
-                continue # only check those with A's
-            err_bc = bc.replace('G','T',1)
+                continue  # only check those with A's
+            err_bc = bc.replace('G', 'T', 1)
             corr, num_errs = golay.decode(err_bc)
             self.assertEqual(corr, bc)
             self.assertEqual(num_errs, 2)
-            
+
     def test_golay600_4bit_errors(self):
         """double A->C, G->T errors should be 2 bit errors for all 600 barcodes
         """
         for bc in golay600:
             if bc.count('A') < 2:
-                continue # only check those with A's
-            err_bc = bc.replace('A','C',2)
+                continue  # only check those with A's
+            err_bc = bc.replace('A', 'C', 2)
             corr, num_errs = golay.decode(err_bc)
             self.assertEqual(corr, None)
             self.assertEqual(num_errs, 4)
 
         for bc in golay600:
             if bc.count('T') < 2:
-                continue # only check those with A's
-            err_bc = bc.replace('T','G',2)
+                continue  # only check those with A's
+            err_bc = bc.replace('T', 'G', 2)
             corr, num_errs = golay.decode(err_bc)
             self.assertEqual(corr, None)
             self.assertEqual(num_errs, 4)
-         
+
 # random 24 bit vectors
 ten_bitvecs = numpy.array([
-       [0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
+    [0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
         1, 0],
-       [0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
+    [0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
         0, 1],
-       [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0,
+    [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0,
         0, 1],
-       [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1,
+    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1,
         1, 1],
-       [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1,
+    [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1,
         0, 1],
-       [0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0,
+    [0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0,
         1, 0],
-       [0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1,
+    [0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1,
         1, 0],
-       [0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0,
+    [0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0,
         0, 1],
-       [0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0,
+    [0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0,
         1, 1],
-       [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1,
+    [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1,
         1, 1]])
 
 golay600_str = """

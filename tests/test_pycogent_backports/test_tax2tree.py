@@ -2,12 +2,11 @@
 
 __author__ = "Kyle Patnode"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Kyle Patnode","Jai Ram Rideout", "Antonio Gonzalez Pena"]
+__credits__ = ["Kyle Patnode", "Jai Ram Rideout", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.5.3-dev"
 __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
-__status__ = "Development"
 
 """Test suite for the generate_taxa_compare_table.py module.
 
@@ -19,8 +18,8 @@ from cogent.app.util import ApplicationNotFoundError
 try:
     from t2t.nlevel import load_tree, load_consensus_map, determine_rank_order
 except ImportError:
-    raise ApplicationNotFoundError,\
-         "Cannot find tax2tree. Is it installed? Is it in your path?"
+    raise ApplicationNotFoundError(
+        "Cannot find tax2tree. Is it installed? Is it in your path?")
 from os import makedirs, getcwd, chdir
 from os.path import exists
 from shutil import rmtree
@@ -31,7 +30,9 @@ from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
 from qiime.pycogent_backports.tax2tree import *
 
+
 class GenerateTaxaCompareTableTests(TestCase):
+
     """Tests for the tax2tree_controller.py module."""
 
     def setUp(self):
@@ -44,7 +45,7 @@ class GenerateTaxaCompareTableTests(TestCase):
         self.start_dir = getcwd()
         self.dirs_to_remove = []
         self.files_to_remove = []
-        
+
         self.tmp_dir = get_qiime_temp_dir()
         if not exists(self.tmp_dir):
             makedirs(self.tmp_dir)
@@ -69,8 +70,9 @@ class GenerateTaxaCompareTableTests(TestCase):
 
     def test_clean_output_valid_input(self):
         """Test clean_output using standard valid input."""
-        exp = {'e':('f__Lachnospiraceae; g__Lachnospira; s__',0), 'g':('f__Lachnospiraceae; g__Lachnospira; s__',0)}
-        obs = clean_output(test_results, ['e','g'])
+        exp = {'e': ('f__Lachnospiraceae; g__Lachnospira; s__', 0),
+               'g': ('f__Lachnospiraceae; g__Lachnospira; s__', 0)}
+        obs = clean_output(test_results, ['e', 'g'])
         self.assertEquals(obs, exp)
 
     def test_expand_constrings_valid_input(self):
@@ -86,7 +88,7 @@ class GenerateTaxaCompareTableTests(TestCase):
 
         obs = expand_constrings(test_cons)
 
-        self.assertEqual(obs,exp)
+        self.assertEqual(obs, exp)
 
     def test_generate_constrings_valid_input(self):
         """Tests generate_constrings with standard valid input.
@@ -106,51 +108,51 @@ class GenerateTaxaCompareTableTests(TestCase):
         Simultaneously checks if reference values are being renamed and new
         rep values are being inserted and labeled 'Unclassified'."""
         exp = ['a	f__Lachnospiraceae; g__Bacteroides; s__',
-        'b	f__Lachnospiraceae; g__Bacteroides; s__',
-        'c	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-        'd	Unclassified',
-        'd_R	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-        'e	Unclassified',
-        'f	f__Lachnospiraceae; g__Lachnospira; s__',
-        'g	Unclassified',
-        'h	Unclassified',
-        'h_R	f__Lachnospiraceae; g__Lachnospira; s__Bacteroides pectinophilus',
-        'i	Unclassified',
-        'j	Unclassified']
+               'b	f__Lachnospiraceae; g__Bacteroides; s__',
+               'c	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+               'd	Unclassified',
+               'd_R	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+               'e	Unclassified',
+               'f	f__Lachnospiraceae; g__Lachnospira; s__',
+               'g	Unclassified',
+               'h	Unclassified',
+               'h_R	f__Lachnospiraceae; g__Lachnospira; s__Bacteroides pectinophilus',
+               'i	Unclassified',
+               'j	Unclassified']
 
-        obs = prep_consensus(test_cons, ['d','h','i','j'])
+        obs = prep_consensus(test_cons, ['d', 'h', 'i', 'j'])
 
         self.assertEqual(set(obs), set(exp))
 
-#All test data borrowed from Tax2Tree's test code
+# All test data borrowed from Tax2Tree's test code
 test_tree = "(((a,b),(c,d)),((e,f),(g,h)));"
 
 test_cons = ['a	f__Lachnospiraceae; g__Bacteroides; s__',
-'b	f__Lachnospiraceae; g__Bacteroides; s__',
-'c	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-'d	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-'e	Unclassified',
-'f	f__Lachnospiraceae; g__Lachnospira; s__',
-'g	Unclassified',
-'h	f__Lachnospiraceae; g__Lachnospira; s__Bacteroides pectinophilus']
+             'b	f__Lachnospiraceae; g__Bacteroides; s__',
+             'c	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+             'd	f__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+             'e	Unclassified',
+             'f	f__Lachnospiraceae; g__Lachnospira; s__',
+             'g	Unclassified',
+             'h	f__Lachnospiraceae; g__Lachnospira; s__Bacteroides pectinophilus']
 
 test_cons_no_spaces = ['a	f__Lachnospiraceae;g__Bacteroides;s__',
-'b	f__Lachnospiraceae;g__Bacteroides;s__',
-'c	f__Lachnospiraceae;g__Bacteroides;s__Bacteroides pectinophilus',
-'d	f__Lachnospiraceae;g__Bacteroides;s__Bacteroides pectinophilus',
-'e	Unclassified',
-'f	f__Lachnospiraceae;g__Lachnospira;s__',
-'g	Unclassified',
-'h	f__Lachnospiraceae;g__Lachnospira;s__Bacteroides pectinophilus']
+                       'b	f__Lachnospiraceae;g__Bacteroides;s__',
+                       'c	f__Lachnospiraceae;g__Bacteroides;s__Bacteroides pectinophilus',
+                       'd	f__Lachnospiraceae;g__Bacteroides;s__Bacteroides pectinophilus',
+                       'e	Unclassified',
+                       'f	f__Lachnospiraceae;g__Lachnospira;s__',
+                       'g	Unclassified',
+                       'h	f__Lachnospiraceae;g__Lachnospira;s__Bacteroides pectinophilus']
 
 test_results = ['a\tf__Lachnospiraceae; g__Bacteroides; s__',
-'b\tf__Lachnospiraceae; g__Bacteroides; s__',
-'c\tf__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-'d\tf__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
-'e\tf__Lachnospiraceae; g__Lachnospira; s__',
-'f\tf__Lachnospiraceae; g__Lachnospira; s__',
-'g\tf__Lachnospiraceae; g__Lachnospira; s__',
-'h\tf__Lachnospiraceae; g__Lachnospira; s__']
+                'b\tf__Lachnospiraceae; g__Bacteroides; s__',
+                'c\tf__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+                'd\tf__Lachnospiraceae; g__Bacteroides; s__Bacteroides pectinophilus',
+                'e\tf__Lachnospiraceae; g__Lachnospira; s__',
+                'f\tf__Lachnospiraceae; g__Lachnospira; s__',
+                'g\tf__Lachnospiraceae; g__Lachnospira; s__',
+                'h\tf__Lachnospiraceae; g__Lachnospira; s__']
 
 if __name__ == "__main__":
     main()

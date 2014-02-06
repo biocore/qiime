@@ -6,10 +6,9 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 import os
 from qiime.util import make_option
@@ -25,33 +24,38 @@ from cogent.phylo.consensus import majorityRule
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = "This script outputs a majority consensus tree given a collection of input trees."
+script_info[
+    'brief_description'] = "This script outputs a majority consensus tree given a collection of input trees."
 script_info['script_description'] = ""
 script_info['script_usage'] = [
- ("basic usage: given a directory of trees 'jackknifed_trees', compute the majority consensus and save as a newick formatted text file","",
- "%prog -i jackknifed_trees -o consensus_tree.tre")
- 
+    ("basic usage: given a directory of trees 'jackknifed_trees', compute the majority consensus and save as a newick formatted text file", "",
+     "%prog -i jackknifed_trees -o consensus_tree.tre")
+
 ]
 
-script_info['output_description']= "The output is a newick formatted tree compatible with most standard tree viewing programs"
-script_info['required_options'] = [\
- make_option('-i','--input_dir',action='store',
-          type='existing_dirpath',help='input folder containing trees'),
- make_option('-o','--output_fname',type='new_filepath',help='the output consensus tree filepath')
+script_info[
+    'output_description'] = "The output is a newick formatted tree compatible with most standard tree viewing programs"
+script_info['required_options'] = [
+    make_option('-i', '--input_dir', action='store',
+                type='existing_dirpath', help='input folder containing trees'),
+    make_option(
+        '-o',
+        '--output_fname',
+        type='new_filepath',
+        help='the output consensus tree filepath')
 ]
-script_info['optional_options'] = [\
- make_option('-s','--strict', 
-  help='Use only nodes occurring >50% of the time [default: %default]',
-  default=False, action='store_true')
+script_info['optional_options'] = [
+    make_option('-s', '--strict',
+                help='Use only nodes occurring >50% of the time [default: %default]',
+                default=False, action='store_true')
 ]
 script_info['version'] = __version__
 
 
-
 def load_tree_files(tree_dir):
     """Load trees from filepaths
-    
-    checks if  filenames indicate that trees are from different 
+
+    checks if  filenames indicate that trees are from different
     distance methods.  If so, warns user.
     loads trees into phylonode objects
     returns [trees]
@@ -59,10 +63,10 @@ def load_tree_files(tree_dir):
     """
     tree_file_names = os.listdir(tree_dir)
     # ignore invisible files like .DS_Store
-    tree_file_names = [fname for fname in tree_file_names if not \
-        fname.startswith('.')]
+    tree_file_names = [fname for fname in tree_file_names if not
+                       fname.startswith('.')]
 
-    #try to warn user if using multiple types of trees { 
+    # try to warn user if using multiple types of trees {
     try:
         base_names = []
         for fname in tree_file_names:
@@ -72,8 +76,8 @@ def load_tree_files(tree_dir):
     else:
         if len(set(base_names)) > 1:
             warnstr = """
-warning: trees are named differently, please be sure you're not 
-comparing trees generated in different manners, unless you're quite sure 
+warning: trees are named differently, please be sure you're not
+comparing trees generated in different manners, unless you're quite sure
 that's what you intend to do.  types: """ + str(set(base_names)) + """
 continuing anyway..."""
             warn(warnstr)
@@ -86,25 +90,25 @@ continuing anyway..."""
             tree.filepath = fname
             trees.append(tree)
             f.close()
-        except IOError, err:
+        except IOError as err:
             sys.stderr.write('error loading tree ' + fname + '\n')
             exit(1)
     if len(trees) == 0:
-        raise RuntimeError('Error: no trees loaded'+\
-            ', check that tree directory has has valid trees')
+        raise RuntimeError('Error: no trees loaded' +
+                           ', check that tree directory has has valid trees')
     return trees
+
 
 def main():
     option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
-    
+        parse_command_line_parameters(**script_info)
 
     trees = load_tree_files(opts.input_dir)
 
     consensus = majorityRule(trees=trees, strict=opts.strict)[0]
     # don't know why returns a list
-    
-    f = open(opts.output_fname,'w')
+
+    f = open(opts.output_fname, 'w')
     f.write(consensus.getNewick(with_distances=True))
     f.close()
 

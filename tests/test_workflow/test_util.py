@@ -6,10 +6,9 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from shutil import rmtree
 from glob import glob
@@ -31,13 +30,13 @@ from qiime.workflow.downstream import run_beta_diversity_through_plots
 
 
 class WorkflowTests(TestCase):
-    
+
     def setUp(self):
         """ """
         self.test_data = get_test_data_fps()
         self.files_to_remove = []
         self.dirs_to_remove = []
-        
+
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
         self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
@@ -46,12 +45,12 @@ class WorkflowTests(TestCase):
                                          result_constructor=str)
         self.dirs_to_remove.append(self.test_out)
         create_dir(self.test_out)
-        
+
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters({})
-        
+
         initiate_timeout(60)
-    
+
     def tearDown(self):
         """ """
         disable_timeout()
@@ -61,24 +60,24 @@ class WorkflowTests(TestCase):
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
-        
+
     def test_unsupported_options_handled_nicely(self):
         """WorkflowError raised on unsupported option """
-        self.params['beta_diversity'] = {'blah':"something-broken"}
+        self.params['beta_diversity'] = {'blah': "something-broken"}
         self.assertRaises(WorkflowError,
                           run_beta_diversity_through_plots,
-                          self.test_data['biom'][0], 
+                          self.test_data['biom'][0],
                           self.test_data['map'][0],
-                          self.test_out, 
+                          self.test_out,
                           call_commands_serially,
                           self.params,
                           self.qiime_config,
                           tree_fp=self.test_data['tree'][0],
-                          parallel=False, 
+                          parallel=False,
                           status_update_callback=no_status_updates)
-        
+
         # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.test_out,'log*.txt'))[0]
+        log_fp = glob(join(self.test_out, 'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
 if __name__ == "__main__":

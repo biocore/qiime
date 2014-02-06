@@ -2,13 +2,13 @@
 """tests for flowgram clustering"""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]#remember to add yourself if you make changes
+__copyright__ = "Copyright 2011, The QIIME Project"
+# remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 import signal
 import os
@@ -27,29 +27,32 @@ from qiime.denoiser.flowgram_clustering import *
 from qiime.denoiser.utils import FlowgramContainerArray
 from qiime.denoiser.cluster_utils import setup_workers, setup_server, stop_workers
 
-#timeout handling taken from test_workflow.py
+# timeout handling taken from test_workflow.py
+
+
 class TimeExceededError(Exception):
     pass
 
 allowed_seconds_per_test = 60
 
+
 def timeout(signum, frame):
-    raise TimeExceededError,\
-     "Test failed to run in allowed time (%d seconds)."\
-      % allowed_seconds_per_test
+    raise TimeExceededError("Test failed to run in allowed time (%d seconds)."
+                            % allowed_seconds_per_test)
+
 
 class DenoiserTests(TestCase):
-    
+
     def setUp(self):
         self.rec = data
         self.flowgram = flowgram
         self.flowgrams, self.head = parse_sff(self.rec.split("\n"))
-        self.socket=None
+        self.socket = None
         self.tmp_dir = None
 
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
-        signal.alarm(allowed_seconds_per_test) 
+        signal.alarm(allowed_seconds_per_test)
 
     def tearDown(self):
 
@@ -57,7 +60,7 @@ class DenoiserTests(TestCase):
         signal.alarm(0)
 
         if self.socket:
-            self.socket.close()    
+            self.socket.close()
         if self.tmp_dir:
             try:
                 rmdir(self.tmp_dir)
@@ -69,110 +72,112 @@ class DenoiserTests(TestCase):
     def test_compute_workload(self):
         """allocation of workload based on observed worker performance"""
 
-        spread = [ 1.23, 0.5, 1.27 ]
+        spread = [1.23, 0.5, 1.27]
         num_cores = 3
         num_flows = 11
         result = compute_workload(num_cores, num_flows, spread)
-        self.assertEqual(result, [4,2,5])
+        self.assertEqual(result, [4, 2, 5])
 
     def test_adjust_processing_time(self):
         """evalulate worker performance"""
 
-        workload = [ 6, 10, 16 ]
+        workload = [6, 10, 16]
         num_cores = 3
-        timing = [ 9.0, 11.0, 65.0 ]
+        timing = [9.0, 11.0, 65.0]
         epoch = 1.0
         result = adjust_processing_time(num_cores, workload, timing, epoch)
         self.assertEqual(result, [1.125, 1.5, 0.375])
 
-
     def test_get_flowgram_distances(self):
         """get_flowgram_distances compute the correct alignment score."""
-        
-        scores, names, fc = get_flowgram_distances("1", self.flowgram, self.flowgrams,
-                                                   FlowgramContainerArray(),
-                                                   {"FZTHQMS01CIW5N":""}, "/tmp/")
+
+        scores, names, fc = get_flowgram_distances(
+            "1", self.flowgram, self.flowgrams,
+            FlowgramContainerArray(),
+            {"FZTHQMS01CIW5N": ""}, "/tmp/")
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
         self.assertFloatEqual(scores, [4.95274923, 0.7815385])
-        
+
     def test_get_flowgram_distances_on_cluster(self):
         """get_flowgram_distances_on_cluster computes the correct alignment score."""
-        
-        self.tmp_dir=get_tmp_filename(tmp_dir = "./", suffix="/")
+
+        self.tmp_dir = get_tmp_filename(tmp_dir="./", suffix="/")
         mkdir(self.tmp_dir)
-        #setup server and workers
+        # setup server and workers
         self.socket = setup_server()
         workers, client_sockets = setup_workers(1, self.tmp_dir, self.socket,
                                                 verbose=False)
-        client_sockets = [a for a,b in client_sockets]
-        scores, names, fc = get_flowgram_distances_on_cluster("1", self.flowgram,
-                                                              self.flowgrams,
-                                                              FlowgramContainerArray(),
-                                                              {"FZTHQMS01CIW5N":""},
-                                                              1, 1, [1],
-                                                              client_sockets)
+        client_sockets = [a for a, b in client_sockets]
+        scores, names, fc = get_flowgram_distances_on_cluster(
+            "1", self.flowgram,
+            self.flowgrams,
+            FlowgramContainerArray(
+            ),
+            {"FZTHQMS01CIW5N": ""},
+            1, 1, [1],
+            client_sockets)
         stop_workers(client_sockets)
-    
+
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
         self.assertFloatEqual(scores, [4.95274923, 0.7815385])
 
     def test_log_remaining_rounds(self):
         """We can calculate how far we have to go"""
 
-        #all empty
+        # all empty
         self.assertEqual(log_remaining_rounds(dict(), dict(), 0), 0)
 
-        #with something in it
-        ids = dict({'1': 1, '2' :1, '3': 1, '4':1})
-        mapping = dict({'1': [5,6], '2': [], '3':[7], '4':[8,9,10]})
-    
+        # with something in it
+        ids = dict({'1': 1, '2': 1, '3': 1, '4': 1})
+        mapping = dict({'1': [5, 6], '2': [], '3': [7], '4': [8, 9, 10]})
+
         self.assertEqual(log_remaining_rounds(ids, mapping, 0), 4)
         self.assertEqual(log_remaining_rounds(ids, mapping, 1), 3)
         self.assertEqual(log_remaining_rounds(ids, mapping, 2), 2)
         self.assertEqual(log_remaining_rounds(ids, mapping, 5), 0)
 
-flowgram = Flowgram("0.99	0.00	0.99	0.00	0.00	1.02	0.00	1.00	1.00	1.12\t\t"+\
-                        "0.01	0.01	1.89	0.01	0.95	0.95	0.97	0.00	0.02	0.98\t"+\
-                        "0.97	0.00	0.97	0.05	0.01	1.06	0.03	0.97	0.00	0.03\t"+\
-                        "0.97	0.02	0.00	1.09	0.02	0.01	0.96	0.00	0.00	1.01\t"+\
-                        "0.04	0.00	0.99	0.06	0.97	0.00	0.09	0.97	0.04	0.00\t"+\
-                        "1.94	0.09	1.02	0.00	2.86	1.02	1.00	1.11	0.10	1.97\t"+\
-                        "0.12	0.98	0.01	0.99	2.90	0.03	0.04	1.93	0.15	1.02\t"+\
-                        "1.95	1.00	1.02	0.00	0.12	1.00	0.97	0.00	1.00	0.06\t"+\
-                        "0.97	0.00	0.96	0.05	0.10	1.03	0.12	0.99	1.98	0.09\t"+\
-                        "1.99	0.08	0.13	2.10	0.14	0.05	1.00	0.10	0.00	1.00\t"+\
-                        "1.00	0.00	0.07	4.82	0.10	1.04	2.05	0.00	2.01	0.04\t"+\
-                        "1.96	0.08	0.93	0.00	0.93	0.03	0.99	0.02	1.01	0.06\t"+\
-                        "0.09	1.04	0.14	1.06	0.07	2.04	3.49	0.15	1.02	0.80\t"+\
-                        "0.23	0.07	1.07	0.17	1.91	0.07	0.18	1.00	0.32	0.07\t"+\
-                        "0.97	0.11	0.96	0.96	0.14	1.96	0.19	2.01	2.84	0.28\t"+\
-                        "0.08	2.03	1.32	0.06	0.05	1.10	0.17	0.88	0.09	0.95\t"+\
-                        "0.14	0.13	1.85	1.07	1.78	0.89	1.94	0.19	1.09	0.14\t"+\
-                        "1.09	0.13	0.13	0.86	1.85	0.07	0.09	1.97	1.20	0.08\t"+\
-                        "0.95	0.23	0.09	0.94	0.16	0.11	1.92	0.12	0.89	1.95\t"+\
-                        "0.21	0.12	0.97	0.14	0.16	1.86	0.12	1.89	1.00	1.07\t"+\
-                        "0.06	0.16	1.05	0.11	0.06	0.95	0.12	0.13	1.01	0.15\t"+\
-                        "3.79	0.14	0.15	0.98	0.40	0.11	1.00	0.19	1.01	1.09\t"+\
-                        "0.12	0.94	0.11	0.15	1.00	2.04	2.03	0.95	0.06	3.05\t"+\
-                        "0.22	0.08	1.82	0.21	1.02	0.09	2.88	1.88	0.15	0.07\t"+\
-                        "1.05	1.89	0.08	0.06	1.87	2.87	1.87	0.06	0.15	1.15\t"+\
-                        "0.25	0.08	0.96	0.12	0.06	0.95	0.09	0.13	1.05	1.95\t"+\
-                        "3.81	1.02	0.13	0.17	2.14	1.08	0.19	0.13	1.08	1.01\t"+\
-                        "1.99	0.11	0.18	1.06	0.17	0.04	0.98	0.08	1.01	2.86\t"+\
-                        "1.06	0.96	0.10	0.22	1.99	2.04	0.14	0.00	0.97	0.16\t"+\
-                        "0.95	0.07	2.75	0.02	0.98	0.12	2.94	0.00	0.99	1.03\t"+\
-                        "0.26	2.89	0.15	1.87	0.10	0.15	0.98	0.17	1.07	0.92\t"+\
-                        "0.00	0.09	1.08	0.16	3.78	1.01	0.07	0.87	0.22	0.98\t"+\
-                        "1.97	1.09	0.08	0.17	1.08	0.03	0.97	2.04	0.18	0.14\t"+\
-                        "1.03	0.03	0.00	1.16	0.12	1.81	2.06	0.18	0.17	2.06\t"+\
-                        "0.14	0.85	0.21	0.12	1.01	1.05	1.05	0.94	0.99	0.11\t"+\
-                        "0.15	1.08	2.00	1.02	0.99	0.13	1.07	0.13	0.98	0.16\t"+\
-                        "0.09	0.99	3.00	1.05	1.02	0.02	0.10	0.93	0.11	0.09\t"+\
-                        "0.81	0.97	0.13	0.05	2.04	1.93	1.12	0.04	0.93	0.93\t"+\
-                        "0.11	0.06	1.96	0.06	0.09	1.14	0.15	0.06	1.08	0.06\t"+\
-                        "0.94	0.11	0.00	0.88	1.11	0.10	2.08	1.05	0.15	0.09")
- 
-data="""Common Header:
+flowgram = Flowgram("0.99	0.00	0.99	0.00	0.00	1.02	0.00	1.00	1.00	1.12\t\t" +
+                    "0.01	0.01	1.89	0.01	0.95	0.95	0.97	0.00	0.02	0.98\t" +
+                    "0.97	0.00	0.97	0.05	0.01	1.06	0.03	0.97	0.00	0.03\t" +
+                    "0.97	0.02	0.00	1.09	0.02	0.01	0.96	0.00	0.00	1.01\t" +
+                    "0.04	0.00	0.99	0.06	0.97	0.00	0.09	0.97	0.04	0.00\t" +
+                    "1.94	0.09	1.02	0.00	2.86	1.02	1.00	1.11	0.10	1.97\t" +
+                    "0.12	0.98	0.01	0.99	2.90	0.03	0.04	1.93	0.15	1.02\t" +
+                    "1.95	1.00	1.02	0.00	0.12	1.00	0.97	0.00	1.00	0.06\t" +
+                    "0.97	0.00	0.96	0.05	0.10	1.03	0.12	0.99	1.98	0.09\t" +
+                    "1.99	0.08	0.13	2.10	0.14	0.05	1.00	0.10	0.00	1.00\t" +
+                    "1.00	0.00	0.07	4.82	0.10	1.04	2.05	0.00	2.01	0.04\t" +
+                    "1.96	0.08	0.93	0.00	0.93	0.03	0.99	0.02	1.01	0.06\t" +
+                    "0.09	1.04	0.14	1.06	0.07	2.04	3.49	0.15	1.02	0.80\t" +
+                    "0.23	0.07	1.07	0.17	1.91	0.07	0.18	1.00	0.32	0.07\t" +
+                    "0.97	0.11	0.96	0.96	0.14	1.96	0.19	2.01	2.84	0.28\t" +
+                    "0.08	2.03	1.32	0.06	0.05	1.10	0.17	0.88	0.09	0.95\t" +
+                    "0.14	0.13	1.85	1.07	1.78	0.89	1.94	0.19	1.09	0.14\t" +
+                    "1.09	0.13	0.13	0.86	1.85	0.07	0.09	1.97	1.20	0.08\t" +
+                    "0.95	0.23	0.09	0.94	0.16	0.11	1.92	0.12	0.89	1.95\t" +
+                    "0.21	0.12	0.97	0.14	0.16	1.86	0.12	1.89	1.00	1.07\t" +
+                    "0.06	0.16	1.05	0.11	0.06	0.95	0.12	0.13	1.01	0.15\t" +
+                    "3.79	0.14	0.15	0.98	0.40	0.11	1.00	0.19	1.01	1.09\t" +
+                    "0.12	0.94	0.11	0.15	1.00	2.04	2.03	0.95	0.06	3.05\t" +
+                    "0.22	0.08	1.82	0.21	1.02	0.09	2.88	1.88	0.15	0.07\t" +
+                    "1.05	1.89	0.08	0.06	1.87	2.87	1.87	0.06	0.15	1.15\t" +
+                    "0.25	0.08	0.96	0.12	0.06	0.95	0.09	0.13	1.05	1.95\t" +
+                    "3.81	1.02	0.13	0.17	2.14	1.08	0.19	0.13	1.08	1.01\t" +
+                    "1.99	0.11	0.18	1.06	0.17	0.04	0.98	0.08	1.01	2.86\t" +
+                    "1.06	0.96	0.10	0.22	1.99	2.04	0.14	0.00	0.97	0.16\t" +
+                    "0.95	0.07	2.75	0.02	0.98	0.12	2.94	0.00	0.99	1.03\t" +
+                    "0.26	2.89	0.15	1.87	0.10	0.15	0.98	0.17	1.07	0.92\t" +
+                    "0.00	0.09	1.08	0.16	3.78	1.01	0.07	0.87	0.22	0.98\t" +
+                    "1.97	1.09	0.08	0.17	1.08	0.03	0.97	2.04	0.18	0.14\t" +
+                    "1.03	0.03	0.00	1.16	0.12	1.81	2.06	0.18	0.17	2.06\t" +
+                    "0.14	0.85	0.21	0.12	1.01	1.05	1.05	0.94	0.99	0.11\t" +
+                    "0.15	1.08	2.00	1.02	0.99	0.13	1.07	0.13	0.98	0.16\t" +
+                    "0.09	0.99	3.00	1.05	1.02	0.02	0.10	0.93	0.11	0.09\t" +
+                    "0.81	0.97	0.13	0.05	2.04	1.93	1.12	0.04	0.93	0.93\t" +
+                    "0.11	0.06	1.96	0.06	0.09	1.14	0.15	0.06	1.08	0.06\t" +
+                    "0.94	0.11	0.00	0.88	1.11	0.10	2.08	1.05	0.15	0.09")
+
+data = """Common Header:
   Magic Number:  0x2E736666
   Version:       0001
   Index Offset:  7773224
@@ -211,4 +216,3 @@ Quality Scores:	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	32	3
 
 if __name__ == "__main__":
     main()
-

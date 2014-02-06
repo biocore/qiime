@@ -5,10 +5,9 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 """Contains functionality to interact with remote services."""
 
@@ -19,12 +18,13 @@ from socket import gaierror
 from StringIO import StringIO
 from cogent.app.util import ApplicationNotFoundError
 
+
 def raise_gdata_not_found_error(*args, **kwargs):
     raise ApplicationNotFoundError("gdata cannot be found.\nIs it installed? "
-            "Is it in your $PYTHONPATH?\nThis is an optional QIIME "
-            "dependency, but is required if you plan to use QIIME's remote "
-            "mapping file features. For more information, please see "
-            "http://qiime.org/install/install.html.")
+                                   "Is it in your $PYTHONPATH?\nThis is an optional QIIME "
+                                   "dependency, but is required if you plan to use QIIME's remote "
+                                   "mapping file features. For more information, please see "
+                                   "http://qiime.org/install/install.html.")
 
 # Load gdata if it's available. If it's not, skip it but set up to raise errors
 # if the user tries to use it.
@@ -35,13 +35,16 @@ try:
 except ImportError:
     # Set functions which cannot be imported to raise_gdata_not_found_error.
     SpreadsheetsCellsFeedFromString = CellQuery = SpreadsheetsService = \
-            raise_gdata_not_found_error
+        raise_gdata_not_found_error
+
 
 class GoogleSpreadsheetError(Exception):
     pass
 
+
 class GoogleSpreadsheetConnectionError(Exception):
     pass
+
 
 def load_google_spreadsheet(spreadsheet_key, worksheet_name=None):
     """Downloads and exports a Google Spreadsheet in TSV format.
@@ -128,6 +131,7 @@ def load_google_spreadsheet(spreadsheet_key, worksheet_name=None):
     tsv_writer.writerows(spreadsheet_lines)
     return out_lines.getvalue()
 
+
 def _extract_spreadsheet_key_from_url(url):
     """Extracts a key from a URL in the form '...key=some_key&foo=42...
 
@@ -140,6 +144,7 @@ def _extract_spreadsheet_key_from_url(url):
         result = url.split('key=')[-1].split('#')[0].split('&')[0]
 
     return result
+
 
 def _get_spreadsheet_headers(client, spreadsheet_key, worksheet_id):
     """Returns a list of headers (the first line of the spreadsheet).
@@ -169,6 +174,7 @@ def _get_spreadsheet_headers(client, spreadsheet_key, worksheet_id):
             break
 
     return headers
+
 
 def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
     """Returns a list of lists containing the entire spreadsheet.
@@ -211,14 +217,14 @@ def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
                     cell_data = row.custom[cleaned_header].text
                 except KeyError:
                     raise GoogleSpreadsheetError("Could not map header '%s' "
-                            "to Google Spreadsheet's internal representation "
-                            "of the header. We suggest changing the name of "
-                            "the header in your Google Spreadsheet to be "
-                            "alphanumeric if possible, as this will likely "
-                            "solve the issue. Note that the name isn't "
-                            "*required* to be alphanumeric, but it may fix "
-                            "issues with converting to Google Spreadsheet's "
-                            "internal format in some cases." % header)
+                                                 "to Google Spreadsheet's internal representation "
+                                                 "of the header. We suggest changing the name of "
+                                                 "the header in your Google Spreadsheet to be "
+                                                 "alphanumeric if possible, as this will likely "
+                                                 "solve the issue. Note that the name isn't "
+                                                 "*required* to be alphanumeric, but it may fix "
+                                                 "issues with converting to Google Spreadsheet's "
+                                                 "internal format in some cases." % header)
 
                 # Special handling of comments (if it's a comment, only keep
                 # that cell to avoid several blank cells following it).
@@ -243,13 +249,14 @@ def _export_spreadsheet(client, spreadsheet_key, worksheet_id, headers):
 
     return spreadsheet_lines
 
+
 def _get_cleaned_headers(headers):
     """Creates a list of "cleaned" headers which spreadsheets accept.
 
     A Google Spreadsheet converts the header names into a "cleaned" internal
     representation, which must be used to reference a cell at a particular
     header/column. They are all lower case and contain no spaces or special
-    characters. If two columns have the same name after being sanitized, the 
+    characters. If two columns have the same name after being sanitized, the
     columns further to the right have _2, _3 _4, etc. appended to them.
 
     If there are column names which consist of all special characters, or if
@@ -271,11 +278,11 @@ def _get_cleaned_headers(headers):
             cleaned_headers.append(sanitized)
         else:
             raise GoogleSpreadsheetError("Encountered a header '%s' that was "
-                    "either blank or consisted only of special characters. "
-                    "Could not map the header to the internal representation "
-                    "used by the Google Spreadsheet. Please change the header "
-                    "to consist of at least one alphanumeric character."
-                    % header)
+                                         "either blank or consisted only of special characters. "
+                                         "Could not map the header to the internal representation "
+                                         "used by the Google Spreadsheet. Please change the header "
+                                         "to consist of at least one alphanumeric character."
+                                         % header)
 
     # When the same sanitized header appears multiple times in the first row
     # of a spreadsheet, _n is appended to the name to make it unique.

@@ -6,10 +6,9 @@ __author__ = "Mike Robeson"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
-__status__ = "Development"
 
 
 import os
@@ -19,16 +18,18 @@ from tempfile import mkdtemp, NamedTemporaryFile
 from cogent.util.unit_test import TestCase, main
 from qiime.join_paired_ends import write_synced_barcodes_fastq
 
+
 class JoinPairedEndsTests(TestCase):
+
     """Tests for join_paired_ends."""
 
     def setUp(self):
         """set up files to be used in all tests"""
-        
+
         # set up temp directory that all temp files will
         # be written to:
         self.temp_dir_path = mkdtemp()
-        
+
         # store files:
         # joined_pairs
         self.joined_pe = NamedTemporaryFile(prefix='joined_',
@@ -41,27 +42,27 @@ class JoinPairedEndsTests(TestCase):
 
         # all barcodes
         self.all_barcodes = NamedTemporaryFile(prefix='all_bc_',
-                                            suffix='.fastq',
-                                            dir=self.temp_dir_path,
-                                            delete=False)
+                                               suffix='.fastq',
+                                               dir=self.temp_dir_path,
+                                               delete=False)
         self.all_bc_fp = self.all_barcodes.name
         self.all_barcodes.write(all_barcodes)
         self.all_barcodes.close()
 
         # out of order barcodes
         self.ooo_barcodes = NamedTemporaryFile(prefix='ooo_bc_',
-                                            suffix='.fastq',
-                                            dir=self.temp_dir_path,
-                                            delete=False)
+                                               suffix='.fastq',
+                                               dir=self.temp_dir_path,
+                                               delete=False)
         self.ooo_bc_fp = self.ooo_barcodes.name
         self.ooo_barcodes.write(all_barcodes_out_of_order)
         self.ooo_barcodes.close()
 
         # missing barcodes
         self.missing_barcodes = NamedTemporaryFile(prefix='missing_bc_',
-                                            suffix='.fastq',
-                                            dir=self.temp_dir_path,
-                                            delete=False)
+                                                   suffix='.fastq',
+                                                   dir=self.temp_dir_path,
+                                                   delete=False)
         self.missing_bc_fp = self.missing_barcodes.name
         self.missing_barcodes.write(missing_barcodes)
         self.missing_barcodes.close()
@@ -78,14 +79,13 @@ class JoinPairedEndsTests(TestCase):
            assemble.
         """
         filtered_bc_path = write_synced_barcodes_fastq(
-                               self.jpe_fp,
-                               self.all_bc_fp)
-        
+            self.jpe_fp,
+            self.all_bc_fp)
+
         observed_barcodes = open(filtered_bc_path, 'U').read()
         self.assertEqual(observed_barcodes, synced_barcodes)
 
         os.remove(filtered_bc_path)
-
 
     def test_out_of_order_barcodes(self):
         """write_synced_barcodes_fastq: should fail if barcodes out of order
@@ -94,16 +94,14 @@ class JoinPairedEndsTests(TestCase):
            file.
         """
         self.assertRaises(StopIteration, write_synced_barcodes_fastq,
-                               self.jpe_fp,
-                               self.ooo_bc_fp)
+                          self.jpe_fp,
+                          self.ooo_bc_fp)
 
     def test_missing_barcodes(self):
         """"write_synced_barcodes_fastq: should fail if barcodes are missing."""
         self.assertRaises(StopIteration, write_synced_barcodes_fastq,
-                               self.jpe_fp,
-                               self.missing_bc_fp)
-
-
+                          self.jpe_fp,
+                          self.missing_bc_fp)
 
 
 all_barcodes = """@MISEQ03:64:000000000-A2H3D:1:1101:14358:1530 1:N:0:TCCACAGGAGT
@@ -399,7 +397,6 @@ TCCACAGGAGT
 +
 FFFFFFFFFFF
 """
-
 
 
 # For reference. Data used to make the 'joined_reads' reference string.

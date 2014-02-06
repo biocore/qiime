@@ -6,11 +6,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
- 
+
 from StringIO import StringIO
 from numpy import inf
 from cogent.util.unit_test import TestCase, main
@@ -18,15 +17,15 @@ from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files
 from biom.parse import parse_biom_table_str
-from qiime.parse import (parse_distmat, parse_mapping_file, 
+from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
-from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
-                          filter_otus_from_otu_table,get_sample_ids,
+from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
+                          filter_otus_from_otu_table, get_sample_ids,
                           sample_ids_from_category_state_coverage,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
-                          filter_mapping_file,filter_tree,
-                          filter_fastq,filter_otus_from_otu_map,
+                          filter_mapping_file, filter_tree,
+                          filter_fastq, filter_otus_from_otu_map,
                           filter_otu_table_to_n_samples,
                           filter_mapping_file_from_mapping_f,
                           filter_mapping_file_by_metadata_states,
@@ -35,24 +34,26 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
 from qiime.test import FakeFile
 from qiime.util import load_qiime_config, get_tmp_filename
 
+
 class fake_output_f():
-    
+
     def __init__(self):
         self.s = ""
-    
-    def write(self,s):
+
+    def write(self, s):
         self.s += s
-    
+
     def close(self):
         pass
 
+
 class FilterTests(TestCase):
-    
+
     def setUp(self):
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir']
         self.files_to_remove = []
-        
+
         self.filter_fasta_expected1 = filter_fasta_expected1
         self.filter_fasta_expected2 = filter_fasta_expected2
         self.filter_fastq_expected1 = filter_fastq_expected1
@@ -63,11 +64,11 @@ class FilterTests(TestCase):
         self.map_str1 = map_str1
         self.map_str2 = map_str2.split('\n')
         self.map_data, self.map_headers, self.map_comments =\
-         parse_mapping_file(StringIO(self.map_str1))
+            parse_mapping_file(StringIO(self.map_str1))
         self.tree1 = DndParser(tree1)
         self.tree2 = DndParser(tree2)
         self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
-        
+
         self.otu_table2 = parse_biom_table_str(sparse_otu_table2)
 
         # For sample_ids_from_category_state_coverage() tests.
@@ -78,72 +79,82 @@ class FilterTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-        
+
     def test_negate_tips_to_keep(self):
         """ negate_tips_to_keep functions as expected """
         t = DndParser("((S5:0.00014,S7:0.00015)0.752:0.45762,(S3:0.00014,"
-         "seq6:0.00014)0.180:0.00015,(Seq1:0.00014,s2:0.00014)0.528:1.0466);")
-        
-        tips_to_keep = ["S5","Seq1","s2"]
-        expected = ["S7","S3","seq6"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
-        
-        tips_to_keep = ["S5","Seq1"]
-        expected = ["S7","S3","seq6","s2"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
-        
+                      "seq6:0.00014)0.180:0.00015,(Seq1:0.00014,s2:0.00014)0.528:1.0466);")
+
+        tips_to_keep = ["S5", "Seq1", "s2"]
+        expected = ["S7", "S3", "seq6"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+
+        tips_to_keep = ["S5", "Seq1"]
+        expected = ["S7", "S3", "seq6", "s2"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+
         tips_to_keep = []
-        expected = ["S7","S3","seq6","s2","S5","Seq1"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
-        
-        tips_to_keep = ["S7","S3","seq6","s2","S5","Seq1"]
+        expected = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+
+        tips_to_keep = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
         expected = []
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
 
     def test_filter_mapping_file(self):
         """filter_mapping_file should filter map file according to sample ids"""
-        self.assertEqual(filter_mapping_file(self.map_data, self.map_headers,\
-         ['a','b','c','d','e','f']), (self.map_headers, self.map_data))
-        self.assertEqual(filter_mapping_file(self.map_data, self.map_headers, ['a']),
-            (['SampleID','Description'],['a\tx'.split('\t')]))
+        self.assertEqual(filter_mapping_file(self.map_data, self.map_headers,
+                                             ['a', 'b', 'c', 'd', 'e', 'f']), (self.map_headers, self.map_data))
+        self.assertEqual(
+            filter_mapping_file(self.map_data, self.map_headers, ['a']),
+            (['SampleID', 'Description'], ['a\tx'.split('\t')]))
 
     def test_filter_mapping_file_from_mapping_f(self):
         """ filter_mapping_file_from_mapping_f functions as expected """
-        actual = filter_mapping_file_from_mapping_f(self.tutorial_mapping_f,["PC.354","PC.355"])
+        actual = filter_mapping_file_from_mapping_f(
+            self.tutorial_mapping_f, ["PC.354", "PC.355"])
         expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
 PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
 PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355"""
-        self.assertEqual(actual,expected)
+        self.assertEqual(actual, expected)
 
     def test_filter_mapping_file_from_mapping_f_negate(self):
         """ filter_mapping_file_from_mapping_f functions as expected when negate is True """
         actual = filter_mapping_file_from_mapping_f(self.tutorial_mapping_f,
-         ["PC.356", "PC.481", "PC.593", "PC.607", "PC.634", "PC.635", "PC.636"],
-         negate=True)
+                                                    ["PC.356",
+                                                     "PC.481",
+                                                     "PC.593",
+                                                     "PC.607",
+                                                     "PC.634",
+                                                     "PC.635",
+                                                     "PC.636"],
+                                                    negate=True)
         expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
 PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
 PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355"""
-        self.assertEqual(actual,expected)
+        self.assertEqual(actual, expected)
 
     def test_filter_mapping_file_by_metadata_states(self):
         """ filter_mapping_file_by_metadata_states functions as expected """
-        actual = filter_mapping_file_by_metadata_states(self.tutorial_mapping_f,"Treatment:Control")
+        actual = filter_mapping_file_by_metadata_states(
+            self.tutorial_mapping_f,
+            "Treatment:Control")
         expected = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
 PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._354
 PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
 PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Control	20061126	Control_mouse_I.D._356
 PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
 PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593"""
-        self.assertEqual(actual,expected)
+        self.assertEqual(actual, expected)
 
     def test_filter_fasta(self):
         """filter_fasta functions as expected"""
-        input_seqs = [('Seq1 some comment','ACCTTGG'),
-                      ('s2 some other comment','TTGG'),
-                      ('S3','AAGGCCGG'),
-                      ('S5 some comment','CGT'),
-                      ('seq6 some other comment','AA'),
-                      ('S7','T')]
+        input_seqs = [('Seq1 some comment', 'ACCTTGG'),
+                      ('s2 some other comment', 'TTGG'),
+                      ('S3', 'AAGGCCGG'),
+                      ('S5 some comment', 'CGT'),
+                      ('seq6 some other comment', 'AA'),
+                      ('S7', 'T')]
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
@@ -153,23 +164,23 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
                      actual,
                      seqs_to_keep,
                      negate=False)
-        self.assertEqual(actual.s,self.filter_fasta_expected1)
-        
+        self.assertEqual(actual.s, self.filter_fasta_expected1)
+
         actual = fake_output_f()
         filter_fasta(input_seqs,
                      actual,
                      seqs_to_keep,
                      negate=True)
-        self.assertEqual(actual.s,self.filter_fasta_expected2)
+        self.assertEqual(actual.s, self.filter_fasta_expected2)
 
     def test_filter_fastq(self):
         """filter_fastq functions as expected"""
-        input_seqs = [('Seq1 some comment','ACCTTGG','BBBBBBB'),
-                      ('s2 some other comment','TTGG','BBBB'),
-                      ('S3','AAGGCCGG','BBCtatcc'),
-                      ('S5 some comment','CGT','BBB'),
-                      ('seq6 some other comment','AA','BB'),
-                      ('S7','T','s')]
+        input_seqs = [('Seq1 some comment', 'ACCTTGG', 'BBBBBBB'),
+                      ('s2 some other comment', 'TTGG', 'BBBB'),
+                      ('S3', 'AAGGCCGG', 'BBCtatcc'),
+                      ('S5 some comment', 'CGT', 'BBB'),
+                      ('seq6 some other comment', 'AA', 'BB'),
+                      ('S7', 'T', 's')]
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
@@ -179,402 +190,665 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
                      actual,
                      seqs_to_keep,
                      negate=False)
-        self.assertEqual(actual.s,self.filter_fastq_expected1)
-        
+        self.assertEqual(actual.s, self.filter_fastq_expected1)
+
         actual = fake_output_f()
         filter_fastq(input_seqs,
                      actual,
                      seqs_to_keep,
                      negate=True)
-        self.assertEqual(actual.s,self.filter_fastq_expected2)
-    
+        self.assertEqual(actual.s, self.filter_fastq_expected2)
+
     def test_filter_tree(self):
         """filter_tree functions as expected"""
-        actual = [e.Name for e in filter_tree(self.tree1,['bbb','ccc']).tips()]
+        actual = [e.Name for e in filter_tree(
+            self.tree1, ['bbb', 'ccc']).tips()]
         #(a_a:10,(b_b:2,c_c:4):5);
-        expected = [e.Name for e in DndParser("((bbb:2,ccc:4));",PhyloNode).tips()]
-        self.assertEqual(actual,expected)
-        
-        actual = [e.Name for e in filter_tree(self.tree2,['bbb','ccc']).tips()]
+        expected = [
+            e.Name for e in DndParser(
+                "((bbb:2,ccc:4));",
+                PhyloNode).tips(
+            )]
+        self.assertEqual(actual, expected)
+
+        actual = [e.Name for e in filter_tree(
+            self.tree2, ['bbb', 'ccc']).tips()]
         #(a_a:10,(b_b:2,c_c:4):5);
-        expected = [e.Name for e in DndParser("(('bbb':2,ccc:4));",PhyloNode).tips()]
-        self.assertEqual(actual,expected)
-    
+        expected = [
+            e.Name for e in DndParser(
+                "(('bbb':2,ccc:4));",
+                PhyloNode).tips(
+            )]
+        self.assertEqual(actual, expected)
+
     def test_filter_samples_from_distance_matrix(self):
         """filter_samples_from_distance_matrix functions as expected """
-        actual = filter_samples_from_distance_matrix(parse_distmat(self.input_dm1),
-                                               ["GHI blah","XYZ"])
-        self.assertEqual(actual,expected_dm1a)
-        actual = filter_samples_from_distance_matrix(parse_distmat(self.input_dm1),
-                                              ["GHI","DEF"])
-        self.assertEqual(actual,expected_dm1b)
-        
-        
+        actual = filter_samples_from_distance_matrix(
+            parse_distmat(self.input_dm1),
+            ["GHI blah", "XYZ"])
+        self.assertEqual(actual, expected_dm1a)
+        actual = filter_samples_from_distance_matrix(
+            parse_distmat(self.input_dm1),
+            ["GHI", "DEF"])
+        self.assertEqual(actual, expected_dm1b)
+
     def test_filter_samples_from_distance_matrix_file_input(self):
         """filter_samples_from_distance_matrix handles file input """
         actual = filter_samples_from_distance_matrix(self.input_dm1,
-                                               ["GHI blah","XYZ"])
-        self.assertEqual(actual,expected_dm1a)
+                                                     ["GHI blah", "XYZ"])
+        self.assertEqual(actual, expected_dm1a)
         actual = filter_samples_from_distance_matrix(self.input_dm1,
-                                              ["GHI","DEF"])
-        self.assertEqual(actual,expected_dm1b)
+                                                     ["GHI", "DEF"])
+        self.assertEqual(actual, expected_dm1b)
 
     def test_filter_samples_from_distance_matrix_negate(self):
         """filter_samples_from_distance_matrix functions w negate """
         actual = filter_samples_from_distance_matrix(
-          parse_distmat(self.input_dm1),
-          ["ABC blah","DEF"],
-          negate=True)
-        self.assertEqual(actual,expected_dm1a)
-        actual = filter_samples_from_distance_matrix(\
-         parse_distmat(self.input_dm1),
-         ["ABC","XYZ"],
-         negate=True)
-        self.assertEqual(actual,expected_dm1b)
-        
+            parse_distmat(self.input_dm1),
+            ["ABC blah", "DEF"],
+            negate=True)
+        self.assertEqual(actual, expected_dm1a)
+        actual = filter_samples_from_distance_matrix(
+            parse_distmat(self.input_dm1),
+            ["ABC", "XYZ"],
+            negate=True)
+        self.assertEqual(actual, expected_dm1b)
+
     def test_get_otu_ids_from_taxonomy_f(self):
         """get_otu_ids_from_taxonomy_f returns functions that work as expected"""
-        ## positive list only
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['a'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['b'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['c'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(['d'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['d','a'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['b','a'])([],42,{'taxonomy':['a','b','c']}))
+        # positive list only
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['a'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['b'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(['d'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['d', 'a'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['b', 'a'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
         # only full-length match works
-        self.assertFalse(get_otu_ids_from_taxonomy_f(['c'])([],42,{'taxonomy':['a','b','cc']}))
-        
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(['c'])([], 42, {'taxonomy': ['a', 'b', 'cc']}))
+
         # negative list only
-        self.assertTrue(get_otu_ids_from_taxonomy_f(None,['d'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertTrue(get_otu_ids_from_taxonomy_f(None,['x'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['a'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['b'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['c'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['x','c'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['b','c'])([],42,{'taxonomy':['a','b','c']}))
-        
-        
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(None, ['d'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(None, ['x'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(None, ['a'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(None, ['b'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(None, ['c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(
+            None, ['x', 'c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(
+            None, ['b', 'c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+
         # positive and negative list
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['a'],['d'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(['a'],['c'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(['a'],['d','c'])([],42,{'taxonomy':['a','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(['x'],['y'])([],42,{'taxonomy':['a','b','c']}))
-        
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['a'], ['d'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(['a'], ['c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(get_otu_ids_from_taxonomy_f(
+            ['a'], ['d', 'c'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(['x'], ['y'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+
         # invalid input
-        self.assertRaises(ValueError,get_otu_ids_from_taxonomy_f,['x'],['x'])
-        self.assertRaises(KeyError,get_otu_ids_from_taxonomy_f(['x'],metadata_field='x'),[],42,{'taxonomy':['a','b','c']})
-        
+        self.assertRaises(
+            ValueError,
+            get_otu_ids_from_taxonomy_f,
+            ['x'],
+            ['x'])
+        self.assertRaises(KeyError, get_otu_ids_from_taxonomy_f(
+            ['x'], metadata_field='x'), [], 42, {'taxonomy': ['a', 'b', 'c']})
+
         # alt metadata field
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['b','a'],metadata_field='x')([],42,{'x':['a','b','c']}))
-        
+        self.assertTrue(get_otu_ids_from_taxonomy_f(
+            ['b', 'a'], metadata_field='x')([], 42, {'x': ['a', 'b', 'c']}))
+
         # case insensitive
-        self.assertTrue(get_otu_ids_from_taxonomy_f(['a'])([],42,{'taxonomy':['A','b','c']}))
-        self.assertFalse(get_otu_ids_from_taxonomy_f(None,['B'])([],42,{'taxonomy':['a','b','c']}))
-        
-    
+        self.assertTrue(
+            get_otu_ids_from_taxonomy_f(['a'])([], 42, {'taxonomy': ['A', 'b', 'c']}))
+        self.assertFalse(
+            get_otu_ids_from_taxonomy_f(None, ['B'])([], 42, {'taxonomy': ['a', 'b', 'c']}))
+
     def test_filter_otus_from_otu_table_ids(self):
         """filter_otus_from_otu_table functions with list of OTU ids"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,
-          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,0,inf)
-        expected_otu_ids = set(otu_table.ObservationIds) - set(['34','155','152'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
-    
+        filtered_otu_table = filter_otus_from_otu_table(otu_table,
+                                                        set(otu_table.ObservationIds) - set(['34', '155', '152']), 0, inf, 0, inf)
+        expected_otu_ids = set(otu_table.ObservationIds) - \
+            set(['34', '155', '152'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
+
     def test_filter_otus_from_otu_table_ids_negate(self):
         """filter_otus_from_otu_table functions with list of OTU ids and negate option"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,
-          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,0,inf,negate_ids_to_keep=True)
-        expected_otu_ids = set(['34','155','152'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
-    
+        filtered_otu_table = filter_otus_from_otu_table(otu_table,
+                                                        set(otu_table.ObservationIds) - set(['34', '155', '152']), 0, inf, 0, inf, negate_ids_to_keep=True)
+        expected_otu_ids = set(['34', '155', '152'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
+
     def test_filter_otus_from_otu_table_counts_dense(self):
         """filter_otus_from_otu_table functions with count-based filtering (dense OTU table)"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        
+
         # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25,0,inf)
-        expected_otu_ids = set(['34','155','152'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            20,
+            25,
+            0,
+            inf)
+        expected_otu_ids = set(['34', '155', '152'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf,0,inf)
-        expected_otu_ids = set(['267','154','254','17'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            43,
+            inf,
+            0,
+            inf)
+        expected_otu_ids = set(['267', '154', '254', '17'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1,0,inf)
-        expected_otu_ids = set(['0', '1', '10', '100', '102', '104', '105', '106', '107', '108', 
-        '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124', 
-        '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139', 
-        '141', '142', '143', '144', '148', '149', '15', '150', '157', '160', '161', '163', '164', 
-        '166', '167', '168', '170', '171', '172', '173', '175', '176', '177', '179', '18', '180', 
-        '182', '183', '185', '186', '188', '189', '19', '190', '192', '193', '195', '197', '2', 
-        '20', '202', '205', '206', '207', '209', '210', '212', '214', '215', '216', '219', '221', 
-        '222', '224', '226', '230', '232', '233', '234', '237', '238', '239', '24', '240', '242', 
-        '243', '244', '246', '247', '249', '25', '252', '255', '256', '258', '259', '260', '261', 
-        '263', '264', '268', '269', '27', '270', '271', '272', '273', '274', '275', '276', '277', 
-        '278', '279', '28', '280', '281', '284', '285', '288', '291', '292', '293', '294', '296', 
-        '297', '298', '30', '300', '302', '303', '304', '305', '306', '307', '308', '309', '31', 
-        '310', '311', '312', '314', '316', '317', '318', '32', '320', '321', '322', '323', '324', 
-        '325', '327', '328', '33', '330', '331', '332', '334', '335', '336', '337', '338', '339', 
-        '342', '343', '344', '345', '346', '347', '348', '350', '354', '355', '356', '358', '359', 
-        '364', '366', '367', '368', '369', '37', '372', '374', '376', '377', '378', '379', '38', 
-        '380', '382', '384', '385', '386', '387', '388', '389', '39', '390', '391', '392', '393', 
-        '394', '397', '398', '4', '40', '400', '401', '402', '403', '404', '405', '406', '410', 
-        '411', '413', '42', '43', '44', '45', '46', '47', '48', '49', '5', '50', '51', '55', '56', 
-        '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76', 
-        '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            1,
+            0,
+            inf)
+        expected_otu_ids = set(
+            ['0', '1', '10', '100', '102', '104', '105', '106', '107', '108',
+             '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124',
+             '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139',
+             '141', '142', '143', '144', '148', '149', '15', '150', '157', '160', '161', '163', '164',
+             '166', '167', '168', '170', '171', '172', '173', '175', '176', '177', '179', '18', '180',
+             '182', '183', '185', '186', '188', '189', '19', '190', '192', '193', '195', '197', '2',
+             '20', '202', '205', '206', '207', '209', '210', '212', '214', '215', '216', '219', '221',
+             '222', '224', '226', '230', '232', '233', '234', '237', '238', '239', '24', '240', '242',
+             '243', '244', '246', '247', '249', '25', '252', '255', '256', '258', '259', '260', '261',
+             '263', '264', '268', '269', '27', '270', '271', '272', '273', '274', '275', '276', '277',
+             '278', '279', '28', '280', '281', '284', '285', '288', '291', '292', '293', '294', '296',
+             '297', '298', '30', '300', '302', '303', '304', '305', '306', '307', '308', '309', '31',
+             '310', '311', '312', '314', '316', '317', '318', '32', '320', '321', '322', '323', '324',
+             '325', '327', '328', '33', '330', '331', '332', '334', '335', '336', '337', '338', '339',
+             '342', '343', '344', '345', '346', '347', '348', '350', '354', '355', '356', '358', '359',
+             '364', '366', '367', '368', '369', '37', '372', '374', '376', '377', '378', '379', '38',
+             '380', '382', '384', '385', '386', '387', '388', '389', '39', '390', '391', '392', '393',
+             '394', '397', '398', '4', '40', '400', '401', '402', '403', '404', '405', '406', '410',
+             '411', '413', '42', '43', '44', '45', '46', '47', '48', '49', '5', '50', '51', '55', '56',
+             '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76',
+             '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
 
     def test_filter_otus_from_otu_table_counts_sparse(self):
         """filter_otus_from_otu_table functions with count-based filtering (sparse OTU table)"""
         otu_table = parse_biom_table_str(sparse_otu_table1)
-        
-        # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25,0,inf)
-        expected_otu_ids = set(['34','155','152'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
-        # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf,0,inf)
-        expected_otu_ids = set(['267','154','254','17'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
-        # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1,0,inf)
-        expected_otu_ids = set(['0', '1', '10', '100', '102', '104', '105', '106', '107', '108', 
-        '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124', 
-        '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139', 
-        '141', '142', '143', '144', '148', '149', '15', '150', '157', '160', '161', '163', '164', 
-        '166', '167', '168', '170', '171', '172', '173', '175', '176', '177', '179', '18', '180', 
-        '182', '183', '185', '186', '188', '189', '19', '190', '192', '193', '195', '197', '2', 
-        '20', '202', '205', '206', '207', '209', '210', '212', '214', '215', '216', '219', '221', 
-        '222', '224', '226', '230', '232', '233', '234', '237', '238', '239', '24', '240', '242', 
-        '243', '244', '246', '247', '249', '25', '252', '255', '256', '258', '259', '260', '261', 
-        '263', '264', '268', '269', '27', '270', '271', '272', '273', '274', '275', '276', '277', 
-        '278', '279', '28', '280', '281', '284', '285', '288', '291', '292', '293', '294', '296', 
-        '297', '298', '30', '300', '302', '303', '304', '305', '306', '307', '308', '309', '31', 
-        '310', '311', '312', '314', '316', '317', '318', '32', '320', '321', '322', '323', '324', 
-        '325', '327', '328', '33', '330', '331', '332', '334', '335', '336', '337', '338', '339', 
-        '342', '343', '344', '345', '346', '347', '348', '350', '354', '355', '356', '358', '359', 
-        '364', '366', '367', '368', '369', '37', '372', '374', '376', '377', '378', '379', '38', 
-        '380', '382', '384', '385', '386', '387', '388', '389', '39', '390', '391', '392', '393', 
-        '394', '397', '398', '4', '40', '400', '401', '402', '403', '404', '405', '406', '410', 
-        '411', '413', '42', '43', '44', '45', '46', '47', '48', '49', '5', '50', '51', '55', '56', 
-        '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76', 
-        '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
 
+        # min and max
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            20,
+            25,
+            0,
+            inf)
+        expected_otu_ids = set(['34', '155', '152'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
+        # no max
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            43,
+            inf,
+            0,
+            inf)
+        expected_otu_ids = set(['267', '154', '254', '17'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
+        # no min
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            1,
+            0,
+            inf)
+        expected_otu_ids = set(
+            ['0', '1', '10', '100', '102', '104', '105', '106', '107', '108',
+             '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124',
+             '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139',
+             '141', '142', '143', '144', '148', '149', '15', '150', '157', '160', '161', '163', '164',
+             '166', '167', '168', '170', '171', '172', '173', '175', '176', '177', '179', '18', '180',
+             '182', '183', '185', '186', '188', '189', '19', '190', '192', '193', '195', '197', '2',
+             '20', '202', '205', '206', '207', '209', '210', '212', '214', '215', '216', '219', '221',
+             '222', '224', '226', '230', '232', '233', '234', '237', '238', '239', '24', '240', '242',
+             '243', '244', '246', '247', '249', '25', '252', '255', '256', '258', '259', '260', '261',
+             '263', '264', '268', '269', '27', '270', '271', '272', '273', '274', '275', '276', '277',
+             '278', '279', '28', '280', '281', '284', '285', '288', '291', '292', '293', '294', '296',
+             '297', '298', '30', '300', '302', '303', '304', '305', '306', '307', '308', '309', '31',
+             '310', '311', '312', '314', '316', '317', '318', '32', '320', '321', '322', '323', '324',
+             '325', '327', '328', '33', '330', '331', '332', '334', '335', '336', '337', '338', '339',
+             '342', '343', '344', '345', '346', '347', '348', '350', '354', '355', '356', '358', '359',
+             '364', '366', '367', '368', '369', '37', '372', '374', '376', '377', '378', '379', '38',
+             '380', '382', '384', '385', '386', '387', '388', '389', '39', '390', '391', '392', '393',
+             '394', '397', '398', '4', '40', '400', '401', '402', '403', '404', '405', '406', '410',
+             '411', '413', '42', '43', '44', '45', '46', '47', '48', '49', '5', '50', '51', '55', '56',
+             '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76',
+             '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
 
     def test_filter_otus_from_otu_table_samples_sparse(self):
         """filter_otus_from_otu_table functions with sample-based filtering (sparse OTU table)"""
         otu_table = parse_biom_table_str(sparse_otu_table1)
-        
+
         # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,7)
-        expected_otu_ids = set(['153','154','203','286','353','191','227'])
-        
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            6,
+            7)
+        expected_otu_ids = set(
+            ['153',
+             '154',
+             '203',
+             '286',
+             '353',
+             '191',
+             '227'])
+
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,inf)
-        expected_otu_ids = set(['153','154','203','286','353','191','227','120'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            6,
+            inf)
+        expected_otu_ids = set(
+            ['153',
+             '154',
+             '203',
+             '286',
+             '353',
+             '191',
+             '227',
+             '120'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,0,1)
-        expected_otu_ids = set(['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19', 
-                                '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39', 
-                                '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', 
-                                '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69', 
-                                '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86', 
-                                '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102', 
-                                '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115', 
-                                '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132', 
-                                '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144', 
-                                '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167', 
-                                '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180', 
-                                '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195', 
-                                '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214', 
-                                '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234', 
-                                '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247', 
-                                '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264', 
-                                '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276', 
-                                '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290', 
-                                '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303', 
-                                '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316', 
-                                '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330', 
-                                '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343', 
-                                '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357', 
-                                '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375', 
-                                '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387', 
-                                '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399', 
-                                '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            0,
+            1)
+        expected_otu_ids = set(
+            ['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19',
+             '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39',
+             '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52',
+             '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69',
+             '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86',
+             '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102',
+             '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115',
+             '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132',
+             '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144',
+             '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167',
+             '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180',
+             '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195',
+             '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214',
+             '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234',
+             '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247',
+             '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264',
+             '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276',
+             '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290',
+             '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303',
+             '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316',
+             '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330',
+             '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343',
+             '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357',
+             '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375',
+             '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387',
+             '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399',
+             '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
 
     def test_filter_otus_from_otu_table_samples_dense(self):
         """filter_otus_from_otu_table functions with sample-based filtering (dense OTU table)"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        
+
         # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,7)
-        expected_otu_ids = set(['153','154','203','286','353','191','227'])
-        
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            6,
+            7)
+        expected_otu_ids = set(
+            ['153',
+             '154',
+             '203',
+             '286',
+             '353',
+             '191',
+             '227'])
+
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,inf)
-        expected_otu_ids = set(['153','154','203','286','353','191','227','120'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            6,
+            inf)
+        expected_otu_ids = set(
+            ['153',
+             '154',
+             '203',
+             '286',
+             '353',
+             '191',
+             '227',
+             '120'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
         # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,0,1)
-        expected_otu_ids = set(['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19', 
-                                '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39', 
-                                '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', 
-                                '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69', 
-                                '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86', 
-                                '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102', 
-                                '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115', 
-                                '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132', 
-                                '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144', 
-                                '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167', 
-                                '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180', 
-                                '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195', 
-                                '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214', 
-                                '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234', 
-                                '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247', 
-                                '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264', 
-                                '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276', 
-                                '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290', 
-                                '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303', 
-                                '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316', 
-                                '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330', 
-                                '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343', 
-                                '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357', 
-                                '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375', 
-                                '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387', 
-                                '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399', 
-                                '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
-        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
-        
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            otu_table.ObservationIds,
+            0,
+            inf,
+            0,
+            1)
+        expected_otu_ids = set(
+            ['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19',
+             '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39',
+             '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52',
+             '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69',
+             '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86',
+             '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102',
+             '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115',
+             '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132',
+             '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144',
+             '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167',
+             '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180',
+             '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195',
+             '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214',
+             '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234',
+             '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247',
+             '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264',
+             '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276',
+             '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290',
+             '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303',
+             '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316',
+             '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330',
+             '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343',
+             '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357',
+             '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375',
+             '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387',
+             '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399',
+             '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
+        self.assertEqual(
+            set(filtered_otu_table.ObservationIds),
+            expected_otu_ids)
+
     def test_filter_samples_from_otu_table_counts_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        
+
         # min and max
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,148,149)
-        expected_sample_ids = set(['PC.354','PC.635','PC.593','PC.607'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            148,
+            149)
+        expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
         # min only
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,148,inf)
-        expected_sample_ids = set(['PC.354','PC.635','PC.593','PC.607','PC.356','PC.634'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            148,
+            inf)
+        expected_sample_ids = set(
+            ['PC.354',
+             'PC.635',
+             'PC.593',
+             'PC.607',
+             'PC.356',
+             'PC.634'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
         # max only
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,0,149)
-        expected_sample_ids = set(['PC.355','PC.481','PC.636','PC.354','PC.635','PC.593','PC.607'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            0,
+            149)
+        expected_sample_ids = set(
+            ['PC.355',
+             'PC.481',
+             'PC.636',
+             'PC.354',
+             'PC.635',
+             'PC.593',
+             'PC.607'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
         otu_table = parse_biom_table_str(dense_otu_table1)
-        
+
         # keep two samples
-        expected_sample_ids = set(['PC.593','PC.607'])
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        expected_sample_ids = set(['PC.593', 'PC.607'])
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            expected_sample_ids,
+            0,
+            inf)
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
 
         # keep some other samples
-        expected_sample_ids = set(['PC.354','PC.635','PC.593'])
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
-    
+        expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593'])
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            expected_sample_ids,
+            0,
+            inf)
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
+
     def test_filter_otu_table_to_n_samples(self):
         """filter_otu_table_to_n_samples returns randomly selected subset of samples
         """
         otu_table = parse_biom_table_str(dense_otu_table1)
-        
+
         # keep two samples
-        filtered_otu_table= filter_otu_table_to_n_samples(otu_table,2)
-        self.assertEqual(len(filtered_otu_table.SampleIds),2)
-        
+        filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 2)
+        self.assertEqual(len(filtered_otu_table.SampleIds), 2)
+
         # keep three samples
-        filtered_otu_table= filter_otu_table_to_n_samples(otu_table,3)
-        self.assertEqual(len(filtered_otu_table.SampleIds),3)
-        
+        filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
+        self.assertEqual(len(filtered_otu_table.SampleIds), 3)
+
         # ValueError on invalid n
-        self.assertRaises(ValueError,filter_otu_table_to_n_samples,otu_table,-1)
-        self.assertRaises(ValueError,filter_otu_table_to_n_samples,otu_table,10)
-        
+        self.assertRaises(
+            ValueError,
+            filter_otu_table_to_n_samples,
+            otu_table,
+            -1)
+        self.assertRaises(
+            ValueError,
+            filter_otu_table_to_n_samples,
+            otu_table,
+            10)
+
         # Multiple iterations yield different OTU tables - check that in 100 iterations
         # we get at least two different results to avoid random test failures.
         results = []
         for i in range(100):
-            filtered_otu_table= filter_otu_table_to_n_samples(otu_table,3)
+            filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
             results.append(tuple(filtered_otu_table.SampleIds))
         self.assertTrue(len(set(results)) > 1)
-            
 
     def test_filter_samples_from_otu_table_counts_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
         otu_table = parse_biom_table_str(sparse_otu_table1)
-        
+
         # min and max
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,148,149)
-        expected_sample_ids = set(['PC.354','PC.635','PC.593','PC.607'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            148,
+            149)
+        expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
         # min only
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,148,inf)
-        expected_sample_ids = set(['PC.354','PC.635','PC.593','PC.607','PC.356','PC.634'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            148,
+            inf)
+        expected_sample_ids = set(
+            ['PC.354',
+             'PC.635',
+             'PC.593',
+             'PC.607',
+             'PC.356',
+             'PC.634'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
         # max only
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,otu_table.SampleIds,0,149)
-        expected_sample_ids = set(['PC.355','PC.481','PC.636','PC.354','PC.635','PC.593','PC.607'])
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            otu_table.SampleIds,
+            0,
+            149)
+        expected_sample_ids = set(
+            ['PC.355',
+             'PC.481',
+             'PC.636',
+             'PC.354',
+             'PC.635',
+             'PC.593',
+             'PC.607'])
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
         otu_table = parse_biom_table_str(sparse_otu_table1)
-        
+
         # keep two samples
-        expected_sample_ids = set(['PC.593','PC.607'])
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        expected_sample_ids = set(['PC.593', 'PC.607'])
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            expected_sample_ids,
+            0,
+            inf)
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
 
         # keep some other samples
-        expected_sample_ids = set(['PC.354','PC.635','PC.593'])
-        filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
-        self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
+        expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593'])
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            expected_sample_ids,
+            0,
+            inf)
+        self.assertEqual(
+            set(filtered_otu_table.SampleIds),
+            expected_sample_ids)
 
     def test_sample_ids_from_metadata_description(self):
         """Testing sample_ids_from_metadata_description fails on an empty set"""
         self.assertRaises(ValueError, sample_ids_from_metadata_description,
-            self.tutorial_mapping_f, "Treatment:Foo")
+                          self.tutorial_mapping_f, "Treatment:Foo")
         self.assertRaises(ValueError, sample_ids_from_metadata_description,
-            self.tutorial_mapping_f, "DOB:!20061218,!20070314,!20071112,"
-            "!20080116")
+                          self.tutorial_mapping_f, "DOB:!20061218,!20070314,!20071112,"
+                          "!20080116")
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""
-        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('Study:Twin')), [])
-        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('Study:Dog')), ['a','b'])
-        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('Study:*,!Dog')), ['c','d','e'])
-        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
-        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,
+                                        parse_metadata_state_descriptions('Study:Twin')), [])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,
+                                        parse_metadata_state_descriptions('Study:Dog')), ['a', 'b'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,
+                                        parse_metadata_state_descriptions('Study:*,!Dog')), ['c', 'd', 'e'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,
+                                        parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,
+                                        parse_metadata_state_descriptions('BodySite:Stool')), ['a', 'b', 'e'])
 
     def test_sample_ids_from_category_state_coverage_min_num_states(self):
         """Test returns samp IDs based on number of states that are covered."""
         # Filter out all samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=2)
+                                                      'Treatment', 'DOB', min_num_states=2)
         self.assertEqual(obs, self.exp_empty)
 
         # Don't filter out any samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1)
+                                                      'Treatment', 'DOB', min_num_states=1)
         self.assertEqual(obs, self.exp_all)
 
         # Filter out some samples.
         exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
-        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+        obs = sample_ids_from_category_state_coverage(
+            self.map_str1.split('\n'),
             'BodySite', 'Study', min_num_states=2)
         self.assertEqual(obs, exp)
 
@@ -582,65 +856,67 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # than one sample at a single coverage state.
         exp = (set(['a', 'c', 'd', 'e', 'f', 'g']), 2, set(['1', '3', '2']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', min_num_states=2)
+                                                      'Time', 'Individual', min_num_states=2)
         self.assertEqual(obs, exp)
 
-    def test_sample_ids_from_category_state_coverage_min_num_states_w_considered_states(self):
+    def test_sample_ids_from_category_state_coverage_min_num_states_w_considered_states(
+            self):
         """Test returns samp IDs based on number of considered states that are covered."""
 
-        ## Filter out all samples
+        # Filter out all samples
         # min_num_states too high
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=2, 
-             considered_states=["Control","Fast"])
+                                                      'Treatment', 'DOB', min_num_states=2,
+                                                      considered_states=["Control", "Fast"])
         self.assertEqual(obs, self.exp_empty)
         # considered_states too restrictive
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1, 
-             considered_states=[])
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      considered_states=[])
         self.assertEqual(obs, self.exp_empty)
 
         # Don't filter out any samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1,
-             considered_states=["Control","Fast"])
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      considered_states=["Control", "Fast"])
         self.assertEqual(obs, self.exp_all)
 
         # Some samples filtered when considered states is partially restrictive
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
                set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1,
-             considered_states=["Control"])
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      considered_states=["Control"])
         self.assertEqual(obs, exp)
 
-        exp = (set(['PC.607','PC.634', 'PC.635', 'PC.636']), 2, set(['Fast']))
+        exp = (set(['PC.607', 'PC.634', 'PC.635', 'PC.636']), 2, set(['Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1,
-             considered_states=["Fast"])
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      considered_states=["Fast"])
         self.assertEqual(obs, exp)
 
     def test_sample_ids_from_category_state_coverage_required_states(self):
         """Test returns samp IDs based on specific category states covered."""
         # Filter out all samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', required_states=['Control', 'Fast'])
+                                                      'Treatment', 'DOB', required_states=['Control', 'Fast'])
         self.assertEqual(obs, self.exp_empty)
 
         # Don't filter out any samples.
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', required_states=[])
+                                                      'Treatment', 'DOB', required_states=[])
         self.assertEqual(obs, self.exp_all)
 
         # Filter out some samples.
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
                set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', required_states=['Control'])
+                                                      'Treatment', 'DOB', required_states=['Control'])
         self.assertEqual(obs, exp)
 
         exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
-        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+        obs = sample_ids_from_category_state_coverage(
+            self.map_str1.split('\n'),
             'BodySite', 'Study', required_states=['Stool', 'Palm'])
         self.assertEqual(obs, exp)
 
@@ -648,55 +924,56 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # than one sample at a single coverage state.
         exp = (set(['c', 'f', 'a', 'g']), 1, set(['1', '2', '3']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', required_states=['3', '2'])
+                                                      'Time', 'Individual', required_states=['3', '2'])
         self.assertEqual(obs, exp)
 
         # Should convert states to strings.
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', required_states=[3, 2])
+                                                      'Time', 'Individual', required_states=[3, 2])
         self.assertEqual(obs, exp)
 
     def test_sample_ids_from_category_state_combined_filters(self):
         """Test returns samp IDs using both supported filters."""
         # Filter out all samples (fails both filters).
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=2,
-            required_states=['Control', 'Fast'])
+                                                      'Treatment', 'DOB', min_num_states=2,
+                                                      required_states=['Control', 'Fast'])
         self.assertEqual(obs, self.exp_empty)
 
         # Filter out all samples (fails one filter).
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=2, required_states=['Control'])
+                                                      'Treatment', 'DOB', min_num_states=2, required_states=['Control'])
         self.assertEqual(obs, self.exp_empty)
 
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1,
-            required_states=['Control', 'Fast'])
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      required_states=['Control', 'Fast'])
         self.assertEqual(obs, self.exp_empty)
 
         # Don't filter out any samples (passes both filters).
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=0, required_states=[])
+                                                      'Treatment', 'DOB', min_num_states=0, required_states=[])
         self.assertEqual(obs, self.exp_all)
 
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1, required_states=[])
+                                                      'Treatment', 'DOB', min_num_states=1, required_states=[])
         self.assertEqual(obs, self.exp_all)
 
         # Filter out some samples.
         exp = (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
                set(['Control']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1, required_states=['Control'])
+                                                      'Treatment', 'DOB', min_num_states=1, required_states=['Control'])
         self.assertEqual(obs, exp)
 
         exp = (set(['PC.607', 'PC.634', 'PC.635', 'PC.636']), 2, set(['Fast']))
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-            'Treatment', 'DOB', min_num_states=1, required_states=['Fast'])
+                                                      'Treatment', 'DOB', min_num_states=1, required_states=['Fast'])
         self.assertEqual(obs, exp)
 
         exp = (set(['d', 'e']), 1, set(['Palm', 'Stool']))
-        obs = sample_ids_from_category_state_coverage(self.map_str1.split('\n'),
+        obs = sample_ids_from_category_state_coverage(
+            self.map_str1.split('\n'),
             'BodySite', 'Study', required_states=['Stool', 'Palm'],
             min_num_states=1)
         self.assertEqual(obs, exp)
@@ -705,13 +982,13 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # than one sample at a single coverage state (i.e. timepoint).
         exp = (set(['c', 'f', 'a', 'g']), 1, set(['1', '2', '3']))
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', min_num_states=3, required_states=['3', '2'])
+                                                      'Time', 'Individual', min_num_states=3, required_states=['3', '2'])
         self.assertEqual(obs, exp)
 
         # Test filtering out the subject (from the above test) that has four
         # timepoints, but only three are unique.
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', min_num_states=4, required_states=['3', '2'])
+                                                      'Time', 'Individual', min_num_states=4, required_states=['3', '2'])
         self.assertEqual(obs, self.exp_empty)
 
     def test_sample_ids_from_category_state_splitter_category(self):
@@ -722,9 +999,10 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
                (set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']), 4,
                 set(['Control']))}
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-                'Treatment', 'DOB', min_num_states=1,
-                required_states=['Control'],
-                splitter_category='LinkerPrimerSequence')
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      required_states=[
+                                                          'Control'],
+                                                      splitter_category='LinkerPrimerSequence')
         self.assertEqual(obs, exp)
 
         # Split on category that has a unique state for each sample ID.
@@ -738,8 +1016,8 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
                'AGCACGAGCCTA': (set(['PC.354']), 1, set(['Control'])),
                'ACAGACCACTCA': (set(['PC.356']), 1, set(['Control']))}
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-                'Treatment', 'DOB', min_num_states=1,
-                splitter_category='BarcodeSequence')
+                                                      'Treatment', 'DOB', min_num_states=1,
+                                                      splitter_category='BarcodeSequence')
         self.assertEqual(obs, exp)
 
         # Filter all samples.
@@ -753,8 +1031,8 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
                'AGCACGAGCCTA': self.exp_empty,
                'ACAGACCACTCA': self.exp_empty}
         obs = sample_ids_from_category_state_coverage(self.tutorial_mapping_f,
-                'Treatment', 'DOB', min_num_states=2,
-                splitter_category='BarcodeSequence')
+                                                      'Treatment', 'DOB', min_num_states=2,
+                                                      splitter_category='BarcodeSequence')
         self.assertEqual(obs, exp)
 
         # Split by body site to filter samples/individuals out that would have
@@ -762,55 +1040,55 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         exp = {'Palm': (set(['a', 'f']), 1, set(['3', '2'])),
                'Stool': (set(['c', 'g']), 1, set(['1', '2']))}
         obs = sample_ids_from_category_state_coverage(self.map_str2,
-            'Time', 'Individual', min_num_states=2,
-            splitter_category='BodySite')
+                                                      'Time', 'Individual', min_num_states=2,
+                                                      splitter_category='BodySite')
         self.assertEqual(obs, exp)
 
     def test_sample_ids_from_category_state_coverage_invalid_input(self):
         """Test that errors are thrown on bad input."""
         # Using SampleID for coverage, subject, or splitter category.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'SampleID', 'DOB',
-            required_states=['Control', 'Fast'])
+                          self.tutorial_mapping_f, 'SampleID', 'DOB',
+                          required_states=['Control', 'Fast'])
 
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'SampleID',
-            required_states=['Control', 'Fast'])
+                          self.tutorial_mapping_f, 'Treatment', 'SampleID',
+                          required_states=['Control', 'Fast'])
 
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB',
-            required_states=['Control', 'Fast'], splitter_category='SampleID')
+                          self.tutorial_mapping_f, 'Treatment', 'DOB',
+                          required_states=['Control', 'Fast'], splitter_category='SampleID')
 
         # Nonexisting coverage, subject, or splitter category.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'foo', 'DOB',
-            required_states=['Control', 'Fast'])
+                          self.tutorial_mapping_f, 'foo', 'DOB',
+                          required_states=['Control', 'Fast'])
 
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'foo',
-            required_states=['Control', 'Fast'])
+                          self.tutorial_mapping_f, 'Treatment', 'foo',
+                          required_states=['Control', 'Fast'])
 
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB',
-            required_states=['Control', 'Fast'], splitter_category='foo')
+                          self.tutorial_mapping_f, 'Treatment', 'DOB',
+                          required_states=['Control', 'Fast'], splitter_category='foo')
 
         # Reusing same category for coverage, subject, or splitter category.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'Treatment',
-            required_states=['Control', 'Fast'])
+                          self.tutorial_mapping_f, 'Treatment', 'Treatment',
+                          required_states=['Control', 'Fast'])
 
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB',
-            required_states=['Control', 'Fast'], splitter_category='Treatment')
+                          self.tutorial_mapping_f, 'Treatment', 'DOB',
+                          required_states=['Control', 'Fast'], splitter_category='Treatment')
 
         # Nonexisting required coverage category state.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB',
-            required_states=['Fast', 'foo'])
+                          self.tutorial_mapping_f, 'Treatment', 'DOB',
+                          required_states=['Fast', 'foo'])
 
         # No filters are provided.
         self.assertRaises(ValueError, sample_ids_from_category_state_coverage,
-            self.tutorial_mapping_f, 'Treatment', 'DOB')
+                          self.tutorial_mapping_f, 'Treatment', 'DOB')
 
     def test_filter_otus_from_otu_map(self):
         """ filter_otus_from_otu_map functions as expected """
@@ -825,31 +1103,31 @@ o2	s1_3	s1_4	s2_5
 """
         otu_map_no_single_min_sample2 = """o2	s1_3	s1_4	s2_5
 """
-        
+
         # write the test files
         in_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_filter_test',suffix='.txt')
-        fasting_seqs_f = open(in_fp,'w')
+                                 prefix='qiime_filter_test', suffix='.txt')
+        fasting_seqs_f = open(in_fp, 'w')
         fasting_seqs_f.write(otu_map_in)
         fasting_seqs_f.close()
         self.files_to_remove.append(in_fp)
-        
+
         actual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_filter_test',suffix='.txt')
+                                     prefix='qiime_filter_test', suffix='.txt')
         self.files_to_remove.append(actual_fp)
-        
-        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,2)
-        self.assertEqual(open(actual_fp).read(),otu_map_no_single)
-        self.assertEqualItems(retained_otus,set(['o1 some comment','o2']))
-        
-        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,3)
-        self.assertEqual(open(actual_fp).read(),otu_map_no_single_double)
-        self.assertEqualItems(retained_otus,set(['o2']))
-        
-        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,2,2)
-        self.assertEqual(open(actual_fp).read(),otu_map_no_single_min_sample2)
-        self.assertEqualItems(retained_otus,set(['o2']))
-        
+
+        retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)
+        self.assertEqual(open(actual_fp).read(), otu_map_no_single)
+        self.assertEqualItems(retained_otus, set(['o1 some comment', 'o2']))
+
+        retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 3)
+        self.assertEqual(open(actual_fp).read(), otu_map_no_single_double)
+        self.assertEqualItems(retained_otus, set(['o2']))
+
+        retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2, 2)
+        self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
+        self.assertEqualItems(retained_otus, set(['o2']))
+
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
 tree2 = "(aaa:10,('bbb':2,ccc:4):5);"

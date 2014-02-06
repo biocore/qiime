@@ -4,12 +4,11 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Jens Reeder", "William Walters"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from os.path import exists, split, splitext, join
 from shutil import rmtree
@@ -21,49 +20,53 @@ from cogent.app.formatdb import build_blast_db_from_fasta_file
 
 from qiime.util import get_tmp_filename, create_dir
 from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
-    chimeraSlayer_identify_chimeras, parse_CPS_file,
-    get_chimeras_from_Nast_aligned, usearch61_chimera_check,
-    identify_chimeras_usearch61, fix_abundance_labels, get_chimera_clusters,
-    merge_clusters_chimeras)
+                                          chimeraSlayer_identify_chimeras, parse_CPS_file,
+                                          get_chimeras_from_Nast_aligned, usearch61_chimera_check,
+                                          identify_chimeras_usearch61, fix_abundance_labels, get_chimera_clusters,
+                                          merge_clusters_chimeras)
+
 
 class BlastFragmentsChimeraCheckerTests(TestCase):
+
     """ """
-    
+
     def setUp(self):
-        """ """    
-        self.id_to_taxonomy_fp = get_tmp_filename(\
-         prefix='BlastFragmentsChimeraCheckerTests_',suffix='.txt') 
-        self.input_seqs_fp = get_tmp_filename(\
-         prefix='BlastFragmentsChimeraCheckerTests_',suffix='.fasta')
-        self.reference_seqs_fp = get_tmp_filename(\
-         prefix='BlastFragmentsChimeraCheckerTests_',suffix='.fasta')
-        
+        """ """
+        self.id_to_taxonomy_fp = get_tmp_filename(
+            prefix='BlastFragmentsChimeraCheckerTests_', suffix='.txt')
+        self.input_seqs_fp = get_tmp_filename(
+            prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
+        self.reference_seqs_fp = get_tmp_filename(
+            prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
+
         self._paths_to_clean_up =\
-         [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp] 
-        
-        open(self.id_to_taxonomy_fp,'w').write(id_to_taxonomy_string)
-        open(self.input_seqs_fp,'w').write(test_seq_coll.toFasta())
-        open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
-        
+            [self.id_to_taxonomy_fp,
+             self.input_seqs_fp,
+             self.reference_seqs_fp]
+
+        open(self.id_to_taxonomy_fp, 'w').write(id_to_taxonomy_string)
+        open(self.input_seqs_fp, 'w').write(test_seq_coll.toFasta())
+        open(self.reference_seqs_fp, 'w').write(test_refseq_coll.toFasta())
+
         self.bcc = None
-        
-        self.expected1 = [\
-            ('c1',\
-                ['Archaea;Euryarchaeota;Halobacteriales;uncultured',\
+
+        self.expected1 = [
+            ('c1',
+                ['Archaea;Euryarchaeota;Halobacteriales;uncultured',
                  'Archaea;Crenarchaeota;uncultured;uncultured'])]
-                 
+
     def tearDown(self):
         remove_files(self._paths_to_clean_up)
-        if self.bcc != None:
+        if self.bcc is not None:
             self.bcc.cleanUp()
 
     def test_init_creates_db(self):
         """BlastFragmentsChimeraCheckerTests: blast database created/cleaned
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        self.assertEqual(self.bcc.num_fragments,3)
+        self.assertEqual(self.bcc.num_fragments, 3)
         # blast db created
         db_name = split(self.reference_seqs_fp)[1]
         db_fp = '/tmp/%s.nsq' % db_name
@@ -71,192 +74,191 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
         self.bcc.cleanUp()
         # db is cleaned up
         self.assertFalse(exists(db_fp))
-        
-        
-        
+
     def test_init_creates_db(self):
         """BlastFragmentsChimeraChecker: parameters initialized correctly
-        """        
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp,\
-                  'num_fragments':2}
+        """
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp,
+                  'num_fragments': 2}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        self.assertEqual(self.bcc.Params['num_fragments'],2)
-        
+        self.assertEqual(self.bcc.Params['num_fragments'], 2)
+
     def test_function_w_preexisting_blastdb(self):
         blast_db, db_files_to_remove = \
-         build_blast_db_from_fasta_file(test_refseq_coll.toFasta().split('\n'))
+            build_blast_db_from_fasta_file(
+                test_refseq_coll.toFasta().split('\n'))
         self._paths_to_clean_up += db_files_to_remove
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':None,\
-                  'blast_db':blast_db,\
-                  'num_fragments':2}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': None,
+                  'blast_db': blast_db,
+                  'num_fragments': 2}
         self.bcc = BlastFragmentsChimeraChecker(params)
         actual = list(self.bcc(self.input_seqs_fp))
-        self.assertEqual(actual,self.expected1)
-        
+        self.assertEqual(actual, self.expected1)
+
     def test_fragmentSeq_even_len_frags(self):
         """BlastFragmentsChimeraChecker:_fragment_seq fns when frags are evenly divisible
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        
+
         # default: 3 frags
-        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),\
-            ['ACCG','TTAT','ATTT'])
-            
+        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),
+                         ['ACCG', 'TTAT', 'ATTT'])
+
         self.bcc.Params['num_fragments'] = 2
-        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),\
-            ['ACCGTT','ATATTT'])
-            
+        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),
+                         ['ACCGTT', 'ATATTT'])
+
         self.bcc.Params['num_fragments'] = 4
-        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),\
-            ['ACC','GTT','ATA','TTT'])
-            
+        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTT'),
+                         ['ACC', 'GTT', 'ATA', 'TTT'])
+
     def test_fragment_seq_uneven_len_frags(self):
         """BlastFragmentsChimeraChecker:_fragment_seq fns when frags aren't evenly divisible
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        
+
         # default: 3 frags
-        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTTC'),\
-            ['ACCGT','TATA','TTTC'])
-        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTTCC'),\
-            ['ACCGT','TATAT','TTCC'])
-        
+        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTTC'),
+                         ['ACCGT', 'TATA', 'TTTC'])
+        self.assertEqual(self.bcc._fragment_seq('ACCGTTATATTTCC'),
+                         ['ACCGT', 'TATAT', 'TTCC'])
+
     def test_is_chimeric(self):
         """BlastFragmentsChimeraChecker: _is_chimeric functions as expected
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
         # Basic cases, fewer than 4 assignments deep
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD','AB;CE','AB;CD']))
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD','AB;CD','AB;CD']))
-        
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD', 'AB;CE', 'AB;CD']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD', 'AB;CD', 'AB;CD']))
+
         # Basic cases, exactly 4 assignments deep
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;GH']))
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
-            
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;GH']))
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
+
         # Leading/trialing spaces in taxa don't affect results
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF; GH ','AB ;CD;EF;GH','AB;CD; EF;GH']))
-            
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF; GH ', 'AB ;CD;EF;GH', 'AB;CD; EF;GH']))
+
         # More complex cases -- only first four levels are considered
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH;IJ','AB;CD;EF;GH']))
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH;LM;XY','AB;CD;EF;GH;IJ','AB;CD;EF;GH;JK']))
-            
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH;IJ', 'AB;CD;EF;GH']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH;LM;XY', 'AB;CD;EF;GH;IJ', 'AB;CD;EF;GH;JK']))
+
         # unlikely case (but possible) where 5th level is identical,
         # but 4th is not
         self.bcc.Params['taxonomy_depth'] = 3
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH;XY', 'AB;CD;EF;JK;XY', 'AB;CD;EF;GH;XY']))
         self.bcc.Params['taxonomy_depth'] = 4
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY']))
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH;XY', 'AB;CD;EF;JK;XY', 'AB;CD;EF;GH;XY']))
         self.bcc.Params['taxonomy_depth'] = 5
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY']))
-            
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH;XY', 'AB;CD;EF;JK;XY', 'AB;CD;EF;GH;XY']))
+
     def test_is_chimeric_no_blast_hit(self):
         """BlastFragmentsChimeraChecker: no blast hit is lack of evidence for chimeric
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
         # 'No blast hit' values ignored (lack of evidence to claim sequence
-        # is chimeric) 
+        # is chimeric)
         self.bcc.Params['taxonomy_depth'] = 3
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF','No blast hit','AB;CD;EF']))
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['No blast hit','No blast hit','No blast hit']))
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['No blast hit','AB;CD;EF','AB;CD;EF']))
-            
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF', 'No blast hit', 'AB;CD;EF']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['No blast hit', 'No blast hit', 'No blast hit']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['No blast hit', 'AB;CD;EF', 'AB;CD;EF']))
+
         # Still called a chimera though if other assignments suggest that it is
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['No blast hit','AB;CD;EF','AB;CD;XY']))
-            
+        self.assertTrue(self.bcc._is_chimeric(
+            ['No blast hit', 'AB;CD;EF', 'AB;CD;XY']))
+
     def test_is_chimeric_alt_depth(self):
         """BlastFragmentsChimeraChecker: _is_chimeric functions as expected with alt depth
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        
+
         # chimeric at depth 5
         self.bcc.Params['taxonomy_depth'] = 5
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
         # chimeric at depth 4
         self.bcc.Params['taxonomy_depth'] = 4
-        self.assertTrue(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
+        self.assertTrue(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
         # non-chimeric at depth 3
         self.bcc.Params['taxonomy_depth'] = 3
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
         # non-chimeric at depth 2
         self.bcc.Params['taxonomy_depth'] = 2
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
         # non-chimeric at depth 1
         self.bcc.Params['taxonomy_depth'] = 1
-        self.assertFalse(self.bcc._is_chimeric(\
-            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY']))
-        
-        
+        self.assertFalse(self.bcc._is_chimeric(
+            ['AB;CD;EF;GH', 'AB;CD;EF;GH', 'AB;CD;EF;XY']))
+
     def test_get_taxonomy(self):
         """BlastFragmentsChimeraChecker: getTaxonomy functions with full-length sequence
-        
+
             (Just testing the input/output here as the core functionality
              is tested in Qiime/tests/test_assign_taxonomy.py.)
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
         s1 = test_seq_coll.getSeq('s1')
         actual = self.bcc._get_taxonomy(str(s1))
         expected = "Archaea;Euryarchaeota;Halobacteriales;uncultured"
-        self.assertEqual(actual,expected)
-        
+        self.assertEqual(actual, expected)
+
     def test_call(self):
         """BlastFragmentsChimeraChecker: correct assignments on known results
         """
-        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
-                  'reference_seqs_fp':self.reference_seqs_fp,\
-                  'num_fragments':2}
+        params = {'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+                  'reference_seqs_fp': self.reference_seqs_fp,
+                  'num_fragments': 2}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        
+
         actual = list(self.bcc(self.input_seqs_fp))
-        self.assertEqual(actual,self.expected1)
-        
+        self.assertEqual(actual, self.expected1)
+
 
 class ChimeraSlayerChimeraCheckerTests(TestCase):
-    """ """
-    
-    def setUp(self):
-        """ """   
 
-        self.files_to_remove=[] 
+    """ """
+
+    def setUp(self):
+        """ """
+
+        self.files_to_remove = []
         test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
         self.files_to_remove.append(test_seqs_fp)
-        fh = open(test_seqs_fp,"w")
+        fh = open(test_seqs_fp, "w")
         fh.write(chimeras)
         fh.close()
 
-        self.query_fp= test_seqs_fp
-         
+        self.query_fp = test_seqs_fp
+
     def tearDown(self):
         remove_files(self.files_to_remove)
 
@@ -267,18 +269,18 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
         observed = chimeraSlayer_identify_chimeras(self.query_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
 
-        
     def test_chimeraSlayer_identify_chimeras_user_db(self):
         """chimeraSlayer_identify_chimeras works with user provided DB"""
 
         # set up DB
         ref_db_fp = get_tmp_filename(prefix="test_chimera_slayer_ref_db_")
-        fh = open(ref_db_fp,"w")
+        fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
-        ref_db_nast_fp = get_tmp_filename(prefix="test_chimera_slayer_nast_db_")
-        fh_nast = open(ref_db_nast_fp,"w")
+        ref_db_nast_fp = get_tmp_filename(
+            prefix="test_chimera_slayer_nast_db_")
+        fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
 
@@ -288,46 +290,48 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
         observed = chimeraSlayer_identify_chimeras(self.query_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
 
+
 class ChimeraSlayer_app_tests(TestCase):
-    
+
     def setUp(self):
         self.files_to_remove = []
 
     def tearDown(self):
-        remove_files(self.files_to_remove,error_on_missing=False)
+        remove_files(self.files_to_remove, error_on_missing=False)
 
     def test_parse_CPS_files(self):
         """parse_CPS_files parse CPS format correctly"""
-        
-        lines=["\t".join(["ChimeraSlayer","chimera_X92624","7000004131495956",
-                         "S000469847","1.0360","99.35","100","0.9354","89.70",
-                         "0","YES","NAST:4595-4596","ECO:941-942"]),
-                "\t".join(["ChimeraSlayer","Test","7000004131495956",
-                         "S000469847","1.0360","99.35","100","0.9354","89.70",
-                          "0","NO","NAST:4595-4596","ECO:941-942"])
-               ]
-        
+
+        lines = [
+            "\t".join(["ChimeraSlayer", "chimera_X92624", "7000004131495956",
+                       "S000469847", "1.0360", "99.35", "100", "0.9354", "89.70",
+                       "0", "YES", "NAST:4595-4596", "ECO:941-942"]),
+            "\t".join(["ChimeraSlayer", "Test", "7000004131495956",
+                       "S000469847", "1.0360", "99.35", "100", "0.9354", "89.70",
+                       "0", "NO", "NAST:4595-4596", "ECO:941-942"])
+        ]
+
         expected = [('chimera_X92624', ['7000004131495956', 'S000469847'])]
         self.assertEqual(parse_CPS_file(lines), expected)
 
-        #Bad file raises error
-        self.assertRaises(ValueError,parse_CPS_file, [""])
-        self.assertRaises(ValueError,parse_CPS_file, ["Broken"])
-        
+        # Bad file raises error
+        self.assertRaises(ValueError, parse_CPS_file, [""])
+        self.assertRaises(ValueError, parse_CPS_file, ["Broken"])
+
     def test_get_chimeras_from_Nast_aligned(self):
         """get_chimeras_from_Nast_aligned identifies chimeras using default_db."""
 
-        #empty input gives empty output
+        # empty input gives empty output
         seqs = ""
         test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
         self.files_to_remove.append(test_seqs_fp)
-        fh = open(test_seqs_fp,"w")
+        fh = open(test_seqs_fp, "w")
         fh.write(seqs)
         fh.close()
 
         observed = get_chimeras_from_Nast_aligned(test_seqs_fp)
         self.assertEqual(observed, [])
-        
+
         # no chimeras give empty output
         seqs = """>test1
 GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTCTTTCAGCAGGGACGAAGCGTAAGTGACGGTACCTGCAGAAGAAGCGCCGGCCAACTACGTGCCAGCAGCCGCGGTAAGAC
@@ -339,11 +343,11 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         fh.close()
         observed = get_chimeras_from_Nast_aligned(test_seqs_fp2)
         self.assertEqual(observed, [])
-        
+
         # Real chimeras are identified as such
         test_seqs_fp3 = get_tmp_filename(prefix="test_chimera_slayer")
         self.files_to_remove.append(test_seqs_fp3)
-        fh = open(test_seqs_fp3,"w")
+        fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
         fh.close()
 
@@ -356,30 +360,34 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         # set up DB
         ref_db_fp = get_tmp_filename(prefix="test_chimera_slayer_ref_db_")
-        fh = open(ref_db_fp,"w")
+        fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
-        ref_db_nast_fp = get_tmp_filename(prefix="test_chimera_slayer_nast_db_")
-        fh_nast = open(ref_db_nast_fp,"w")
+        ref_db_nast_fp = get_tmp_filename(
+            prefix="test_chimera_slayer_nast_db_")
+        fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
 
         self.files_to_remove.extend([ref_db_fp, ref_db_nast_fp,
-                                     ref_db_nast_fp+'.cidx'])
+                                     ref_db_nast_fp + '.cidx'])
 
-        #empty input gives empty output
+        # empty input gives empty output
         seqs = ""
         test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
 
         self.files_to_remove.append(test_seqs_fp)
-        fh = open(test_seqs_fp,"w")
+        fh = open(test_seqs_fp, "w")
         fh.write(seqs)
         fh.close()
 
-        observed = get_chimeras_from_Nast_aligned(test_seqs_fp, ref_db_nast_fp, ref_db_fp)
+        observed = get_chimeras_from_Nast_aligned(
+            test_seqs_fp,
+            ref_db_nast_fp,
+            ref_db_fp)
         self.assertEqual(observed, [])
-        
+
         # no chimeras give empty output
         seqs = """>test1
 GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTCTTTCAGCAGGGACGAAGCGTAAGTGACGGTACCTGCAGAAGAAGCGCCGGCCAACTACGTGCCAGCAGCCGCGGTAAGAC
@@ -387,326 +395,340 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         test_seqs_fp2 = get_tmp_filename(prefix="test_chimera_slayer")
         self.files_to_remove.append(test_seqs_fp2)
-        fh = open(test_seqs_fp2,"w")
+        fh = open(test_seqs_fp2, "w")
         fh.write(seqs)
         fh.close()
-        observed = get_chimeras_from_Nast_aligned(test_seqs_fp2, ref_db_nast_fp, ref_db_fp)
+        observed = get_chimeras_from_Nast_aligned(
+            test_seqs_fp2,
+            ref_db_nast_fp,
+            ref_db_fp)
         self.assertEqual(observed, [])
-        
+
         # Real chimeras are identified as such
         test_seqs_fp3 = get_tmp_filename(prefix="test_chimera_slayer")
         self.files_to_remove.append(test_seqs_fp3)
-        fh = open(test_seqs_fp3,"w")
+        fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
         fh.close()
 
-        observed = get_chimeras_from_Nast_aligned(test_seqs_fp3, ref_db_nast_fp, ref_db_fp)
+        observed = get_chimeras_from_Nast_aligned(
+            test_seqs_fp3,
+            ref_db_nast_fp,
+            ref_db_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
 
-        #test that degapped fasta file is generated and used correctly
-        observed = get_chimeras_from_Nast_aligned(test_seqs_fp3, ref_db_nast_fp)
+        # test that degapped fasta file is generated and used correctly
+        observed = get_chimeras_from_Nast_aligned(
+            test_seqs_fp3,
+            ref_db_nast_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
+
 
 class Usearch61Tests(TestCase):
+
     """ Tests for usearch 6.1 functionality """
-    
+
     def setUp(self):
         # create the temporary input files
-        
-        self.output_dir =  get_tmp_filename(\
-         prefix='Usearch61ChimeraTests_',\
-         suffix='/')
-         
+
+        self.output_dir = get_tmp_filename(
+            prefix='Usearch61ChimeraTests_',
+            suffix='/')
+
         create_dir(self.output_dir)
-        
+
         self.dna_seqs = usearch61_dna_seqs
         self.ref_seqs = usearch61_ref_seqs
         self.abundance_seqs = abundance_seqs
         self.uchime_data = uchime_data
-        
-        self.raw_dna_seqs_fp = get_tmp_filename(\
-         prefix='Usearch61QuerySeqs_',\
-         suffix='.fasta')
-        seq_file = open(self.raw_dna_seqs_fp,'w')
+
+        self.raw_dna_seqs_fp = get_tmp_filename(
+            prefix='Usearch61QuerySeqs_',
+            suffix='.fasta')
+        seq_file = open(self.raw_dna_seqs_fp, 'w')
         seq_file.write(self.dna_seqs)
         seq_file.close()
-        
-        self.ref_seqs_fp = get_tmp_filename(\
-         prefix="Usearch61RefSeqs_",\
-         suffix=".fasta")
+
+        self.ref_seqs_fp = get_tmp_filename(
+            prefix="Usearch61RefSeqs_",
+            suffix=".fasta")
         seq_file = open(self.ref_seqs_fp, "w")
         seq_file.write(self.ref_seqs)
         seq_file.close()
-        
-        self.abundance_seqs_fp = get_tmp_filename(\
-         prefix="Usearch61AbundanceSeqs_",\
-         suffix=".fasta")
+
+        self.abundance_seqs_fp = get_tmp_filename(
+            prefix="Usearch61AbundanceSeqs_",
+            suffix=".fasta")
         seq_file = open(self.abundance_seqs_fp, "w")
         seq_file.write(self.abundance_seqs)
         seq_file.close()
-        
-        self.uchime_fp = get_tmp_filename(\
-         prefix="UsearchUchimeData_",\
-         suffix=".uchime")
+
+        self.uchime_fp = get_tmp_filename(
+            prefix="UsearchUchimeData_",
+            suffix=".uchime")
         seq_file = open(self.uchime_fp, "w")
         seq_file.write(self.uchime_data)
         seq_file.close()
-        
+
         self._files_to_remove =\
-         [self.raw_dna_seqs_fp, self.ref_seqs_fp, self.abundance_seqs_fp,
-          self.uchime_fp]
-          
+            [self.raw_dna_seqs_fp, self.ref_seqs_fp, self.abundance_seqs_fp,
+             self.uchime_fp]
+
         self._dirs_to_remove = [self.output_dir]
-        
+
     def tearDown(self):
         remove_files(self._files_to_remove)
         if self._dirs_to_remove:
             for curr_dir in self._dirs_to_remove:
                 rmtree(curr_dir)
-                
+
     def test_usearch61_chimera_check(self):
         """ Overall usearch61 functionality test with default params """
-        
-        
+
         usearch61_chimera_check(self.raw_dna_seqs_fp,
                                 self.output_dir,
                                 self.ref_seqs_fp)
-        
-        # All should be non-chimeric, due to union of tests     
+
+        # All should be non-chimeric, due to union of tests
         expected_non_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2',
-         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+                                 'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
         expected_chimeras = []
-        
+
         output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
         output_non_chimeras = open(join(self.output_dir,
-         "non_chimeras.txt"), "U")
-        
+                                        "non_chimeras.txt"), "U")
+
         actual_chimeras = [line.strip() for line in output_chimeras]
         actual_non_chimeras = [line.strip() for line in output_non_chimeras]
-        
+
         for curr_chimera in actual_chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in actual_non_chimeras:
 
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
-                                
-                                        
+
     def test_usearch61_chimera_check_no_denovo(self):
         """ Overall usearch61 functionality test, no denovo detection """
-        
+
         usearch61_chimera_check(self.raw_dna_seqs_fp,
                                 self.output_dir,
                                 self.ref_seqs_fp,
                                 suppress_usearch61_denovo=True)
-        
-        # Should get seq1 cluster as chimeric     
+
+        # Should get seq1 cluster as chimeric
         expected_non_chimeras = [
-         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+            'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
         expected_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2']
-        
+
         output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
         output_non_chimeras = open(join(self.output_dir,
-         "non_chimeras.txt"), "U")
-        
+                                        "non_chimeras.txt"), "U")
+
         actual_chimeras = [line.strip() for line in output_chimeras]
         actual_non_chimeras = [line.strip() for line in output_non_chimeras]
-        
+
         for curr_chimera in actual_chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in actual_non_chimeras:
 
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
-        
+
     def test_usearch61_chimera_check_no_ref(self):
         """ Overall usearch61 functionality test, no ref detection """
-        
+
         usearch61_chimera_check(self.raw_dna_seqs_fp,
                                 self.output_dir,
                                 self.ref_seqs_fp,
                                 suppress_usearch61_ref=True)
-        
-        # Should get seq3 cluster as chimeric     
+
+        # Should get seq3 cluster as chimeric
         expected_non_chimeras = ['seq1dup_3', 'seq2dup_4', 'seq2dup_5',
-         'seq2dup_6', 'seq1dup_1',  'seq1dup_2']
+                                 'seq2dup_6', 'seq1dup_1', 'seq1dup_2']
         expected_chimeras = ['seq3_7']
-        
+
         output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
         output_non_chimeras = open(join(self.output_dir,
-         "non_chimeras.txt"), "U")
-        
+                                        "non_chimeras.txt"), "U")
+
         actual_chimeras = [line.strip() for line in output_chimeras]
         actual_non_chimeras = [line.strip() for line in output_non_chimeras]
-        
+
         for curr_chimera in actual_chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in actual_non_chimeras:
 
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
-        
+
     def test_usearch61_chimera_check_split_on_id(self):
         """ Overall usearch61 functionality test, splits on SampleID """
-        
+
         usearch61_chimera_check(self.raw_dna_seqs_fp,
                                 self.output_dir,
                                 self.ref_seqs_fp,
-                                suppress_usearch61_ref = True,
-                                split_by_sampleid = True)
-        
+                                suppress_usearch61_ref=True,
+                                split_by_sampleid=True)
+
         # This case, should not flag seq3 as chimeric, as it will be
-        # clustered de novo separately from its parent seqs   
+        # clustered de novo separately from its parent seqs
         expected_non_chimeras = ['seq1dup_3', 'seq2dup_4', 'seq2dup_5',
-         'seq2dup_6', 'seq1dup_1',  'seq1dup_2', 'seq3_7']
+                                 'seq2dup_6', 'seq1dup_1', 'seq1dup_2', 'seq3_7']
         expected_chimeras = []
-        
+
         output_chimeras = open(join(self.output_dir, "chimeras.txt"), "U")
         output_non_chimeras = open(join(self.output_dir,
-         "non_chimeras.txt"), "U")
-        
+                                        "non_chimeras.txt"), "U")
+
         actual_chimeras = [line.strip() for line in output_chimeras]
         actual_non_chimeras = [line.strip() for line in output_non_chimeras]
-        
+
         for curr_chimera in actual_chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in actual_non_chimeras:
 
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
-            
+
     def test_identify_chimeras_usearch61_union(self):
         """ Properly returns union results """
-        
-        log_lines = {'denovo_chimeras':0,
-                 'denovo_non_chimeras':0,
-                 'ref_chimeras':0,
-                 'ref_non_chimeras':0}
-        
+
+        log_lines = {'denovo_chimeras': 0,
+                     'denovo_non_chimeras': 0,
+                     'ref_chimeras': 0,
+                     'ref_non_chimeras': 0}
+
         chimeras, non_chimeras, files_to_remove, log_lines =\
-         identify_chimeras_usearch61(self.raw_dna_seqs_fp,
-                                     self.output_dir,
-                                     self.ref_seqs_fp,
-                                     non_chimeras_retention = "union",
-                                     log_lines = log_lines)
-                                    
-        # All should be non-chimeric, due to union of tests     
+            identify_chimeras_usearch61(self.raw_dna_seqs_fp,
+                                        self.output_dir,
+                                        self.ref_seqs_fp,
+                                        non_chimeras_retention="union",
+                                        log_lines=log_lines)
+
+        # All should be non-chimeric, due to union of tests
         expected_non_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2',
-         'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
+                                 'seq3_7', 'seq2dup_4', 'seq2dup_5', 'seq2dup_6']
         expected_chimeras = []
         expected_log_lines = {'ref_non_chimeras': 4, 'ref_chimeras': 3,
-         'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
-        
+                              'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
+
         for curr_chimera in chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in non_chimeras:
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
         self.assertEqual(log_lines, expected_log_lines)
-        
+
     def test_identify_chimeras_usearch61_intersection(self):
         """ Properly returns intersection results """
-        
-        log_lines = {'denovo_chimeras':0,
-                 'denovo_non_chimeras':0,
-                 'ref_chimeras':0,
-                 'ref_non_chimeras':0}
-        
+
+        log_lines = {'denovo_chimeras': 0,
+                     'denovo_non_chimeras': 0,
+                     'ref_chimeras': 0,
+                     'ref_non_chimeras': 0}
+
         chimeras, non_chimeras, files_to_remove, log_lines =\
-         identify_chimeras_usearch61(self.raw_dna_seqs_fp,
-                                     self.output_dir,
-                                     self.ref_seqs_fp,
-                                     non_chimeras_retention = "intersection",
-                                     log_lines = log_lines)
-                                    
-        # All of seq1, sea3 should be chimeric with intersection     
+            identify_chimeras_usearch61(self.raw_dna_seqs_fp,
+                                        self.output_dir,
+                                        self.ref_seqs_fp,
+                                        non_chimeras_retention="intersection",
+                                        log_lines=log_lines)
+
+        # All of seq1, sea3 should be chimeric with intersection
         expected_non_chimeras = ['seq2dup_4', 'seq2dup_5', 'seq2dup_6']
         expected_chimeras = ['seq1dup_1', 'seq1dup_3', 'seq1dup_2', 'seq3_7']
         expected_log_lines = {'ref_non_chimeras': 4, 'ref_chimeras': 3,
-         'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
-        
+                              'denovo_chimeras': 1, 'denovo_non_chimeras': 6}
+
         for curr_chimera in chimeras:
             self.assertTrue(curr_chimera in expected_chimeras)
         for curr_non_chimera in non_chimeras:
             self.assertTrue(curr_non_chimera in expected_non_chimeras)
         self.assertEqual(log_lines, expected_log_lines)
-        
-        
+
     def test_fix_abundance_labels(self):
         """ Properly writes corrected abundance labeled fasta """
-        
+
         output_fp = join(self.output_dir, "abundance_fixed.fasta")
-        
+
         fix_abundance_labels(self.abundance_seqs_fp, output_fp)
-        
+
         self._files_to_remove.append(output_fp)
-        
+
         expected_results = ['>centroid=PC.354_3;size=14',
-         'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTCAACTCGGCTATGC',
-         '>centroid=PC.354_63;size=33',
-         'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCACCCTCTC',
-         '>centroid=PC.354_171;size=1',
-         'TTGGTCCGTGTCTCAGTACCAATGTGGGGGGTTAACCTCTCAGTCC']
-        
+                            'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTCAACTCGGCTATGC',
+                            '>centroid=PC.354_63;size=33',
+                            'TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCACCCTCTC',
+                            '>centroid=PC.354_171;size=1',
+                            'TTGGTCCGTGTCTCAGTACCAATGTGGGGGGTTAACCTCTCAGTCC']
+
         actual_result_f = open(output_fp, "U")
-        
+
         actual_results = [line.strip() for line in actual_result_f]
-        
+
         self.assertEqual(actual_results, expected_results)
-        
-        
+
     def test_get_chimera_clusters(self):
         """ Properly parses out SampleIDs in clusters flagged as chimeric """
-        
+
         chimeras = get_chimera_clusters(self.uchime_fp)
-        
+
         expected_chimeras = ['PC.481_4']
-        
+
         self.assertEqual(chimeras, expected_chimeras)
-        
+
     def test_merge_clusters_chimeras(self):
         """ Properly expands clustered seqs into chimeras and non chimeras """
-        
-        de_novo_clusters = {'cluster1':['seq1', 'seq2'], 'cluster2':['seq3']}
+
+        de_novo_clusters = {'cluster1': ['seq1', 'seq2'], 'cluster2': ['seq3']}
         chimeras = ['seq2']
-        
+
         expanded_chimeras, expanded_non_chimeras =\
-         merge_clusters_chimeras(de_novo_clusters, chimeras)
-         
+            merge_clusters_chimeras(de_novo_clusters, chimeras)
+
         expected_chimeras = ['seq1', 'seq2']
         expected_non_chimeras = ['seq3']
-        
+
         self.assertEqual(expanded_chimeras, expected_chimeras)
         self.assertEqual(expanded_non_chimeras, expected_non_chimeras)
 
 id_to_taxonomy_string = \
-"""AY800210\tArchaea;Euryarchaeota;Halobacteriales;uncultured
+    """AY800210\tArchaea;Euryarchaeota;Halobacteriales;uncultured
 EU883771\tArchaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.
 EF503699\tArchaea;Crenarchaeota;uncultured;uncultured
 DQ260310\tArchaea;Euryarchaeota;Methanobacteriales;Methanobacterium
 EF503697\tArchaea;Crenarchaeota;uncultured;uncultured"""
 
-        
-test_refseq_coll = LoadSeqs(data=[\
- ('AY800210','TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),\
- ('EU883771','TGGCGTACGGCTCAGTAACACGTGGATAACTTACCCTTAGGACTGGGATAACTCTGGGAAACTGGGGATAATACTGGATATTAGGCTATGCCTGGAATGGTTTGCCTTTGAAATGTTTTTTTTCGCCTAAGGATAGGTCTGCGGCTGATTAGGTCGTTGGTGGGGTAATGGCCCACCAAGCCGATGATCGGTACGGGTTGTGAGAGCAAGGGCCCGGAGATGGAACCTGAGACAAGGTTCCAGACCCTACGGGGTGCAGCAGGCGCGAAACCTCCGCAATGTACGAAAGTGCGACGGGGGGATCCCAAGTGTTATGCTTTTTTGTATGACTTTTCATTAGTGTAAAAAGCTTTTAGAATAAGAGCTGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCAGCTCGAGTGGTGACCACTTTTATTGGGCTTAAAGCGTTCGTAGCTTGATTTTTAAGTCTCTTGGGAAATCTCACGGCTTAACTGTGAGGCGTCTAAGAGATACTGGGAATCTAGGGACCGGGAGAGGTAAGAGGTACTTCAGGGGTAGAAGTGAAATTCTGTAATCCTTGAGGGACCACCGATGGCGAAGGCATCTTACCAGAACGGCTTCGACAGTGAGGAACGAAAGCTGGGGGAGCGAACGGGATTAGATACCCCGGTAGTCCCAGCCGTAAACTATGCGCGTTAGGTGTGCCTGTAACTACGAGTTACCGGGGTGCCGAAGTGAAAACGTGAAACGTGCCGCCTGGGAAGTACGGTCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACCACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGGCAGCTCACCGGATAGGACAGCGGAATGATAGCCGGGCTGAAGACCTTGCTTGACCAGCTGAGA'),\
- ('EF503699','AAGAATGGGGATAGCATGCGAGTCACGCCGCAATGTGTGGCATACGGCTCAGTAACACGTAGTCAACATGCCCAGAGGACGTGGACACCTCGGGAAACTGAGGATAAACCGCGATAGGCCACTACTTCTGGAATGAGCCATGACCCAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGGAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCACGAAACCTCTGCAATAGGCGAAAGCTTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG'),\
- ('DQ260310','GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),\
- ('EF503697','TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC')],aligned=False)
- 
-test_seq_coll = LoadSeqs(data=[\
- ('s1','TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),\
- ('s2','TGGCGTACGGCTCAGTAACACGTGGATAACTTACCCTTAGGACTGGGATAACTCTGGGAAACTGGGGATAATACTGGATATTAGGCTATGCCTGGAATGGTTTGCCTTTGAAATGTTTTTTTTCGCCTAAGGATAGGTCTGCGGCTGATTAGGTCGTTGGTGGGGTAATGGCCCACCAAGCCGATGATCGGTACGGGTTGTGAGAGCAAGGGCCCGGAGATGGAACCTGAGACAAGGTTCCAGACCCTACGGGGTGCAGCAGGCGCGAAACCTCCGCAATGTACGAAAGTGCGACGGGGGGATCCCAAGTGTTATGCTTTTTTGTATGACTTTTCATTAGTGTAAAAAGCTTTTAGAATAAGAGCTGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCAGCTCGAGTGGTGACCACTTTTATTGGGCTTAAAGCGTTCGTAGCTTGATTTTTAAGTCTCTTGGGAAATCTCACGGCTTAACTGTGAGGCGTCTAAGAGATACTGGGAATCTAGGGACCGGGAGAGGTAAGAGGTACTTCAGGGGTAGAAGTGAAATTCTGTAATCCTTGAGGGACCACCGATGGCGAAGGCATCTTACCAGAACGGCTTCGACAGTGAGGAACGAAAGCTGGGGGAGCGAACGGGATTAGATACCCCGGTAGTCCCAGCCGTAAACTATGCGCGTTAGGTGTGCCTGTAACTACGAGTTACCGGGGTGCCGAAGTGAAAACGTGAAACGTGCCGCCTGGGAAGTACGGTCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACCACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGGCAGCTCACCGGATAGGACAGCGGAATGATAGCCGGGCTGAAGACCTTGCTTGACCAGCTGAGA'),\
- ('s3','AAGAATGGGGATAGCATGCGAGTCACGCCGCAATGTGTGGCATACGGCTCAGTAACACGTAGTCAACATGCCCAGAGGACGTGGACACCTCGGGAAACTGAGGATAAACCGCGATAGGCCACTACTTCTGGAATGAGCCATGACCCAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGGAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCACGAAACCTCTGCAATAGGCGAAAGCTTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG'),\
- ('s4','GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),\
- ('s5','TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC'),\
- ('s6','ATAGTAGGTGATTGCGAAGACCGCGGAACCGGGACCTAGCACCCAGCCTGTACCGAGGGATGGGGAGCTGTGGCGGTCCACCGACGACCCTTTGTGACAGCCGATTCCTACAATCCCAGCAACTGCAATGATCCACTCTAGTCGGCATAACCGGGAATCGTTAACCTGGTAGGGTTCTCTACGTCTGAGTCTACAGCCCAGAGCAGTCAGGCTACTATACGGTTTGCTGCATTGCATAGGCATCGGTCGCGGGCACTCCTCGCGGTTTCAGCTAGGGTTTAAATGGAGGGTCGCTGCATGAGTATGCAAATAGTGCCACTGCTCTGATACAGAGAAGTGTTGATATGACACCTAAGACCTGGTCACAGTTTTAACCTGCCTACGCACACCAGTGTGCTATTGATTAACGATATCGGTAGACACGACCTTGGTAACCTGACTAACCTCATGGAAAGTGACTAGATAAATGGACCGGAGCCAACTTTCACCCGGAAAACGGACCGACGAATCGTCGTAGACTACCGATCTGACAAAATAAGCACGAGGGAGCATGTTTTGCGCAGGCTAGCCTATTCCCACCTCAAGCCTCGAGAACCAAGACGCCTGATCCGGTGCTGCACGAAGGGTCGCCTCTAGGTAAGGAGAGCTGGCATCTCCAGATCCGATATTTTACCCAACCTTTGCGCGCTCAGATTGTTATAGTGAAACGATTTAAGCCTGAACGGAGTTCCGCTCCATATGTGGGTTATATATGTGAGATGTATTAACTTCCGCAGTTGTCTCTTTCGGTGCAGTACGCTTGGTATGTGTCTCAAATAATCGGTATTATAGTGATCTGAGAGGTTTTAAG'),\
- ('c1','TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG')],aligned=False)
+
+test_refseq_coll = LoadSeqs(data=[
+    ('AY800210',
+     'TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),
+    ('EU883771',
+     'TGGCGTACGGCTCAGTAACACGTGGATAACTTACCCTTAGGACTGGGATAACTCTGGGAAACTGGGGATAATACTGGATATTAGGCTATGCCTGGAATGGTTTGCCTTTGAAATGTTTTTTTTCGCCTAAGGATAGGTCTGCGGCTGATTAGGTCGTTGGTGGGGTAATGGCCCACCAAGCCGATGATCGGTACGGGTTGTGAGAGCAAGGGCCCGGAGATGGAACCTGAGACAAGGTTCCAGACCCTACGGGGTGCAGCAGGCGCGAAACCTCCGCAATGTACGAAAGTGCGACGGGGGGATCCCAAGTGTTATGCTTTTTTGTATGACTTTTCATTAGTGTAAAAAGCTTTTAGAATAAGAGCTGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCAGCTCGAGTGGTGACCACTTTTATTGGGCTTAAAGCGTTCGTAGCTTGATTTTTAAGTCTCTTGGGAAATCTCACGGCTTAACTGTGAGGCGTCTAAGAGATACTGGGAATCTAGGGACCGGGAGAGGTAAGAGGTACTTCAGGGGTAGAAGTGAAATTCTGTAATCCTTGAGGGACCACCGATGGCGAAGGCATCTTACCAGAACGGCTTCGACAGTGAGGAACGAAAGCTGGGGGAGCGAACGGGATTAGATACCCCGGTAGTCCCAGCCGTAAACTATGCGCGTTAGGTGTGCCTGTAACTACGAGTTACCGGGGTGCCGAAGTGAAAACGTGAAACGTGCCGCCTGGGAAGTACGGTCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACCACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGGCAGCTCACCGGATAGGACAGCGGAATGATAGCCGGGCTGAAGACCTTGCTTGACCAGCTGAGA'),
+    ('EF503699',
+     'AAGAATGGGGATAGCATGCGAGTCACGCCGCAATGTGTGGCATACGGCTCAGTAACACGTAGTCAACATGCCCAGAGGACGTGGACACCTCGGGAAACTGAGGATAAACCGCGATAGGCCACTACTTCTGGAATGAGCCATGACCCAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGGAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCACGAAACCTCTGCAATAGGCGAAAGCTTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG'),
+    ('DQ260310',
+     'GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),
+    ('EF503697', 'TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC')], aligned=False)
+
+test_seq_coll = LoadSeqs(data=[
+    ('s1',
+     'TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),
+    ('s2',
+     'TGGCGTACGGCTCAGTAACACGTGGATAACTTACCCTTAGGACTGGGATAACTCTGGGAAACTGGGGATAATACTGGATATTAGGCTATGCCTGGAATGGTTTGCCTTTGAAATGTTTTTTTTCGCCTAAGGATAGGTCTGCGGCTGATTAGGTCGTTGGTGGGGTAATGGCCCACCAAGCCGATGATCGGTACGGGTTGTGAGAGCAAGGGCCCGGAGATGGAACCTGAGACAAGGTTCCAGACCCTACGGGGTGCAGCAGGCGCGAAACCTCCGCAATGTACGAAAGTGCGACGGGGGGATCCCAAGTGTTATGCTTTTTTGTATGACTTTTCATTAGTGTAAAAAGCTTTTAGAATAAGAGCTGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCAGCTCGAGTGGTGACCACTTTTATTGGGCTTAAAGCGTTCGTAGCTTGATTTTTAAGTCTCTTGGGAAATCTCACGGCTTAACTGTGAGGCGTCTAAGAGATACTGGGAATCTAGGGACCGGGAGAGGTAAGAGGTACTTCAGGGGTAGAAGTGAAATTCTGTAATCCTTGAGGGACCACCGATGGCGAAGGCATCTTACCAGAACGGCTTCGACAGTGAGGAACGAAAGCTGGGGGAGCGAACGGGATTAGATACCCCGGTAGTCCCAGCCGTAAACTATGCGCGTTAGGTGTGCCTGTAACTACGAGTTACCGGGGTGCCGAAGTGAAAACGTGAAACGTGCCGCCTGGGAAGTACGGTCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACCACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGGCAGCTCACCGGATAGGACAGCGGAATGATAGCCGGGCTGAAGACCTTGCTTGACCAGCTGAGA'),
+    ('s3',
+     'AAGAATGGGGATAGCATGCGAGTCACGCCGCAATGTGTGGCATACGGCTCAGTAACACGTAGTCAACATGCCCAGAGGACGTGGACACCTCGGGAAACTGAGGATAAACCGCGATAGGCCACTACTTCTGGAATGAGCCATGACCCAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGGAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCACGAAACCTCTGCAATAGGCGAAAGCTTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG'),
+    ('s4',
+     'GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),
+    ('s5',
+     'TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC'),
+    ('s6',
+     'ATAGTAGGTGATTGCGAAGACCGCGGAACCGGGACCTAGCACCCAGCCTGTACCGAGGGATGGGGAGCTGTGGCGGTCCACCGACGACCCTTTGTGACAGCCGATTCCTACAATCCCAGCAACTGCAATGATCCACTCTAGTCGGCATAACCGGGAATCGTTAACCTGGTAGGGTTCTCTACGTCTGAGTCTACAGCCCAGAGCAGTCAGGCTACTATACGGTTTGCTGCATTGCATAGGCATCGGTCGCGGGCACTCCTCGCGGTTTCAGCTAGGGTTTAAATGGAGGGTCGCTGCATGAGTATGCAAATAGTGCCACTGCTCTGATACAGAGAAGTGTTGATATGACACCTAAGACCTGGTCACAGTTTTAACCTGCCTACGCACACCAGTGTGCTATTGATTAACGATATCGGTAGACACGACCTTGGTAACCTGACTAACCTCATGGAAAGTGACTAGATAAATGGACCGGAGCCAACTTTCACCCGGAAAACGGACCGACGAATCGTCGTAGACTACCGATCTGACAAAATAAGCACGAGGGAGCATGTTTTGCGCAGGCTAGCCTATTCCCACCTCAAGCCTCGAGAACCAAGACGCCTGATCCGGTGCTGCACGAAGGGTCGCCTCTAGGTAAGGAGAGCTGGCATCTCCAGATCCGATATTTTACCCAACCTTTGCGCGCTCAGATTGTTATAGTGAAACGATTTAAGCCTGAACGGAGTTCCGCTCCATATGTGGGTTATATATGTGAGATGTATTAACTTCCGCAGTTGTCTCTTTCGGTGCAGTACGCTTGGTATGTGTCTCAAATAATCGGTATTATAGTGATCTGAGAGGTTTTAAG'),
+    ('c1', 'TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCCGCTTAACGGATGGGCTGCGGAGGATACTGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCTTTGATCTACTGAAGACCACCAGTGGTGAAGGCGGTTCGCCAGAACGCGCTCGAACGGTGAGGATGAAAGCTGGGGGAGCAAACCGGAATAGATACCCGAGTAATCCCAACTGTAAACGATGGCAACTCGGGGATGGGTTGGCCTCCAACCAACCCCATGGCCGCAGGGAAGCCGTTTAGCTCTCCCGCCTGGGGAATACGGTCCGCAGAATTGAACCTTAAAGGAATTTGGCGGGGAACCCCCACAAGGGGGAAAACCGTGCGGTTCAATTGGAATCCACCCCCCGGAAACTTTACCCGGGCGCG')], aligned=False)
 
 
-
-#Test data taken from the ChimeraSlayer sample data
-
+# Test data taken from the ChimeraSlayer sample data
 chimera_id = 'chimera_X92624|S000015368_d10.86_AF282889|S000390572_d11.18_nc4580_ec939'
-parent_ids =['7000004131495956','S000469847']
+parent_ids = ['7000004131495956', 'S000469847']
 
 
-ref_db_nast=""">7000004131495956
+ref_db_nast = """>7000004131495956
 ............................................................
 ......................................................T-GA--
 T-CC-T-G-GCTC-AG-GA-CGAA-C-GC--TGG-C--G-GC-G-TG--C----T-T--A
@@ -974,7 +996,7 @@ TGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCTTAACACATGCAAGTCGAGCGGAAAGGCCCTTCGGGGTACTCGAGC
 aaggcccttcggggcacacgaggcggcgaacgggtgagtaacactgtgggtgatctgcctcgcacttcgggataagcctgggaaactgggtctaataccggatatgacctgctgtcgcatggcggtgggtggaaagatttatcggtgcgagatgggcccgcggcctatcagcttgttggtgggtaatggcctaccaaggcgacgacgggtagccgacctgagaggggtgaccggccacactgggactgagacacggcccagactcctacgggaggcagcagtggggaatattgcacaatgggcgaaagcctgatgcagcgacgccgcgtgagggatgacggccttcgggttgtaaacctctttcgacagggacgaagcgcaagtgacggtacctgtagaagaagcaccggccaactacgtgccagcagccgcggtaatacgtagggtgcgagcgttgtccggaattactgggcgtaaagagcttgtaggcggtttgtcgcgtcgtctgtgaaaactcacagctcaactgtgagcttgcaggcgatacgggcagacttgagtacttcaggggagactggaattcctggtgtagcggtgaaatgcgcagatatcaggaggaacaccggtggcgaaggcgggtctctgggaagtaactgacgctgagaagcgaaagcgtgggtagcgaacaggattagataccctggtagtccacgccgtaaacggtgggtactaggtgtgggtttccttccacgggatccgtgccgtagctaacgcattaagtaccccgcctggggagtacggccgcaaggctaaaactcaaaggaattgacgggggcccgcacaagcggcggagcatgtggattaattcgatgcaacgcgaagaaccttacctgggtttgacatacaccggaaacctgcagagatgtaggcccccttgtggtcggtgtacaggtggtgcatggctgtcgtcagctcgtgtcgtgagatgttgggttaagtcccgcaacgagcgcaacccttatcttatgttgccagcgcgtaatggcggggactcgtgagagactgccggggtcaactcggaggaaggtggggacgacgtcaagtcatcatgccccttatgtccagggcttcacacatgctacaatggccggtacagagggctgcgataccgtgaggtggagcgaatcccttaaagccggtctcagttcggatcggggtctgcaactcgaccccgtgaagttggagtcgctagtaatcgcagatcagcaacgctgcggtgaatacgttcccgggccttgtacacaccgcccgtcacgtcatgaaagtcggtaacacccgaagccggtggcctaaccccttgtgggagggagccgtcgaaggtgggatcggcgattgggacgaagtcgtaacaaggtagccgtaccggaaggtgcggctggatcccct
 """
 
-chimeras=""">chimera_X92624|S000015368_d10.86_AF282889|S000390572_d11.18_nc4580_ec939 
+chimeras = """>chimera_X92624|S000015368_d10.86_AF282889|S000390572_d11.18_nc4580_ec939
 .................................................................................................................TT-GA--T-CC-T-G-GCGC-AG-GA-CGAA-C-GC--TGG-C--G-GC-G-TG--C----T-T--AACACA-T-GC-A-AGT-CGA-GCG
 GAAA-------G-G---CC-------------------------------------------------------------------------------------------CTTCGGGG--------------------------------------------------------------------------------------
 --------------------T--A-CTC--G--AG-C-GG-C-GA-A--C-------------GGG-TGAGT-A--AC-AC-G-T-G-AG---CAA--C-CT-C--C-C-CTA--GG-C------------------------------------------------------------------T-TT----GGG-AT-AA-C
