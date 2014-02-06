@@ -217,7 +217,7 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
 
     # create figure and plot heatmap
     fig = figure(figsize=(width, height))
-    my_cmap=get_cmap(color_scheme)
+    my_cmap = get_cmap(color_scheme)
     # numpy magic: [:,::-1] actually means fliplr()
     #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
 
