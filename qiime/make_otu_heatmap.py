@@ -187,13 +187,16 @@ def get_fontsize(numrows):
 
 
 def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
-        width=5, height=5, textborder=.25):
+        width=5, height=5, textborder=.25, color_scheme="jet"):
     """Create a heatmap plot, save as a pdf.
     
         'width', 'height' are in inches
         
         'textborder' is the fraction of the figure allocated for the
         tick labels on the x and y axes
+        
+        color_scheme: choices can be found at 
+         http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
     nrow = len(otu_table.ObservationIds)
     ncol = len(otu_table.SampleIds)
@@ -204,7 +207,7 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
 
     # create figure and plot heatmap
     fig = figure(figsize=(width, height))
-    my_cmap=get_cmap('gist_gray')
+    my_cmap=get_cmap(color_scheme)
     # numpy magic: [:,::-1] actually means fliplr()
     #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
 

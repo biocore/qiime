@@ -79,6 +79,10 @@ this flag is ignored.', default=False),
 make_option('--log_eps', type="float", 
      help='Small value to replace zeros for log transform. \
 [default: 1/2 the smallest non-zero entry].',default=None),
+make_option('--color_scheme', default="jet",
+    help=("color scheme for figure. see"
+          " http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps"
+          " for choices [default: %default]"))
 ]
 
 script_info['version'] = __version__
@@ -187,7 +191,8 @@ def main():
     sample_ids = array(otu_table.SampleIds)[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids, 
-        filename=join(dir_path,'heatmap.pdf'))
+        filename=join(dir_path,'heatmap.pdf'),
+        color_scheme=opts.color_scheme)
 
 
 if __name__ == "__main__":
