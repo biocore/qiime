@@ -106,7 +106,7 @@ this flag is ignored.', default=False),
                 help=("color scheme for figure. see"
                       " http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps"
                       " for choices [default: %default]")),
-    make_option('--observation_metadata_level', default=-1, type="int",
+    make_option('--observation_metadata_level', default=None, type="int",
                 help=("the level of observation metadata to plot for "
                       "hierarchical metadata [default: lowest level]")),
     make_option('--observation_metadata_category', default="taxonomy",
@@ -123,6 +123,12 @@ def main():
     otu_table = parse_biom_table(open(opts.otu_table_fp, 'U'))
     observation_metadata_category = opts.observation_metadata_category
     observation_metadata_level = opts.observation_metadata_level
+    if observation_metadata_level is None:
+        # grab the last level if the user didn't specify a level
+        observation_metadata_level = -1
+    else:
+        # convert to 0-based indexing
+        observation_metadata_level -= 1
     observation_metadata_labels = []
     if (otu_table.ObservationMetadata is None or 
         observation_metadata_category not in otu_table.ObservationMetadata[0]):
