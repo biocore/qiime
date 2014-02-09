@@ -106,10 +106,10 @@ this flag is ignored.', default=False),
                 help=("color scheme for figure. see"
                       " http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps"
                       " for choices [default: %default]")),
-    make_option('--observation_metadata_level', default=None, type="int",
+    make_option('--obs_md_level', default=None, type="int",
                 help=("the level of observation metadata to plot for "
                       "hierarchical metadata [default: lowest level]")),
-    make_option('--observation_metadata_category', default="taxonomy",
+    make_option('--obs_md_category', default="taxonomy",
                 help=("the level of observation metadata to plot for "
                       "hierarchical metadata [default: %default]"))
 ]
@@ -121,29 +121,32 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     otu_table = parse_biom_table(open(opts.otu_table_fp, 'U'))
-    observation_metadata_category = opts.observation_metadata_category
-    observation_metadata_level = opts.observation_metadata_level
-    if observation_metadata_level is None:
+    obs_md_category = opts.obs_md_category
+    obs_md_level = opts.obs_md_level
+    if obs_md_level is None:
         # grab the last level if the user didn't specify a level
-        observation_metadata_level = -1
+        obs_md_level = -1
     else:
         # convert to 0-based indexing
-        observation_metadata_level -= 1
-    observation_metadata_labels = []
-    if (otu_table.ObservationMetadata is None or 
-        observation_metadata_category not in otu_table.ObservationMetadata[0]):
-        observation_metadata_labels = [''] * len(otu_table.ObservationIds)
+        obs_md_level -= 1
+    obs_md = otu_table.ObservationMetadata
+    # create reference to the observation metadata for the first
+    # observation for convenient lookup
+    obs_md_0 = obs_md[0]
+    obs_md_labels = []
+    if (obs_md is None or obs_md_category not in obs_md_0):
+        obs_md_labels = [['']] * len(otu_table.ObservationIds)
     else:
         for _, _, md in otu_table.iterObservations():
-            current_md = md[observation_metadata_category]
-            if observation_metadata_level < len(current_md):
-                current_md_at_level = current_md[observation_metadata_level]
+            current_md = md[obs_md_category]
+            if obs_md_level < len(current_md):
+                current_md_at_level = current_md[obs_md_level]
             else:
                 current_md_at_level = ''
-            observation_metadata_labels.append([current_md_at_level])
+            obs_md_labels.append([current_md_at_level])
 
     otu_labels = make_otu_labels(otu_table.ObservationIds, 
-                                 observation_metadata_labels)
+                                 obs_md_labels)
 
     # Convert to relative abundance if requested
     if not opts.absolute_abundance:
