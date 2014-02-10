@@ -11,6 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+import re
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
 from sys import platform, version as python_version, executable, stdout
@@ -369,20 +370,34 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(which('FastTree'),
                         "FastTree not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
-        command = "FastTree 2>&1 > %s | grep version" % devnull
+
+        # If FastTree is run interactively, it outputs the following line:
+        #     Usage for FastTree version 2.1.3 SSE3:
+        #
+        # If run non-interactively:
+        #     FastTree Version 2.1.3 SSE3
+        command = "FastTree 2>&1 > %s | grep -i version" % devnull
         proc = Popen(command, shell=True, universal_newlines=True,
                      stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-        version_string = stdout.strip().split(' ')[4].strip()
+        stdout = proc.stdout.read().strip()
+
+        version_str_matches = re.findall('ersion\s+(\S+)\s+', stdout)
+        self.assertEqual(len(version_str_matches), 1,
+                         "Could not find FastTree version info in usage text "
+                         "'%s'." % stdout)
+
+        version_str = version_str_matches[0]
+
         try:
-            version = tuple(map(int, version_string.split('.')))
+            version = tuple(map(int, version_str.split('.')))
             pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
-            version_string = stdout
+
+        acceptable_version_str = '.'.join(map(str, acceptable_version))
         self.assertTrue(pass_test,
-                        "Unsupported FastTree version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
+                        "Unsupported FastTree version. %s is required, but "
+                        "running %s." % (acceptable_version_str, version_str))
 
 
 class QIIMEDependencyFull(QIIMEDependencyBase):
