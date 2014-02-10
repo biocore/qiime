@@ -10,13 +10,11 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Contains functions used in the compare_distance_matrices.py script."""
-
 from os import path
+from bipy.core.distance import SymmetricDistanceMatrix
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import make_compatible_distance_matrices
 from qiime.stats import Mantel, MantelCorrelogram, PartialMantel
-from qiime.util import DistanceMatrix
 
 
 def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
@@ -100,10 +98,8 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
                                                              len(dm1_labels))
                 continue
 
-            # Create DistanceMatrix instances from our raw distance matrix
-            # variables.
-            dm1 = DistanceMatrix(dm1_data, dm1_labels, dm1_labels)
-            dm2 = DistanceMatrix(dm2_data, dm2_labels, dm2_labels)
+            dm1 = SymmetricDistanceMatrix(dm1_data, dm1_labels)
+            dm2 = SymmetricDistanceMatrix(dm2_data, dm2_labels)
 
             # Create an instance of our correlation test and run it with
             # the specified number of permutations.
@@ -116,8 +112,8 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
                                                                   'r_value'], p_str,
                                                               num_perms, tail_type)
             elif method == 'partial_mantel':
-                results = PartialMantel(dm1, dm2, DistanceMatrix(cdm_data,
-                                        cdm_labels, cdm_labels))(num_perms)
+                cdm = SymmetricDistanceMatrix(cdm_data, cdm_labels)
+                results = PartialMantel(dm1, dm2, cdm)(num_perms)
                 p_str = format_p_value_for_num_iters(results['mantel_p'],
                                                      num_perms)
                 result += "%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (fp1, fp2,
@@ -186,10 +182,8 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
                                                              len(dm1_labels))
                 continue
 
-            # Create DistanceMatrix instances from our raw distance matrix
-            # variables.
-            dm1 = DistanceMatrix(dm1_data, dm1_labels, dm1_labels)
-            dm2 = DistanceMatrix(dm2_data, dm2_labels, dm2_labels)
+            dm1 = SymmetricDistanceMatrix(dm1_data, dm1_labels)
+            dm2 = SymmetricDistanceMatrix(dm2_data, dm2_labels)
 
             # Create an instance of our Mantel correlogram test and run it with
             # the specified number of permutations.

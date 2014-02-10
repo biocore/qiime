@@ -10,8 +10,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Contains functions used in the compare_categories.py script."""
-
 from os.path import join
 from types import ListType
 
