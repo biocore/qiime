@@ -264,25 +264,37 @@ class QIIMEDependencyBase(QIIMEConfig):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        acceptable_version = (2, 7, 3)
+        min_acceptable_version = (2, 7, 0)
+        min_unacceptable_version = (3, 0, 0)
+
         command = 'python --version'
         proc = Popen(command, shell=True, universal_newlines=True,
                      stdout=PIPE, stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip().split('Python')[-1].strip()
+
+        version_str_matches = re.findall('Python\s+(\S+)\s*', stdout.strip())
+        self.assertEqual(len(version_str_matches), 1,
+                         "Could not determine the Python version in '%s'." %
+                         stdout)
+        version_string = version_str_matches[0]
+
         try:
             if version_string[-1] == '+':
                 version_string = version_string[:-1]
             version = tuple(map(int, version_string.split('.')))
             if len(version) == 2:
                 version = (version[0], version[1], 0)
-            pass_test = version == acceptable_version
+            pass_test = (version >= min_acceptable_version and
+                         version < min_unacceptable_version)
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,
-                        "Unsupported python version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
+                        "Unsupported Python version. Must be >= %s and < %s, "
+                        "but running %s."
+                        % ('.'.join(map(str, min_acceptable_version)),
+                           '.'.join(map(str, min_unacceptable_version)),
+                           version_string))
 
     def test_numpy_supported_version(self):
         """numpy version is supported """
