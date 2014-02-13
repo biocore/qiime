@@ -175,10 +175,11 @@ ACGT
     # Check to see if the file which was requested to be created
     # already exists -- if it does, print a message and exit
     if exists(output_fp):
-        raise IOError("The file name you requested already exists. Delete "
-                      "existing file and rerun script if it should be "
-                      "overwritten. Otherwise change the file name (-o). "
-                      "Creating no files and exiting...")
+        raise option_parser.error("The file name you requested already "
+                                  "exists. Delete existing file and rerun "
+                                  "script if it should be overwritten. "
+                                  "Otherwise change the file name (-o). "
+                                  "Creating no files and exiting...")
 
     # Create the header data
     header_block = header_block.replace('AUTHOR_NAME', opts.author_name)
