@@ -96,15 +96,18 @@ from qiime.util import parse_command_line_parameters, make_option
 script_info = {}
 script_info['brief_description'] = ""
 script_info['script_description'] = ""
+# Members of the tuple in script_usage are (title, description, example call)
 script_info['script_usage'] = [("","","")]
 script_info['output_description']= ""
-script_info['required_options'] = [\\
- # Example required option
- #make_option('-i','--input_fp',type="existing_filepath",help='the input filepath'),\\
+script_info['required_options'] = [
+    # Example required option
+    #make_option('-i', '--input_fp', type='existing_filepath',
+    #            help='the input filepath')
 ]
-script_info['optional_options'] = [\\
- # Example optional option
- #make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]'),\\
+script_info['optional_options'] = [
+    # Example optional option
+    #make_option('-o', '--output_dir', type="new_dirpath",
+    #            help='the output directory [default: %default]')
 ]
 script_info['version'] = __version__"""
 
@@ -135,8 +138,8 @@ class NAMETests(TestCase):
 
         # Create example input file
         self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                            prefix='qiime_inseqs',
-                                            suffix='.fasta')
+                                           prefix='qiime_inseqs',
+                                           suffix='.fasta')
         inseqs1_f = open(self.inseqs1_fp,'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
@@ -145,7 +148,6 @@ class NAMETests(TestCase):
         # Define number of seconds a test can run for before timing out
         # and failing
         initiate_timeout(60)
-
 
     def tearDown(self):
         """ """
@@ -163,7 +165,7 @@ ACGT
 """
 
     if opts.test and opts.script:
-        option_parser.error('-s and -t cannot both be passed: file must be a' +
+        option_parser.error('-s and -t cannot both be passed: file must be a '
                             'test or a script, or neither one.')
 
     script = opts.script
@@ -173,11 +175,10 @@ ACGT
     # Check to see if the file which was requested to be created
     # already exists -- if it does, print a message and exit
     if exists(output_fp):
-        print '\n'.join(["The file name you requested already exists.",
-                         " Delete extant file and rerun script if it should be overwritten.",
-                         " Otherwise change the file name (-o).",
-                         "Creating no files and exiting..."])
-        exit(1)
+        raise IOError("The file name you requested already exists. Delete "
+                      "existing file and rerun script if it should be "
+                      "overwritten. Otherwise change the file name (-o). "
+                      "Creating no files and exiting...")
 
     # Create the header data
     header_block = header_block.replace('AUTHOR_NAME', opts.author_name)
@@ -187,18 +188,15 @@ ACGT
 
     if test:
         lines.append(test_block)
-        lines += ['', '', '', 'if __name__ == "__main__":', '    main()']
+        lines += ['', '', 'if __name__ == "__main__":', '    main()']
     elif script:
         lines.append(script_block)
-        lines += ['', '', '', 'def main():',
-                  '    option_parser, opts, args =\\',
-                  '       parse_command_line_parameters(**script_info)',
-                  '', '',
+        lines += ['', '', 'def main():',
+                  '    option_parser, opts, args = '
+                  'parse_command_line_parameters(**script_info)',
+                  '',
                   'if __name__ == "__main__":',
                   '    main()']
-    else:
-        # Running the file does nothing by default if not a test file
-        pass
 
     # Open the new file for writing and write it.
     f = open(output_fp, 'w')
@@ -209,7 +207,6 @@ ACGT
         # Change the permissions on the new file to make it executable
         chmod_string = ' '.join(['chmod 755', output_fp])
         popen(chmod_string)
-
 
 if __name__ == "__main__":
     main()
