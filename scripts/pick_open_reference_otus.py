@@ -32,17 +32,12 @@ This script is broken down into 4 possible OTU picking steps, and 2 steps
 involving the creation of OTU tables and trees. The commands for each step are 
 described below, including what the input and resulting output files are. 
 Additionally, the optional specified parameters of this script that can be passed
-are referenced. Note that the workflow of this script was designed to minimize
-runtime for very large datasets, and therefore if you wish to have possibly more
-detailed results (with slower runtimes), a few parameters in particular can be 
-changed.
+are referenced. 
 
-Step 1) Prefilting and Picking Closed Reference OTUs
+Step 1) Prefilting and picking closed reference OTUs
 The first step is to prefilter the input fasta file to remove sequences that do 
-not hit the reference database with a given sequence identity. By default, the 
-prefilter reference database is assumed to be the same as the OTU picking 
-reference database, and the prefilter percent identity has a default of 0.60, 
-although both of this prefilter parameters can be changed with the options:
+not hit the reference database with a given sequence identity (PREFILTER_PERCENT_ID). 
+The prefilter parameters can be changed with the options:
 --prefilter_refseqs_fp
 --prefilter_percent_id
 This filtering is accomplished by picking closed reference OTUs at the specified
@@ -54,9 +49,9 @@ prefilter_otus/seqs_clusters.uc
 Next, the seqs_failures.txt file is used to remove these failed sequences from 
 the original input fasta file to produce:
 prefilter_otus/prefiltered_seqs.fna
-This prefiltered_seqs.fna file is then considered to contain the high quality 
-sequences which are used for downstream OTU picking, and the failed sequences 
-are discarded.
+This prefiltered_seqs.fna file is then considered to contain the reads 
+of the marker gene of interest, rather than spurious reads such as host 
+genomic sequence or sequencing artifacts.
 
 With the prefiltered_seqs.fna file, the Step 1 closed reference OTU picking is 
 done against the supplied reference database. This command produces:
@@ -72,27 +67,16 @@ step1_otus/step1_rep_set.fna
 Next, the sequences that failed to hit the reference database in Step 1 are 
 filtered from the Step 1 input fasta file to produce:
 step1_otus/failures.fasta
-Then an additional filtering step occurs whereby the failures.fasta file is 
-randomly subsampling a certain percentage of the failed sequences to produce a 
-subsampled_failures.fna (which is not written to an output file). The percent 
-of the Step 1 failures to keep for a later de novo step can be specified with 
-the -s PERCENT_SUBSAMPLE option. Larger percentages than the default can be 
-specified to produce more comprehensive results, but the the compute time 
-required will be longer.
 
-** Note that Steps 2 and 3 are paired together to decrease compute time. Ideally, 
-what you'd like to do is to pick de novo OTUs using all of the sequences that 
-failed to hit the reference database in Step 1. However, depending on your samples 
-there is the possibility that the number of failed sequences is still so large 
-that picking de novo OTUs is prohibitively expensive in terms of compute. In 
-order to get around this computational hit, a subset of the failed sequence are 
-clustered de novo and are used as the 'reference' database for running a 
-reference-based OTU picking algorithm.
+Then the failures.fasta file is randomly subsampled to PERCENT_SUBSAMPLE of 
+the sequences to produce:
+step1_otus/subsampled_failures.fna. 
+Modifying PERCENT_SUBSAMPLE can have a big effect on run time for this workflow, 
+but will not alter the final OTUs. 
 
-Step 2) Pick de novo OTUs on the subsampled_failures.fna
-This step is used to create the temporary reference database for Step 3 OTU 
-picking. The randomly subsampled failure sequences from Step 1 are pre-clustered 
-de novo to produce:
+Step 2) The subsampled_failures.fna are next clustered de novo, and each cluster 
+centroid is then chosen as a "new reference sequence" for use as the reference 
+database in Step 3, to produce:
 step2_otus/subsampled_seqs_clusters.uc
 step2_otus/subsampled_seqs_otus.log
 step2_otus/subsampled_seqs_otus.txt
