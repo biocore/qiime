@@ -20,8 +20,7 @@ from numpy import array, nan
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import (get_tmp_filename, get_qiime_library_version,
-                        DistanceMatrix, MetadataMap)
+from qiime.util import (get_tmp_filename, get_qiime_library_version)
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
                           format_coords, build_prefs_string, format_matrix, format_map_file,
@@ -36,7 +35,6 @@ from qiime.format import (format_distance_matrix, format_otu_table,
                           format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
                           format_best_results, format_permanova_results, format_fastq_record,
                           format_histograms_two_bins)
-from qiime.stats import Anosim, Best, Permanova
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
 from biom.table import SparseTaxonTable
 from StringIO import StringIO
@@ -83,42 +81,8 @@ class TopLevelTests(TestCase):
                           ('S3', 'T3', 100.68, 0.9, 1, 1, 1, (-0.4, -0.2))]
         self.corr_vec3 = [('S1', 'T1', 0.7777777777, 0, 0, 0, 0, (None, None))]
 
-        # For testing statistical method formatters.
-        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
-            overview_dm_lines)
-        self.overview_map = MetadataMap.parseMetadataMap(overview_map_lines)
-
-        self.soils_dm = DistanceMatrix.parseDistanceMatrix(soils_dm_lines)
-        self.soils_map = MetadataMap.parseMetadataMap(soils_map_lines)
-
-        self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
-                                      'Treatment')
-        self.permanova_overview = Permanova(self.overview_map,
-                                            self.overview_dm, 'Treatment')
-        self.best_overview = Best(self.overview_dm, self.overview_map, ['DOB'])
-        self.best_88_soils = Best(self.soils_dm, self.soils_map,
-                                  ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION',
-                                   'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO',
-                                   'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH',
-                                   'CMIN_RATE', 'LONGITUDE', 'LATITUDE'])
-
     def tearDown(self):
         remove_files(self.files_to_remove)
-
-    def remove_nums(self, text):
-        """Removes all digits from the given string.
-
-        Returns the string will all digits removed. Useful for testing strings
-        for equality in unit tests where you don't care about numeric values,
-        or if some values are random.
-
-        This code was taken from http://bytes.com/topic/python/answers/
-            850562-finding-all-numbers-string-replacing
-
-        Arguments:
-            text - the string to remove digits from
-        """
-        return text.translate(None, digits)
 
     def test_format_biom_table(self):
         """ Formatting of BIOM table correctly includes "generated-by" information
@@ -824,40 +788,57 @@ y\t5\t6\tsample y""")
 
     def test_format_anosim_results(self):
         """Test formatting results of ANOSIM."""
-        exp = 'Method name\tR statistic\tp-value\tNumber of permutations\n' + \
-              'ANOSIM\t.\t.\t\n'
-        obs = format_anosim_results(self.anosim_overview(999))
-        self.assertEqual(self.remove_nums(obs), exp)
+        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
+               'ANOSIM\t0.876553\t0.006\t999\n')
+        obs = format_anosim_results({'method_name': 'ANOSIM',
+                                     'r_value': 0.876553, 'p_value': 0.0056341,
+                                     'num_perms': 999})
+        self.assertEqual(obs, exp)
 
-        exp = 'Method name\tR statistic\tp-value\tNumber of permutations\n' + \
-              'ANOSIM\t.\tToo few iters to compute p-value (num_iters=)\t\n'
-        obs = format_anosim_results(self.anosim_overview(0))
-        self.assertEqual(self.remove_nums(obs), exp)
+        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
+               'ANOSIM\t0.876553\tToo few iters to compute p-value '
+               '(num_iters=0)\t0\n')
+        obs = format_anosim_results({'method_name': 'ANOSIM',
+                                     'r_value': 0.876553, 'p_value': 1.0,
+                                     'num_perms': 0})
+        self.assertEqual(obs, exp)
 
     def test_format_permanova_results(self):
         """Test formatting results of PERMANOVA."""
-        exp = 'Method name\tPseudo-F statistic\tp-value\tNumber of ' + \
-              'permutations\nPERMANOVA\t.\t.\t\n'
-        obs = format_permanova_results(self.permanova_overview(999))
-        self.assertEqual(self.remove_nums(obs), exp)
+        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
+               'permutations\nPERMANOVA\t0.123456789\t0.111\t999\n')
+        obs = format_permanova_results({'method_name': 'PERMANOVA',
+                                        'f_value': 0.1234567890,
+                                        'p_value': 0.11111, 'num_perms': 999})
+        self.assertEqual(obs, exp)
 
-        exp = 'Method name\tPseudo-F statistic\tp-value\tNumber of ' + \
-              'permutations\nPERMANOVA\t.\tToo few iters to compute ' + \
-              'p-value (num_iters=)\t\n'
-        obs = format_permanova_results(self.permanova_overview(0))
-        self.assertEqual(self.remove_nums(obs), exp)
+        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
+               'permutations\nPERMANOVA\t0.123456789\tToo few iters to '
+               'compute p-value (num_iters=0)\t0\n')
+        obs = format_permanova_results({'method_name': 'PERMANOVA',
+                                        'f_value': 0.1234567890,
+                                        'p_value': 1.0, 'num_perms': 0})
+        self.assertEqual(obs, exp)
 
     def test_format_best_results(self):
         """Test formatting results of BEST."""
         # Single category.
-        exp = 'Method name\tNumber of categories\tCategories\t' + \
-              'rho statistics\nBEST\t\tDOB = \t(., \'\')\n'
-        obs = format_best_results(self.best_overview(999))
-        self.assertEqual(self.remove_nums(obs), exp)
+        exp = ('Method name\tNumber of categories\tCategories\t'
+               'rho statistics\nBEST\t1\tDOB = 1\t(-0.001, \'1\')\n')
+        obs = format_best_results({'method_name': 'BEST', 'num_vars': 1,
+                                   'vars': ['DOB = 1'],
+                                   'rho_vals': [(-0.0010, '1')]})
+        self.assertEqual(obs, exp)
 
         # Multiple categories.
-        obs = format_best_results(self.best_88_soils(0))
-        self.assertEqual(self.remove_nums(obs), exp_best_88_soils)
+        exp = ('Method name\tNumber of categories\tCategories\t'
+               'rho statistics\nBEST\t2\tDOB = 1, pH = 2\t(-0.001, \'1\'), '
+               '(0.99909, \'1,2\')\n')
+        obs = format_best_results({'method_name': 'BEST', 'num_vars': 2,
+                                   'vars': ['DOB = 1', 'pH = 2'],
+                                   'rho_vals': [(-0.0010, '1'),
+                                                (0.99909, '1,2')]})
+        self.assertEqual(obs, exp)
 
     def test_format_fastq_record(self):
         """ Returns fastq record in the correct format """
@@ -1069,84 +1050,6 @@ exp_jnlp_web_url = """
     <argument>test</argument>
     </application-desc>
 </jnlp>
-"""
-
-overview_dm_lines = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
-                      \tPC.607\tPC.634\tPC.635\tPC.636",
-                     "PC.354\t0.0\t0.595483768391\t0.618074717633\
-                      \t0.582763100909\t0.566949022108\
-                      \t0.714717232268\t0.772001731764\
-                      \t0.690237118413\t0.740681707488",
-                     "PC.355\t0.595483768391\t0.0\t0.581427669668\
-                      \t0.613726772383\t0.65945132763\
-                      \t0.745176523638\t0.733836123821\
-                      \t0.720305073505\t0.680785600439",
-                     "PC.356\t0.618074717633\t0.581427669668\t0.0\
-                      \t0.672149021573\t0.699416863323\
-                      \t0.71405573754\t0.759178215168\
-                      \t0.689701276341\t0.725100672826",
-                     "PC.481\t0.582763100909\t0.613726772383\
-                      \t0.672149021573\t0.0\t0.64756120797\
-                      \t0.666018240373\t0.66532968784\
-                      \t0.650464714994\t0.632524644216",
-                     "PC.593\t0.566949022108\t0.65945132763\
-                      \t0.699416863323\t0.64756120797\t0.0\
-                      \t0.703720200713\t0.748240937349\
-                      \t0.73416971958\t0.727154987937",
-                     "PC.607\t0.714717232268\t0.745176523638\
-                      \t0.71405573754\t0.666018240373\
-                      \t0.703720200713\t0.0\t0.707316869557\
-                      \t0.636288883818\t0.699880573956",
-                     "PC.634\t0.772001731764\t0.733836123821\
-                      \t0.759178215168\t0.66532968784\
-                      \t0.748240937349\t0.707316869557\t0.0\
-                      \t0.565875193399\t0.560605525642",
-                     "PC.635\t0.690237118413\t0.720305073505\
-                      \t0.689701276341\t0.650464714994\
-                      \t0.73416971958\t0.636288883818\
-                      \t0.565875193399\t0.0\t0.575788039321",
-                     "PC.636\t0.740681707488\t0.680785600439\
-                      \t0.725100672826\t0.632524644216\
-                      \t0.727154987937\t0.699880573956\
-                      \t0.560605525642\t0.575788039321\t0.0"]
-
-overview_map_lines = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
-                      "PC.354\tAGCACGAGCCTA\tControl\t20061218",
-                      "PC.355\tAACTCGTCGATG\tControl\t20061218",
-                      "PC.356\tACAGACCACTCA\tControl\t20061126",
-                      "PC.481\tACCAGCGACTAG\tControl\t20070314",
-                      "PC.593\tAGCAGCACTTGT\tControl\t20071210",
-                      "PC.607\tAACTGTGCGTAC\tFast\t20071112",
-                      "PC.634\tACAGAGTCGGCT\tFast\t20080116",
-                      "PC.635\tACCGCAGAGTCA\tFast\t20080116",
-                      "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
-
-soils_dm_lines = ["\tMT2.141698\tCA1.141704\tBB2.141659\t"
-                  "CO2.141657\tTL3.141709\tSN3.141650", "MT2.141698\t0.0\t"
-                  "0.623818643706\t0.750015427505\t0.585201193913\t0.729023583672\t"
-                  "0.622135587669", "CA1.141704\t0.623818643706\t0.0\t0.774881224555"
-                  "\t0.649822398416\t0.777203137034\t0.629507320436", "BB2.141659\t"
-                  "0.750015427505\t0.774881224555\t0.0\t0.688845424001\t0.567470311282"
-                  "\t0.721707516043", "CO2.141657\t0.585201193913\t0.649822398416\t"
-                  "0.688845424001\t0.0\t0.658853575764\t0.661223617505", "TL3.141709\t"
-                  "0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t"
-                  "0.711173405838", "SN3.141650\t0.622135587669\t0.629507320436\t"
-                  "0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
-
-soils_map_lines = ["#SampleId\tTOT_ORG_CARB\tSILT_CLAY\t"
-                   "ELEVATION\tSOIL_MOISTURE_DEFICIT\tCARB_NITRO_RATIO\t"
-                   "ANNUAL_SEASON_TEMP\tANNUAL_SEASON_PRECPT\tPH\tCMIN_RATE\tLONGITUDE\t"
-                   "LATITUDE", "MT2.141698\t39.1\t35\t1000\t70\t23.087\t7\t450\t6.66\t"
-                   "19.7\t-114\t46.8", "CA1.141704\t16.7\t73\t2003\t198\t13\t10.3\t400\t"
-                   "7.27\t2.276\t-111.7666667\t36.05", "BB2.141659\t52.2\t44\t400\t-680\t"
-                   "21.4\t6.1\t1200\t4.6\t2.223\t-68.1\t44.86666667", "CO2.141657\t18.1\t"
-                   "24\t2400\t104\t31.8\t6.1\t350\t5.68\t9.223\t-105.3333333\t"
-                   "40.58333333", "TL3.141709\t53.9\t52\t894\t-212\t24.6\t-9.3\t400\t"
-                   "4.23\t16.456\t-149.5833333\t68.63333333", "SN3.141650\t16.6\t20\t"
-                   "3000\t-252\t13.9\t3.6\t600\t5.74\t6.289\t-118.1666667\t36.45"]
-
-exp_best_88_soils = """Method name\tNumber of categories\tCategories\trho statistics
-BEST\t\tTOT_ORG_CARB = , SILT_CLAY = , ELEVATION = , SOIL_MOISTURE_DEFICIT = , CARB_NITRO_RATIO = , ANNUAL_SEASON_TEMP = , ANNUAL_SEASON_PRECPT = , PH = , CMIN_RATE = , LONGITUDE = , LATITUDE = \t(., ''), (., ','), (., ',,'), (., ',,,'), (., ',,,,'), (., ',,,,,'), (., ',,,,,,'), (., ',,,,,,,'), (., ',,,,,,,,'), (., ',,,,,,,,,'), (., ',,,,,,,,,,')
 """
 
 

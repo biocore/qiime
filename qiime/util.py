@@ -39,7 +39,6 @@ from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
 
-from biom.table import DenseTable
 from biom.parse import parse_biom_table
 import biom
 
@@ -1688,117 +1687,6 @@ def summarize_otu_sizes_from_otu_map(otu_map_f):
 
     result = sorted(result.items())
     return result
-
-
-class DistanceMatrix(DenseTable):
-
-    """This class represents a QIIME distance matrix.
-
-    Public attributes:
-        SampleIds - the list of sample ID strings (i.e. row/column headers)
-    """
-
-    _biom_type = "Distance matrix"
-
-    @staticmethod
-    def parseDistanceMatrix(lines):
-        """Parses a QIIME distance matrix file into a DistanceMatrix object.
-
-        This static method is basically a factory that reads in the given
-        distance matrix file contents and returns a DistanceMatrix instance.
-        This method is provided for convenience.
-
-        Arguments:
-            lines - a list of strings representing the file contents of a QIIME
-                distance matrix
-        """
-        sample_ids, matrix_data = parse_distmat(lines)
-        return DistanceMatrix(matrix_data, sample_ids, sample_ids)
-
-    def __init__(self, *args, **kwargs):
-        """Instantiates a DistanceMatrix object.
-
-        A distance matrix must be square and its sample IDs are exactly the
-        same as its observation IDs (a biom table has sample IDs for column
-        labels and observation IDs for row labels). A distance matrix must be
-        at least 1x1 in size.
-
-        Please refer to the biom.table.Table class documentation for a list of
-        acceptable arguments to the constructor. The data matrix argument (the
-        first argument) is expected to be a numpy array.
-
-        We have to match the parent class constructor exactly in this case due
-        to how several of the parent class methods are implemented (they assume
-        all subclasses have the same constructor signature). Otherwise, I would
-        have just made a simple constructor that took the matrix data and a
-        single list of sample IDs (because the row/col IDs are the same for a
-        distance matrix). As there is no easy way around this at the moment,
-        users of this class must pass the same list of sample IDs as the
-        observation IDs parameter as well.
-        """
-        super(DistanceMatrix, self).__init__(*args, **kwargs)
-
-        # Make sure the matrix isn't empty, is square, and our sample IDs match
-        # the observation IDs.
-        data_matrix = args[0]
-        if 0 in data_matrix.shape:
-            raise ValueError("The input data matrix must be at least 1x1 in "
-                             "size.")
-        if data_matrix.shape[0] != data_matrix.shape[1]:
-            raise ValueError("The input distance matrix must be square.")
-        if self.SampleIds != self.ObservationIds:
-            raise ValueError("The sample IDs must match the observation IDs.")
-
-    @property
-    def Size(self):
-        """Returns the size of the distance matrix (number of rows or cols)."""
-        return len(self.SampleIds)
-
-    @property
-    def DataMatrix(self):
-        """Returns the matrix of distances as a numpy array.
-
-        The returned matrix is not a copy of the matrix stored in this object.
-        """
-        return asarray(self._data)
-
-    def max(self):
-        """Returns the maximum value present in the distance matrix.
-
-        Since distance matrices are guaranteed to be at least 1x1 in size, this
-        method will always return a valid maximum.
-        """
-        max_val = self[0][0]
-        for row_idx in range(self.Size):
-            for col_idx in range(self.Size):
-                if self[row_idx][col_idx] > max_val:
-                    max_val = self[row_idx][col_idx]
-        return max_val
-
-    def flatten(self, lower=True):
-        """Returns a list containing the flattened distance matrix.
-
-        The returned list will contain the elements in column-major order
-        (i.e. from leftmost to rightmost column, starting from the first row).
-
-        Arguments:
-            lower - If True, only the lower triangular elements will be
-                included (the diagonal will not be included). If False, all
-                elements (including the diagonal) will be included
-        """
-        flattened = []
-        for col_num in range(self.Size):
-            for row_num in range(self.Size):
-                if lower:
-                    if col_num < row_num:
-                        flattened.append(self[row_num][col_num])
-                else:
-                    flattened.append(self[row_num][col_num])
-        return flattened
-
-    def is_symmetric_and_hollow(self):
-        """Returns True if the distance matrix is symmetric and hollow."""
-        return is_symmetric_and_hollow(self._data)
 
 
 class MetadataMap():
