@@ -80,8 +80,6 @@ database in Step 3, to produce:
 step2_otus/subsampled_seqs_clusters.uc
 step2_otus/subsampled_seqs_otus.log
 step2_otus/subsampled_seqs_otus.txt
-
-The representative sequence for the clustered OTUs is then chosen to produce:
 step2_otus/step2_rep_set.fna
 
 Step 3) Pick Closed Reference OTUs against Step 2 de novo OTUs
