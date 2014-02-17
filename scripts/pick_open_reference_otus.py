@@ -26,7 +26,7 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = """
-This script is used to pick subsampled open reference OTUs"""
+This script is used to pick open reference OTUs"""
 script_info['script_description'] = """
 This script is broken down into 4 possible OTU picking steps, and 2 steps 
 involving the creation of OTU tables and trees. The commands for each step are 
@@ -139,21 +139,23 @@ Step 6) Making the OTU tables and trees
 An OTU table is built using the final_otu_map_mc2.txt file to produce:
 otu_table_mc2.biom
 
-If the run_assign_tax flag is passed, then taxonomy will be assigned to each of 
-the represenatative sequences in the final rep_set produced in Step 5, producing:
+As long as the --suppress_taxonomy_assignment flag is NOT passed, 
+then taxonomy will be assigned to each of the represenatative sequences 
+in the final rep_set produced in Step 5, producing:
 rep_set_tax_assignments.log
 rep_set_tax_assignments.txt
 This taxonomic metadata is then added to the otu_table_mc2.biom to produce:
 otu_table_mc_w_tax.biom
 
-If the run_align_and_tree flag is passed, then the rep_set.fna file will be used 
-to align the sequences and build the phylogenetic tree, which includes the de 
-novo OTUs. Any sequences that fail to align are removed from the rep_set.fna to 
-produce:
+As long as the --suppress_align_and_tree is NOT passed, then the rep_set.fna 
+file will be used to align the sequences and build the phylogenetic tree, 
+which includes the de novo OTUs. Any sequences that fail to align are 
+omitted from the OTU table and tree to produce:
 otu_table_mc_no_pynast_failures.biom
 rep_set.tre
 
-Passing both the run_assign_tax and run_align_and_tree options will produce:
+If both --suppress_taxonomy_assignment and --suppress_align_and_tree are
+NOT passed, the script will produce:
 otu_table_mc_w_tax_no_pynast_failures.biom
 
 It is important to remember that with a large workflow script like this that 
@@ -164,9 +166,6 @@ rerun the script and pass in the:
 --step_1_otu_map_fp
 --step1_failures_fasta_fp
 parameters, and the script will continue with Steps 2 - 4.
-
-Steps 2 - 4 cannot be 'saved' and must be re-run if interrupted because they 
-involve de novo OTU picking.
 """
 
 script_info['script_usage'] = []
