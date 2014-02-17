@@ -25,8 +25,148 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = ""
-script_info['script_description'] = ""
+script_info['brief_description'] = """
+This script is used to pick open reference OTUs"""
+script_info['script_description'] = """
+This script is broken down into 4 possible OTU picking steps, and 2 steps 
+involving the creation of OTU tables and trees. The commands for each step are 
+described below, including what the input and resulting output files are. 
+Additionally, the optional specified parameters of this script that can be passed
+are referenced. 
+
+Step 1) Prefilting and picking closed reference OTUs
+The first step is to prefilter the input fasta file to remove sequences that do 
+not hit the reference database with a given sequence identity (PREFILTER_PERCENT_ID). 
+The prefilter parameters can be changed with the options:
+--prefilter_refseqs_fp
+--prefilter_percent_id
+This filtering is accomplished by picking closed reference OTUs at the specified
+prefilter percent id to produce:
+prefilter_otus/seqs_otus.log
+prefilter_otus/seqs_otus.txt
+prefilter_otus/seqs_failures.txt
+prefilter_otus/seqs_clusters.uc
+Next, the seqs_failures.txt file is used to remove these failed sequences from 
+the original input fasta file to produce:
+prefilter_otus/prefiltered_seqs.fna
+This prefiltered_seqs.fna file is then considered to contain the reads 
+of the marker gene of interest, rather than spurious reads such as host 
+genomic sequence or sequencing artifacts.
+
+With the prefiltered_seqs.fna file, the Step 1 closed reference OTU picking is 
+done against the supplied reference database. This command produces:
+step1_otus/prefiltered_seqs_clusters.uc
+step1_otus/prefiltered_seqs_failures.txt
+step1_otus/prefiltered_seqs_otus.log
+step1_otus/prefiltered_seqs_otus.txt 
+
+The representative sequence for each of the Step 1 picked OTUs are selected to 
+produce:
+step1_otus/step1_rep_set.fna
+
+Next, the sequences that failed to hit the reference database in Step 1 are 
+filtered from the Step 1 input fasta file to produce:
+step1_otus/failures.fasta
+
+Then the failures.fasta file is randomly subsampled to PERCENT_SUBSAMPLE of 
+the sequences to produce:
+step1_otus/subsampled_failures.fna. 
+Modifying PERCENT_SUBSAMPLE can have a big effect on run time for this workflow, 
+but will not alter the final OTUs. 
+
+Step 2) The subsampled_failures.fna are next clustered de novo, and each cluster 
+centroid is then chosen as a "new reference sequence" for use as the reference 
+database in Step 3, to produce:
+step2_otus/subsampled_seqs_clusters.uc
+step2_otus/subsampled_seqs_otus.log
+step2_otus/subsampled_seqs_otus.txt
+step2_otus/step2_rep_set.fna
+
+Step 3) Pick Closed Reference OTUs against Step 2 de novo OTUs
+Closed reference OTU picking is performed using the failures.fasta file created 
+in Step 1 against the 'reference' de novo database created in Step 2 to produce:
+step3_otus/failures_seqs_clusters.uc
+step3_otus/failures_seqs_failures.txt
+step3_otus/failures_seqs_otus.log
+step3_otus/failures_seqs_otus.txt
+
+Assuming the user has NOT passed the --suppress_step4 flag:
+The sequences which failed to hit the reference database in Step 3 are removed 
+from the Step 3 input fasta file to produce:
+step3_otus/failures_failures.fasta
+
+Step 4) Additional de novo OTU picking
+It is assumed by this point that the majority of sequences have been assigned 
+to an OTU, and thus the sequence count of failures_failures.fasta is small 
+enough that de novo OTU picking is computationally feasible. However, depending 
+on the sequences being used, it might be that the failures_failures.fasta file 
+is still prohibitively large for de novo clustering, and the jobs might take 
+too long to finish. In this case it is likely that the user would want to pass 
+the --suppress_step4 flag to avoid this additional de novo step.
+
+A final round of de novo OTU picking is done on the failures_failures.fasta file 
+to produce:
+step4_otus/failures_failures_cluster.uc
+step4_otus/failures_failures_otus.log
+step4_otus/failures_failures_otus.txt
+
+A representative sequence for each cluster is chosen to produce:
+step4_otus/step4_rep_set.fna
+
+Step 5) Produce the final OTU map and rep set
+If Step 4 is completed, the OTU maps from Step 1, Step 3, and Step 4 are 
+concatenated to produce:
+final_otu_map.txt
+
+If Step 4 was not completed, the OTU maps from Steps 1 and Step 3 are 
+concatenated together to produce:
+final_otu_map.txt
+
+Next, the minimum specified OTU size required to keep an OTU is specified with
+the --min_otu_size flag. For example, if the user left the --min_otu_size as the 
+default value of 2, requiring each OTU to contain at least 2 sequences, the any
+OTUs which failed to meet this criteria would be removed from the
+final_otu_map.txt to produce:
+final_otu_map_mc2.txt
+
+If --min_otu_size 10 was passed, it would produce:
+final_otu_map_mc10.txt
+
+The final_otu_map_mc2.txt is used to build the final representative set:
+rep_set.fna
+
+Step 6) Making the OTU tables and trees
+An OTU table is built using the final_otu_map_mc2.txt file to produce:
+otu_table_mc2.biom
+
+As long as the --suppress_taxonomy_assignment flag is NOT passed, 
+then taxonomy will be assigned to each of the represenatative sequences 
+in the final rep_set produced in Step 5, producing:
+rep_set_tax_assignments.log
+rep_set_tax_assignments.txt
+This taxonomic metadata is then added to the otu_table_mc2.biom to produce:
+otu_table_mc_w_tax.biom
+
+As long as the --suppress_align_and_tree is NOT passed, then the rep_set.fna 
+file will be used to align the sequences and build the phylogenetic tree, 
+which includes the de novo OTUs. Any sequences that fail to align are 
+omitted from the OTU table and tree to produce:
+otu_table_mc_no_pynast_failures.biom
+rep_set.tre
+
+If both --suppress_taxonomy_assignment and --suppress_align_and_tree are
+NOT passed, the script will produce:
+otu_table_mc_w_tax_no_pynast_failures.biom
+
+It is important to remember that with a large workflow script like this that 
+the user can jump into intermediate steps. For example, imagine that for some 
+reason the script was interrupted on Step 2, and the user did not want to go 
+through the process of re-picking OTUs as was done in Step 1. They can simply 
+rerun the script and pass in the:
+--step_1_otu_map_fp
+--step1_failures_fasta_fp
+parameters, and the script will continue with Steps 2 - 4.
+"""
 
 script_info['script_usage'] = []
 
