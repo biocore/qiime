@@ -311,7 +311,8 @@ def main():
 
         if barcode_read_fp is not None:
             log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %
-                        (barcode_read_fp, safe_md5(open(barcode_read_fp)).hexdigest()))
+                        (barcode_read_fp, 
+                         safe_md5(open(barcode_read_fp)).hexdigest()))
 
             if barcode_read_fp.endswith('.gz'):
                 barcode_read_f = gzip_open(barcode_read_fp)
