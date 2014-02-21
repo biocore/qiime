@@ -188,6 +188,9 @@ def main():
     elif barcode_read_fps is None:
         option_parser.error("Must provide --barcode_read_fps if "
                             "--barcode_type is not 'not-barcoded'")
+    elif mapping_fps is None:
+        option_parser.error("Must provide --mapping_fps if "
+                            "--barcode_type is not 'not-barcoded'")
 
     phred_offset = opts.phred_offset
     if phred_offset is not None:
