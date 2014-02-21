@@ -15,19 +15,18 @@ from qiime.util import qiime_open
 
 
 def extract_reads_from_interleaved(
-        input_fp, single_file_identifier, output_dir):
-    """Parses a single fasta file and creates two new files: forward and reverse, based on
-    the two values (comma separated) in single_file_identifier
+        input_fp, read_direction_identifiers, output_dir):
+    """Parses a single fastq file and creates two new files: forward and reverse, based on
+    the two values (comma separated) in read_direction_identifiers
 
     input_fp: file path to input
-    single_file_identifier: comma separated values to identify forward and reverse reads
-    index_in_single_file: boolean defining if the indexes are also in the input_fp
+    read_direction_identifiers: comma separated values to identify forward and reverse reads
     output_folder: file path to the output folder
     """
-    values = single_file_identifier.split(',')
+    values = read_direction_identifiers.split(',')
     if len(values) != 2:
         raise ValueError('You need to have two values for the headers separated by '
-                         'comma but you passed "%s"' % single_file_identifier)
+                         'comma but you passed "%s"' % read_direction_identifiers)
 
     forward_id = values[0]
     reverse_id = values[1]

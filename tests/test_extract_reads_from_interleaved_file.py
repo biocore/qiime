@@ -17,9 +17,9 @@ from cogent.util.unit_test import TestCase, main
 from qiime.extract_reads_from_interleaved_file import extract_reads_from_interleaved
 
 
-class JoinPairedEndsTests(TestCase):
+class ExtractReadsFromInterleavedTests(TestCase):
 
-    """Tests for join_paired_ends."""
+    """Tests for extract_reads_from_interleaved_file."""
 
     def setUp(self):
         """set up files to be used in all tests"""

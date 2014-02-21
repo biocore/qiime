@@ -35,12 +35,11 @@ script_info['required_options'] = [
                 help='Directory to store result files'),
 ]
 script_info['optional_options'] = [
-    make_option('--single_file_identifier', type="string",
+    make_option('--read_direction_identifiers', type="string",
                 help='This is the string identifying the forward and reverse reads. In '
                 'general, the format is 1:N:0 for read one (forward) and 2:N:0 for read '
                 'two (reverse). Each value should be passed by a comma separated value. '
-                'This only applies to cases when the forward and reverse reads are in a '
-                'single file [default: %default].', default="1:N:0,2:N:0"),
+                '[default: %default].', default="1:N:0,2:N:0"),
 ]
 
 script_info['version'] = __version__
@@ -53,13 +52,13 @@ def main():
     # Create local copy of options
     input_fp = opts.input_fp
     output_dir = opts.output_dir
-    single_file_identifier = opts.single_file_identifier
+    read_direction_identifiers = opts.read_direction_identifiers
 
     create_dir(output_dir, fail_on_exist=False)
 
     extract_reads_from_interleaved(
         input_fp,
-        single_file_identifier,
+        read_direction_identifiers,
         output_dir)
 
 
