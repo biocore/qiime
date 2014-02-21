@@ -58,12 +58,6 @@ script_info['script_usage'].append(("Demultiplex and quality filter "
 script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one "
                                     "non-multiplexed lane of Illumina fastq data and write results "
                                     "to ./slout_single_sample_q20.", "", "%prog -i lane1_read1.fastq.gz "
-                                    "--sample_id my.sample -o slout_single_sample_q20/ "
-                                    "-m map_not_multiplexed.txt  -q 19 --barcode_type 'not-barcoded'"))
-
-script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one "
-                                    "non-multiplexed lane of Illumina fastq data and write results "
-                                    "to ./slout_single_sample_q20.", "", "%prog -i lane1_read1.fastq.gz "
                                     "--sample_id my.sample.1 -o slout_single_sample_q20/ "
                                     "-q 19 --barcode_type 'not-barcoded'"))
 
@@ -85,7 +79,8 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     make_option('-m', '--mapping_fps', type="existing_filepaths",
-                help='metadata mapping files (comma-separated if more than one)'),
+                help='metadata mapping files (comma-separated if more than'
+                ' one) [default: %default]', default=None),
     make_option('-b', '--barcode_read_fps', type="existing_filepaths",
                 default=None, help='the barcode read fastq files (comma-separated '
                 'if more than one) [default: %default]'),
