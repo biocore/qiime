@@ -1,50 +1,47 @@
 #!/usr/bin/env python
 # File created on 30 Nov 2009.
 from __future__ import division
-from qiime.merge_mapping_files import merge_mapping_files
-from unittest import TestCase, main
 
-__author__ = "Greg Caporaso"
+from unittest import TestCase, main
+from StringIO import StringIO
+
+from qiime.util import MetadataMap
+from qiime.merge_mapping_files import merge_mapping_files
+
+__author__ = "Adam Robbins-Pianka"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jesse Stombaugh"]
+__credits__ = ["Greg Caporaso", "Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
-
+__maintainer__ = "Adam Robbins-Pianka"
+__email__ = "adam.robbinspianka@colorado.edu"
 
 class MergeMappingFilesTests(TestCase):
 
     """ Tests of the MergeMappingFiles script"""
-
     def setUp(self):
-        """ """
-        self.m1 = m1.split('\n')
-        self.m1_dup_bad = m1_dup_bad.split('\n')
-        self.m1_dup_good = m1_dup_good.split('\n')
-        self.m2 = m2.split('\n')
-        self.m3 = m3.split('\n')
-        self.m1_m2_m3_exp = m1_m2_m3_exp.split('\n')
+        self.m1 = StringIO(m1)
+        self.m2 = StringIO(m2)
+        self.m3 = StringIO(m3)
 
+        self.m1_dup_bad = StringIO(m1_dup_bad)
+        self.m1_dup_good = StringIO(m1_dup_good)
+    
     def test_merge_mapping_file(self):
         """merge_mapping_file: functions with default parameters """
-        actual = merge_mapping_files([self.m1, self.m2, self.m3])
-        expected = self.m1_m2_m3_exp
-
-        self.assertTrue(actual[0].startswith(
-                        '#SampleID\tBarcodeSequence\tLinkerPrimerSequence'))
-        self.assertTrue(actual[0].endswith('Description'))
-
-        actual.sort()
-        expected.sort()
-
-        for a, e in zip(actual, expected):
-            a_fields = a.split('\t')
-            e_fields = e.split('\t')
-            a_fields.sort()
-            e_fields.sort()
-            self.assertEqual(a_fields, e_fields)
-
+        observed = merge_mapping_files([self.m1,self.m3])
+        self.assertEqual(observed.__dict__, m1_m3_exp)
+            
+    def test_merge_mapping_file_different_no_data_value(self):
+        """merge_mapping_file: functions with different no_data_value"""
+        observed = merge_mapping_files([self.m1,self.m2], "TESTING_NA")
+        self.assertEqual(observed.__dict__, m1_m2_exp)
+            
+    def test_merge_mapping_file_three_mapping_files(self):
+        """merge_mapping_file: 3 mapping files"""
+        observed = merge_mapping_files([self.m1,self.m2,self.m3])
+        self.assertEqual(observed.__dict__, m1_m2_m3_exp)
+            
     def test_merge_mapping_file_bad_duplicates(self):
         """merge_mapping_file: error raised when merging mapping files where same sample ids has different values """
         self.assertRaises(
@@ -56,98 +53,38 @@ class MergeMappingFilesTests(TestCase):
     def test_merge_mapping_file_good_duplicates(self):
         """merge_mapping_file: same sample ids merged correctly when they have mergable data
         """
-        actual = merge_mapping_files([self.m1, self.m1_dup_good])
-        # 2 total entries
-        self.assertEqual(len(actual), 3)
-        # all fields are the same length
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
-        # 7 fields
-        self.assertEqual(len(actual[0].split('\t')), 7)
+        actual = merge_mapping_files([self.m1,self.m1_dup_good])
 
-    def test_merge_mapping_correct_num_records(self):
-        """merge_mapping_file: num recs returned is correct with varied input
-        """
-        # number of lines is always 1 greater than number of samples, and number
-        # of tab-separated fields on each line is equal
-        actual = merge_mapping_files([self.m1])
-        self.assertEqual(len(actual), 3)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
-        actual = merge_mapping_files([self.m2])
-        self.assertEqual(len(actual), 2)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
-        actual = merge_mapping_files([self.m3])
-        self.assertEqual(len(actual), 4)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
+        self.assertEqual(actual.__dict__, m1_m1_dup_good_exp)
 
-        actual = merge_mapping_files([self.m1, self.m2])
-        self.assertEqual(len(actual), 4)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
-        actual = merge_mapping_files([self.m1, self.m3])
-        self.assertEqual(len(actual), 6)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
-        actual = merge_mapping_files([self.m2, self.m3])
-        self.assertEqual(len(actual), 5)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
+m1="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tfirst1111\tTHE FIRST"""
 
-        actual = merge_mapping_files([self.m1, self.m2, self.m3])
-        self.assertEqual(len(actual), 7)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
+# when merged with m1, this should raise a ValueError
+m1_dup_bad="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tdupe11111\tDUPE BAD"""
 
-        actual = merge_mapping_files([self.m3, self.m3, self.m3, self.m3])
-        self.assertEqual(len(actual), 4)
-        self.assertEqual(
-            len(set([len(line.split('\t')) for line in actual])),
-            1)
+# when merged with m1, this should NOT raise a ValueError
+m1_dup_good="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional9\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tsomthing\tTHE FIRST"""
 
+m2="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional2\tDescription
+222222222\tGGGGGGGGGGGGGGG\tCCCCCCCCCCCCCCCCCCCC\tsecond222\tTHE SECOND"""
 
-m1 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata2\tDescription
-samp1_1\tAAAA\tCCCCC\t42\t36.9\tsomething
-samp1_2\tAAAA\tCCCCC\t99\t22.5\t"nothing interesting"
-"""
+m3="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+333333333\tFFFFFFFFFFFFFFF\tIIIIIIIIIIIIIIIIIIII\tthird3333\tTHE THIRD"""
 
-m1_dup_bad = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata2\tDescription
-samp1_1\tAATA\tCCCCC\t42\t36.9\tsomething
-samp1_2\tAATA\tCCCCC\t99\t22.5\t"nothing interesting"
-"""
+# the dict representation of the object with no_data_value set to TESTING_NA
+m1_m2_exp={'_metadata': {'111111111': {'optional1': 'first1111', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'Description': 'THE FIRST', 'optional2': None}, '222222222': {'optional1': None, 'LinkerPrimerSequence': 'CCCCCCCCCCCCCCCCCCCC', 'BarcodeSequence': 'GGGGGGGGGGGGGGG', 'Description': 'THE SECOND', 'optional2': 'second222'}}, 'no_data_value': 'TESTING_NA', 'Comments': []}
 
-m1_dup_good = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata3\tDescription
-samp1_1\tAAAA\tCCCCC\t42\t36.1\tsomething
-samp1_2\tAAAA\tCCCCC\t99\t22.1\t"nothing interesting"
-"""
+# dict representation, with no_data_value left as default ("no_data")
+m1_m3_exp={'_metadata': {'111111111': {'optional1': 'first1111', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'Description': 'THE FIRST'}, '333333333': {'optional1': 'third3333', 'LinkerPrimerSequence': 'IIIIIIIIIIIIIIIIIIII', 'BarcodeSequence': 'FFFFFFFFFFFFFFF', 'Description': 'THE THIRD'}}, 'no_data_value': 'no_data', 'Comments': []}
 
-m2 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata 3\tdata4\tdata5\tdata2\tDescription
-samp2_1\tAAAA\tCCCCC\tgreen\tsoil\t99.8\t44.5\tother
-"""
+# dict representation, with no_data_value left as default ("no_data")
+m1_m2_m3_exp={'_metadata': {'111111111': {'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'optional1': 'first1111', 'Description': 'THE FIRST', 'optional2': None}, '333333333': {'BarcodeSequence': 'FFFFFFFFFFFFFFF', 'LinkerPrimerSequence': 'IIIIIIIIIIIIIIIIIIII', 'optional1': 'third3333', 'Description': 'THE THIRD', 'optional2': None}, '222222222': {'BarcodeSequence': 'GGGGGGGGGGGGGGG', 'LinkerPrimerSequence': 'CCCCCCCCCCCCCCCCCCCC', 'optional1': None, 'Description': 'THE SECOND', 'optional2': 'second222'}}, 'no_data_value': 'no_data', 'Comments': []}
 
-m3 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tDescription
-samp3_1\tAAAT\tCCCCA\t8\tmisc1
-samp3_2\tAAAG\tCCCCG\t6\tmisc2
-samp3_3\tAAAC\tCCCCU\t7\tmisc3
-"""
-
-m1_m2_m3_exp = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata2\tdata 3\tdata4\tdata5\tDescription
-samp1_1\tAAAA\tCCCCC\t42\t36.9\tno_data\tno_data\tno_data\tsomething
-samp1_2\tAAAA\tCCCCC\t99\t22.5\tno_data\tno_data\tno_data\t"nothing interesting"
-samp2_1\tAAAA\tCCCCC\tno_data\t44.5\tgreen\tsoil\t99.8\tother
-samp3_1\tAAAT\tCCCCA\t8\tno_data\tno_data\tno_data\tno_data\tmisc1
-samp3_2\tAAAG\tCCCCG\t6\tno_data\tno_data\tno_data\tno_data\tmisc2
-samp3_3\tAAAC\tCCCCU\t7\tno_data\tno_data\tno_data\tno_data\tmisc3"""
+# dict representation, m1 and m1_dup_bad should be mergeable
+m1_m1_dup_good_exp = {'_metadata': {'111111111': {'optional9': 'somthing', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'optional1': 'first1111', 'Description': 'THE FIRST', 'BarcodeSequence': 'AAAAAAAAAAAAAAA'}}, 'no_data_value': 'no_data', 'Comments': []}
 
 if __name__ == "__main__":
     main()
