@@ -1698,6 +1698,10 @@ class MetadataMap():
             strings)
     """
 
+    req_header_prefix = ['SampleID', 'BarcodeSequence',
+                         'LinkerPrimerSequence']
+    req_header_suffix = ['Description']
+
     @staticmethod
     def parseMetadataMap(lines):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
@@ -1763,50 +1767,39 @@ class MetadataMap():
         output_lines = []
 
         # Build an ordered list of headers
-        # 1. The required headers in the required locations
-        headers = ['#SampleID', 'BarcodeSequence', 'LinkerPrimerSequence']
-
-        required_columns = set([
-            'Description', 'BarcodeSequence',
-            'LinkerPrimerSequence'])
-
         # 2. The optional columns in the mapping file
-        for header in self._metadata.iteritems().next()[1].keys():
-            if header in required_columns:
-                continue
+        headers_present = self._metadata.iteritems().next()[1].keys()
+        optional_headers = list(set(headers_present) -
+                                set(self.req_header_prefix +
+                                    self.req_header_suffix))
 
-            headers.append(header)
+        headers = (self.req_header_prefix + optional_headers +
+                   self.req_header_suffix)
 
-        # 3. the last required column in its required location
-        headers.append('Description')
-
-        output_lines.append('\t'.join(headers))
+        output_lines.append('#' + '\t'.join(headers))
 
         for sample_id, data in self._metadata.iteritems():
             current_data = []
 
-            # Get the first three required columns
+            # Get the first required columns
             current_data.append(sample_id)
-            current_data.append(data['BarcodeSequence'])
-            current_data.append(data['LinkerPrimerSequence'])
+            # skip the SampleID required header, since we get that from the
+            # dict we are currently iterating over
+            for header in self.req_header_prefix[1:]:
+                current_data.append(data[header])
 
-            # Get the optional columns (slice the headers list here to exclude
-            # the required headers we set explicitly above and below this
-            # for loop)
-            for header in headers[3:-1]:
-                if header not in data:
-                    raise ValueError("Required metadata column %s missing!" %
-                                     header)
-
+            # Get the optional columns; allow for None in these columns
+            for header in optional_headers:
                 value = self.no_data_value if data[header] is None else \
                     data[header]
 
-                current_data.append(str(value))
+                current_data.append(value)
 
-            # get the last required column
-            current_data.append(data['Description'])
+            # get the last required columns
+            for header in self.req_header_suffix:
+                current_data.append(data[header])
 
-            output_lines.append('\t'.join(current_data))
+            output_lines.append('\t'.join([str(x) for x in current_data]))
 
         return '\n'.join(output_lines)
 
@@ -1814,17 +1807,12 @@ class MetadataMap():
         """Merges two mapping files
 
         Fills in None where there is no data (i.e., when one mapping file
-        does not have a column in the other)
+        does not have a column in the other).  The comments from both mapping
+        files will be concatenated.
         """
-        # These two functions are used to make a defaultdict of defaultdicts,
-        # the latter of which returns None when an key is not present
-        def returnNone():
-            return None
-
-        def returnNoneDefaultDict():
-            return defaultdict(returnNone)
-
-        merged_data = defaultdict(returnNoneDefaultDict)
+        # Make a defaultdict of defaultdicts, the latter of which returns
+        # None when an key is not present
+        merged_data = defaultdict(lambda: defaultdict(lambda: None))
 
         # We will keep track of all unique sample_ids and metadata headers
         # we have seen as we go
@@ -1864,7 +1852,7 @@ class MetadataMap():
                 normal_dict[sample_id][header] = \
                     merged_data[sample_id][header]
 
-        # and create a MetadataMap object from it
+        # and create a MetadataMap object from it; concatenate comments
         normal_dict = Dict2D(normal_dict)
         return MetadataMap(normal_dict, self.Comments + other.Comments)
 

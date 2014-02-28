@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -20,7 +20,7 @@ script_info['brief_description'] = """Merge mapping files"""
 script_info[
     'script_description'] = (
         "This script provides a convenient interface for merging mapping "
-        "files which contains data on different samples.")
+        "files which contain data on different samples.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
     ("Example:",
@@ -60,7 +60,7 @@ def main():
                                        no_data_value=no_data_value)
 
     with open(output_fp, 'w') as f:
-        f.write(write(str(mapping_data)))
+        f.write(str(mapping_data))
 
 if __name__ == "__main__":
     main()
