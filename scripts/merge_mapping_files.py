@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.merge_mapping_files import merge_mapping_files, write_mapping_file
+from qiime.merge_mapping_files import merge_mapping_files
 
 script_info = {}
 script_info['brief_description'] = """Merge mapping files"""
