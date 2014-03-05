@@ -27,7 +27,7 @@ One of the output files from :file:`supervised_learning.py` is the file :file:`m
 Visualizing mislabeled samples
 -------------------------------------------------------------------
 
-You can also visualize the predicted mislabels using `make_emperor.py <http://biocore.github.io/emperor/>`_. Assuming that you have run :file:`beta_diversity.py` and :file:`principal_coordinates.py` to obtain a principal coordinates table :file:`pcoa.txt` for your samples, you can use the following command to obtain a plot where samples are colored by their mislabeling status::
+You can also visualize the predicted mislabels using `make_emperor.py <http://emperor.colorado.edu/>`_. Assuming that you have run :file:`beta_diversity.py` and :file:`principal_coordinates.py` to obtain a principal coordinates table :file:`pcoa.txt` for your samples, you can use the following command to obtain a plot where samples are colored by their mislabeling status::
 
     make_emperor.py -i pcoa.txt -m ml/mislabeling.txt -o color_by_mislabeling
     
