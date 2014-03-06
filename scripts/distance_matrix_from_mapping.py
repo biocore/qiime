@@ -47,7 +47,7 @@ script_info['required_options'] = [
 ]
 script_info['optional_options'] = [
     make_option('-o', '--output_fp',
-                help="Output directory. One will be created if it doesn't exist. [default=%default]",
+                help="Output path to store the distance matrix. [default=%default]",
                 type='new_dirpath', default="map_distance_matrix.txt")
 ]
 script_info['option_label'] = {'input_path': 'Mapping filepath',
