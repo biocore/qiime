@@ -72,7 +72,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
     # matrix (important for validation checks). Use strict=True so that an
     # error is raised if the distance matrix contains any samples that aren't
     # in the mapping file.
-    md_map.filterSamples(dm.sample_ids, strict=True)
+    md_map.filterSamples(dm.ids, strict=True)
 
     # Run the specified statistical method.
     if method in ['adonis', 'morans_i', 'mrpp', 'permdisp', 'dbrda']:

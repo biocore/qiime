@@ -639,7 +639,7 @@ class AnosimTests(TestHelper):
         # group map can be used for testing both the small dm data and the
         # small dm with ties data.
         self.small_group_map = {}
-        for samp_id in self.small_dm.sample_ids:
+        for samp_id in self.small_dm.ids:
             self.small_group_map[samp_id] = self.small_map.getCategoryValue(
                 samp_id, 'Treatment')
 
@@ -790,7 +790,7 @@ class PermanovaTests(TestHelper):
                             "sam4\t4\t2\t3\t0"]
 
         self.distmtx = SymmetricDistanceMatrix.from_file(self.distmtx_str)
-        self.distmtx_samples = self.distmtx.sample_ids
+        self.distmtx_samples = self.distmtx.ids
 
         self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
                                 "sam1\t0\t1\t1\t4",
@@ -799,7 +799,7 @@ class PermanovaTests(TestHelper):
                                 "sam4\t4\t2\t3\t0"]
         self.distmtx_tie = SymmetricDistanceMatrix.from_file(
             self.distmtx_tie_str)
-        self.distmtx_tie_samples = self.distmtx_tie.sample_ids
+        self.distmtx_tie_samples = self.distmtx_tie.ids
 
         # For testing with uneven group sizes.
         self.distmtx_uneven_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
@@ -810,7 +810,7 @@ class PermanovaTests(TestHelper):
                                    "sam5\t1\t1\t6\t2\t0"]
         self.distmtx_uneven = SymmetricDistanceMatrix.from_file(
             self.distmtx_uneven_str)
-        self.distmtx_uneven_samples = self.distmtx_uneven.sample_ids
+        self.distmtx_uneven_samples = self.distmtx_uneven.ids
 
         # Some group maps to help test Permanova, data_map can be used with
         # distmtx and distmtx_tie while data_map_uneven can only be used
@@ -1044,8 +1044,8 @@ class BestTests(TestHelper):
 
         exp = SymmetricDistanceMatrix(asarray(mtx), dm_lbls)
         obs = self.best._derive_euclidean_dm(cat_mat,
-                                             self.bv_dm_88soils.num_samples)
-        self.assertEqual(obs.sample_ids, exp.sample_ids)
+                                             self.bv_dm_88soils.shape[0])
+        self.assertEqual(obs.ids, exp.ids)
         self.assertFloatEqual(obs.data, exp.data)
 
     def test_call(self):
