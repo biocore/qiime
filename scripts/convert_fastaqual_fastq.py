@@ -54,7 +54,7 @@ script_info['optional_options'] = [
                 default=None),
 
     make_option('-o', '--output_dir',
-                type='new_path',
+                type='new_filepath',
                 help='Output directory. Will be created if does not ' +
                 'exist. [default: %default]', default="."),
 
