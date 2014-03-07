@@ -62,7 +62,7 @@ script_info['required_options'] = [
                 help='path to distance matrix to be displayed in the x axis'),
     make_option('-y', '--input_path_y', type='existing_filepath',
                 help='path to distance matrix to be displayed in the y axis'),
-    make_option('-o', '--output_path', type='new_path',
+    make_option('-o', '--output_path', type='new_filepath',
                 help='output path. directory for batch processing, ' +
                 'filename for single file operation'),
 ]

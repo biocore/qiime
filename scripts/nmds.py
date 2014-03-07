@@ -43,7 +43,7 @@ script_info['required_options'] = [
     make_option('-i', '--input_path', type='existing_path',
                 help='path to the input distance matrix file(s) (i.e., the output from beta_diversity.py). Is a directory for batch processing and a filename for a single file operation.'),
 
-    make_option('-o', '--output_path', type='new_path',
+    make_option('-o', '--output_path', type='new_filepath',
                 help='output path. directory for batch processing, ' +
                 'filename for single file operation'),
 ]
