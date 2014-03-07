@@ -72,7 +72,7 @@ script_info['optional_options'] = [
     make_option('-o', '--output_path',
                 help='Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format '
                 'or output directory when batch processing. [default: %default]',
-                type='new_filepath'),
+                type='new_path'),
     make_option('-m', '--metrics', type='multiple_choice',
                 mchoices=list_known_metrics(),
                 default='PD_whole_tree,chao1,observed_species',

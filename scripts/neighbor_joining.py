@@ -38,7 +38,7 @@ script_info['required_options'] = [
                 'filename for single file operation'),
 
 
-    make_option('-o', '--output_path', type='new_filepath',
+    make_option('-o', '--output_path', type='new_path',
                 help='output path. directory for batch processing, ' +
                 'filename for single file operation'),
 ]
