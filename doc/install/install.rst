@@ -58,10 +58,12 @@ The easiest way to install the latest QIIME release and its base dependencies is
 
 That's it!
 
+You should next `write your QIIME config file <./qiime_config.html>`_.
+
 Installing QIIME on Mac OS X (Using MacQIIME)
 +++++++++++++++++++++++++++++++++++++++++++++
 
-Jeff Werner builds and maintain MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
+Jeff Werner builds and maintains MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
 
 
 Manually installing QIIME
@@ -76,6 +78,7 @@ The first are the core scientific python dependencies. The easiest way to instal
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * Numpy 1.5.1 - 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
 * MatPlotLib 1.1.0 - 1.3.1 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+* SciPy >= 0.13.0 (`src_scipy <https://pypi.python.org/packages/source/s/scipy/scipy-0.13.0.tar.gz>`_) (license: BSD)
 
 The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
@@ -85,6 +88,8 @@ The next are python packages not included in Canopy Express. Each of these can b
 * qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
+* pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
+* bipy (latest development version) (`src_bipy <https://github.com/biocore/bipy>`_) (license: BSD)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions. 
 
@@ -141,11 +146,7 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
-	                qiime_scripts_dir:	$HOME/code/Qiime/scripts
 	            denoiser_min_per_core:	50
-	                      working_dir:	None
-	                    python_exe_fp:	python
 	                         temp_dir:	$HOME/temp
 	                      blastall_fp:	blastall
 	                 seconds_to_sleep:	1
@@ -255,11 +256,7 @@ You should see output that looks like the following::
 	                     torque_queue:	friendlyq
 	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
-	                cloud_environment:	False
-	                qiime_scripts_dir:	$HOME/code/Qiime/scripts
 	            denoiser_min_per_core:	50
-	                      working_dir:	None
-	                    python_exe_fp:	python
 	                         temp_dir:	$HOME/temp
 	                      blastall_fp:	blastall
 	                 seconds_to_sleep:	1
@@ -315,7 +312,7 @@ If you have downloaded the development version from GitHub, QIIME is already unp
 
 Installing QIIME
 ----------------
-QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), example script input and output (in ``Qiime/qiime_test_data``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files, and running the tests (optional, but highly recommended).
+QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), example script input (in ``Qiime/qiime_test_data``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files, and running the tests (optional, but highly recommended).
 
 .. _python-setup:
 
@@ -342,21 +339,11 @@ If you specified an alternate value for ``--install-purelib``, you'll need to be
 
 	echo "export PYTHONPATH=$HOME/lib/:$PYTHONPATH" >> $HOME/.bashrc
 
-The source your ``.bashrc``::
+Then source your ``.bashrc``::
 
 	source $HOME/.bashrc
 
-.. _set-script-dir:
-
-Finally, you'll need to create and edit a custom ``qiime_config`` file to tell QIIME where to look for the QIIME scripts. Create a custom ``qiime_config`` file by copying the default ``qiime_config`` packaged with QIIME::
-
-	cp $HOME/Qiime/qiime/support_files/qiime_config $HOME/.qiime_config
-
-Open the new file, ``$HOME/.qiime_config``, in a text editor such as TextEdit (on Mac), gedit (on Linux), vim, or emacs (but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_!). Find the line beginning ``qiime_scripts_dir`` and add a tab, followed by the QIIME scripts directory. If you've used the default value (i.e., you didn't specify ``--install-scripts``) the value you add will be ``/usr/local/bin/``. Otherwise, specify the value that you provided for ``--install-scripts``. In the example above, this would look like::
-
-	qiime_scripts_dir	$HOME/bin/
-
-Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, `see this document <./qiime_config.html>`_.
+Finally, you should `write your QIIME config file <./qiime_config.html>`_.
 
 .. _run-test-suite:
 

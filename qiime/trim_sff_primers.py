@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-#file trim_sff_primers.py: resets trim values in sff file based on primers.
+# file trim_sff_primers.py: resets trim values in sff file based on primers.
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", 'Kyle Bittinger']
+__credits__ = ["Rob Knight", 'Kyle Bittinger', "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -21,16 +21,17 @@ import subprocess
 import sys
 import tempfile
 
-from cogent.util.misc import app_path
+from bipy.app.util import which
 from cogent.app.util import ApplicationNotFoundError
 from qiime.parse import parse_mapping_file
 from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff
-    )
+)
+
 
 def get_technical_lengths(input_map, debug=False):
     """Returns per-sample info on technical lengths.
-    
+
     Note: KEY_SEQ, BARCODE and PRIMER fields are required. The LINKER
     field is optional.
     """
@@ -51,7 +52,7 @@ def get_technical_lengths(input_map, debug=False):
         curr_tech_len = len(fields[key_index]) + len(fields[bc_index]) + \
             len(fields[primer_index])
         if linker_index is not None:
-            curr_tech_len += len(fields[linker_index]) 
+            curr_tech_len += len(fields[linker_index])
         technical_lengths[fields[0]] = curr_tech_len
     if debug:
         print "Technical lengths:"
@@ -77,7 +78,7 @@ def set_clip_qual_left(sff_data, technical_read_length):
     """
     # TODO: Move to PyCogent
     header, reads = sff_data
-    
+
     # sfftools use 1-based indexing
     clip_idx = technical_read_length + 1
 
@@ -97,8 +98,9 @@ def set_sff_trimpoints(sff_dir, technical_lengths):
         except KeyError:
             continue
         sff_data = parse_binary_sff(open(sff_fp), True)
-        clipped_header, clipped_reads = set_clip_qual_left(sff_data, readlength)
-        
+        clipped_header, clipped_reads = set_clip_qual_left(
+            sff_data, readlength)
+
         _, temp_fp = tempfile.mkstemp(dir=sff_dir)
         with open(temp_fp, 'w') as f:
             write_binary_sff(f, clipped_header, clipped_reads)
@@ -107,20 +109,20 @@ def set_sff_trimpoints(sff_dir, technical_lengths):
 
 
 def set_sff_trimpoints_with_sfftools(
-    sff_dir, technical_lengths, sffinfo_path='sffinfo', sfffile_path='sfffile',
-    debug=False):
+        sff_dir, technical_lengths, sffinfo_path='sffinfo', sfffile_path='sfffile',
+        debug=False):
     """Set trimpoints to end of technical read for all SFF files in directory.
 
     This function essentially provides the reference implementation.
     It uses the official sfftools from Roche to process the SFF files.
     """
-    if not (os.path.exists(sffinfo_path) or app_path(sffinfo_path)):
+    if not (os.path.exists(sffinfo_path) or which(sffinfo_path)):
         raise ApplicationNotFoundError(
             'sffinfo executable not found. Is it installed and in your $PATH?')
-    if not (os.path.exists(sfffile_path) or app_path(sfffile_path)):
+    if not (os.path.exists(sfffile_path) or which(sfffile_path)):
         raise ApplicationNotFoundError(
             'sfffile executable not found. Is it installed and in your $PATH?')
-    
+
     for lib_id, sff_fp in get_per_lib_sff_fps(sff_dir):
         try:
             readlength = technical_lengths[lib_id]
@@ -145,7 +147,7 @@ def set_sff_trimpoints_with_sfftools(
         trim_file = open(trim_fp, 'w')
         for id_, length in seqlengths.items():
             curr_length = int(seqlengths[id_])
-            # Sfftools use 1-based index 
+            # Sfftools use 1-based index
             left_trim = readlength + 1
             # Key sequence not included in FASTA length
             right_trim = curr_length + 4

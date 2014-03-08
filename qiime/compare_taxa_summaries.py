@@ -22,6 +22,7 @@ comparison_modes = ['paired', 'expected']
 correlation_types = ['pearson', 'spearman']
 tail_types = ['low', 'high', 'two-sided']
 
+
 def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
                            correlation_type='pearson', tail_type='two-sided',
                            num_permutations=999, confidence_level=0.95,
@@ -118,8 +119,8 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         tail_type_desc = "one-sided (negative association)"
 
     header += tail_type_desc + " test of significance using a " + \
-              "t-distribution.\n"
-    
+        "t-distribution.\n"
+
     if num_permutations > 0:
         header += "# The nonparametric p-value(s) were calculated using " + \
                   "a " + tail_type_desc + " permutation test with " + \
@@ -131,14 +132,14 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
               "3rd edition pg. 575). The confidence interval(s) are two-sided."
 
     spearman_overall_warning = "# Since there were 10 or fewer " + \
-            "observations when calculating Spearman's rank correlation " + \
-            "coefficient, the parametric p-value is "
+        "observations when calculating Spearman's rank correlation " + \
+        "coefficient, the parametric p-value is "
     spearman_detailed_warning = "# Since there were 10 or fewer taxa in " + \
-            "the sorted and filled taxa summary files, the parametric " + \
-            "p-values and Bonferroni-corrected parametric p-values are "
+        "the sorted and filled taxa summary files, the parametric " + \
+        "p-values and Bonferroni-corrected parametric p-values are "
     spearman_warning_suffix = "not accurate when using the " + \
-            "t-distribution. Please see Biometry (Sokal and Rohlf, " + \
-            "3rd edition) page 600 for more details."
+        "t-distribution. Please see Biometry (Sokal and Rohlf, " + \
+        "3rd edition) page 600 for more details."
     spearman_overall_warning += spearman_warning_suffix
     spearman_detailed_warning += spearman_warning_suffix
 
@@ -149,25 +150,25 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
         # Make sure that each sample is paired up to the sample it needs to be
         # compared against according to the sample ID map.
         compatible_ts1, compatible_ts2 = _make_compatible_taxa_summaries(
-                filled_ts1, filled_ts2, sample_id_map)
+            filled_ts1, filled_ts2, sample_id_map)
         overall_corr, corr_vec = _compute_correlation(compatible_ts1,
-                compatible_ts2, comparison_mode, correlation_type, tail_type,
-                num_permutations, confidence_level,
-                perform_detailed_comparisons)
+                                                      compatible_ts2, comparison_mode, correlation_type, tail_type,
+                                                      num_permutations, confidence_level,
+                                                      perform_detailed_comparisons)
 
         # Calculate the length of the vectors that were used to compute
         # correlation of.
         num_overall_observations = len(compatible_ts1[0]) * \
-                                   len(compatible_ts1[1])
+            len(compatible_ts1[1])
 
         # Report the number of samples that matched.
         header += "\n# Number of samples that matched between the taxa " + \
                   "summary files: %d" % len(compatible_ts1[0])
     elif comparison_mode == 'expected':
         overall_corr, corr_vec = _compute_correlation(filled_ts1, filled_ts2,
-                comparison_mode, correlation_type, tail_type, num_permutations,
-                confidence_level, perform_detailed_comparisons,
-                expected_sample_id)
+                                                      comparison_mode, correlation_type, tail_type, num_permutations,
+                                                      confidence_level, perform_detailed_comparisons,
+                                                      expected_sample_id)
         num_overall_observations = len(filled_ts1[0]) * len(filled_ts1[1])
     else:
         raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
@@ -180,8 +181,9 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
     if correlation_type == 'spearman' and num_overall_observations <= 10:
         overall_corr_str_header += '\n' + spearman_overall_warning
     overall_corr_str = format_correlation_info(overall_corr[0],
-            overall_corr[1], overall_corr[2], overall_corr[3],
-            num_permutations, overall_corr_str_header)
+                                               overall_corr[1], overall_corr[
+                                                   2], overall_corr[3],
+                                               num_permutations, overall_corr_str_header)
 
     # Format the correlation vector.
     corr_vec_str = None
@@ -193,7 +195,8 @@ def compare_taxa_summaries(taxa_summary1, taxa_summary2, comparison_mode,
                                                  detailed_header)
 
     return (format_taxa_summary(filled_ts1), format_taxa_summary(filled_ts2),
-           overall_corr_str, corr_vec_str)
+            overall_corr_str, corr_vec_str)
+
 
 def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
     """Returns two taxa summaries that are ready for direct comparison.
@@ -234,8 +237,8 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
         for samp_id in ts1[0] + ts2[0]:
             if samp_id not in sample_id_map:
                 raise ValueError("The original sample ID '%s' does not have a "
-                        "mapping in the sample ID map. All sample IDs must "
-                        "have a mapping." % samp_id)
+                                 "mapping in the sample ID map. All sample IDs must "
+                                 "have a mapping." % samp_id)
 
     # For each sample ID in the first taxa summary file, try to find a matching
     # sample ID (using the sample ID map if one was provided) in the second
@@ -253,7 +256,7 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
             new_samp_id = sample_id_map[samp_id]
             for orig_samp_id in sample_id_map:
                 if (orig_samp_id != samp_id and
-                    sample_id_map[orig_samp_id] == new_samp_id):
+                        sample_id_map[orig_samp_id] == new_samp_id):
                     matching_samp_id = orig_samp_id
         else:
             if samp_id in ts2[0]:
@@ -270,6 +273,7 @@ def _make_compatible_taxa_summaries(ts1, ts2, sample_id_map=None):
                          "The taxa summaries are incompatible.")
     return (new_samp_ids1, ts1[1], array(new_data1).T), \
            (new_samp_ids2, ts2[1], array(new_data2).T)
+
 
 def _sort_and_fill_taxa_summaries(taxa_summaries):
     """Sorts and fills the taxonomic information of taxa summaries.
@@ -291,8 +295,7 @@ def _sort_and_fill_taxa_summaries(taxa_summaries):
     master_taxa = []
     for ts in taxa_summaries:
         master_taxa += ts[1]
-    master_taxa = list(set(master_taxa))
-    master_taxa.sort()
+    master_taxa = sorted(set(master_taxa))
 
     # Put each taxon and data in the order it appears in the master taxa list
     # for each taxa summary. If it doesn't exist, record an abundance of zero
@@ -311,6 +314,7 @@ def _sort_and_fill_taxa_summaries(taxa_summaries):
                 data.append([0.] * len(samples))
         result.append((samples, master_taxa, array(data)))
     return result
+
 
 def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
                          tail_type, num_permutations, confidence_level,
@@ -390,13 +394,13 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
     # Make sure that the second taxa summary has only one sample if we weren't
     # provided an expected sample ID to compare against.
     if (comparison_mode == 'expected' and expected_sample_id is None and
-        len(ts2[0]) != 1):
+            len(ts2[0]) != 1):
         raise ValueError("The second taxa summary file must contain a single "
-                "sample (column) to compare all samples in the first taxa "
-                "summary file against when the comparison mode is 'expected' "
-                "and an expected sample ID is not provided. You provided a "
-                "file with %d samples."
-                % len(ts2[0]))
+                         "sample (column) to compare all samples in the first taxa "
+                         "summary file against when the comparison mode is 'expected' "
+                         "and an expected sample ID is not provided. You provided a "
+                         "file with %d samples."
+                         % len(ts2[0]))
 
     if comparison_mode == 'paired':
         # Make sure the number of samples match between the two files (the IDs
@@ -458,20 +462,20 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
         if perform_detailed_comparisons:
             # Compare the current sample and its pair.
             corr_coeff, param_p_val, unused, nonparam_p_val, conf_interval = \
-                    correlation_test(ts1_data, ts2_data,
-                                     method=correlation_type,
-                                     tails=tail_type,
-                                     permutations=num_permutations,
-                                     confidence_level=confidence_level)
+                correlation_test(ts1_data, ts2_data,
+                                 method=correlation_type,
+                                 tails=tail_type,
+                                 permutations=num_permutations,
+                                 confidence_level=confidence_level)
 
             # Compute the Bonferroni-corrected p-values.
             param_p_val_corr = min(param_p_val * num_comparisons, 1)
             nonparam_p_val_corr = None if nonparam_p_val is None else \
-                                  min(nonparam_p_val * num_comparisons, 1)
+                min(nonparam_p_val * num_comparisons, 1)
 
             corr_vec.append((samp_id, ts2[0][paired_idx], corr_coeff,
-                param_p_val, param_p_val_corr, nonparam_p_val,
-                nonparam_p_val_corr, conf_interval))
+                             param_p_val, param_p_val_corr, nonparam_p_val,
+                             nonparam_p_val_corr, conf_interval))
 
     # Compare all paired samples at once.
     results = correlation_test(all_ts1_data, all_ts2_data,

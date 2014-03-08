@@ -30,6 +30,7 @@ __status__ = "Prototype"
 
 
 class Mothur(CommandLineApplication):
+
     """Mothur application controller
     """
     _options = {
@@ -43,17 +44,17 @@ class Mothur(CommandLineApplication):
         # Minimum pairwise distance to consider for clustering
         'precision': ValuedParameter(
             Name='precision', Value=None, Delimiter='=', Prefix=''),
-        }
+    }
     _parameters = {}
     _parameters.update(_options)
     _input_handler = '_input_as_multiline_string'
     _command = 'mothur'
-    
+
     def __init__(self, params=None, InputHandler=None, SuppressStderr=None,
                  SuppressStdout=None, WorkingDir=None, TmpDir='/tmp',
                  TmpNameLen=20, HALT_EXEC=False):
         """Initialize a Mothur application controller
-        
+
             params: a dictionary mapping the Parameter id or synonym to its
                 value (or None for FlagParameters or MixedParameters in flag
                 mode) for Parameters that should be turned on
@@ -66,23 +67,23 @@ class Mothur(CommandLineApplication):
             SuppressStdout: if set to True, will route standard out to
                 /dev/null, False by default
             WorkingDir: the directory where you want the application to run,
-                default is the current working directory, but is useful to 
+                default is the current working directory, but is useful to
                 change in cases where the program being run creates output
                 to its current working directory and you either don't want
-                it to end up where you are running the program, or the user 
-                running the script doesn't have write access to the current 
+                it to end up where you are running the program, or the user
+                running the script doesn't have write access to the current
                 working directory
                 WARNING: WorkingDir MUST be an absolute path!
             TmpDir: the directory where temp files will be created, /tmp
-                by default 
+                by default
             TmpNameLen: the length of the temp file name
             HALT_EXEC: if True, raises exception w/ command output just
                 before execution, doesn't clean up temp files. Default False.
         """
         super(Mothur, self).__init__(
-            params=params, InputHandler=InputHandler, 
+            params=params, InputHandler=InputHandler,
             SuppressStderr=SuppressStderr, SuppressStdout=SuppressStdout,
-            WorkingDir='', TmpDir='', TmpNameLen=TmpNameLen, 
+            WorkingDir='', TmpDir='', TmpNameLen=TmpNameLen,
             HALT_EXEC=HALT_EXEC)
         # Prevent self.WorkingDir from being explicitly cast as a
         # FilePath object.  This behavior does not seem necessary in
@@ -101,15 +102,15 @@ class Mothur(CommandLineApplication):
         help = (
             'See manual, available on the MOTHUR wiki:\n'
             'http://schloss.micro.umass.edu/mothur/'
-            )
+        )
         return help
 
     def __call__(self, data=None, remove_tmp=True):
         """Run the application with the specified kwargs on data
-        
+
             data: anything that can be cast into a string or written out to
-                a file. Usually either a list of things or a single string or 
-                number. input_handler will be called on this data before it 
+                a file. Usually either a list of things or a single string or
+                number. input_handler will be called on this data before it
                 is passed as part of the command-line argument, so by creating
                 your own input handlers you can customize what kind of data
                 you want your application to accept
@@ -135,8 +136,8 @@ class Mothur(CommandLineApplication):
         exit_status = process.wait()
         if not self._accept_exit_status(exit_status):
             raise ApplicationError(
-                'Unacceptable application exit status: %s, command: %s' % \
-                    (exit_status, args))
+                'Unacceptable application exit status: %s, command: %s' %
+                (exit_status, args))
 
         if outfile is not None:
             outfile.seek(0)
@@ -166,19 +167,19 @@ class Mothur(CommandLineApplication):
             'unique': self._derive_unique_path(),
             'dist': self._derive_dist_path(),
             'names': self._derive_names_path(),
-            'cluster_opts' : format_opts(
+            'cluster_opts': format_opts(
                 self.Parameters['method'],
                 self.Parameters['cutoff'],
                 self.Parameters['precision'],
-                ),
-            }
+            ),
+        }
         script = (
             '#'
             'unique.seqs(fasta=%(in)s); '
             'dist.seqs(fasta=%(unique)s); '
             'read.dist(column=%(dist)s, name=%(names)s); '
             'cluster(%(cluster_opts)s)' % vars
-            )
+        )
         return script
 
     def _get_result_paths(self):
@@ -190,8 +191,8 @@ class Mothur(CommandLineApplication):
             'unique names': self._derive_names_path(),
             'unique seqs': self._derive_unique_path(),
             'log': self._derive_log_path(),
-            }
-        return dict([(k, ResultPath(v)) for (k,v) in paths.items()])
+        }
+        return dict([(k, ResultPath(v)) for (k, v) in paths.items()])
 
     # Methods to derive/guess output pathnames produced by MOTHUR.
     # TODO: test for input files that do not have a filetype extension
@@ -210,7 +211,10 @@ class Mothur(CommandLineApplication):
         simultaneously.
         """
         filenames = listdir(self.WorkingDir)
-        lognames = [x for x in filenames if re.match("^mothur\.\d+\.logfile$", x)]
+        lognames = [
+            x for x in filenames if re.match(
+                "^mothur\.\d+\.logfile$",
+                x)]
         if not lognames:
             raise ApplicationError(
                 'No log file detected in directory %s. Contents: \n\t%s' % (
@@ -240,8 +244,8 @@ class Mothur(CommandLineApplication):
         """
         abbrevs = {
             'furthest': 'fn',
-            'nearest':  'nn',
-            'average':  'an',
+            'nearest': 'nn',
+            'average': 'an',
         }
         if self.Parameters['method'].isOn():
             method = self.Parameters['method'].Value
@@ -253,12 +257,12 @@ class Mothur(CommandLineApplication):
         """Guess otu list file path produced by Mothur"""
         base, ext = path.splitext(self._input_filename)
         return '%s.unique.%s.list' % (base, self.__get_method_abbrev())
-        
+
     def _derive_rank_abundance_path(self):
         """Guess rank abundance file path produced by Mothur"""
         base, ext = path.splitext(self._input_filename)
         return '%s.unique.%s.rabund' % (base, self.__get_method_abbrev())
-        
+
     def _derive_species_abundance_path(self):
         """Guess species abundance file path produced by Mothur"""
         base, ext = path.splitext(self._input_filename)
@@ -272,7 +276,7 @@ class Mothur(CommandLineApplication):
         # Override to change default constructor to str(). FilePath
         # objects muck up the Mothur script.
         return super(Mothur, self).getTmpFilename(
-            tmp_dir=tmp_dir, prefix=prefix, suffix=suffix, 
+            tmp_dir=tmp_dir, prefix=prefix, suffix=suffix,
             result_constructor=str)
 
     # Temporary input file needs to be in the working directory, so we
@@ -290,7 +294,7 @@ class Mothur(CommandLineApplication):
 
     def _input_as_lines(self, data):
         """Write sequence of lines to temp file, return filename
-        
+
         data: a sequence to be written to a file, each element of the
             sequence will compose a line in the file
 
@@ -357,6 +361,7 @@ def mothur_from_file(file):
 
 
 class _MothurFilepathParameter(ValuedParameter):
+
     """Inserts escape characters in filepath parameters for Mothur."""
 
     def _get_value(self):
@@ -383,7 +388,7 @@ class MothurClassifySeqs(Mothur):
             Name='iters', Value=None, Delimiter='=', Prefix=''),
         'ksize': ValuedParameter(
             Name='ksize', Value=None, Delimiter='=', Prefix=''),
-        }
+    }
     _parameters = {}
     _parameters.update(_options)
     _filepath_parameters = set(['reference', 'taxonomy'])
@@ -413,8 +418,8 @@ class MothurClassifySeqs(Mothur):
             ".summary": "summary",
             ".taxonomy": "assignments",
             ".accnos": "accnos",
-            }
-        
+        }
+
         paths = {'log': self._derive_log_path()}
         input_dir = path.dirname(self._input_filename)
         for fn in listdir(input_dir):
@@ -422,7 +427,7 @@ class MothurClassifySeqs(Mothur):
                 for suffix, result_key in result_by_suffix.items():
                     if fn.endswith(suffix):
                         paths[result_key] = path.join(input_dir, fn)
-        return dict([(k, ResultPath(v)) for (k,v) in paths.items()])
+        return dict([(k, ResultPath(v)) for (k, v) in paths.items()])
 
 
 def parse_mothur_assignments(lines):
@@ -454,8 +459,8 @@ def parse_mothur_assignments(lines):
 
 
 def mothur_classify_file(
-    query_file, ref_fp, tax_fp, cutoff=None, iters=None, ksize=None,
-    output_fp=None):
+        query_file, ref_fp, tax_fp, cutoff=None, iters=None, ksize=None,
+        output_fp=None):
     """Classify a set of sequences using Mothur's naive bayes method
 
     Dashes are used in Mothur to provide multiple filenames.  A
@@ -467,7 +472,7 @@ def mothur_classify_file(
     id-to-taxonomy file ends with a semicolon.
     """
     ref_seq_ids = set()
-    
+
     user_ref_file = open(ref_fp)
     tmp_ref_file = NamedTemporaryFile(suffix=".ref.fa")
     for seq_id, seq in MinimalFastaParser(user_ref_file):

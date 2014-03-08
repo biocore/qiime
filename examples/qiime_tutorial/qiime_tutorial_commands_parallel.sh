@@ -4,7 +4,7 @@
 
 # Pre-processing
 echo "Check mapping file"
-rm -rf mapping_output ; check_id_map.py -m Fasting_Map.txt -o mapping_output -v
+rm -rf mapping_output ; validate_mapping_file.py -m Fasting_Map.txt -o mapping_output -v
 
 echo "Demultiplexing"
 rm -rf split_library_output ; split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_library_output

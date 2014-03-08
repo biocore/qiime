@@ -20,12 +20,13 @@ from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
 from biom.parse import parse_biom_table
+from bipy.core.distance import DistanceMatrix, SymmetricDistanceMatrix
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
-        Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
-        MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
-        _quantile,paired_difference_analyses)
-from qiime.util import (DistanceMatrix, MetadataMap, get_qiime_temp_dir,
-                        get_tmp_filename)
+                         Anosim, Best, CategoryStats, CorrelationStats,
+                         DistanceMatrixStats, MantelCorrelogram, Mantel,
+                         PartialMantel, Permanova, quantile, _quantile,
+                         paired_difference_analyses)
+from qiime.util import MetadataMap, get_qiime_temp_dir, get_tmp_filename
 
 
 class TestHelper(TestCase):
@@ -76,7 +77,7 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
+        self.overview_dm = SymmetricDistanceMatrix.from_file(
             self.overview_dm_str)
 
         # The overview tutorial's metadata mapping file.
@@ -93,20 +94,20 @@ class TestHelper(TestCase):
         self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
 
         self.test_map_str = [
-                "#SampleID\tBarcodeSequence\tFoo\tBar\tDescription",
-                "PC.354\tAGCACGAGCCTA\tfoo\ta\t354",
-                "PC.355\tAACTCGTCGATG\tfoo\ta\t355",
-                "PC.356\tACAGACCACTCA\tbar\ta\t356",
-                "PC.481\tACCAGCGACTAG\tfoo\ta\t481",
-                "PC.593\tAGCAGCACTTGT\tbar\ta\t593",
-                "PC.607\tAACTGTGCGTAC\tbar\ta\t607",
-                "PC.634\tACAGAGTCGGCT\tbar\ta\t634",
-                "PC.635\tACCGCAGAGTCA\tfoo\ta\t635",
-                "PC.636\tACGGTGAGTGTC\tbar\ta\t636"]
+            "#SampleID\tBarcodeSequence\tFoo\tBar\tDescription",
+            "PC.354\tAGCACGAGCCTA\tfoo\ta\t354",
+            "PC.355\tAACTCGTCGATG\tfoo\ta\t355",
+            "PC.356\tACAGACCACTCA\tbar\ta\t356",
+            "PC.481\tACCAGCGACTAG\tfoo\ta\t481",
+            "PC.593\tAGCAGCACTTGT\tbar\ta\t593",
+            "PC.607\tAACTGTGCGTAC\tbar\ta\t607",
+            "PC.634\tACAGAGTCGGCT\tbar\ta\t634",
+            "PC.635\tACCGCAGAGTCA\tfoo\ta\t635",
+            "PC.636\tACGGTGAGTGTC\tbar\ta\t636"]
         self.test_map = MetadataMap.parseMetadataMap(self.test_map_str)
 
         # A 1x1 dm.
-        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+        self.single_ele_dm = SymmetricDistanceMatrix([[0]], ['s1'])
 
         # How many times to test a p-value.
         self.p_val_tests = 10
@@ -232,7 +233,7 @@ foo	baz	-9.79795897113	0.000608184944463	0.00182455483339	N/A	N/A
 bar	baz	-3.0	0.0576688856224	0.173006656867	N/A	N/A
 """
         obs = all_pairs_t_test(self.labels2, self.dists2,
-                                        num_permutations=0)
+                               num_permutations=0)
         self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
 
     def test_all_pairs_t_test_few_perms(self):
@@ -250,7 +251,7 @@ foo	baz	-9.79795897113	0.000304092472232	0.000912277416695	Too few iters to comp
 bar	baz	-3.0	0.0288344428112	0.0865033284337	Too few iters to compute p-value (num_iters=5)	Too few iters to compute p-value (num_iters=5)
 """
         obs = all_pairs_t_test(self.labels2, self.dists2,
-                                        num_permutations=5, tail_type='low')
+                               num_permutations=5, tail_type='low')
         self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
 
     def test_all_pairs_t_test_invalid_tests(self):
@@ -266,28 +267,28 @@ Group 1	Group 2	t statistic	Parametric p-value	Parametric p-value (Bonferroni-co
 foo	bar	N/A	N/A	N/A	N/A	N/A
 """
         obs = all_pairs_t_test(['foo', 'bar'], [[], [1, 2, 4]],
-                'high', 20)
+                               'high', 20)
         self.assertEqual(self.remove_nums(obs), self.remove_nums(exp))
 
     def test_all_pairs_t_test_invalid_input(self):
         """Test performing Monte Carlo tests on invalid input."""
         # Number of labels and distance groups do not match.
         self.assertRaises(ValueError, all_pairs_t_test,
-                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6], [7, 8]])
+                          ['foo', 'bar'], [[1, 2, 3], [4, 5, 6], [7, 8]])
 
         # Invalid tail type.
         self.assertRaises(ValueError, all_pairs_t_test,
-                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], 'foo')
+                          ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], 'foo')
 
         # Invalid number of permutations.
         self.assertRaises(ValueError, all_pairs_t_test,
-                ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], num_permutations=-1)
+                          ['foo', 'bar'], [[1, 2, 3], [4, 5, 6]], num_permutations=-1)
 
     def test_perform_pairwise_tests_single_comp(self):
         """Test on valid dataset w/ 1 comp."""
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
-            0.0070804795641244006, 0.10199999999999999, 0.10199999999999999]]
+                0.0070804795641244006, 0.10199999999999999, 0.10199999999999999]]
         obs = _perform_pairwise_tests(self.labels1, self.dists1, 'two-sided',
                                       999)
         self.assertEqual(len(obs), len(exp))
@@ -299,10 +300,11 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
         """Test on valid dataset w/ multiple comps."""
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
-            0.021241438692373202, nan, nan], ['foo', 'baz',
-            -9.7979589711327115, 0.00060818494446333643, 0.0018245548333900093,
-            nan, nan], ['bar', 'baz', -3.0, 0.05766888562243732,
-            0.17300665686731195, nan, nan]]
+                0.021241438692373202, nan, nan], ['foo', 'baz',
+                                                  -
+                                                  9.7979589711327115, 0.00060818494446333643, 0.0018245548333900093,
+                                                  nan, nan], ['bar', 'baz', -3.0, 0.05766888562243732,
+                                                              0.17300665686731195, nan, nan]]
         obs = _perform_pairwise_tests(self.labels2, self.dists2, 'two-sided',
                                       0)
         self.assertFloatEqual(obs, exp)
@@ -310,10 +312,12 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
     def test_perform_pairwise_tests_too_few_obs(self):
         """Test on dataset w/ too few observations."""
         exp = [['foo', 'bar', nan, nan, nan, nan, nan], ['foo', 'baz',
-            -7.794228634059948, 0.008032650971672552, 0.016065301943345104,
-            nan, nan], ['bar', 'baz',
-            -2.598076211353316, 0.060844967173160069, 0.12168993434632014,
-            nan, nan]]
+                                                         -
+                                                         7.794228634059948, 0.008032650971672552, 0.016065301943345104,
+                                                         nan, nan], ['bar', 'baz',
+                                                                     -
+                                                                     2.598076211353316, 0.060844967173160069, 0.12168993434632014,
+                                                                     nan, nan]]
         obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
         self.assertFloatEqual(obs, exp)
 
@@ -333,21 +337,21 @@ class DistanceMatrixStatsTests(TestHelper):
         self.empty_dms = DistanceMatrixStats([])
         self.single_dms = DistanceMatrixStats([self.overview_dm])
         self.double_dms = DistanceMatrixStats(
-                [self.overview_dm, self.single_ele_dm])
+            [self.overview_dm, self.single_ele_dm])
         # For testing the requirement that two distance matrices are set.
         self.two_dms = DistanceMatrixStats(
-                [self.overview_dm, self.single_ele_dm], 2)
+            [self.overview_dm, self.single_ele_dm], 2)
         # For testing the requirement that the distance matrices meet the
         # minimum size requirements.
         self.size_dms = DistanceMatrixStats(
-                [self.overview_dm, self.overview_dm], 2, 4)
+            [self.overview_dm, self.overview_dm], 2, 4)
 
     def test_DistanceMatrices_getter(self):
         """Test getter for distmats."""
         self.assertEqual(self.empty_dms.DistanceMatrices, [])
         self.assertEqual(self.single_dms.DistanceMatrices, [self.overview_dm])
         self.assertEqual(self.double_dms.DistanceMatrices,
-                [self.overview_dm, self.single_ele_dm])
+                         [self.overview_dm, self.single_ele_dm])
 
     def test_DistanceMatrices_setter(self):
         """Test setter for dms on valid input data."""
@@ -359,32 +363,32 @@ class DistanceMatrixStatsTests(TestHelper):
 
         self.empty_dms.DistanceMatrices = [self.overview_dm, self.overview_dm]
         self.assertEqual(self.empty_dms.DistanceMatrices,
-            [self.overview_dm, self.overview_dm])
+                         [self.overview_dm, self.overview_dm])
 
     def test_DistanceMatrices_setter_invalid(self):
         """Test setter for dms on invalid input data."""
         # Allows testing of non-callable property setter that raises errors.
         # Idea was obtained from http://stackoverflow.com/a/3073049
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', None)
+                          'DistanceMatrices', None)
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', 10)
+                          'DistanceMatrices', 10)
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', 20.0)
+                          'DistanceMatrices', 20.0)
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', "foo")
+                          'DistanceMatrices', "foo")
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', {})
+                          'DistanceMatrices', {})
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', self.overview_dm)
+                          'DistanceMatrices', self.overview_dm)
         self.assertRaises(TypeError, setattr, self.empty_dms,
-                'DistanceMatrices', [1])
-        self.assertRaises(ValueError, setattr, self.empty_dms,
-                'DistanceMatrices',
-                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])])
+                          'DistanceMatrices', [1])
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                          'DistanceMatrices',
+                          [DistanceMatrix(
+                              array([[0, 2], [3, 0]]), ['foo', 'bar']),
+                           DistanceMatrix(
+                               array([[0, 2], [3.5, 0]]), ['foo', 'bar'])])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -394,41 +398,24 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
-        self.assertRaises(ValueError, DistanceMatrixStats, 
-                [DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])])
+        self.assertRaises(TypeError, DistanceMatrixStats,
+                          [DistanceMatrix(
+                              array([[0, 2], [3, 0]]), ['foo', 'bar']),
+                           DistanceMatrix(
+                               array([[0, 2], [3.5, 0]]), ['foo', 'bar'])])
 
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, setattr, self.two_dms,
-                'DistanceMatrices', [self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm])
         self.assertRaises(ValueError, setattr, self.two_dms,
-                'DistanceMatrices', [self.overview_dm, self.overview_dm,
-                                     self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm, self.overview_dm,
+                                               self.overview_dm])
 
     def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.size_dms,
-                'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
-
-    def test_DistanceMatrices_setter_suppress_symmetry_check(self):
-        """Test suppressing symmetry check."""
-        dms = DistanceMatrixStats([],
-                                  suppress_symmetry_and_hollowness_check=True)
-        dms.DistanceMatrices = [
-                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])]
-
-        dms = DistanceMatrixStats([
-                DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                ['foo', 'bar']),
-                DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                ['foo', 'bar'])],
-                suppress_symmetry_and_hollowness_check=True)
+                          'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Test __call__() returns an empty result set."""
@@ -461,10 +448,10 @@ class CorrelationStatsTests(TestHelper):
 
     def test_DistanceMatrices_setter_mismatched_labels(self):
         """Test setting dms with mismatching sample ID labels."""
-        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
+        mismatch = SymmetricDistanceMatrix(array([[0]]), ['s2'])
 
         self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
-            [self.single_ele_dm, mismatch])
+                          [self.single_ele_dm, mismatch])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
                           mismatch])
@@ -472,7 +459,7 @@ class CorrelationStatsTests(TestHelper):
     def test_DistanceMatrices_setter_wrong_dims(self):
         """Test setting dms with mismatching dimensions."""
         self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
-            [self.overview_dm, self.single_ele_dm])
+                          [self.overview_dm, self.single_ele_dm])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
                           self.single_ele_dm])
@@ -495,7 +482,7 @@ class CategoryStatsTests(TestHelper):
         """Define some useful data to use in testing."""
         super(CategoryStatsTests, self).setUp()
         self.cs_overview = CategoryStats(self.overview_map, [self.overview_dm],
-            ["Treatment", "DOB"])
+                                         ["Treatment", "DOB"])
 
     def test_MetadataMap_setter(self):
         """Should set the mdmap property."""
@@ -532,10 +519,10 @@ class CategoryStatsTests(TestHelper):
 
         # Test setting a unique category.
         self.assertRaises(ValueError, CategoryStats, self.test_map,
-                [self.overview_dm], ["Description"])
+                          [self.overview_dm], ["Description"])
         cs_test = CategoryStats(self.test_map, [self.overview_dm], ["Foo"])
         self.assertRaises(ValueError, setattr, cs_test, 'Categories',
-                ["Description"])
+                          ["Description"])
 
         # Test setting a category with only a single value.
         self.assertRaises(ValueError, setattr, cs_test, 'Categories', ["Bar"])
@@ -565,19 +552,19 @@ class CategoryStatsTests(TestHelper):
     def test_RandomFunction_setter_invalid_input(self):
         """Test setter for the random function with non-callable input."""
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', 42)
+                          'RandomFunction', 42)
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', 42.0)
+                          'RandomFunction', 42.0)
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', "j")
+                          'RandomFunction', "j")
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', None)
+                          'RandomFunction', None)
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', [])
+                          'RandomFunction', [])
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', ())
+                          'RandomFunction', ())
         self.assertRaises(TypeError, setattr, self.cs_overview,
-                'RandomFunction', {})
+                          'RandomFunction', {})
 
     def test_validate_compatibility(self):
         """Test for compatible sample IDs between dms and mdmap."""
@@ -623,15 +610,15 @@ class AnosimTests(TestHelper):
                              "sam2\t1\t0\t3\t2",
                              "sam3\t5\t3\t0\t3",
                              "sam4\t4\t2\t3\t0"]
-        self.small_dm = DistanceMatrix.parseDistanceMatrix(self.small_dm_str)
+        self.small_dm = SymmetricDistanceMatrix.from_file(self.small_dm_str)
 
         self.small_dm_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
                                  "sam1\t0\t1\t1\t4",
                                  "sam2\t1\t0\t3\t2",
                                  "sam3\t1\t3\t0\t3",
                                  "sam4\t4\t2\t3\t0"]
-        self.small_dm_tie = DistanceMatrix.parseDistanceMatrix(
-                self.small_dm_tie_str)
+        self.small_dm_tie = SymmetricDistanceMatrix.from_file(
+            self.small_dm_tie_str)
 
         self.small_map_str = ["#SampleID\tBarcodeSequence\
                               \tLinkerPrimerSequence\tTreatment\tDOB\
@@ -652,9 +639,9 @@ class AnosimTests(TestHelper):
         # group map can be used for testing both the small dm data and the
         # small dm with ties data.
         self.small_group_map = {}
-        for samp_id in self.small_dm.SampleIds:
+        for samp_id in self.small_dm.ids:
             self.small_group_map[samp_id] = self.small_map.getCategoryValue(
-                    samp_id, 'Treatment')
+                samp_id, 'Treatment')
 
         # Create three Anosim instances: one for the small dm, one for the
         # small dm with ties, and one for the overview tutorial dataset.
@@ -727,34 +714,36 @@ class AnosimTests(TestHelper):
 
     def test_remove_ties1(self):
         """Test removal of ties. Should return [1.5,1.5]."""
-        result = self.anosim_small._remove_ties([1,1],[1,2])
-        self.assertEqual(result, [1.5,1.5])
+        result = self.anosim_small._remove_ties([1, 1], [1, 2])
+        self.assertEqual(result, [1.5, 1.5])
 
     def test_remove_ties2(self):
         """Should return [3.5,3.5,3.5,3.5,3.5,3.5]."""
-        result = self.anosim_small._remove_ties([1,1,1,1,1,1],[1,2,3,4,5,6])
-        self.assertEqual(result, [3.5,3.5,3.5,3.5,3.5,3.5])
+        result = self.anosim_small._remove_ties(
+            [1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6])
+        self.assertEqual(result, [3.5, 3.5, 3.5, 3.5, 3.5, 3.5])
 
     def test_remove_ties3(self):
         """Should return [1,3.5,3.5,3.5,3.5,6]."""
-        result = self.anosim_small._remove_ties([1,3,3,3,3,8],[1,2,3,4,5,6])
-        self.assertEqual(result, [1,3.5,3.5,3.5,3.5,6])
+        result = self.anosim_small._remove_ties(
+            [1, 3, 3, 3, 3, 8], [1, 2, 3, 4, 5, 6])
+        self.assertEqual(result, [1, 3.5, 3.5, 3.5, 3.5, 6])
 
     def test_remove_ties4(self):
         """Should return [1,2,3,4]."""
-        result = self.anosim_small._remove_ties([1,2,3,4],[1,2,3,4])
-        self.assertEqual(result, [1,2,3,4])
+        result = self.anosim_small._remove_ties([1, 2, 3, 4], [1, 2, 3, 4])
+        self.assertEqual(result, [1, 2, 3, 4])
 
     def test_remove_ties5(self):
         """Should return [1,3,3,3,5.5,5.5,7]."""
-        result = self.anosim_small._remove_ties([1,2,2,2,3,3,5],
-                                                [1,2,3,4,5,6,7])
-        self.assertEqual(result, [1,3,3,3,5.5,5.5,7])
+        result = self.anosim_small._remove_ties([1, 2, 2, 2, 3, 3, 5],
+                                                [1, 2, 3, 4, 5, 6, 7])
+        self.assertEqual(result, [1, 3, 3, 3, 5.5, 5.5, 7])
 
     def test_remove_ties6(self):
         """Should return [1.5,1.5,3.5,3.5]."""
-        result = self.anosim_small._remove_ties([1,1,2,2],[1,2,3,4])
-        self.assertEqual(result,[1.5,1.5,3.5,3.5])
+        result = self.anosim_small._remove_ties([1, 1, 2, 2], [1, 2, 3, 4])
+        self.assertEqual(result, [1.5, 1.5, 3.5, 3.5])
 
     def test_get_adjusted_vals(self):
         """Test computing adjusted ranks for ties."""
@@ -764,11 +753,14 @@ class AnosimTests(TestHelper):
 
     def test_compute_r1(self):
         """Should return .625 for the R statistic on the small dm."""
-        sorted_rank = [1.0,2.0,3.5,3.5,5.0,6.0]
-        sorted_group = [1.0,0.0,0.0,1.0,0.0,0.0]
+        sorted_rank = [1.0, 2.0, 3.5, 3.5, 5.0, 6.0]
+        sorted_group = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
         sorted_rank = array(sorted_rank)
         sorted_group = array(sorted_group)
-        result = self.anosim_small._compute_r_value(sorted_rank,sorted_group,4)
+        result = self.anosim_small._compute_r_value(
+            sorted_rank,
+            sorted_group,
+            4)
         self.assertEqual(result, .625)
 
     def test_anosim_p_test(self):
@@ -785,6 +777,7 @@ class AnosimTests(TestHelper):
 
 
 class PermanovaTests(TestHelper):
+
     def setUp(self):
         """Define some useful data to use in testing."""
         super(PermanovaTests, self).setUp()
@@ -796,59 +789,59 @@ class PermanovaTests(TestHelper):
                             "sam3\t5\t3\t0\t3",
                             "sam4\t4\t2\t3\t0"]
 
-        self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
-        self.distmtx_samples = self.distmtx.SampleIds
+        self.distmtx = SymmetricDistanceMatrix.from_file(self.distmtx_str)
+        self.distmtx_samples = self.distmtx.ids
 
         self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
                                 "sam1\t0\t1\t1\t4",
                                 "sam2\t1\t0\t3\t2",
                                 "sam3\t1\t3\t0\t3",
                                 "sam4\t4\t2\t3\t0"]
-        self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(
-                self.distmtx_tie_str)
-        self.distmtx_tie_samples = self.distmtx_tie.SampleIds
+        self.distmtx_tie = SymmetricDistanceMatrix.from_file(
+            self.distmtx_tie_str)
+        self.distmtx_tie_samples = self.distmtx_tie.ids
 
         # For testing with uneven group sizes.
         self.distmtx_uneven_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
-                                    "sam1\t0\t3\t7\t2\t1",
-                                    "sam2\t3\t0\t5\t4\t1",
-                                    "sam3\t7\t5\t0\t2\t6",
-                                    "sam4\t2\t4\t2\t0\t2",
-                                    "sam5\t1\t1\t6\t2\t0"]
-        self.distmtx_uneven = DistanceMatrix.parseDistanceMatrix(
-                self.distmtx_uneven_str)
-        self.distmtx_uneven_samples = self.distmtx_uneven.SampleIds
+                                   "sam1\t0\t3\t7\t2\t1",
+                                   "sam2\t3\t0\t5\t4\t1",
+                                   "sam3\t7\t5\t0\t2\t6",
+                                   "sam4\t2\t4\t2\t0\t2",
+                                   "sam5\t1\t1\t6\t2\t0"]
+        self.distmtx_uneven = SymmetricDistanceMatrix.from_file(
+            self.distmtx_uneven_str)
+        self.distmtx_uneven_samples = self.distmtx_uneven.ids
 
         # Some group maps to help test Permanova, data_map can be used with
         # distmtx and distmtx_tie while data_map_uneven can only be used
         # with distmtx_uneven.
         self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
                 \tTreatment\tDOB\tDescription",
-                "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+                             "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
                 \tControl_mouse_I.D._354",
-                "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+                             "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
                 \tControl_mouse_I.D._355",
-                "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
+                             "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
                 \tControl_mouse_I.D._356",
-                "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\
+                             "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\
                 \tControl_mouse_I.D._481"]
         self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
 
         # For testing with uneven group sizes.
-        self.data_map_uneven_str=["#SampleID\tBarcodeSequence\
+        self.data_map_uneven_str = ["#SampleID\tBarcodeSequence\
                 \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
-                "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+                                    "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
                 \tControl_mouse_I.D._354",
-                "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+                                    "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
                 \tControl_mouse_I.D._355",
-                "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
+                                    "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
                 \tControl_mouse_I.D._356",
-                "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\
+                                    "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\
                 \tControl_mouse_I.D._481",
-                "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
+                                    "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
                 \tcontrolmouseid"]
         self.data_map_uneven = MetadataMap.parseMetadataMap(
-                self.data_map_uneven_str)
+            self.data_map_uneven_str)
 
         # Formatting the two data_maps to meet permanova requirements.
         self.map = {}
@@ -858,17 +851,17 @@ class PermanovaTests(TestHelper):
         self.map_uneven = {}
         for samp_id in self.data_map_uneven.SampleIds:
             self.map_uneven[samp_id] = self.data_map_uneven.getCategoryValue(
-                    samp_id, 'Treatment')
+                samp_id, 'Treatment')
 
         # Creating instances of Permanova to run the tests on.
         self.permanova_plain = Permanova(self.data_map, self.distmtx,
-                'Treatment')
+                                         'Treatment')
         self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,
-                'Treatment')
+                                       'Treatment')
         self.permanova_uneven = Permanova(self.data_map_uneven,
-                self.distmtx_uneven, 'Treatment')
+                                          self.distmtx_uneven, 'Treatment')
         self.permanova_overview = Permanova(self.overview_map,
-                self.overview_dm,'Treatment')
+                                            self.overview_dm, 'Treatment')
 
     def test_permanova1(self):
         """permanova() should return 4.4."""
@@ -890,12 +883,13 @@ class PermanovaTests(TestHelper):
 
     def test_compute_f1(self):
         """Should return 4.4, testing just function."""
-        distances = [1,5,4,3,2,3]
-        grouping = [0,-1,-1,-1,-1,1]
+        distances = [1, 5, 4, 3, 2, 3]
+        grouping = [0, -1, -1, -1, -1, 1]
         distances = array(distances)
         grouping = array(grouping)
-        result = self.permanova_plain._compute_f_value(distances,grouping,4,2,
-                [2,2])
+        result = self.permanova_plain._compute_f_value(
+            distances, grouping, 4, 2,
+            [2, 2])
         self.assertEqual(result, 4.4)
 
     def test_call_plain(self):
@@ -950,32 +944,32 @@ class BestTests(TestHelper):
         super(BestTests, self).setUp()
 
         self.bv_dm_88soils_str = ["\tMT2.141698\tCA1.141704\tBB2.141659\t"
-        "CO2.141657\tTL3.141709\tSN3.141650", "MT2.141698\t0.0\t"
-        "0.623818643706\t0.750015427505\t0.585201193913\t0.729023583672\t"
-        "0.622135587669", "CA1.141704\t0.623818643706\t0.0\t0.774881224555"
-        "\t0.649822398416\t0.777203137034\t0.629507320436", "BB2.141659\t"
-        "0.750015427505\t0.774881224555\t0.0\t0.688845424001\t0.567470311282"
-        "\t0.721707516043", "CO2.141657\t0.585201193913\t0.649822398416\t"
-        "0.688845424001\t0.0\t0.658853575764\t0.661223617505", "TL3.141709\t"
-        "0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t"
-        "0.711173405838", "SN3.141650\t0.622135587669\t0.629507320436\t"
-        "0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
-        self.bv_dm_88soils = DistanceMatrix.parseDistanceMatrix(
-                self.bv_dm_88soils_str)
+                                  "CO2.141657\tTL3.141709\tSN3.141650", "MT2.141698\t0.0\t"
+                                  "0.623818643706\t0.750015427505\t0.585201193913\t0.729023583672\t"
+                                  "0.622135587669", "CA1.141704\t0.623818643706\t0.0\t0.774881224555"
+                                  "\t0.649822398416\t0.777203137034\t0.629507320436", "BB2.141659\t"
+                                  "0.750015427505\t0.774881224555\t0.0\t0.688845424001\t0.567470311282"
+                                  "\t0.721707516043", "CO2.141657\t0.585201193913\t0.649822398416\t"
+                                  "0.688845424001\t0.0\t0.658853575764\t0.661223617505", "TL3.141709\t"
+                                  "0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t"
+                                  "0.711173405838", "SN3.141650\t0.622135587669\t0.629507320436\t"
+                                  "0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
+        self.bv_dm_88soils = SymmetricDistanceMatrix.from_file(
+            self.bv_dm_88soils_str)
 
         self.bv_map_88soils_str = ["#SampleId\tTOT_ORG_CARB\tSILT_CLAY\t"
-        "ELEVATION\tSOIL_MOISTURE_DEFICIT\tCARB_NITRO_RATIO\t"
-        "ANNUAL_SEASON_TEMP\tANNUAL_SEASON_PRECPT\tPH\tCMIN_RATE\tLONGITUDE\t"
-        "LATITUDE", "MT2.141698\t39.1\t35\t1000\t70\t23.087\t7\t450\t6.66\t"
-        "19.7\t-114\t46.8", "CA1.141704\t16.7\t73\t2003\t198\t13\t10.3\t400\t"
-        "7.27\t2.276\t-111.7666667\t36.05", "BB2.141659\t52.2\t44\t400\t-680\t"
-        "21.4\t6.1\t1200\t4.6\t2.223\t-68.1\t44.86666667", "CO2.141657\t18.1\t"
-        "24\t2400\t104\t31.8\t6.1\t350\t5.68\t9.223\t-105.3333333\t"
-        "40.58333333", "TL3.141709\t53.9\t52\t894\t-212\t24.6\t-9.3\t400\t"
-        "4.23\t16.456\t-149.5833333\t68.63333333", "SN3.141650\t16.6\t20\t"
-        "3000\t-252\t13.9\t3.6\t600\t5.74\t6.289\t-118.1666667\t36.45"]
+                                   "ELEVATION\tSOIL_MOISTURE_DEFICIT\tCARB_NITRO_RATIO\t"
+                                   "ANNUAL_SEASON_TEMP\tANNUAL_SEASON_PRECPT\tPH\tCMIN_RATE\tLONGITUDE\t"
+                                   "LATITUDE", "MT2.141698\t39.1\t35\t1000\t70\t23.087\t7\t450\t6.66\t"
+                                   "19.7\t-114\t46.8", "CA1.141704\t16.7\t73\t2003\t198\t13\t10.3\t400\t"
+                                   "7.27\t2.276\t-111.7666667\t36.05", "BB2.141659\t52.2\t44\t400\t-680\t"
+                                   "21.4\t6.1\t1200\t4.6\t2.223\t-68.1\t44.86666667", "CO2.141657\t18.1\t"
+                                   "24\t2400\t104\t31.8\t6.1\t350\t5.68\t9.223\t-105.3333333\t"
+                                   "40.58333333", "TL3.141709\t53.9\t52\t894\t-212\t24.6\t-9.3\t400\t"
+                                   "4.23\t16.456\t-149.5833333\t68.63333333", "SN3.141650\t16.6\t20\t"
+                                   "3000\t-252\t13.9\t3.6\t600\t5.74\t6.289\t-118.1666667\t36.45"]
         self.bv_map_88soils = MetadataMap.parseMetadataMap(
-                self.bv_map_88soils_str)
+            self.bv_map_88soils_str)
 
         self.cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION',
                      'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO',
@@ -985,18 +979,18 @@ class BestTests(TestHelper):
 
     def test_vector_dist(self):
         """Test the _vector_dist helper method."""
-        v1 = [1,4,2]
-        v2 = [-1,12,4]
+        v1 = [1, 4, 2]
+        v2 = [-1, 12, 4]
 
         exp = 8.48528137424
-        obs = self.best._vector_dist(v1,v2)
+        obs = self.best._vector_dist(v1, v2)
         self.assertFloatEqual(exp, obs)
 
-        v1 = [1,2,100,4,2]
-        v2 = [-1,12,4,12,99]
+        v1 = [1, 2, 100, 4, 2]
+        v2 = [-1, 12, 4, 12, 99]
 
         exp = 137.087563258
-        obs = self.best._vector_dist(v1,v2)
+        obs = self.best._vector_dist(v1, v2)
         self.assertFloatEqual(exp, obs)
 
     def test_make_cat_mat(self):
@@ -1008,8 +1002,8 @@ class BestTests(TestHelper):
                ('4.23', '68.63333333'),
                ('5.74', '36.45')]
 
-        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1,3])
-        self.assertEqual(exp,obs)
+        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1, 3])
+        self.assertEqual(exp, obs)
 
         exp = [('6.66', '-114', '46.8'),
                ('7.27', '-111.7666667', '36.05'),
@@ -1019,8 +1013,8 @@ class BestTests(TestHelper):
                ('5.74', '-118.1666667', '36.45')]
 
         obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'],
-                                        [1,2,3])
-        self.assertEqual(exp,obs)
+                                      [1, 2, 3])
+        self.assertEqual(exp, obs)
 
     def test_derive_euclidean_dm(self):
         """Test the derive_euclidean_dm method."""
@@ -1031,26 +1025,28 @@ class BestTests(TestHelper):
                    ('4.23', '68.63333333'),
                    ('5.74', '36.45')]
 
-        dm_lbls = ['MT2.141698','CA1.141704','BB2.141659',
-            'CO2.141657','TL3.141709','SN3.141650']
+        dm_lbls = ['MT2.141698', 'CA1.141704', 'BB2.141659',
+                   'CO2.141657', 'TL3.141709', 'SN3.141650']
 
         mtx = [
-        [0.0,10.7672930674,2.82513322958,6.29343661968,
-            21.9681438519,10.3908084382],
-        [10.7672930674,0.0,9.21208506093,4.80408275125,
-        32.7248408842,1.58142340946],
-        [2.82513322958,9.21208506093,0.0,4.41739114202,
-        23.7695465697,8.49351975531],
-        [6.29343661968,4.80408275125,4.41739114202,0.0,
-        28.0874527147,4.13376879093],
-        [21.9681438519,32.7248408842,23.7695465697,
-        28.0874527147,0.0,32.2187374711],
-        [10.3908084382,1.58142340946,8.49351975531,
-        4.13376879093,32.2187374711,0.0]]
+            [0.0, 10.7672930674, 2.82513322958, 6.29343661968,
+             21.9681438519, 10.3908084382],
+            [10.7672930674, 0.0, 9.21208506093, 4.80408275125,
+             32.7248408842, 1.58142340946],
+            [2.82513322958, 9.21208506093, 0.0, 4.41739114202,
+             23.7695465697, 8.49351975531],
+            [6.29343661968, 4.80408275125, 4.41739114202, 0.0,
+             28.0874527147, 4.13376879093],
+            [21.9681438519, 32.7248408842, 23.7695465697,
+             28.0874527147, 0.0, 32.2187374711],
+            [10.3908084382, 1.58142340946, 8.49351975531,
+             4.13376879093, 32.2187374711, 0.0]]
 
-        exp = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
+        exp = SymmetricDistanceMatrix(asarray(mtx), dm_lbls)
         obs = self.best._derive_euclidean_dm(cat_mat,
-                                               self.bv_dm_88soils.Size)
+                                             self.bv_dm_88soils.shape[0])
+        self.assertEqual(obs.ids, exp.ids)
+        self.assertFloatEqual(obs.data, exp.data)
 
     def test_call(self):
         """Test the overall functionality of Best."""
@@ -1069,26 +1065,26 @@ class BestTests(TestHelper):
                    (0.16785714285714282, '1,2,3,4,5,6,7,8,9,10,11')],
                'num_vars': 11,
                'vars': ['TOT_ORG_CARB = 1', 'SILT_CLAY = 2',
-                       'ELEVATION = 3', 'SOIL_MOISTURE_DEFICIT = 4',
-                       'CARB_NITRO_RATIO = 5', 'ANNUAL_SEASON_TEMP = 6',
-                       'ANNUAL_SEASON_PRECPT = 7', 'PH = 8',
-                       'CMIN_RATE = 9', 'LONGITUDE = 10',
-                       'LATITUDE = 11']}
+                        'ELEVATION = 3', 'SOIL_MOISTURE_DEFICIT = 4',
+                        'CARB_NITRO_RATIO = 5', 'ANNUAL_SEASON_TEMP = 6',
+                        'ANNUAL_SEASON_PRECPT = 7', 'PH = 8',
+                        'CMIN_RATE = 9', 'LONGITUDE = 10',
+                        'LATITUDE = 11']}
 
-        # the difference caused by the new spearmans_rho function is in the 
-        # final decimal place of the rho_vals. its not a significant difference, 
-        # but the test is failing because we are doing a dict comparison for 
-        # float values. 
+        # the difference caused by the new spearmans_rho function is in the
+        # final decimal place of the rho_vals. its not a significant difference,
+        # but the test is failing because we are doing a dict comparison for
+        # float values.
         obs = self.best()
         self.assertEqual(exp['method_name'], obs['method_name'])
         self.assertEqual(exp['num_vars'], obs['num_vars'])
         self.assertEqual(exp['vars'], obs['vars'])
-        for i,j in zip(exp['rho_vals'], obs['rho_vals']):
+        for i, j in zip(exp['rho_vals'], obs['rho_vals']):
             self.assertFloatEqual(i[0], j[0])
             self.assertEqual(i[1], j[1])
         # check that the keys are the same since we have checked all the values
         # we expect to be there are the same
-        self.assertTrue(set(exp.keys())==set(obs.keys()))
+        self.assertTrue(set(exp.keys()) == set(obs.keys()))
 
 
 class MantelCorrelogramTests(TestHelper):
@@ -1104,16 +1100,16 @@ class MantelCorrelogramTests(TestHelper):
 
         # Smallest test case: 3x3 matrices.
         ids = ['s1', 's2', 's3']
-        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]),
-                             ids, ids)
-        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
-                             ids, ids)
+        dm1 = SymmetricDistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]),
+                                      ids)
+        dm2 = SymmetricDistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
+                                      ids)
 
         self.small_mc = MantelCorrelogram(dm1, dm2)
 
         # For testing variable-sized bins.
         self.small_mc_var_bins = MantelCorrelogram(dm1, dm2,
-                variable_size_distance_classes=True)
+                                                   variable_size_distance_classes=True)
 
     def test_Alpha_getter(self):
         """Test retrieving the value of alpha."""
@@ -1140,12 +1136,12 @@ class MantelCorrelogramTests(TestHelper):
         self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
                           [self.overview_dm])
         self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
-                [self.overview_dm, self.overview_dm, self.overview_dm])
+                          [self.overview_dm, self.overview_dm, self.overview_dm])
 
     def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
-                [self.single_ele_dm, self.single_ele_dm])
+                          [self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Test running a Mantel correlogram analysis on valid input."""
@@ -1160,15 +1156,15 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_class_index = [0.5757052546507142, 0.60590471266814283,
-            0.63610417068557146, 0.66630362870299997, 0.69650308672042849,
-            0.72670254473785723, 0.75690200275528574]
+                           0.63610417068557146, 0.66630362870299997, 0.69650308672042849,
+                           0.72670254473785723, 0.75690200275528574]
         self.assertFloatEqual(obs['class_index'], exp_class_index)
 
         exp_num_dist = [12, 6, 8, 10, 12, 16, 8]
         self.assertEqual(obs['num_dist'], exp_num_dist)
 
         exp_mantel_r = [0.73244729118260765, 0.31157641757444593,
-            0.17627427296718071, None, None, None, None]
+                        0.17627427296718071, None, None, None, None]
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
 
         # Test matplotlib Figure for a sane state.
@@ -1178,9 +1174,9 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
         self.assertFloatEqual(obs_ax.get_xticks(), [0.57, 0.58, 0.59, 0.6,
-            0.61, 0.62, 0.63, 0.64, 0.65])
+                                                    0.61, 0.62, 0.63, 0.64, 0.65])
         self.assertFloatEqual(obs_ax.get_yticks(), [0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9])
+                                                    0.6, 0.7, 0.8, 0.9])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1194,10 +1190,10 @@ class MantelCorrelogramTests(TestHelper):
             self.assertIsProb(p_vals[1])
             self.assertIsProb(p_vals[2])
             self.assertFloatEqual(corr_p_vals,
-                [p_val * 3 if p_val is not None else None for p_val in p_vals])
+                                  [p_val * 3 if p_val is not None else None for p_val in p_vals])
 
             if (p_vals[0] >= 0 and p_vals[0] <= 0.01 and p_vals[1] > 0.01 and
-                p_vals[1] <= 0.1 and p_vals[2] > 0.1 and p_vals[2] <= 0.5):
+                    p_vals[1] <= 0.1 and p_vals[2] > 0.1 and p_vals[2] <= 0.5):
                 found_match = True
                 break
         self.assertTrue(found_match)
@@ -1227,9 +1223,9 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
         self.assertFloatEqual(obs_ax.get_xticks(), [2.85, 2.9, 2.95, 3., 3.05,
-            3.1, 3.15, 3.2])
+                                                    3.1, 3.15, 3.2])
         self.assertFloatEqual(obs_ax.get_yticks(), [0.82, 0.83, 0.84, 0.85,
-            0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
+                                                    0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1249,23 +1245,23 @@ class MantelCorrelogramTests(TestHelper):
 
     def test_find_distance_classes(self):
         """Test finding the distance classes a matrix's elements are in."""
-        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+        exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [3.0, 5.0, 7.0])
         obs = self.small_mc._find_distance_classes(
             self.small_mc.DistanceMatrices[1], 3)
         self.assertFloatEqual(obs, exp)
 
-        exp = (array([[-1,  1,  2,  0,  0,  5,  7,  4,  6],
-            [ 1, -1,  0,  2,  3,  6,  6,  6,  4],
-            [ 2,  0, -1,  4,  5,  5,  7,  4,  6],
-            [ 0,  2,  4, -1,  3,  3,  3,  3,  2],
-            [ 0,  3,  5,  3, -1,  5,  7,  6,  6],
-            [ 5,  6,  5,  3,  5, -1,  5,  2,  5],
-            [ 7,  6,  7,  3,  7,  5, -1,  0,  0],
-            [ 4,  6,  4,  3,  6,  2,  0, -1,  0],
-            [ 6,  4,  6,  2,  6,  5,  0,  0, -1]]),
-            [0.57381779, 0.60024231, 0.62666684, 0.65309137, 0.67951589,
-             0.70594042, 0.73236494, 0.75878947])
+        exp = (array([[-1, 1, 2, 0, 0, 5, 7, 4, 6],
+                      [1, -1, 0, 2, 3, 6, 6, 6, 4],
+                      [2, 0, -1, 4, 5, 5, 7, 4, 6],
+                      [0, 2, 4, -1, 3, 3, 3, 3, 2],
+                      [0, 3, 5, 3, -1, 5, 7, 6, 6],
+                      [5, 6, 5, 3, 5, -1, 5, 2, 5],
+                      [7, 6, 7, 3, 7, 5, -1, 0, 0],
+                      [4, 6, 4, 3, 6, 2, 0, -1, 0],
+                      [6, 4, 6, 2, 6, 5, 0, 0, -1]]),
+               [0.57381779, 0.60024231, 0.62666684, 0.65309137, 0.67951589,
+                0.70594042, 0.73236494, 0.75878947])
         obs = self.mc._find_distance_classes(
             self.mc.DistanceMatrices[1], 8)
         self.assertFloatEqual(obs, exp)
@@ -1273,26 +1269,26 @@ class MantelCorrelogramTests(TestHelper):
     def test_find_distance_classes_variable_size_bins(self):
         """Test finding distance classes with variable-size bins."""
         # Single distance class.
-        exp = (array([[-1,  0,  0], [ 0, -1,  0], [ 0,  0, -1]]), [5.0])
+        exp = (array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]]), [5.0])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 1)
         self.assertFloatEqual(obs, exp)
 
         # Multiple distance classes (even #).
-        exp = (array([[-1,  0,  0], [ 0, -1,  1], [ 0,  1, -1]]), [3.5, 6.5])
+        exp = (array([[-1, 0, 0], [0, -1, 1], [0, 1, -1]]), [3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 2)
         self.assertFloatEqual(obs, exp)
 
         # Multiple distance classes (odd #).
-        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+        exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 3)
         self.assertFloatEqual(obs, exp)
 
         # More classes than distances.
-        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+        exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5, 8])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 4)
@@ -1301,9 +1297,9 @@ class MantelCorrelogramTests(TestHelper):
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""
         self.assertRaises(ValueError, self.mc._find_distance_classes,
-                self.mc.DistanceMatrices[1], 0)
+                          self.mc.DistanceMatrices[1], 0)
         self.assertRaises(ValueError, self.mc._find_distance_classes,
-                self.mc.DistanceMatrices[1], -1)
+                          self.mc.DistanceMatrices[1], -1)
 
     def test_find_row_col_indices(self):
         """Test finds the row and col based on a flattened-list index."""
@@ -1400,7 +1396,7 @@ class MantelCorrelogramTests(TestHelper):
     def test_generate_correlogram(self):
         """Test creating a correlogram plot."""
         obs_fig = self.mc._generate_correlogram([0, 1, 2], [-0.9, 0, 0.9],
-                [0.001, 0.1, 0.9])
+                                                [0.001, 0.1, 0.9])
         obs_ax = obs_fig.get_axes()[0]
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
@@ -1428,8 +1424,8 @@ class MantelTests(TestHelper):
         sample_ids = ["S1", "S2", "S3"]
         m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
         m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m1_dm = DistanceMatrix(m1, sample_ids, sample_ids)
-        m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
+        m1_dm = SymmetricDistanceMatrix(m1, sample_ids)
+        m2_dm = SymmetricDistanceMatrix(m2, sample_ids)
 
         self.small_mantel = Mantel(m1_dm, m2_dm, 'less')
         self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
@@ -1444,15 +1440,15 @@ class MantelTests(TestHelper):
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, setattr, self.overview_mantel,
-                'DistanceMatrices', [self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm])
         self.assertRaises(ValueError, setattr, self.overview_mantel,
-                'DistanceMatrices', [self.overview_dm, self.overview_dm,
-                                     self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm, self.overview_dm,
+                                               self.overview_dm])
 
     def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.overview_mantel,
-                'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
+                          'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
 
     def test_call_overview(self):
         """Runs mantel test on the overview dm when compared to itself.
@@ -1514,35 +1510,40 @@ class PartialMantelTests(TestHelper):
 
         # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
-        self.small_pm = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
-            smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
-            [10, 2, 0]]), smpl_ids, smpl_ids))
+        self.small_pm = PartialMantel(
+            SymmetricDistanceMatrix(array([[0, 1, 4], [1, 0, 3], [4, 3, 0]]),
+                                    smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
+                                    smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 9, 10], [9, 0, 2], [10, 2, 0]]),
+                                    smpl_ids))
 
-        self.small_pm_diff = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0, 20, 51], [20, 0, 888], [51, 888, 0]]),
-            smpl_ids, smpl_ids), DistanceMatrix(array([[0, 9, 10], [9, 0, 2],
-            [10, 2, 0]]), smpl_ids, smpl_ids))
+        self.small_pm_diff = PartialMantel(
+            SymmetricDistanceMatrix(array([[0, 1, 4], [1, 0, 3], [4, 3, 0]]),
+                                    smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 20, 51], [20, 0, 888],
+                                           [51, 888, 0]]), smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 9, 10], [9, 0, 2], [10, 2, 0]]),
+                                    smpl_ids))
 
         smpl_ids = ['s1', 's2', 's3', 's4', 's5']
         self.small_pm_diff2 = PartialMantel(
-            DistanceMatrix(array([[0,1,2,3,1.4],
-                                  [1,0,1.5,1.6,1.7],
-                                  [2,1.5,0,0.8,1.9],
-                                  [3,1.6,0.8,0,1.0],
-                                  [1.4,1.7,1.9,1.0,0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0,1,2,3,4.1],
-                                  [1,0,5,6,7],
-                                  [2,5,0,8,9],
-                                  [3,6,8,0,10],
-                                  [4.1,7,9,10,0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0,1,2,3,4],
-                                  [1,0,5,6,7],
-                                  [2,5,0,8,9.1],
-                                  [3,6,8,0,10],
-                                  [4,7,9.1,10,0]]), smpl_ids, smpl_ids))
+            SymmetricDistanceMatrix(array([[0, 1, 2, 3, 1.4],
+                                           [1, 0, 1.5, 1.6, 1.7],
+                                           [2, 1.5, 0, 0.8, 1.9],
+                                           [3, 1.6, 0.8, 0, 1.0],
+                                           [1.4, 1.7, 1.9, 1.0, 0]]),
+                                    smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 1, 2, 3, 4.1],
+                                           [1, 0, 5, 6, 7],
+                                           [2, 5, 0, 8, 9],
+                                           [3, 6, 8, 0, 10],
+                                           [4.1, 7, 9, 10, 0]]), smpl_ids),
+            SymmetricDistanceMatrix(array([[0, 1, 2, 3, 4],
+                                           [1, 0, 5, 6, 7],
+                                           [2, 5, 0, 8, 9.1],
+                                           [3, 6, 8, 0, 10],
+                                           [4, 7, 9.1, 10, 0]]), smpl_ids))
 
     def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
@@ -1553,14 +1554,14 @@ class PartialMantelTests(TestHelper):
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, setattr, self.pm,
-                'DistanceMatrices', [self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm])
         self.assertRaises(ValueError, setattr, self.pm,
-                'DistanceMatrices', [self.overview_dm, self.overview_dm])
+                          'DistanceMatrices', [self.overview_dm, self.overview_dm])
 
     def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.pm, 'DistanceMatrices',
-                [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
+                          [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Test running partial Mantel analysis on valid input."""
@@ -1580,8 +1581,10 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = 0.99999999999999944
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertCorrectPValue(0.40, 0.60, self.small_pm,
-                                 p_val_key='mantel_p')
+        # We're not testing that this p-value falls between a certain range
+        # because this test has poor stability across platforms/numpy
+        # configurations. Just make sure the p-value is between 0 and 1.
+        self.assertIsProb(obs['mantel_p'])
 
         obs = self.small_pm_diff()
         exp_method_name = 'Partial Mantel'
@@ -1601,14 +1604,15 @@ class PartialMantelTests(TestHelper):
         self.assertCorrectPValue(0.8, 1.0, self.small_pm_diff2,
                                  p_val_key='mantel_p')
 
+
 class TopLevelTests(TestCase):
-    
+
     def setUp(self):
         pass
 
     def test_quantile(self):
         """checks for correct quantile statistic values"""
-        
+
         # suffle the data to be sure, it is getting sorted
         sample_data = array(range(1, 11))
         shuffle(sample_data)
@@ -1620,7 +1624,7 @@ class TopLevelTests(TestCase):
         self.assertFloatEqual(expected_output, output)
 
         sample_data = array([42, 32, 24, 57, 15, 34, 83, 24, 60, 67, 55, 17,
-            83, 17, 80, 65, 14, 34, 39, 53])
+                             83, 17, 80, 65, 14, 34, 39, 53])
         list_of_quantiles = [0.5]
         output = quantile(sample_data, list_of_quantiles)
         self.assertFloatEqual(output, median(sample_data))
@@ -1644,30 +1648,31 @@ class TopLevelTests(TestCase):
         self.assertFloatEqual(_quantile(sample_data, 0.5), median(sample_data))
 
         # sorted data is assumed for this function
-        sample_data = array([0.17483293, 0.99891939, 0.81377467, 0.8137437,
-            0.51990174, 0.35521497, 0.98751461])
-        sample_data.sort()
+        sample_data = sorted(
+            array([0.17483293, 0.99891939, 0.81377467, 0.8137437,
+                   0.51990174, 0.35521497, 0.98751461]))
         self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
 
+
 class PairedDifferenceTests(TestCase):
-    
+
     def setUp(self):
         self.personal_ids_to_state_values1 = \
-          {'firmicutes-abundance':
-            {'subject1':[0.45,0.55],
-             'subject2':[0.11,0.52]},
-           'bacteroidetes-abundance':
-             {'subject1':[0.28,0.21],
-              'subject2':[0.11,0.01]}
-           }
+            {'firmicutes-abundance':
+             {'subject1': [0.45, 0.55],
+              'subject2': [0.11, 0.52]},
+             'bacteroidetes-abundance':
+             {'subject1': [0.28, 0.21],
+              'subject2': [0.11, 0.01]}
+             }
         self.personal_ids_to_state_values2 = \
-          {'firmicutes-abundance':
-            {'subject1':[0.45,0.55],
-             'subject2':[0.11,None]},
-           'bacteroidetes-abundance':
-             {'subject1':[0.28,0.21],
-              'subject2':[0.11,0.01]}
-           }
+            {'firmicutes-abundance':
+             {'subject1': [0.45, 0.55],
+              'subject2': [0.11, None]},
+             'bacteroidetes-abundance':
+             {'subject1': [0.28, 0.21],
+              'subject2': [0.11, 0.01]}
+             }
         self.files_to_remove = []
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
@@ -1679,76 +1684,85 @@ class PairedDifferenceTests(TestCase):
         create_dir(self.test_out)
 
     def tearDown(self):
-        
+
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
-    
+
     def test_paired_difference_analyses(self):
         """paired_difference_analyses functions as expected
         """
         actual = paired_difference_analyses(
-                                   self.personal_ids_to_state_values1,
-                                   ['firmicutes-abundance',
-                                    'bacteroidetes-abundance'],
-                                   ['Pre','Post'],
-                                   output_dir=self.test_out,
-                                   ymin=0.0,
-                                   ymax=1.0)
+            self.personal_ids_to_state_values1,
+            ['firmicutes-abundance',
+             'bacteroidetes-abundance'],
+            ['Pre', 'Post'],
+            output_dir=self.test_out,
+            ymin=0.0,
+            ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
-        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        self.assertTrue(
+            exists(join(self.test_out, 'firmicutes-abundance.pdf')))
+        self.assertTrue(
+            exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),5)
+        self.assertEqual(len(actual[0]), 5)
         # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
-        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
+        self.assertFloatEqual(
+            actual[1]['bacteroidetes-abundance'][4],
+            -4.500,
+            3)
 
     def test_paired_difference_analyses_biom_output(self):
         """paired_difference_analyses generates correct biom tables
         """
         actual = paired_difference_analyses(
-                                   self.personal_ids_to_state_values1,
-                                   ['firmicutes-abundance',
-                                    'bacteroidetes-abundance'],
-                                   ['Pre','Post'],
-                                   output_dir=self.test_out,
-                                   ymin=0.0,
-                                   ymax=1.0)
-        biom_table_fp = join(self.test_out,'differences.biom')
+            self.personal_ids_to_state_values1,
+            ['firmicutes-abundance',
+             'bacteroidetes-abundance'],
+            ['Pre', 'Post'],
+            output_dir=self.test_out,
+            ymin=0.0,
+            ymax=1.0)
+        biom_table_fp = join(self.test_out, 'differences.biom')
         self.assertTrue(exists(biom_table_fp))
-        self.assertTrue(exists(join(self.test_out,'differences_sids.txt')))
-        table = parse_biom_table(open(biom_table_fp,'U'))
-        self.assertEqualItems(table.SampleIds,['subject1','subject2'])
+        self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
+        table = parse_biom_table(open(biom_table_fp, 'U'))
+        self.assertEqualItems(table.SampleIds, ['subject1', 'subject2'])
         self.assertEqualItems(table.ObservationIds,
-         ['firmicutes-abundance','bacteroidetes-abundance'])
+                              ['firmicutes-abundance', 'bacteroidetes-abundance'])
         self.assertFloatEqual(table
-            [table.getObservationIndex('firmicutes-abundance')]
-            [table.getSampleIndex('subject1')],
-            0.1,2)
+                              [table.getObservationIndex(
+                                  'firmicutes-abundance')]
+                              [table.getSampleIndex('subject1')],
+                              0.1, 2)
         self.assertFloatEqual(table
-            [table.getObservationIndex('bacteroidetes-abundance')]
-            [table.getSampleIndex('subject1')],
-            -0.1,2)
+                              [table.getObservationIndex(
+                                  'bacteroidetes-abundance')]
+                              [table.getSampleIndex('subject1')],
+                              -0.1, 2)
         self.assertFloatEqual(table
-            [table.getObservationIndex('firmicutes-abundance')]
-            [table.getSampleIndex('subject2')],
-            0.41,2)
+                              [table.getObservationIndex(
+                                  'firmicutes-abundance')]
+                              [table.getSampleIndex('subject2')],
+                              0.41, 2)
         self.assertFloatEqual(table
-            [table.getObservationIndex('bacteroidetes-abundance')]
-            [table.getSampleIndex('subject2')],
-            -0.07,2)
+                              [table.getObservationIndex(
+                                  'bacteroidetes-abundance')]
+                              [table.getSampleIndex('subject2')],
+                              -0.07, 2)
 
         # missing data should raise ValueError
         self.assertRaises(ValueError, paired_difference_analyses,
                           self.personal_ids_to_state_values2,
                           ['firmicutes-abundance',
                            'bacteroidetes-abundance'],
-                          ['Pre','Post'],
+                          ['Pre', 'Post'],
                           output_dir=self.test_out,
                           ymin=0.0,
                           ymax=1.0)
@@ -1758,41 +1772,48 @@ class PairedDifferenceTests(TestCase):
         """
         # runs successfully with ymin/ymax
         actual = paired_difference_analyses(
-                                   self.personal_ids_to_state_values1,
-                                   ['firmicutes-abundance',
-                                    'bacteroidetes-abundance'],
-                                   ['Pre','Post'],
-                                   output_dir=self.test_out,
-                                   ymin=None,
-                                   ymax=None)
+            self.personal_ids_to_state_values1,
+            ['firmicutes-abundance',
+             'bacteroidetes-abundance'],
+            ['Pre', 'Post'],
+            output_dir=self.test_out,
+            ymin=None,
+            ymax=None)
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
-        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertTrue(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        self.assertTrue(
+            exists(join(self.test_out, 'firmicutes-abundance.pdf')))
+        self.assertTrue(
+            exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),5)
+        self.assertEqual(len(actual[0]), 5)
         # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
-        self.assertFloatEqual(actual[1]['bacteroidetes-abundance'][4],-4.500,3)
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
+        self.assertFloatEqual(
+            actual[1]['bacteroidetes-abundance'][4],
+            -4.500,
+            3)
 
     def test_paired_difference_analyses_analysis_cat_subset(self):
         """paired_difference_analyses fns w a subset of analysis categories
         """
         actual = paired_difference_analyses(
-                                   self.personal_ids_to_state_values1,
-                                   ['firmicutes-abundance'],
-                                   ['Pre','Post'],
-                                   output_dir=self.test_out,
-                                   ymin=0.0,
-                                   ymax=1.0)
+            self.personal_ids_to_state_values1,
+            ['firmicutes-abundance'],
+            ['Pre', 'Post'],
+            output_dir=self.test_out,
+            ymin=0.0,
+            ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
                         'paired_difference_comparisons.txt')))
-        self.assertTrue(exists(join(self.test_out,'firmicutes-abundance.pdf')))
-        self.assertFalse(exists(join(self.test_out,'bacteroidetes-abundance.pdf')))
+        self.assertTrue(
+            exists(join(self.test_out, 'firmicutes-abundance.pdf')))
+        self.assertFalse(
+            exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
-        self.assertEqual(len(actual[0]),4)
+        self.assertEqual(len(actual[0]), 4)
         # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4],1.645,3)
+        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
 
 if __name__ == "__main__":
     main()

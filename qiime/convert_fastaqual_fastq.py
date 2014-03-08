@@ -18,12 +18,13 @@ from qiime.parse import QiimeParseError, MinimalQualParser
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.fastq import MinimalFastqParser
 
-def convert_fastaqual_fastq(fasta_file_path, qual_file_path, 
-        conversion_type='fastaqual_to_fastq', output_directory='.', 
-        multiple_output_files=False, ascii_increment=33,
-        full_fastq=False, full_fasta_headers=False):
+
+def convert_fastaqual_fastq(fasta_file_path, qual_file_path,
+                            conversion_type='fastaqual_to_fastq', output_directory='.',
+                            multiple_output_files=False, ascii_increment=33,
+                            full_fastq=False, full_fasta_headers=False):
     """Calls appropriate conversion function, depending on direction.
-    
+
     fasta_file_path:  filepath of input FASTA or FASTQ file.
     qual_file_path:  filepath of input QUAL file (needed for making FASTQ files)
     conversion_type:  Either fastqual_to_fastq or fastq_to_fastqual.
@@ -38,17 +39,18 @@ def convert_fastaqual_fastq(fasta_file_path, qual_file_path,
 
     if conversion_type == 'fastaqual_to_fastq':
         convert_fastq(fasta_file_path, qual_file_path, output_directory,
-        multiple_output_files, ascii_increment,
-        full_fastq, full_fasta_headers)
+                      multiple_output_files, ascii_increment,
+                      full_fastq, full_fasta_headers)
 
     elif conversion_type == 'fastq_to_fastaqual':
         convert_fastaqual(fasta_file_path, output_directory,
-        multiple_output_files, ascii_increment,
-        full_fastq, full_fasta_headers)
+                          multiple_output_files, ascii_increment,
+                          full_fastq, full_fasta_headers)
 
     else:
-        raise ValueError,('conversion_type must be fastaqual_to_fastq '
-         'or fastq_to_fastaqual.')
+        raise ValueError('conversion_type must be fastaqual_to_fastq '
+                         'or fastq_to_fastaqual.')
+
 
 def get_filename_with_new_ext(original_file_path, new_ext, output_directory):
     """Returns the original file name, but with a different extension
@@ -59,15 +61,15 @@ def get_filename_with_new_ext(original_file_path, new_ext, output_directory):
     'test.fastq'
     """
     return path.join(output_directory,
-    path.splitext(path.split(original_file_path)[1])[0] + new_ext)
+                     path.splitext(path.split(original_file_path)[1])[0] + new_ext)
 
 
 def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
-        multiple_output_files=False, ascii_increment=33,
-        full_fastq=False, full_fasta_headers=False,
-        per_file_buffer_size=100000):
+                  multiple_output_files=False, ascii_increment=33,
+                  full_fastq=False, full_fasta_headers=False,
+                  per_file_buffer_size=100000):
     '''Takes a FASTA and QUAL file, generates FASTQ file(s)
-    
+
     fasta_file_path:  filepath of input FASTA file.
     qual_file_path:  filepath of input QUAL file (needed for making FASTQ files)
     output_directory:  Directory to output converted files.
@@ -76,12 +78,11 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
      quality score.
     full_fastq:  Write labels to both sequence and quality score lines.
     full_fasta_headers:  Retain all data on fasta label, instead of breaking at
-     first whitespace.'''   
-    
-    
-    fasta_file = open(fasta_file_path,'U')
-    qual_file = open(qual_file_path,'U')
-    
+     first whitespace.'''
+
+    fasta_file = open(fasta_file_path, 'U')
+    qual_file = open(qual_file_path, 'U')
+
     # if we're not using multiple output files, we can open the one (and only)
     # output file right now
     if not multiple_output_files:
@@ -96,10 +97,10 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
     # iterate through the FASTA and QUAL files entry by entry (assume the
     # entries are synchronized)
     for fasta_data, qual_data in izip(MinimalFastaParser(fasta_file),
-         MinimalQualParser(qual_file)):
-        
+                                      MinimalQualParser(qual_file)):
+
         qual_header = qual_data[0]
-        fasta_header = fasta_data[0] 
+        fasta_header = fasta_data[0]
 
         label = fasta_header.split()[0]
         sample_id = label.split('_')[0]
@@ -109,17 +110,18 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
 
         # check whether the entries are actually (at least nominally) synch'd
         if qual_header != label:
-            raise KeyError, ("QUAL header (%s) does not match "
-                             "FASTA header (%s)") % (qual_header, label)
+            raise KeyError(("QUAL header (%s) does not match "
+                            "FASTA header (%s)") % (qual_header, label))
 
         if len(sequence) != len(qual):
-            raise KeyError, ("Sequence length does not match QUAL length for "
-                             "label (%s)") % label
+            raise KeyError(("Sequence length does not match QUAL length for "
+                            "label (%s)") % label)
 
         if multiple_output_files:
             output_file_path = get_filename_with_new_ext(fasta_file_path,
-                                                 '_' + sample_id + '.fastq',
-                                                 output_directory)
+                                                         '_' + sample_id +
+                                                         '.fastq',
+                                                         output_directory)
 
             # when we use multiple output files, we close each file after each
             # sequence is written to avoid using up all the file handles, so
@@ -136,7 +138,7 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
         else:
             fastq_quality_header = ''
 
-        #Writing to FASTQ file
+        # Writing to FASTQ file
         record = '@%s\n%s\n+%s\n' % (fastq_sequence_header,
                                      sequence,
                                      fastq_quality_header)
@@ -148,13 +150,13 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
 
         for qual_score in qual:
             # increment the qual score by the asciiIncrement (default 33),
-            # and print the corresponding character, which represents that 
+            # and print the corresponding character, which represents that
             # position's quality.
             qual_score += ascii_increment
             if qual_score < 32 or qual_score > 126:
-                raise ValueError,("Cannot convert quality score to ASCII code"+
-                 " between 32 and 126: " + str(qual_score - ascii_increment) +
-                 "using ascii_increment = " + str(ascii_increment))
+                raise ValueError("Cannot convert quality score to ASCII code" +
+                                 " between 32 and 126: " + str(qual_score - ascii_increment) +
+                                 "using ascii_increment = " + str(ascii_increment))
 
             if multiple_output_files:
                 fastq_lookup[output_file_path] += chr(qual_score)
@@ -183,13 +185,14 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
                 fastq_file.close()
     else:
         fastq_file.close()
-        
+
+
 def convert_fastaqual(fasta_file_path, output_directory='.',
-        multiple_output_files=False, ascii_increment=33,
-        full_fastq=False, full_fasta_headers=False,
-        per_file_buffer_size=100000):
+                      multiple_output_files=False, ascii_increment=33,
+                      full_fastq=False, full_fasta_headers=False,
+                      per_file_buffer_size=100000):
     '''Takes a FASTQfile, generates FASTA and QUAL file(s)
-    
+
     fasta_file_path:  filepath of input FASTQ file.
     output_directory:  Directory to output converted files.
     multiple_output_files:  Make one file per SampleID.
@@ -197,7 +200,7 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
      quality score.
     full_fastq:  Write labels to both sequence and quality score lines.
     full_fasta_headers:  Retain all data on fasta label, instead of breaking at
-     first whitespace.''' 
+     first whitespace.'''
 
     # rename this to avoid confusion...
     fastq_fp = fasta_file_path
@@ -209,8 +212,8 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
                                                  '.fna',
                                                  output_directory)
         qual_out_fp = get_filename_with_new_ext(fastq_fp,
-                                                 '.qual',
-                                                 output_directory)
+                                                '.qual',
+                                                output_directory)
 
         fasta_out_f = open(fasta_out_fp, 'w')
         qual_out_f = open(qual_out_fp, 'w')
@@ -226,37 +229,37 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
 
         if multiple_output_files:
             fasta_out_fp = get_filename_with_new_ext(fastq_fp,
-                                     '_' + sample_id + '.fna',
-                                     output_directory)
+                                                     '_' + sample_id + '.fna',
+                                                     output_directory)
 
             qual_out_fp = get_filename_with_new_ext(fastq_fp,
-                                     '_' + sample_id + '.qual',
-                                     output_directory)
+                                                    '_' + sample_id + '.qual',
+                                                    output_directory)
 
         if full_fasta_headers:
             label = header
 
-        #convert quality scores
+        # convert quality scores
         qual_scores = []
         for qual_char in qual:
-            if (ord(qual_char) - ascii_increment) < 0: 
-                raise ValueError,("Output qual scores are negative values. "
-                 "Use different ascii_increment value than %s" %
-                 str(ascii_increment))
+            if (ord(qual_char) - ascii_increment) < 0:
+                raise ValueError("Output qual scores are negative values. "
+                                 "Use different ascii_increment value than %s" %
+                                 str(ascii_increment))
             else:
                 qual_scores.append(str(ord(qual_char) - ascii_increment))
 
-        #write QUAL file, 60 qual scores per line
+        # write QUAL file, 60 qual scores per line
         qual_record = '>' + label + '\n'
         for i in range(0, len(qual_scores), 60):
-            qual_record += ' '.join(qual_scores[i:i+60]) + '\n'
+            qual_record += ' '.join(qual_scores[i:i + 60]) + '\n'
 
         if multiple_output_files:
             qual_out_lookup[qual_out_fp] += qual_record
         else:
             qual_out_f.write(qual_record)
 
-        #write FASTA file
+        # write FASTA file
         fasta_record = '>%s\n%s\n' % (label, sequence)
         if multiple_output_files:
             fasta_out_lookup[fasta_out_fp] += fasta_record
