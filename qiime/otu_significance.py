@@ -70,8 +70,7 @@ CORRELATION_PVALUE_CHOICES = [
 
 # Functions for group significance testing
 
-
-def get_sample_cats(pmf, category):
+def get_sample_cats(pmf, category, exclude_values=[""]):
     """Create {SampleID:category_value} for samples in parsed mf dict.
 
     Inputs:
@@ -79,7 +78,8 @@ def get_sample_cats(pmf, category):
      category - string, key in the pmf.
     """
     # ignore samples where the value in the mapping file is empty
-    return {k: pmf[k][category] for k in pmf if pmf[k][category] != ""}
+    return {k: pmf[k][category] for k in pmf if pmf[k][category] not in 
+        exclude_values}
 
 
 def get_cat_sample_groups(sam_cats):
@@ -272,27 +272,27 @@ def grouped_correlation_formatter(bt, rhos, pvals, f_rhos, f_pvals, f_hs,
     nls = _add_metadata(bt, md_key, lines)
     return nls
 
-
 def correlation_row_generator(bt, pmf, category):
     """Produce a generator that feeds lists of arrays to any gradient test.
 
     In this function, a row is a full row of the OTU table, a single 1D array.
     Inputs:
      bt - biom table object. Described at top of library.
-     cat_sam_indices - dict, output of get_sample_indices.
+     pmf - dict, parsed mapping file. described at top of library.
      category - str, category to pull continuous sample metadata from.
     """
-    data = array([i for i in bt.iterObservationData()])
-    # ensure that the order of the category vector sample values is the same
-    # as the order of the samples in data. otherwise will have hard to
-    # diagnose correspondence issues
+    # we exclude nan values because they can work with spearman -- nans will 
+    # compare with floats -- but don't give us meaningful data.
+    sample_to_value = get_sample_cats(pmf, category, exclude_values=['','nan'])
     try:
-        cat_vect = array([pmf[s][category] for s in bt.SampleIds], dtype=float)
-        return ((row, cat_vect) for row in data)
+        stv = {k:float(v) for k,v in sample_to_value.items()}
     except ValueError:
         raise ValueError("Mapping file category contained data that couldn't " +
                          "be converted to float. Can't continue.")
-
+    # if we pull data from bt as samples we get a transposed matrix that is sXf
+    otu_data = array([bt.sampleData(i) for i in sample_to_value]).T
+    mf_data = array(sample_to_value.values())
+    return ((row, mf_data) for row in otu_data)
 
 def run_correlation_test(data_generator, test, test_choices,
                          pval_assignment_method, permutations=None):
@@ -316,7 +316,7 @@ def run_correlation_test(data_generator, test, test_choices,
                                            pval_assignment_method, permutations, test_fn, otu_vals,
                                            md_vals)
         else:
-            pval = assign_correlation_pval(r, len(otu_vals),
+            pval = assign_correlation_pval(r, len(md_vals),
                                            pval_assignment_method)
         corr_coefs.append(r)
         pvals.append(pval)
