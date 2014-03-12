@@ -6,11 +6,12 @@ from cogent.app.parameters import FlagParameter, ValuedParameter, \
     MixedParameter, FilePath
 from cogent.app.util import CommandLineApplication, ResultPath, \
     ApplicationError, get_tmp_filename
-from cogent import DNA, PROTEIN
 from cogent.core.genetic_code import GeneticCodes
 from cogent.parse.fasta import MinimalFastaParser
 from os import remove
 from os.path import isabs
+
+from bipy.core.sequence import DNA
 
 __author__ = "Adam Robbins-Pianka"
 __copyright__ = "Copyright 2007-2012, The QIIME Project"
@@ -401,7 +402,7 @@ def assign_dna_reads_to_protein_database(query_fasta_fp, database_fasta_fp,
     for label, sequence in MinimalFastaParser(open(query_fasta_fp)):
         seq_id = label.split()[0]
 
-        s = DNA.makeSequence(sequence)
+        s = DNA(sequence)
         translations = my_genetic_code.sixframes(s)
         frames = [1, 2, 3, -1, -2, -3]
         translations = dict(zip(frames, translations))
