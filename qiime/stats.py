@@ -273,12 +273,12 @@ class DistanceMatrixStats(object):
                 raise TypeError(
                     'Invalid type (%s); expected SymmetricDistanceMatrix' %
                     dm.__class__.__name__)
-            if self._min_dm_size >= 0 and dm.num_samples < self._min_dm_size:
+            if self._min_dm_size >= 0 and dm.shape[0] < self._min_dm_size:
                 raise ValueError("Distance matrix of size %dx%d is smaller "
                                  "than the minimum allowable distance matrix "
                                  "size of %dx%d for this analysis." %
-                                 (dm.num_samples, dm.num_samples,
-                                  self._min_dm_size, self._min_dm_size))
+                                 (dm.shape[0], dm.shape[0], self._min_dm_size,
+                                  self._min_dm_size))
         self._dms = dms
 
     def __call__(self, num_perms=999):
@@ -345,13 +345,13 @@ class CorrelationStats(DistanceMatrixStats):
         if len(dms) < 1:
             raise ValueError("Must provide at least one distance matrix.")
 
-        size = dms[0].num_samples
-        sample_ids = dms[0].sample_ids
+        size = dms[0].shape[0]
+        sample_ids = dms[0].ids
         for dm in dms:
-            if dm.num_samples != size:
+            if dm.shape[0] != size:
                 raise ValueError("All distance matrices must have the same "
                                  "number of rows and columns.")
-            if dm.sample_ids != sample_ids:
+            if dm.ids != sample_ids:
                 raise ValueError("All distance matrices must have matching "
                                  "sample IDs.")
 
@@ -528,7 +528,7 @@ class CategoryStats(DistanceMatrixStats):
         matrices, metadata map, and categories at the same time.
         """
         for dm in self.DistanceMatrices:
-            for samp_id in dm.sample_ids:
+            for samp_id in dm.ids:
                 if samp_id not in self.MetadataMap.SampleIds:
                     raise ValueError("The sample ID '%s' was not found in the "
                                      "metadata map." % samp_id)
@@ -603,7 +603,7 @@ class Anosim(CategoryStats):
         """
         results = super(Anosim, self).__call__(num_perms)
         category = self.Categories[0]
-        samples = self.DistanceMatrices[0].sample_ids
+        samples = self.DistanceMatrices[0].ids
 
         # Create the group map, which maps sample ID to category value (e.g.
         # sample 1 to 'control' and sample 2 to 'fast').
@@ -653,13 +653,13 @@ class Anosim(CategoryStats):
                 matrix
         """
         dm = self.DistanceMatrices[0]
-        dm_size = dm.num_samples
+        dm_size = dm.shape[0]
 
         # Create grouping matrix, where a one means that the two samples are in
         # the same group (e.g. control) and a zero means that they aren't.
         within_between = zeros(dm.shape)
-        for i, i_sample in enumerate(dm.sample_ids):
-            for j, j_sample in enumerate(dm.sample_ids):
+        for i, i_sample in enumerate(dm.ids):
+            for j, j_sample in enumerate(dm.ids):
                 if group_map[i_sample] == group_map[j_sample]:
                     within_between[i][j] = 1
 
@@ -805,7 +805,7 @@ class Permanova(CategoryStats):
         """
         results = super(Permanova, self).__call__(num_perms)
         category = self.Categories[0]
-        samples = self.DistanceMatrices[0].sample_ids
+        samples = self.DistanceMatrices[0].ids
 
         # Create the group map, which maps sample ID to category value (e.g.
         # sample 1 to 'control' and sample 2 to 'fast').
@@ -852,7 +852,7 @@ class Permanova(CategoryStats):
                 matrix
         """
         dm = self.DistanceMatrices[0]
-        samples = dm.sample_ids
+        samples = dm.ids
 
         # Number of samples in each group.
         unique_n = []
@@ -876,11 +876,11 @@ class Permanova(CategoryStats):
                     grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
         # Extract upper triangle.
-        distances = dm.data[tri(dm.num_samples) == 0]
+        distances = dm.data[tri(dm.shape[0]) == 0]
         groups = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute F value.
-        return self._compute_f_value(distances, groups, dm.num_samples,
+        return self._compute_f_value(distances, groups, dm.shape[0],
                                      number_groups, unique_n)
 
     def _compute_f_value(self, distances, groupings, number_samples,
@@ -958,7 +958,7 @@ class Best(CategoryStats):
         dm = self.DistanceMatrices[0]
         dm_flat = dm.condensed_form()
 
-        row_count = dm.num_samples
+        row_count = dm.shape[0]
         col_count = len(cats)
         sum = 0
         stats = [(-777777777, '') for c in range(col_count + 1)]
@@ -992,7 +992,7 @@ class Best(CategoryStats):
                 res_mat[j][i] = res_mat[i][j]
 
         return SymmetricDistanceMatrix(res_mat,
-                                       self.DistanceMatrices[0].sample_ids)
+                                       self.DistanceMatrices[0].ids)
 
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors."""
@@ -1002,7 +1002,7 @@ class Best(CategoryStats):
     def _make_cat_mat(self, cats, combo):
         """Returns a matrix with columns pulled from category values.
 
-        Returns a matrix with len(sample_ids) rows of columns pulled from
+        Returns a matrix with len(ids) rows of columns pulled from
         category values, the number of columns for each category is
         determined by the current combination (combo).
         """
@@ -1010,7 +1010,7 @@ class Best(CategoryStats):
         md_map = self.MetadataMap
         res = []
         for i in combo:
-            res.append(md_map.getCategoryValues(dm.sample_ids, cats[i - 1]))
+            res.append(md_map.getCategoryValues(dm.ids, cats[i - 1]))
         return zip(*res)
 
 
@@ -1097,7 +1097,7 @@ class MantelCorrelogram(CorrelationStats):
         results = super(MantelCorrelogram, self).__call__(num_perms)
         eco_dm = self.DistanceMatrices[0]
         geo_dm = self.DistanceMatrices[1]
-        dm_size = eco_dm.num_samples
+        dm_size = eco_dm.shape[0]
 
         # Find the number of lower triangular elements (excluding the
         # diagonal).
@@ -1133,7 +1133,7 @@ class MantelCorrelogram(CorrelationStats):
                     if curr_ele == class_num and i != j:
                         model_matrix[i][j] = 1
             model_matrix = SymmetricDistanceMatrix(model_matrix,
-                                                   geo_dm.sample_ids)
+                                                   geo_dm.ids)
 
             # Count the number of distances in the current distance class.
             num_distances = int(model_matrix.data.sum())
@@ -1212,7 +1212,7 @@ class MantelCorrelogram(CorrelationStats):
             raise ValueError("Cannot have fewer than one distance class.")
 
         dm_lower_flat = dm.condensed_form()
-        size = dm.num_samples
+        size = dm.shape[0]
 
         if self.VariableSizeDistanceClasses:
             class_size = int(ceil(len(dm_lower_flat) / num_classes))
@@ -1554,8 +1554,8 @@ class PartialMantel(CorrelationStats):
         for i in range(0, num_perms):
             # Permute the first distance matrix and calculate new r and
             # p-values.
-            p1 = permute_2d(dm1, permutation(dm1.num_samples))
-            dm1_perm = SymmetricDistanceMatrix(p1, dm1.sample_ids)
+            p1 = permute_2d(dm1, permutation(dm1.shape[0]))
+            dm1_perm = SymmetricDistanceMatrix(p1, dm1.ids)
             dm1_perm_flat = dm1_perm.condensed_form()
             rval1 = pearson(dm1_perm_flat, dm2_flat)
             rval2 = pearson(dm1_perm_flat, cdm_flat)
