@@ -48,11 +48,13 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
 from collections import defaultdict
-from string import letters, digits, upper
+from string import letters, digits, upper, lower
 from os.path import basename, join
 from operator import itemgetter
 from copy import deepcopy
 from shutil import copyfile
+
+from bipy.core.sequence import DNASequence
 
 from qiime.util import get_qiime_project_dir, duplicates_indices
 from qiime.parse import parse_mapping_file
@@ -375,7 +377,10 @@ def check_dna_chars_primers(header,
     disable_primer_check:  If True, disables tests for valid primer sequences.
     """
 
-    valid_dna_chars = "ACBDGHKMNSRTWVY,acbdghkmnsrtwvy"
+    valid_dna_chars = DNASequence.iupac_characters
+    valid_dna_chars.update(lower("".join([chr for chr in\
+        DNASequence.iupac_characters])))
+    valid_dna_chars.update([','])
 
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
@@ -427,8 +432,9 @@ def check_dna_chars_bcs(header,
      uniqueness, valid IUPAC DNA chars).
     """
 
-    valid_dna_chars = "ACTGactg"
-
+    valid_dna_chars = DNASequence.iupac_standard_characters
+    valid_dna_chars.update(lower("".join([chr for chr in\
+        DNASequence.iupac_standard_characters])))
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
     header_fields_to_check = []
