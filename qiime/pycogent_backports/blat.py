@@ -2,14 +2,15 @@
 
 """Application controller for BLAT v34"""
 
+from os import remove
+from os.path import isabs
+
 from cogent.app.parameters import FlagParameter, ValuedParameter, \
     MixedParameter, FilePath
 from cogent.app.util import CommandLineApplication, ResultPath, \
     ApplicationError, get_tmp_filename
 from cogent.core.genetic_code import GeneticCodes
 from cogent.parse.fasta import MinimalFastaParser
-from os import remove
-from os.path import isabs
 
 from bipy.core.sequence import DNA
 
