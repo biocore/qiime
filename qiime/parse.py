@@ -17,19 +17,23 @@ from collections import defaultdict
 import os
 from os.path import expandvars
 import re
+from types import GeneratorType
+
+from numpy import concatenate, repeat, zeros, nan, asarray
+from numpy.random import permutation
+
 from cogent.util.dict2d import Dict2D
 from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
-from numpy import concatenate, repeat, zeros, nan, asarray
-from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
 from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
 from cogent.core.tree import PhyloNode
-from cogent import DNA
+
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
-from types import GeneratorType
+
+from bipy.core.sequence import DNA
 
 
 def MinimalFastqParser(data, strict=False):
@@ -800,7 +804,7 @@ def parse_illumina_line(l, barcode_length, rev_comp_barcode,
         barcode = y_position_subfields[1][:barcode_length]
 
     if rev_comp_barcode:
-        barcode = DNA.rc(barcode)
+        barcode = str(DNA(barcode).rc())
 
     result = {
         'Full description': ':'.join(fields[:5]),
