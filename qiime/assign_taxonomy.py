@@ -23,7 +23,6 @@ from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
 from collections import Counter, defaultdict
 
-from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app import rtax
