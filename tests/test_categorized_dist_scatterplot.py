@@ -12,6 +12,7 @@ __email__ = "justinak@gmail.com"
 
 
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.parse import parse_distmat_to_dict, parse_mapping_file
 from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 import StringIO
@@ -40,7 +41,7 @@ s3\t.6\t.7\t0.0
         # note s2 in both
         exp_avgs = [.55, .7]
         obs_avgs = get_avg_dists(state1_samids, state2_samids, distdict1)
-        self.assertFloatEqual(exp_avgs, obs_avgs)
+        assert_almost_equal(exp_avgs, obs_avgs)
 
     def test_get_sam_ids(self):
         """set of sample ids in get_sam_ids should be correct"""

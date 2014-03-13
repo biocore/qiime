@@ -14,6 +14,7 @@ from StringIO import StringIO
 from os.path import exists
 from collections import defaultdict
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from os import remove
 from random import choice, randrange
 import shutil
@@ -183,7 +184,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(rth((255, 0, 0)), (0, 100, 100))
         self.assertEqual(rth((0, 255, 0)), (120, 100, 100))
         self.assertEqual(rth((0, 0, 255)), (240, 100, 100))
-        self.assertFloatEqual(rth((127, 127, 127)), (0, 0, 49.803921568627452))
+        assert_almost_equal(rth((127, 127, 127)), (0, 0, 49.803921568627452))
 
     def test_mage_hsv_tuple_to_rgb(self):
         """mage_hsv_to_rgb should accept and emit tuples on right scale"""
@@ -192,7 +193,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(htr((0, 100, 100)), (255, 0, 0))
         self.assertEqual(htr((120, 100, 100)), (0, 255, 0))
         self.assertEqual(htr((240, 100, 100)), (0, 0, 255))
-        self.assertFloatEqual(htr((0, 0, 49.803921568627452)), (127, 127, 127))
+        assert_almost_equal(htr((0, 0, 49.803921568627452)), (127, 127, 127))
 
     def test_combine_map_label_cols(self):
         """combine_map_label_cols: Combine two or more columns from the \
