@@ -86,7 +86,7 @@ class CogentAlignerTests(SharedSetupTestCase):
                    log_path=log_fp)
         expected = expected_muscle_alignment
         # note: lines in diff order w/ diff versions
-        assert_almost_equal(str(actual).splitlines(), expected.splitlines())
+        self.assertEqual(str(actual).splitlines(), expected.splitlines())
 
     def test_muscle_max_memory(self):
         """CogentAligner: muscle_max_memory should be passed to alignment fcn
@@ -105,7 +105,7 @@ class CogentAlignerTests(SharedSetupTestCase):
                    log_path=log_fp)
         expected = expected_muscle_alignment
         # note: lines in diff order w/ diff versions
-        assert_almost_equal(str(actual).splitlines(), expected.splitlines())
+        self.assertEqual(str(actual).splitlines(), expected.splitlines())
 
 
 class InfernalAlignerTests(SharedSetupTestCase):
