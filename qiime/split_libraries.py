@@ -1300,7 +1300,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     else:
         rev_primers = False
 
-    # *** Generate dictionary of {barcode: DNA.rc(ReversePrimer)}
+    # *** Generate dictionary of {barcode: DNA(ReversePrimer).rc()}
     # First check for ReversePrimer in headers, raise error if not found
     # Implement local alignment for primer after barcode is determined.
     # Add option to flag seq with error for rev_primer not found
