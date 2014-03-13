@@ -36,7 +36,7 @@ def compute_manifold(file_name,algorithm):
     eigvals = [1,2,3]
     pcnts = [30,20,10]
     
-    format_coords(samples, fit, eigvals, pcnts)
+    return format_coords(samples, fit, eigvals, pcnts)
 
 def multiple_file_manifold(input_dir, output_dir, algorithm):
     """perform manifoldss on all distance matrices in the input_dir
