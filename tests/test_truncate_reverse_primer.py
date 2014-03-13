@@ -20,6 +20,7 @@ from cogent.util.misc import remove_files, get_random_directory_name
 from qiime.truncate_reverse_primer import get_rev_primer_seqs,\
     get_output_filepaths, truncate_rev_primers, truncate_reverse_primer
 
+from bipy.core.exception import BiologicalSequenceError
 
 class FakeOutFile(object):
 
@@ -124,7 +125,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
                           open(self.mapping_bad_header_fp, "U"))
 
         # Raises error if invalid characters in primer
-        self.assertRaises(ValueError, get_rev_primer_seqs,
+        self.assertRaises(BiologicalSequenceError, get_rev_primer_seqs,
                           open(self.mapping_bad_primer_fp, "U"))
 
     def test_get_output_filepaths(self):
