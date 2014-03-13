@@ -15,22 +15,19 @@ from StringIO import StringIO
 from numpy import array
 from shutil import rmtree
 
-from cogent import DNA
 from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 
+from qiime.util import get_tmp_filename
 from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
     ok_mm_primer, check_map, fasta_ids,
     count_ambig, split_seq, primer_exceeds_mismatches,
     check_barcode, make_histograms, SeqQualBad,
     seq_exceeds_homopolymers, check_window_qual_scores, check_seqs,
-    local_align_primer_seq, preprocess
-)
+    local_align_primer_seq, preprocess)
 from qiime.parse import parse_qual_score
 from qiime.util import create_dir
-
 
 class FakeOutFile(object):
 
@@ -305,21 +302,21 @@ z\tGG\tGC\t5\tsample_z"""
     def test_local_align_primer_seq_fwd_rev_match(self):
         "local_align function can handle fwd/rev primers with no mismatches"
         # forward primer
-        primer = DNA.makeSequence('TAGC', Name='F5')
+        primer = 'TAGC'
         seq = 'TAGC'
         # mismatch_count, hit_start
         expected = (0, 0)
         actual = local_align_primer_seq(primer, seq)
         self.assertEqual(actual, expected)
 
-        primer = DNA.makeSequence('TAGC', Name='F5')
+        primer = 'TAGC'
         seq = 'TAGCCCCC'
         # mismatch_count, hit_start
         expected = (0, 0)
         actual = local_align_primer_seq(primer, seq)
         self.assertEqual(actual, expected)
 
-        primer = DNA.makeSequence('TAGC', Name='F5')
+        primer = 'TAGC'
         seq = 'CCCTAGCCCCC'
         # mismatch_count, hit_start
         expected = (0, 3)
@@ -327,21 +324,21 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual, expected)
 
         # different length primer
-        primer = DNA.makeSequence('GTTTAGC', Name='F5')
+        primer = 'GTTTAGC'
         seq = 'GTTTAGC'
         # mismatch_count, hit_start
         expected = (0, 0)
         actual = local_align_primer_seq(primer, seq)
         self.assertEqual(actual, expected)
 
-        primer = DNA.makeSequence('GCTC', Name='R5')
+        primer = 'GCTC'
         seq = 'TAGCCCCC'
         # mismatch_count, hit_start
         expected = (1, 2)
         actual = local_align_primer_seq(primer, seq)
         self.assertEqual(actual, expected)
 
-        primer = DNA.makeSequence('GCTA', Name='R5')
+        primer = 'GCTA'
         seq = 'CCCTAGCCCCC'
         # mismatch_count, hit_start
         expected = (1, 1)
@@ -350,7 +347,7 @@ z\tGG\tGC\t5\tsample_z"""
 
     def test_local_align_primer_seq_fwd_rev_match_ambig(self):
         "local_align function can handle fwd/rev primers with ambigs"
-        primer = DNA.makeSequence('TASC', Name='F5')
+        primer = 'TASC'
         seq = 'TAGC'
         # primer_hit, target, mismatch_count, hit_start
         expected = (0, 0)
@@ -360,7 +357,7 @@ z\tGG\tGC\t5\tsample_z"""
     def test_local_align_primer_seq_mm(self):
         "local_align function can handle fwd/rev primers with mismatches"
         # forward primer
-        primer = DNA.makeSequence('AAAAACTTTTT', Name='F5')
+        primer = 'AAAAACTTTTT'
         seq = 'AAAAAGTTTTT'
         # mismatch_count, hit_start
         expected = (1, 0)
@@ -368,7 +365,7 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual, expected)
 
         # forward primer
-        primer = DNA.makeSequence('AAAACCTTTTT', Name='F5')
+        primer = 'AAAACCTTTTT'
         seq = 'AAAAAGTTTTT'
         # mismatch_count, hit_start
         expected = (2, 0)
@@ -379,7 +376,7 @@ z\tGG\tGC\t5\tsample_z"""
         "local_align function can handle fwd/rev primers with indels in middle of seq"
 
         # Insertion in target sequence
-        primer = DNA.makeSequence('CGAATCGCTATCG', Name='F5')
+        primer = 'CGAATCGCTATCG'
         seq = 'CGAATCTGCTATCG'
         # mismatch count, hit_start
         expected = (1, 0)
@@ -387,7 +384,7 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual, expected)
 
         # Deletion in target sequence
-        primer = DNA.makeSequence('CGAATCGCTATCG', Name='F5')
+        primer = 'CGAATCGCTATCG'
         seq = 'CGAATGCTATCG'
         # mismatch_count, hit_start
         expected = (1, 0)
@@ -397,7 +394,7 @@ z\tGG\tGC\t5\tsample_z"""
     def test_local_align_primer_seq_multiple_mismatch_indel(self):
         "local_align function can handle fwd/rev primers with indels and mismatches"
         # multiple insertions
-        primer = DNA.makeSequence('ATCGGGCGATCATT', Name='F5')
+        primer = 'ATCGGGCGATCATT'
         seq = 'ATCGGGTTCGATCATT'
         # mismatch_count, hit_start
         expected = (2, 0)
@@ -405,7 +402,7 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual, expected)
 
         # two deletions
-        primer = DNA.makeSequence('ACGGTACAGTGG', Name='F5')
+        primer = 'ACGGTACAGTGG'
         seq = 'ACGGCAGTGG'
         # mismatch_count, hit_start
         expected = (2, 0)
@@ -413,7 +410,7 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual, expected)
 
         # deletion and mismatch
-        primer = DNA.makeSequence('CATCGTCGATCA', Name='F5')
+        primer = 'CATCGTCGATCA'
         seq = 'CCTCGTGATCA'
         # mismatch_count, hit_start
         expected = (2, 0)
