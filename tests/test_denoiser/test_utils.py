@@ -112,7 +112,7 @@ class TestUtils(TestCase):
         self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")
         store_mapping(self.mapping, "/tmp/", prefix="test_store_mapping")
         observed = list(open("/tmp/test_store_mapping_mapping.txt", "U"))
-        self.assert_almost_equal(observed, expected)
+        assert_almost_equal(observed, expected)
 
     def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""

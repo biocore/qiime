@@ -402,7 +402,7 @@ class SimsamTests(TestCase):
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
-        self.assert_almost_equal(t.SampleIds, mapping_sample_ids)
+        assert_almost_equal(t.SampleIds, mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription

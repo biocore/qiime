@@ -1734,8 +1734,8 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
         table = parse_biom_table(open(biom_table_fp, 'U'))
-        self.assert_almost_equal(table.SampleIds, ['subject1', 'subject2'])
-        self.assert_almost_equal(table.ObservationIds,
+        assert_almost_equal(table.SampleIds, ['subject1', 'subject2'])
+        assert_almost_equal(table.ObservationIds,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         self.assertFloatEqual(table
                               [table.getObservationIndex(

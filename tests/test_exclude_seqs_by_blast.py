@@ -194,7 +194,7 @@ class ExcludeHumanTests(TestCase):
 
         ok_ids, removed_ids = query_ids_from_blast_result(
             self.blast_result, align_filter, DEBUG=True)
-        self.assert_almost_equal(ok_ids, set([]))
+        assert_almost_equal(ok_ids, set([]))
 
     def test_ids_from_fasta_lines(self):
         """ ids_from_fasta_lines should return ids"""

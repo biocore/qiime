@@ -88,19 +88,19 @@ class FilterTests(TestCase):
 
         tips_to_keep = ["S5", "Seq1", "s2"]
         expected = ["S7", "S3", "seq6"]
-        self.assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
+        assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S5", "Seq1"]
         expected = ["S7", "S3", "seq6", "s2"]
-        self.assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
+        assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = []
         expected = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
-        self.assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
+        assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
         expected = []
-        self.assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
+        assert_almost_equal(negate_tips_to_keep(tips_to_keep, t), expected)
 
     def test_filter_mapping_file(self):
         """filter_mapping_file should filter map file according to sample ids"""
@@ -1119,15 +1119,15 @@ o2	s1_3	s1_4	s2_5
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single)
-        self.assert_almost_equal(retained_otus, set(['o1 some comment', 'o2']))
+        assert_almost_equal(retained_otus, set(['o1 some comment', 'o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 3)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_double)
-        self.assert_almost_equal(retained_otus, set(['o2']))
+        assert_almost_equal(retained_otus, set(['o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
-        self.assert_almost_equal(retained_otus, set(['o2']))
+        assert_almost_equal(retained_otus, set(['o2']))
 
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
