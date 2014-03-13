@@ -13,7 +13,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 from numpy import array, nan, diff
 from StringIO import StringIO
 from os.path import exists
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from os import remove, mkdir, system
 from random import choice, randrange, random
 import shutil

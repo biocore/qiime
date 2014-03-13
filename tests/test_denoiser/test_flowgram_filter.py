@@ -12,7 +12,7 @@ __email__ = "jens.reeder@gmail.com"
 
 from os import remove
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram

@@ -18,7 +18,7 @@ from os import remove
 from string import digits
 from numpy import array, nan
 from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import (get_tmp_filename, get_qiime_library_version)
 from qiime.parse import fields_to_dict, parse_mapping_file

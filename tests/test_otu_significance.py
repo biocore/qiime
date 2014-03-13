@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     get_sample_indices, group_significance_row_generator, sort_by_pval,
                                     run_group_significance_test, group_significance_output_formatter,

@@ -16,7 +16,7 @@ use('Agg', warn=False)
 from numpy import array
 from os.path import exists, join
 from StringIO import StringIO
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from os import remove
 from qiime.make_2d_plots import (make_interactive_scatter, transform_xy_coords,
                                  draw_scatterplot, draw_pcoa_graph,

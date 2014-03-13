@@ -13,7 +13,7 @@ from numpy import array, log
 import shutil
 from shutil import rmtree
 from os.path import join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.make_otu_heatmap_html import (
     make_html_doc, create_javascript_array,
     filter_by_otu_hits,

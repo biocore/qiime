@@ -10,7 +10,7 @@ __email__ = "justinak@gmail.com"
 
 """tests the tree_compare.py module."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_newick
 import qiime.tree_compare as tc
 

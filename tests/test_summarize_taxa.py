@@ -15,7 +15,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.summarize_taxa import make_summary, \
     add_summary_mapping, sum_counts_by_consensus
 from qiime.parse import parse_mapping_file

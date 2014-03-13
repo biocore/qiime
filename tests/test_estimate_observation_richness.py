@@ -16,7 +16,7 @@ from StringIO import StringIO
 
 from biom.parse import parse_biom_table
 from biom.table import Table
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from numpy import asarray, array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,

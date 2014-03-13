@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import shutil
 from os import mkdir, listdir, path
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\

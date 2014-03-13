@@ -16,7 +16,7 @@ import numpy
 from shutil import rmtree
 from os import makedirs
 from os.path import exists
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 #from cogent.maths.stats.alpha_diversity import (observed_species, osd)
 from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)

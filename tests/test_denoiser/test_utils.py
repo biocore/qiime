@@ -15,7 +15,7 @@ from os import remove, rmdir
 from shutil import rmtree
 from os.path import exists
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 from cogent import Sequence
 from cogent.parse.fasta import MinimalFastaParser

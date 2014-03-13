@@ -14,7 +14,7 @@ import qiime.biplots as bp
 import numpy as np
 
 from os import system
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import get_random_directory_name
 
 

@@ -13,7 +13,7 @@ from numpy import array
 from StringIO import StringIO
 from os.path import exists
 from collections import defaultdict
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from os import remove
 from random import choice, randrange
 import shutil

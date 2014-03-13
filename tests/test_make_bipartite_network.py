@@ -13,7 +13,7 @@ __email__ = "wdwvt1@gmail.com"
 
 from shutil import rmtree
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.util import (get_qiime_temp_dir,
                         get_tmp_filename)

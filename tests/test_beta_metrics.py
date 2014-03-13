@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 """Contains tests for beta_metrics  functions."""
 import os.path
 import numpy
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
 from qiime.beta_metrics import (

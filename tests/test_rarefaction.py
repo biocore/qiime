@@ -11,7 +11,7 @@ __email__ = "justinak@gmail.com"
 
 """Contains tests for producing rarefied OTU tables."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import numpy
 from qiime.util import get_tmp_filename, load_qiime_config
 from qiime.rarefaction import (RarefactionMaker,

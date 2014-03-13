@@ -16,7 +16,7 @@ from os import mkdir, rmdir
 from time import sleep
 from StringIO import StringIO
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.core.sequence import Sequence
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import parse_sff, FlowgramCollection

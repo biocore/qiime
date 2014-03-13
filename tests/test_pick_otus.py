@@ -22,7 +22,7 @@ from os.path import abspath, join, exists
 from shutil import rmtree
 
 from cogent.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path

@@ -15,7 +15,7 @@ import gzip
 from biom.parse import parse_biom_table_str, parse_biom_table
 
 from cogent import Sequence
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes

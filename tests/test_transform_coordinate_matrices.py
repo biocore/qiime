@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_coords
 from qiime.transform_coordinate_matrices import map_sample_ids, reorder_coords,\
     filter_coords_matrix, pad_coords_matrix, pad_coords_matrices,\

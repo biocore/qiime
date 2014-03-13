@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from numpy import array, nan
 from StringIO import StringIO
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields,

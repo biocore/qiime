@@ -18,7 +18,7 @@ environment variable set for tests to pass
 from os import remove, system, mkdir
 from random import choice
 from numpy import array, arange, log, log10
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\

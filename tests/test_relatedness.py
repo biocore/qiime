@@ -11,7 +11,7 @@ __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from numpy.random import seed
 from numpy import array, arange
 from qiime.relatedness_library import (reduce_mtx, nri, nti, mpd, mntd,

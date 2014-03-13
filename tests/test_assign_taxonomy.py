@@ -20,7 +20,7 @@ from glob import glob
 from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file, rmtree
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
 from cogent.app.formatdb import build_blast_db_from_fasta_path

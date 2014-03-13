@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 
 from os.path import exists
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table

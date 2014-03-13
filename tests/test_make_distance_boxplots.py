@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 """Test suite for the make_distance_boxplots.py module."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from matplotlib.figure import Figure
 from qiime.make_distance_boxplots import (_cast_y_axis_extrema,
                                           _color_field_states, make_distance_boxplots,

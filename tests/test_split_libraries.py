@@ -16,7 +16,7 @@ from numpy import array
 from shutil import rmtree
 
 from cogent import DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 

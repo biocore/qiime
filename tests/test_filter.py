@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from StringIO import StringIO
 from numpy import inf
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files

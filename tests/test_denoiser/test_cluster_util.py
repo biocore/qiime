@@ -18,7 +18,7 @@ from os.path import exists
 from StringIO import StringIO
 from socket import error
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 from cogent import Sequence

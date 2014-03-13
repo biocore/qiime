@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from string import digits
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 from qiime.compare_taxa_summaries import (compare_taxa_summaries,
                                           _compute_correlation, _make_compatible_taxa_summaries,

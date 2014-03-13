@@ -13,7 +13,7 @@ __email__ = "justinak@gmail.com"
 
 import numpy
 import warnings
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename, load_qiime_config
 from cogent.core.tree import PhyloNode

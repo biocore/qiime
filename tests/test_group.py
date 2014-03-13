@@ -15,7 +15,7 @@ __email__ = "jai.rideout@gmail.com"
 from numpy import array, matrix
 from biom.parse import parse_biom_table
 from biom.exception import UnknownID
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 from qiime.parse import (parse_mapping_file, parse_distmat,
                          group_by_field, parse_coords,

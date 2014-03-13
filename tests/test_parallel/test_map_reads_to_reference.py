@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from glob import glob
 from shutil import rmtree
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import create_dir, remove_files
 from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout

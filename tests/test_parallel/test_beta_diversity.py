@@ -14,9 +14,9 @@ __email__ = "gregcaporaso@gmail.com"
 from glob import glob
 from shutil import rmtree
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from biom.parse import parse_biom_table
 from qiime.parse import parse_distmat
 from qiime.util import (get_qiime_temp_dir,

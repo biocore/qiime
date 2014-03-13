@@ -15,7 +15,7 @@ from StringIO import StringIO
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, split, splitext
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.compare_alpha_diversity import compare_alpha_diversities
 from qiime.util import (get_tmp_filename,

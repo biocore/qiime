@@ -16,7 +16,7 @@ __email__ = "antgonza@gmail.com"
 
 from qiime.distance_matrix_from_mapping import compute_distance_matrix_from_metadata, dist_vincenty, calculate_dist_vincenty
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import StringIO
 
 

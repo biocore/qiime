@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_distmat_to_dict, parse_mapping_file
 from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 import StringIO

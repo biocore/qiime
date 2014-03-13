@@ -10,7 +10,7 @@ __email__ = "danknights@gmail.com"
 
 from numpy import array
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from qiime.filter_alignment import apply_lane_mask, apply_gap_filter,\
     apply_lane_mask_and_gap_filter, remove_outliers, freqs_from_aln_array,\

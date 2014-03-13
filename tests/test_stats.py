@@ -15,7 +15,7 @@ __email__ = "jai.rideout@gmail.com"
 from shutil import rmtree
 from os.path import exists, join
 from string import digits
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle

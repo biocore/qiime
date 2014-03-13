@@ -13,7 +13,7 @@ __email__ = "vantreur@colorado.edu"
 
 from numpy.random import seed
 from numpy import nan, isnan, array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
                                            compare_alpha_diversities,

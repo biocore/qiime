@@ -15,7 +15,7 @@ from os import getenv
 from os.path import basename, exists, join
 from tempfile import NamedTemporaryFile
 from cogent import LoadSeqs
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.util import (get_qiime_temp_dir,
                         get_tmp_filename, load_qiime_config)

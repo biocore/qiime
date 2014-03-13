@@ -11,7 +11,7 @@ __email__ = "daniel.knights@colorado.edu"
 
 from os.path import exists
 from numpy import array, log10, asarray, float64
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
