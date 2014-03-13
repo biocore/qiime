@@ -19,7 +19,7 @@ from collections import defaultdict
 from string import strip
 from sys import stderr
 from numpy import array, zeros
-from cogent.util.misc import flatten, InverseDict
+from cogent.util.misc import InverseDict
 from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
 from qiime.format import format_biom_table
@@ -34,7 +34,8 @@ def libs_from_seqids(seq_ids, delim='_'):
 
 def seqids_from_otu_to_seqid(otu_to_seqid):
     """Returns set of all seq ids from libs"""
-    return set(flatten(otu_to_seqid.values()))
+    # flatten out the list of lists
+    return set(sum(otu_to_seqid.values(), []))
 
 
 def make_otu_table(otu_map_f,
