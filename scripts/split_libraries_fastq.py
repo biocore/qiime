@@ -12,7 +12,6 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import rename
 
-from cogent import DNA
 from cogent.util.misc import safe_md5, create_dir
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
 from qiime.parse import parse_mapping_file
@@ -22,6 +21,8 @@ from qiime.split_libraries import check_map
 from qiime.split_libraries_fastq import get_illumina_qual_chars
 from qiime.golay import get_invalid_golay_barcodes
 from qiime.quality import phred_to_ascii33, phred_to_ascii64
+
+from bipy.core.sequence import DNA
 
 phred_to_ascii_fs = {'33': phred_to_ascii33, '64': phred_to_ascii64}
 
@@ -279,7 +280,7 @@ def main():
             barcode_to_sample_id = {}
 
         if rev_comp_mapping_barcodes:
-            barcode_to_sample_id = {DNA.rc(k): v for k, v in
+            barcode_to_sample_id = {str(DNA(k).rc()): v for k, v in
                                     barcode_to_sample_id.iteritems()}
 
         if barcode_type == 'golay_12':
