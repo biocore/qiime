@@ -10,13 +10,15 @@ __email__ = "danknights@gmail.com"
 
 from os import remove, path, devnull
 from os.path import join, split, splitext, exists
+
 from numpy import array, set_printoptions, nan, sqrt, mean, square
-from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
-    FilePath, ResultPath, ApplicationError
-from qiime.util import get_qiime_project_dir
-from cogent.app.parameters import Parameters
+from cogent.app.util import (CommandLineApplication, CommandLineAppResult,
+                             ResultPath, ApplicationError)
+from bipy.app.parameters import (Parameters, ValuedParameter, FlagParameter,
+                                 FilePath)
 from biom.parse import convert_biom_to_table
-from cogent.app.parameters import ValuedParameter, FlagParameter, FilePath
+
+from qiime.util import get_qiime_project_dir
 
 
 def parse_feature_importances(filepath):
