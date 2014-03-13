@@ -11,7 +11,7 @@ __email__ = "danknights@gmail.com"
 from os.path import split, splitext, join, exists
 from os import remove
 from cogent.app.util import CommandLineApplication, ResultPath, get_tmp_filename
-from cogent.app.parameters import ValuedParameter, FlagParameter, FilePath
+from bipy.app.parameters import ValuedParameter, FlagParameter, FilePath
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 
