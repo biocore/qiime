@@ -198,7 +198,7 @@ class TestUtils(TestCase):
         self.server_socket = setup_server()
         host, port = self.server_socket.getsockname()
         # Not much to test here, if we get something back it should work
-        self.assertGreaterThan(port, 1023)
+        self.assertGreater(port, 1023)
         # binding to a known port should fail
         self.assertRaises(error, setup_server, 80)
 
