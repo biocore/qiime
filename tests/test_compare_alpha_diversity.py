@@ -14,6 +14,7 @@ __email__ = "vantreur@colorado.edu"
 from numpy.random import seed
 from numpy import nan, isnan, array
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
                                            compare_alpha_diversities,
@@ -414,7 +415,7 @@ class TopLevelTests(TestCase):
         for k, v in exp.iteritems():
             self.assertFloatEqual(obs[k], v)
         # check that keys are the same
-        self.assertEqualItems(obs.keys(), exp.keys())
+        self.assert_almost_equal(obs.keys(), exp.keys())
         # test when depth is specified
         depth = 850
         exp = {'Sam1': 3.32916466,
@@ -428,7 +429,7 @@ class TopLevelTests(TestCase):
         for k, v in exp.iteritems():
             self.assertFloatEqual(obs[k], v)
         # check that keys are the same
-        self.assertEqualItems(obs.keys(), exp.keys())
+        self.assert_almost_equal(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

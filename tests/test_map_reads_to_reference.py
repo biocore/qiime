@@ -14,6 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from os.path import exists, join
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files, create_dir
 from biom.parse import parse_biom_table
 from qiime.util import get_qiime_temp_dir, get_tmp_filename
@@ -109,8 +110,8 @@ class UsearchDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(
             table.ObservationIds,
             ['eco:b0122-pr',
              'eco:b0015-pr'])
@@ -132,8 +133,8 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(
             table.ObservationIds,
             ['eco:b0122-pr',
              'eco:b0015-pr'])
@@ -152,8 +153,8 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds,
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(table.ObservationIds,
                               ['eco:b0122-pr', 'eco:b0015-pr', 'eco:b0001-pr'])
         self.assertEqual(table.sum(), 6)
 
@@ -172,8 +173,8 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(
             table.ObservationIds,
             ['r1',
              'r2',
@@ -194,8 +195,8 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 
@@ -212,8 +213,8 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(
             table.ObservationIds,
             ['r1',
              'r2',
@@ -233,8 +234,8 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
         # float can also be passed for max_diff
         bwa_short_database_mapper(query_fp=self.inseqs2_fp,
@@ -259,8 +260,8 @@ class BwaSwAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
+        self.assert_almost_equal(table.SampleIds, ['s2', 's1'])
+        self.assert_almost_equal(
             table.ObservationIds,
             ['r1',
              'r2',

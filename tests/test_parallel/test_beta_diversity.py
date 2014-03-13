@@ -15,6 +15,7 @@ from glob import glob
 from shutil import rmtree
 from os.path import exists, join
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files, create_dir
 from unittest import TestCase, main
 from biom.parse import parse_biom_table
@@ -104,7 +105,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
         dm_fps = glob(join(self.test_out, '*weighted_unifrac*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
-            self.assertEqualItems(dm_sample_ids, input_sample_ids)
+            self.assert_almost_equal(dm_sample_ids, input_sample_ids)
 
     def test_parallel_beta_diversity_wo_tree(self):
         """ parallel beta diveristy functions in single file mode """
@@ -125,7 +126,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
         dm_fps = glob(join(self.test_out, 'bray_curtis*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
-            self.assertEqualItems(dm_sample_ids, input_sample_ids)
+            self.assert_almost_equal(dm_sample_ids, input_sample_ids)
 
 
 class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):

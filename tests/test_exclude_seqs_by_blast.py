@@ -19,6 +19,7 @@ from os import remove, system, mkdir
 from random import choice
 from numpy import array, arange, log, log10
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\
@@ -193,7 +194,7 @@ class ExcludeHumanTests(TestCase):
 
         ok_ids, removed_ids = query_ids_from_blast_result(
             self.blast_result, align_filter, DEBUG=True)
-        self.assertEqualItems(ok_ids, set([]))
+        self.assert_almost_equal(ok_ids, set([]))
 
     def test_ids_from_fasta_lines(self):
         """ ids_from_fasta_lines should return ids"""

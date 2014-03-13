@@ -16,6 +16,7 @@ from shutil import rmtree
 from os.path import exists
 
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from cogent import Sequence
 from cogent.parse.fasta import MinimalFastaParser
@@ -111,7 +112,7 @@ class TestUtils(TestCase):
         self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")
         store_mapping(self.mapping, "/tmp/", prefix="test_store_mapping")
         observed = list(open("/tmp/test_store_mapping_mapping.txt", "U"))
-        self.assertEqualItems(observed, expected)
+        self.assert_almost_equal(observed, expected)
 
     def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""

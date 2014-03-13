@@ -16,6 +16,7 @@ from shutil import rmtree
 from os.path import exists, join
 from string import digits
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
@@ -1733,8 +1734,8 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
         table = parse_biom_table(open(biom_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['subject1', 'subject2'])
-        self.assertEqualItems(table.ObservationIds,
+        self.assert_almost_equal(table.SampleIds, ['subject1', 'subject2'])
+        self.assert_almost_equal(table.ObservationIds,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         self.assertFloatEqual(table
                               [table.getObservationIndex(

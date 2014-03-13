@@ -13,6 +13,7 @@ __email__ = "justinak@gmail.com"
 from os.path import exists
 
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
@@ -401,7 +402,7 @@ class SimsamTests(TestCase):
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
-        self.assertEqualItems(t.SampleIds, mapping_sample_ids)
+        self.assert_almost_equal(t.SampleIds, mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription
