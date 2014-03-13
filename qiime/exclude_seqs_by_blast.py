@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # file exclude_seqs_by_blast.py
 from __future__ import division
-from time import strftime, time
-from optparse import OptionParser
-from os import system, getcwd
+
+"""
+A lightweight script for BLASTing one or more sequences against a number of BLAST databases, and returning FASTA files a) of the results that did match b) of the results that didn't match c) raw blast results and also d) returning a report containing the parameters used, which sequences were excluded and why.
+"""
+
 from os.path import join
-from bipy.app.parameters import FilePath
-from cogent.util.misc import remove_files
+from time import strftime, time
+
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 
@@ -19,10 +21,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 
-
-"""
-A lightweight script for BLASTing one or more sequences against a number of BLAST databases, and returning FASTA files a) of the results that did match b) of the results that didn't match c) raw blast results and also d) returning a report containing the parameters used, which sequences were excluded and why.
-"""
 
 FORMAT_BAR =   """------------------------------""" * 2
 

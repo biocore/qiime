@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 # file process_sff.py
+from __future__ import division
+
+"""Converts directory of sff files into fasta and qual files.
+"""
+
+from os import listdir, devnull
+from os.path import splitext, join, isfile, basename, dirname
+from cStringIO import StringIO
+from itertools import imap
+from subprocess import check_call
+
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
 )
-from bipy.app.util import which
-from qiime.util import qiime_open, is_gzip
-from os import listdir
-from os.path import splitext, join, isfile, isdir, split
-from cStringIO import StringIO
-import itertools
-import os
-import subprocess
+from skbio.app.util import which
 
-"""Converts directory of sff files into fasta and qual files.
-"""
+from qiime.util import qiime_open, is_gzip
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -41,8 +44,8 @@ def _fail_on_gzipped_sff(sff_fp):
 def _check_call(*args, **kwargs):
     """Run subprocess.check_call, sending stderr messages to /dev/null
     """
-    kwargs['stderr'] = open(os.devnull, 'w')
-    return subprocess.check_call(*args, **kwargs)
+    kwargs['stderr'] = open(devnull, 'w')
+    return check_call(*args, **kwargs)
 
 
 def _cumulative_sum(xs):
@@ -101,7 +104,7 @@ def adjust_sff_cycles(sff_data, num_cycles):
 
         return r
 
-    return (h, itertools.imap(adjust_read, reads))
+    return (h, imap(adjust_read, reads))
 
 
 def format_binary_sff_as_fna(sff_file, output_file=None, qual=False):
@@ -187,7 +190,7 @@ def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
         check_sfffile()
         _check_call(
             ['sfffile', '-flx', '-o', output_fp, sff_fp],
-            stdout=open(os.devnull, 'w'))
+            stdout=open(devnull, 'w'))
     else:
         header, reads = adjust_sff_cycles(
             parse_binary_sff(qiime_open(sff_fp, 'rb'),
@@ -262,10 +265,10 @@ def prep_sffs_in_dir(
         # This is undocumented behavior, but we do support passing a
         # single file.  Do not check for sff extension; assume the
         # user knows what they are doing.
-        filenames = [os.path.basename(sff_dir)]
-        sff_dir = os.path.dirname(sff_dir)
+        filenames = [basename(sff_dir)]
+        sff_dir = dirname(sff_dir)
     else:
-        filenames = [x for x in os.listdir(sff_dir) if (x.endswith('.sff') or
+        filenames = [x for x in listdir(sff_dir) if (x.endswith('.sff') or
                      x.endswith('.sff.gz'))]
 
     for filename in filenames:

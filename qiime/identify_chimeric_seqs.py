@@ -3,23 +3,18 @@
 
 from __future__ import division
 
-from os import remove, makedirs, system
-from os.path import (split, splitext, basename, isdir, abspath, isfile, exists,
-                     join)
+from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
-from datetime import datetime
 
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from bipy.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import (CommandLineApplication, ResultPath,
                              ApplicationError, ApplicationNotFoundError)
-from cogent.util.misc import remove_files
-from bipy.app.util import which
+from skbio.app.parameters import ValuedParameter
+from skbio.app.util import which
 
-from qiime.util import (FunctionWithParams, degap_fasta_aln,
-                        write_degapped_fasta_to_file, get_tmp_filename, create_dir,
+from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file, 
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
 from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,

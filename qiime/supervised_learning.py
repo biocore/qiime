@@ -14,8 +14,7 @@ from os.path import join, split, splitext, exists
 from numpy import array, set_printoptions, nan, sqrt, mean, square
 from cogent.app.util import (CommandLineApplication, CommandLineAppResult,
                              ResultPath, ApplicationError)
-from bipy.app.parameters import (Parameters, ValuedParameter, FlagParameter,
-                                 FilePath)
+from skbio.app.parameters import ValuedParameter, FlagParameter
 from biom.parse import convert_biom_to_table
 
 from qiime.util import get_qiime_project_dir
