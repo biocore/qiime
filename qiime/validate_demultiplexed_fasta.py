@@ -14,7 +14,7 @@ __email__ = "william.a.walters@gmail.com"
 from collections import defaultdict
 from os.path import split, join
 
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from cogent.parse.record import RecordError
 from cogent.parse.tree import DndParser
 

@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
 

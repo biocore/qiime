@@ -18,7 +18,7 @@ from collections import defaultdict
 from string import lowercase
 
 from cogent.util.trie import build_prefix_map
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle

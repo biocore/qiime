@@ -5,7 +5,7 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight"]
+__credits__ = ["Jens Reeder", "Rob Knight", "John Chase"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -14,7 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 from random import sample
 
 from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 

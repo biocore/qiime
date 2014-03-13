@@ -8,7 +8,7 @@ from cogent.app.util import CommandLineApplication, ResultPath, \
     ApplicationError, get_tmp_filename
 from cogent import DNA
 from cogent.core.genetic_code import GeneticCodes
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from os import remove
 from os.path import isabs
 

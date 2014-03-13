@@ -16,7 +16,7 @@ from itertools import imap
 from collections import defaultdict
 
 from qiime.util import get_tmp_filename, FileFormatError
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 
 from qiime.denoiser.utils import cat_sff_files, write_sff_header

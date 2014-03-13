@@ -18,7 +18,7 @@ from os.path import exists
 from cogent.util.unit_test import TestCase, main
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError

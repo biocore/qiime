@@ -15,7 +15,7 @@ from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
 from cogent.util.misc import create_dir, remove_files
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,

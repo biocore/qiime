@@ -12,7 +12,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from qiime.util import parse_command_line_parameters, make_option, \
     get_options_lookup, load_qiime_config, create_dir
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from cogent.core.alignment import DenseAlignment
 from qiime.parse import parse_qiime_parameters
 from cogent.core.moltype import DNA

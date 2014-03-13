@@ -22,7 +22,7 @@ library id. This code takes the output from split_libraries.py and the
 corresponding qual files, pulls the qual info by id, and writes everything
 either to one file or to per-library files.
 """
-from cogent.parse.fasta import MinimalFastaParser
+from bipy.parse.fasta import MinimalFastaParser
 from os import mkdir
 from collections import defaultdict
 
