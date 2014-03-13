@@ -66,6 +66,8 @@ from qiime.format import format_histograms
 from qiime.parse import QiimeParseError, parse_qual_scores
 from qiime.util import create_dir, median_absolute_deviation
 
+from bipy.core.sequence import DNA
+
 # Including new=True in the histogram() call is necessary to
 # get the correct result in versions prior to NumPy 1.2.0,
 # but the new keyword will be removed in NumPy 1.4. In NumPy 1.2.0
