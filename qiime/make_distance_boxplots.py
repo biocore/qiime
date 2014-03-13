@@ -18,7 +18,7 @@ from qiime.format import format_mapping_file
 from qiime.group import get_all_grouped_distances, get_grouped_distances
 from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file
-from qiime.pycogent_backports.distribution_plots import generate_box_plots
+from bipy.draw.distributions import boxplots
 from qiime.util import MetadataMap
 
 
@@ -158,13 +158,15 @@ def make_distance_boxplots(dm_f,
                 raise ValueError("The specified width and height of the plot "
                                  "must be greater than zero.")
 
-            plot_figure = generate_box_plots(plot_data,
-                                             x_tick_labels=plot_labels, title="%s Distances" % field,
-                                             x_label="Grouping", y_label="Distance",
-                                             x_tick_labels_orientation='vertical', y_min=y_min,
-                                             y_max=y_max, whisker_length=whisker_length,
-                                             box_width=box_width, box_colors=plot_colors,
-                                             figure_width=width, figure_height=height, legend=legend)
+            plot_figure = boxplots(plot_data, x_tick_labels=plot_labels,
+                                   title="%s Distances" % field,
+                                   x_label="Grouping", y_label="Distance",
+                                   x_tick_labels_orientation='vertical',
+                                   y_min=y_min, y_max=y_max,
+                                   whisker_length=whisker_length,
+                                   box_width=box_width, box_colors=plot_colors,
+                                   figure_width=width, figure_height=height,
+                                   legend=legend)
 
             results.append((field, plot_figure, plot_data, plot_labels,
                             plot_colors))
