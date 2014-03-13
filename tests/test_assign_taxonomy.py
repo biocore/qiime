@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file, rmtree
 
 from unittest import TestCase, main
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_allclose
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -688,7 +688,10 @@ class BlastTaxonAssignerTests(TestCase):
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        assert_almost_equal(log_file_str.split('\n'), log_file_exp)
+        
+        print log_file_str.split('\n')
+        print log_file_exp
+        self.assertEqual(log_file_str.split('\n'), log_file_exp)
 
 
 class RtaxTaxonAssignerTests(TestCase):
@@ -865,7 +868,7 @@ class RtaxTaxonAssignerTests(TestCase):
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        assert_almost_equal(log_file_str.split('\n')[0:12], log_file_exp)
+        self.assertEqual(log_file_str.split('\n')[0:12], log_file_exp)
 
 
 class MothurTaxonAssignerTests(TestCase):
@@ -1168,8 +1171,8 @@ class RdpTaxonAssignerTests(TestCase):
                 # confidence is above threshold
                 self.assertTrue(actual[seq_id][1] >= min_confidence)
                 # confidence roughly matches expected
-                self.assertFloatEqual(
-                    actual[seq_id][1], expected[seq_id][1], 0.1)
+                assert_allclose(actual[seq_id][1], expected[seq_id][1], 
+                                    atol=0.1)
                 # check if the assignment is correct -- this must happen
                 # at least once per seq_id for the test to pass
                 if actual[seq_id][0] == expected[seq_id][0]:

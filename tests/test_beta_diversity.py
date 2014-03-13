@@ -14,6 +14,7 @@ __email__ = "justinak@gmail.com"
 import numpy
 import warnings
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename, load_qiime_config
 from cogent.core.tree import PhyloNode
@@ -101,7 +102,7 @@ class BetaDiversityCalcTests(TestCase):
         beta_calc_chisq = BetaDiversityCalc(dist_chisq, 'chi square', False)
         matrix, labels = beta_calc_chisq(data_path=self.l19_fp, tree_path=None)
         self.assertEqual(labels, self.l19_sample_names)
-        self.assertFloatEqual(matrix, dist_chisq(self.l19_data))
+        assert_almost_equal(matrix, dist_chisq(self.l19_data))
 
     def test_l19_unifrac(self):
         """beta calc run should also work for phylo metric"""
@@ -125,7 +126,8 @@ class BetaDiversityCalcTests(TestCase):
         self.files_to_remove.append(tree_fp)
         escaped_result = beta_calc(data_path=self.l19_str_w_underscore_fp,
                                    tree_path=tree_fp, result_path=None, log_path=None)
-        self.assertEqual(escaped_result, non_escaped_result)
+        assert_almost_equal(escaped_result[0], non_escaped_result[0])
+        self.assertEqual(escaped_result[1], non_escaped_result[1])
 
     def single_file_beta(
             self, otu_table_string, tree_string, missing_sams=None,
@@ -201,7 +203,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # full tree run:
             if 'full_tree' in str(metric).lower():
@@ -232,7 +234,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # do it with full tree
             if use_metric_list:
@@ -244,7 +246,7 @@ class BetaDiversityCalcTests(TestCase):
             sams_ft, dmtx_ft = parse_distmat(open(output_dir + '/ft/' +
                                                   metric + '_' + in_fname))
             self.assertEqual(sams_ft, sams)
-            self.assertFloatEqual(dmtx_ft, dmtx)
+            assert_almost_equal(dmtx_ft, dmtx)
 
     def test_single_file_beta(self):
         self.single_file_beta(l19_otu_table, l19_tree)
@@ -327,7 +329,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # full tree run:
             if 'full_tree' in str(metric).lower():
@@ -355,7 +357,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # do it with full tree
             r_out = single_object_beta(otu_table, metric,
@@ -363,7 +365,7 @@ class BetaDiversityCalcTests(TestCase):
                                        full_tree=True)
             sams_ft, dmtx_ft = parse_distmat(r_out)
             self.assertEqual(sams_ft, sams)
-            self.assertFloatEqual(dmtx_ft, dmtx)
+            assert_almost_equal(dmtx_ft, dmtx)
 
     def test_single_object_beta(self):
         self.single_file_beta(l19_otu_table, l19_tree)
