@@ -31,7 +31,6 @@ from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
-from cogent.util.misc import flatten
 
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
@@ -1704,8 +1703,9 @@ class MothurOtuPicker(OtuPicker):
 
 def expand_otu_map_seq_ids(otu_map, seq_id_map):
     for otu_id, seq_ids in otu_map.items():
-        mapped_seq_ids = flatten(
-            [seq_id_map[seq_id] for seq_id in seq_ids])
+        # flatten out the list of lists
+        mapped_seq_ids = sum(
+            [seq_id_map[seq_id] for seq_id in seq_ids], [])
         otu_map[otu_id] = mapped_seq_ids
     return otu_map
 

@@ -20,7 +20,6 @@ from time import strftime
 from numpy.linalg import norm
 from biplots import make_mage_taxa
 from numpy import abs as numpy_abs
-from cogent.util.misc import flatten
 from qiime.format import format_coords
 from cogent.maths.stats.util import Numbers
 from qiime.sort import natsort, signed_natsort
@@ -241,7 +240,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var,
     # check that we didn't get fewer dimensions than we wanted
     if len(mins) < num_coords:
         num_coords = len(mins)
-    min_maxes = flatten(zip(mins, maxes))
+    # flatten out the tuples
+    min_maxes = sum(zip(mins, maxes), ())
 
     if custom_axes:
         axis_names = ['PC%s' % (i + 1)
