@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
-from cogent.parse.fastq import MinimalFastqParser
+from bipy.parse.fastq import MinimalFastqParser
 from qiime.join_paired_ends import (join_method_names,
                                     join_method_constructors,
                                     write_synced_barcodes_fastq)

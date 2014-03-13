@@ -17,13 +17,13 @@ from qiime.split_libraries_fastq import (
     bad_chars_from_threshold,
     get_illumina_qual_chars,
     quality_filter_sequence,
-    FastqParseError,
     check_header_match_pre180,
     check_header_match_180_or_later,
     correct_barcode,
     process_fastq_single_end_read_file_no_barcode
 )
 from qiime.golay import decode_golay_12
+from bipy.core.exception import FastqParseError
 
 
 class FakeFile(object):

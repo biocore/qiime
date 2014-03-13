@@ -15,7 +15,7 @@ from os.path import split, splitext
 from os import makedirs
 from numpy import log10, arange, histogram
 from cogent import DNA
-from cogent.parse.fastq import MinimalFastqParser
+from bipy.parse.fastq import MinimalFastqParser
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log,
                           )
@@ -23,11 +23,7 @@ from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
 from qiime.quality import phred_to_ascii33, phred_to_ascii64
-
-
-class FastqParseError(Exception):
-    pass
-
+from bipy.core.exception import FastqParseError
 
 def get_illumina_qual_chars():
     # pulled from stack overflow (url wrapped over two lines):
