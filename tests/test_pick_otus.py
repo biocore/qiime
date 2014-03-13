@@ -24,7 +24,6 @@ from shutil import rmtree
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import get_tmp_filename, load_qiime_config, create_dir
@@ -34,6 +33,8 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
                              UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
                              Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
+
+from bipy.core.sequence import DNA
 
 
 class OtuPickerTests(TestCase):
@@ -236,10 +237,10 @@ class BlastOtuPickerTests(TestCase):
         ]
 
         self.ref_seqs_rc = [
-            ('ref1', DNA.rc('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),
-            ('ref2', DNA.rc('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),
-            ('ref3', DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),
-            ('ref4', DNA.rc('ACGTATTTTAATGGGGCATGGT')),
+            ('ref1', str(DNA('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC').rc())),
+            ('ref2', str(DNA('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA').rc())),
+            ('ref3', str(DNA('TGTCGAGAGTGAGATGAGATGAGAACA').rc())),
+            ('ref4', str(DNA('ACGTATTTTAATGGGGCATGGT').rc())),
         ]
 
         self.seqs_fp = get_tmp_filename(
