@@ -12,9 +12,9 @@ from datetime import datetime
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.parameters import ValuedParameter, FlagParameter
-from cogent.app.util import CommandLineApplication, ResultPath,\
-    ApplicationError, ApplicationNotFoundError
+from bipy.app.parameters import ValuedParameter, FlagParameter
+from cogent.app.util import (CommandLineApplication, ResultPath,
+                             ApplicationError, ApplicationNotFoundError)
 from cogent.util.misc import remove_files
 from bipy.app.util import which
 
