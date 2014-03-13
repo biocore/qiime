@@ -4,7 +4,7 @@ from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
 )
-from bipy.app.util import which
+from skbio.app.util import which
 from qiime.util import qiime_open, is_gzip
 from os import listdir
 from os.path import splitext, join, isfile, isdir, split
