@@ -28,7 +28,7 @@ def compute_manifold(file_name,algorithm):
 
     if algorithm=="isomap":
         print otumtx
-        fit = manifold.Isomap().fit_transform(otumtx,n_components=3)
+        fit = manifold.Isomap(n_components=3).fit_transform(otumtx)
     else:
         print("arg in error, unknown algorithm")
         exit(1)
