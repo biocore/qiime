@@ -43,7 +43,7 @@ from biom.parse import parse_biom_table
 import biom
 
 from cogent.util.dict2d import Dict2D
-from cogent import LoadSeqs, Sequence, DNA
+from cogent import LoadSeqs, Sequence
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
@@ -66,6 +66,7 @@ from cogent.util.misc import (create_dir,
                               handle_error_codes)
 
 from bipy.app.util import which
+from bipy.core.sequence import DNA
 
 from qcli import (parse_command_line_parameters,
                   make_option,
@@ -1382,7 +1383,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
     # create set of reverse complement barcodes from mapping file
     revcomp_barcode_mapping_column = []
     for i in barcode_mapping_column:
-        revcomp_barcode_mapping_column.append(DNA.rc(i))
+        revcomp_barcode_mapping_column.append(str(DNA(i).rc()))
         barcode_len = len(i)
     revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
 
