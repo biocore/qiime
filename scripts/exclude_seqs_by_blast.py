@@ -23,7 +23,8 @@ __credits__ = [
     "Jesse Zaneveld",
     "Rob Knight",
     "Justin Kuczynski",
-    "Jose Antonio Navas Molina"]
+    "Jose Antonio Navas Molina",
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Zaneveld"

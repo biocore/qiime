@@ -29,7 +29,7 @@ from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"

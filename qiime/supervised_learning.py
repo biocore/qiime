@@ -2,7 +2,7 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Dan Knights", "Luke Ursell"]
+__credits__ = ["Dan Knights", "Luke Ursell", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"

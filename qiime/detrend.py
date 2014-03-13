@@ -2,7 +2,7 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
-__credits__ = ["Dan Knights"]
+__credits__ = ["Dan Knights", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
