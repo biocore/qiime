@@ -43,7 +43,7 @@ class Test_preprocess(TestCase):
                # check that sampled key is in the full list
                 correct = list(self.test_map[key])
                 correct.append(key)
-                self.assertContains(correct, x)
+                self.assertTrue(x in correct)
 
     def test_average_flowgrams(self):
         """_average_flowgrams computes an averaged flowgram for each cluster."""
