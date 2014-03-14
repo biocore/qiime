@@ -33,7 +33,9 @@ _index_headers = {
     "alpha_diversity": "Alpha diversity results",
     "taxa_summary": "Taxonomic summary results",
     "taxa_summary_categorical": "Taxonomic summary results (by %s)",
-    "group_significance": "Group significance results"}
+    "group_significance": "Group significance results", 
+    "failures_fp": "failures_fp", 
+    "filtered_otu_map": "filtered_otu_map"}
 
 
 def format_index_link(link_description, relative_path):
