@@ -7,7 +7,7 @@ from os.path import join, split, abspath
 
 from cogent.app.formatdb import FormatDb
 from cogent.util.misc import remove_files
-from bipy.app.parameters import FilePath
+from skbio.app.parameters import FilePath
 
 from qiime.util import get_qiime_temp_dir
 from qiime.exclude_seqs_by_blast import (check_options,
