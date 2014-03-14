@@ -62,10 +62,9 @@ from cogent.app.util import (ApplicationError, CommandLineApplication,
                              FilePath)
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, create_dir, handle_error_codes
 from cogent.app.formatdb import (build_blast_db_from_fasta_path,
                                  build_blast_db_from_fasta_file)
-from cogent.util.misc import create_dir
 from skbio.app.util import which
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
 
