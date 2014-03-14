@@ -24,7 +24,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, guess_input_handler, system,\
     ApplicationNotFoundError, ApplicationError
-from bipy.app.util import which
+from skbio.app.util import which
 
 
 class RdpClassifier(CommandLineApplication):
