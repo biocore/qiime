@@ -28,7 +28,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app import rtax
 from cogent.app.util import ApplicationNotFoundError
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 from qiime.pycogent_backports.uclust import Uclust
 from qiime.pycogent_backports import rdp_classifier

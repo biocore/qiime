@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
 from numpy import inf, isinf
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from biom.parse import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.filter import filter_otus_from_otu_table

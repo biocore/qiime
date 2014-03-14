@@ -51,7 +51,7 @@ from numpy import __version__ as numpy_version
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 from cogent import DNA, LoadSeqs
@@ -245,7 +245,7 @@ def local_align_primer_seq(primer, sequence, sw_scorer=equality_scorer_ambigs):
     # Get alignment object from primer, target sequence
     alignment = pair_hmm_align_unaligned_seqs([query_primer, query_sequence])
 
-    # Extract sequence of primer, target site, may have gaps in insertions
+    # Extract sequence of primer, target site, may have gaps if insertions
     # or deletions have occurred.
     primer_hit = str(alignment.Seqs[0])
     target_hit = str(alignment.Seqs[1])

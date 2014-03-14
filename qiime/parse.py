@@ -25,7 +25,7 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
-from bipy.parse.fastq import MinimalFastqParser as MinimalFastqParserBipy
+from skbio.parse.fastq import MinimalFastqParser as MinimalFastqParserBipy
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
