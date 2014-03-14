@@ -30,8 +30,8 @@ from random import random
 from itertools import repeat, izip
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
-                   float, where, isnan, std, sqrt, ravel, mean, median, sum,
-                   nan, sort)
+                   float, where, isnan, std, sqrt, ravel, mean, median, 
+                   sum as np_sum, nan, sort)
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from biom.util import compute_counts_per_sample_stats
@@ -846,7 +846,7 @@ def summarize_pcoas(master_pcoa, support_pcoas,
         jn_flipped_matrices, method)
     # compute average eigvals
     all_eigvals_stack = vstack(all_eigvals)
-    eigval_sum = sum(all_eigvals_stack, axis=0)
+    eigval_sum = np_sum(all_eigvals_stack, axis=0)
     eigval_average = eigval_sum / float(len(all_eigvals))
     return matrix_average, matrix_low, matrix_high, eigval_average, m_names
 
@@ -865,7 +865,7 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     x, y = shape(jn_flipped_matrices[0])
     all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
     summary_matrix = vstack(all_flat_matrices)
-    matrix_sum = sum(summary_matrix, axis=0)
+    matrix_sum = np_sum(summary_matrix, axis=0)
     matrix_average = matrix_sum / float(len(jn_flipped_matrices))
     matrix_average = matrix_average.reshape(x, y)
     if method == 'IQR':
