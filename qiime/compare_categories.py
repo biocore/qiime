@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import join
 from types import ListType
 
-from bipy.core.distance import SymmetricDistanceMatrix
+from skbio.core.distance import SymmetricDistanceMatrix
 
 from qiime.format import (format_anosim_results, format_best_results,
                           format_permanova_results)

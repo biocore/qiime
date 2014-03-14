@@ -16,7 +16,7 @@ from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
     ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from bipy.app.util import which
+from skbio.app.util import which
 
 from qiime.util import (FunctionWithParams, degap_fasta_aln,
                         write_degapped_fasta_to_file, get_tmp_filename, create_dir,

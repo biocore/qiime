@@ -36,7 +36,7 @@ from cogent.maths.stats.test import t_one_sample
 
 from biom.table import table_factory, DenseOTUTable
 
-from bipy.core.distance import SymmetricDistanceMatrix
+from skbio.core.distance import SymmetricDistanceMatrix
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
