@@ -1779,6 +1779,8 @@ class MetadataMapTests(TestCase):
         self.single_value = MetadataMap(*parse_mapping_file_to_dict(
             self.single_value_str))
 
+        self.m1 = StringIO(m1)
+
     def test_parseMetadataMap(self):
         """Test parsing a mapping file into a MetadataMap instance."""
         obs = MetadataMap.parseMetadataMap(self.overview_map_str)
@@ -2001,6 +2003,34 @@ class MetadataMapTests(TestCase):
 
         self.empty_map.filterSamples(['foo'], strict=False)
         self.assertEqual(self.empty_map.SampleIds, [])
+
+    def test_str(self):
+        """Test conversion to string representation
+        """
+        map_obj = MetadataMap.parseMetadataMap(self.m1)
+        string_rep = StringIO(map_obj)
+
+        self.m1.seek(0)
+
+        # The string representation of the map_obj is unpredictable, since
+        # it is generated from a dict, so we have to get a little clever
+        exp_headers = self.m1.readline().strip().split('\t')
+        obs_headers = string_rep.readline().strip().split('\t')
+
+        # make sure that they have the same columns
+        self.assertEqual(set(exp_headers), set(obs_headers))
+
+        # make sure they have the same values for the same columns
+        for obs, exp in zip(string_rep, self.m1):
+            obs_elements = obs.strip().split('\t')
+            exp_elements = exp.strip().split('\t')
+
+            for exp_i, exp_header in enumerate(exp_headers):
+                obs_i = obs_headers.index(exp_header)
+
+                self.assertEqual(obs_elements[exp_i],
+                                 exp_elements[obs_i])
+
 
 
 class SyncBiomTests(TestCase):
@@ -2281,6 +2311,9 @@ ACCAGAGACCGAGA""".split('\n')
 
 expected_lines_20_perc = """>seq4
 ACAGGAGACCGAGAAGA""".split('\n')
+
+m1="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tfirst1111\tTHE FIRST"""
 
 
 # run unit tests if run from command-line

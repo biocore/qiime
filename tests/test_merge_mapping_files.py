@@ -5,8 +5,6 @@ from __future__ import division
 from unittest import TestCase, main
 from StringIO import StringIO
 
-from numpy import argsort
-
 from qiime.util import MetadataMap
 from qiime.merge_mapping_files import merge_mapping_files
 
@@ -63,32 +61,6 @@ class MergeMappingFilesTests(TestCase):
         observed = merge_mapping_files([self.m1,self.m1_dup_good])
         self.assertEqual(observed, m1_m1_dup_good_exp)
 
-    def test_str(self):
-        """Test conversion to string representation
-        """
-        map_obj = MetadataMap.parseMetadataMap(self.m1)
-        string_rep = StringIO(map_obj)
-
-        self.m1.seek(0)
-
-        # The string representation of the map_obj is unpredictable, since
-        # it is generated from a dict, so we have to get a little clever
-        exp_headers = self.m1.readline().strip().split('\t')
-        obs_headers = string_rep.readline().strip().split('\t')
-
-        # make sure that they have the same columns
-        self.assertEqual(set(exp_headers), set(obs_headers))
-
-        # make sure they have the same values for the same columns
-        for obs, exp in zip(string_rep, self.m1):
-            obs_elements = obs.strip().split('\t')
-            exp_elements = exp.strip().split('\t')
-
-            for exp_i, exp_header in enumerate(exp_headers):
-                obs_i = obs_headers.index(exp_header)
-
-                self.assertEqual(obs_elements[exp_i],
-                                 exp_elements[obs_i])
 
 m1="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
 111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tfirst1111\tTHE FIRST"""
