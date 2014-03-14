@@ -1776,6 +1776,7 @@ class MetadataMap():
         headers = (self.req_header_prefix + optional_headers +
                    self.req_header_suffix)
 
+        output_lines.extend(self.Comments)
         output_lines.append('#' + '\t'.join(headers))
 
         for sample_id, data in self._metadata.iteritems():
@@ -1801,7 +1802,7 @@ class MetadataMap():
 
             output_lines.append('\t'.join([str(x) for x in current_data]))
 
-        return '\n'.join(output_lines)
+        return '\n'.join(output_lines) + '\n'
 
     def __add__(self, other):
         """Merges two mapping files
@@ -1854,7 +1855,7 @@ class MetadataMap():
 
         # and create a MetadataMap object from it; concatenate comments
         normal_dict = Dict2D(normal_dict)
-        return MetadataMap(normal_dict, self.Comments + other.Comments)
+        return self.__class__(normal_dict, self.Comments + other.Comments)
 
     def getSampleMetadata(self, sample_id):
         """Returns the metadata associated with a particular sample.
