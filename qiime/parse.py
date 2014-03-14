@@ -23,7 +23,7 @@ from cogent.maths.stats.rarefaction import subsample
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
-from cogent.parse.fasta import FastaFinder
+from skbio.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.fastq import MinimalFastqParser as MinimalFastqParserBipy
 from cogent.core.tree import PhyloNode
