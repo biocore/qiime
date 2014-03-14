@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent import DNA
 
 usage_str = """usage: %prog [options] {-i INPUT_FASTA_FP}

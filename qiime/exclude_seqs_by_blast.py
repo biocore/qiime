@@ -7,7 +7,7 @@ from os import system, getcwd
 from os.path import join
 from cogent.app.parameters import FilePath
 from cogent.util.misc import remove_files
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 
 

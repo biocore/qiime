@@ -12,7 +12,7 @@ __email__ = "William.A.Walters@colorado.edu"
 from os.path import join, basename
 from string import letters, digits
 
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 from qiime.util import duplicates_indices
 from qiime.check_id_map import process_id_map

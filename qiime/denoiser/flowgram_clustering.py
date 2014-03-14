@@ -25,7 +25,7 @@ from qiime.util import get_tmp_filename
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram, seq_to_flow
 from cogent.parse.flowgram_collection import FlowgramCollection
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 from qiime.format import write_Fasta_from_name_seq_pairs
 from qiime.util import get_qiime_project_dir, load_qiime_config

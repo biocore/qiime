@@ -13,7 +13,7 @@ from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
 import numpy
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, eps
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 

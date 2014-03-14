@@ -20,7 +20,7 @@ from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.unit_test import TestCase, main
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import check_flowgram_ali_exe

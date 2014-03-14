@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 
 from unittest import TestCase, main
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from qiime.adjust_seq_orientation import rc_fasta_lines, null_seq_desc_mapper,\
     append_rc
 

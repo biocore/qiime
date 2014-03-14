@@ -51,7 +51,7 @@ from numpy import __version__ as numpy_version
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 from cogent import DNA, LoadSeqs

@@ -15,7 +15,7 @@ from itertools import izip
 from collections import defaultdict
 
 from qiime.parse import QiimeParseError, MinimalQualParser
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from bipy.parse.fastq import MinimalFastqParser
 
 

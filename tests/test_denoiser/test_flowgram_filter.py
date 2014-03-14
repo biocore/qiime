@@ -13,7 +13,7 @@ __email__ = "jens.reeder@gmail.com"
 from os import remove
 
 from cogent.util.unit_test import TestCase, main
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle

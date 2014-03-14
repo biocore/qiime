@@ -19,7 +19,7 @@ from StringIO import StringIO
 from socket import error
 
 from cogent.util.unit_test import TestCase, main
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError

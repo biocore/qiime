@@ -12,7 +12,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from matplotlib import use
 use('Agg', warn=False)
-from bipy.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from numpy import arange, std, average
 from pylab import plot, savefig, xlabel, ylabel, text, \
     hist, figure, legend, title, show, xlim, ylim, xticks, yticks,\
