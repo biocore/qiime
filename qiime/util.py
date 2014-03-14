@@ -53,8 +53,9 @@ from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,
 from cogent.data.molecular_weight import DnaMW
 from cogent.core.sequence import DnaSequence
 from cogent.app.blast import Blastall
-from cogent.app.util import (ApplicationError, CommandLineApplication,
-                             get_tmp_filename as cogent_get_tmp_filename, FilePath)
+from skbio.app.util import ApplicationError, CommandLineApplication
+from cogent.app.util import (FilePath,
+                             get_tmp_filename as cogent_get_tmp_filename)
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
