@@ -16,10 +16,10 @@ from qiime.util import (parse_command_line_parameters,
                         make_option,
                         get_rdp_jarpath,
                         load_qiime_config,
-                        get_tmp_filename,
                         remove_files)
 from os import system, remove, path, mkdir
 from os.path import split, splitext
+from tempfile import mkstemp
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
     RtaxTaxonAssigner, Tax2TreeTaxonAssigner, validate_rdp_version,
@@ -337,7 +337,7 @@ def main():
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error
         exit(1)
-    temp_result_path = get_tmp_filename(prefix='assign-tax')
+    _, temp_result_path = mkstemp(prefix='assign-tax')
     taxon_assigner = taxon_assigner_constructor(params)
     taxon_assigner(input_sequences_filepath,
                    result_path=temp_result_path,

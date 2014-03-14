@@ -19,7 +19,7 @@ from cogent.util.misc import remove_files
 from bipy.app.util import which
 
 from qiime.util import (FunctionWithParams, degap_fasta_aln,
-                        write_degapped_fasta_to_file, get_tmp_filename, create_dir,
+                        write_degapped_fasta_to_file, create_dir,
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
 from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,

@@ -14,10 +14,9 @@ __email__ = "jens.reeder@gmail.com"
 
 from os import makedirs, remove
 from os.path import exists
+from tempfile import mkdtemp
 
-from qiime.util import get_tmp_filename
-from cogent.util.misc import create_dir
-
+from skbio.util.misc import create_dir
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option
 
@@ -236,14 +235,14 @@ def main(commandline_args=None):
     if opts.output_dir:
         # make sure it always ends on /
         tmpoutdir = opts.output_dir + "/"
+        create_dir(tmpoutdir, not opts.force)
     else:
         # make random dir in current dir
-        tmpoutdir = get_tmp_filename(
-            tmp_dir="",
+        tmpoutdir = mkdtemp(
+            dir="",
             prefix="denoiser_",
             suffix="/")
-
-    create_dir(tmpoutdir, not opts.force)
+	
 
     log_fp = 'denoiser.log'
 

@@ -20,6 +20,7 @@ from itertools import ifilter
 from os.path import splitext, split, abspath, join
 from os import makedirs
 from itertools import imap
+from tempfile import mkstemp
 
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
@@ -33,7 +34,7 @@ from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 
-from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
+from qiime.util import FunctionWithParams, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
@@ -750,8 +751,8 @@ class UclustOtuPickerBase(OtuPicker):
         self.Params['suppress_sort'] = True
 
         # Get a temp file name for the sorted fasta file
-        sorted_input_seqs_filepath = \
-            get_tmp_filename(prefix=self.Name, suffix='.fasta')
+        _, sorted_input_seqs_filepath = \
+            mkstemp(prefix=self.Name, suffix='.fasta')
         # Sort input seqs by abundance, and write to the temp
         # file
         sort_fasta_by_abundance(open(seq_path, 'U'),
@@ -790,7 +791,7 @@ class UclustOtuPickerBase(OtuPicker):
 
     def _apply_identical_sequences_prefilter(self, seq_path):
         """ """
-        unique_seqs_fp = get_tmp_filename(
+        _, unique_seqs_fp = mkstemp(
             prefix='UclustExactMatchFilter', suffix='.fasta')
         seqs_to_cluster, exact_match_id_map =\
             self._prefilter_exact_matches(

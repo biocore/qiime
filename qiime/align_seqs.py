@@ -35,8 +35,7 @@ from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 import cogent.app.clustalw
 import cogent.app.mafft
 
-from qiime.util import (get_tmp_filename,
-                        FunctionWithParams,
+from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 import cogent.app.muscle_v38
 

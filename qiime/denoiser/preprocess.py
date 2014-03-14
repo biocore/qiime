@@ -16,10 +16,10 @@ from os import remove
 from random import sample
 from collections import defaultdict
 from string import lowercase
+from tempfile import mkstemp
 
 from cogent.util.trie import build_prefix_map
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
@@ -86,7 +86,7 @@ def build_averaged_flowgrams(mapping, sff_fp,
     if (out_fp):
         out_filename = out_fp
     else:
-        out_filename = get_tmp_filename(tmp_dir="/tmp/",
+        _, out_filename = mkstemp(dir="/tmp/",
                                         prefix="prefix_dereplicated",
                                         suffix=".sff.txt")
     outhandle = open(out_filename, "w")

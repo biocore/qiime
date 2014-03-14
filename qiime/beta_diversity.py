@@ -39,7 +39,7 @@ from cogent.util.misc import unzip
 from biom.parse import parse_biom_table
 from biom.table import DenseTable
 from qiime.util import (FunctionWithParams, TreeMissingError,
-                        OtuMissingError, get_tmp_filename)
+                        OtuMissingError)
 from qiime.format import format_matrix, format_distance_matrix
 from qiime.parse import parse_newick, PhyloNode
 import qiime.beta_metrics

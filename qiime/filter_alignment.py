@@ -17,8 +17,6 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
-from qiime.util import get_tmp_filename
-
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"

@@ -14,8 +14,9 @@ __email__ = "jens.reeder@gmail.com"
 from re import compile, search
 from itertools import imap
 from collections import defaultdict
+from tempfile import mkstemp
 
-from qiime.util import get_tmp_filename, FileFormatError
+from qiime.util import FileFormatError
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 
@@ -115,7 +116,7 @@ def truncate_flowgrams_in_SFF(
     """
     out_filename = ""
     if not outhandle:
-        out_filename = get_tmp_filename(tmp_dir=outdir, prefix="trunc_sff",
+        _, out_filename = mkstemp(dir=outdir, prefix="trunc_sff",
                                         suffix=".sff.txt")
         outhandle = open(out_filename, "w")
 
@@ -166,7 +167,7 @@ def cleanup_sff(flowgrams, header, outhandle=None, outdir="/tmp",
 
     clean_filename = ""
     if not outhandle:
-        clean_filename = get_tmp_filename(tmp_dir=outdir, prefix="cleanup_sff",
+        _, clean_filename = mkstemp(dir=outdir, prefix="cleanup_sff",
                                           suffix=".sff.txt")
         outhandle = open(clean_filename, "w")
 
