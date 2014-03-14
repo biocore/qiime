@@ -13,13 +13,11 @@ __email__ = "gregcaporaso@gmail.com"
 from os import remove
 from os.path import getsize
 from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment, Alignment as CogentAlignment
 from cogent.util.unit_test import TestCase, main
 from qiime.util import get_tmp_filename
 from qiime.align_seqs import (compute_min_alignment_length,
                               Aligner, CogentAligner, PyNastAligner, InfernalAligner,
-                              alignment_module_names,
-                              )
+                              alignment_module_names)
 
 from skbio.core.exception import SequenceCollectionError
 from skbio.core.alignment import SequenceCollection, Alignment
@@ -121,7 +119,7 @@ class InfernalAlignerTests(SharedSetupTestCase):
         open(
             self.infernal_test1_input_fp,
             'w').write(
-            infernal_test1_input_fasta)
+            '\n'.join(infernal_test1_input_fasta))
 
         self.infernal_test1_template_fp = get_tmp_filename(
             prefix='InfernalAlignerTests_', suffix='template.sto')
@@ -148,9 +146,9 @@ class InfernalAlignerTests(SharedSetupTestCase):
         self.infernal_test1_aligner = InfernalAligner({
             'template_filepath': self.infernal_test1_template_fp,
         })
-        self.infernal_test1_expected_aln = \
-            LoadSeqs(data=infernal_test1_expected_alignment, aligned=CogentAlignment,
-                     moltype=DNA)
+        self.infernal_test1_expected_aln = Alignment.from_fasta_records(
+                MinimalFastaParser(infernal_test1_expected_alignment), 
+                DNASequence)
 
     def test_call_infernal_test1_file_output(self):
         """InfernalAligner writes correct output files for infernal_test1 seqs
@@ -164,7 +162,8 @@ class InfernalAlignerTests(SharedSetupTestCase):
                         "Result should be None when result path provided.")
 
         expected_aln = self.infernal_test1_expected_aln
-        actual_aln = LoadSeqs(self.result_fp, aligned=CogentAlignment)
+        actual_aln = Alignment.from_fasta_records(MinimalFastaParser(
+                open(self.result_fp)), DNASequence)
         self.assertEqual(actual_aln, expected_aln)
 
     def test_call_infernal_test1(self):
@@ -410,7 +409,7 @@ ACTGCTAGCTAGTAGCGTACGTA
 >seq_2
 GCTACGTAGCTAC
 >seq_3
-GCGGCTATTAGATCGTA"""
+GCGGCTATTAGATCGTA""".split('\n')
 
 infernal_test1_template_stockholm = """# STOCKHOLM 1.0
 seq_a           TAGGCTCTGATATAATAGC-TCTC---------
@@ -425,7 +424,7 @@ infernal_test1_expected_alignment = """>seq_1
 --------GCTACG-TAGCTAC-----------
 >seq_3
 -----GCGGCTATTAGATC-GTA----------
-"""
+""".split('\n')
 
 pynast_test1_template_fasta = """>1
 ACGT--ACGTAC-ATA-C-----CC-T-G-GTA-G-T---

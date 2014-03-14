@@ -140,7 +140,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = dict(MinimalFastaParser(open(seq_path, 'U')))
+        candidate_sequences = MinimalFastaParser(open(seq_path, 'U'))
 
         # load template sequences
         try:
@@ -154,9 +154,10 @@ class InfernalAligner(Aligner):
         moltype = self.Params['moltype']
 
         # Need to make separate mapping for unaligned sequences
-        unaligned = SequenceCollection(candidate_sequences, MolType=moltype)
-        int_map, int_keys = unaligned.getIntMap(prefix='unaligned_')
-        int_map = SequenceCollection(int_map, MolType=moltype)
+        unaligned = SequenceCollection.from_fasta_records(candidate_sequences, DNASequence)
+        int_map, int_keys = unaligned.int_map(prefix='unaligned_')
+        int_map = SequenceCollection.from_fasta_records(
+                [(s[0], str(s[1])) for s in int_map.items()], DNASequence)
 
         # Turn on --gapthresh option in cmbuild to force alignment to full
         # model
@@ -206,7 +207,7 @@ class InfernalAligner(Aligner):
 
         if result_path is not None:
             result_file = open(result_path, 'w')
-            result_file.write(infernal_aligned.toFasta())
+            result_file.write(infernal_aligned.to_fasta())
             result_file.close()
             return None
         else:
