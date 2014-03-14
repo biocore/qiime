@@ -15,7 +15,7 @@ from os.path import join
 from os import rename
 from re import compile
 
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.fastq import MinimalFastqParser
 from cogent import DNA
 
 from qiime.check_id_map import process_id_map
@@ -23,7 +23,7 @@ from qiime.split_libraries_fastq import (check_header_match_pre180,
                                          check_header_match_180_or_later)
 from qiime.parse import is_casava_v180_or_later
 from qiime.format import format_fastq_record
-from qiime.pycogent_backports.fastq import FastqParseError
+from bipy.core.exception import FastqParseError
 
 
 def extract_barcodes(fastq1,

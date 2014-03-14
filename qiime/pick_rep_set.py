@@ -24,7 +24,7 @@ from qiime.parse import fields_to_dict
 from random import choice
 from numpy import argmax
 from cogent.util.misc import InverseDictMulti  # inverts dict
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 label_to_name = lambda x: x.split()[0]
 
