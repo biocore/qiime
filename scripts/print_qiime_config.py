@@ -48,10 +48,11 @@ try:
                             get_rdp_jarpath,
                             get_java_version,
                             get_pynast_version,
+                            parse_command_line_parameters,
+                            make_option,
                             qiime_system_call,
                             get_qiime_temp_dir)
     from qiime.denoiser.utils import check_flowgram_ali_exe
-    from qcli import parse_command_line_parameters, make_option
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
