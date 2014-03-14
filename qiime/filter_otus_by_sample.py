@@ -14,6 +14,7 @@ from string import strip
 import re
 
 from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
 
 def filter_otus(otus, prefs):
     """filters the otus file based on which samples should be removed and
@@ -111,7 +112,8 @@ def filter_samples(prefs, data, dir_path='', filename=None):
     # write a fasta containing list of sequences removed from
     # representative set
     try:
-        removed_seqs = SequenceCollection(removed_seqs, DNA)
+        removed_seqs = SequenceCollection.from_fasta_records(
+                [(e[0], str(e[1])) for e in removed_seqs], DNA)
     except:
         raise ValueError(
             'No sequences were removed.  Did you specify the correct Sample ID?')
@@ -122,7 +124,8 @@ def filter_samples(prefs, data, dir_path='', filename=None):
 
     # write a fasta containing the filtered representative seqs
     try:
-        filtered_seqs = SequenceCollection(filtered_seqs, DNA)
+        filtered_seqs = SequenceCollection.from_fasta_records(
+                [(e[0], str(e[1])) for e in filtered_seqs], DNA)
     except:
         raise ValueError(
             'No sequences were remaining in the fasta file.  Did you remove all Sample ID\'s?')
