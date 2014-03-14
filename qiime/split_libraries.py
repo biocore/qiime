@@ -245,7 +245,7 @@ def local_align_primer_seq(primer, sequence, sw_scorer=equality_scorer_ambigs):
     # Get alignment object from primer, target sequence
     alignment = pair_hmm_align_unaligned_seqs([query_primer, query_sequence])
 
-    # Extract sequence of primer, target site, may have gaps in insertions
+    # Extract sequence of primer, target site, may have gaps if insertions
     # or deletions have occurred.
     primer_hit = str(alignment.Seqs[0])
     target_hit = str(alignment.Seqs[1])
