@@ -11,7 +11,7 @@ from cogent.util.unit_test import TestCase, main
 from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
     arange
 import numpy
-from cogent import LoadSeqs, DNA
+from cogent import DNA
 from cogent.core.alignment import DenseAlignment, eps
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.sequence import ModelDnaSequence

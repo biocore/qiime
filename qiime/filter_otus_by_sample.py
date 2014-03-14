@@ -12,8 +12,8 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from string import strip
 import re
-from cogent import LoadSeqs
 
+from skbio.core.alignment import SequenceCollection
 
 def filter_otus(otus, prefs):
     """filters the otus file based on which samples should be removed and
@@ -111,23 +111,24 @@ def filter_samples(prefs, data, dir_path='', filename=None):
     # write a fasta containing list of sequences removed from
     # representative set
     try:
-        removed_seqs = LoadSeqs(data=removed_seqs, aligned=False)
+        removed_seqs = SequenceCollection(removed_seqs, DNA)
     except:
         raise ValueError(
             'No sequences were removed.  Did you specify the correct Sample ID?')
     output_filepath2 = '%s/%s_sremoved.fasta' % (dir_path, filename)
     output_file2 = open(output_filepath2, 'w')
-    output_file2.write(removed_seqs.toFasta())
+    output_file2.write(removed_seqs.to_fasta())
     output_file2.close()
 
     # write a fasta containing the filtered representative seqs
     try:
-        filtered_seqs = LoadSeqs(data=filtered_seqs, aligned=False)
+        filtered_seqs = SequenceCollection(filtered_seqs, DNA)
     except:
         raise ValueError(
             'No sequences were remaining in the fasta file.  Did you remove all Sample ID\'s?')
 
     output_filepath = '%s/%s_sfiltered.fasta' % (dir_path, filename)
     output_file = open(output_filepath, 'w')
-    output_file.write(filtered_seqs.toFasta())
+    output_file.write(filtered_seqs.to_fasta())
     output_file.close()
+
