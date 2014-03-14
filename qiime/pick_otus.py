@@ -16,9 +16,7 @@ grouping those sequences by similarity.
 """
 
 from copy import copy
-from itertools import ifilter
-from os.path import splitext, split, abspath, join
-from os import makedirs
+from os.path import abspath
 from itertools import imap
 
 from cogent.parse.fasta import MinimalFastaParser
@@ -27,9 +25,8 @@ from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.mothur import Mothur
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
-from cogent import LoadSeqs, DNA, Alignment
+from cogent import LoadSeqs, DNA
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 
@@ -38,7 +35,8 @@ from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
 from qiime.pycogent_backports.usearch import (usearch_qf,
-                                              usearch61_denovo_cluster, usearch61_ref_cluster)
+                                              usearch61_denovo_cluster,
+                                              usearch61_ref_cluster)
 
 
 class OtuPicker(FunctionWithParams):
