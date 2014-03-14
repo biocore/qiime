@@ -65,7 +65,7 @@ from cogent import LoadSeqs
 from cogent.util.misc import (create_dir,
                               handle_error_codes)
 
-from bipy.app.util import which
+from skbio.app.util import which
 
 from qcli import (parse_command_line_parameters,
                   make_option,
