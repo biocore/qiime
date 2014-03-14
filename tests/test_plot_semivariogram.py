@@ -351,23 +351,19 @@ class FunctionTests(TestCase):
                  0.0,
                  0.0,
                  1515.0]])
-        y_vals_exp = [
-            -9.44475054741e-09,
-            -9.44475054741e-09,
-            -9.44475054741e-09,
-            -9.44475054741e-09,
-            0.999999998426,
-            2.0000000063,
-            3.00000001417,
-            4.00000002204,
-            5.99999999885,
-            6.99999998726]
-        # x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
-        #     (x_lbl, x), (x_lbl, x), model, [])
-        # self.assertFloatEqual(x_vals, vals_exp)
-        # self.assertFloatEqual(y_vals, vals_exp)
-        # self.assertFloatEqual(x_fit, vals_exp)
-        # self.assertFloatEqual(y_fit, y_vals_exp)
+        x_vals_exp = [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0]
+        y_vals_exp = [0.0, 0.0, 0.0, 0.0, 1.0, 22.0, 33.0, 44.0, 66.0, 77.0]
+        x_fit_exp =  [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0]
+        y_fit_exp = [-1.481486808707005, -1.481486808707005, -1.481486808707005,
+                    -1.481486808707005, 9.72783464904061, 20.937152199747878,
+                    32.14646584698613, 43.355775583612704, 65.7743833464588,
+                    76.983681369107]
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
+            (x_lbl, x), (y_lbl, y), model, [])
+        self.assertFloatEqual(x_vals, x_vals_exp)
+        self.assertFloatEqual(y_vals, y_vals_exp)
+        self.assertFloatEqual(x_fit, x_fit_exp)
+        self.assertFloatEqual(y_fit, y_fit_exp)
 
         model = "gaussian"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
