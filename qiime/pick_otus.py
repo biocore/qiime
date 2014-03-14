@@ -27,8 +27,9 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA
-from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
+
+from skbio.util.trie import CompressedTrie, fasta_to_pairlist
 
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
@@ -138,8 +139,9 @@ class OtuPicker(FunctionWithParams):
 
         trunc_id = lambda a_b: (a_b[0].split()[0], a_b[1])
         # get the prefix map
-        mapping = build_prefix_map(imap(trunc_id, MinimalFastaParser(
-            open(seq_path))))
+        t = CompressedTrie(fasta_to_pairlist(imap(trunc_id, MinimalFastaParser(
+                           open(seq_path)))))
+        mapping = t.prefix_map
         for key in mapping.keys():
                 mapping[key].append(key)
 
@@ -574,7 +576,8 @@ class TrieOtuPicker(OtuPicker):
                         MinimalFastaParser(open(seq_path)))
 
         # Build the mapping
-        mapping = build_prefix_map(seqs)
+        t = CompressedTrie(fasta_to_pairlist(seqs))
+        mapping = t.prefix_map
         log_lines.append('Num OTUs: %d' % len(mapping))
 
         if result_path:
