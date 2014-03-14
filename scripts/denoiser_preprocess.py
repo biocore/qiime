@@ -14,8 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 from os.path import exists
 from os import remove, rename, rmdir, makedirs
 from random import sample
-
-from qiime.util import get_tmp_filename
+from tempfile import mkdtemp
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option
@@ -88,9 +87,8 @@ def main(commandline_args=None):
     parser, opts, args = parse_command_line_parameters(**script_info)
 
     # make tmp and output dir
-    tmp_dir = get_tmp_filename(tmp_dir=opts.output_dir + "/", suffix="/")
     try:
-        makedirs(tmp_dir)
+        tmp_dir = mkdtemp(dir=opts.output_dir, suffix="/")
     except OSError:
         exit("Creating temporary directory failed")
     if(not exists(opts.output_dir)):

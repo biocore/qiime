@@ -16,7 +16,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.alignment import DenseAlignment
 from qiime.parse import parse_qiime_parameters
 from cogent.core.moltype import DNA
-from qiime.util import get_tmp_filename
+from tempfile import mkstemp
+#from qiime.util import get_tmp_filename
 from os.path import abspath, join, split, splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
@@ -134,7 +135,7 @@ def main():
 
         # set the primary parameters for raxml
         parameters['-w'] = abspath(output_dir) + '/'
-        parameters["-n"] = split(splitext(get_tmp_filename())[0])[-1]
+        _, parameters["-n"] = mkstemp()
         parameters["-t"] = updated_tree_fp
 
         if "-f" not in parameters:

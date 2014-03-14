@@ -117,11 +117,12 @@ script_info['version'] = __version__"""
     test_block = """
 from shutil import rmtree
 from os.path import exists, join
+from tempfile import mkstemp
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 
-from qiime.util import get_qiime_temp_dir, get_tmp_filename
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 
 class NAMETests(TestCase):
@@ -133,15 +134,14 @@ class NAMETests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+        _, self.test_out = mkstemp(dir=tmp_dir,
                                          prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+                                         suffix='')
         self.dirs_to_remove.append(self.test_out)
         create_dir(self.test_out)
 
         # Create example input file
-        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
+        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                            prefix='qiime_inseqs',
                                            suffix='.fasta')
         inseqs1_f = open(self.inseqs1_fp,'w')
