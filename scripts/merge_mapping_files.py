@@ -11,9 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
-from qiime.merge_mapping_files import merge_mapping_files
+from qiime.util import parse_command_line_parameters, make_option, MetadataMap
 
 script_info = {}
 script_info['brief_description'] = """Merge mapping files"""
@@ -56,8 +54,8 @@ def main():
     mapping_files = [open(fp, 'U') for fp in opts.mapping_fps]
     no_data_value = opts.no_data_value
 
-    mapping_data = merge_mapping_files(mapping_files,
-                                       no_data_value=no_data_value)
+    mapping_data = MetadataMap.mergeMappingFiles(mapping_files,
+                                                 no_data_value=no_data_value)
 
     with open(output_fp, 'w') as f:
         f.write(str(mapping_data))
