@@ -26,7 +26,7 @@ from operator import itemgetter
 from gzip import GzipFile
 
 from numpy import array
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 
 from qiime.parse import QiimeParseError, MinimalQualParser

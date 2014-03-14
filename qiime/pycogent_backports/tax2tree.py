@@ -13,7 +13,7 @@ __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
 
 from t2t import nlevel
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 
 
 def clean_output(assigned_constrings, seq_names):

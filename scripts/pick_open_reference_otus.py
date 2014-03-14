@@ -20,6 +20,8 @@ from qiime.workflow.util import (validate_and_set_jobs_to_start,
 from qiime.workflow.pick_open_reference_otus import (
     pick_subsampled_open_reference_otus,
     iterative_pick_subsampled_open_reference_otus)
+    
+from qiime.workflow.core_diversity_analyses import format_index_link, generate_index_page
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()

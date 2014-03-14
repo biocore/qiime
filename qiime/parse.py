@@ -23,9 +23,9 @@ from cogent.maths.stats.rarefaction import subsample
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
-from cogent.parse.fasta import FastaFinder
+from skbio.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
-from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
+from skbio.parse.fastq import MinimalFastqParser as MinimalFastqParserBipy
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
@@ -33,7 +33,7 @@ from types import GeneratorType
 
 
 def MinimalFastqParser(data, strict=False):
-    return MinimalFastqParserCogent(data, strict=strict)
+    return MinimalFastqParserBipy(data, strict=strict)
 
 # this has to be here to avoid circular import
 

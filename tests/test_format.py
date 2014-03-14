@@ -6,7 +6,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 __credits__ = [
     "Rob Knight", "Jeremy Widmann", "Jens Reeder", "Daniel McDonald",
-    "Jai Ram Rideout", "Jose Antonio Navas Molina"]
+    "Jai Ram Rideout", "Jose Antonio Navas Molina", "John Chase"]
 # remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
@@ -19,7 +19,7 @@ from string import digits
 from numpy import array, nan
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.fasta import MinimalFastaParser
 from qiime.util import (get_tmp_filename, get_qiime_library_version)
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
