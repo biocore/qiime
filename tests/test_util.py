@@ -14,6 +14,8 @@ import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
 
+from skbio.core.sequence import DNASequence
+
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
@@ -1238,7 +1240,8 @@ class FunctionWithParamsTests(TestCase):
                     ('d', "--------AAAAAAA"),
                     ('e', "")]
 
-        expected_result = map(lambda a_b: Sequence(name=a_b[0], seq=a_b[1]),
+        expected_result = map(lambda a_b: DNASequence(a_b[1],
+                                                      identifier=a_b[0]),
                               [("a", "AAAAAAAAAGGGG"),
                                ("b", "AAGGAGC"),
                                ('c', ""),
