@@ -20,7 +20,7 @@ from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
 from biom.parse import parse_biom_table
-from bipy.core.distance import DistanceMatrix, SymmetricDistanceMatrix
+from skbio.core.distance import DistanceMatrix, SymmetricDistanceMatrix
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          Anosim, Best, CategoryStats, CorrelationStats,
                          DistanceMatrixStats, MantelCorrelogram, Mantel,
