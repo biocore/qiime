@@ -24,13 +24,13 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
-from cogent import DNA
-from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
-from cogent.parse.fasta import MinimalFastaParser
+
 from cogent.parse.record import RecordError
 from cogent.app.util import ApplicationNotFoundError
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
+
+from cogent import DNA
 import cogent.app.clustalw
 import cogent.app.mafft
 import cogent.app.muscle_v38
@@ -41,6 +41,7 @@ from qiime.util import (get_tmp_filename,
 
 from skbio.core.alignment import SequenceCollection, Alignment
 from skbio.core.sequence import DNASequence
+from skbio.parse.fasta import MinimalFastaParser
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
