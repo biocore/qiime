@@ -24,9 +24,8 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
-from cogent import LoadSeqs, DNA
+from cogent import DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
-from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.record import RecordError
 from cogent.app.util import ApplicationNotFoundError
@@ -34,12 +33,14 @@ from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 import cogent.app.clustalw
 import cogent.app.mafft
+import cogent.app.muscle_v38
 
 from qiime.util import (get_tmp_filename,
                         FunctionWithParams,
                         get_qiime_temp_dir)
-import cogent.app.muscle_v38
 
+from skbio.core.alignment import SequenceCollection, Alignment
+from skbio.core.sequence import DNASequence
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
@@ -196,7 +197,7 @@ class InfernalAligner(Aligner):
             infernal_aligned[int_keys.get(key, key)] = aligned_dict[key]
 
         # Create an Alignment object from alignment dict
-        infernal_aligned = Alignment(infernal_aligned, MolType=moltype)
+        infernal_aligned = Alignment(infernal_aligned, DNASequence)
 
         if log_path is not None:
             log_file = open(log_path, 'w')
@@ -245,12 +246,8 @@ class PyNastAligner(Aligner):
         for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
-        try:
-            template_alignment = LoadSeqs(data=template_alignment, moltype=DNA,
-                                          aligned=DenseAlignment)
-        except KeyError as e:
-            raise KeyError('Only ACGT-. characters can be contained in template alignments.' +
-                           ' The offending character was: %s' % e)
+        template_alignment = Alignment.from_fasta_records(
+                    template_alignment, DNASequence, validate=True)
 
         # initialize_logger
         logger = NastLogger(log_path)
@@ -270,25 +267,28 @@ class PyNastAligner(Aligner):
 
         logger.record(str(self))
 
+        for i, seq in enumerate(pynast_failed):
+            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            pynast_failed[i] = skb_seq
+        pynast_failed = SequenceCollection(pynast_failed)
+
+        for i, seq in enumerate(pynast_aligned):
+            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            pynast_aligned[i] = skb_seq
+        pynast_aligned = Alignment(pynast_aligned)
+
         if failure_path is not None:
             fail_file = open(failure_path, 'w')
-            for seq in pynast_failed:
-                fail_file.write(seq.toFasta())
-                fail_file.write('\n')
+            fail_file.write(pynast_failed.to_fasta())
             fail_file.close()
 
         if result_path is not None:
             result_file = open(result_path, 'w')
-            for seq in pynast_aligned:
-                result_file.write(seq.toFasta())
-                result_file.write('\n')
+            result_file.write(pynast_aligned.to_fasta())
             result_file.close()
             return None
         else:
-            try:
-                return LoadSeqs(data=pynast_aligned, aligned=DenseAlignment)
-            except ValueError:
-                return {}
+            return pynast_aligned
 
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
