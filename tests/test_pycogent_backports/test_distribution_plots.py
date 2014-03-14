@@ -19,10 +19,10 @@ from matplotlib.pyplot import boxplot
 from numpy import array
 from qiime.pycogent_backports.distribution_plots import (_validate_input,
                                                          _get_distribution_markers, _validate_x_values, _create_plot,
-                                                         _calc_data_point_locations, _set_axes_options, generate_box_plots,
+                                                         _calc_data_point_locations, _set_axes_options,
                                                          generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,
                                                          _plot_scatter_data, _plot_box_data, _color_box_plot,
-                                                         _is_single_matplotlib_color, _create_legend, _set_figure_size)
+                                                         _create_legend, _set_figure_size)
 from cogent.util.unit_test import TestCase, main
 
 
@@ -345,72 +345,6 @@ class DistributionPlotsTests(TestCase):
         self.assertRaises(ValueError, _create_legend, ax, ['^', '<', '>'],
                           ['dist1', 'dist2', 'dist3'], 'foo')
 
-    def test_generate_box_plots(self):
-        """generate_box_plots() should return a valid Figure object."""
-        fig = generate_box_plots(self.ValidTypicalBoxData, [1, 4, 10],
-                                 ["Data 1", "Data 2", "Data 3"], "Test",
-                                 "x-axis label", "y-axis label")
-        ax = fig.get_axes()[0]
-        self.assertEqual(ax.get_title(), "Test")
-        self.assertEqual(ax.get_xlabel(), "x-axis label")
-        self.assertEqual(ax.get_ylabel(), "y-axis label")
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
-
-    def test_generate_box_plots_empty_distributions(self):
-        """Test functions correctly with empty distributions."""
-        fig = generate_box_plots([[1, 2, 3], [], [4, 5, 6]], [1, 4, 10],
-                                 ["Data 1", "Data 2", "Data 3"], "Test",
-                                 "x-axis label", "y-axis label")
-        ax = fig.get_axes()[0]
-        self.assertEqual(ax.get_title(), "Test")
-        self.assertEqual(ax.get_xlabel(), "x-axis label")
-        self.assertEqual(ax.get_ylabel(), "y-axis label")
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
-
-        # All distributions are empty.
-        fig = generate_box_plots([[], [], []], [1, 4, 10],
-                                 ["Data 1", "Data 2", "Data 3"], "Test",
-                                 "x-axis label", "y-axis label")
-        ax = fig.get_axes()[0]
-        self.assertEqual(ax.get_title(), "Test")
-        self.assertEqual(ax.get_xlabel(), "x-axis label")
-        self.assertEqual(ax.get_ylabel(), "y-axis label")
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-        self.assertFloatEqual(ax.get_xticks(), [1, 4, 10])
-
-    def test_generate_box_plots_box_colors(self):
-        """Test correctly handles coloring of box plots."""
-        # Coloring works with all empty distributions.
-        fig = generate_box_plots([[], [], []],
-                                 box_colors=['blue', 'red', 'yellow'])
-        ax = fig.get_axes()[0]
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-
-        fig = generate_box_plots([[], [], []], box_colors='pink')
-        ax = fig.get_axes()[0]
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-
-        # Coloring works with some empty distributions.
-        fig = generate_box_plots([[], [1, 2, 3.5], []],
-                                 box_colors=['blue', 'red', 'yellow'])
-        ax = fig.get_axes()[0]
-        self.assertEqual(len(ax.get_xticklabels()), 3)
-
-    def test_generate_box_plots_invalid_input(self):
-        """Test correctly throws error on invalid input."""
-        # Non-numeric entries in distribution.
-        self.assertRaises(ValueError, generate_box_plots, [[1, 'foo', 3]])
-
-        # Number of colors doesn't match number of distributions.
-        self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3], [],
-                          [4, 5, 6]], box_colors=['blue', 'red'])
-
-        # Invalid legend.
-        self.assertRaises(ValueError, generate_box_plots, [[1, 2, 3]],
-                          legend=('foo', 'bar', 'baz'))
-
     def test_generate_comparative_plots_bar(self):
         """Should return a valid barchart Figure object."""
         fig = generate_comparative_plots('bar', self.ValidTypicalData,
@@ -548,25 +482,6 @@ class DistributionPlotsTests(TestCase):
         box_plot = boxplot(self.ValidTypicalBoxData)
         self.assertRaises(ValueError, _color_box_plot, ax, box_plot,
                           ['blue', (1, 1, 0.9)])
-
-    def test_is_single_matplotlib_color(self):
-        """Test correct identification of single versus multiple mpl colors."""
-        self.assertTrue(_is_single_matplotlib_color('w'))
-        self.assertTrue(_is_single_matplotlib_color('white'))
-        self.assertTrue(_is_single_matplotlib_color([1, 1, 1]))
-        self.assertTrue(_is_single_matplotlib_color([1, 1, 1, 1]))
-        self.assertTrue(_is_single_matplotlib_color((1, 1, 1)))
-        self.assertTrue(_is_single_matplotlib_color((1, 1, 1, 1)))
-        self.assertTrue(_is_single_matplotlib_color((1.0, 1.0, 1.0, 1.0)))
-        self.assertTrue(_is_single_matplotlib_color((1.0, 1, 1.0)))
-        self.assertTrue(_is_single_matplotlib_color((2.0, 1, 1.0)))
-
-        self.assertFalse(_is_single_matplotlib_color(['w', 'r']))
-        self.assertFalse(_is_single_matplotlib_color(['w']))
-        self.assertFalse(_is_single_matplotlib_color(('w',)))
-        self.assertFalse(_is_single_matplotlib_color(((1.0, 1.0, 1),)))
-        self.assertFalse(_is_single_matplotlib_color(((1.0, 1.0, 1),
-                                                      (0.9, 0.9))))
 
     def test_set_figure_size(self):
         """Test setting a valid figure size."""

@@ -18,7 +18,7 @@ from qiime.format import format_mapping_file
 from qiime.group import get_all_grouped_distances, get_grouped_distances
 from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file
-from bipy.draw.distributions import boxplots
+from skbio.draw.distributions import boxplots
 from qiime.util import MetadataMap
 
 

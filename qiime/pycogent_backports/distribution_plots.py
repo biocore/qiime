@@ -30,102 +30,6 @@ from matplotlib.transforms import Bbox
 from numpy import arange, array, mean, random, sqrt, std
 
 
-def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
-                       title=None, x_label=None, y_label=None,
-                       x_tick_labels_orientation='vertical', y_min=None,
-                       y_max=None, whisker_length=1.5, box_width=0.5,
-                       box_colors=None, figure_width=None, figure_height=None,
-                       legend=None):
-    """Returns a matplotlib.figure.Figure object containing a boxplot for each
-    distribution.
-
-    Arguments:
-        - distributions: A list of lists containing each distribution.
-        - x_values: A list indicating where each boxplot should be placed. Must
-            be the same length as distributions if provided.
-        - x_tick_labels: A list of labels to be used to label x-axis ticks.
-        - title: A string containing the title of the plot.
-        - x_label: A string containing the x-axis label.
-        - y_label: A string containing the y-axis label.
-        - x_tick_labels_orientation: A string specifying the orientation of the
-            x-axis labels (either "vertical" or "horizontal").
-        - y_min: The minimum value of the y-axis. If None, uses matplotlib's
-            autoscale.
-        - y_max: The maximum value of the y-axis. If None, uses matplotlib's
-            autoscale.
-        - whisker_length: The length of the whiskers as a function of the IQR.
-            For example, if 1.5, the whiskers extend to 1.5 * IQR. Anything
-            outside of that range is seen as an outlier.
-        - box_width: The width of each box in plot units.
-        - box_colors: Either a matplotlib-compatible string or tuple that
-            indicates the color to be used for every boxplot, or a list of
-            colors to color each boxplot individually. If None, boxes will be
-            the same color as the plot background. If a list of colors is
-            provided, a color must be provided for each boxplot. Can also
-            supply None instead of a color, which will color the box the same
-            color as the plot background.
-        - figure_width: The width of the plot figure in inches. If not
-            provided, will default to matplotlib's default figure width.
-        - figure_height: The height of the plot figure in inches. If not
-            provided, will default to matplotlib's default figure height.
-        - legend: A two-element tuple or list that contains a list of valid
-            matplotlib colors as the first element and a list of labels
-            (strings) as the second element. The lengths of the first and
-            second elements must be the same. If None, a legend will not be
-            plotted.
-    """
-    # Make sure our input makes sense.
-    for distribution in distributions:
-        try:
-            map(float, distribution)
-        except:
-            raise ValueError("Each value in each distribution must be a "
-                             "number.")
-
-    _validate_x_values(x_values, x_tick_labels, len(distributions))
-
-    # Create a new figure to plot our data on, and then plot the distributions.
-    result, plot_axes = _create_plot()
-    box_plot = boxplot(distributions, positions=x_values, whis=whisker_length,
-                       widths=box_width)
-
-    if box_colors is not None:
-        if _is_single_matplotlib_color(box_colors):
-            box_colors = [box_colors] * len(box_plot['boxes'])
-        else:
-            # We check against the number of input distributions because mpl
-            # will only return non-empty boxplots from the boxplot() call
-            # above.
-            if len(box_colors) != len(distributions):
-                raise ValueError("Not enough colors were supplied to color "
-                                 "each boxplot.")
-
-            # Filter out colors corresponding to empty distributions.
-            box_colors = [color for distribution, color in zip(distributions,
-                                                               box_colors)
-                          if distribution]
-
-        _color_box_plot(plot_axes, box_plot, box_colors)
-
-    # Set up the various plotting options, such as x- and y-axis labels, plot
-    # title, and x-axis values if they have been supplied.
-    _set_axes_options(plot_axes, title, x_label, y_label,
-                      x_tick_labels=x_tick_labels,
-                      x_tick_labels_orientation=x_tick_labels_orientation,
-                      y_min=y_min, y_max=y_max)
-
-    if legend is not None:
-        if len(legend) != 2:
-            raise ValueError("Invalid legend was provided. The legend must be "
-                             "a two-element tuple/list where the first "
-                             "element is a list of colors and the second "
-                             "element is a list of labels.")
-        _create_legend(plot_axes, legend[0], legend[1], 'colors')
-
-    _set_figure_size(result, figure_width, figure_height)
-    return result
-
-
 def generate_comparative_plots(plot_type, data, x_values=None,
                                data_point_labels=None, distribution_labels=None,
                                distribution_markers=None, x_label=None, y_label=None, title=None,
@@ -523,22 +427,6 @@ def _color_box_plot(plot_axes, box_plot, colors):
                 median_x.append(median.get_xdata()[i])
                 median_y.append(median.get_ydata()[i])
                 plot_axes.plot(median_x, median_y, 'black')
-
-
-def _is_single_matplotlib_color(color):
-    """Returns True if color is a single (not a list) mpl color."""
-    single_color = False
-
-    if (isinstance(color, str)):
-        single_color = True
-    elif len(color) == 3 or len(color) == 4:
-        single_color = True
-
-        for e in color:
-            if not (isinstance(e, float) or isinstance(e, int)):
-                single_color = False
-
-    return single_color
 
 
 def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
