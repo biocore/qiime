@@ -238,10 +238,7 @@ def main(commandline_args=None):
         create_dir(tmpoutdir, not opts.force)
     else:
         # make random dir in current dir
-        tmpoutdir = mkdtemp(
-            dir="",
-            prefix="denoiser_",
-            suffix="/")
+        tmpoutdir = mkdtemp(dir="", prefix="denoiser_", suffix="/")
 	
 
     log_fp = 'denoiser.log'

@@ -30,7 +30,7 @@ from cogent.util.misc import create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from bipy.app.util import which
 
-from qiime.util import (get_qiime_project_dir, FileFormatError)
+from qiime.util import get_qiime_project_dir, FileFormatError
 
 
 def write_sff_header(header, fh, num=None):
@@ -105,9 +105,8 @@ class FlowgramContainerFile():
 
     def __init__(self, header, outdir="/tmp/"):
         # set up output file
-        _, self.filename = mkstemp(
-            dir=outdir, prefix="fc",
-                                         suffix=".sff.txt")
+        _, self.filename = mkstemp(dir=outdir, prefix="fc",
+                                   suffix=".sff.txt")
         self.fh = open(self.filename, "w")
         write_sff_header(header, self.fh)
 
