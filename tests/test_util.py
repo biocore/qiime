@@ -13,9 +13,7 @@ from collections import defaultdict
 import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
-
 from skbio.core.sequence import DNASequence
-
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser

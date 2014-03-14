@@ -31,6 +31,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
 from itertools import repeat, izip
+
 from biom.util import compute_counts_per_sample_stats
 from numpy import min, max, median, mean
 import numpy
@@ -38,10 +39,8 @@ from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
-
 from biom.parse import parse_biom_table
 import biom
-
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
@@ -61,10 +60,8 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir,
                               handle_error_codes)
-
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
-
 from qcli import (parse_command_line_parameters,
                   make_option,
                   qcli_system_call)
