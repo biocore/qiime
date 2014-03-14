@@ -1716,6 +1716,19 @@ class MetadataMap():
         """
         return MetadataMap(*parse_mapping_file_to_dict(lines))
 
+    @staticmethod
+    def mergeMappingFiles(mapping_files, no_data_value='no_data'):
+        """ Merge list of mapping files into a single mapping file 
+
+            mapping_files: open file objects containing mapping data
+            no_data_value: value to be used in cases where there is no
+            mapping field associated with a sample ID (default: 'no_data')
+        """
+        metadata_maps = map(MetadataMap.parseMetadataMap, mapping_files)
+        merged = sum(metadata_maps[1:], metadata_maps[0])
+        merged.no_data_value = no_data_value
+        return merged
+
     def __init__(self, sample_metadata, Comments):
         """Instantiates a MetadataMap object.
 
