@@ -15,7 +15,7 @@ import re
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
-               "Yoshiki Vazquez Baeza"]
+               "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -259,9 +259,11 @@ setup(name='qiime',
                         'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 1.3.1', 'emperor >= 0.9.3',
-                        'scikit-bio == 0.0.0-dev'],
+                        'scikit-bio == 0.0.0-dev',
+                        'brokit == 0.0.0-dev'],
       dependency_links=[
-          'https://github.com/biocore/scikit-bio/archive/master.zip#egg=scikit-bio-0.0.0-dev'
+          'https://github.com/biocore/scikit-bio/archive/master.zip#egg=scikit-bio-0.0.0-dev',
+          'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev'
       ],
       extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
                               # the following are optional for pycogent, should
