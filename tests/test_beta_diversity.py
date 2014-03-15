@@ -13,9 +13,11 @@ __email__ = "justinak@gmail.com"
 
 import numpy
 import warnings
+from tempfile import mkstemp, mkdtemp
+
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
@@ -73,15 +75,15 @@ class BetaDiversityCalcTests(TestCase):
         l19_str = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                   self.l19_sample_names,
                                                   self.l19_taxon_names))
-        self.l19_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                       prefix='test_bdiv_otu_table', suffix='.blom')
+        _, self.l19_fp = mkstemp(dir=self.tmp_dir,
+                                prefix='test_bdiv_otu_table', suffix='.blom')
         open(self.l19_fp, 'w').write(l19_str)
 
         l19_str_w_underscore = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                                self.l19_sample_names,
                                                                self.l19_taxon_names_w_underscore))
-        self.l19_str_w_underscore_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                        prefix='test_bdiv_otu_table', suffix='.blom')
+        _, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
+                                                  prefix='test_bdiv_otu_table', suffix='.blom')
         open(self.l19_str_w_underscore_fp, 'w').write(l19_str_w_underscore)
 
         self.l19_tree_str = '((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4,\
@@ -120,7 +122,7 @@ class BetaDiversityCalcTests(TestCase):
         l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4,\
  (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
 
-        tree_fp = get_tmp_filename(prefix='Beta_div_tests', suffix='.tre')
+        _, tree_fp = mkstemp(prefix='Beta_div_tests', suffix='.tre')
         open(tree_fp, 'w').write(l19_tree_str)
         self.files_to_remove.append(tree_fp)
         escaped_result = beta_calc(data_path=self.l19_str_w_underscore_fp,
@@ -134,19 +136,18 @@ class BetaDiversityCalcTests(TestCase):
         if missing_sams is None:
             missing_sams = []
         # setup
-        input_path = get_tmp_filename()
+        _, input_path = mkstemp(suffix='.txt')
         in_fname = os.path.split(input_path)[1]
         f = open(input_path, 'w')
         f.write(otu_table_string)
         f.close()
-        tree_path = get_tmp_filename()
+        _, tree_path = mkstemp(suffix='.txt')
         f = open(tree_path, 'w')
         f.write(tree_string)
         f.close()
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
-        output_dir = get_tmp_filename(suffix='')
-        os.mkdir(output_dir)
+        output_dir = mkdtemp()
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
@@ -266,18 +267,15 @@ class BetaDiversityCalcTests(TestCase):
         if missing_sams is None:
             missing_sams = []
         # setup
-        #input_path = get_tmp_filename()
         #in_fname = os.path.split(input_path)[1]
         #f = open(input_path,'w')
         # f.write(otu_table_string)
         # f.close()
-        #tree_path = get_tmp_filename()
         #f = open(tree_path,'w')
         # f.write(tree_string)
         # f.close()
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
-        #output_dir = get_tmp_filename(suffix = '')
         # os.mkdir(output_dir)
 
         # new metrics that don't trivially parallelize must be dealt with

@@ -14,7 +14,7 @@ from shutil import rmtree
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
-from qiime.util import create_dir, get_tmp_filename
+from qiime.util import create_dir
 from qiime.add_qiime_labels import (add_qiime_labels, check_mapping_data,
                                     get_fasta_fps, write_combined_fasta)
 
