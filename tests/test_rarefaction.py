@@ -11,9 +11,11 @@ __email__ = "justinak@gmail.com"
 
 """Contains tests for producing rarefied OTU tables."""
 
+from tempfile import mkstemp, mkdtemp
+
 from cogent.util.unit_test import TestCase, main
 import numpy
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from qiime.rarefaction import (RarefactionMaker,
                                get_rare_data,
                                remove_empty_otus)
@@ -53,14 +55,13 @@ class FunctionTests(TestCase):
         self.otu_table_str = format_biom_table(self.otu_table)
         self.otu_table_meta_str = format_biom_table(self.otu_table_meta)
 
-        self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                             prefix='test_rarefaction', suffix='.biom')
-        self.otu_table_meta_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                  prefix='test_rarefaction', suffix='.biom')
+        _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
+                                       prefix='test_rarefaction', suffix='.biom')
+        _, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
+                                            prefix='test_rarefaction', suffix='.biom')
 
-        self.rare_dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                         prefix='test_rarefaction_dir', suffix='', result_constructor=str)
-        os.mkdir(self.rare_dir)
+        self.rare_dir = mkdtemp(dir=self.tmp_dir,
+                                   prefix='test_rarefaction_dir', suffix='')
 
         open(self.otu_table_fp, 'w').write(self.otu_table_str)
         open(self.otu_table_meta_fp, 'w').write(self.otu_table_meta_str)

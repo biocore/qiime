@@ -14,10 +14,10 @@ from os.path import exists, abspath
 from shutil import rmtree
 from numpy import array
 from matplotlib.axes import Subplot
+from tempfile import mkstemp, mkdtemp
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs
 from qiime.util import create_dir
@@ -98,11 +98,10 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with all filetypes"""
 
         self.otu_table = parse_biom_table_str(otu_table_sparse)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                    prefix="test_plot_rank_abundance",
-                                    suffix="/")
+        self.dir = mkdtemp(dir=self.tmp_dir,
+                           prefix="test_plot_rank_abundance",
+                           suffix="/")
 
-        create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
 
         # test all supported filetypes
@@ -121,12 +120,12 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples (SparseOTUTable)"""
 
         self.otu_table = parse_biom_table_str(otu_table_sparse)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
+        self.dir = mkdtemp(dir=self.tmp_dir,
                                     prefix="test_plot_rank_abundance",
                                     suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
-        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+        _, tmp_fname = mkstemp(dir=self.dir)
 
         # test empty sample name
         self.assertRaises(
@@ -158,12 +157,12 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples (DenseOTUTable)"""
 
         self.otu_table = parse_biom_table_str(otu_table_dense)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                    prefix="test_plot_rank_abundance",
-                                    suffix="/")
+        self.dir = mkdtemp(dir=self.tmp_dir,
+                           prefix="test_plot_rank_abundance",
+                           suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
-        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+        _, tmp_fname = mkstemp(dir=self.dir)
 
         # test empty sample name
         self.assertRaises(
