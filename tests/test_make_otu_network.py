@@ -14,6 +14,8 @@ from os import remove
 from os.path import exists
 import os
 import shutil
+from tempfile import mkstemp
+
 from numpy import array
 from random import choice, randrange
 from cogent.util.unit_test import TestCase, main
@@ -22,7 +24,7 @@ from qiime.pycogent_backports.test import G_2_by_2
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
     get_num_con_cat, get_num_cat, make_table_file, make_stats_files,\
     make_props_files
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from qiime.format import format_biom_table
 from biom.table import table_factory
 
@@ -131,7 +133,7 @@ class OtuNetworkTests(TestCase):
                                                                           "otu_425"]},
                                                             {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]))
 
-        self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+        _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
                                              prefix='test_make_otu_network_otu_table', suffix='.biom')
         open(self.otu_table_fp, 'w').write(otu_table_str)
 

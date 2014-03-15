@@ -17,6 +17,8 @@ from cogent.util.unit_test import TestCase, main
 from os import remove, mkdir, system
 from random import choice, randrange, random
 import shutil
+from tempfile import mkstemp
+
 from qiime.colors import data_colors
 from qiime.make_3d_plots import (make_3d_plots, scale_pc_data_matrix,
                                  auto_radius, make_mage_output,
@@ -32,7 +34,6 @@ from qiime.make_3d_plots import (make_3d_plots, scale_pc_data_matrix,
                                  can_run_ANOVA_trajectories,
                                  avg_vector_for_group, weight_by_vector,
                                  windowed_diff)
-from qiime.util import get_tmp_filename
 
 
 class TopLevelTests(TestCase):
@@ -744,9 +745,9 @@ class TopLevelTests(TestCase):
 
         edges_file = '\n'.join(['B A', 'B\t\t\t   \t\tC'])
 
-        fp1 = get_tmp_filename()
-        fp2 = get_tmp_filename()
-        fp3 = get_tmp_filename()
+        _, fp1 = mkstemp(suffix='.txt')
+        _, fp2 = mkstemp(suffix='.txt')
+        _, fp3 = mkstemp(suffix='.txt')
         try:
             f1 = open(fp1, 'w')
             f2 = open(fp2, 'w')
@@ -814,9 +815,9 @@ class TopLevelTests(TestCase):
                                'eigvals\t0.34\t0.15',
                                '% variation explained\t10.11\t2.28'])
 
-        fp1 = get_tmp_filename()
-        fp2 = get_tmp_filename()
-        fp3 = get_tmp_filename()
+        _, fp1 = mkstemp(suffix='.txt')
+        _, fp2 = mkstemp(suffix='.txt')
+        _, fp3 = mkstemp(suffix='.txt')
         try:
             f1 = open(fp1, 'w')
             f2 = open(fp2, 'w')
@@ -900,10 +901,10 @@ class TopLevelTests(TestCase):
                                'eigvals\t0.52\t0.24',
                                '% variation explained\t25.12\t13.29'])
 
-        fp1 = get_tmp_filename()
-        fp2 = get_tmp_filename()
-        fp3 = get_tmp_filename()
-        fp4 = get_tmp_filename()
+        _, fp1 = mkstemp(suffix='.txt')
+        _, fp2 = mkstemp(suffix='.txt')
+        _, fp3 = mkstemp(suffix='.txt')
+        _, fp4 = mkstemp(suffix='.txt')
 
         try:
             f1 = open(fp1, 'w')

@@ -25,8 +25,7 @@ from qiime.make_2d_plots import (make_interactive_scatter, transform_xy_coords,
                                  convert_coord_data_to_dict, generate_xmap,
                                  draw_scree_graph, make_line_plot)
 from qiime.colors import data_colors
-from qiime.util import load_qiime_config, get_tmp_filename
-
+from qiime.util import load_qiime_config
 
 class TopLevelTests(TestCase):
 
