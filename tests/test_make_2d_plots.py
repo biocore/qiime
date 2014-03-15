@@ -17,6 +17,7 @@ from numpy import array
 from os.path import exists, join
 from StringIO import StringIO
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from os import remove
 from qiime.make_2d_plots import (make_interactive_scatter, transform_xy_coords,
                                  draw_scatterplot, draw_pcoa_graph,
@@ -172,7 +173,7 @@ the appropriate location')
                                    self.alpha)
         obs = sc_plot.get_offsets()
 
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_transform_xy_coords(self):
         """transform_xy_coords: transforms the xy coords from the matplotlib \
@@ -239,7 +240,8 @@ associates colors to those coords based on its group"""
             self.p1d, self.p2d, None, None, None, self.colors,
             data_colors, self.groups, self.coords)
 
-        self.assertFloatEqual(obs, self.xy_coords)
+        self.assertEqual(obs['Sample1'], self.xy_coords['Sample1'])
+        self.assertEqual(obs['Sample2'], self.xy_coords['Sample2'])
 
     def test_create_html_filename(self):
         """create_html_filename: using the pcoa filename, generates an html \
@@ -262,8 +264,11 @@ dictionary"""
         exp2 = {'1': [25.00], '2': [30.00], }
         obs1, obs2 = convert_coord_data_to_dict(self.data)
 
-        self.assertEqual(obs1, exp1)
-        self.assertEqual(obs2, exp2)
+        self.assertEqual(exp1['pc vector number'], obs1['pc vector number'])
+        assert_almost_equal(exp1['1'], obs1['1'])
+        assert_almost_equal(exp1['2'], obs1['2'])
+        assert_almost_equal(exp2['1'], obs2['1'])
+        assert_almost_equal(exp2['2'], obs2['2'])
 
     def test_write_html_file(self):
         "Write html and make sure it gets cleaned up"""

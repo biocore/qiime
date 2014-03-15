@@ -111,12 +111,12 @@ class ParallelDatabaseMapperUsearchTests(ParallelDatabaseMapperTests):
             join(self.test_out, 'observation_map.txt'))[0]
         omap = parse_otu_map(open(observation_map_fp, 'U'))
         self.assertEqual(len(omap[0]), 3)
-        assert_almost_equal(
+        self.assertItemsEqual(
             omap[1],
             ['eco:b0015',
              'eco:b0122',
              'eco:b0015:duplicate'])
-        assert_almost_equal(omap[2], ['eco:b0015-pr', 'eco:b0122-pr'])
+        self.assertItemsEqual(omap[2], ['eco:b0015-pr', 'eco:b0122-pr'])
 
 
 class ParallelDatabaseMapperBlatTests(ParallelDatabaseMapperTests):
@@ -145,12 +145,12 @@ class ParallelDatabaseMapperBlatTests(ParallelDatabaseMapperTests):
             join(self.test_out, 'observation_map.txt'))[0]
         omap = parse_otu_map(open(observation_map_fp, 'U'))
         self.assertEqual(len(omap[0]), 3)
-        assert_almost_equal(
+        self.assertItemsEqual(
             omap[1],
             ['eco:b0015',
              'eco:b0122',
              'eco:b0015:duplicate'])
-        assert_almost_equal(omap[2], ['eco:b0015-pr', 'eco:b0122-pr'])
+        self.assertItemsEqual(omap[2], ['eco:b0015-pr', 'eco:b0122-pr'])
 
 
 class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
@@ -170,8 +170,8 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        assert_almost_equal(table.SampleIds, ['s2', 's1'])
-        assert_almost_equal(
+        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(
             table.ObservationIds,
             ['r1',
              'r2',
@@ -195,8 +195,8 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        assert_almost_equal(table.SampleIds, ['s2', 's1'])
-        assert_almost_equal(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 refseqs1 = """>eco:b0001-pr

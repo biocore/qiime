@@ -12,6 +12,7 @@ __email__ = "wdwvt1@gmail.com"
 
 
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from numpy.random import seed
 from numpy import array, arange
 from qiime.relatedness_library import (reduce_mtx, nri, nti, mpd, mntd,
@@ -32,7 +33,7 @@ class TopLevelTests(TestCase):
                          [0.4, 0.0, 1.6, 0.2],
                          [2.0, 1.6, 0.0, 1.1],
                          [1.3, 0.2, 1.1, 0.0]])
-        self.assertFloatEqual(6.6 / 6., mpd(distmat))
+        assert_almost_equal(6.6 / 6., mpd(distmat))
 
     def test_mntd(self):
         """Test if mean nearest taxon distance (mntd) is calculated correctly.
@@ -44,7 +45,7 @@ class TopLevelTests(TestCase):
                          [0.4, 0.0, 1.6, 0.2],
                          [2.0, 1.6, 0.0, 1.1],
                          [1.3, 0.2, 1.1, 0.0]])
-        self.assertFloatEqual(1.9 / 4., mntd(distmat))
+        assert_almost_equal(1.9 / 4., mntd(distmat))
 
     def test_reduce_mtx(self):
         """Test matrix reduction works correctly."""
@@ -64,8 +65,8 @@ class TopLevelTests(TestCase):
         exp_2 = array([[8, 10, 13],
                        [22, 24, 27],
                        [43, 45, 48]])
-        self.assertEqual(exp_1, reduce_mtx(distmat, inds_1))
-        self.assertEqual(exp_2, reduce_mtx(distmat, inds_2))
+        assert_almost_equal(exp_1, reduce_mtx(distmat, inds_1))
+        assert_almost_equal(exp_2, reduce_mtx(distmat, inds_2))
 
     def test_random_mpd(self):
         """Test random mpd draws are calculated correctly when seeded."""
@@ -81,8 +82,8 @@ class TopLevelTests(TestCase):
         # are: [2,0,1], [2,1,0], [1,4,3], avgs = 2.14/3, 2.14/3, 1.52/3
         # mean= .62, std means =0.13199326582148888
         obs_mean, obs_std = random_mpd(distmat, n=3, iters=3)
-        self.assertFloatEqual(obs_mean, 0.64444444444444449)
-        self.assertFloatEqual(obs_std, 0.097423600963479878)
+        assert_almost_equal(obs_mean, 0.64444444444444449)
+        assert_almost_equal(obs_std, 0.097423600963479878)
 
     def test_random_mntd(self):
         """Test random mntd draws are calculated correctly when seeded."""
@@ -98,8 +99,8 @@ class TopLevelTests(TestCase):
         # are: [2,0,1], [2,1,0], [1,4,3], avgs = 0.5966666666666667,
         # 0.5966666666666667, .97/3
         obs_mean, obs_std = random_mntd(distmat, n=3, iters=3)
-        self.assertFloatEqual(obs_mean, 0.50555555555555554)
-        self.assertFloatEqual(obs_std, 0.12885056901621536)
+        assert_almost_equal(obs_mean, 0.50555555555555554)
+        assert_almost_equal(obs_std, 0.12885056901621536)
 
     def test_nri(self):
         """Test that nri works correctly."""
@@ -161,7 +162,7 @@ class TopLevelTests(TestCase):
 
         seed(0)
         obs_nri = nri(distmat, list(arange(8)), [0, 1, 3, 6], 1000)
-        self.assertFloatEqual(0.45181900877903675, obs_nri)
+        assert_almost_equal(0.45181900877903675, obs_nri)
 
     def test_nti(self):
         """Test that nti works correctly."""
@@ -223,7 +224,7 @@ class TopLevelTests(TestCase):
 
         seed(0)
         obs_nti = nti(distmat, list(arange(8)), [0, 1, 3, 6], 1000)
-        self.assertFloatEqual(-1.2046544711672049, obs_nti)
+        assert_almost_equal(-1.2046544711672049, obs_nti)
 
 
 # run unit tests if run from command-line

@@ -689,9 +689,7 @@ class BlastTaxonAssignerTests(TestCase):
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
         
-        print log_file_str.split('\n')
-        print log_file_exp
-        self.assertEqual(log_file_str.split('\n'), log_file_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_exp)
 
 
 class RtaxTaxonAssignerTests(TestCase):
@@ -868,7 +866,7 @@ class RtaxTaxonAssignerTests(TestCase):
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqual(log_file_str.split('\n')[0:12], log_file_exp)
+        self.assertItemsEqual(log_file_str.split('\n')[0:12], log_file_exp)
 
 
 class MothurTaxonAssignerTests(TestCase):

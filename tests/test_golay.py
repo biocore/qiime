@@ -29,11 +29,11 @@ class GolayTests(TestCase):
         rec = sent[:-1] + 'C'  # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
-        self.assertLessThan(errors, 1.5)
+        self.assertLess(errors, 1.5)
         rec = sent[:-1] + 'T'  # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
-        self.assertLessThan(errors, 1.5)
+        self.assertLess(errors, 1.5)
 
     def test_golay_matches_old_code(self):
         """ decode should behave as micah's code did, i.e., same golay encoding
@@ -123,8 +123,8 @@ class GolayTests(TestCase):
         rec = (trans + err) % 2
         corr, num_errs = golay.decode_bits(rec)
 
-        self.assertEqual(corr, trans)
-        self.assertEqual(corr, numpy.mod(rec + err, 2))
+        self.assertItemsEqual(corr, trans)
+        self.assertItemsEqual(corr, numpy.mod(rec + err, 2))
         self.assertEqual(num_errs, 2)
 
     def test_syndome_LUT(self):
