@@ -32,7 +32,7 @@ from cogent.parse.fasta import MinimalFastaParser
 
 from bk_uclust.uclust import Uclust
 from bk_rdp import rdp_classifier
-from qiime.pycogent_backports import mothur
+from bk_mothur import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up

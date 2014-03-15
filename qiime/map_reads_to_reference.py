@@ -19,8 +19,8 @@ from bk_blat.blat import (assign_dna_reads_to_protein_database
 from bk_usearch.usearch import (clusters_from_blast_uc_file,
                                 assign_dna_reads_to_database
                                 as usearch_assign_dna_reads_to_database)
-from pycogent_backports.bwa import (
-    assign_dna_reads_to_dna_database as bwa_assign_dna_reads_to_dna_database)
+from bk_bwa.bwa import (assign_dna_reads_to_dna_database
+                        as bwa_assign_dna_reads_to_dna_database)
 from qiime.format import format_observation_map
 from qiime.parse import parse_taxonomy, MinimalSamParser
 from qiime.make_otu_table import make_otu_table
