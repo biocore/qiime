@@ -18,7 +18,6 @@ from tempfile import mkstemp, mkdtemp
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
-from skbio.util.misc import create_dir
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
                                            convert_fastaqual_fastq,
@@ -57,7 +56,6 @@ class MakeFastqTests(TestCase):
         noseq_qual_file.close()
         self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         # Need read only directory to test errors for files written during
         # fastq/fasta iteration.
         chmod(self.read_only_output_dir, 0o555)
@@ -66,8 +64,7 @@ class MakeFastqTests(TestCase):
                                            suffix='/')
         self.output_dir += sep
 
-        create_dir(self.output_dir)
-
+       
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)
 
@@ -198,14 +195,11 @@ class MakeFastaqualTests(TestCase):
         false_qual_file = '/'
         self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         chmod(self.read_only_output_dir, 0o555)
 
         self.output_dir = mkdtemp(prefix='convert_fastaqual_fastq_',
                                            suffix='/')
         self.output_dir += sep
-
-        create_dir(self.output_dir)
 
         self._files_to_remove.append(self.fasta_file_path)
 
@@ -332,14 +326,12 @@ class ConvertFastaqualTests(TestCase):
         fasta_file = open(self.fasta_file_path, 'w')
         self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         chmod(self.read_only_output_dir, 0o555)
 
         self.output_dir = mkdtemp(prefix='convert_fastaqual_fastq_',
                                            suffix='/')
         self.output_dir += sep
 
-        create_dir(self.output_dir)
 
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)

@@ -11,11 +11,12 @@ __email__ = "william.a.walters@colorado.edu"
 
 from os.path import exists, join
 from shutil import rmtree
+from tempfile import mkstemp
 
+from skbio.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
-from qiime.util import get_tmp_filename, create_dir
 from qiime.parse import parse_qual_score
 from qiime.demultiplex_fasta import (
     demultiplex_sequences, assign_seqs, check_map, get_ids_bcs_added_field,
@@ -82,21 +83,21 @@ class TopLevelTests(TestCase):
         self.output_dir += '/'
         create_dir(self.output_dir)
 
-        self.correct_mapping_fp = get_tmp_filename(
+        _, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
 
-        self.sample_fasta_fp = get_tmp_filename(
+        _, self.sample_fasta_fp = mkstemp(
             prefix='sample_fasta_',
             suffix='.fna')
         sample_fasta = open(self.sample_fasta_fp, 'w')
         sample_fasta.write(self.sample_fasta_file)
         sample_fasta.close()
 
-        self.sample_qual_fp = get_tmp_filename(
+        _, self.sample_qual_fp = mkstemp(
             prefix='sample_qual_',
             suffix='.qual')
         sample_qual = open(self.sample_qual_fp, 'w')
