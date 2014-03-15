@@ -18,12 +18,11 @@ from cogent.parse.tree import DndParser
 from biom.parse import parse_biom_table
 from biom.table import table_factory
 from qiime.parse import parse_mapping_file
-from qiime.util import (load_qiime_config, get_tmp_filename,
-                        get_qiime_temp_dir, create_dir)
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
 
-import tempfile
-import string
+from tempfile import gettempdir, mkdtemp
+import string 
 import random
 import os
 import shutil
@@ -36,12 +35,10 @@ class SimsamTests(TestCase):
     def setUp(self):
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.map_f = map_lines.split('\n')
         self.otu_table = parse_biom_table(otu_table_lines.split('\n'))
@@ -59,7 +56,7 @@ class SimsamTests(TestCase):
         """ test the whole simsam script
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -129,7 +126,7 @@ class SimsamTests(TestCase):
         """ simsam script with 0 distance should just replicate input samples
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))

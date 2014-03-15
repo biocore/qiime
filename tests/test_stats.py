@@ -15,8 +15,10 @@ __email__ = "jai.rideout@gmail.com"
 from shutil import rmtree
 from os.path import exists, join
 from string import digits
+from tempfile import mkdtemp
+
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
+from cogent.util.misc import remove_files
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
 from biom.parse import parse_biom_table
@@ -26,8 +28,7 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          DistanceMatrixStats, MantelCorrelogram, Mantel,
                          PartialMantel, Permanova, quantile, _quantile,
                          paired_difference_analyses)
-from qiime.util import MetadataMap, get_qiime_temp_dir, get_tmp_filename
-
+from qiime.util import MetadataMap, get_qiime_temp_dir
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -1676,12 +1677,10 @@ class PairedDifferenceTests(TestCase):
         self.files_to_remove = []
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_paired_diff_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_paired_diff_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
     def tearDown(self):
 
