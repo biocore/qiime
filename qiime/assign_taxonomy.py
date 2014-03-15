@@ -31,7 +31,7 @@ from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
 
 from bk_uclust.uclust import Uclust
-from qiime.pycogent_backports import rdp_classifier
+from bk_rdp import rdp_classifier
 from qiime.pycogent_backports import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 

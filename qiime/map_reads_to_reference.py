@@ -12,9 +12,10 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
-from pycogent_backports.blat import (
-    assign_dna_reads_to_protein_database as blat_assign_dna_reads_to_protein_database,
-    assign_dna_reads_to_dna_database as blat_assign_dna_reads_to_dna_database)
+from bk_blat.blat import (assign_dna_reads_to_protein_database
+                          as blat_assign_dna_reads_to_protein_database,
+                          assign_dna_reads_to_dna_database as
+                          blat_assign_dna_reads_to_dna_database)
 from bk_usearch.usearch import (clusters_from_blast_uc_file,
                                 assign_dna_reads_to_database
                                 as usearch_assign_dna_reads_to_database)
