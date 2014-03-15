@@ -31,6 +31,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
 from random import random
 from itertools import repeat, izip
+
 from biom.util import compute_counts_per_sample_stats
 from numpy import min, max, median, mean
 import numpy
@@ -38,20 +39,15 @@ from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
-
 from biom.parse import parse_biom_table
 import biom
-
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
-from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
-    IUPAC_DNA_ambiguities_complements, DnaStandardPairs, ModelDnaSequence
 from cogent.data.molecular_weight import DnaMW
-from cogent.core.sequence import DnaSequence
 from cogent.app.blast import Blastall
 from cogent.app.util import (ApplicationError, CommandLineApplication,
                              get_tmp_filename as cogent_get_tmp_filename, FilePath)
@@ -64,9 +60,8 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir,
                               handle_error_codes)
-
-from bipy.app.util import which
-
+from skbio.app.util import which
+from skbio.core.sequence import DNASequence
 from qcli import (parse_command_line_parameters,
                   make_option,
                   qcli_system_call)
@@ -982,20 +977,6 @@ def isarray(a):
 
     return validity
 
-# make an alphabet that allows '.' as additional gaps
-DNA_with_more_gaps = MolType(
-    Sequence=DnaSequence,
-    motifset=IUPAC_DNA_chars,
-    Ambiguities=IUPAC_DNA_ambiguities,
-    label="dna",
-    Gaps=".",
-    MWCalculator=DnaMW,
-    Complements=IUPAC_DNA_ambiguities_complements,
-    Pairs=DnaStandardPairs,
-    make_alphabet_group=True,
-    ModelSeq=ModelDnaSequence,
-)
-
 
 def degap_fasta_aln(seqs):
     """degap a Fasta aligment.
@@ -1004,24 +985,18 @@ def degap_fasta_aln(seqs):
     """
 
     for (label, seq) in seqs:
-        degapped_seq = Sequence(moltype=DNA_with_more_gaps,
-                                seq=seq, name=label).degap()
-        degapped_seq.Name = label
-        yield degapped_seq
+        yield DNASequence(seq, identifier=label).degap()
 
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
+    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_",
+                                    suffix=".fasta")
 
-    tmp_filename = get_tmp_filename(
-        tmp_dir=tmp_dir,
-        prefix="degapped_",
-        suffix=".fasta")
-    fh = open(tmp_filename, "w")
+    with open(tmp_filename, 'w') as fh:
+        for seq in degap_fasta_aln(seqs):
+            fh.write(seq.to_fasta())
 
-    for seq in degap_fasta_aln(seqs):
-        fh.write(seq.toFasta() + "\n")
-    fh.close()
     return tmp_filename
 
 

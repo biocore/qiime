@@ -16,7 +16,7 @@ from os import access, X_OK, R_OK
 from os.path import exists
 from subprocess import Popen, PIPE, STDOUT
 from unittest import TestCase, main
-from bipy.app.util import which
+from skbio.app.util import which
 from qiime.util import load_qiime_config, which
 from qiime.denoiser.utils import get_flowgram_ali_exe
 

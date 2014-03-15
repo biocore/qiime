@@ -17,6 +17,7 @@ from biom.parse import parse_biom_table_str, parse_biom_table
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
+from skbio.core.sequence import DNASequence
 from cogent import Sequence
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
@@ -1242,7 +1243,8 @@ class FunctionWithParamsTests(TestCase):
                     ('d', "--------AAAAAAA"),
                     ('e', "")]
 
-        expected_result = map(lambda a_b: Sequence(name=a_b[0], seq=a_b[1]),
+        expected_result = map(lambda a_b: DNASequence(a_b[1],
+                                                      identifier=a_b[0]),
                               [("a", "AAAAAAAAAGGGG"),
                                ("b", "AAGGAGC"),
                                ('c', ""),
