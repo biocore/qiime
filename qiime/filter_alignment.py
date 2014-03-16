@@ -9,10 +9,10 @@ from collections import defaultdict
 
 from cogent.util.unit_test import TestCase, main
 from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
-    arange
+    arange, finfo
 import numpy
 from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment, eps
+from cogent.core.alignment import DenseAlignment
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
@@ -55,7 +55,8 @@ def apply_lane_mask(fastalines, lane_mask, verbose=False):
                                           allowed_gap_frac=1, verbose=False)
 
 
-def apply_gap_filter(fastalines, allowed_gap_frac=1 - eps, verbose=False):
+def apply_gap_filter(fastalines, allowed_gap_frac=1 - finfo(float).eps,
+                     verbose=False):
     """ Applies gap filter to fasta-formatted data, yielding filtered seqs.
     """
     return apply_lane_mask_and_gap_filter(fastalines, None,
@@ -69,7 +70,8 @@ def attempt_file_reset(f):
 
 
 def apply_lane_mask_and_gap_filter(fastalines, mask,
-                                   allowed_gap_frac=1 - eps, verbose=False, entropy_threshold=None):
+                                   allowed_gap_frac=1 - finfo(float).eps,
+                                   verbose=False, entropy_threshold=None):
     """Applies a mask and gap filter to fasta file, yielding filtered seqs."""
     if entropy_threshold is not None and not (0 < entropy_threshold < 1):
         raise ValueError('Entropy threshold parameter (-e) needs to be '
