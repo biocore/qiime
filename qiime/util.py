@@ -41,7 +41,6 @@ from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
 from biom.parse import parse_biom_table
 import biom
-from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
