@@ -20,6 +20,9 @@ from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files, create_dir
 from numpy import array, asarray, roll, median, nan
 from numpy.random import permutation, shuffle
+import numpy as np
+from itertools import izip
+from types import StringType, ListType, FloatType, TupleType
 from biom.parse import parse_biom_table
 from skbio.core.distance import DistanceMatrix, SymmetricDistanceMatrix
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
@@ -37,8 +40,23 @@ class TestHelper(TestCase):
     members.
     """
 
+    def compare_multiple_level_array(self, observed, expected):
+        """ Compare multiple level arrays.
+
+        It expecte observed and expected arrays, where each element is an
+        array of elements.
+        """
+        if isinstance(observed, (TupleType, ListType)):
+            for obs, exp in izip(observed, expected):
+                self.compare_multiple_level_array(obs, exp)
+        elif observed is not None and isinstance(observed, (np.number, np.ndarray, FloatType)):
+            assert_almost_equal(observed, expected, decimal=5)
+        else:
+            self.assertEqual(observed, expected)
+
     def setUp(self):
         """Define some useful test objects."""
+        self.value_for_seed = 20
         # The unweighted unifrac distance matrix from the overview tutorial.
         self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                 \tPC.607\tPC.634\tPC.635\tPC.636",
@@ -132,7 +150,7 @@ class TestHelper(TestCase):
             else:
                 obs = fn()
             p_val = obs[p_val_key]
-            self.assertIsProb(p_val)
+            self.assertTrue(0.0 <= p_val < 1.0)
             if p_val >= exp_min and p_val <= exp_max:
                 found_match = True
                 break
@@ -170,9 +188,23 @@ class NonRandomShuffler(object):
 class StatsTests(TestCase):
     """Tests for top-level functions in the stats module."""
 
+    def compare_multiple_level_array(self, observed, expected):
+        """ Compare multiple level arrays.
+
+        It expecte observed and expected arrays, where each element is an
+        array of elements.
+        """
+        if isinstance(observed, (TupleType, ListType)):
+            for obs, exp in izip(observed, expected):
+                self.compare_multiple_level_array(obs, exp)
+        elif observed is not None and isinstance(observed, (np.number, np.ndarray, FloatType)):
+            assert_almost_equal(observed, expected, decimal=5)
+        else:
+            self.assertEqual(observed, expected)
+
     def setUp(self):
         """Set up data that will be used by the tests."""
-        # For testing Monte Carlo functionality.
+        self.value_for_seed = 20
 
         # Single comp.
         self.labels1 = ['foo', 'bar']
@@ -289,13 +321,11 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
         """Test on valid dataset w/ 1 comp."""
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
-                0.0070804795641244006, 0.10199999999999999, 0.10199999999999999]]
+                0.0070804795641244006, 0.100000000001, 0.10000000000001]]
+        np.random.seed(self.value_for_seed)        
         obs = _perform_pairwise_tests(self.labels1, self.dists1, 'two-sided',
                                       999)
-        self.assertEqual(len(obs), len(exp))
-        assert_almost_equal(obs[0][:5], exp[0][:5])
-        self.assertIsProb(obs[0][5])
-        assert_almost_equal(obs[0][5], obs[0][6])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_perform_pairwise_tests_multi_comp(self):
         """Test on valid dataset w/ multiple comps."""
@@ -308,7 +338,7 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
                                                               0.17300665686731195, nan, nan]]
         obs = _perform_pairwise_tests(self.labels2, self.dists2, 'two-sided',
                                       0)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_perform_pairwise_tests_too_few_obs(self):
         """Test on dataset w/ too few observations."""
@@ -320,13 +350,13 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
                                                                      2.598076211353316, 0.060844967173160069, 0.12168993434632014,
                                                                      nan, nan]]
         obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
+
 
         exp = [['foo', 'bar', nan, nan, nan, nan, nan]]
         obs = _perform_pairwise_tests(['foo', 'bar'], [[], [1, 2, 4]], 'high',
                                       20)
-        assert_almost_equal(obs, exp)
-
+        self.compare_multiple_level_array(obs, exp)
 
 class DistanceMatrixStatsTests(TestHelper):
     """Tests for the DistanceMatrixStats class."""
@@ -880,7 +910,7 @@ class PermanovaTests(TestHelper):
         """Should result in 3.58462."""
         exp = 3.58462
         obs = self.permanova_uneven._permanova(self.map_uneven)
-        assert_almost_equal(obs, exp, decimals=4)
+        assert_almost_equal(obs, exp, decimal=4)
 
     def test_compute_f1(self):
         """Should return 4.4, testing just function."""
@@ -917,7 +947,7 @@ class PermanovaTests(TestHelper):
         obs = self.permanova_uneven(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
-        assert_almost_equal(obs['f_value'], exp['f_value'], decimals=4)
+        assert_almost_equal(obs['f_value'], exp['f_value'], decimal=4)
         assert_almost_equal(obs['p_value'], exp['p_value'])
 
     def test_call_overview(self):
@@ -1166,7 +1196,7 @@ class MantelCorrelogramTests(TestHelper):
 
         exp_mantel_r = [0.73244729118260765, 0.31157641757444593,
                         0.17627427296718071, None, None, None, None]
-        assert_almost_equal(obs['mantel_r'], exp_mantel_r)
+        self.compare_multiple_level_array(obs['mantel_r'], exp_mantel_r)
 
         # Test matplotlib Figure for a sane state.
         obs_fig = obs['correlogram_plot']
@@ -1187,10 +1217,10 @@ class MantelCorrelogramTests(TestHelper):
             corr_p_vals = obs['mantel_p_corr']
             self.assertEqual(len(p_vals), 7)
             self.assertEqual(p_vals[3:], [None, None, None, None])
-            self.assertIsProb(p_vals[0])
-            self.assertIsProb(p_vals[1])
-            self.assertIsProb(p_vals[2])
-            assert_almost_equal(corr_p_vals,
+            self.assertTrue(0.0 <= p_vals[0] <= 1.0)
+            self.assertTrue(0.0 <= p_vals[1] <= 1.0)
+            self.assertTrue(0.0 <= p_vals[2] <= 1.0)
+            self.compare_multiple_level_array(corr_p_vals,
                                   [p_val * 3 if p_val is not None else None for p_val in p_vals])
 
             if (p_vals[0] >= 0 and p_vals[0] <= 0.01 and p_vals[1] > 0.01 and
@@ -1215,7 +1245,7 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs['num_dist'], exp_num_dist)
 
         exp_mantel_r = [0.86602540378443871, None, None]
-        assert_almost_equal(obs['mantel_r'], exp_mantel_r)
+        self.compare_multiple_level_array(obs['mantel_r'], exp_mantel_r)
 
         # Test matplotlib Figure for a sane state.
         obs_fig = obs['correlogram_plot']
@@ -1236,8 +1266,8 @@ class MantelCorrelogramTests(TestHelper):
             corr_p_vals = obs['mantel_p_corr']
             self.assertEqual(len(p_vals), 3)
             self.assertEqual(p_vals[1:], [None, None])
-            self.assertIsProb(p_vals[0])
-            assert_almost_equal(corr_p_vals, p_vals)
+            self.assertTrue(0.0 <= p_vals[0] <= 1.0)
+            self.compare_multiple_level_array(corr_p_vals, p_vals)
 
             if p_vals[0] >= 0 and p_vals[0] <= 0.5:
                 found_match = True
@@ -1250,7 +1280,7 @@ class MantelCorrelogramTests(TestHelper):
                [3.0, 5.0, 7.0])
         obs = self.small_mc._find_distance_classes(
             self.small_mc.DistanceMatrices[1], 3)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         exp = (array([[-1, 1, 2, 0, 0, 5, 7, 4, 6],
                       [1, -1, 0, 2, 3, 6, 6, 6, 4],
@@ -1265,7 +1295,7 @@ class MantelCorrelogramTests(TestHelper):
                 0.70594042, 0.73236494, 0.75878947])
         obs = self.mc._find_distance_classes(
             self.mc.DistanceMatrices[1], 8)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_find_distance_classes_variable_size_bins(self):
         """Test finding distance classes with variable-size bins."""
@@ -1273,27 +1303,27 @@ class MantelCorrelogramTests(TestHelper):
         exp = (array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]]), [5.0])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 1)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # Multiple distance classes (even #).
         exp = (array([[-1, 0, 0], [0, -1, 1], [0, 1, -1]]), [3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 2)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # Multiple distance classes (odd #).
         exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 3)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # More classes than distances.
         exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5, 8])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 4)
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""
@@ -1371,13 +1401,13 @@ class MantelCorrelogramTests(TestHelper):
         """Test p-value correction for mixture of None and valid p-values."""
         exp = [None, 0.008, 0.01, None]
         obs = self.mc._correct_p_values([None, 0.004, 0.005, None])
-        assert_almost_equal(obs, exp)
+        self.assertEqual(obs, exp)
 
     def test_correct_p_values_no_change(self):
         """Test p-value correction where none is needed."""
         exp = [None, 0.008]
         obs = self.mc._correct_p_values([None, 0.008])
-        assert_almost_equal(obs, exp)
+        self.assertEqual(obs, exp)
         exp = [0.007]
         obs = self.mc._correct_p_values([0.007])
         assert_almost_equal(obs, exp)
@@ -1386,7 +1416,7 @@ class MantelCorrelogramTests(TestHelper):
         """Test p-value correction that exceeds 1.0."""
         exp = [1, None, 0.03, 0.03]
         obs = self.mc._correct_p_values([0.5, None, 0.01, 0.01])
-        assert_almost_equal(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_correct_p_values_empty(self):
         """Test p-value correction on empty list."""
@@ -1585,7 +1615,7 @@ class PartialMantelTests(TestHelper):
         # We're not testing that this p-value falls between a certain range
         # because this test has poor stability across platforms/numpy
         # configurations. Just make sure the p-value is between 0 and 1.
-        self.assertIsProb(obs['mantel_p'])
+        self.assertTrue(0.0 <= obs['mantel_p'] <= 1.0)
 
         obs = self.small_pm_diff()
         exp_method_name = 'Partial Mantel'
@@ -1658,6 +1688,7 @@ class TopLevelTests(TestCase):
 class PairedDifferenceTests(TestCase):
 
     def setUp(self):
+        self.value_for_seed = 20
         self.personal_ids_to_state_values1 = \
             {'firmicutes-abundance':
              {'subject1': [0.45, 0.55],
@@ -1696,6 +1727,7 @@ class PairedDifferenceTests(TestCase):
     def test_paired_difference_analyses(self):
         """paired_difference_analyses functions as expected
         """
+        #np.random.seed(self.value_for_seed)
         actual = paired_difference_analyses(
             self.personal_ids_to_state_values1,
             ['firmicutes-abundance',
@@ -1734,8 +1766,8 @@ class PairedDifferenceTests(TestCase):
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
         table = parse_biom_table(open(biom_table_fp, 'U'))
-        assert_almost_equal(table.SampleIds, ['subject1', 'subject2'])
-        assert_almost_equal(table.ObservationIds,
+        self.assertItemsEqual(table.SampleIds, ['subject1', 'subject2'])
+        self.assertItemsEqual(table.ObservationIds,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table
                               [table.getObservationIndex(
@@ -1771,6 +1803,7 @@ class PairedDifferenceTests(TestCase):
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
         """
+        np.random.seed(self.value_for_seed)
         # runs successfully with ymin/ymax
         actual = paired_difference_analyses(
             self.personal_ids_to_state_values1,

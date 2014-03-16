@@ -49,8 +49,9 @@ from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
 from cogent.app.blast import Blastall
-from cogent.app.util import (ApplicationError, CommandLineApplication,
-                             get_tmp_filename as cogent_get_tmp_filename, FilePath)
+from skbio.app.util import ApplicationError, CommandLineApplication
+from cogent.app.util import (FilePath,
+                             get_tmp_filename as cogent_get_tmp_filename)
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
