@@ -16,8 +16,8 @@ from os.path import abspath, join, split, splitext
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.alignment import DenseAlignment
 from cogent.core.moltype import DNA
-import cogent.app.pplacer
 
+import brokit.pplacer
 import brokit.parsinsert
 import brokit.raxml_v730
 
@@ -100,7 +100,7 @@ def main():
     tree_insertion_module_names = \
         {'raxml_v730': brokit.raxml_v730,
          'parsinsert': brokit.parsinsert,
-         'pplacer': cogent.app.pplacer}
+         'pplacer': brokit.pplacer}
 
     # load input sequences and convert to phylip since the tools require
     # the query sequences to phylip-compliant names
