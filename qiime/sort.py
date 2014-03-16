@@ -5,7 +5,7 @@ from __future__ import division
 import re
 from operator import itemgetter
 from numpy import array
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.parse import parse_mapping_file
 
 __author__ = "Greg Caporaso"

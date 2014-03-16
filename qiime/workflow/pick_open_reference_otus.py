@@ -15,7 +15,7 @@ from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
 from cogent.util.misc import create_dir, remove_files
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,
@@ -28,6 +28,7 @@ from qiime.workflow.util import (print_to_stdout,
                                  WorkflowError)
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
+from qiime.workflow.core_diversity_analyses import generate_index_page, _index_headers
 
 
 def final_repset_from_iteration_repsets(repset_fasta_fs):
@@ -589,10 +590,19 @@ def pick_subsampled_open_reference_otus(input_fp,
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)
     input_basename, input_ext = splitext(input_filename)
+    
     create_dir(output_dir)
+    index_fp = '%s/index.html' % output_dir
+    index_links = []
     commands = []
+    log_fp = generate_log_fp(output_dir)
+    index_links.append(
+        ('Master run log',
+         log_fp,
+         _index_headers['run_summary']))
+    
     if logger is None:
-        logger = WorkflowLogger(generate_log_fp(output_dir),
+        logger = WorkflowLogger(log_fp,
                                 params=params,
                                 qiime_config=qiime_config)
         close_logger_on_success = True
@@ -747,6 +757,9 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # name the final otu map
     merged_otu_map_fp = '%s/final_otu_map.txt' % output_dir
+    index_links.append(('Final OTU map',
+                        merged_otu_map_fp,
+                        _index_headers['run_summary']))
 
     if not suppress_step4:
         step3_failures_fasta_fp = '%s/failures_failures.fasta' % step3_dir
@@ -799,6 +812,9 @@ def pick_subsampled_open_reference_otus(input_fp,
     # Filter singletons from the otu map
     otu_no_singletons_fp = '%s/final_otu_map_mc%d.txt' % (output_dir,
                                                           min_otu_size)
+    index_links.append(('Final filtered otu map',
+                        otu_no_singletons_fp,
+                        _index_headers['run_summary']))
     otus_to_keep = filter_otus_from_otu_map(
         otu_fp,
         otu_no_singletons_fp,
@@ -955,3 +971,5 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     if close_logger_on_success:
         logger.close()
+
+    generate_index_page(index_links, index_fp)

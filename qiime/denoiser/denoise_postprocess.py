@@ -14,7 +14,7 @@ from itertools import imap
 from re import compile, search
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 
 from qiime.denoiser.utils import read_denoiser_mapping, sort_ids
 

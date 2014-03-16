@@ -21,7 +21,7 @@ from os.path import splitext, split, abspath, join
 from os import makedirs
 from itertools import imap
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.mothur import Mothur

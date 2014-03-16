@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 
 from qiime.util import make_option
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict

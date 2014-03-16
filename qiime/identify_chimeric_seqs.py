@@ -10,7 +10,7 @@ from subprocess import PIPE, Popen
 from datetime import datetime
 
 from cogent.util.misc import remove_files
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.util.misc import remove_files

@@ -20,7 +20,7 @@ from glob import glob
 
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationError, get_tmp_filename
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.util.misc import create_dir, get_random_directory_name, remove_files
 from qiime.pycogent_backports.usearch import (Usearch,
                                               clusters_from_blast_uc_file, usearch_fasta_sort_from_filepath,

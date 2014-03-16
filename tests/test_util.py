@@ -16,7 +16,7 @@ from biom.parse import parse_biom_table_str, parse_biom_table
 from skbio.core.sequence import DNASequence
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file

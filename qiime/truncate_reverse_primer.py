@@ -12,7 +12,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import join, basename
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent import DNA
 
 from qiime.split_libraries import local_align_primer_seq

@@ -53,7 +53,7 @@ from skbio.app.util import ApplicationError, CommandLineApplication
 from cogent.app.util import (FilePath,
                              get_tmp_filename as cogent_get_tmp_filename)
 from cogent.parse.blast import BlastResult
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\

@@ -20,7 +20,7 @@ from shutil import rmtree
 import tempfile
 import warnings
 from cogent.app.parameters import Parameter, ValuedParameter, Parameters
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, guess_input_handler, system,\
     ApplicationNotFoundError, ApplicationError

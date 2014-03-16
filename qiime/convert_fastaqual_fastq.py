@@ -15,7 +15,7 @@ from itertools import izip
 from collections import defaultdict
 
 from qiime.parse import QiimeParseError, MinimalQualParser
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.fastq import MinimalFastqParser
 
 

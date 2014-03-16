@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap

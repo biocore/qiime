@@ -15,7 +15,7 @@ from cogent.app.parameters import ValuedParameter
 from cogent.app.util import CommandLineApplication, ResultPath, \
     CommandLineAppResult, ApplicationError
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.mothur import parse_otu_list
 
 

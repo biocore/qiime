@@ -22,7 +22,7 @@ __status__ = "Production"
 from os import remove, makedirs
 from os.path import split, splitext, basename, isdir, abspath, isfile, join
 from tempfile import gettempdir
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
     get_tmp_filename, ApplicationError, ApplicationNotFoundError
