@@ -24,15 +24,15 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
-from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
+from cogent.parse.fastq import fastq_parse as fastq_parseCogent
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
 from types import GeneratorType
 
 
-def MinimalFastqParser(data, strict=False):
-    return MinimalFastqParserCogent(data, strict=strict)
+def fastq_parse(data, strict=False):
+    return fastq_parseCogent(data, strict=strict)
 
 # this has to be here to avoid circular import
 
@@ -832,7 +832,7 @@ def parse_fastq_qual_score(fastq_lines):
     else:
         ascii_to_phred_f = ascii_to_phred64
 
-    for header, seq, qual in MinimalFastqParser(fastq_lines):
+    for header, seq, qual in fastq_parse(fastq_lines):
         results[header] = asarray(qual, dtype=ascii_to_phred_f)
     return results
 

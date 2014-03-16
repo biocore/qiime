@@ -78,7 +78,7 @@ from qiime.parse import (parse_distmat,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
-                         MinimalFastqParser)
+                         fastq_parse)
 
 
 # for backward compatibility - compute_seqs_per_library_stats has
@@ -302,7 +302,7 @@ class FunctionWithParams(object):
 
 def trim_fastq(fastq_lines, output_length):
     """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in MinimalFastqParser(fastq_lines, strict=False):
+    for seq_id, seq, qual in fastq_parse(fastq_lines, strict=False):
         yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
                                     qual[:output_length])
 
@@ -1301,7 +1301,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = MinimalFastqParser
+            parser = fastq_parse
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1376,7 +1376,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
             fastq_fp = open(fastq_file, 'U')
 
         file_lines = get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq = MinimalFastqParser(file_lines, strict=False)
+        parsed_fastq = fastq_parse(file_lines, strict=False)
         for i, seq_data in enumerate(parsed_fastq):
             if i == 0:
                 get_file_type_info[fastq_file] = len(seq_data[1])
@@ -1407,7 +1407,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
         else:
             fastq_fp = open(bfile, 'U')
 
-        parsed_fastq = MinimalFastqParser(fastq_fp, strict=False)
+        parsed_fastq = fastq_parse(fastq_fp, strict=False)
         for bdata in parsed_fastq:
             if bdata[1][:barcode_len] in barcode_mapping_column:
                 fwd_count += 1
@@ -1606,7 +1606,7 @@ def subsample_fastq(input_fastq_fp,
     input_fastq = open(input_fastq_fp, "U")
     output_fastq = open(output_fp, "w")
 
-    for label, seq, qual in MinimalFastqParser(input_fastq, strict=False):
+    for label, seq, qual in fastq_parse(input_fastq, strict=False):
         if random() < percent_subsample:
             output_fastq.write(
                 '@%s\n%s\n+%s\n%s\n' %
@@ -1629,8 +1629,8 @@ def subsample_fastqs(input_fastq1_fp,
     input_fastq2 = open(input_fastq2_fp, "U")
     output_fastq2 = open(output_fastq2_fp, "w")
 
-    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1, strict=False),
-                               MinimalFastqParser(input_fastq2, strict=False)):
+    for fastq1, fastq2 in izip(fastq_parse(input_fastq1, strict=False),
+                               fastq_parse(input_fastq2, strict=False)):
         label1, seq1, qual1 = fastq1
         label2, seq2, qual2 = fastq2
         if random() < percent_subsample:
