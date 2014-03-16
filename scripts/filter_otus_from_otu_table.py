@@ -120,7 +120,7 @@ def main():
         if otu_ids_to_exclude_fp.endswith('.fasta') or \
            otu_ids_to_exclude_fp.endswith('.fna'):
             otu_ids_to_exclude = set([id_.strip().split()[0]
-                                      for id_, seq in MinimalFastaParser(open(otu_ids_to_exclude_fp, 'U'))])
+                                      for id_, seq in fasta_parse(open(otu_ids_to_exclude_fp, 'U'))])
         else:
             otu_ids_to_exclude = set([l.strip().split('\t')[0]
                                       for l in open(otu_ids_to_exclude_fp, 'U')])

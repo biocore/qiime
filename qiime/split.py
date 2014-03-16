@@ -111,7 +111,7 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         working_dir += '/'
         create_dir(working_dir)
 
-    for seq_id, seq in MinimalFastaParser(infile):
+    for seq_id, seq in fasta_parse(infile):
         if seq_counter == 0:
             current_out_fp = '%s%s.%d.fasta' \
                 % (working_dir, outfile_prefix, len(out_files))

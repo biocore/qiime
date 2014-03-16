@@ -407,7 +407,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
         out_files = []
         buffered_handles = {}
         prefix_length = params['prefix_length'] or 1
-        for seq_id, seq in MinimalFastaParser(open(input_fp)):
+        for seq_id, seq in fasta_parse(open(input_fp)):
 
             if(len(seq) < prefix_length):
                 raise ValueError("Prefix length must be equal or longer than sequence.\n"

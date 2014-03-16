@@ -115,7 +115,7 @@ FS8APND01CKOMZ:
         self.assertEqual(observed, expected)
 
         self.assertEqual(
-            len(list(MinimalFastaParser(open(self.result_dir + "singletons.fasta")))),
+            len(list(fasta_parse(open(self.result_dir + "singletons.fasta")))),
             6)
 
         observed = "".join(

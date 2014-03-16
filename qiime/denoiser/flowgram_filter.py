@@ -188,7 +188,7 @@ def split_sff(sff_file_handles, map_file_handle, outdir="/tmp/"):
                               'produced by sffinfo. The binary .sff will not work here.')
 
     (inverse_map, map_count) = build_inverse_barcode_map(
-        MinimalFastaParser(map_file_handle))
+        fasta_parse(map_file_handle))
 
     filenames = []
     # we might have many barcodes and reach python open file limit

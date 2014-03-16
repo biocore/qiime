@@ -542,7 +542,7 @@ y\t5\t6\tsample y""")
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()
-        actual_seqs = list(MinimalFastaParser(open(tmp_filename, "U")))
+        actual_seqs = list(fasta_parse(open(tmp_filename, "U")))
         remove(tmp_filename)
 
         self.assertEqual(actual_seqs, seqs)

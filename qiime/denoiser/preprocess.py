@@ -206,7 +206,7 @@ def preprocess(sff_fps, log_fh, fasta_fp=None, out_fp="/tmp/",
     if(fasta_fp):
         # remove barcodes and sequences tossed by split_libraries, i.e. not in
         # fasta_fp
-        labels = imap(lambda a_b: a_b[0], MinimalFastaParser(open(fasta_fp)))
+        labels = imap(lambda a_b: a_b[0], fasta_parse(open(fasta_fp)))
         barcode_mapping = extract_barcodes_from_mapping(labels)
         (trunc_sff_fp, l) = truncate_flowgrams_in_SFF(flowgrams, header,
                                                       outdir=out_fp,
@@ -314,7 +314,7 @@ def read_preprocessed_data(out_fp="/tmp/"):
     #  > id:   count
 
     seqs = dict([(a.split(':')[0], b) for (a, b) in
-                (MinimalFastaParser(open(out_fp + "/prefix_dereplicated.fasta")))])
+                (fasta_parse(open(out_fp + "/prefix_dereplicated.fasta")))])
 
     mapping = read_denoiser_mapping(open(out_fp + "/prefix_mapping.txt"))
 

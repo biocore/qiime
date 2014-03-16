@@ -725,7 +725,7 @@ def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
             open(out_fp + "/denoiser_mapping.txt"))
         combined_mapping.update(this_rounds_mapping)
         result_centroids.append(
-            MinimalFastaParser(open(out_fp + "/centroids.fasta")))
+            fasta_parse(open(out_fp + "/centroids.fasta")))
         result_singletons_files.append(out_fp + "/singletons.fasta")
 
     # write the combined files
@@ -738,7 +738,7 @@ def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
         fasta_fh)
     for singleton_file in result_singletons_files:
         write_Fasta_from_name_seq_pairs(
-            MinimalFastaParser(open(singleton_file, "r")),
+            fasta_parse(open(singleton_file, "r")),
             fasta_fh)
     fasta_fh.close()
 

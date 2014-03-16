@@ -201,7 +201,7 @@ def get_next_record_type(lines, types):
 
 def get_next_two_fasta_records(lines):
     result = []
-    for record in MinimalFastaParser(lines):
+    for record in fasta_parse(lines):
         result.append(record)
         if len(result) == 2:
             yield result

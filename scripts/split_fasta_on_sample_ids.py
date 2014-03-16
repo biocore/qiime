@@ -52,7 +52,7 @@ def main():
         parse_command_line_parameters(**script_info)
 
     split_fasta_on_sample_ids_to_files(
-        MinimalFastaParser(open(opts.input_fasta_fp, 'U')),
+        fasta_parse(open(opts.input_fasta_fp, 'U')),
         opts.output_dir,
         opts.buffer_size)
 

@@ -96,7 +96,7 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
 
     # iterate through the FASTA and QUAL files entry by entry (assume the
     # entries are synchronized)
-    for fasta_data, qual_data in izip(MinimalFastaParser(fasta_file),
+    for fasta_data, qual_data in izip(fasta_parse(fasta_file),
                                       MinimalQualParser(qual_file)):
 
         qual_header = qual_data[0]

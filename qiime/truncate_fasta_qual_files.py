@@ -27,7 +27,7 @@ def parse_fasta_file(fasta_lines):
     fasta_seqs = {}
     seq_order = []
 
-    for label, seq in MinimalFastaParser(fasta_lines):
+    for label, seq in fasta_parse(fasta_lines):
         fasta_seqs[label.split()[0].strip()] = seq
         seq_order.append(label)
 

@@ -190,7 +190,7 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         if seq_path:
             # Get a seq iterator
-            seqs = MinimalFastaParser(open(seq_path))
+            seqs = fasta_parse(open(seq_path))
         # Build object to keep track of the current set of sequence to be
         # blasted, and the results (i.e., seq_id -> (taxonomy,quaility score)
         # mapping)
@@ -466,7 +466,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         reference_seqs_file = open(self.Params['reference_sequences_fp'], 'U')
         id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'U')
 
-        for seq_id, seq in MinimalFastaParser(reference_seqs_file):
+        for seq_id, seq in fasta_parse(reference_seqs_file):
             training_set.add_sequence(seq_id, seq)
 
         for line in id_to_taxonomy_file:
@@ -810,7 +810,7 @@ class Tax2TreeTaxonAssigner(TaxonAssigner):
         logger.info(str(self))
 
         with open(seq_path, 'U') as f:
-            seqs = dict(MinimalFastaParser(f))
+            seqs = dict(fasta_parse(f))
 
         consensus_map = tax2tree.prep_consensus(
             open(self.Params['id_to_taxonomy_fp']),

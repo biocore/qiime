@@ -73,11 +73,11 @@ def main():
         parse_command_line_parameters(**script_info)
 
     centroid_seqs = \
-        [MinimalFastaParser(open(e, 'U')) for e in opts.centroid_fps]
+        [fasta_parse(open(e, 'U')) for e in opts.centroid_fps]
     singleton_seqs = \
-        [MinimalFastaParser(open(e, 'U')) for e in opts.singleton_fps]
+        [fasta_parse(open(e, 'U')) for e in opts.singleton_fps]
     fasta_seqs = \
-        [MinimalFastaParser(open(e, 'U')) for e in opts.fasta_fps]
+        [fasta_parse(open(e, 'U')) for e in opts.fasta_fps]
     denoiser_map_fs = \
         [open(e, 'U') for e in opts.denoiser_map_fps]
     output_fasta_fp = opts.output_fasta_fp

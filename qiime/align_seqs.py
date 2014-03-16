@@ -139,7 +139,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = dict(MinimalFastaParser(open(seq_path, 'U')))
+        candidate_sequences = dict(fasta_parse(open(seq_path, 'U')))
 
         # load template sequences
         try:
@@ -237,12 +237,12 @@ class PyNastAligner(Aligner):
                  failure_path=None):
         # load candidate sequences
         seq_file = open(seq_path, 'U')
-        candidate_sequences = MinimalFastaParser(seq_file)
+        candidate_sequences = fasta_parse(seq_file)
 
         # load template sequences
         template_alignment = []
         template_alignment_fp = self.Params['template_filepath']
-        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+        for seq_id, seq in fasta_parse(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
         try:
@@ -293,7 +293,7 @@ class PyNastAligner(Aligner):
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    med_length = median([len(s) for _, s in MinimalFastaParser(seqs_f)])
+    med_length = median([len(s) for _, s in fasta_parse(seqs_f)])
     return int(med_length * fraction)
 
 

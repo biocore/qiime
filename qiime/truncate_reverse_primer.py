@@ -107,7 +107,7 @@ def truncate_rev_primers(fasta_f,
         'seqs_written': 0
     }
 
-    for label, seq in MinimalFastaParser(fasta_f):
+    for label, seq in fasta_parse(fasta_f):
         curr_label = label.split('_')[0]
 
         log_data['total_seqs'] += 1

@@ -353,7 +353,7 @@ def fasta_ids(fasta_files, verbose=False):
     """ Returns list of ids in FASTA files """
     all_ids = set([])
     for fasta_in in fasta_files:
-        for label, seq in MinimalFastaParser(fasta_in):
+        for label, seq in fasta_parse(fasta_in):
             rid = label.split()[0]
             if rid in all_ids:
                 raise ValueError(
@@ -607,7 +607,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     below_seq_min_after_ambi_trunc = 0
 
     for fasta_in in fasta_files:
-        for curr_id, curr_seq in MinimalFastaParser(fasta_in):
+        for curr_id, curr_seq in fasta_parse(fasta_in):
             curr_rid = curr_id.split()[0]
             curr_seq = upper(curr_seq)
 
@@ -877,7 +877,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
 
         # Record sequence lengths for median/mad calculation
         sequence_lens = []
-        for label, seq in MinimalFastaParser(fasta_out):
+        for label, seq in fasta_parse(fasta_out):
             sequence_lens.append(len(seq))
 
         '''# Create a temporary file to copy the contents of the fasta file, will
@@ -885,7 +885,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
         fasta_temp = open(fasta_out.name + "_tmp.fasta", "w")
 
         sequence_lens = []
-        for label, seq in MinimalFastaParser(fasta_lens):
+        for label, seq in fasta_parse(fasta_lens):
             sequence_lens.append(len(seq))
             fasta_temp.write(">%s\n%s\n" % (label, seq))
 
@@ -911,7 +911,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
         # Create final seqs.fna
         final_fasta_out = open(fasta_out.name.replace('.tmp', ''), "w")
 
-        for label, seq in MinimalFastaParser(fasta_out):
+        for label, seq in fasta_parse(fasta_out):
             curr_len = len(seq)
             if curr_len < min_corrected_len or curr_len > max_corrected_len:
                 seqs_discarded_median += 1
@@ -936,7 +936,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
         # Create final seqs.fna
         final_fasta_out = open(fasta_out.name.replace('.tmp', ''), "w")
 
-        for label, seq in MinimalFastaParser(fasta_out):
+        for label, seq in fasta_parse(fasta_out):
             final_fasta_out.write(">%s\n%s\n" % (label, seq))
 
         final_fasta_out.close()

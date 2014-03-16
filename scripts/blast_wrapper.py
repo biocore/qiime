@@ -45,7 +45,7 @@ def main():
     option_parser, options, args = parse_command_line_parameters(**script_info)
 
     blast_results = qiime_blast_seqs(
-        seqs=MinimalFastaParser(open(options.input_fasta_fp)),
+        seqs=fasta_parse(open(options.input_fasta_fp)),
         refseqs_fp=options.refseqs_fp,
         seqs_per_blast_run=options.num_seqs_per_blast_run)
 

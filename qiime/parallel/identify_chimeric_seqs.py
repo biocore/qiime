@@ -56,7 +56,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             else:
                 # otherwise create it
                 reference_seqs_fp = write_degapped_fasta_to_file(
-                    MinimalFastaParser(open(aligned_reference_seqs_fp)),
+                    fasta_parse(open(aligned_reference_seqs_fp)),
                     tmp_dir=working_dir)
             # delete it afterwards
             self.files_to_remove.append(reference_seqs_fp)

@@ -219,7 +219,7 @@ def id_from_fasta_label_line(line):
 def seqs_from_file(ids, file_lines):
     """Extract labels and seqs from file"""
 
-    for label, seq in MinimalFastaParser(file_lines):
+    for label, seq in fasta_parse(file_lines):
 
         if id_from_fasta_label_line(label) in ids:
             yield label, seq

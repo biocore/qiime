@@ -475,7 +475,7 @@ def mothur_classify_file(
 
     user_ref_file = open(ref_fp)
     tmp_ref_file = NamedTemporaryFile(suffix=".ref.fa")
-    for seq_id, seq in MinimalFastaParser(user_ref_file):
+    for seq_id, seq in fasta_parse(user_ref_file):
         id_token = seq_id.split()[0]
         ref_seq_ids.add(id_token)
         tmp_ref_file.write(">%s\n%s\n" % (seq_id, seq))

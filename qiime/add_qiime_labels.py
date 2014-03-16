@@ -141,7 +141,7 @@ def write_combined_fasta(fasta_name_to_sample_id,
     combined_file_out = open(join(output_dir + "/", "combined_seqs.fna"), "w")
 
     for curr_fasta in fasta_files:
-        for label, seq in MinimalFastaParser(open(curr_fasta, "U")):
+        for label, seq in fasta_parse(open(curr_fasta, "U")):
             combined_file_out.write(">%s_%d %s\n" %
                                     (fasta_name_to_sample_id[basename(curr_fasta)], counter, label))
             combined_file_out.write("%s\n" % seq)

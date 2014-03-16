@@ -37,8 +37,8 @@ def fast_denoiser(
                      verbose=verbose, titanium=titanium)
 
     # read centroids and singletons
-    centroids = MinimalFastaParser(open(tmp_outdir + "/centroids.fasta"))
-    singletons = MinimalFastaParser(open(tmp_outdir + "/singletons.fasta"))
+    centroids = fasta_parse(open(tmp_outdir + "/centroids.fasta"))
+    singletons = fasta_parse(open(tmp_outdir + "/singletons.fasta"))
 
     seqs = chain(centroids, singletons)
 

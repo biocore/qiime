@@ -59,7 +59,7 @@ def split_lib_transform(header):
 
 def iter_fastq(in_fasta, quals, label_transform=split_lib_transform):
     """Iterate over fastq records, yields seq id of each"""
-    for label, seq in MinimalFastaParser(in_fasta):
+    for label, seq in fasta_parse(in_fasta):
         new_label, qual_id = label_transform(label)
         seq_id = label.split()[0]
         if seq_id.startswith('>'):

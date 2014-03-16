@@ -131,7 +131,7 @@ def sort_fasta_by_abundance(fasta_lines, fasta_out_f):
     """
     seq_index = {}
     count = 0
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in fasta_parse(fasta_lines):
         count += 1
         try:
             seq_index[seq].append(seq_id)

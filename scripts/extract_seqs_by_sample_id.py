@@ -89,7 +89,7 @@ def main():
         print "Extracting samples: %s" % ', '.join(sample_ids)
 
     try:
-        seqs = MinimalFastaParser(open(input_fasta_fp))
+        seqs = fasta_parse(open(input_fasta_fp))
     except IOError:
         option_parser.error(
             'Cannot open %s. Does it exist? Do you have read access?' %

@@ -40,7 +40,7 @@ def append_rc(s):
 def rc_fasta_lines(fasta_lines, seq_desc_mapper=append_rc):
     """
     """
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in fasta_parse(fasta_lines):
         seq_id = seq_desc_mapper(seq_id)
         seq = DNA.rc(seq.upper())
         yield seq_id, seq

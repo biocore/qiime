@@ -90,7 +90,7 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
     gapmask = slice(None)
     if allowed_gap_frac < 1:
         seq_count = 0.0
-        for seq_id, seq in MinimalFastaParser(fastalines):
+        for seq_id, seq in fasta_parse(fastalines):
             seq_count += 1
             seq = seq.replace('.', '-')
 
@@ -106,7 +106,7 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
         attempt_file_reset(fastalines)
 
     # mask, degap, and yield
-    for seq_id, seq in MinimalFastaParser(fastalines):
+    for seq_id, seq in fasta_parse(fastalines):
         seq = seq.replace('.', '-')
 
         seq = get_masked_string(seq, mask)
@@ -203,7 +203,7 @@ def freqs_from_aln_array(seqs):
     seqs = list of lines from aligned fasta file
     """
     result = None
-    for label, seq in MinimalFastaParser(seqs):
+    for label, seq in fasta_parse(seqs):
         # Currently cogent does not support . characters for gaps, converting
         # to - characters for compatability.
         seq = ModelDnaSequence(seq.replace('.', '-'))

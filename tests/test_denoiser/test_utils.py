@@ -125,10 +125,10 @@ class TestUtils(TestCase):
         # empty map results in empty files
         store_clusters({}, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            fasta_parse(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, [])
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            fasta_parse(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, [])
 
         # non-empty map creates non-empty files, centroids sorted by size
@@ -146,10 +146,10 @@ class TestUtils(TestCase):
 
         store_clusters(mapping, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            fasta_parse(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, centroids)
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            fasta_parse(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, singletons)
 
     def test_get_representatives(self):

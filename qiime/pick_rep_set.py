@@ -155,7 +155,7 @@ class GenericRepSetPicker(RepSetPicker):
         # to avoid the overhead of loading large sequence collections
         # during this step.
         seq_f = open(seq_path, 'U')
-        seqs = dict(MinimalFastaParser(seq_f, label_to_name=label_to_name))
+        seqs = dict(fasta_parse(seq_f, label_to_name=label_to_name))
         seq_f.close()
 
         # Load the otu file
@@ -249,7 +249,7 @@ class ReferenceRepSetPicker(RepSetPicker):
         # during this step.
         if seq_path:
             seq_f = open(seq_path, 'U')
-            seqs = dict(MinimalFastaParser(seq_f, label_to_name=label_to_name))
+            seqs = dict(fasta_parse(seq_f, label_to_name=label_to_name))
             seq_f.close()
         else:
             # allows the user to not pass seqs, which can be useful when
@@ -261,7 +261,7 @@ class ReferenceRepSetPicker(RepSetPicker):
         # during this step.
         reference_f = open(reference_path, 'U')
         reference_seqs = dict(
-            MinimalFastaParser(reference_f, label_to_name=label_to_name))
+            fasta_parse(reference_f, label_to_name=label_to_name))
         reference_f.close()
 
         # Load the otu file

@@ -51,7 +51,7 @@ def main():
     else:
         fd = stdout
 
-    for label, seq in MinimalFastaParser(open(opts.input_fasta_fp, 'U')):
+    for label, seq in fasta_parse(open(opts.input_fasta_fp, 'U')):
         print >> fd, '>%s\n%s' % (
             label, seq.replace(' ', '').replace('.', '-'))
 

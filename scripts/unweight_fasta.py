@@ -60,7 +60,7 @@ def main():
         parse_command_line_parameters(**script_info)
     seqsfna_fh = open(opts.output_file, 'w')
     seq_counter = 0
-    for label, seq in MinimalFastaParser(open(opts.input_fasta, 'U')):
+    for label, seq in fasta_parse(open(opts.input_fasta, 'U')):
         seq_abundance = int(label.split()[0].split('_')[-1])
         for i in range(seq_abundance):  # don't use i, use seq_counter
             seqsfna_fh.write('>' + opts.label + '_' + str(seq_counter) + '\n')
