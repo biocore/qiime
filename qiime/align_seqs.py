@@ -34,8 +34,9 @@ from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 
 import brokit
 from brokit.infernal import cmalign_from_alignment
+import brokit.clustalw
+
 import cogent.app.muscle_v38
-import cogent.app.clustalw
 import cogent.app.mafft
 
 from skbio.app.util import ApplicationNotFoundError
@@ -306,7 +307,7 @@ alignment_method_constructors = {'pynast': PyNastAligner,
 
 alignment_module_names = {
     'muscle': cogent.app.muscle_v38,
-    'clustalw': cogent.app.clustalw,
+    'clustalw': brokit.clustalw,
     'mafft': cogent.app.mafft,
     'infernal': brokit.infernal,
 }
