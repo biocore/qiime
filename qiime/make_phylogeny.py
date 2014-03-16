@@ -29,8 +29,7 @@ import brokit.mafft
 import brokit.raxml_v730
 import brokit.fasttree
 import brokit.fasttree_v1
-
-import cogent.app.clearcut
+import brokit.clearcut
 
 
 class TreeBuilder(FunctionWithParams):
@@ -130,7 +129,7 @@ tree_module_names = {'muscle': brokit.muscle_v38,
                      'fasttree': brokit.fasttree,
                      'fasttree_v1': brokit.fasttree_v1,
                      'raxml_v730': brokit.raxml_v730,
-                     'clearcut': cogent.app.clearcut
+                     'clearcut': brokit.clearcut
                      }
 
 # def maxTipTipDistance(tree):
