@@ -20,14 +20,16 @@ added..
 
 from cogent import LoadSeqs, DNA
 from cogent.parse.fasta import MinimalFastaParser
+
 from qiime.util import FunctionWithParams
 # app controllers that implement align_unaligned_seqs
 import brokit.muscle_v38
 import brokit.clustalw
 import brokit.mafft
 import brokit.raxml_v730
-import cogent.app.fasttree
-import cogent.app.fasttree_v1
+import brokit.fasttree
+import brokit.fasttree_v1
+
 import cogent.app.clearcut
 
 
@@ -125,8 +127,8 @@ tree_module_names = {'muscle': brokit.muscle_v38,
                      'clustalw': brokit.clustalw,
                      #'mafft':brokit.mafft,
                      # current version of Mafft does not support tree building
-                     'fasttree': cogent.app.fasttree,
-                     'fasttree_v1': cogent.app.fasttree_v1,
+                     'fasttree': brokit.fasttree,
+                     'fasttree_v1': brokit.fasttree_v1,
                      'raxml_v730': brokit.raxml_v730,
                      'clearcut': cogent.app.clearcut
                      }

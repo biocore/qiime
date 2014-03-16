@@ -12,10 +12,13 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from os import remove
+
 from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
+
+import brokit.fasttree
+
 from qiime.util import get_tmp_filename
-import cogent.app.fasttree
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 
 
