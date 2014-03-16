@@ -363,7 +363,7 @@ class FunctionTests(TestCase):
         assert_almost_equal(x_vals, x_vals_exp)
         assert_almost_equal(y_vals, y_vals_exp)
         assert_almost_equal(x_fit, x_fit_exp)
-        assert_almost_equal(y_fit, y_fit_exp)
+        assert_almost_equal(y_fit, y_fit_exp, decimal=3)
 
         model = "gaussian"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -407,7 +407,7 @@ class FunctionTests(TestCase):
         assert_almost_equal(x_vals, vals_exp)
         assert_almost_equal(y_vals, vals_exp)
         assert_almost_equal(x_fit, vals_exp)
-        assert_almost_equal(y_fit, y_vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp, decimal=3)
 
         model = "periodic"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -452,7 +452,7 @@ class FunctionTests(TestCase):
         assert_almost_equal(x_vals, vals_exp)
         assert_almost_equal(y_vals, vals_exp)
         assert_almost_equal(x_fit, vals_exp)
-        assert_almost_equal(y_fit, y_vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp, decimal=3)
 
         model = "linear"
         y_lbl = x_lbl
@@ -462,7 +462,7 @@ class FunctionTests(TestCase):
         assert_almost_equal(x_vals, vals_exp)
         assert_almost_equal(y_vals, vals_exp)
         assert_almost_equal(x_fit, vals_exp)
-        assert_almost_equal(y_fit, vals_exp)
+        assert_almost_equal(y_fit, vals_exp, decimal=3)
 
 # run tests if called from command line
 if __name__ == '__main__':
