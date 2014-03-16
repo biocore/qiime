@@ -34,7 +34,7 @@ except ImportError as e:
 
 try:
     from cogent.util.misc import get_random_directory_name, remove_files
-    from cogent.app.util import ApplicationNotFoundError, ApplicationError
+    from skbio.app.util import ApplicationNotFoundError, ApplicationError
     from cogent import __version__ as pycogent_lib_version
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
@@ -72,8 +72,8 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
-    from bipy import __version__ as bipy_lib_version
-    from bipy.app.util import which
+    from skbio import __version__ as skbio_lib_version
+    from skbio.app.util import which
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -853,7 +853,7 @@ def main():
         ("biom-format version", biom_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
-        ("bipy version", bipy_lib_version),
+        ("scikit-bio version", skbio_lib_version),
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
         ("PyNAST version (if installed)", pynast_lib_version),
