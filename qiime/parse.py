@@ -18,7 +18,6 @@ import os
 from os.path import expandvars
 import re
 from cogent.util.dict2d import Dict2D
-from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
