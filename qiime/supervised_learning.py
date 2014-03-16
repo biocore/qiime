@@ -11,8 +11,9 @@ __email__ = "danknights@gmail.com"
 from os import remove, path, devnull
 from os.path import join, split, splitext, exists
 from numpy import array, set_printoptions, nan, sqrt, mean, square
-from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
-    FilePath, ResultPath, ApplicationError
+from skbio.app.util import (CommandLineApplication, CommandLineAppResult,
+                            ResultPath, ApplicationError)
+from cogent.app.util import FilePath
 from qiime.util import get_qiime_project_dir
 from cogent.app.parameters import Parameters
 from biom.parse import convert_biom_to_table
