@@ -5,9 +5,12 @@ import numpy
 from time import time
 from os import system, getcwd, makedirs
 from os.path import join, split, abspath
-from cogent.app.formatdb import FormatDb
+
+from brokit.formatdb import FormatDb
+
 from cogent.app.parameters import FilePath
 from cogent.util.misc import remove_files
+
 from qiime.util import get_qiime_temp_dir
 from qiime.exclude_seqs_by_blast import blast_genome,\
     check_options,\

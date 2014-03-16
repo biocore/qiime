@@ -13,14 +13,17 @@ from collections import defaultdict
 import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
+
 from skbio.core.sequence import DNASequence
+
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
-from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
+
+from brokit.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,

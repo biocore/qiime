@@ -11,7 +11,6 @@ from datetime import datetime
 
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.util.misc import remove_files
 from skbio.app.util import (which, CommandLineApplication, ResultPath,
@@ -21,6 +20,8 @@ from qiime.util import (FunctionWithParams,
                         write_degapped_fasta_to_file, get_tmp_filename, create_dir,
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
+
+from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.usearch import (usearch61_smallmem_cluster,
                             usearch61_chimera_check_denovo,
                             parse_usearch61_clusters,

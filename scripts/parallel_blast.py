@@ -14,11 +14,12 @@ from glob import glob
 from os import makedirs, system
 from os.path import exists, split, splitext, isfile
 from subprocess import check_call, CalledProcessError
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+
+from brokit.formatdb import build_blast_db_from_fasta_path
+
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.util import load_qiime_config, get_options_lookup
-
 from qiime.parallel.blast import ParallelBlaster
 
 qiime_config = load_qiime_config()

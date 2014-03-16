@@ -33,14 +33,16 @@ from random import random
 from itertools import repeat, izip
 
 from biom.util import compute_counts_per_sample_stats
+import biom
+from biom.parse import parse_biom_table
+
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
     float, where, isnan, mean, std, sqrt, ravel
-from biom.parse import parse_biom_table
-import biom
+
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
@@ -49,20 +51,23 @@ from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
 from cogent.app.blast import Blastall
-from skbio.app.util import ApplicationError, CommandLineApplication
 from cogent.app.util import (FilePath,
                              get_tmp_filename as cogent_get_tmp_filename)
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
-from cogent.app.formatdb import build_blast_db_from_fasta_path,\
-    build_blast_db_from_fasta_file
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir,
                               handle_error_codes)
+
+from skbio.app.util import ApplicationError, CommandLineApplication
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
+
+from brokit.formatdb import (build_blast_db_from_fasta_path,
+                             build_blast_db_from_fasta_file)
+
 from qcli import (parse_command_line_parameters,
                   make_option,
                   qcli_system_call)

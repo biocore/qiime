@@ -23,10 +23,11 @@ from shutil import copy as copy_file, rmtree
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files, create_dir
 from cogent.parse.fasta import MinimalFastaParser
+
+from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import get_tmp_filename, get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout

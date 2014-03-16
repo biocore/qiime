@@ -25,7 +25,8 @@ from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent import DNA
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+
+from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import get_tmp_filename, load_qiime_config, create_dir
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,

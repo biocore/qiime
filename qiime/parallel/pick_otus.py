@@ -10,13 +10,16 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.parallel.util import ParallelWrapper, BufferedWriter
-from qiime.parallel.poller import basic_process_run_results_f
-from cogent.parse.fasta import MinimalFastaParser
 from math import ceil
 from os.path import basename, join
 from re import compile
+
+from brokit.formatdb import build_blast_db_from_fasta_path
+
+from cogent.parse.fasta import MinimalFastaParser
+
+from qiime.parallel.util import ParallelWrapper, BufferedWriter
+from qiime.parallel.poller import basic_process_run_results_f
 
 
 class ParallelPickOtus(ParallelWrapper):

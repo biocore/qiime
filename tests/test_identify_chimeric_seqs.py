@@ -16,7 +16,8 @@ from shutil import rmtree
 from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.formatdb import build_blast_db_from_fasta_file
+
+from brokit.formatdb import build_blast_db_from_fasta_file
 
 from qiime.util import get_tmp_filename, create_dir
 from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
