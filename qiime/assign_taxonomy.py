@@ -30,9 +30,9 @@ from cogent.app import rtax
 from cogent.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
 
-from bk_uclust.uclust import Uclust
-from bk_rdp import rdp_classifier
-from bk_mothur import mothur
+from brokit.uclust import Uclust
+from brokit import rdp_classifier
+from brokit import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up

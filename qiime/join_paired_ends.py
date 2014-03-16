@@ -9,8 +9,8 @@ __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
 from cogent.parse.fastq import MinimalFastqParser
-from bk_fastq_join.fastq_join import FastqJoin, join_paired_end_reads_fastqjoin
-from bk_seqprep.seqprep import SeqPrep, join_paired_end_reads_seqprep
+from brokit.fastq_join import FastqJoin, join_paired_end_reads_fastqjoin
+from brokit.seqprep import SeqPrep, join_paired_end_reads_seqprep
 from qiime.util import qiime_open
 import os
 import gzip
