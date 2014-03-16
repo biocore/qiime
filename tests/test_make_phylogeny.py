@@ -67,7 +67,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     def test_call_correct_alignment(self):
         """CogentTreeBuilder: output expected alignment file
         """
-        p = CogentTreeBuilder({'Module': cogent.app.fasttree})
+        p = CogentTreeBuilder({'Module': brokit.fasttree})
         log_fp = get_tmp_filename(
             prefix='CogentTreeBuilderTests_', suffix='.log')
         self._paths_to_clean_up.append(log_fp)
@@ -82,7 +82,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     # a good test
     # def test_midpoint_rooting(self):
     #     """CogentTreeBuilder: midpoint rooting should work"""
-    #     p = CogentTreeBuilder({'Module': cogent.app.fasttree})
+    #     p = CogentTreeBuilder({'Module': brokit.fasttree})
     #     log_fp = get_tmp_filename(\
     #      prefix='CogentTreeBuilderTests_',suffix='.log')
     #     self._paths_to_clean_up.append(log_fp)
