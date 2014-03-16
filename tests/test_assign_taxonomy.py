@@ -17,7 +17,7 @@ from cStringIO import StringIO
 from os import remove, system, path, getenv
 from os.path import exists
 from glob import glob
-from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
+from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file, rmtree
 
 from cogent.util.unit_test import TestCase, main
@@ -28,7 +28,7 @@ from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files, create_dir
 from cogent.parse.fasta import MinimalFastaParser
 
-from qiime.util import get_qiime_temp_dir
+from qiime.util import get_tmp_filename, get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 
 from qiime.assign_taxonomy import (
@@ -79,28 +79,30 @@ class UclustConsensusTaxonAssignerTests(TestCase):
 
         # Create test output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = mkdtemp(dir=tmp_dir,
+        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
                                          prefix='qiime_uclust_tax_tests',
-                                         suffix='')
+                                         suffix='',
+                                         result_constructor=str)
         self.dirs_to_remove.append(self.test_out)
+        create_dir(self.test_out)
 
-        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
+        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                            prefix='in',
                                            suffix='.fasta')
-        _, self.refseqs1_fp = mkstemp(dir=self.test_out,
+        self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                             prefix='in',
                                             suffix='.fasta')
-        _, self.id_to_tax1_fp = mkstemp(dir=self.test_out,
+        self.id_to_tax1_fp = get_tmp_filename(tmp_dir=self.test_out,
                                               prefix='id-to-tax',
                                               suffix='.txt')
 
-        _, self.output_log_fp = mkstemp(dir=self.test_out,
+        self.output_log_fp = get_tmp_filename(tmp_dir=self.test_out,
                                               prefix='out',
                                               suffix='.log')
-        _, self.output_uc_fp = mkstemp(dir=self.test_out,
+        self.output_uc_fp = get_tmp_filename(tmp_dir=self.test_out,
                                              prefix='out',
                                              suffix='.uc')
-        _, self.output_txt_fp = mkstemp(dir=self.test_out,
+        self.output_txt_fp = get_tmp_filename(tmp_dir=self.test_out,
                                               prefix='out',
                                               suffix='.txt')
 
@@ -389,11 +391,11 @@ class BlastTaxonAssignerTests(TestCase):
     """Tests of the BlastTaxonAssigner class"""
 
     def setUp(self):
-        _, self.id_to_taxonomy_fp = mkstemp(
+        self.id_to_taxonomy_fp = get_tmp_filename(
             prefix='BlastTaxonAssignerTests_', suffix='.txt')
-        _, self.input_seqs_fp = mkstemp(
+        self.input_seqs_fp = get_tmp_filename(
             prefix='BlastTaxonAssignerTests_', suffix='.fasta')
-        _, self.reference_seqs_fp = mkstemp(
+        self.reference_seqs_fp = get_tmp_filename(
             prefix='BlastTaxonAssignerTests_', suffix='.fasta')
 
         self._paths_to_clean_up =\
@@ -620,7 +622,7 @@ class BlastTaxonAssignerTests(TestCase):
     def test_call_output_to_file(self):
         """BlastTaxonAssigner.__call__ functions w output to file
         """
-        _, result_path = mkstemp(
+        result_path = get_tmp_filename(
             prefix='BlastTaxonAssignerTests_', suffix='.fasta')
         self._paths_to_clean_up.append(result_path)
 
@@ -651,7 +653,7 @@ class BlastTaxonAssignerTests(TestCase):
     def test_call_logs_run(self):
         """BlastTaxonAssigner.__call__ logs the run when expected
         """
-        _, log_path = mkstemp(
+        log_path = get_tmp_filename(
             prefix='BlastTaxonAssignerTests_', suffix='.fasta')
         self._paths_to_clean_up.append(log_path)
 
@@ -693,15 +695,15 @@ class RtaxTaxonAssignerTests(TestCase):
     """Tests for the RTAX taxonomy assigner."""
 
     def setUp(self):
-        _, self.id_to_taxonomy_fp = mkstemp(
+        self.id_to_taxonomy_fp = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.txt')
-        _, self.input_seqs_fp = mkstemp(
+        self.input_seqs_fp = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
-        _, self.reference_seqs_fp = mkstemp(
+        self.reference_seqs_fp = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
-        _, self.read_1_seqs_fp = mkstemp(
+        self.read_1_seqs_fp = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
-        _, self.read_2_seqs_fp = mkstemp(
+        self.read_2_seqs_fp = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
 
         self._paths_to_clean_up =\
@@ -800,7 +802,7 @@ class RtaxTaxonAssignerTests(TestCase):
     def test_call_output_to_file(self):
         """RtaxTaxonAssigner.__call__ functions w output to file
         """
-        _, result_path = mkstemp(
+        result_path = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
         self._paths_to_clean_up.append(result_path)
 
@@ -826,7 +828,7 @@ class RtaxTaxonAssignerTests(TestCase):
     def test_call_logs_run(self):
         """RtaxTaxonAssigner.__call__ logs the run when expected
         """
-        _, log_path = mkstemp(
+        log_path = get_tmp_filename(
             prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
         self._paths_to_clean_up.append(log_path)
 
@@ -872,11 +874,11 @@ class MothurTaxonAssignerTests(TestCase):
 
     def setUp(self):
         def tfp(suffix):
-            _, tfpn = mkstemp(
+            return get_tmp_filename(
                 prefix='MothurTaxonAssigner_',
                 suffix=suffix,
-                )
-            return tfpn
+                result_constructor=str,
+            )
 
         tax_fp = tfp('.txt')
         f = open(tax_fp, "w")
@@ -964,7 +966,7 @@ class RdpTaxonAssignerTests(TestCase):
 
     def setUp(self):
         # Temporary input file
-        _, self.tmp_seq_filepath = mkstemp(
+        self.tmp_seq_filepath = get_tmp_filename(
             prefix='RdpTaxonAssignerTest_',
             suffix='.fasta'
         )
@@ -973,7 +975,7 @@ class RdpTaxonAssignerTests(TestCase):
         seq_file.close()
 
         # Temporary results filename
-        _, self.tmp_res_filepath = mkstemp(
+        self.tmp_res_filepath = get_tmp_filename(
             prefix='RdpTaxonAssignerTestResult_',
             suffix='.tsv',
         )
@@ -981,7 +983,7 @@ class RdpTaxonAssignerTests(TestCase):
         open(self.tmp_res_filepath, 'w').close()
 
         # Temporary log filename
-        _, self.tmp_log_filepath = mkstemp(
+        self.tmp_log_filepath = get_tmp_filename(
             prefix='RdpTaxonAssignerTestLog_',
             suffix='.txt',
         )
@@ -1035,7 +1037,7 @@ class RdpTaxonAssignerTests(TestCase):
     def test_taxa_with_special_characters(self):
         """Special characters in taxa do not cause RDP errors
         """
-        _, taxonomy_fp = mkstemp(suffix='.txt')
+        taxonomy_fp = get_tmp_filename()
         f = open(taxonomy_fp, "w")
         f.write(rdp_id_to_taxonomy_special_chars)
         f.close()
@@ -1298,7 +1300,7 @@ class RdpTrainingSetTests(TestCase):
         self.assertEqual(s.get_rdp_taxonomy(), expected)
 
     def test_fix_output_file(self):
-        _, fp = mkstemp(suffix='.txt')
+        fp = get_tmp_filename()
         open(fp, 'w').write(self.tagged_str)
 
         s = RdpTrainingSet()
