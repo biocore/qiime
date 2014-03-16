@@ -115,9 +115,10 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
         seq = seq.replace('.', '-')
 
         # The order in which the mask is applied depends on whether a mask is
-        # specified or inferred. I do not know if this is the _correct_
-        # approach, but that is the approach QIIME has taken since the origins
-        # of this code and prior to the refactor between 1.7 and 1.8
+        # specified or inferred. Specifically, if a precomputed mask is
+        # provided (e.g., the Lane mask) then it must be applied prior to a
+        # gap filter, whereas if a mask is inferred then it must be applied
+        # after a gap filter.
         if mask is None:
             seq = get_masked_string(seq, gapmask)
             seq = entropy_filter_f(seq)
