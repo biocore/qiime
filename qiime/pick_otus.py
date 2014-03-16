@@ -23,7 +23,6 @@ from itertools import imap
 
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.mothur import Mothur
 from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
@@ -35,6 +34,7 @@ from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 
+from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.blast import blast_seqs, Blastall, BlastResult
 from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.uclust import get_clusters_from_fasta_filepath
