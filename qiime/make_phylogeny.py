@@ -25,7 +25,7 @@ from qiime.util import FunctionWithParams
 import brokit.muscle_v38
 import brokit.clustalw
 import brokit.mafft
-import cogent.app.raxml_v730
+import brokit.raxml_v730
 import cogent.app.fasttree
 import cogent.app.fasttree_v1
 import cogent.app.clearcut
@@ -127,7 +127,7 @@ tree_module_names = {'muscle': brokit.muscle_v38,
                      # current version of Mafft does not support tree building
                      'fasttree': cogent.app.fasttree,
                      'fasttree_v1': cogent.app.fasttree_v1,
-                     'raxml_v730': cogent.app.raxml_v730,
+                     'raxml_v730': brokit.raxml_v730,
                      'clearcut': cogent.app.clearcut
                      }
 
