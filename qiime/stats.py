@@ -964,15 +964,15 @@ class Best(CategoryStats):
         sum = 0
         stats = [(-777777777, '') for c in range(col_count + 1)]
         for i in range(1, col_count + 1):
-            combo = list(combinations([j for j in range(1, col_count + 1)], i))
+            combo = combinations([j for j in range(1, col_count + 1)], i)
 
-            for c in range(len(combo)):
-                cat_mat = self._make_cat_mat(cats, combo[c])
+            for element in combo:
+                cat_mat = self._make_cat_mat(cats, element)
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
                 cat_dm_flat = cat_dm.condensed_form()
                 r = spearman(dm_flat, cat_dm_flat)
                 if r > stats[i - 1][0]:
-                    stats[i - 1] = (r, ','.join(str(s) for s in combo[c]))
+                    stats[i - 1] = (r, ','.join(str(s) for s in element))
 
         res['method_name'] = 'BEST'
         res['num_vars'] = col_count
