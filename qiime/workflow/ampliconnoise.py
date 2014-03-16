@@ -12,7 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import os
-from cogent.core.moltype import IUPAC_DNA_ambiguities
+from skbio.core.sequence import DNASequence
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir
 from qiime.workflow.util import (print_to_stdout,
@@ -74,14 +74,8 @@ def run_ampliconnoise(mapping_fp,
     for i in range(len(map_data)):
         sample_names.append(map_data[i][headers.index('SampleID')])
         bc_seqs.append(map_data[i][headers.index('BarcodeSequence')])
-        # don't know why don't just take off the primer now.
-        # but that's done later
-        # primer += (map_data[i][headers.index('LinkerPrimerSequence')])
-        # for char, bases in IUPAC_DNA_ambiguities.items():
-        #     primer = primer.replace(char,'['+''.join(bases)+']')
-
         primer = (map_data[i][headers.index('LinkerPrimerSequence')])
-        for char, bases in IUPAC_DNA_ambiguities.items():
+        for char, bases in DNASequence.iupac_degeneracies.iteritems():
             primer = primer.replace(char, '[' + ''.join(bases) + ']')
         primer_seqs.append(primer)
 
