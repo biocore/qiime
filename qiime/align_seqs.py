@@ -29,7 +29,7 @@ from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.record import RecordError
-from cogent.app.util import ApplicationNotFoundError
+from skbio.app.util import ApplicationNotFoundError
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 import cogent.app.clustalw

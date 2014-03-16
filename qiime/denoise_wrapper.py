@@ -18,7 +18,7 @@ from itertools import chain
 
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
+from skbio.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError
 
 from qiime.util import load_qiime_config

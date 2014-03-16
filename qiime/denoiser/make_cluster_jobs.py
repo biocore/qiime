@@ -18,7 +18,7 @@ from tempfile import mkstemp
 
 from cogent.util.misc import create_dir
 from cogent.app.util import ApplicationNotFoundError
-from bipy.app.util import which
+from skbio.app.util import which
 
 
 # qsub template

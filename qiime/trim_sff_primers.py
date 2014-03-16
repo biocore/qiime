@@ -21,8 +21,7 @@ import subprocess
 import sys
 import tempfile
 
-from bipy.app.util import which
-from cogent.app.util import ApplicationNotFoundError
+from skbio.app.util import which, ApplicationNotFoundError
 from qiime.parse import parse_mapping_file
 from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff

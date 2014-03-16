@@ -13,10 +13,9 @@ from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
-from cogent.app.util import CommandLineApplication, ResultPath,\
-    ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from bipy.app.util import which
+from skbio.app.util import (which, CommandLineApplication, ResultPath,
+                            ApplicationError, ApplicationNotFoundError)
 
 from qiime.util import (FunctionWithParams, degap_fasta_aln,
                         write_degapped_fasta_to_file, create_dir,
