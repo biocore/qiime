@@ -24,19 +24,20 @@ create new statistical method implementations.
 from os.path import join
 from types import ListType
 from copy import deepcopy
+from itertools import combinations
+
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
 from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
-                   log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor, median, nan)
+                   log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor,
+                   median, nan)
 from numpy import argsort, min as np_min, max as np_max, log10
 from numpy.random import permutation
-from cogent.util.misc import combinate, create_dir
 from cogent.maths.stats.test import t_one_sample
-
 from biom.table import table_factory, DenseOTUTable
-
 from skbio.core.distance import SymmetricDistanceMatrix
+from skbio.util.misc import create_dir
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
@@ -963,15 +964,15 @@ class Best(CategoryStats):
         sum = 0
         stats = [(-777777777, '') for c in range(col_count + 1)]
         for i in range(1, col_count + 1):
-            combo = list(combinate([j for j in range(1, col_count + 1)], i))
+            combo = combinations([j for j in range(1, col_count + 1)], i)
 
-            for c in range(len(combo)):
-                cat_mat = self._make_cat_mat(cats, combo[c])
+            for element in combo:
+                cat_mat = self._make_cat_mat(cats, element)
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
                 cat_dm_flat = cat_dm.condensed_form()
                 r = spearman(dm_flat, cat_dm_flat)
                 if r > stats[i - 1][0]:
-                    stats[i - 1] = (r, ','.join(str(s) for s in combo[c]))
+                    stats[i - 1] = (r, ','.join(str(s) for s in element))
 
         res['method_name'] = 'BEST'
         res['num_vars'] = col_count
