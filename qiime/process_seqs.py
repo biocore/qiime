@@ -15,153 +15,170 @@ from qiime.golay import decode as decode_golay_12
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
 from numpy import array
 
-# pre allocate the iterable return. This is done for performance reasons to
-# avoid frequent reallocations and to ensure a consistent object type
-_iter_prealloc = {'SequenceID':None,
-                  'Sequence':None,
-                  'Qual':None,
-                  'Barcode':None}
+class CannotHandleData(exception):
+    pass
 
-def _reset_iter_prealloc():
-    """Reset the buffer"""
-    for k in _iter_prealloc:
-        _iter_prealloc[k] = None
-
-def _fasta_qual_gen(fasta_gen, qual_gen):
-    """Yield fasta and qual together
-
-    Raises ValueError if the sequence IDs and quality IDs are not in the same
-    order. Raises ValueError if the sequence length does not match the length
-    of the quality score.
-
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
+class SequenceIterator(object):
+    """Provide a standard API for interacting with sequence files
+    
+    
     """
-    for (seq_id, seq), (qual_id, qual) in izip(fasta_gen, qual_gen):
-        if seq_id != qual_id:
-            raise ValueError("%s is not equal to %s!" % (seq_id, qual_id))
-        if len(seq) != len(qual):
-            raise ValueError("%s is not equal length to %s!" % (seq_id,
-                                                                qual_id))
+    # pre allocate the iterable return. This is done for performance reasons to
+    # avoid frequent reallocations and to ensure a consistent object type
+    _iter_prealloc = {'SequenceID':None,
+                      'Sequence':None,
+                      'Qual':None,
+                      'Barcode':None}
 
-        _iter_prealloc['SequenceID'] = seq_id
-        _iter_prealloc['Sequence'] = seq
-        _iter_prealloc['Qual'] = qual
+    def __init__(self, fasta=None, qual=None, fastq=None, rc=False, 
+                 rc_barcodes=None):
+        if fasta is not None and fastq is not None:
+            raise CannotHandleData("Cannot handle both fasta and fastq files")
 
-        yield _iter_prealloc
+        if fasta is None qual is not None:
+            raise CannotHandleData("Cannot process qual without fasta data")
 
-def _fasta_gen(fasta_gens):
-    """Yield fasta data
 
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
-    """
-    for id_, seq in fasta_gens:
-        _iter_prealloc['SequenceID'] = id_
-        _iter_prealloc['Sequence'] = seq
-        yield _iter_prealloc
+    def _reset_iter_prealloc():
+        """Reset the buffer"""
+        for k in _iter_prealloc:
+            _iter_prealloc[k] = None
 
-def fasta_iterator(fasta_fps, qual_fps=None):
-    """Yield fasta and qual data
+    def _fasta_qual_gen(fasta_gen, qual_gen):
+        """Yield fasta and qual together
 
-    Expects file-like objects. If qual_fps is not None, quality scores are
-    yielded. The return will either be:
+        Raises ValueError if the sequence IDs and quality IDs are not in the same
+        order. Raises ValueError if the sequence length does not match the length
+        of the quality score.
 
-    {'SequenceID':foo, 'Sequence':bar, 'Qual':array([])}
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        for (seq_id, seq), (qual_id, qual) in izip(fasta_gen, qual_gen):
+            if seq_id != qual_id:
+                raise ValueError("%s is not equal to %s!" % (seq_id, qual_id))
+            if len(seq) != len(qual):
+                raise ValueError("%s is not equal length to %s!" % (seq_id,
+                                                                    qual_id))
 
-    or
+            _iter_prealloc['SequenceID'] = seq_id
+            _iter_prealloc['Sequence'] = seq
+            _iter_prealloc['Qual'] = qual
 
-    {'SequenceID':foo, 'Sequence':bar, 'Qual':None}
+            yield _iter_prealloc
 
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
-    """
-    _reset_iter_prealloc()
+    def _fasta_gen(fasta_gens):
+        """Yield fasta data
 
-    fasta_gens = chain(*[MinimalFastaParser(f) for f in fasta_fps])
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        for id_, seq in fasta_gens:
+            _iter_prealloc['SequenceID'] = id_
+            _iter_prealloc['Sequence'] = seq
+            yield _iter_prealloc
 
-    if qual_fps is not None:
-        qual_gens = chain(*[MinimalQualParser(f) for f in qual_fps])
-        gen = _fasta_qual_gen(fasta_gens, qual_gens)
-    else:
-        qual_gens = None
-        gen = _fasta_gen(fasta_gens)
+    def fasta_iterator(fasta_fps, qual_fps=None):
+        """Yield fasta and qual data
 
-    return gen
+        Expects file-like objects. If qual_fps is not None, quality scores are
+        yielded. The return will either be:
 
-def _fastq_barcode_gen(fastq_gens, barcode_gens, phred_f):
-    """Yield fastq and barcode data
+        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([])}
 
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
-    """
-    _gen = izip(fastq_gens, barcode_gens)
-    for (seqid, seq, qual), (bc_seqid, bc_seq, bc_qual) in _gen:
-        if seqid != bc_seqid:
-            raise ValueError("%s is not equal to %s!" % (seqid, bc_seqid))
-        _iter_prealloc['SequenceID'] = seqid
-        _iter_prealloc['Sequence'] = seq
-        _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
-        _iter_prealloc['Barcode'] = bc_seq
+        or
 
-        yield _iter_prealloc
+        {'SequenceID':foo, 'Sequence':bar, 'Qual':None}
 
-def _fastq_gen(fastq_gens, phred_f):
-    """Yield fastq data
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        _reset_iter_prealloc()
 
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
-    """
-    for (seqid, seq, qual) in fastq_gens:
-        _iter_prealloc['SequenceID'] = seqid
-        _iter_prealloc['Sequence'] = seq
-        _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
+        fasta_gens = chain(*[MinimalFastaParser(f) for f in fasta_fps])
 
-        yield _iter_prealloc
+        if qual_fps is not None:
+            qual_gens = chain(*[MinimalQualParser(f) for f in qual_fps])
+            gen = _fasta_qual_gen(fasta_gens, qual_gens)
+        else:
+            qual_gens = None
+            gen = _fasta_gen(fasta_gens)
 
-def fastq_iterator(fastq_fps, barcode_fps=None):
-    """Yield fastq data
+        return gen
 
-    Expects file-like objects. If barcode_fps is not None, barcodes are also
-    yielded. The return will either be:
+    def _fastq_barcode_gen(fastq_gens, barcode_gens, phred_f):
+        """Yield fastq and barcode data
 
-    {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':foobar}
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        _gen = izip(fastq_gens, barcode_gens)
+        for (seqid, seq, qual), (bc_seqid, bc_seq, bc_qual) in _gen:
+            if seqid != bc_seqid:
+                raise ValueError("%s is not equal to %s!" % (seqid, bc_seqid))
+            _iter_prealloc['SequenceID'] = seqid
+            _iter_prealloc['Sequence'] = seq
+            _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
+            _iter_prealloc['Barcode'] = bc_seq
 
-    or
+            yield _iter_prealloc
 
-    {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':None}
+    def _fastq_gen(fastq_gens, phred_f):
+        """Yield fastq data
 
-    Note: object yielded is updated on each iteration. A new object is _not_
-    created on each iteration. This is done for performance reasons, where
-    quick testing showed a 50% reduction in runtime.
-    """
-    _reset_iter_prealloc()
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        for (seqid, seq, qual) in fastq_gens:
+            _iter_prealloc['SequenceID'] = seqid
+            _iter_prealloc['Sequence'] = seq
+            _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
 
-    fastq_gens = chain(*[MinimalFastqParser(f) for f in fastq_fps])
+            yield _iter_prealloc
 
-    # peek
-    first_item = fastq_gens.next()
-    seqid, seq, qual = first_item
-    fastq_gens = chain([first_item], fastq_gens)
+    def fastq_iterator(fastq_fps, barcode_fps=None):
+        """Yield fastq data
 
-    # from qiime.parse.parse_fastq_qual_score (v1.8.0)
-    if is_casava_v180_or_later('@%s' % seqid):
-        ascii_to_phred_f = ascii_to_phred33
-    else:
-        ascii_to_phred_f = ascii_to_phred64
+        Expects file-like objects. If barcode_fps is not None, barcodes are also
+        yielded. The return will either be:
 
-    if barcode_fps:
-        barcode_gens = chain(*[MinimalFastqParser(f) for f in barcode_fps])
-        gen = _fastq_barcode_gen(fastq_gens, barcode_gens, ascii_to_phred_f)
-    else:
-        gen = _fastq_gen(fastq_gens, ascii_to_phred_f)
+        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':foobar}
 
-    return gen
+        or
+
+        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':None}
+
+        Note: object yielded is updated on each iteration. A new object is _not_
+        created on each iteration. This is done for performance reasons, where
+        quick testing showed a 50% reduction in runtime.
+        """
+        _reset_iter_prealloc()
+
+        fastq_gens = chain(*[MinimalFastqParser(f) for f in fastq_fps])
+
+        # peek
+        first_item = fastq_gens.next()
+        seqid, seq, qual = first_item
+        fastq_gens = chain([first_item], fastq_gens)
+
+        # from qiime.parse.parse_fastq_qual_score (v1.8.0)
+        if is_casava_v180_or_later('@%s' % seqid):
+            ascii_to_phred_f = ascii_to_phred33
+        else:
+            ascii_to_phred_f = ascii_to_phred64
+
+        if barcode_fps:
+            barcode_gens = chain(*[MinimalFastqParser(f) for f in barcode_fps])
+            gen = _fastq_barcode_gen(fastq_gens, barcode_gens, ascii_to_phred_f)
+        else:
+            gen = _fastq_gen(fastq_gens, ascii_to_phred_f)
+
+        return gen
 
 ### can cythonize
 def _count_mismatches(seq1, seq2):
