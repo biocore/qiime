@@ -172,7 +172,7 @@ def mapping_file_to_dict(mapping_data, header):
             if j == 0:
                 continue  # sampleID field
             map_dict[sam[0]][header[j]] = sam[j]
-    return Dict2D(map_dict)
+    return map_dict
 
 
 def parse_prefs_file(prefs_string):
