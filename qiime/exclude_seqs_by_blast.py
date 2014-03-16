@@ -5,10 +5,12 @@ from time import strftime, time
 from optparse import OptionParser
 from os import system, getcwd
 from os.path import join
+
 from cogent.app.parameters import FilePath
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
+
+from brokit.blast import blast_seqs, Blastall, BlastResult
 
 
 __author__ = "Jesse Zaneveld"

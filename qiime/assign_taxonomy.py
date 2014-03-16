@@ -24,12 +24,12 @@ from cStringIO import StringIO
 from collections import Counter, defaultdict
 
 from cogent import LoadSeqs, DNA
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app import rtax
 from cogent.parse.fasta import MinimalFastaParser
 
 from skbio.app.util import ApplicationNotFoundError
 
+from brokit.blast import blast_seqs, Blastall, BlastResult
 from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.uclust import Uclust
 from brokit import rdp_classifier

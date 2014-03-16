@@ -50,7 +50,6 @@ from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
-from cogent.app.blast import Blastall
 from cogent.app.util import (FilePath,
                              get_tmp_filename as cogent_get_tmp_filename)
 from cogent.parse.blast import BlastResult
@@ -65,6 +64,7 @@ from skbio.app.util import ApplicationError, CommandLineApplication
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
 
+from brokit.blast import Blastall
 from brokit.formatdb import (build_blast_db_from_fasta_path,
                              build_blast_db_from_fasta_file)
 
