@@ -16,9 +16,9 @@ from os.path import abspath, join, split, splitext
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.alignment import DenseAlignment
 from cogent.core.moltype import DNA
-import cogent.app.parsinsert
 import cogent.app.pplacer
 
+import brokit.parsinsert
 import brokit.raxml_v730
 
 from qiime.util import parse_command_line_parameters, make_option, \
@@ -99,7 +99,7 @@ def main():
     # list of tree insertion methods
     tree_insertion_module_names = \
         {'raxml_v730': brokit.raxml_v730,
-         'parsinsert': cogent.app.parsinsert,
+         'parsinsert': brokit.parsinsert,
          'pplacer': cogent.app.pplacer}
 
     # load input sequences and convert to phylip since the tools require
