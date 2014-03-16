@@ -22,7 +22,7 @@ __status__ = "Production"
 
 from os.path import split, splitext, basename, isdir, abspath, isfile, join
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
     get_tmp_filename, ApplicationError, ApplicationNotFoundError
@@ -942,9 +942,9 @@ def concatenate_fastas(output_fna_clustered,
 
     output_fp = open(output_concat_filepath, "w")
 
-    for label, seq in MinimalFastaParser(open(output_fna_clustered, "U")):
+    for label, seq in fasta_parse(open(output_fna_clustered, "U")):
         output_fp.write(">%s\n%s\n" % (label, seq))
-    for label, seq in MinimalFastaParser(open(output_fna_failures, "U")):
+    for label, seq in fasta_parse(open(output_fna_failures, "U")):
         output_fp.write(">%s\n%s\n" % (label, seq))
 
     return output_concat_filepath
@@ -975,7 +975,7 @@ def enumerate_otus(fasta_filepath,
 
     fasta_o = open(output_filepath, "w")
 
-    for label, seq in MinimalFastaParser(fasta_i):
+    for label, seq in fasta_parse(fasta_i):
         curr_label = ">" + label_prefix + str(count_start) + label_suffix
         if retain_label_as_comment:
             curr_label += '\t' + label
@@ -1024,7 +1024,7 @@ def get_fasta_from_uc_file(fasta_filepath,
 
     out_fna = open(output_fna_filepath, "w")
 
-    for label, seq in MinimalFastaParser(open(fasta_filepath, "U")):
+    for label, seq in fasta_parse(open(fasta_filepath, "U")):
         if label in labels_to_keep:
             if hit_type == "H":
                 out_fna.write(">" + labels_hits[label] + "\n%s\n" % seq)
@@ -1058,10 +1058,10 @@ def get_retained_chimeras(output_fp_de_novo_nonchimeras,
 
     output_combined_f = open(output_combined_fp, "w")
 
-    for label, seq in MinimalFastaParser(de_novo_nonchimeras_f):
+    for label, seq in fasta_parse(de_novo_nonchimeras_f):
         de_novo_non_chimeras.append(label)
     de_novo_nonchimeras_f.close()
-    for label, seq in MinimalFastaParser(reference_nonchimeras_f):
+    for label, seq in fasta_parse(reference_nonchimeras_f):
         reference_non_chimeras.append(label)
     reference_nonchimeras_f.close()
 
@@ -1080,13 +1080,13 @@ def get_retained_chimeras(output_fp_de_novo_nonchimeras,
     # Save a list of already-written labels
     labels_written = []
 
-    for label, seq in MinimalFastaParser(de_novo_nonchimeras_f):
+    for label, seq in fasta_parse(de_novo_nonchimeras_f):
         if label in all_non_chimeras:
             if label not in labels_written:
                 output_combined_f.write('>%s\n%s\n' % (label, seq))
                 labels_written.append(label)
     de_novo_nonchimeras_f.close()
-    for label, seq in MinimalFastaParser(reference_nonchimeras_f):
+    for label, seq in fasta_parse(reference_nonchimeras_f):
         if label in all_non_chimeras:
             if label not in labels_written:
                 output_combined_f.write('>%s\n%s\n' % (label, seq))
@@ -2529,7 +2529,7 @@ def parse_usearch61_failures(seq_path,
 
     parsed_out = open(output_fasta_fp, "w")
 
-    for label, seq in MinimalFastaParser(open(seq_path), "U"):
+    for label, seq in fasta_parse(open(seq_path), "U"):
         curr_label = label.split()[0]
         if curr_label in failures:
             parsed_out.write(">%s\n%s\n" % (label, seq))

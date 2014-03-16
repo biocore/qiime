@@ -16,7 +16,7 @@ from os.path import exists, split
 from re import search
 from itertools import chain
 from qiime.util import get_tmp_filename
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from skbio.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError
@@ -37,8 +37,8 @@ def fast_denoiser(
                      verbose=verbose, titanium=titanium)
 
     # read centroids and singletons
-    centroids = MinimalFastaParser(open(tmp_outdir + "/centroids.fasta"))
-    singletons = MinimalFastaParser(open(tmp_outdir + "/singletons.fasta"))
+    centroids = fasta_parse(open(tmp_outdir + "/centroids.fasta"))
+    singletons = fasta_parse(open(tmp_outdir + "/singletons.fasta"))
 
     seqs = chain(centroids, singletons)
 

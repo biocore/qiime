@@ -20,7 +20,7 @@ from shutil import rmtree
 import tempfile
 import warnings
 from cogent.app.parameters import Parameter, ValuedParameter, Parameters
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, guess_input_handler, system,\
     ApplicationNotFoundError, ApplicationError
@@ -391,7 +391,7 @@ def assign_taxonomy(
     # RDP classifier doesn't preserve identifiers with spaces
     # Use lookup table
     seq_id_lookup = {}
-    for seq_id, seq in MinimalFastaParser(data):
+    for seq_id, seq in fasta_parse(data):
         seq_id_lookup[seq_id.split()[0]] = seq_id
 
     app_kwargs = {}

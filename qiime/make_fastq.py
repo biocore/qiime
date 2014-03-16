@@ -22,7 +22,7 @@ library id. This code takes the output from split_libraries.py and the
 corresponding qual files, pulls the qual info by id, and writes everything
 either to one file or to per-library files.
 """
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from os import mkdir
 from collections import defaultdict
 
@@ -59,7 +59,7 @@ def split_lib_transform(header):
 
 def iter_fastq(in_fasta, quals, label_transform=split_lib_transform):
     """Iterate over fastq records, yields seq id of each"""
-    for label, seq in MinimalFastaParser(in_fasta):
+    for label, seq in fasta_parse(in_fasta):
         new_label, qual_id = label_transform(label)
         seq_id = label.split()[0]
         if seq_id.startswith('>'):

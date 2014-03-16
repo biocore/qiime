@@ -15,7 +15,7 @@ from os.path import join
 from os import rename
 from re import compile
 
-from cogent.parse.fastq import MinimalFastqParser
+from cogent.parse.fastq import fastq_parse
 from cogent import DNA
 
 from qiime.check_id_map import process_id_map
@@ -112,8 +112,8 @@ def extract_barcodes(fastq1,
     header_index = 0
 
     for read1_data, read2_data in izip(
-            MinimalFastqParser(fastq1, strict=False),
-            MinimalFastqParser(fastq2, strict=False)):
+            fastq_parse(fastq1, strict=False),
+            fastq_parse(fastq2, strict=False)):
         if not disable_header_match:
             if not check_header_match_f(read1_data[header_index],
                                         read2_data[header_index]):

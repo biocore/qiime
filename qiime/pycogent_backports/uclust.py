@@ -22,7 +22,7 @@ __status__ = "Production"
 from os import remove, makedirs
 from os.path import split, splitext, basename, isdir, abspath, isfile, join
 from tempfile import gettempdir
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
     get_tmp_filename, ApplicationError, ApplicationNotFoundError
@@ -201,7 +201,7 @@ def get_next_record_type(lines, types):
 
 def get_next_two_fasta_records(lines):
     result = []
-    for record in MinimalFastaParser(lines):
+    for record in fasta_parse(lines):
         result.append(record)
         if len(result) == 2:
             yield result

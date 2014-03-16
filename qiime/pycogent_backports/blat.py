@@ -8,7 +8,7 @@ from cogent.app.util import CommandLineApplication, ResultPath, \
     ApplicationError, get_tmp_filename
 from cogent import DNA
 from cogent.core.genetic_code import GeneticCodes
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from os import remove
 from os.path import isabs
 
@@ -398,7 +398,7 @@ def assign_dna_reads_to_protein_database(query_fasta_fp, database_fasta_fp,
     tmp = get_tmp_filename(tmp_dir=temp_dir, result_constructor=str)
     tmp_out = open(tmp, 'w')
 
-    for label, sequence in MinimalFastaParser(open(query_fasta_fp)):
+    for label, sequence in fasta_parse(open(query_fasta_fp)):
         seq_id = label.split()[0]
 
         s = DNA.makeSequence(sequence)

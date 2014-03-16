@@ -26,7 +26,7 @@ from operator import itemgetter
 from gzip import GzipFile
 
 from numpy import array
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 
 from qiime.parse import QiimeParseError, MinimalQualParser
@@ -227,7 +227,7 @@ def assign_seqs(file_data,
     if file_data['qual_files']:
         for curr_fasta, curr_qual in zip(file_data['fasta_files'],
                                          file_data['qual_files']):
-            for fasta_data, qual_data in izip(MinimalFastaParser(curr_fasta),
+            for fasta_data, qual_data in izip(fasta_parse(curr_fasta),
                                               MinimalQualParser(curr_qual, full_header=True)):
 
                 seq_counts += 1
@@ -272,7 +272,7 @@ def assign_seqs(file_data,
 
     else:
         for curr_fasta in file_data['fasta_files']:
-            for fasta_label, fasta_seq in MinimalFastaParser(curr_fasta):
+            for fasta_label, fasta_seq in fasta_parse(curr_fasta):
                 seq_counts += 1
                 bc, corrected_bc, num_errors, added_field =\
                     get_demultiplex_data(ids_bcs_added_field,
