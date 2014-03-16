@@ -27,21 +27,20 @@ from qiime.compare_taxa_summaries import (compare_taxa_summaries,
 class CompareTaxaSummariesTests(TestCase):
 
     """Tests for the compare_taxa_summaries.py module."""
-    
+
     def compare_multiple_level_array(self, observed, expected):
         """ Compare multiple level arrays.
 
         It expecte observed and expected arrays, where each element is an
         array of elements.
         """
-        for obs, exp in izip(observed, expected):
-            for o, e in izip(obs, exp):
-                if o is not None and (isinstance(o, (np.number, np.ndarray, TupleType, FloatType))):
-                    assert_almost_equal(o, e, decimal=5)
-                elif isinstance(o, ListType):
-                    self.assertItemsEqual(o, e)
-                else:
-                    self.assertEqual(o, e)
+        if isinstance(observed, (TupleType, ListType)):
+            for obs, exp in izip(observed, expected):
+                self.compare_multiple_level_array(obs, exp)
+        elif observed is not None and isinstance(observed, (np.number, np.ndarray, FloatType)):
+            assert_almost_equal(observed, expected, decimal=5)
+        else:
+            self.assertEqual(observed, expected)
 
     def remove_nums(self, text):
         """Removes all digits from the given string.
@@ -60,8 +59,7 @@ class CompareTaxaSummariesTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
-        # How many times to test a stochastic p-value.
-        self.p_val_tests = 20
+        self.value_for_seed = 20
 
         self.taxa_summary1 = (['Even1', 'Even2', 'Even3'],
                               ['Bacteria;Actinobacteria;Actinobacteria(class);Actinobacteridae',
@@ -757,296 +755,128 @@ class CompareTaxaSummariesTests(TestCase):
 
     def test_compute_correlation_expected_pearson(self):
         """Test functions correctly with expected mode and pearson corr."""
-        exp = ((0.68824720161169595, 0.31175279838830405, 0.339,
+        exp = ((0.68824720161169595, 0.31175279838830405, 0.689,
                (-0.80594408245459292, 0.99269848760560575)), None)
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs1,
                                    self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                                    999, 0.95)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-        assert_almost_equal(obs[1], exp[1])
-
-        # Test stochastic p-value by making sure it falls within a sane range
-        # at least once out of self.p_val_tests times.
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs1,
-                                         self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
-                                         999, 0.95)[0][2]
-            self.assertIs(0.0 <= p_val <= 1.0)
-            if p_val >= 0.66 and p_val <= 0.7:
-                found_match = True
-                break
-        self.assertTrue(found_match)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_expected_pearson_detailed(self):
         """Test functions with expected mode, pearson corr, detailed tests."""
-        exp = ((0.68824720161169595, 0.31175279838830405, 0.348,
+        exp = ((0.68824720161169595, 0.31175279838830405, 0.664,
                 (-0.66416860387615351, 0.9863313909937903)),
                [('S1', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None)),
                 ('S2', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None))])
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs1,
                                    self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
                                    999, 0.90, True)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-        assert_almost_equal(obs[1], exp[1])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs1,
-                                         self.taxa_summary_exp1, 'expected', 'pearson', 'two-sided',
-                                         999, 0.90, True)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            if p_val >= 0.6 and p_val <= 0.7:
-                found_match = True
-                break
-        self.assertTrue(found_match)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_expected_spearman_detailed(self):
         """Test functions with expected mode, spearman corr, detailed tests."""
         # Verified with R's cor.test function.
 
         # No repeats in ranks.
-        exp = ((0.70710678118654757, 0.29289321881345232, 0.671,
+        exp = ((0.70710678118654757, 0.29289321881345232, 0.664,
                 (-0.93471237439516763, 0.99801522848859603)),
                [('S1', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None)),
                 ('S2', 'Expected', 1.0, 1, 1, 1.0, 1, (None, None))])
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs1,
                                    self.taxa_summary_exp1,
                                    'expected', 'spearman', 'two-sided',
                                    999, 0.99, True)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-        assert_almost_equal(obs[1], exp[1])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs1,
-                                         self.taxa_summary_exp1, 'expected', 'spearman',
-                                         'two-sided', 999, 0.99, True)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            if p_val >= 0.6 and p_val <= 0.7:
-                found_match = True
-                break
-        self.assertTrue(found_match)
+        self.compare_multiple_level_array(obs, exp)
 
         # Repeats in ranks.
-        exp = ((0.83914639167827365, 0.036729871219315036, 0.126,
+        exp = ((0.83914639167827365, 0.036729871219315036, 0.137,
                 (-0.2625774054977657, 0.99110427297276837)),
                [('S1', 'Expected', 0.86602540378443871, 0.33333333333333326,
-                 0.66666666666666652, 0.67, 1, (None, None)),
-                ('S2', 'Expected', 1.0, 0, 0, 0.331, 0.662, (None, None))])
+                 0.66666666666666652, 0.679, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 0, 0, 0.327, 0.654, (None, None))])
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp2,
                                    'expected', 'spearman', 'two-sided', 999,
                                    0.99, True)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs2,
-                                         self.taxa_summary_exp2, 'expected', 'spearman',
-                                         'two-sided', 999, 0.99, True)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            if p_val >= 0.11 and p_val <= 0.14:
-                found_match = True
-                break
-        self.assertTrue(found_match)
-
-        self.assertEqual(len(obs[1]), len(exp[1]))
-        assert_almost_equal(obs[1][0][:5], exp[1][0][:5])
-        self.assertTrue(0.0 <= obs[1][0][5] >= 1.0)
-        self.assertTrye(0.0 <= obs[1][0][6] >= 1.0)
-        assert_almost_equal(obs[1][0][7], exp[1][0][7])
-
-        assert_almost_equal(obs[1][1][:5], exp[1][1][:5])
-        self.assertTrue(0.0 <= obs[1][1][5] >= 1.0)
-        self.assertTrue(0.0 <= obs[1][1][6] >= 1.0)
-        assert_almost_equal(obs[1][1][7], exp[1][1][7])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_expected_expected_sample_id(self):
         """Test functions with expected mode using an expected sample ID."""
-        exp = ((0.83914639167827365, 0.036729871219315036,
-                0.13786213786213786, (0.032537093928499856,
+        # Using a single-sample expected ts.
+        exp = ((0.83914639167827365, 0.036729,
+                0.13786213786213786, (0.032537093928499863,
                                       0.98380431996767537)),
                [('S1', 'Expected', 0.86602540378443871, 0.33333333333333326,
-                 0.66666666666666652, 0.6943056943056943, 1, (None, None)),
-                ('S2', 'Expected', 1.0, 0, 0, 0.33466533466533466,
-                 0.6693306693306693, (None, None))])
-
-        # Using a single-sample expected ts.
+                 0.66666666666666652, 0.6793206793206793, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 0, 0, 0.32667332667332666,
+                 0.6533466533466533, (None, None))])
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp2,
                                    'expected', 'spearman', 'two-sided',
                                    1000, 0.96, True, 'Expected')
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs2,
-                                         self.taxa_summary_exp2, 'expected', 'spearman',
-                                         'two-sided', 1000, 0.96, True, 'Expected')[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            if p_val >= 0.1 and p_val <= 0.15:
-                found_match = True
-                break
-        self.assertTrue(found_match)
-
-        self.assertEqual(len(obs[1]), len(exp[1]))
-        for o, e in izip(obs[1][0][:5], exp[1][0][:5]):
-            if o is None or isinstance(o, StringType):
-                self.assertEqual(o, e)
-            else:
-                assert_almost_equal(o, e)
-        self.assertTrue(0.0 <= obs[1][0][5] <= 1.0)
-
-        self.assertTrue(0.0 <= obs[1][0][6] <= 1.0)
-
-        for o, e in izip(obs[1][0][7], exp[1][0][7]):
-            if o is None or isinstance(o, StringType):
-                self.assertEqual(o, e)
-            else:
-                assert_almost_equal(o, e)
-
-        assert_almost_equal(obs[1][1][:5], exp[1][1][:5])
-        self.assertTrue(0.0 <= obs[1][1][5] <= 1.0)
-        self.assertTrue(0.0 <= obs[1][1][6] <= 1.0)
-        assert_almost_equal(obs[1][1][7], exp[1][1][7])
-
+        self.compare_multiple_level_array(obs, exp)
+        
         # Using a two-sample expected ts.
+        exp = ((0.83914639167827365, 0.036729,
+                0.13786213786213786, (0.032537093928499863,
+                                      0.98380431996767537)),
+               [('S1', 'Expected', 0.86602540378443871, 0.33333333333333326,
+                 0.66666666666666652, 0.6793206793206793, 1, (None, None)),
+                ('S2', 'Expected', 1.0, 0, 0, 0.32667332667332666,
+                 0.6533466533466533, (None, None))])
+
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_obs2,
                                    self.taxa_summary_exp3,
                                    'expected', 'spearman', 'two-sided',
                                    1000, 0.96, True, 'Expected')
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_obs2,
-                                         self.taxa_summary_exp3, 'expected', 'spearman',
-                                         'two-sided', 1000, 0.96, True, 'Expected')[0][2]
-            self.assertTrye(0.0 <= p_val <= 1.0)
-            if p_val >= 0.1 and p_val <= 0.15:
-                found_match = True
-                break
-        self.assertTrue(found_match)
-
-        self.assertEqual(len(obs[1]), len(exp[1]))
-        assert_almost_equal(obs[1][0][:5], exp[1][0][:5])
-        self.assertTrue(0.0 <= obs[1][0][5] <= 1.0)
-        self.assertTrue(0.0 <= obs[1][0][6] <= 1.0)
-        assert_almost_equal(obs[1][0][7], exp[1][0][7])
-
-        assert_almost_equal(obs[1][1][:5], exp[1][1][:5])
-        self.assertTrue(0.0 <= obs[1][1][5] <= 1.0)
-        self.assertTrue(0.0 <= obs[1][1][6] <= 1.0)
-        assert_almost_equal(obs[1][1][7], exp[1][1][7])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_paired(self):
         """Test runs correctly on standard input taxa summaries."""
         # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808, 0.011,
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.03,
                (0.33958335414859975, 0.98938788428012969)), None)
+        
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_paired1,
                                    self.taxa_summary_paired2, 'paired', 'pearson', 'two-sided',
                                    999, 0.95)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-        assert_almost_equal(obs[1], exp[1])
-
-        found_match = False
-        # for this test:
-        # x = array([ 0.4,  0.5,  0.4,  0.5,  0.7,  0.4])
-        # y = array([ 0.5,  0.7,  0.5,  0.6,  0.8,  0.6])
-        # ccs = [corrcoef(x,i) for i in permutations(y)]
-        # 24/720 = .03333 <- (abs(array(ccs))>=corrcoef(x,y)[0][1]).sum()
-        # so for our bound should be symmetric about this
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_paired1,
-                                         self.taxa_summary_paired2, 'paired', 'pearson',
-                                         'two-sided', 999, 0.95)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            #
-            if p_val >= 0.02833333 and p_val <= 0.0383333:
-                found_match = True
-                break
-        self.assertTrue(found_match)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_paired_detailed(self):
         """Test runs correctly on standard input ts with detailed tests."""
         # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808, 0.011,
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.038,
                 (0.33958335414859975, 0.98938788428012969)),
-               [('S1', 'S1', 1.0, 0, 0, 0.324, 0.648, (None, None)),
+               [('S1', 'S1', 1.0, 0, 0, 0.373, 0.746, (None, None)),
                 ('S2', 'S2', 0.94491118252306538, 0.21229561500966185,
-                 0.4245912300193237, 0.355, 0.71, (None, None))])
+                 0.4245912300193237, 0.342, 0.684, (None, None))])
+
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_paired1,
                                    self.taxa_summary_paired2, 'paired', 'pearson', 'two-sided',
                                    999, 0.95, True)
 
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_paired1,
-                                         self.taxa_summary_paired2, 'paired', 'pearson',
-                                         'two-sided', 999, 0.95, True)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            if p_val >= 0.016 and p_val <= 0.036:
-                found_match = True
-                break
-        self.assertTrue(found_match)
-
-        self.assertEqual(len(obs[1]), len(exp[1]))
-        assert_almost_equal(obs[1][0][:5], exp[1][0][:5])
-        self.assertTrue(0.0 <= obs[1][0][5] <= 1.0)
-        self.assertTrue(0.0 <= obs[1][0][6] <= 1.0)
-        assert_almost_equal(obs[1][0][7], exp[1][0][7])
-
-        assert_almost_equal(obs[1][1][:5], exp[1][1][:5])
-        self.assertTrue(0.0 <= obs[1][1][5] <= 1.0)
-        self.assertTrue(0.0 <= obs[1][1][6] <= 1.0)
-        assert_almost_equal(obs[1][1][7], exp[1][1][7])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_paired_mismatched_ids(self):
         """Test runs correctly on taxa summaries with mismatched IDs."""
         # Verified using R's cor.test function.
-        exp = ((0.90243902439024193, 0.013812916237431808, 0.0310,
+        exp = ((0.90243902439024193, 0.013812916237431808, 0.038,
                 (0.48961251524616184, 0.98476601971494115)),
-               [('S1', 'E1', 1.0, 0, 0, 0.346, 0.692, (None, None)),
+               [('S1', 'E1', 1.0, 0, 0, 0.373, 0.746, (None, None)),
                 ('S2', 'E1', 0.94491118252306538, 0.21229561500966185,
-                 0.4245912300193237, 0.3, 0.6, (None, None))])
+                 0.4245912300193237, 0.342, 0.684, (None, None))])
+        np.random.seed(self.value_for_seed)
         obs = _compute_correlation(self.taxa_summary_paired1,
                                    self.taxa_summary_paired3, 'paired', 'pearson', 'two-sided',
                                    999, 0.90, True)
-
-        assert_almost_equal(obs[0][:2], exp[0][:2])
-        assert_almost_equal(obs[0][3:], exp[0][3:])
-        self.compare_multiple_level_array(obs, exp)
-
-        found_match = False
-        for i in range(self.p_val_tests):
-            p_val = _compute_correlation(self.taxa_summary_paired1,
-                                         self.taxa_summary_paired3, 'paired', 'pearson',
-                                         'two-sided', 999, 0.90, True)[0][2]
-            self.assertTrue(0.0 <= p_val <= 1.0)
-            print p_val
-            if p_val == 0.0310:
-                found_match = True
-                break
-        self.assertTrue(found_match)
 
         self.compare_multiple_level_array(obs, exp)
 
@@ -1078,7 +908,7 @@ class CompareTaxaSummariesTests(TestCase):
             [self.taxa_summary1, self.taxa_summary2])
         obs = _compute_correlation(ts1, ts2, 'paired', 'pearson', 'low', 0,
                                    0.90, True)
-        self.compare_multiple_level_array(obs[0], exp[0])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_compute_correlation_expected_invalid_sample_count(self):
         """Test running on expected taxa summary without exactly one sample."""

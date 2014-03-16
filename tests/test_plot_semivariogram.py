@@ -11,6 +11,7 @@ __email__ = "antgonza@gmail.com"
 
 from qiime.plot_semivariogram import hist_bins, fit_semivariogram
 from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from numpy import asarray
 
 
@@ -57,8 +58,8 @@ class FunctionTests(TestCase):
 
         vals, hist = hist_bins(bins, x)
 
-        self.assertFloatEqual(vals, bins)
-        self.assertFloatEqual(hist, hist_res)
+        assert_almost_equal(vals, bins)
+        assert_almost_equal(hist, hist_res)
 
     def test_reorder_samples(self):
         """ test that regural and irregular order give the same results """
@@ -132,10 +133,10 @@ class FunctionTests(TestCase):
 
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, vals_exp)
 
         # Test altered
         model = "linear"
@@ -235,10 +236,10 @@ class FunctionTests(TestCase):
 
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (y_lbl, y), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, vals_exp)
 
     def test_models_semivariograms(self):
         """ test the semivariogram fitting models """
@@ -314,10 +315,10 @@ class FunctionTests(TestCase):
         y_vals_exp = [2.3000000143667378] * (len(x) * 2)
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, y_vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp)
 
         model = "exponential"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -365,10 +366,10 @@ class FunctionTests(TestCase):
             6.99999998726]
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, y_vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp)
 
         model = "gaussian"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -416,10 +417,10 @@ class FunctionTests(TestCase):
             6.74689019]
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, y_vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp)
 
         model = "periodic"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -467,20 +468,20 @@ class FunctionTests(TestCase):
             6.72728412]
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, y_vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, y_vals_exp)
 
         model = "linear"
         y_lbl = x_lbl
         y = x
         x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram(
             (x_lbl, x), (x_lbl, x), model, [])
-        self.assertFloatEqual(x_vals, vals_exp)
-        self.assertFloatEqual(y_vals, vals_exp)
-        self.assertFloatEqual(x_fit, vals_exp)
-        self.assertFloatEqual(y_fit, vals_exp)
+        assert_almost_equal(x_vals, vals_exp)
+        assert_almost_equal(y_vals, vals_exp)
+        assert_almost_equal(x_fit, vals_exp)
+        assert_almost_equal(y_fit, vals_exp)
 
 # run tests if called from command line
 if __name__ == '__main__':
