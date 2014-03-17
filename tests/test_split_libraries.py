@@ -16,7 +16,8 @@ from numpy import array
 from shutil import rmtree
 
 from cogent import DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy. testing import assert_almost_equal
 from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 
@@ -443,9 +444,9 @@ z\tGG\tGC\t5\tsample_z"""
         post_lengths = [130, 135]
         raw_hist, pre_hist, post_hist, bin_edges = \
             make_histograms(raw_lengths, pre_lengths, post_lengths)
-        self.assertEqual(pre_hist, array([0, 2, 1, 0, 2]))
-        self.assertEqual(post_hist, array([0, 0, 0, 0, 2]))
-        self.assertEqual(bin_edges, array([90, 100, 110, 120, 130, 140]))
+        assert_almost_equal(pre_hist, array([0, 2, 1, 0, 2]))
+        assert_almost_equal(post_hist, array([0, 0, 0, 0, 2]))
+        assert_almost_equal(bin_edges, array([90, 100, 110, 120, 130, 140]))
 
     def test_check_seqs_sliding_window(self):
         """check_seqs handles sliding window truncations/removal """

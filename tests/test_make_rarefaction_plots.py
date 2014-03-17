@@ -11,7 +11,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.make_rarefaction_plots import make_plots, \
     save_single_ave_rarefaction_plots, save_single_rarefaction_plots, \
     get_rarefaction_data, make_html, make_averages, \

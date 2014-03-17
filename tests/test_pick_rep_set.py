@@ -14,7 +14,7 @@ __email__ = "wasade@gmail.com"
 from os import remove
 from cogent import LoadSeqs
 from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
                                 first, random_id, longest_id, unique_id_map, label_to_name,

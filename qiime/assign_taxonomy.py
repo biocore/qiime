@@ -30,9 +30,9 @@ from cogent.app import rtax
 from skbio.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
 
-from qiime.pycogent_backports.uclust import Uclust
-from qiime.pycogent_backports import rdp_classifier
-from qiime.pycogent_backports import mothur
+from brokit.uclust import Uclust
+from brokit import rdp_classifier
+from brokit import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
