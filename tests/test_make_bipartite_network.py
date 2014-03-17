@@ -13,10 +13,10 @@ __email__ = "wdwvt1@gmail.com"
 
 from shutil import rmtree
 from os.path import exists, join
+from cogent.util.misc import remove_files
+
+from qiime.util import get_qiime_temp_dir
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.make_bipartite_network import (make_otu_node_table, make_edge_table,
                                           make_sample_node_table, make_node_attr_table)

@@ -14,14 +14,14 @@ __email__ = "gregcaporaso@gmail.com"
 from glob import glob
 from shutil import rmtree
 from os.path import exists, join
+from tempfile import mkstemp, mkdtemp
+
+from cogent.util.misc import remove_files
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.util.misc import remove_files, create_dir
-from unittest import TestCase, main
 from biom.parse import parse_biom_table
 from qiime.parse import parse_distmat
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parallel.beta_diversity import (ParallelBetaDiversitySingle,
                                            ParallelBetaDiversityMultiple)
@@ -36,24 +36,22 @@ class ParallelBetaDiversityTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.input1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                          prefix='qiime_inseqs',
-                                          suffix='.biom')
+        _, self.input1_fp = mkstemp(dir=self.test_out,
+                                    prefix='qiime_inseqs',
+                                    suffix='.biom')
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()
         self.files_to_remove.append(self.input1_fp)
 
-        self.input2_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                          prefix='qiime_inseqs',
-                                          suffix='.biom')
+        _, self.input2_fp = mkstemp(dir=self.test_out,
+                                    prefix='qiime_inseqs',
+                                    suffix='.biom')
         input2_f = open(self.input2_fp, 'w')
         input2_f.write(input2)
         input2_f.close()
@@ -61,9 +59,9 @@ class ParallelBetaDiversityTests(TestCase):
 
         self.input1_fps = [self.input1_fp, self.input2_fp]
 
-        self.tree_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                        prefix='qiime',
-                                        suffix='.tre')
+        _, self.tree_fp = mkstemp(dir=self.test_out,
+                                  prefix='qiime',
+                                  suffix='.tre')
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
         tree_f.close()

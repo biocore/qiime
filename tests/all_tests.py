@@ -9,7 +9,7 @@ import re
 from sys import exit
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         load_qiime_config, qiime_system_call, get_qiime_scripts_dir,
-                        make_option, get_tmp_filename, get_qiime_project_dir)
+                        make_option, get_qiime_project_dir)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
