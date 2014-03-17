@@ -11,14 +11,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-import numpy
-import random
 from os.path import join
+
+from numpy import zeros
+from random import choice
 from biom.table import table_factory
+
 from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option, create_dir
-from qiime.util import parse_command_line_parameters
+from qiime.util import make_option, create_dir, parse_command_line_parameters
 from qiime.sort import natsort
 
 
@@ -103,7 +104,7 @@ def get_new_otu_id(old_otu_id, tree, dissim):
     if node.isTip():
         return node.Name
     else:
-        return random.choice([tip.Name for tip in node.tips()])
+        return choice([tip.Name for tip in node.tips()])
 
 
 def combine_sample_dicts(sample_dicts):
@@ -131,7 +132,7 @@ def combine_sample_dicts(sample_dicts):
     for i in range(len(all_otu_ids)):
         indices[all_otu_ids[i]] = i
 
-    otu_mtx = numpy.zeros((len(all_otu_ids), len(sample_dicts)), int)
+    otu_mtx = zeros((len(all_otu_ids), len(sample_dicts)), int)
     # otus (rows) by samples (cols)
     for i, sample_dict in enumerate(sample_dicts):
         for otu, abund in sample_dict.items():

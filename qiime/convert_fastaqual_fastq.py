@@ -16,7 +16,7 @@ from collections import defaultdict
 
 from qiime.parse import QiimeParseError, MinimalQualParser
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.sequences import fastq_parse
 
 
 def convert_fastaqual_fastq(fasta_file_path, qual_file_path,
@@ -222,7 +222,7 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         fasta_out_lookup = defaultdict(str)
         qual_out_lookup = defaultdict(str)
 
-    for header, sequence, qual in MinimalFastqParser(open(fastq_fp, 'U'),
+    for header, sequence, qual in fastq_parse(open(fastq_fp, 'U'),
                                                      strict=False):
         label = header.split()[0]
         sample_id = label.split('_')[0]

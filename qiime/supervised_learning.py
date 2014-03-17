@@ -2,7 +2,7 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Dan Knights", "Luke Ursell"]
+__credits__ = ["Dan Knights", "Luke Ursell", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
@@ -10,14 +10,14 @@ __email__ = "danknights@gmail.com"
 
 from os import remove, path, devnull
 from os.path import join, split, splitext, exists
+
 from numpy import array, set_printoptions, nan, sqrt, mean, square
-from skbio.app.util import (CommandLineApplication, CommandLineAppResult,
-                            ResultPath, ApplicationError)
-from cogent.app.util import FilePath
-from qiime.util import get_qiime_project_dir
-from cogent.app.parameters import Parameters
+from cogent.app.util import (CommandLineApplication, CommandLineAppResult,
+                             ResultPath, ApplicationError)
+from skbio.app.parameters import ValuedParameter, FlagParameter
 from biom.parse import convert_biom_to_table
-from cogent.app.parameters import ValuedParameter, FlagParameter, FilePath
+
+from qiime.util import get_qiime_project_dir
 
 
 def parse_feature_importances(filepath):

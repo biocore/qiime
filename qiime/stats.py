@@ -29,10 +29,9 @@ from itertools import combinations
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (argsort, array, asarray, ceil, empty, fill_diagonal, finfo,
+from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor,
-                   median, nan)
-from numpy import argsort, min as np_min, max as np_max, log10
+                   median, nan, min as np_min, max as np_max)
 from numpy.random import permutation
 from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
@@ -42,7 +41,6 @@ from skbio.util.misc import create_dir
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
                                            pearson, permute_2d, spearman)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
-from qiime.format import format_p_value_for_num_iters
 from qiime.util import MetadataMap
 
 # Top-level stats functions.

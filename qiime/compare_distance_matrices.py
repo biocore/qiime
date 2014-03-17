@@ -11,7 +11,9 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os import path
+
 from skbio.core.distance import SymmetricDistanceMatrix
+
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import make_compatible_distance_matrices
 from qiime.stats import Mantel, MantelCorrelogram, PartialMantel

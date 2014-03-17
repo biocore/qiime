@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import make_option
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.sequences import fastq_parse
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
 from qiime.filter import (filter_fasta, filter_fastq,
@@ -97,7 +97,7 @@ def filter_fasta_fp(input_seqs_fp, output_seqs_fp, seqs_to_keep, negate=False):
 
 def filter_fastq_fp(input_seqs_fp, output_seqs_fp, seqs_to_keep, negate=False):
     """Filter a fastq file to include only sequences listed in seqs_to_keep """
-    input_seqs = MinimalFastqParser(open(input_seqs_fp, 'U'), strict=False)
+    input_seqs = fastq_parse(open(input_seqs_fp, 'U'), strict=False)
     output_f = open(output_seqs_fp, 'w')
     return filter_fastq(input_seqs, output_f, seqs_to_keep, negate)
 
