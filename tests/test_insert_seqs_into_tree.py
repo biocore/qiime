@@ -15,7 +15,6 @@ from cogent.util.unit_test import TestCase, main
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree
-#from os.path import splitext
 from os import getcwd, remove, rmdir
 from tempfile import mkstemp
 

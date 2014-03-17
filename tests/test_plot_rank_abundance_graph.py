@@ -123,7 +123,6 @@ class PlotRankAbundance(TestCase):
         self.dir = mkdtemp(dir=self.tmp_dir,
                                     prefix="test_plot_rank_abundance",
                                     suffix="/")
-        create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
         _, tmp_fname = mkstemp(dir=self.dir)
 

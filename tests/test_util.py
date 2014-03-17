@@ -1032,7 +1032,7 @@ class FunctionWithParamsTests(TestCase):
         self.assertEqual(biom_data, F.getBiomData(biom_data))
 
         # write biom_data to temp location
-        _, bt_path = mkstemp(suffix='.txt')
+        _, bt_path = mkstemp(suffix='.biom')
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()

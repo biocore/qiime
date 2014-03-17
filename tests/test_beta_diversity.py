@@ -141,7 +141,7 @@ class BetaDiversityCalcTests(TestCase):
         f = open(input_path, 'w')
         f.write(otu_table_string)
         f.close()
-        _, tree_path = mkstemp(suffix='.txt')
+        _, tree_path = mkstemp(suffix='.tre')
         f = open(tree_path, 'w')
         f.write(tree_string)
         f.close()
@@ -266,17 +266,9 @@ class BetaDiversityCalcTests(TestCase):
         """ running single_file_beta should give same result using --rows"""
         if missing_sams is None:
             missing_sams = []
-        # setup
-        #in_fname = os.path.split(input_path)[1]
-        #f = open(input_path,'w')
-        # f.write(otu_table_string)
-        # f.close()
-        #f = open(tree_path,'w')
-        # f.write(tree_string)
-        # f.close()
+    
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
-        # os.mkdir(output_dir)
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
