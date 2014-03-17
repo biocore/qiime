@@ -681,3 +681,9 @@ def get_qiime_hex_string_color(index):
         index = int(index - floor((index / n_colors) * n_colors))
 
     return data_colors[data_color_order[index]].toHex()
+
+def matplotlib_rgb_color(rgb_color):
+    """Returns RGB color in matplotlib format.
+       ex: (255,0,255) will return (1.0,0.0,1.0)
+    """
+    return tuple([i / 255. for i in rgb_color])

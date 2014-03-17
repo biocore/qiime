@@ -15,7 +15,7 @@ from cogent.util.misc import create_dir
 from skbio.draw.distributions import grouped_distributions
 from qiime.colors import data_colors, data_color_order
 from qiime.group import get_field_state_comparisons
-from qiime.make_distance_histograms import matplotlib_rgb_color
+from qiime.color import matplotlib_rgb_color
 from qiime.parse import (group_by_field, parse_distmat, parse_mapping_file,
                          QiimeParseError)
 from qiime.stats import all_pairs_t_test, tail_types
