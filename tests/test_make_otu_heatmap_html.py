@@ -13,7 +13,8 @@ from numpy import array, log
 import shutil
 from shutil import rmtree
 from os.path import join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.make_otu_heatmap_html import (
     make_html_doc, create_javascript_array,
     filter_by_otu_hits,
@@ -100,7 +101,7 @@ javascript array"""
 
         # comparing directly log_otu_table against exp_otu_table doesn't work,
         #  needs to be modified in the otu table object
-        self.assertFloatEqual(list(log_otu_table.iterSampleData()),
+        assert_almost_equal(list(log_otu_table.iterSampleData()),
                               list(exp_otu_table.iterSampleData()))
 
     def test_generate_heatmap_plots(self):

@@ -19,7 +19,7 @@ from os import remove, rmdir
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 
 from qiime.util import get_qiime_project_dir

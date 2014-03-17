@@ -15,7 +15,7 @@ from shutil import rmtree
 from numpy import array
 from matplotlib.axes import Subplot
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
@@ -43,46 +43,46 @@ class PlotRankAbundance(TestCase):
 
         # works on empty
         counts = array([])
-        self.assertEqual(make_sorted_frequencies(counts), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts), [])
 
          # works on zeros
         counts = array([0, 0, 0, 0, 0, 0])
-        self.assertEqual(make_sorted_frequencies(counts), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts), [])
 
         # works on flat data
         counts = array([3, 3, 3, 3, 3])
         expected_freqs = [0.2, 0.2, 0.2, 0.2, 0.2]
         observed_freqs = make_sorted_frequencies(counts)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
         # works on real data
         counts = array([1, 2, 0, 1, 0, 2, 4])
         expected_freqs = [0.4, 0.2, 0.2, 0.1, 0.1]
         observed_freqs = make_sorted_frequencies(counts)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
     def test_make_sorted_frequencies_abolute(self):
         """make_sorted_frequencies returns correct absolute values"""
 
         # works on empty
         counts = array([])
-        self.assertEqual(make_sorted_frequencies(counts, True), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts, True), [])
 
         # works on zeros
         counts = array([0, 0, 0, 0, 0, 0])
-        self.assertEqual(make_sorted_frequencies(counts, True), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts, True), [])
 
         # works on flat data
         counts = array([3, 3, 3, 3, 3])
         expected_freqs = [3, 3, 3, 3, 3]
         observed_freqs = make_sorted_frequencies(counts, True)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
         # works o real data
         counts = array([1, 2, 0, 1, 0, 2, 4])
         expected_freqs = [4, 2, 2, 1, 1]
         observed_freqs = make_sorted_frequencies(counts, True)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
     def test_plot_rank_abundance_graph(self):
         """plot_rank_abudance_graph plots something"""

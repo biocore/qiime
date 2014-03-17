@@ -11,7 +11,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree

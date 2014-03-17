@@ -12,7 +12,8 @@ __email__ = "justinak@gmail.com"
 """Contains tests for beta_metrics  functions."""
 import os.path
 import numpy
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
 from qiime.beta_metrics import (
@@ -73,7 +74,7 @@ class FunctionTests(TestCase):
         reordered_mtx = _reorder_unifrac_res(
             [unifrac_mtx, unifrac_sample_names],
             sample_names)
-        self.assertFloatEqual(reordered_mtx, mtx)
+        assert_almost_equal(reordered_mtx, mtx)
 
     def test_make_unifrac_metric(self):
         """ exercise of the unweighted unifrac metric should not throw errors"""
@@ -85,7 +86,7 @@ class FunctionTests(TestCase):
                               self.l19_taxon_names)
         unifrac_mat, unifrac_names = fast_unifrac(tree, envs,
                                                   modes=['distance_matrix'])['distance_matrix']
-        self.assertFloatEqual(res, _reorder_unifrac_res([unifrac_mat,
+        assert_almost_equal(res, _reorder_unifrac_res([unifrac_mat,
                                                          unifrac_names], self.l19_sample_names))
         self.assertEqual(res[0, 0], 0)
         self.assertEqual(res[0, 3], 0.0)

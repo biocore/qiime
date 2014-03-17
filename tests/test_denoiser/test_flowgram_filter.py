@@ -12,7 +12,8 @@ __email__ = "jens.reeder@gmail.com"
 
 from os import remove
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
@@ -88,7 +89,7 @@ class Test_flowgram_filter(TestCase):
         fh = open(tmp_name, "U")
         lines = list(fh)
         remove(tmp_name)
-        self.assertEqualItems(lines, map(lambda a: a + "\n", expected))
+        self.assertItemsEqual(lines, map(lambda a: a + "\n", expected))
 
     def test_filter_sff_file(self):
         """filter_sff_file filters out bad reads."""
