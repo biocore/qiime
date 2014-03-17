@@ -19,7 +19,6 @@ from qiime.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from skbio.app.util import ApplicationNotFoundError, ApplicationError
-from cogent.parse.record import RecordError
 from qiime.util import load_qiime_config
 from qiime.denoiser.flowgram_clustering import denoise_seqs
 
