@@ -1,28 +1,21 @@
 #!/usr/bin/env python
 # File created on 09 Feb 2010
 from __future__ import division
-import numpy
 from time import time
-from os import system, getcwd, makedirs
+from os import getcwd, makedirs
 from os.path import join, split, abspath
+
 from cogent.app.formatdb import FormatDb
-from cogent.app.parameters import FilePath
 from cogent.util.misc import remove_files
+from skbio.app.parameters import FilePath
+
 from qiime.util import get_qiime_temp_dir
-from qiime.exclude_seqs_by_blast import blast_genome,\
-    check_options,\
-    find_homologs,\
-    sequences_to_file,\
-    no_filter,\
-    format_options_as_lines,\
-    check_align_percent_field,\
-    make_percent_align_filter,\
-    query_ids_from_blast_result,\
-    ids_from_fasta_lines,\
-    id_from_fasta_label_line,\
-    seqs_from_file,\
-    ids_to_seq_file,\
-    compose_logfile_lines
+from qiime.exclude_seqs_by_blast import (check_options,
+                                         find_homologs,
+                                         format_options_as_lines, 
+                                         ids_from_fasta_lines,
+                                         ids_to_seq_file,
+                                         compose_logfile_lines)
 
 __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -30,7 +23,8 @@ __credits__ = [
     "Jesse Zaneveld",
     "Rob Knight",
     "Justin Kuczynski",
-    "Jose Antonio Navas Molina"]
+    "Jose Antonio Navas Molina",
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Zaneveld"
