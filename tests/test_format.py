@@ -16,11 +16,13 @@ __email__ = "gregcaporaso@gmail.com"
 import json
 from os import remove
 from string import digits
+from tempfile import mkstemp
+
 from numpy import array, nan
 from cogent.util.misc import remove_files
 from unittest import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import (get_tmp_filename, get_qiime_library_version)
+from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
                           format_coords, build_prefs_string, format_matrix, format_map_file,
@@ -48,8 +50,8 @@ class TopLevelTests(TestCase):
         self.otu_map1 = [('0', ['seq1', 'seq2', 'seq5']),
                          ('1', ['seq3', 'seq4']),
                          ('2', ['seq6', 'seq7', 'seq8'])]
-        self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_', suffix='.txt')
-        self.tmp_fp2 = get_tmp_filename(prefix='FormatTests_', suffix='.txt')
+        _, self.tmp_fp1 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        _, self.tmp_fp2 = mkstemp(prefix='FormatTests_', suffix='.txt')
         self.files_to_remove = []
 
         self.taxa_summary = [[('a', 'b', 'c'), 0, 1, 2],
@@ -536,9 +538,8 @@ y\t5\t6\tsample y""")
             seqs,
             None)
 
-        tmp_filename = get_tmp_filename(
-            prefix="test_write_Fasta",
-            suffix=".fna")
+        _, tmp_filename = mkstemp(prefix="test_write_Fasta",
+                                  suffix=".fna")
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()

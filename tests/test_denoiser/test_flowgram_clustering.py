@@ -12,9 +12,10 @@ __email__ = "jens.reeder@gmail.com"
 
 import signal
 import os
-from os import mkdir, rmdir
+from os import rmdir
 from time import sleep
 from StringIO import StringIO
+from tempfile import mkdtemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -22,7 +23,6 @@ from cogent.core.sequence import Sequence
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import parse_sff, FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
 
 from qiime.denoiser.flowgram_clustering import *
 from qiime.denoiser.utils import FlowgramContainerArray
@@ -102,8 +102,7 @@ class DenoiserTests(TestCase):
     def test_get_flowgram_distances_on_cluster(self):
         """get_flowgram_distances_on_cluster computes the correct alignment score."""
 
-        self.tmp_dir = get_tmp_filename(tmp_dir="./", suffix="/")
-        mkdir(self.tmp_dir)
+        self.tmp_dir = mkdtemp(dir="./", suffix="/")
         # setup server and workers
         self.socket = setup_server()
         workers, client_sockets = setup_workers(1, self.tmp_dir, self.socket,
