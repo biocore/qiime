@@ -36,9 +36,10 @@ from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
-from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
-from qiime.pycogent_backports.usearch import (usearch_qf,
-                                              usearch61_denovo_cluster, usearch61_ref_cluster)
+from brokit.uclust import get_clusters_from_fasta_filepath
+from brokit.usearch import (usearch_qf,
+                            usearch61_denovo_cluster,
+                            usearch61_ref_cluster)
 
 
 class OtuPicker(FunctionWithParams):
