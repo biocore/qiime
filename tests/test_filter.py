@@ -11,6 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from StringIO import StringIO
+from tempfile import mkstemp
+
 from numpy import inf
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -33,7 +35,7 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           get_otu_ids_from_taxonomy_f,
                           sample_ids_from_metadata_description)
 from qiime.test import FakeFile
-from qiime.util import load_qiime_config, get_tmp_filename
+from qiime.util import load_qiime_config
 
 
 class fake_output_f():
@@ -1106,15 +1108,15 @@ o2	s1_3	s1_4	s2_5
 """
 
         # write the test files
-        in_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                 prefix='qiime_filter_test', suffix='.txt')
+        _, in_fp = mkstemp(dir=self.tmp_dir,
+                        prefix='qiime_filter_test', suffix='.txt')
         fasting_seqs_f = open(in_fp, 'w')
         fasting_seqs_f.write(otu_map_in)
         fasting_seqs_f.close()
         self.files_to_remove.append(in_fp)
 
-        actual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                     prefix='qiime_filter_test', suffix='.txt')
+        _, actual_fp = mkstemp(dir=self.tmp_dir,
+                            prefix='qiime_filter_test', suffix='.txt')
         self.files_to_remove.append(actual_fp)
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)

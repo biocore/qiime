@@ -13,12 +13,12 @@ __email__ = "justinak@gmail.com"
 
 from os import remove
 from unittest import TestCase, main
+from tempfile import mkstemp
 
 from cogent import LoadSeqs, DNA
 
 import brokit.fasttree
 
-from qiime.util import get_tmp_filename
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 
 
@@ -58,8 +58,8 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     """Tests of the CogentTreeBuilder class"""
 
     def setUp(self):
-        self.input_fp = get_tmp_filename(
-            prefix='CogentTreeBuilderTests_', suffix='.fasta')
+        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_', 
+                                            suffix='.fasta')
         self._paths_to_clean_up =\
             [self.input_fp]
         open(self.input_fp, 'w').write(aln_for_tree)
@@ -68,8 +68,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         """CogentTreeBuilder: output expected alignment file
         """
         p = CogentTreeBuilder({'Module': brokit.fasttree})
-        log_fp = get_tmp_filename(
-            prefix='CogentTreeBuilderTests_', suffix='.log')
+        _, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, aln_path=self.input_fp,

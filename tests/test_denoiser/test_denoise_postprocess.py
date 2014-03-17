@@ -12,9 +12,9 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
-from os import remove, rmdir, mkdir
+from os import remove, rmdir
+from tempfile import mkdtemp
 from unittest import TestCase, main
-from qiime.util import get_tmp_filename
 
 # import as _main to not interfere with TestCase.main
 from qiime.denoiser.denoise_postprocess import extract_read_to_sample_mapping,\
@@ -50,8 +50,7 @@ class DenoiserTests(TestCase):
     def test_combine_mappings(self):
         """combine_mappings works as expected"""
 
-        self.tmp_dir = get_tmp_filename(tmp_dir="./", suffix="/")
-        mkdir(self.tmp_dir)
+        self.tmp_dir = mkdtemp(dir="./", suffix="/")
 
         combine_mappings(
             fasta,
