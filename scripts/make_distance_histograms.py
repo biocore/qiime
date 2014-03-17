@@ -218,6 +218,11 @@ def main():
                     "The field, %s, is not in the provided mapping file.  Please supply correct fields (using the -f option or providing a 'FIELDS' list in the prefs file) corresponding to fields in mapping file." %
                     (f))
 
+    try:
+        mkdir(opts.dir_path)
+    except OSError:  # raised if dir exists
+        pass
+
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.map_fname,
                         dmatrix_file=opts.distance_matrix_file,
