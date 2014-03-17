@@ -31,7 +31,7 @@ import os
 from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 options_lookup = get_options_lookup()
 
 script_info = {}
@@ -166,8 +166,7 @@ def main():
 
     jar_path = os.path.join(qiime_dir, 'qiime/support_files/jar/')
 
-    data_dir_path = get_random_directory_name(output_dir=dir_path,
-                                              return_absolute_path=False)
+    data_dir_path = mkdtemp(dir=dir_path)
 
     try:
         os.mkdir(data_dir_path)

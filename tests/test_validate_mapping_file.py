@@ -9,6 +9,7 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
 from os.path import isdir, isfile, exists, join, basename
+from tempfile import mkdtemp
 from shutil import rmtree
 from collections import defaultdict
 
@@ -103,7 +104,7 @@ class CheckIdMapTests(TestCase):
         self.expected_log_errors_warnings_output =\
             expected_log_errors_warnings_output
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

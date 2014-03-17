@@ -13,6 +13,7 @@ from shutil import rmtree
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
+from tempfile import mkdtemp
 
 from qiime.util import create_dir, get_tmp_filename
 from qiime.add_qiime_labels import (add_qiime_labels, check_mapping_data,
@@ -28,7 +29,7 @@ class AddQiimeLabelsTests(TestCase):
 
         # Need an empty input directory to control fasta files present
 
-        self.input_dir = get_random_directory_name(prefix='/tmp/') + "/"
+        self.input_dir = mkdtemp()
         # Input data
         self.sample_fasta1 = sample_fasta1
         self.sample_fasta2 = sample_fasta2
@@ -51,7 +52,7 @@ class AddQiimeLabelsTests(TestCase):
 
         # Output data
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

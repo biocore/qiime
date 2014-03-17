@@ -15,7 +15,7 @@ import numpy as np
 
 from os import system
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 
 
 class BiplotTests(TestCase):
@@ -27,7 +27,7 @@ class BiplotTests(TestCase):
         pass
 
     def test_get_taxa(self):
-        rand_fname = get_random_directory_name(suppress_mkdir=True)
+        rand_fname = mkdtemp('./')
         rand_fname += '_tmp.txt'
         fout = open(rand_fname, 'w')
         lines = ['#Full OTU Counts',

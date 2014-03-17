@@ -11,6 +11,7 @@ __email__ = "william.a.walters@colorado.edu"
 
 from os.path import exists, join
 from shutil import rmtree
+from tempfile import mkdtemp
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
@@ -78,7 +79,7 @@ class TopLevelTests(TestCase):
         self.sample_fasta_file = sample_fasta_file
         self.sample_qual_file = sample_qual_file
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
         create_dir(self.output_dir)
 

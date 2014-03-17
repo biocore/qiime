@@ -10,6 +10,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import isdir, isfile, exists
 from shutil import rmtree
+from tempfile import mkdtemp
 
 from cogent.util.unit_test import TestCase, main
 from qiime.util import get_tmp_filename
@@ -36,7 +37,7 @@ class QualityScoresPlotTests(TestCase):
         seq_file.write(qual_scores)
         seq_file.close()
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

@@ -31,7 +31,7 @@ from qiime.make_3d_plots import get_coord, get_map, remove_unmapped_samples, \
     validate_coord_files
 from qiime.biplots import get_taxa, get_taxa_coords, get_taxa_prevalence,\
     remove_rare_taxa, make_mage_taxa, make_biplot_scores_output
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 import numpy as np
 
 options_lookup = get_options_lookup()
@@ -507,8 +507,7 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
     jar_path = os.path.join(qiime_dir, 'qiime/support_files/jar/')
 
-    data_dir_path = get_random_directory_name(output_dir=dir_path,
-                                              return_absolute_path=False)
+    data_dir_path = mkdtemp(dir=dir_path)
 
     try:
         os.mkdir(data_dir_path)

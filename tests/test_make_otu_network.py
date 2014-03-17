@@ -17,7 +17,7 @@ import shutil
 from numpy import array
 from random import choice, randrange
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from qiime.pycogent_backports.test import G_2_by_2
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
     get_num_con_cat, get_num_cat, make_table_file, make_stats_files,\
@@ -283,7 +283,7 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         self.assertEqual(num_cat, self.num_cat_less)
 
     def test_make_table_file(self):
-        random_dir_name = get_random_directory_name(output_dir='/tmp')
+        random_dir_name = mkdtemp()
         foldername = random_dir_name
 
         self._dir_to_clean_up = foldername
@@ -311,7 +311,7 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
 the appropriate location')
 
     def test_make_stats_files(self):
-        random_dir_name = get_random_directory_name(output_dir='/tmp')
+        random_dir_name = mkdtemp()
         foldername = random_dir_name
         self._dir_to_clean_up = foldername
 
@@ -356,7 +356,7 @@ the appropriate location')
 the appropriate location')
 
     def test_make_props_files(self):
-        random_dir_name = get_random_directory_name(output_dir='/tmp')
+        random_dir_name = mkdtemp()
         foldername = random_dir_name
 
         self._dir_to_clean_up = foldername

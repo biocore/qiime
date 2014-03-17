@@ -33,7 +33,7 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
-    from cogent.util.misc import get_random_directory_name, remove_files
+    from tempfile import mkdtemp, remove_files
     from skbio.app.util import ApplicationNotFoundError, ApplicationError
     from cogent import __version__ as pycogent_lib_version
 except ImportError as e:

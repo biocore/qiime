@@ -11,6 +11,7 @@ __email__ = "william.a.walters@colorado.edu"
 from os.path import isdir, isfile, exists, join, basename
 from shutil import rmtree
 from re import compile
+from tempfile import mkdtemp
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
@@ -42,7 +43,7 @@ class ExtractBarcodes(TestCase):
                       '[AT]', 'K': '[GT]', 'M': '[AC]',
                       'B': '[CGT]', 'D': '[AGT]', 'H': '[ACT]', 'V': '[ACG]', 'N': '[ACGT]'}
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

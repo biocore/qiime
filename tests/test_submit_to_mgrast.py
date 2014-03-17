@@ -12,7 +12,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 
 from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from qiime.submit_to_mgrast import parse_and_submit_params, post_multipart,\
     encode_multipart_formdata, get_content_type
 from os import mkdir, remove, removedirs, path, listdir
@@ -37,7 +37,7 @@ class TopLevelTests(TestCase):
         test_dir = path.dirname(path.abspath(__file__))
         self.seq_file = path.join(test_dir, 'test_support_files',
                                   'qiime_tutorial_split_lib_seqs_subset.fna')
-        self.output_dir = get_random_directory_name(output_dir='/tmp/')
+        self.output_dir = mkdtemp()
         self.sample_file = [('file', 'qiime_test.fna', fasta_example)]
         self._paths_to_clean_up = []
         self._dirs_to_clean_up = []
