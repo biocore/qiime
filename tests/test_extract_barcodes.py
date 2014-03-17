@@ -14,7 +14,7 @@ from re import compile
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 from qiime.util import create_dir, get_tmp_filename
 from qiime.extract_barcodes import (extract_barcodes,

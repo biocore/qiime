@@ -14,7 +14,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 from qiime.util import get_tmp_filename, create_dir
 from qiime.parse import parse_qual_score

@@ -15,7 +15,7 @@ from shutil import rmtree
 from os import chmod
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 from qiime.util import get_tmp_filename, create_dir
 

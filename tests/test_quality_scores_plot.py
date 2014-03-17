@@ -14,7 +14,7 @@ from tempfile import mkdtemp
 
 from unittest import TestCase, main
 from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 from qiime.quality_scores_plot import generate_histogram,\
     plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
