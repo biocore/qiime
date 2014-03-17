@@ -15,7 +15,7 @@ from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
 from cogent.util.misc import create_dir, remove_files
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,
@@ -38,7 +38,7 @@ def final_repset_from_iteration_repsets(repset_fasta_fs):
     """
     observed = {}
     for repset_fasta_f in repset_fasta_fs:
-        for otu_id, seq in MinimalFastaParser(repset_fasta_f):
+        for otu_id, seq in fasta_parse(repset_fasta_f):
             o = otu_id.split()[0]
             if not o in observed:
                 yield (otu_id, seq)
@@ -826,7 +826,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     new_refseqs_fp = '%s/new_refseqs.fna' % output_dir
     # write non-singleton otus representative sequences from step1 to the
     # final rep set file
-    for otu_id, seq in MinimalFastaParser(open(step1_repset_fasta_fp, 'U')):
+    for otu_id, seq in fasta_parse(open(step1_repset_fasta_fp, 'U')):
         if otu_id.split()[0] in otus_to_keep:
             final_repset_f.write('>%s\n%s\n' % (otu_id, seq))
     logger.write('# Write non-singleton otus representative sequences ' +
@@ -840,12 +840,12 @@ def pick_subsampled_open_reference_otus(input_fp,
     # iterate over all representative sequences from step2 and step4 and write
     # those corresponding to non-singleton otus to the final representative set
     # file and the new reference sequences file.
-    for otu_id, seq in MinimalFastaParser(open(step2_repset_fasta_fp, 'U')):
+    for otu_id, seq in fasta_parse(open(step2_repset_fasta_fp, 'U')):
         if otu_id.split()[0] in otus_to_keep:
             new_refseqs_f.write('>%s\n%s\n' % (otu_id, seq))
             final_repset_f.write('>%s\n%s\n' % (otu_id, seq))
     if not suppress_step4:
-        for otu_id, seq in MinimalFastaParser(open(step4_repset_fasta_fp, 'U')):
+        for otu_id, seq in fasta_parse(open(step4_repset_fasta_fp, 'U')):
             if otu_id.split()[0] in otus_to_keep:
                 new_refseqs_f.write('>%s\n%s\n' % (otu_id, seq))
                 final_repset_f.write('>%s\n%s\n' % (otu_id, seq))

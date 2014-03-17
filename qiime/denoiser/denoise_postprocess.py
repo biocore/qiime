@@ -14,7 +14,7 @@ from itertools import imap
 from re import compile, search
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 
 from qiime.denoiser.utils import read_denoiser_mapping, sort_ids
 
@@ -65,7 +65,7 @@ def combine_mappings(fasta_fh, mapping_fh, denoised_seqs_fh,
     """
 
      # read in mapping from split_library file
-    labels = imap(lambda a_b: a_b[0], MinimalFastaParser(fasta_fh))
+    labels = imap(lambda a_b: a_b[0], fasta_parse(fasta_fh))
     # mapping from seq_id to sample_id
     sample_id_mapping = extract_read_to_sample_mapping(labels)
 
@@ -95,7 +95,7 @@ def combine_mappings(fasta_fh, mapping_fh, denoised_seqs_fh,
             exit()
 
     fasta_out_fh = open(out_dir + "/denoised_all.fasta", "w")
-    for label, seq in MinimalFastaParser(denoised_seqs_fh):
+    for label, seq in fasta_parse(denoised_seqs_fh):
         id = label.split()[0]
         newlabel = "%s %s" % (sample_id_mapping[id], id)
         fasta_out_fh.write(Sequence(name=newlabel, seq=seq).toFasta() + "\n")
