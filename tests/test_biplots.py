@@ -69,16 +69,12 @@ class BiplotTests(TestCase):
                               [0, 0, 0, 0]], float)
         sample_weights = [3, 1, 1, 2]
         res = bp.get_taxa_prevalence(otu_table)
-        # print res
-        # assert_almost_equal(res, np.array([(2/3) + 1/2, 1/3+1+1+1/2, 0])/4)
         assert_almost_equal(res, np.array([(2 / 3) + 1 / 2, 1 / 3 + 1 + 1 + 1 / 2, 0]) / 4
                               * 4 / (2.5 + 1 / 3))
         otu_table = np.array([[2, 0, 0, 1],
                               [1, 1, 1, 1],
                               [0, 2, 2, 1]], float)
         res = bp.get_taxa_prevalence(otu_table)
-        # print res
-        # assert_almost_equal(res, np.array([3,4,5])/12) # if no normalize
         assert_almost_equal(res, [0, .5, 1])
 
     def test_remove_rare_taxa(self):

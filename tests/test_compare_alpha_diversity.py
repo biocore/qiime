@@ -438,7 +438,7 @@ class TopLevelTests(TestCase):
         for k, v in exp.iteritems():
             assert_almost_equal(obs[k], v)
         # check that keys are the same
-        self.assertEqual(obs.keys(), exp.keys())
+        self.assertItemsEqual(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

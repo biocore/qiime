@@ -21,9 +21,10 @@ from qiime.util import (FunctionWithParams,
                         write_degapped_fasta_to_file, get_tmp_filename, create_dir,
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
-from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
-                                              usearch61_chimera_check_denovo, parse_usearch61_clusters,
-                                              usearch61_chimera_check_ref)
+from brokit.usearch import (usearch61_smallmem_cluster,
+                            usearch61_chimera_check_denovo,
+                            parse_usearch61_clusters,
+                            usearch61_chimera_check_ref)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
