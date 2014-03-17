@@ -19,7 +19,7 @@ from string import digits
 from numpy import array, nan
 from cogent.util.misc import remove_files
 from unittest import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.util import (get_tmp_filename, get_qiime_library_version)
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
@@ -542,7 +542,7 @@ y\t5\t6\tsample y""")
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()
-        actual_seqs = list(MinimalFastaParser(open(tmp_filename, "U")))
+        actual_seqs = list(fasta_parse(open(tmp_filename, "U")))
         remove(tmp_filename)
 
         self.assertEqual(actual_seqs, seqs)

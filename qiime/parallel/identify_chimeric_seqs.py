@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import split
 from shutil import copy
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from qiime.identify_chimeric_seqs import make_cidx_file
 from qiime.parse import parse_tmp_to_final_filepath_map_file
 from qiime.util import write_degapped_fasta_to_file
@@ -56,7 +56,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             else:
                 # otherwise create it
                 reference_seqs_fp = write_degapped_fasta_to_file(
-                    MinimalFastaParser(open(aligned_reference_seqs_fp)),
+                    fasta_parse(open(aligned_reference_seqs_fp)),
                     tmp_dir=working_dir)
             # delete it afterwards
             self.files_to_remove.append(reference_seqs_fp)

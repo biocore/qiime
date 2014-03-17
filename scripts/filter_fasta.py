@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 
 from qiime.util import make_option
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from skbio.parse.sequences import fastq_parse
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
@@ -90,7 +90,7 @@ script_info['version'] = __version__
 
 def filter_fasta_fp(input_seqs_fp, output_seqs_fp, seqs_to_keep, negate=False):
     """Filter a fasta file to include only sequences listed in seqs_to_keep """
-    input_seqs = MinimalFastaParser(open(input_seqs_fp, 'U'))
+    input_seqs = fasta_parse(open(input_seqs_fp, 'U'))
     output_f = open(output_seqs_fp, 'w')
     return filter_fasta(input_seqs, output_f, seqs_to_keep, negate)
 
@@ -113,7 +113,7 @@ def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
 
 def get_seqs_to_keep_lookup_from_prefix(fasta_f, prefix):
     seqs_to_keep = [seq_id
-                    for seq_id, seq in MinimalFastaParser(fasta_f)
+                    for seq_id, seq in fasta_parse(fasta_f)
                     if seq_id.startswith(prefix)]
     return {}.fromkeys(seqs_to_keep)
 
@@ -121,7 +121,7 @@ def get_seqs_to_keep_lookup_from_prefix(fasta_f, prefix):
 def get_seqs_to_keep_lookup_from_sample_ids(fasta_f, sample_ids):
     sample_ids = set(sample_ids)
     seqs_to_keep = set()
-    for seq_id, seq in MinimalFastaParser(fasta_f):
+    for seq_id, seq in fasta_parse(fasta_f):
         if seq_id.split('_')[0] in sample_ids:
             seqs_to_keep.add(seq_id)
     return {}.fromkeys(seqs_to_keep)
@@ -132,7 +132,7 @@ def get_seqs_to_keep_lookup_from_mapping_file(
     sample_ids = {}.fromkeys(
         sample_ids_from_metadata_description(mapping_f, valid_states))
     seqs_to_keep = []
-    for seq_id, seq in MinimalFastaParser(fasta_f):
+    for seq_id, seq in fasta_parse(fasta_f):
         if seq_id.split('_')[0] in sample_ids:
             seqs_to_keep.append(seq_id)
         else:

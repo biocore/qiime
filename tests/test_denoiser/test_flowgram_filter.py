@@ -14,7 +14,7 @@ from os import remove
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle

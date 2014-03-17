@@ -12,7 +12,7 @@ __email__ = "William.A.Walters@colorado.edu"
 from os.path import join, basename
 from string import letters, digits
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 
 from qiime.util import duplicates_indices
 from qiime.check_id_map import process_id_map
@@ -141,7 +141,7 @@ def write_combined_fasta(fasta_name_to_sample_id,
     combined_file_out = open(join(output_dir + "/", "combined_seqs.fna"), "w")
 
     for curr_fasta in fasta_files:
-        for label, seq in MinimalFastaParser(open(curr_fasta, "U")):
+        for label, seq in fasta_parse(open(curr_fasta, "U")):
             combined_file_out.write(">%s_%d %s\n" %
                                     (fasta_name_to_sample_id[basename(curr_fasta)], counter, label))
             combined_file_out.write("%s\n" % seq)

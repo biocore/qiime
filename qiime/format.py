@@ -683,7 +683,7 @@ def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
 def write_Fasta_from_name_seq_pairs(name_seqs, fh):
     """writes a list of (name,seqs) to filehandle.
 
-    name_seqs: (name,seqs) pair such as from MinimalFASTAParser
+    name_seqs: (name,seqs) pair such as from fasta_parse
     fh: an open filehandle
     """
     if fh is None:

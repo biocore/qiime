@@ -14,7 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 from random import sample
 
 from unittest import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 

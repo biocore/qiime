@@ -14,7 +14,7 @@ __email__ = "william.a.walters@gmail.com"
 from collections import defaultdict
 from os.path import split, join
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.record import RecordError
 from cogent.parse.tree import DndParser
 
@@ -111,7 +111,7 @@ def verify_valid_fasta_format(input_fasta_fp):
     fasta_f = open(input_fasta_fp, "U")
 
     try:
-        for label, seq in MinimalFastaParser(fasta_f):
+        for label, seq in fasta_parse(fasta_f):
             continue
     except RecordError:
         raise RecordError("Input fasta file not valid fasta format.  Error " +
@@ -130,7 +130,7 @@ def get_fasta_labels(input_fasta_fp):
 
     fasta_f = open(input_fasta_fp, "U")
 
-    for label, seq in MinimalFastaParser(fasta_f):
+    for label, seq in fasta_parse(fasta_f):
         fasta_labels.append(label.split()[0])
 
     return fasta_labels
@@ -223,7 +223,7 @@ def check_fasta_seqs(input_fasta_fp,
     else:
         max_bc_len = 0
 
-    for label, seq in MinimalFastaParser(input_fasta_f):
+    for label, seq in fasta_parse(input_fasta_f):
 
         # Only count one offending problem
         for curr_nt in seq:
@@ -279,7 +279,7 @@ def check_fasta_seqs_lens(input_fasta_fp):
 
     input_fasta_f = open(input_fasta_fp, "U")
 
-    for label, seq in MinimalFastaParser(input_fasta_f):
+    for label, seq in fasta_parse(input_fasta_f):
         seq_lens[len(seq)] += 1
 
     input_fasta_f.close()
