@@ -18,7 +18,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.util import get_tmp_filename
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
                                 first, random_id, longest_id, unique_id_map, label_to_name,
-                                make_most_abundant, MinimalFastaParser, ReferenceRepSetPicker)
+                                make_most_abundant, fasta_parse, ReferenceRepSetPicker)
 
 
 class RepSetPickerTests(TestCase):
@@ -385,7 +385,7 @@ class TopLevelTests(SharedSetupTestCase):
         ids = \
             "R27DLI_4812 R27DLI_600  R27DLI_727  U1PLI_403   U1PLI_8969".split(
             )
-        seqs = dict(MinimalFastaParser(dna_seqs.splitlines(),
+        seqs = dict(fasta_parse(dna_seqs.splitlines(),
                                        label_to_name=label_to_name))
         self.assertEqual(longest_id(ids, seqs), 'U1PLI_403')
 
@@ -403,7 +403,7 @@ class TopLevelTests(SharedSetupTestCase):
         ids = \
             "R27DLI_4812 R27DLI_600  R27DLI_727  U1PLI_403   U1PLI_8969".split(
             )
-        seqs = dict(MinimalFastaParser(dna_seqs.splitlines(),
+        seqs = dict(fasta_parse(dna_seqs.splitlines(),
                                        label_to_name=label_to_name))
         f = make_most_abundant(seqs)
         result = f(ids, seqs)

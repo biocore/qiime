@@ -12,7 +12,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from qiime.util import parse_command_line_parameters, make_option, \
     get_options_lookup, load_qiime_config, create_dir
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.core.alignment import DenseAlignment
 from qiime.parse import parse_qiime_parameters
 from cogent.core.moltype import DNA
@@ -101,7 +101,7 @@ def main():
 
     # load input sequences and convert to phylip since the tools require
     # the query sequences to phylip-compliant names
-    load_aln = MinimalFastaParser(open(opts.input_fasta_fp, 'U'))
+    load_aln = fasta_parse(open(opts.input_fasta_fp, 'U'))
     aln = DenseAlignment(load_aln)
     seqs, align_map = aln.toPhylip()
 
@@ -111,10 +111,10 @@ def main():
     if module == 'raxml_v730':
         # load the reference sequences
         load_ref_aln = \
-            DenseAlignment(MinimalFastaParser(open(opts.refseq_fp, 'U')))
+            DenseAlignment(fasta_parse(open(opts.refseq_fp, 'U')))
 
         # combine and load the reference plus query
-        combined_aln = MinimalFastaParser(StringIO(load_ref_aln.toFasta() +
+        combined_aln = fasta_parse(StringIO(load_ref_aln.toFasta() +
                                                    '\n' + aln.toFasta()))
         # overwrite the alignment map
         aln = DenseAlignment(combined_aln)

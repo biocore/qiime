@@ -18,7 +18,7 @@ from os.path import exists
 from cogent.util.unit_test import TestCase, main
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import fasta_parse
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
@@ -125,10 +125,10 @@ class TestUtils(TestCase):
         # empty map results in empty files
         store_clusters({}, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            fasta_parse(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, [])
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            fasta_parse(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, [])
 
         # non-empty map creates non-empty files, centroids sorted by size
@@ -146,10 +146,10 @@ class TestUtils(TestCase):
 
         store_clusters(mapping, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            fasta_parse(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, centroids)
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            fasta_parse(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, singletons)
 
     def test_get_representatives(self):
