@@ -16,7 +16,8 @@ from tempfile import mkstemp
 
 from numpy import array, nan
 from StringIO import StringIO
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
 from qiime.parse import (group_by_field, group_by_fields,
                          parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords,
@@ -111,10 +112,9 @@ class TopLevelTests(TestCase):
     def test_parse_taxa_summary_table(self):
         """ parse_taxa_summary_table functions as expected """
         actual = parse_taxa_summary_table(self.taxa_summary1.split('\n'))
-        self.assertEqual(actual[0], self.taxa_summary1_expected[0])
-        self.assertEqual(actual[1], self.taxa_summary1_expected[1])
-        self.assertEqual(actual[2], self.taxa_summary1_expected[2])
-        self.assertEqual(actual, self.taxa_summary1_expected)
+        self.assertItemsEqual(actual[0], self.taxa_summary1_expected[0])
+        self.assertItemsEqual(actual[1], self.taxa_summary1_expected[1])
+        assert_almost_equal(actual[2], self.taxa_summary1_expected[2])
 
     def test_parse_newick(self):
         """parse_newick correctly matches escaped tip names to otu ids
@@ -309,7 +309,8 @@ c\t1\t3.5\t0
 """.splitlines()
         exp = (['a', 'b', 'c'], array([[0, 1, 2], [1, 0, 3.5], [1, 3.5, 0]]))
         obs = parse_distmat(lines)
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        assert_almost_equal(obs[1], exp[1])
 
     def test_parse_distmat_to_dict(self):
         """parse_distmat should return dict of distmat"""
@@ -345,7 +346,7 @@ node2\t0
         lines = input_txt.splitlines()
         exp = {'17node': 0.11922, 'node2': 0.00}
         obs = parse_bootstrap_support(lines)
-        self.assertFloatEqual(obs, exp)
+        self.assertItemsEqual(obs, exp)
 
     def test_parse_rarefaction_data(self):
         self.data = {}
@@ -525,7 +526,8 @@ eigvals\t4.94\t1.79\t1.50
                array([[.11, .09, .23], [.03, .07, -.26], [.12, .06, -.32]]),
                array([4.94, 1.79, 1.50]),
                array([14.3, 5.2, 4.3]))
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        assert_almost_equal(obs[1], exp[1])
 
     def test_parse_coords_exceptions(self):
         """Check exceptions are raised accordingly with missing information"""
@@ -555,7 +557,10 @@ eigvals\t4.94\t1.79\t1.50
                array([[19111, 44536, 42], [1216, 3500, 6], [1803, 1184, 2],
                       [1722, 4903, 17], [589, 2074, 34]]),
                self.expected_lineages1)
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
 
     def test_parse_classic_otu_table(self):
         """parse_classic_otu_table functions as expected with new-style OTU table
@@ -568,7 +573,11 @@ eigvals\t4.94\t1.79\t1.50
                array([[19111, 44536, 42], [1216, 3500, 6], [1803, 1184, 2],
                       [1722, 4903, 17], [589, 2074, 34]]),
                self.expected_lineages1)
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
+
 
         # test that the modified parse_classic performs correctly on OTU tables
         # without leading comments
@@ -603,7 +612,11 @@ eigvals\t4.94\t1.79\t1.50
                       [1803.0, 1184.0, 2.0], [1722.1, 4903.2, 17.0],
                       [589.6, 2074.4, 34.5]]),
                self.expected_lineages1)
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
+
 
     def test_parse_classic_otu_table_float_counts(self):
         """parse_classic_otu_table should return correct result from small table"""
@@ -641,7 +654,11 @@ eigvals\t4.94\t1.79\t1.50
                  'Bacilli',
                  'Staphylococcaceae'],
                 ['Bacteria', 'Cyanobacteria', 'Chloroplasts', 'vectors']])
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
+
 
     def test_parse_classic_otu_table_file(self):
         """parse_classic_otu_table should return correct result on fileio format object"""
@@ -678,7 +695,11 @@ eigvals\t4.94\t1.79\t1.50
                  'Bacilli',
                  'Staphylococcaceae'],
                 ['Bacteria', 'Cyanobacteria', 'Chloroplasts', 'vectors']])
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
+
 
     def test_parse_classic_otu_table_consensus_lineage(self):
         """parse_classic_otu_table should accept 'consensusLineage'"""
@@ -715,7 +736,10 @@ eigvals\t4.94\t1.79\t1.50
                  'Bacilli',
                  'Staphylococcaceae'],
                 ['Bacteria', 'Cyanobacteria', 'Chloroplasts', 'vectors']])
-        self.assertEqual(obs, exp)
+        self.assertEqual(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
+        assert_almost_equal(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
 
     def test_make_envs_dict(self):
         """ make_envs_dict should have the same abundance for each taxon
@@ -1022,7 +1046,7 @@ eigvals\t4.94\t1.79\t1.50
     def test_parse_qual_score(self):
         """qual_score should return dict of {id: qual_scores}"""
         scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
-        self.assertEqual(parse_qual_score(scores),
+        self.assertItemsEqual(parse_qual_score(scores),
                          {'x': [5, 10, 5, 12], 'y': [30, 40]})
 
         # Check that a bad file, e.g. a fast raises Error
@@ -1033,7 +1057,7 @@ eigvals\t4.94\t1.79\t1.50
         """qual_scores should return dict of {id:qual_scores}"""
         scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
         scores2 = StringIO('>a\n5 10 5\n12\n>b\n30 40')
-        self.assertEqual(parse_qual_scores([scores, scores2]),
+        self.assertItemsEqual(parse_qual_scores([scores, scores2]),
                          {'x': [5, 10, 5, 12], 'y': [30, 40], 'a': [5, 10, 5, 12], 'b': [30, 40]})
 
     def test_MinimalQualParser(self):
@@ -1042,11 +1066,11 @@ eigvals\t4.94\t1.79\t1.50
                   '>y', '30 40',
                   '>a', '5 10 5', '12',
                   '>b', '30 40']
-        gen = MinimalQualParser(scores)
-        self.assertEqual(list(gen), [('x', [5, 10, 5, 12]),
-                                     ('y', [30, 40]),
-                                     ('a', [5, 10, 5, 12]),
-                                     ('b', [30, 40])])
+        gen = list(MinimalQualParser(scores))
+        self.assertItemsEqual(gen[0][1], [5, 10, 5, 12])
+        self.assertItemsEqual(gen[1][1], [30, 40])
+        self.assertItemsEqual(gen[2][1], [5, 10, 5, 12])
+        self.assertItemsEqual(gen[3][1], [30, 40])
 
     def test_parse_trflp(self):
         """ should return a header and otu_table lists"""
@@ -1074,7 +1098,7 @@ Sample 5	25			"""
 
         self.assertEqual(samples, samples_exp)
         self.assertEqual(otus, otus_exp)
-        self.assertEqual(data, data_exp)
+        assert_almost_equal(data, data_exp)
 
     def test_parse_trflp_headerless(self):
         """ should return a header and otu_table lists"""
@@ -1101,7 +1125,7 @@ Sample_5__	25			"""
 
         self.assertEqual(samples, samples_exp)
         self.assertEqual(otus, otus_exp)
-        self.assertEqual(data, data_exp)
+        assert_almost_equal(data, data_exp)
 
     def test_parse_trflp_headerless_diff_row_len(self):
         """ should return a header and otu_table lists"""
@@ -1128,9 +1152,9 @@ Sample 5	25
                           [0, 0, 3000, 0, 0],
                           [0, 0, 0, 4000, 0]])
 
-        self.assertEqual(samples, samples_exp)
-        self.assertEqual(otus, otus_exp)
-        self.assertEqual(data, data_exp)
+        self.assertItemsEqual(samples, samples_exp)
+        self.assertItemsEqual(otus, otus_exp)
+        assert_almost_equal(data, data_exp)
 
     def test_parse_denoiser_mapping(self):
         """ parse_denoiser_mapping creates {} from denoiser mapping file
@@ -1139,7 +1163,7 @@ Sample 5	25
         expected = {'Read1': ['Read1', 'Read4', 'Read5 some comment'],
                     'Read2': ['Read2'],
                     'Read3': ['Read3', 'Read6']}
-        self.assertEqual(actual, expected)
+        self.assertDictEqual(actual, expected)
 
     def test_parse_otu_map(self):
         """ parse_otu_map functions as expected
@@ -1153,9 +1177,9 @@ otu3	s8_7	s2_5""".split('\n')
         expected_sids = ['s1', 's2', 's5', 's3', '1', 's8']
         expected_oids = ['otu1', '2', 'otu3']
         actual = parse_otu_map(otu_map_f)
-        self.assertEqual(actual[0], expected_map)
-        self.assertEqual(actual[1], expected_sids)
-        self.assertEqual(actual[2], expected_oids)
+        self.assertDictEqual(actual[0], expected_map)
+        self.assertItemsEqual(actual[1], expected_sids)
+        self.assertItemsEqual(actual[2], expected_oids)
 
     def test_parse_otu_map_w_excludes(self):
         """ parse_otu_map functions as expected when excluding otu ids

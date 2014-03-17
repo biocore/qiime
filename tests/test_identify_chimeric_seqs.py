@@ -15,7 +15,7 @@ from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 
 from cogent import LoadSeqs, DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 

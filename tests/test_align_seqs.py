@@ -15,7 +15,8 @@ from os.path import getsize
 from tempfile import mkstemp
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.align_seqs import (compute_min_alignment_length,
                               Aligner, CogentAligner, PyNastAligner, InfernalAligner,
                               alignment_module_names,
@@ -85,7 +86,7 @@ class CogentAlignerTests(SharedSetupTestCase):
                    log_path=log_fp)
         expected = expected_muscle_alignment
         # note: lines in diff order w/ diff versions
-        self.assertEqualItems(str(actual).splitlines(), expected.splitlines())
+        self.assertEqual(str(actual).splitlines(), expected.splitlines())
 
     def test_muscle_max_memory(self):
         """CogentAligner: muscle_max_memory should be passed to alignment fcn
@@ -104,7 +105,7 @@ class CogentAlignerTests(SharedSetupTestCase):
                    log_path=log_fp)
         expected = expected_muscle_alignment
         # note: lines in diff order w/ diff versions
-        self.assertEqualItems(str(actual).splitlines(), expected.splitlines())
+        self.assertEqual(str(actual).splitlines(), expected.splitlines())
 
 
 class InfernalAlignerTests(SharedSetupTestCase):

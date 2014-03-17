@@ -13,7 +13,8 @@ from os.path import exists
 from tempfile import mkstemp
 
 from numpy import array, log10, asarray, float64
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
@@ -80,14 +81,14 @@ class TopLevelTests(TestCase):
         category_labels = ['A', 'B', 'A', 'B', 'A', 'B']
         obs = get_order_from_categories(self.otu_table, category_labels)
         exp = [0, 4, 2, 1, 5, 3]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_get_order_from_tree(self):
         obs = get_order_from_tree(
             self.otu_table.ObservationIds,
             self.tree_text)
         exp = [2, 0, 1]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_make_otu_labels(self):
         lineages = []
@@ -113,7 +114,7 @@ class TopLevelTests(TestCase):
                      'Sample6', 'Sample5', 'Sample1']
         obs = names_to_indices(self.otu_table.SampleIds, new_order)
         exp = [3, 1, 2, 5, 4, 0]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_get_log_transform(self):
         eps = .01
@@ -124,7 +125,7 @@ class TopLevelTests(TestCase):
         xform[xform == 0] = eps
 
         for (i, val) in enumerate(obs.iterObservationData()):
-            self.assertEqual(val, log10(xform[i]))
+            assert_almost_equal(val, log10(xform[i]))
 
     def test_get_clusters(self):
         data = asarray([val for val in self.otu_table.iterObservationData()])

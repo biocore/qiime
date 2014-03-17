@@ -16,7 +16,7 @@ from glob import glob
 from os.path import join, exists, getsize, dirname
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import (load_qiime_config,
                         count_seqs,

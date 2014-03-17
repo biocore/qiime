@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from tempfile import mkstemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,

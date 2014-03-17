@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import exists
 from tempfile import mkstemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir

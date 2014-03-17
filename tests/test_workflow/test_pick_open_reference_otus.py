@@ -17,7 +17,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 
 from cogent import LoadTree, LoadSeqs
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import (load_qiime_config,
                         count_seqs,

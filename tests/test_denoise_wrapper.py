@@ -14,8 +14,9 @@ __email__ = "justinak@gmail.com"
 from os import remove, mkdir
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
-from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
@@ -72,7 +73,7 @@ class DenoiseWrapperTests(TestCase):
             num_cpus=1, primer="YATGCTGCCTCCCGTAGGAGT", verbose=False)
 
         actual = list(actual_centroids)
-        self.assertEqualItems(actual, expected_centroids)
+        self.assertEqual(actual, expected_centroids)
         # centroids are sorted, so first one should be unique
         #(all others have cluster size 1, so relative ordering is not guaranteed
         self.assertEqual(actual[0], expected_centroids[0])

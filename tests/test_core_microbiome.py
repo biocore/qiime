@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from biom.parse import parse_biom_table
 from qiime.core_microbiome import (core_observations_across_sample_ids)
 

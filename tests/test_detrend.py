@@ -17,7 +17,7 @@ from shutil import rmtree
 from os.path import join, exists
 from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from skbio.app.util import ApplicationError
 
 from cogent.util.misc import remove_files

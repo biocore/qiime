@@ -14,7 +14,7 @@ from shutil import rmtree
 from tempfile import mkstemp
 
 from skbio.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.parse import parse_qual_score

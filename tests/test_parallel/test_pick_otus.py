@@ -15,8 +15,8 @@ from glob import glob
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
                                       ParallelPickOtusTrie,

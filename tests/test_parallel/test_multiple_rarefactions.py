@@ -15,8 +15,8 @@ from shutil import rmtree
 from os.path import exists, join
 from tempfile import mkdtemp, mkstemp
 
-from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from biom.parse import parse_biom_table
 from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_distmat

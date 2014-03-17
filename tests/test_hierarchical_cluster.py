@@ -12,7 +12,7 @@ from tempfile import mkstemp
 
 from qiime.hierarchical_cluster import single_file_upgma, single_file_nj
 from qiime.format import format_distance_matrix
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import os
 import numpy
 

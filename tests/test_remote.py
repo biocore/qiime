@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 """Test suite for the remote.py module."""
 
 from socket import gaierror
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.remote import (_get_cleaned_headers,
                           _get_spreadsheet_headers,
                           _export_spreadsheet,

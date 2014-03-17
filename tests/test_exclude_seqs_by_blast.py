@@ -20,7 +20,8 @@ from random import choice
 from tempfile import mkstemp
 
 from numpy import array, arange, log, log10
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\
@@ -98,7 +99,7 @@ class ExcludeHumanTests(TestCase):
                           wordsize=28, percent_aligned=0.98, DEBUG=False)
 
         self.assertEqual(hit_ids, set(["bth:BT_0001", "hsa:8355"]))
-        self.assertEqual(removed_hit_ids, set([]))
+        self.assertEqual(removed_hit_ids, set())
 
         i = 0
         for line in blast_output:
@@ -128,7 +129,7 @@ class ExcludeHumanTests(TestCase):
                           DEBUG=False)
 
         self.assertEqual(hit_ids, set(["bth:BT_0001", "hsa:8355_tweaked"]))
-        self.assertEqual(removed_hit_ids, set([]))
+        self.assertEqual(removed_hit_ids, set())
 
     def test_sequences_to_file(self):
         """sequences_to_file should write a standard format FASTA file."""
@@ -187,7 +188,7 @@ class ExcludeHumanTests(TestCase):
 
         ok_ids, removed_ids = query_ids_from_blast_result(
             self.blast_result, align_filter, DEBUG=True)
-        self.assertEqualItems(ok_ids, set([]))
+        self.assertEqual(ok_ids, set())
 
     def test_ids_from_fasta_lines(self):
         """ ids_from_fasta_lines should return ids"""

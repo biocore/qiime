@@ -17,7 +17,7 @@ from shutil import rmtree
 from os.path import join, exists
 from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from skbio.app.util import ApplicationError
 
 from cogent.util.misc import remove_files
@@ -110,7 +110,7 @@ class RSupervisedLearnerTests(TestCase):
 
         # ensure that at least one feature is listed (skip header and comment)
         num_features_returned = len(features_output) - 1
-        self.assertGreaterThan(num_features_returned, 0)
+        self.assertGreater(num_features_returned, 0)
 
         # ensure that each line has two elements, and that the first one
         # is the name of one of the OTUs, the second is a float

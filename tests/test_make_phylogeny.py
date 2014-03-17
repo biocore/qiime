@@ -15,7 +15,7 @@ from os import remove
 from tempfile import mkstemp
 
 from cogent import LoadSeqs, DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import cogent.app.fasttree
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 

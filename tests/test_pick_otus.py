@@ -23,7 +23,8 @@ from shutil import rmtree
 from tempfile import mkstemp
 
 from skbio.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
 from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -93,27 +94,27 @@ class MothurOtuPickerTests(TestCase):
         app = MothurOtuPicker({})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['cccccc'], ['bbbbbb'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1, 2])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_low_similarity(self):
         app = MothurOtuPicker({'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_nearest_neighbor(self):
         app = MothurOtuPicker({'Algorithm': 'nearest', 'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        self.assertItemsEqual(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
 
@@ -447,7 +448,7 @@ class BlastOtuPickerTests(TestCase):
                     'ref2': ['s4'],
                     'ref3': ['s5']}
         actual = self.otu_picker(self.seqs_fp, blast_db=blast_db)
-        self.assertEqual(actual, expected)
+        self.assertItemsEqual(actual, expected)
 
     def test_call_multiple_blast_runs(self):
         """BLAST OTU Picker not affected by alt SeqsPerBlastRun
@@ -542,21 +543,21 @@ class PrefixSuffixOtuPickerTests(TestCase):
                                  prefix_length=400, suffix_length=0)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=0, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long prefix and suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=400, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
     def test_collapse_exact_matches_prefix_and_suffix(self):
         """Prefix/suffix: collapse_exact_matches fns with pref/suf len > 0
@@ -800,7 +801,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_and_higher_id(self):
         """ clusters seqs within 99% identity with default parameters """
@@ -821,8 +822,8 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
 
         # should be exactly 3 clusters
         self.assertEqual(len(obs_clusters), 3)
-        self.assertEqualItems(obs_clusters.keys(), expected_clusters.keys())
-        self.assertEqualItems(
+        self.assertItemsEqual(obs_clusters.keys(), expected_clusters.keys())
+        self.assertItemsEqual(
             obs_clusters.values(),
             expected_clusters.values())
 
@@ -921,7 +922,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq_2bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_minlen(self):
         """ Discards reads that fall below minlen setting """
@@ -958,7 +959,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'test0': ['usearch_ecoli_seq',
                                        'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_usearch61_length_sorting(self):
         """ Sorting according to length, clusters seqs """
@@ -1390,7 +1391,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
 
         expected_failures = ['usearch_ecoli_seq',
                              'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']
-        self.assertEqualItems(failures, expected_failures)
+        self.assertItemsEqual(failures, expected_failures)
 
     def test_closed_reference_with_match_usearch61(self):
         """ usearch61 does closed reference OTU picking successfully """
@@ -2857,7 +2858,7 @@ class UclustOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_map_filtered_clusters_to_full_clusters(self):
         """UclustOtuPicker._map_filtered_clusters_to_full_clusters functions as expected
@@ -3276,10 +3277,10 @@ class UclustReferenceOtuPickerTests(TestCase):
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
 
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
         failures_file_99_exp = ["s3", "s4"]
-        self.assertEqualItems(fail_file_str.split('\n'), failures_file_99_exp)
+        self.assertItemsEqual(fail_file_str.split('\n'), failures_file_99_exp)
 
     def test_default_parameters_new_clusters_allowed(self):
         """UclustReferenceOtuPicker: default parameters, new clusters allowed
@@ -3558,7 +3559,7 @@ class CdHitOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_prefilter_exact_prefixes_no_filtering(self):
         """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when no seqs get filtered
@@ -3765,10 +3766,10 @@ class PickOtusStandaloneFunctions(TestCase):
         """expanding failures generated by chained otu picking fns as expected
         """
         expected_f1 = ['0', '2']
-        self.assertEqualItems(expand_failures(self.failures1, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures1, self.otu_map2),
                               expected_f1)
         expected_f2 = ['0', '1', '2']
-        self.assertEqualItems(expand_failures(self.failures2, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures2, self.otu_map2),
                               expected_f2)
 
     def test_expand_failures_two_otu_maps(self):
@@ -3778,7 +3779,7 @@ class PickOtusStandaloneFunctions(TestCase):
 
         actual = expand_failures(self.failures1,
                                  expand_otu_map_seq_ids(self.otu_map2, self.otu_map1))
-        self.assertEqualItems(actual, expected_f1)
+        self.assertItemsEqual(actual, expected_f1)
 
     def test_map_otu_map_files_failures_file_two_otu_maps1(self):
         """map_otu_map_files: correctly maps two otu files and failures

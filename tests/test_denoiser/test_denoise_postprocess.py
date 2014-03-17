@@ -14,8 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 
 from os import remove, rmdir
 from tempfile import mkdtemp
-
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 # import as _main to not interfere with TestCase.main
 from qiime.denoiser.denoise_postprocess import extract_read_to_sample_mapping,\

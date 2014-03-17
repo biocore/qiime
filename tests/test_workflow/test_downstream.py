@@ -17,7 +17,7 @@ from glob import glob
 from os.path import join, exists, getsize, split, splitext
 from tempfile import mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.compare_alpha_diversity import compare_alpha_diversities
 from qiime.util import load_qiime_config, get_qiime_temp_dir

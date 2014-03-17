@@ -13,7 +13,8 @@ __email__ = "justinak@gmail.com"
 
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 import numpy
 from qiime.util import load_qiime_config
 from qiime.rarefaction import (RarefactionMaker,
@@ -82,8 +83,8 @@ class FunctionTests(TestCase):
         """
         maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
         res = maker.rarefy_to_list(include_full=True)
-        self.assertFloatEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
-        self.assertFloatEqual(
+        self.assertItemsEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
+        self.assertItemsEqual(
             res[-1][2].ObservationIds,
             self.otu_table.ObservationIds)
         self.assertEqual(res[-1][2], self.otu_table)
@@ -91,7 +92,7 @@ class FunctionTests(TestCase):
         sample_value_sum = []
         for val in res[1][2].iterSampleData():
             sample_value_sum.append(val.sum())
-        self.assertFloatEqual(sample_value_sum, [1.0, 1.0])
+        assert_almost_equal(sample_value_sum, [1.0, 1.0])
 
     def test_rarefy_to_files(self):
         """rarefy_to_files should write valid files
@@ -106,11 +107,11 @@ class FunctionTests(TestCase):
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
         otu_table = parse_biom_table(open(fname, 'U'))
 
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.SampleIds,
             self.otu_table.SampleIds[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.ObservationIds,
             self.otu_table.ObservationIds)
 
@@ -127,11 +128,11 @@ class FunctionTests(TestCase):
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
         otu_table = parse_biom_table(open(fname, 'U'))
 
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.SampleIds,
             self.otu_table.SampleIds[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.ObservationIds,
             self.otu_table.ObservationIds)
 

@@ -14,7 +14,8 @@ from StringIO import StringIO
 from tempfile import mkstemp
 
 from numpy import inf
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files
@@ -89,19 +90,19 @@ class FilterTests(TestCase):
 
         tips_to_keep = ["S5", "Seq1", "s2"]
         expected = ["S7", "S3", "seq6"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S5", "Seq1"]
         expected = ["S7", "S3", "seq6", "s2"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = []
         expected = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
         expected = []
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
     def test_filter_mapping_file(self):
         """filter_mapping_file should filter map file according to sample ids"""
@@ -1120,15 +1121,15 @@ o2	s1_3	s1_4	s2_5
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single)
-        self.assertEqualItems(retained_otus, set(['o1 some comment', 'o2']))
+        self.assertEqual(retained_otus, set(['o1 some comment', 'o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 3)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_double)
-        self.assertEqualItems(retained_otus, set(['o2']))
+        self.assertEqual(retained_otus, set(['o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
-        self.assertEqualItems(retained_otus, set(['o2']))
+        self.assertEqual(retained_otus, set(['o2']))
 
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"

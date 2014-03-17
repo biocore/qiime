@@ -11,7 +11,8 @@ __email__ = "jai.rideout@gmail.com"
 
 """Test suite for the make_distance_boxplots.py module."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from matplotlib.figure import Figure
 from qiime.make_distance_boxplots import (_cast_y_axis_extrema,
                                           _color_field_states, make_distance_boxplots,
@@ -31,19 +32,19 @@ class MakeDistanceBoxplotsTests(TestCase):
     def test_cast_y_axis_extrema(self):
         """Test correctly assigns colors to a field based on another field."""
         obs = _cast_y_axis_extrema(1.0)
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema(1)
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('1.0')
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('1')
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('auto')
-        self.assertFloatEqual(obs, None)
+        self.assertIsNone(obs)
 
     def test_cast_y_axis_extrema_invalid_input(self):
         """Test correctly raises an error on bad input."""
@@ -56,12 +57,15 @@ class MakeDistanceBoxplotsTests(TestCase):
                {'y': (0.0, 0.0, 1.0), 'x': (1.0, 0.0, 0.0)})
         obs = _color_field_states(self.map_f, ['1', '2', '3', '4', '5', '6'],
                                   'Foo', ['a', 'b', 'c'], 'Bar')
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['x'], exp[1]['x'])
+        assert_almost_equal(obs[1]['y'], exp[1]['y'])
 
         # Subset of sample IDs and field states.
         exp = ([(1.0, 0.0, 0.0)], {'x': (1.0, 0.0, 0.0)})
         obs = _color_field_states(self.map_f, ['1', '2'], 'Foo', ['a'], 'Bar')
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['x'], exp[1]['x'])
 
         # Color field by itself (useless but still allowed).
         exp = ([(1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.9490196078431372,
@@ -71,7 +75,10 @@ class MakeDistanceBoxplotsTests(TestCase):
                                                                    0.01568627450980392), 'b': (0.0, 0.0, 1.0)})
         obs = _color_field_states(self.map_f, ['1', '2', '3', '4', '5', '6'],
                                   'Foo', ['a', 'b', 'c'], 'Foo')
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['a'], exp[1]['a'])
+        assert_almost_equal(obs[1]['b'], exp[1]['b'])
+        assert_almost_equal(obs[1]['c'], exp[1]['c'])
 
     def test_color_field_states_invalid_input(self):
         """Test correctly raises error on invalid input."""
@@ -202,8 +209,13 @@ class MakeDistanceBoxplotsTests(TestCase):
         self.assertEqual(len(obs[0][2]), 7)
         self.assertEqual(len(obs[0][3]), 7)
         self.assertEqual(len(obs[0][4]), 7)
-        self.assertFloatEqual(obs[0][4], [None, None, (1.0, 0.0, 0.0), (0.0,
-                                                                        0.0, 1.0), None, None, None])
+        self.assertIsNone(obs[0][4][0])
+        self.assertIsNone(obs[0][4][1])
+        self.assertEqual(obs[0][4][2], (1.0, 0.0, 0.0))
+        self.assertEqual(obs[0][4][3], (0.0, 0.0, 1.0))
+        self.assertIsNone(obs[0][4][4])
+        self.assertIsNone(obs[0][4][5])
+        self.assertIsNone(obs[0][4][6])
 
         # Color individual within boxes, make sure box_color is ignored.
         obs = make_distance_boxplots(self.dm_f, self.map_f, ['Foo'],
@@ -214,8 +226,13 @@ class MakeDistanceBoxplotsTests(TestCase):
         self.assertEqual(len(obs[0][2]), 7)
         self.assertEqual(len(obs[0][3]), 7)
         self.assertEqual(len(obs[0][4]), 7)
-        self.assertFloatEqual(obs[0][4], [None, None, (1.0, 0.0, 0.0), (0.0,
-                                                                        0.0, 1.0), None, None, None])
+        self.assertIsNone(obs[0][4][0])
+        self.assertIsNone(obs[0][4][1])
+        self.assertEqual(obs[0][4][2], (1.0, 0.0, 0.0))
+        self.assertEqual(obs[0][4][3], (0.0, 0.0, 1.0))
+        self.assertIsNone(obs[0][4][4])
+        self.assertIsNone(obs[0][4][5])
+        self.assertIsNone(obs[0][4][6])
 
     def test_make_distance_boxplots_invalid_input(self):
         """Test correctly raises an error on invalid input."""

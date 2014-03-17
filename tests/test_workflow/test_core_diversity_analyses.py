@@ -16,8 +16,8 @@ from shutil import rmtree
 from os.path import exists
 from tempfile import mkdtemp
 
-from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.util import (get_qiime_temp_dir,
                         load_qiime_config)
 from qiime.parse import (parse_qiime_parameters)

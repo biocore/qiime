@@ -10,8 +10,8 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
 from qiime.plot_semivariogram import hist_bins, fit_semivariogram
+from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.util.unit_test import TestCase, main
 from numpy import asarray
 
 
