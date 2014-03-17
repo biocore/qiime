@@ -19,7 +19,6 @@ from copy import copy
 from os.path import abspath
 from itertools import imap
 
-from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.mothur import Mothur
@@ -30,6 +29,7 @@ from cogent import LoadSeqs, DNA
 from cogent.util.misc import flatten
 
 from skbio.util.trie import CompressedTrie, fasta_to_pairlist
+from skbio.parse.sequences import fasta_parse
 
 from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
@@ -140,15 +140,16 @@ class OtuPicker(FunctionWithParams):
 
         trunc_id = lambda a_b: (a_b[0].split()[0], a_b[1])
         # get the prefix map
-        t = CompressedTrie(fasta_to_pairlist(imap(trunc_id, MinimalFastaParser(
-                           open(seq_path)))))
+        with open(seq_path, 'U') as seq_lines:
+            t = CompressedTrie(fasta_to_pairlist(imap(trunc_id,
+                                                      fasta_parse(seq_lines))))
         mapping = t.prefix_map
         for key in mapping.keys():
                 mapping[key].append(key)
 
         # collect the representative seqs
         filtered_seqs = []
-        for (label, seq) in MinimalFastaParser(open(seq_path)):
+        for (label, seq) in fasta_parse(open(seq_path)):
             label = label.split()[0]
             if label in mapping:
                 filtered_seqs.append((label, seq))
@@ -211,7 +212,7 @@ class BlastOtuPicker(OtuPicker):
         self.log_lines.append('Blast database: %s' % self.blast_db)
 
         clusters, failures = self._cluster_seqs(
-            MinimalFastaParser(open(seq_path)))
+            fasta_parse(open(seq_path)))
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
         if result_path:
@@ -468,7 +469,7 @@ class PrefixSuffixOtuPicker(OtuPicker):
         assert suffix_length >= 0, 'Suffix length (%d) must be >= 0' % suffix_length
 
         clusters = self._collapse_exact_matches(
-            MinimalFastaParser(open(seq_path)), prefix_length, suffix_length)
+            fasta_parse(open(seq_path)), prefix_length, suffix_length)
         log_lines.append('Num OTUs: %d' % len(clusters))
 
         if result_path:
@@ -568,13 +569,13 @@ class TrieOtuPicker(OtuPicker):
             # This effectively creates a suffix map.
             # Also removes descriptions from seq identifier lines
             seqs = imap(lambda s: (s[0].split()[0], s[1][::-1]),
-                        MinimalFastaParser(open(seq_path)))
+                        fasta_parse(open(seq_path)))
             log_lines.append(
                 'Seqs reversed for suffix mapping (rather than prefix mapping).')
         else:
             # remove descriptions from seq identifier lines
             seqs = imap(lambda s: (s[0].split()[0], s[1]),
-                        MinimalFastaParser(open(seq_path)))
+                        fasta_parse(open(seq_path)))
 
         # Build the mapping
         t = CompressedTrie(fasta_to_pairlist(seqs))
@@ -678,7 +679,7 @@ class CdHitOtuPicker(OtuPicker):
                 'Prefix-based prefiltering, prefix length: %d'
                 % prefix_prefilter_length)
             seqs, filter_map = self._prefilter_exact_prefixes(
-                MinimalFastaParser(open(seq_path)), prefix_prefilter_length)
+                fasta_parse(open(seq_path)), prefix_prefilter_length)
             log_lines.append(
                 'Prefix-based prefiltering, post-filter num seqs: %d'
                 % len(seqs))
@@ -796,7 +797,7 @@ class UclustOtuPickerBase(OtuPicker):
             prefix='UclustExactMatchFilter', suffix='.fasta')
         seqs_to_cluster, exact_match_id_map =\
             self._prefilter_exact_matches(
-                MinimalFastaParser(open(seq_path, 'U')))
+                fasta_parse(open(seq_path, 'U')))
         self.files_to_remove.append(unique_seqs_fp)
         unique_seqs_f = open(unique_seqs_fp, 'w')
         for seq_id, seq in seqs_to_cluster:
