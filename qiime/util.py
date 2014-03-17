@@ -1506,12 +1506,7 @@ def make_compatible_distance_matrices(dm1, dm2, lookup=None):
         indices = [ids.index(element) for element in order]
 
         # this matrix contains the matched up data
-        out = zeros([len(indices)]*2)
-
-        for new_i, i in enumerate(indices):
-            for new_j, j in enumerate(indices):
-                out[new_i, new_j] = distance_matrix[i, j]
-
+        out = distance_matrix[indices][:, indices]
         matrices.append(out)
 
     return (order, matrices[0]), (order, matrices[1])
