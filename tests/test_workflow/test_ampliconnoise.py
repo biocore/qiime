@@ -14,7 +14,7 @@ import os
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, dirname
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import (get_tmp_filename,
                         load_qiime_config,

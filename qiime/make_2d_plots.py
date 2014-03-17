@@ -24,7 +24,7 @@ from numpy import array, asarray, ndarray
 from time import strftime
 from random import choice
 from qiime.util import summarize_pcoas, isarray
-from qiime.parse import group_by_field, group_by_fields
+from qiime.parse import group_by_field, group_by_fields, parse_coords
 from qiime.colors import data_color_order, data_colors, \
     get_group_colors, data_colors, iter_color_groups
 from qiime.sort import natsort
@@ -103,6 +103,38 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', 'green',
                   'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
 
+# This function used to live in make_3d_plots.py but in the Boulder sk-bio 
+# code sprint it got moved here to remove the 3D files.
+def get_coord(coord_fname, method="IQR"):
+    """Opens and returns coords location matrix and metadata.
+       Also two spread matrices (+/-) if passed a dir of coord files.
+       If only a single coord file, spread matrices are returned as None.
+    """
+    if not os.path.isdir(coord_fname):
+        try:
+            coord_f = open(coord_fname, 'U').readlines()
+        except (TypeError, IOError):
+            raise MissingFileError('Coord file required for this analysis')
+        coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
+        return [coord_header, coords, eigvals, pct_var, None, None]
+    else:
+        master_pcoa, support_pcoas = load_pcoa_files(coord_fname)
+
+        # get Summary statistics
+        coords, coords_low, coords_high, eigval_average, coord_header = \
+            summarize_pcoas(master_pcoa, support_pcoas, method=method)
+        pct_var = master_pcoa[3]  # should be getting this from an average
+
+        # make_3d_plots expects coord_header to be a python list
+        coord_header = list(master_pcoa[0])
+        return (
+            [coord_header,
+             coords,
+             eigval_average,
+             pct_var,
+             coords_low,
+             coords_high]
+        )
 
 def make_line_plot(
         dir_path, data_file_link, background_color, label_color, xy_coords,

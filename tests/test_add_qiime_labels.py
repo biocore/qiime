@@ -11,7 +11,7 @@ __email__ = "william.a.walters@colorado.edu"
 from os.path import join, basename, exists
 from shutil import rmtree
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 from tempfile import mkdtemp
 

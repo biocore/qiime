@@ -11,7 +11,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from string import digits
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_distmat
 from qiime.compare_distance_matrices import (run_mantel_correlogram,
                                              run_mantel_test)

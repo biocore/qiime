@@ -14,7 +14,7 @@ from os.path import exists, join, basename
 from shutil import rmtree
 from tempfile import mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename, create_dir
 from cogent.util.misc import remove_files, get_random_directory_name
 

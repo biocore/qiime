@@ -11,8 +11,8 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
 
-from cogent.util.unit_test import TestCase, main
 from tempfile import mkdtemp
+from unittest import TestCase, main
 from qiime.submit_to_mgrast import parse_and_submit_params, post_multipart,\
     encode_multipart_formdata, get_content_type
 from os import mkdir, remove, removedirs, path, listdir

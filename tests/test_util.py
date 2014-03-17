@@ -13,9 +13,12 @@ from collections import defaultdict
 import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
+
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+
 from skbio.core.sequence import DNASequence
 from cogent import Sequence
-from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
@@ -221,7 +224,7 @@ o4	seq6	seq7""".split('\n')
         rel_otu_table = convert_otu_table_relative(otu_table)
         self.assertEqual(rel_otu_table[0], otu_table[0])
         self.assertEqual(rel_otu_table[1], otu_table[1])
-        self.assertEqual(rel_otu_table[2], exp_counts)
+        assert_almost_equal(rel_otu_table[2], exp_counts)
         self.assertEqual(rel_otu_table[3], otu_table[3])
 
     def test_make_safe_f(self):
@@ -332,7 +335,7 @@ o4	seq6	seq7""".split('\n')
                                [.05, 0, 0],
                                [.1, 0, 0]], 'float')
         results = matrix_stats(headers_list, distmats_list)
-        self.assertFloatEqual(results[1:], [exp_mean, exp_median, exp_std])
+        assert_almost_equal(results[1:], [exp_mean, exp_median, exp_std])
         self.assertEqual(results[0], ['a', 'c', 'b'])
 
     def test_matrix_stats2(self):
@@ -465,18 +468,16 @@ o4	seq6	seq7""".split('\n')
               '>s33', 'A',
               '> 4>', 'AA>',
               '>blah', 'AA']
-        self.assertFloatEqual(
+        assert_almost_equal(
             count_seqs_from_file(f1),
             (3,
              8.666,
-             2.4944),
-            0.001)
-        self.assertFloatEqual(
+             2.4944), decimal=3)
+        assert_almost_equal(
             count_seqs_from_file(f2),
             (4,
              3.25,
-             2.2776),
-            0.001)
+             2.2776), decimal=3)
         self.assertEqual(count_seqs_from_file([]), (0, None, None))
 
     def test_count_seqs(self):
@@ -694,8 +695,10 @@ o4	seq6	seq7""".split('\n')
                                [12.3, 10.0]]))
 
         actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1, dm2)
-        self.assertEqual(actual_dm1, expected_dm1)
-        self.assertEqual(actual_dm2, expected_dm2)
+        self.assertItemsEqual(actual_dm1[0], expected_dm1[0])
+        assert_almost_equal(actual_dm1[1], expected_dm1[1])
+        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])        
+        assert_almost_equal(actual_dm2[1], expected_dm2[1])
 
     def test_make_compatible_distance_matrices_w_lookup(self):
         """make_compatible_distance_matrices: functions as expected with lookup"""
@@ -724,8 +727,10 @@ o4	seq6	seq7""".split('\n')
 
         actual_dm1, actual_dm2 = make_compatible_distance_matrices(
             dm1, dm2, lookup)
-        self.assertEqual(actual_dm1, expected_dm1)
-        self.assertEqual(actual_dm2, expected_dm2)
+        self.assertItemsEqual(actual_dm1[0], expected_dm1[0])
+        assert_almost_equal(actual_dm1[1], expected_dm1[1])
+        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])
+        assert_almost_equal(actual_dm2[1], expected_dm2[1])
 
         lookup = {'C': 'C', 'B': 'B', 'T': 'B', 'D': 'D'}
         self.assertRaises(KeyError,
@@ -1079,7 +1084,7 @@ class FunctionWithParamsTests(TestCase):
         m_matrix = array([[1.0, 0.0, 1.0], [2.0, 4.0, 4.0]])
         jn_matrix = array([[1.2, 0.1, -1.2], [2.5, 4.0, -4.5]])
         new_matrix = _flip_vectors(jn_matrix, m_matrix)
-        self.assertEqual(new_matrix, array([[1.2, 0.1, 1.2], [2.5, 4.0, 4.5]]))
+        assert_almost_equal(new_matrix, array([[1.2, 0.1, 1.2], [2.5, 4.0, 4.5]]))
 
     def test_compute_jn_pcoa_avg_ranges(self):
         """_compute_jn_pcoa_avg_ranges works
@@ -1093,10 +1098,10 @@ class FunctionWithParamsTests(TestCase):
                                array([[1.0, 4.0, -4.5], [-1.2, -0.1, 1.2]])]
         avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(
             jn_flipped_matrices, 'ideal_fourths')
-        self.assertFloatEqual(avg_matrix[(0, 0)], 4.0)
-        self.assertFloatEqual(avg_matrix[(0, 2)], -4.5)
-        self.assertFloatEqual(low_matrix[(0, 0)], 2.16666667)
-        self.assertFloatEqual(high_matrix[(0, 0)], 5.83333333)
+        assert_almost_equal(avg_matrix[(0, 0)], 4.0)
+        assert_almost_equal(avg_matrix[(0, 2)], -4.5)
+        assert_almost_equal(low_matrix[(0, 0)], 2.16666667)
+        assert_almost_equal(high_matrix[(0, 0)], 5.83333333)
 
         avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(
             jn_flipped_matrices, 'sdev')
@@ -1129,20 +1134,20 @@ class FunctionWithParamsTests(TestCase):
             summarize_pcoas(master_pcoa, support_pcoas, 'ideal_fourths',
                             apply_procrustes=False)
         self.assertEqual(m_names, ['1', '2', '3'])
-        self.assertFloatEqual(matrix_average[(0, 0)], -1.4)
-        self.assertFloatEqual(matrix_average[(0, 1)], 0.0125)
-        self.assertFloatEqual(matrix_low[(0, 0)], -1.5)
-        self.assertFloatEqual(matrix_high[(0, 0)], -1.28333333)
-        self.assertFloatEqual(matrix_low[(0, 1)], -0.0375)
-        self.assertFloatEqual(matrix_high[(0, 1)], 0.05)
-        self.assertFloatEqual(eigval_average[0], 0.81)
-        self.assertFloatEqual(eigval_average[1], 0.19)
+        assert_almost_equal(matrix_average[(0, 0)], -1.4)
+        assert_almost_equal(matrix_average[(0, 1)], 0.0125)
+        assert_almost_equal(matrix_low[(0, 0)], -1.5)
+        assert_almost_equal(matrix_high[(0, 0)], -1.28333333)
+        assert_almost_equal(matrix_low[(0, 1)], -0.0375)
+        assert_almost_equal(matrix_high[(0, 1)], 0.05)
+        assert_almost_equal(eigval_average[0], 0.81)
+        assert_almost_equal(eigval_average[1], 0.19)
         # test with the IQR option
         matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
             summarize_pcoas(master_pcoa, support_pcoas, method='IQR',
                             apply_procrustes=False)
-        self.assertFloatEqual(matrix_low[(0, 0)], -1.5)
-        self.assertFloatEqual(matrix_high[(0, 0)], -1.3)
+        assert_almost_equal(matrix_low[(0, 0)], -1.5)
+        assert_almost_equal(matrix_high[(0, 0)], -1.3)
 
         # test with procrustes option followed by sdev
         m, m1, msq = procrustes(master_pcoa[1], jn1[1])
@@ -1197,8 +1202,8 @@ class FunctionWithParamsTests(TestCase):
         """
         x = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         min_vals, max_vals = matrix_IQR(x)
-        self.assertEqual(min_vals, array([2.5, 3.5, 4.5]))
-        self.assertEqual(max_vals, array([8.5, 9.5, 10.5]))
+        assert_almost_equal(min_vals, array([2.5, 3.5, 4.5]))
+        assert_almost_equal(max_vals, array([8.5, 9.5, 10.5]))
 
     def test_idealfourths(self):
         """idealfourths: tests the ideal-fourths function which was imported from scipy
@@ -1209,16 +1214,16 @@ class FunctionWithParamsTests(TestCase):
                          [24.416666666666668, 74.583333333333343])
         test_2D = test.repeat(3).reshape(-1, 3)
 
-        self.assertFloatEqualRel(numpy.asarray(idealfourths(test_2D, axis=0)),
+        assert_almost_equal(numpy.asarray(idealfourths(test_2D, axis=0)),
                                  numpy.array(
                                      [[24.41666667, 24.41666667, 24.41666667],
                                       [74.58333333, 74.58333333, 74.58333333]]))
 
-        self.assertEqual(idealfourths(test_2D, axis=1),
+        assert_almost_equal(idealfourths(test_2D, axis=1),
                          test.repeat(2).reshape(-1, 2))
         test = [0, 0]
         _result = idealfourths(test)
-        self.assertEqual(numpy.isnan(_result).all(), True)
+        assert_almost_equal(numpy.isnan(_result).all(), True)
 
     def test_isarray(self):
         "isarray: tests the isarray function"
@@ -1294,19 +1299,19 @@ AAAAAAA
     def test_compare_otu_maps(self):
         """compare_otu_maps computes correct values"""
 
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map1), 0.0)
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map3), 0.0)
-        self.assertFloatEqual(
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map1), 0.0)
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map3), 0.0)
+        assert_almost_equal(
             compare_otu_maps(
                 otu_map1,
                 otu_map4),
             0.33333333333)
-        self.assertFloatEqual(
+        assert_almost_equal(
             compare_otu_maps(
                 otu_map3,
                 otu_map4),
             0.33333333333)
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map5), 1)
 
     def test_iseq_to_qseq_fields(self):
         """iseq_to_qseq_fields functions as expected"""
@@ -1346,15 +1351,15 @@ AAAAAAA
         exp = array([0.57735026918962584, 0.57735026918962584,
                      0.57735026918962584, 0.57735026918962584])
         obs = stderr([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]])
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test__chk_asarray(self):
         """_chk_asarray converts list into a numpy array"""
 
         exp = (array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]]), 0)
         obs = _chk_asarray([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]], 0)
-        self.assertEqual(obs, exp)
-
+        assert_almost_equal(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
 
 class BlastSeqsTests(TestCase):
 

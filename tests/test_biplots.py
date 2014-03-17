@@ -14,8 +14,9 @@ import qiime.biplots as bp
 import numpy as np
 
 from os import system
-from cogent.util.unit_test import TestCase, main
 from tempfile import mkdtemp
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 
 class BiplotTests(TestCase):
@@ -42,7 +43,7 @@ class BiplotTests(TestCase):
         otu_table = np.array([[0.1, 0.3], [0.05, 0.3]])
         res = bp.get_taxa(rand_fname, sample_ids_kept=['A', 'C'])
         self.assertEqual(res[0], otu_ids)
-        self.assertEqual(res[1], otu_table)
+        assert_almost_equal(res[1], otu_table)
 
         # remove temporary file
         system('rm %s' % (rand_fname))
@@ -60,7 +61,7 @@ class BiplotTests(TestCase):
         otu_coords[0] = .4 * 2 / 3 + .9 * 1 / 3
         otu_coords[1] = .4 * 1 / 4 + .2 * 1 / 4 + .1 * 1 / 4 + .9 * 1 / 4
         otu_coords[2] = .4 * 0 / 5 + .2 * 2 / 5 + .1 * 2 / 5 + .9 * 1 / 5
-        self.assertFloatEqual(res, otu_coords)
+        assert_almost_equal(res, otu_coords)
 
     def test_get_taxa_prevalence(self):
         otu_table = np.array([[2, 0, 0, 1],
@@ -68,17 +69,13 @@ class BiplotTests(TestCase):
                               [0, 0, 0, 0]], float)
         sample_weights = [3, 1, 1, 2]
         res = bp.get_taxa_prevalence(otu_table)
-        # print res
-        # self.assertFloatEqual(res, np.array([(2/3) + 1/2, 1/3+1+1+1/2, 0])/4)
-        self.assertFloatEqual(res, np.array([(2 / 3) + 1 / 2, 1 / 3 + 1 + 1 + 1 / 2, 0]) / 4
+        assert_almost_equal(res, np.array([(2 / 3) + 1 / 2, 1 / 3 + 1 + 1 + 1 / 2, 0]) / 4
                               * 4 / (2.5 + 1 / 3))
         otu_table = np.array([[2, 0, 0, 1],
                               [1, 1, 1, 1],
                               [0, 2, 2, 1]], float)
         res = bp.get_taxa_prevalence(otu_table)
-        # print res
-        # self.assertFloatEqual(res, np.array([3,4,5])/12) # if no normalize
-        self.assertFloatEqual(res, [0, .5, 1])
+        assert_almost_equal(res, [0, .5, 1])
 
     def test_remove_rare_taxa(self):
         otu_table = np.array([[2, 0, 0, 1],
@@ -98,9 +95,9 @@ class BiplotTests(TestCase):
                                   [1, 1, 1, 1]], float)
         exp_prevalence = np.array([1, .5])
         exp_lineages = np.array(['C', 'B'])
-        self.assertFloatEqual(taxdata['counts'], exp_otu_table)
-        self.assertFloatEqual(taxdata['prevalence'], exp_prevalence)
-        self.assertFloatEqual(taxdata['lineages'], exp_lineages)
+        assert_almost_equal(taxdata['counts'], exp_otu_table)
+        assert_almost_equal(taxdata['prevalence'], exp_prevalence)
+        self.assertListEqual(taxdata['lineages'], list(exp_lineages))
 
     def test_remove_rare_taxa_not_valid_number(self):
         otu_table = np.array([[2, 0, 0, 1],
@@ -121,9 +118,9 @@ class BiplotTests(TestCase):
                                   [2, 0, 0, 1]], float)
         exp_prevalence = np.array([1, .5, 0])
         exp_lineages = np.array(['C', 'B', 'A'])
-        self.assertFloatEqual(taxdata['counts'], exp_otu_table)
-        self.assertFloatEqual(taxdata['prevalence'], exp_prevalence)
-        self.assertFloatEqual(taxdata['lineages'], exp_lineages)
+        assert_almost_equal(taxdata['counts'], exp_otu_table)
+        assert_almost_equal(taxdata['prevalence'], exp_prevalence)
+        self.assertListEqual(taxdata['lineages'], list(exp_lineages))
 
     def test_scale_taxa_data_matrix(self):
         coord = np.array([[1, 4, 7, 0],

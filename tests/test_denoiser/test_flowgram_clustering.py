@@ -16,7 +16,8 @@ from os import mkdir, rmdir
 from time import sleep
 from StringIO import StringIO
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.core.sequence import Sequence
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import parse_sff, FlowgramCollection
@@ -96,7 +97,7 @@ class DenoiserTests(TestCase):
             FlowgramContainerArray(),
             {"FZTHQMS01CIW5N": ""}, "/tmp/")
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
-        self.assertFloatEqual(scores, [4.95274923, 0.7815385])
+        assert_almost_equal(scores, [[4.95274923, 0.7815385]], decimal=4)
 
     def test_get_flowgram_distances_on_cluster(self):
         """get_flowgram_distances_on_cluster computes the correct alignment score."""
@@ -119,7 +120,7 @@ class DenoiserTests(TestCase):
         stop_workers(client_sockets)
 
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
-        self.assertFloatEqual(scores, [4.95274923, 0.7815385])
+        assert_almost_equal(scores, [[4.95274923, 0.7815385]], decimal=4)
 
     def test_log_remaining_rounds(self):
         """We can calculate how far we have to go"""
