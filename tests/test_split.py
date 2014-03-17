@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,

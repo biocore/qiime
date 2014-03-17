@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
 from qiime.util import (get_qiime_temp_dir,

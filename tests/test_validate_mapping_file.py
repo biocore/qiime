@@ -12,7 +12,7 @@ from os.path import isdir, isfile, exists, join, basename
 from shutil import rmtree
 from collections import defaultdict
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.util import create_dir, get_tmp_filename

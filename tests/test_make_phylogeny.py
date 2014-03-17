@@ -12,9 +12,9 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from os import remove
+from unittest import TestCase, main
 
 from cogent import LoadSeqs, DNA
-from cogent.util.unit_test import TestCase, main
 
 import brokit.fasttree
 

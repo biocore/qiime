@@ -14,7 +14,7 @@ from os.path import sep, split, splitext, exists, join
 from shutil import rmtree
 from os import chmod
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.util import get_tmp_filename, create_dir

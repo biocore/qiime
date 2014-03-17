@@ -19,13 +19,12 @@ import matplotlib
 import re
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from qiime.make_2d_plots import generate_2d_plots
+from qiime.make_2d_plots import generate_2d_plots, get_coord
 from qiime.parse import parse_coords, group_by_field, group_by_fields
 import shutil
 import os
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.util import get_qiime_project_dir, load_pcoa_files
-from qiime.make_3d_plots import get_coord
 from cogent.util.misc import get_random_directory_name
 
 options_lookup = get_options_lookup()

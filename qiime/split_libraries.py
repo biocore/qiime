@@ -149,7 +149,7 @@ def MatchScorerAmbigs(match, mismatch, matches=None):
     matches = matches or \
         {'A': {'A': None}, 'G': {'G': None}, 'C': {'C': None},
          'T': {'T': None}, '-': {'-': None}}
-    for ambig, chars in DNASequence.iupac_degeneracies.iteritems():
+    for ambig, chars in DNASequence.iupac_degeneracies().iteritems():
         try:
             matches[ambig].update({}.fromkeys(chars))
         except KeyError:

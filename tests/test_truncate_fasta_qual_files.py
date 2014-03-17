@@ -12,7 +12,7 @@ from os.path import isdir, isfile, basename
 from shutil import rmtree
 
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 
@@ -168,8 +168,8 @@ class TruncateFastaQualFilesTests(TestCase):
         actual_fasta_seqs, actual_qual_scores =\
             truncate_seqs(fasta_seqs, qual_scores, base_pos)
 
-        self.assertEqual(actual_fasta_seqs, expected_fasta)
-        self.assertEqual(actual_qual_scores, expected_qual)
+        self.assertDictEqual(actual_fasta_seqs, expected_fasta)
+        self.assertItemsEqual(expected_qual, actual_qual_scores)
 
     def test_get_output_filepaths(self):
         """ Generates output filepaths for fasta, qual files correctly """

@@ -13,7 +13,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from os import remove, rmdir, mkdir
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename
 
 # import as _main to not interfere with TestCase.main

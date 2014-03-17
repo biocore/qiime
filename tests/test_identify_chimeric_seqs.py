@@ -14,7 +14,7 @@ from os.path import exists, split, splitext, join
 from shutil import rmtree
 
 from cogent import LoadSeqs, DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
 
 from brokit.formatdb import build_blast_db_from_fasta_file
