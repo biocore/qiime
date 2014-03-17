@@ -48,7 +48,6 @@ from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
 from cogent.app.blast import Blastall
-from skbio.core.distance import SymmetricDistanceMatrix
 from skbio.app.util import ApplicationError, CommandLineApplication
 from cogent.app.util import (FilePath,
                              get_tmp_filename as cogent_get_tmp_filename)
