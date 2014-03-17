@@ -24,17 +24,11 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
-from skbio.parse.sequences import fastq_parse as fastq_parse
+from skbio.parse.sequences import fastq_parse
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
 from types import GeneratorType
-
-
-def fastq_parse(data, strict=False):
-    return fastq_parseCogent(data, strict=strict)
-
-# this has to be here to avoid circular import
 
 
 def is_casava_v180_or_later(header_line):
