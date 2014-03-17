@@ -16,7 +16,7 @@ from collections import defaultdict
 
 from qiime.parse import QiimeParseError, MinimalQualParser
 from cogent.parse.fasta import MinimalFastaParser
-from from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import fastq_parse
 
 
 def convert_fastaqual_fastq(fasta_file_path, qual_file_path,

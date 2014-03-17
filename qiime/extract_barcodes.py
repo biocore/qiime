@@ -15,7 +15,7 @@ from os.path import join
 from os import rename
 from re import compile
 
-from from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import fastq_parse
 from cogent import DNA
 
 from qiime.check_id_map import process_id_map

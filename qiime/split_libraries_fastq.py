@@ -15,7 +15,7 @@ from os.path import split, splitext
 from os import makedirs
 from numpy import log10, arange, histogram
 from cogent import DNA
-from from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import fastq_parse
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log,
                           )

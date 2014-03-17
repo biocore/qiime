@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
-from from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import fastq_parse
 from brokit.fastq_join import FastqJoin, join_paired_end_reads_fastqjoin
 from brokit.seqprep import SeqPrep, join_paired_end_reads_seqprep
 from qiime.util import qiime_open
