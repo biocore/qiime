@@ -1494,6 +1494,9 @@ def make_compatible_distance_matrices(dm1, dm2, lookup=None):
                            "lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
 
+    if len(order) == 0:
+        return ([], []), ([], [])
+
     # store the intersected distance matrices here
     matrices = []
 
