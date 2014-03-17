@@ -65,6 +65,7 @@ from cogent.util.misc import remove_files, create_dir, handle_error_codes
 from cogent.app.formatdb import (build_blast_db_from_fasta_path,
                                  build_blast_db_from_fasta_file)
 from skbio.app.util import which
+from skbio.core.sequence import DNASequence
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
 
 from qiime import __version__ as qiime_library_version
