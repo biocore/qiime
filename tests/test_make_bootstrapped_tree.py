@@ -8,11 +8,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
+from tempfile import mkstemp
+
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from unittest import TestCase, main
 from cogent.core.tree import PhyloNode
 from qiime.parse import parse_newick
-from qiime.util import get_tmp_filename
 import os
 
 
@@ -43,10 +44,8 @@ class FunctionTests(TestCase):
             "((tax7:0.1,tax3:0.2)node0:.98,tax8:.3, tax4:.3)node1:.4",
             PhyloNode)
         bootstraps = {'node0': .7, 'node1': .4}
-        f = get_tmp_filename(
-            prefix='make_bootstrapped_tree_test',
-            suffix='.pdf',
-            result_constructor=str)
+        _, f = mkstemp(prefix='make_bootstrapped_tree_test',
+                       suffix='.pdf')
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))
@@ -66,10 +65,8 @@ class FunctionTests(TestCase):
             PhyloNode)
 
         bootstraps = {"no__``!!:o de0": .7, 'node1': .4}
-        f = get_tmp_filename(
-            prefix='make_bootstrapped_tree_test',
-            suffix='.pdf',
-            result_constructor=str)
+        _, f = mkstemp(prefix='make_bootstrapped_tree_test',
+                       suffix='.pdf')
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))

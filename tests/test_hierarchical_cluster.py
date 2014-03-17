@@ -8,10 +8,11 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
+from tempfile import mkstemp
+
 from qiime.hierarchical_cluster import single_file_upgma, single_file_nj
 from qiime.format import format_distance_matrix
 from unittest import TestCase, main
-from qiime.util import get_tmp_filename
 import os
 import numpy
 
@@ -41,14 +42,13 @@ class FunctionTests(TestCase):
 
         titles = ['hi', 'ho']
         distdata = numpy.array([[0, .5], [.5, 0.]])
-        fname = get_tmp_filename(prefix='upgma_', suffix='.txt')
+        _, fname = mkstemp(prefix='upgma_', suffix='.txt')
         f = open(fname, 'w')
         self._paths_to_clean_up.append(fname)
         f.write(format_distance_matrix(titles, distdata))
         f.close()
 
-        fname2 = get_tmp_filename(prefix='upgma_', suffix='.txt',
-                                  result_constructor=str)
+        _, fname2 = mkstemp(prefix='upgma_', suffix='.txt')
         self._paths_to_clean_up.append(fname2)
         single_file_upgma(fname, fname2)
         assert(os.path.exists(fname2))
@@ -58,14 +58,13 @@ class FunctionTests(TestCase):
 
         titles = ['hi', 'ho', 'yo']
         distdata = numpy.array([[0, .5, .3], [.5, 0., .9], [.3, .9, 0.]])
-        fname = get_tmp_filename(prefix='nj_', suffix='.txt')
+        _, fname = mkstemp(prefix='nj_', suffix='.txt')
         f = open(fname, 'w')
         self._paths_to_clean_up.append(fname)
         f.write(format_distance_matrix(titles, distdata))
         f.close()
 
-        fname2 = get_tmp_filename(prefix='nj_', suffix='.txt',
-                                  result_constructor=str)
+        _, fname2 = mkstemp(prefix='nj_', suffix='.txt')
         self._paths_to_clean_up.append(fname2)
         single_file_nj(fname, fname2)
         assert(os.path.exists(fname2))

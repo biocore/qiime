@@ -16,7 +16,6 @@ from os import remove
 from cogent.util.misc import create_dir
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from qiime.util import get_tmp_filename
 
 from qiime.cluster_quality import clust_qual_ratio
 

@@ -11,11 +11,12 @@ __email__ = "william.a.walters@colorado.edu"
 from os.path import isdir, isfile, exists, join, basename
 from shutil import rmtree
 from collections import defaultdict
+from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
+from skbio.util.misc import create_dir
 
-from qiime.util import create_dir, get_tmp_filename
 from qiime.check_id_map import (check_mapping_file, process_id_map,
                                 check_data_fields, check_fields_past_bounds, check_chars_data_fields,
                                 check_dna_chars_primers, check_dna_chars_bcs, check_bcs_lengths,
@@ -40,35 +41,35 @@ class CheckIdMapTests(TestCase):
             sample_errors_warnings_mapping_data
         self.empty_fields_mapping_data = empty_fields_mapping_data
 
-        self.correct_mapping_fp = get_tmp_filename(
+        _, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
 
-        self.errors_mapping_fp = get_tmp_filename(
+        _, self.errors_mapping_fp = mkstemp(
             prefix='errors_mapping_',
             suffix='.txt')
         map_file = open(self.errors_mapping_fp, 'w')
         map_file.write(self.sample_errors_mapping_data)
         map_file.close()
 
-        self.empty_fields_fp = get_tmp_filename(
+        _, self.empty_fields_fp = mkstemp(
             prefix='empty_fields_',
             suffix='.txt')
         map_file = open(self.empty_fields_fp, 'w')
         map_file.write(self.empty_fields_mapping_data)
         map_file.close()
 
-        self.warnings_mapping_fp = get_tmp_filename(
+        _, self.warnings_mapping_fp = mkstemp(
             prefix='warnings_mapping_',
             suffix='.txt')
         map_file = open(self.warnings_mapping_fp, 'w')
         map_file.write(self.sample_warnings_mapping_data)
         map_file.close()
 
-        self.errors_warnings_mapping_fp = get_tmp_filename(
+        _, self.errors_warnings_mapping_fp = mkstemp(
             prefix='errors_warnings_mapping_',
             suffix='.txt')
         map_file = open(self.errors_warnings_mapping_fp, 'w')
