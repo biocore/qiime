@@ -75,7 +75,7 @@ def run_ampliconnoise(mapping_fp,
         sample_names.append(map_data[i][headers.index('SampleID')])
         bc_seqs.append(map_data[i][headers.index('BarcodeSequence')])
         primer = (map_data[i][headers.index('LinkerPrimerSequence')])
-        for char, bases in DNASequence.iupac_degeneracies.iteritems():
+        for char, bases in DNASequence.iupac_degeneracies().iteritems():
             primer = primer.replace(char, '[' + ''.join(bases) + ']')
         primer_seqs.append(primer)
 
