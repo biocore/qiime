@@ -56,7 +56,6 @@ class TestHelper(TestCase):
 
     def setUp(self):
         """Define some useful test objects."""
-        self.value_for_seed = 20
         # The unweighted unifrac distance matrix from the overview tutorial.
         self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                 \tPC.607\tPC.634\tPC.635\tPC.636",
@@ -185,22 +184,8 @@ class NonRandomShuffler(object):
         return x
 
 
-class StatsTests(TestCase):
+class StatsTests(TestHelper):
     """Tests for top-level functions in the stats module."""
-
-    def compare_multiple_level_array(self, observed, expected):
-        """ Compare multiple level arrays.
-
-        It expecte observed and expected arrays, where each element is an
-        array of elements.
-        """
-        if isinstance(observed, (TupleType, ListType)):
-            for obs, exp in izip(observed, expected):
-                self.compare_multiple_level_array(obs, exp)
-        elif observed is not None and isinstance(observed, (np.number, np.ndarray, FloatType)):
-            assert_almost_equal(observed, expected, decimal=5)
-        else:
-            self.assertEqual(observed, expected)
 
     def setUp(self):
         """Set up data that will be used by the tests."""
@@ -322,7 +307,7 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
                 0.0070804795641244006, 0.100000000001, 0.10000000000001]]
-        np.random.seed(self.value_for_seed)        
+        np.random.seed(self.value_for_seed)
         obs = _perform_pairwise_tests(self.labels1, self.dists1, 'two-sided',
                                       999)
         self.compare_multiple_level_array(obs, exp)
@@ -1626,7 +1611,7 @@ class PartialMantelTests(TestHelper):
                                  p_val_key='mantel_p')
 
 
-class TopLevelTests(TestCase):
+class TopLevelTests(TestHelper):
 
     def setUp(self):
         pass
@@ -1675,10 +1660,9 @@ class TopLevelTests(TestCase):
         assert_almost_equal(_quantile(sample_data, 0.10), 0.283062154)
 
 
-class PairedDifferenceTests(TestCase):
+class PairedDifferenceTests(TestHelper):
 
     def setUp(self):
-        self.value_for_seed = 20
         self.personal_ids_to_state_values1 = \
             {'firmicutes-abundance':
              {'subject1': [0.45, 0.55],
@@ -1717,7 +1701,6 @@ class PairedDifferenceTests(TestCase):
     def test_paired_difference_analyses(self):
         """paired_difference_analyses functions as expected
         """
-        #np.random.seed(self.value_for_seed)
         actual = paired_difference_analyses(
             self.personal_ids_to_state_values1,
             ['firmicutes-abundance',
@@ -1790,7 +1773,6 @@ class PairedDifferenceTests(TestCase):
     def test_paired_difference_analyses_wo_ymin_ymax(self):
         """paired_difference_analyses functions as expected w/o ymin/ymax
         """
-        np.random.seed(self.value_for_seed)
         # runs successfully with ymin/ymax
         actual = paired_difference_analyses(
             self.personal_ids_to_state_values1,
