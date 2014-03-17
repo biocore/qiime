@@ -48,15 +48,14 @@ from string import upper
 
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
-
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
-from cogent.core.moltype import IUPAC_DNA_ambiguities
 from cogent import DNA, LoadSeqs
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
 from cogent.util.misc import remove_files
+from skbio.core.sequence import DNASequence
 
 from qiime.check_id_map import process_id_map
 from qiime.barcode import correct_barcode
@@ -150,7 +149,7 @@ def MatchScorerAmbigs(match, mismatch, matches=None):
     matches = matches or \
         {'A': {'A': None}, 'G': {'G': None}, 'C': {'C': None},
          'T': {'T': None}, '-': {'-': None}}
-    for ambig, chars in IUPAC_DNA_ambiguities.items():
+    for ambig, chars in DNASequence.iupac_degeneracies.iteritems():
         try:
             matches[ambig].update({}.fromkeys(chars))
         except KeyError:
@@ -245,7 +244,7 @@ def local_align_primer_seq(primer, sequence, sw_scorer=equality_scorer_ambigs):
     # Get alignment object from primer, target sequence
     alignment = pair_hmm_align_unaligned_seqs([query_primer, query_sequence])
 
-    # Extract sequence of primer, target site, may have gaps in insertions
+    # Extract sequence of primer, target site, may have gaps if insertions
     # or deletions have occurred.
     primer_hit = str(alignment.Seqs[0])
     target_hit = str(alignment.Seqs[1])

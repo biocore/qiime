@@ -28,7 +28,6 @@ from gzip import GzipFile
 from numpy import array
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
-from cogent.core.moltype import IUPAC_DNA_ambiguities
 
 from qiime.parse import QiimeParseError, MinimalQualParser
 from qiime.hamming import decode_barcode_8

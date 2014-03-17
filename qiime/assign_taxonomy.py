@@ -27,12 +27,12 @@ from cogent import LoadSeqs, DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app import rtax
-from cogent.app.util import ApplicationNotFoundError
+from skbio.app.util import ApplicationNotFoundError
 from cogent.parse.fasta import MinimalFastaParser
 
-from qiime.pycogent_backports.uclust import Uclust
-from qiime.pycogent_backports import rdp_classifier
-from qiime.pycogent_backports import mothur
+from brokit.uclust import Uclust
+from brokit import rdp_classifier
+from brokit import mothur
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
