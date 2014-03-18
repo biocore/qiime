@@ -17,7 +17,7 @@ from qiime.util import (parse_command_line_parameters,
                         get_rdp_jarpath,
                         load_qiime_config,
                         remove_files)
-from os import system, remove, path, mkdir
+from os import system, remove, path, mkdir, close
 from os.path import split, splitext
 from tempfile import mkstemp
 from qiime.assign_taxonomy import (
@@ -338,6 +338,7 @@ def main():
         # have raised an optparse error
         exit(1)
     _, temp_result_path = mkstemp(prefix='assign-tax')
+    close(_)
     taxon_assigner = taxon_assigner_constructor(params)
     taxon_assigner(input_sequences_filepath,
                    result_path=temp_result_path,

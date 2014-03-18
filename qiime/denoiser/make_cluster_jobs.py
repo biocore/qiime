@@ -12,7 +12,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from os.path import exists
-from os import remove, rename, rmdir, makedirs
+from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkstemp
 
@@ -87,7 +87,8 @@ def make_jobs(commands, job_prefix, queue, jobs_dir="jobs/",
     create_dir(jobs_dir)
     for command in commands:
         _, job_name = mkstemp(dir=jobs_dir, prefix=job_prefix + "_",
-                                    suffix=".txt")
+                              suffix=".txt")
+        close(_)
         out_fh = open(job_name, "w")
 
         out_fh.write(QSUB_TEXT % (walltime, ncpus, nodes, queue, job_prefix,

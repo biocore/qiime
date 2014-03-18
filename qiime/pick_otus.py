@@ -18,7 +18,7 @@ grouping those sequences by similarity.
 from copy import copy
 from itertools import ifilter
 from os.path import splitext, split, abspath, join
-from os import makedirs
+from os import makedirs, close
 from itertools import imap
 from tempfile import mkstemp
 
@@ -754,6 +754,7 @@ class UclustOtuPickerBase(OtuPicker):
         # Get a temp file name for the sorted fasta file
         _, sorted_input_seqs_filepath = \
             mkstemp(prefix=self.Name, suffix='.fasta')
+        close(_)
         # Sort input seqs by abundance, and write to the temp
         # file
         sort_fasta_by_abundance(open(seq_path, 'U'),
@@ -794,6 +795,7 @@ class UclustOtuPickerBase(OtuPicker):
         """ """
         _, unique_seqs_fp = mkstemp(
             prefix='UclustExactMatchFilter', suffix='.fasta')
+        close(_)
         seqs_to_cluster, exact_match_id_map =\
             self._prefilter_exact_matches(
                 MinimalFastaParser(open(seq_path, 'U')))

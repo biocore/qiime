@@ -15,6 +15,7 @@ from re import compile, search
 from itertools import imap
 from collections import defaultdict
 from tempfile import mkstemp
+from os import close
 
 from qiime.util import FileFormatError
 from cogent.parse.fasta import MinimalFastaParser
@@ -117,7 +118,8 @@ def truncate_flowgrams_in_SFF(
     out_filename = ""
     if not outhandle:
         _, out_filename = mkstemp(dir=outdir, prefix="trunc_sff",
-                                        suffix=".sff.txt")
+                                  suffix=".sff.txt")
+        close(_)
         outhandle = open(out_filename, "w")
 
     write_sff_header(header, outhandle)
@@ -168,7 +170,8 @@ def cleanup_sff(flowgrams, header, outhandle=None, outdir="/tmp",
     clean_filename = ""
     if not outhandle:
         _, clean_filename = mkstemp(dir=outdir, prefix="cleanup_sff",
-                                          suffix=".sff.txt")
+                                    suffix=".sff.txt")
+        close(_)
         outhandle = open(clean_filename, "w")
 
     l = filter_sff_file(

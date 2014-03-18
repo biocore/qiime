@@ -15,7 +15,7 @@ Replaces the sff files with the trimmed versions.
 """
 
 from itertools import imap
-from os import walk, devnull, remove, rename
+from os import walk, devnull, remove, rename, close
 from os.path import splitext, join, exists
 from shutil import move
 from subprocess import check_call
@@ -102,6 +102,7 @@ def set_sff_trimpoints(sff_dir, technical_lengths):
             sff_data, readlength)
 
         _, temp_fp = mkstemp(dir=sff_dir)
+        close(_)
         with open(temp_fp, 'w') as f:
             write_binary_sff(f, clipped_header, clipped_reads)
 

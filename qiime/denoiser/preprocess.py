@@ -12,7 +12,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from itertools import imap
-from os import remove
+from os import remove, close
 from random import sample
 from collections import defaultdict
 from string import lowercase
@@ -89,6 +89,7 @@ def build_averaged_flowgrams(mapping, sff_fp,
         _, out_filename = mkstemp(dir="/tmp/",
                                   prefix="prefix_dereplicated",
                                   suffix=".sff.txt")
+        close(_)
     outhandle = open(out_filename, "w")
 
     # write out reduced flogram set

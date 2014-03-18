@@ -13,7 +13,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 import sys
-from os import remove, makedirs, access, X_OK, R_OK
+from os import remove, makedirs, access, X_OK, R_OK, close
 from os.path import exists, isdir
 from collections import defaultdict
 from re import sub
@@ -107,6 +107,7 @@ class FlowgramContainerFile():
         # set up output file
         _, self.filename = mkstemp(dir=outdir, prefix="fc",
                                    suffix=".sff.txt")
+        close(_)
         self.fh = open(self.filename, "w")
         write_sff_header(header, self.fh)
 
@@ -326,6 +327,7 @@ def init_flowgram_file(filename=None, n=0, l=400, prefix="/tmp/"):
 
     if (filename is None):
         _, filename = mkstemp (dir=prefix, suffix=".dat")
+        close(_)
 
     fh = open(filename, "w")
     fh.write("%d %d\n" % (n, l))

@@ -11,7 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
-from os import remove, popen, makedirs, rename
+from os import remove, popen, makedirs, rename, close
 from os.path import exists
 from collections import defaultdict
 from itertools import izip, imap, ifilter, chain
@@ -554,6 +554,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
     # TODO: might use abstract FlowgramContainer here as well
     _, non_clustered_filename = mkstemp(dir=outdir, prefix="ff",
                                         suffix=".sff.txt")
+    close(_)
     non_clustered_fh = open(non_clustered_filename, "w")
     write_sff_header(header, non_clustered_fh)
     for f in flowgrams:
