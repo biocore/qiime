@@ -12,11 +12,11 @@ __email__ = "adam.robbinspianka@colorado.edu"
 
 from os.path import sep, split, splitext, exists, join
 from shutil import rmtree
-from os import chmod
+from os import chmod, close
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
@@ -32,11 +32,15 @@ class MakeFastqTests(TestCase):
         self._files_to_remove = []
 
         _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        close(_)
         _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
+        close(_)
         _, self.nolabel_qual_file_path = mkstemp(prefix='qual_',
                                                        suffix='.qual')
+        close(_)
         _, self.noseq_qual_file_path = mkstemp(prefix='qual_',
                                                      suffix='.qual')
+        close(_)
 
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
@@ -64,7 +68,7 @@ class MakeFastqTests(TestCase):
                                            suffix='/')
         self.output_dir += sep
 
-       
+
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)
 
@@ -184,6 +188,7 @@ class MakeFastaqualTests(TestCase):
 
         _,self.fasta_file_path = mkstemp(prefix='fastq_',
                                                 suffix='.fastq')
+        close(_)
 
         fastq_file = open(self.fasta_file_path, 'w')
 
@@ -320,7 +325,9 @@ class ConvertFastaqualTests(TestCase):
         self._files_to_remove = []
 
         _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        close(_)
         _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
+        close(_)
 
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')

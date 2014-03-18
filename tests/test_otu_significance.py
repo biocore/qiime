@@ -23,7 +23,7 @@ from qiime.pycogent_backports.test import (assign_correlation_pval, fisher,
 from numpy import array, hstack, corrcoef
 from numpy.random import seed
 from numpy.testing import assert_almost_equal
-from cogent.util.dict2d import Dict2D
+from qiime.util import get_tmp_filename
 from os import remove
 from qiime.parse import parse_mapping_file_to_dict, parse_otu_table
 from biom.parse import parse_biom_table

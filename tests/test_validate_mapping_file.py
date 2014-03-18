@@ -8,13 +8,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
+from os import close
 from os.path import isdir, isfile, exists, join, basename
+from tempfile import mkdtemp
 from shutil import rmtree
 from collections import defaultdict
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 from skbio.util.misc import create_dir
 
 from qiime.check_id_map import (check_mapping_file, process_id_map,
@@ -44,6 +46,7 @@ class CheckIdMapTests(TestCase):
         _, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
+        close(_)
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
@@ -51,6 +54,7 @@ class CheckIdMapTests(TestCase):
         _, self.errors_mapping_fp = mkstemp(
             prefix='errors_mapping_',
             suffix='.txt')
+        close(_)
         map_file = open(self.errors_mapping_fp, 'w')
         map_file.write(self.sample_errors_mapping_data)
         map_file.close()
@@ -58,6 +62,7 @@ class CheckIdMapTests(TestCase):
         _, self.empty_fields_fp = mkstemp(
             prefix='empty_fields_',
             suffix='.txt')
+        close(_)
         map_file = open(self.empty_fields_fp, 'w')
         map_file.write(self.empty_fields_mapping_data)
         map_file.close()
@@ -65,6 +70,7 @@ class CheckIdMapTests(TestCase):
         _, self.warnings_mapping_fp = mkstemp(
             prefix='warnings_mapping_',
             suffix='.txt')
+        close(_)
         map_file = open(self.warnings_mapping_fp, 'w')
         map_file.write(self.sample_warnings_mapping_data)
         map_file.close()
@@ -72,6 +78,7 @@ class CheckIdMapTests(TestCase):
         _, self.errors_warnings_mapping_fp = mkstemp(
             prefix='errors_warnings_mapping_',
             suffix='.txt')
+        close(_)
         map_file = open(self.errors_warnings_mapping_fp, 'w')
         map_file.write(self.sample_errors_warnings_mapping_data)
         map_file.close()
@@ -104,7 +111,7 @@ class CheckIdMapTests(TestCase):
         self.expected_log_errors_warnings_output =\
             expected_log_errors_warnings_output
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

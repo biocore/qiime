@@ -16,7 +16,7 @@ from re import compile
 
 from brokit.formatdb import build_blast_db_from_fasta_path
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
@@ -410,7 +410,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
         out_files = []
         buffered_handles = {}
         prefix_length = params['prefix_length'] or 1
-        for seq_id, seq in MinimalFastaParser(open(input_fp)):
+        for seq_id, seq in parse_fasta(open(input_fp)):
 
             if(len(seq) < prefix_length):
                 raise ValueError("Prefix length must be equal or longer than sequence.\n"

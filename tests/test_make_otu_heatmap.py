@@ -9,6 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
+from os import close
 from os.path import exists
 from tempfile import mkstemp
 
@@ -68,6 +69,7 @@ class TopLevelTests(TestCase):
         self.tree_text = ["('OTU3',('OTU1','OTU2'))"]
         _, self.tmp_heatmap_fpath = mkstemp(prefix='test_heatmap_',
                                             suffix='.pdf')
+        close(_)
 
     def test_extract_metadata_column(self):
         """Extracts correct column from mapping file"""

@@ -19,7 +19,8 @@ added..
 """
 
 from cogent import LoadSeqs, DNA
-from cogent.parse.fasta import MinimalFastaParser
+
+from skbio.parse.sequences import parse_fasta
 
 from qiime.util import FunctionWithParams
 # app controllers that implement align_unaligned_seqs

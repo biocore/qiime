@@ -757,7 +757,7 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
     p-value obtained from the Monte Carlo permutations test.
 
     This code is partially based on Jeremy Widmann's
-    qiime.make_distance_histograms.monte_carlo_group_distances code.
+    qiime.make_distance_histograms.monte_carlo_group_distances code from QIIME 1.8.0.
 
     Arguments:
         x_items - the first list of observations

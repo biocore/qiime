@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from shutil import rmtree
 from glob import glob
+from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
@@ -40,6 +41,7 @@ class ParallelAlphaDiversityTests(TestCase):
             _, rt_fp = mkstemp(dir=self.test_out,
                                prefix='qiime_rt',
                                suffix='.biom')
+            close(_)
             rt_f = open(rt_fp, 'w')
             rt_f.write(rt)
             rt_f.close()
@@ -49,6 +51,7 @@ class ParallelAlphaDiversityTests(TestCase):
         _, self.tree_fp = mkstemp(dir=self.test_out,
                                   prefix='qiime',
                                   suffix='.tre')
+        close(_)
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
         tree_f.close()

@@ -11,7 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from os import remove, mkdir
+from os import remove, mkdir, close
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
@@ -40,16 +40,19 @@ class DenoiseWrapperTests(TestCase):
 
         _, self.sff_path = mkstemp(
             prefix='DenoiseWrapperTest_', suffix='.sff.txt')
+        close(_)
         self.large_flowgram_collection.writeToFile(self.sff_path)
 
         _, self.sff_path2 = mkstemp(
             prefix='fastDenoiserTest_', suffix='.sff.txt')
+        close(_)
         fh = open(self.sff_path2, "w")
         fh.write(fasting_subset_sff)
         fh.close()
 
         _, self.seq_path = mkstemp(
             prefix='fastDenoiserTest_', suffix='.fasta')
+        close(_)
         fh = open(self.seq_path, "w")
         fh.write(fasting_seqs_subset)
         fh.close()

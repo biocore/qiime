@@ -28,7 +28,7 @@ from qiime.parse import group_by_field, group_by_fields, parse_coords
 from qiime.colors import data_color_order, data_colors, \
     get_group_colors, data_colors, iter_color_groups
 from qiime.sort import natsort
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 import os
 import numpy
 
@@ -549,8 +549,7 @@ def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
         data_colors = groups_and_colors[i][3]
         data_color_order = groups_and_colors[i][4]
 
-        data_file_dir_path = get_random_directory_name(
-            output_dir=data_dir_path)
+        data_file_dir_path = mkdtemp(dir=data_dir_path)
 
         new_link = os.path.split(data_file_dir_path)
         data_file_link = os.path.join('.', os.path.split(new_link[-2])[-1],
@@ -605,8 +604,7 @@ def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
                                    "<br>".join(img_data[("1", "3")]))
 
     if generate_scree:
-        data_file_dir_path = get_random_directory_name(
-            output_dir=data_dir_path)
+        data_file_dir_path = mkdtemp(dir=data_dir_path)
         new_link = os.path.split(data_file_dir_path)
         data_file_link = os.path.join(
             '.',

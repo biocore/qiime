@@ -65,7 +65,7 @@ def all_pairs_t_test(labels, dists, tail_type='two-sided',
     results of the tests.
 
     This code is based on Jeremy Widmann's
-    qiime.make_distance_histograms.monte_carlo_group_distances code.
+    qiime.make_distance_histograms.monte_carlo_group_distances code from QIIME 1.8.0.
 
     Arguments:
         labels - list of labels corresponding to each of the distributions
