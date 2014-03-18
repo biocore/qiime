@@ -23,7 +23,9 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import get_random_directory_name, remove_files
+from cogent.util.misc import remove_files
+
+from tempfile import mkdtemp
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -194,7 +196,7 @@ o4	seq6	seq7""".split('\n')
     def test_split_fasta_on_sample_ids_to_files(self):
         """ split_fasta_on_sample_ids_to_files functions as expected
         """
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         split_fasta_on_sample_ids_to_files(
@@ -514,7 +516,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using reverse
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -555,7 +557,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using forward
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -595,7 +597,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using gzipped files
            and forward barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -636,7 +638,7 @@ o4	seq6	seq7""".split('\n')
             the open fastq file
         """
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         fastq_files = []

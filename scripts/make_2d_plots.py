@@ -25,7 +25,8 @@ import shutil
 import os
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.util import get_qiime_project_dir, load_pcoa_files
-from cogent.util.misc import get_random_directory_name
+from qiime.make_2d_plots import get_coord
+from tempfile import mkdtemp
 
 options_lookup = get_options_lookup()
 
@@ -188,9 +189,10 @@ def main():
     basename, extension = os.path.splitext(filepath)
     filename = '%s_2D_PCoA_plots' % (basename)
 
+    # obtaining where the files live so they can be copied
     qiime_dir = get_qiime_project_dir()
-
     js_path = os.path.join(qiime_dir, 'qiime', 'support_files', 'js')
+
 
     if opts.output_dir:
         if os.path.exists(opts.output_dir):
@@ -205,7 +207,7 @@ def main():
         dir_path = './'
 
     html_dir_path = dir_path
-    data_dir_path = get_random_directory_name(output_dir=dir_path)
+    data_dir_path = mkdtemp(dir=dir_path)
     try:
         os.mkdir(data_dir_path)
     except OSError:

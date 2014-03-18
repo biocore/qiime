@@ -18,7 +18,7 @@ from qiime.util import make_option, get_interesting_mapping_fields
 from qiime.make_distance_histograms import group_distances, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances, monte_carlo_group_distances_within_between
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
 from qiime.parse import (parse_mapping_file, parse_distmat,
@@ -218,13 +218,17 @@ def main():
                     "The field, %s, is not in the provided mapping file.  Please supply correct fields (using the -f option or providing a 'FIELDS' list in the prefs file) corresponding to fields in mapping file." %
                     (f))
 
+    try:
+        mkdir(opts.dir_path)
+    except OSError:  # raised if dir exists
+        pass
+
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.map_fname,
                         dmatrix_file=opts.distance_matrix_file,
                         fields=fields,
-                        dir_prefix=get_random_directory_name(
-                            output_dir=opts.dir_path,
-                            prefix='distances'))
+                        dir_prefix=mkdtemp(dir=opts.dir_path,
+                                           prefix='distances'))
 
     if not opts.suppress_html_output:
         # histograms output path
