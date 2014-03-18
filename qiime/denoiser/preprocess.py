@@ -86,10 +86,10 @@ def build_averaged_flowgrams(mapping, sff_fp,
     if (out_fp):
         out_filename = out_fp
     else:
-        _, out_filename = mkstemp(dir="/tmp/",
+        fd, out_filename = mkstemp(dir="/tmp/",
                                   prefix="prefix_dereplicated",
                                   suffix=".sff.txt")
-        close(_)
+        close(fd)
     outhandle = open(out_filename, "w")
 
     # write out reduced flogram set

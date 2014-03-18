@@ -552,9 +552,9 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
 
     # write all remaining flowgrams into file for next step
     # TODO: might use abstract FlowgramContainer here as well
-    _, non_clustered_filename = mkstemp(dir=outdir, prefix="ff",
+    fd, non_clustered_filename = mkstemp(dir=outdir, prefix="ff",
                                         suffix=".sff.txt")
-    close(_)
+    close(fd)
     non_clustered_fh = open(non_clustered_filename, "w")
     write_sff_header(header, non_clustered_fh)
     for f in flowgrams:

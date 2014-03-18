@@ -86,9 +86,9 @@ def make_jobs(commands, job_prefix, queue, jobs_dir="jobs/",
     filenames = []
     create_dir(jobs_dir)
     for command in commands:
-        _, job_name = mkstemp(dir=jobs_dir, prefix=job_prefix + "_",
+        fd, job_name = mkstemp(dir=jobs_dir, prefix=job_prefix + "_",
                               suffix=".txt")
-        close(_)
+        close(fd)
         out_fh = open(job_name, "w")
 
         out_fh.write(QSUB_TEXT % (walltime, ncpus, nodes, queue, job_prefix,

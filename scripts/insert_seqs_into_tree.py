@@ -141,8 +141,8 @@ def main():
 
         # set the primary parameters for raxml
         parameters['-w'] = abspath(output_dir) + '/'
-        _, parameters["-n"] = mkstemp()
-        close(_)
+        fd, parameters["-n"] = mkstemp()
+        close(fd)
         parameters["-t"] = updated_tree_fp
 
         if "-f" not in parameters:

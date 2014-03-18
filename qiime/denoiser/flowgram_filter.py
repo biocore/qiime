@@ -117,9 +117,9 @@ def truncate_flowgrams_in_SFF(
     """
     out_filename = ""
     if not outhandle:
-        _, out_filename = mkstemp(dir=outdir, prefix="trunc_sff",
+        fd, out_filename = mkstemp(dir=outdir, prefix="trunc_sff",
                                   suffix=".sff.txt")
-        close(_)
+        close(fd)
         outhandle = open(out_filename, "w")
 
     write_sff_header(header, outhandle)

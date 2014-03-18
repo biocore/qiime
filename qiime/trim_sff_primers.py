@@ -101,8 +101,8 @@ def set_sff_trimpoints(sff_dir, technical_lengths):
         clipped_header, clipped_reads = set_clip_qual_left(
             sff_data, readlength)
 
-        _, temp_fp = mkstemp(dir=sff_dir)
-        close(_)
+        fd, temp_fp = mkstemp(dir=sff_dir)
+        close(fd)
         with open(temp_fp, 'w') as f:
             write_binary_sff(f, clipped_header, clipped_reads)
 

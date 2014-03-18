@@ -337,8 +337,8 @@ def main():
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error
         exit(1)
-    _, temp_result_path = mkstemp(prefix='assign-tax')
-    close(_)
+    fd, temp_result_path = mkstemp(prefix='assign-tax')
+    close(fd)
     taxon_assigner = taxon_assigner_constructor(params)
     taxon_assigner(input_sequences_filepath,
                    result_path=temp_result_path,

@@ -105,9 +105,9 @@ class FlowgramContainerFile():
 
     def __init__(self, header, outdir="/tmp/"):
         # set up output file
-        _, self.filename = mkstemp(dir=outdir, prefix="fc",
+        fd, self.filename = mkstemp(dir=outdir, prefix="fc",
                                    suffix=".sff.txt")
-        close(_)
+        close(fd)
         self.fh = open(self.filename, "w")
         write_sff_header(header, self.fh)
 
@@ -326,8 +326,8 @@ def init_flowgram_file(filename=None, n=0, l=400, prefix="/tmp/"):
     """
 
     if (filename is None):
-        _, filename = mkstemp (dir=prefix, suffix=".dat")
-        close(_)
+        fd, filename = mkstemp (dir=prefix, suffix=".dat")
+        close(fd)
 
     fh = open(filename, "w")
     fh.write("%d %d\n" % (n, l))

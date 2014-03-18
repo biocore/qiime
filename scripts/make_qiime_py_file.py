@@ -135,18 +135,18 @@ class NAMETests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        _, self.test_out = mkstemp(dir=tmp_dir,
+        fd, self.test_out = mkstemp(dir=tmp_dir,
                                    prefix='qiime_parallel_tests_',
                                    suffix='')
-        close(_)
+        close(fd)
         self.dirs_to_remove.append(self.test_out)
         create_dir(self.test_out)
 
         # Create example input file
-        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
+        fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
-        close(_)
+        close(fd)
         inseqs1_f = open(self.inseqs1_fp,'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
