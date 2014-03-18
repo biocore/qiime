@@ -12,18 +12,19 @@ __email__ = "justinak@gmail.com"
 
 from os.path import exists
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from itertools import izip
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
 from biom.table import table_factory
 from qiime.parse import parse_mapping_file
-from qiime.util import (load_qiime_config, get_tmp_filename,
-                        get_qiime_temp_dir, create_dir)
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
 
-import tempfile
-import string
+from tempfile import gettempdir, mkdtemp
+import string 
 import random
 import os
 import shutil
@@ -36,12 +37,10 @@ class SimsamTests(TestCase):
     def setUp(self):
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.map_f = map_lines.split('\n')
         self.otu_table = parse_biom_table(otu_table_lines.split('\n'))
@@ -59,7 +58,7 @@ class SimsamTests(TestCase):
         """ test the whole simsam script
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -129,7 +128,7 @@ class SimsamTests(TestCase):
         """ simsam script with 0 distance should just replicate input samples
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -195,7 +194,7 @@ class SimsamTests(TestCase):
             orig_sam = orig_sams.next()
             for j in range(num_replicates):
                 res_sam = res_sams.next()
-                self.assertEqual(res_sam, orig_sam)
+                self.assertItemsEqual(res_sam, orig_sam)
 
     def test_sim_otu_table(self):
         """ simulated otu table should be right order, number of seqs
@@ -230,7 +229,8 @@ class SimsamTests(TestCase):
         c_index = res_otus.index('C')
         c_row = res_otu_mtx[c_index]
         self.assertEqual(res_otu_metadata[c_index], {'tax': 'otu_C is cool'})
-        self.assertGreaterThan(c_row, [2, 2, 2, 8, 8, 8])
+        for o, e in izip(c_row,[2 , 2, 2, 8, 8, 8]):
+            self.assertGreater(o, e)
 
         # order of samples should remain the same as input,
         # and eash replicate sample
@@ -269,14 +269,15 @@ class SimsamTests(TestCase):
             otu_md_results.extend(res_otu_metadata)
 
         # We should see all OTUs show up at least once.
-        self.assertContains(otu_id_results, 'A')
-        self.assertContains(otu_id_results, 'B')
-        self.assertContains(otu_id_results, 'C')
-        self.assertContains(otu_id_results, 'D')
+        
+        self.assertTrue('A' in otu_id_results)
+        self.assertTrue('B' in otu_id_results)
+        self.assertTrue('C' in otu_id_results)
+        self.assertTrue('D' in otu_id_results)
 
         # We should see at least one blank metadata entry since A and B are not
         # in the original table.
-        self.assertContains(otu_md_results, None)
+        self.assertTrue(None in otu_md_results)
 
     def test_get_new_otu_id_small(self):
         """ small dissim should return old tip id"""
@@ -294,10 +295,10 @@ class SimsamTests(TestCase):
         for i in range(1000):
             results.append(qiime.simsam.get_new_otu_id(old_otu_id='D',
                                                        tree=tree, dissim=.6))
-        self.assertContains(results, 'C')
-        self.assertContains(results, 'D')
-        self.assertNotContains(results, 'A')
-        self.assertNotContains(results, 'B')
+        self.assertTrue('C' in results)
+        self.assertTrue('D' in results)
+        self.assertTrue('A' not in results)
+        self.assertTrue('B' not in results)
 
     def test_combine_sample_dicts(self):
         """ combining sample dicts should give correct otu table and sorting
@@ -313,7 +314,7 @@ class SimsamTests(TestCase):
                                    [0, 5, 0],
                                    ])
         self.assertEqual(res_otu_ids, exp_otu_ids)
-        self.assertEqual(res_otu_mtx, exp_otu_mtx)
+        assert_almost_equal(res_otu_mtx, exp_otu_mtx)
 
     def test_create_replicated_mapping_file(self):
         """Test creating replicate samples in a mapping file."""
@@ -401,7 +402,7 @@ class SimsamTests(TestCase):
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
-        self.assertEqualItems(t.SampleIds, mapping_sample_ids)
+        self.assertItemsEqual(t.SampleIds, mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription

@@ -2,17 +2,18 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
-__credits__ = ["Dan Knights"]
+__credits__ = ["Dan Knights", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 
-from os.path import split, splitext, join, exists
 from os import remove
-from cogent.app.util import get_tmp_filename
-from skbio.app.util import CommandLineApplication, ResultPath 
-from cogent.app.parameters import ValuedParameter, FlagParameter, FilePath
+from os.path import join
+
+from cogent.app.util import CommandLineApplication, ResultPath 
+from skbio.app.parameters import ValuedParameter, FlagParameter, FilePath
+
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 

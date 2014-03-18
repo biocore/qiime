@@ -11,7 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.parse import parse_coords
 from qiime.transform_coordinate_matrices import map_sample_ids, reorder_coords,\
     filter_coords_matrix, pad_coords_matrix, pad_coords_matrices,\
@@ -61,22 +62,22 @@ class ProcrustesTests(TestCase):
         in_sids = ['A', 'B', 'C']
         order = ['A', 'B', 'C']
         expected = m
-        self.assertEqual(reorder_coords(m, in_sids, order), expected)
+        assert_almost_equal(reorder_coords(m, in_sids, order), expected)
 
         in_sids = ['C', 'B', 'A']
         expected = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
-        self.assertEqual(reorder_coords(m, in_sids, order), expected)
+        assert_almost_equal(reorder_coords(m, in_sids, order), expected)
 
         in_sids = ['C', 'B', 'A']
         expected = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
-        self.assertEqual(reorder_coords(m, in_sids, order), expected)
+        assert_almost_equal(reorder_coords(m, in_sids, order), expected)
 
         # order leaves some samples out
         m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         in_sids = ['A', 'B', 'C']
         order = ['A', 'B']
         expected = [[1, 2, 3], [4, 5, 6]]
-        self.assertEqual(reorder_coords(m, in_sids, order), expected)
+        assert_almost_equal(reorder_coords(m, in_sids, order), expected)
 
     def test_reorder_coords_errors(self):
         """Reordering of columns handles errors """
@@ -91,22 +92,22 @@ class ProcrustesTests(TestCase):
         """
         m = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         expected = array([[1], [4], [7], [10]])
-        self.assertEqual(filter_coords_matrix(m, 1), expected)
+        assert_almost_equal(filter_coords_matrix(m, 1), expected)
         expected = array([[1, 2], [4, 5], [7, 8], [10, 11]])
-        self.assertEqual(filter_coords_matrix(m, 2), expected)
+        assert_almost_equal(filter_coords_matrix(m, 2), expected)
 
     def test_pad_coords_matrix(self):
         """ padding a coordinates matrix with zeros functions as expected
         """
         m = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         actual = pad_coords_matrix(m, 0)
-        self.assertEqual(actual, m)
+        assert_almost_equal(actual, m)
 
         m = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         expected = array([[1, 2, 3, 0., 0.], [4, 5, 6, 0., 0.],
                           [7, 8, 9, 0., 0.], [10, 11, 12, 0., 0.]])
         actual = pad_coords_matrix(m, 2)
-        self.assertEqual(actual, expected)
+        assert_almost_equal(actual, expected)
 
         m = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         self.assertRaises(ValueError, pad_coords_matrix, m, -3)
@@ -122,7 +123,7 @@ class ProcrustesTests(TestCase):
                              [7, 8, 9, 0., 0.], [10, 11, 12, 0., 0.]])
         actual = pad_coords_matrices(m1, m2)
         expected = (m1, m2_expected)
-        self.assertEqual(actual, expected)
+        assert_almost_equal(actual, expected)
 
         # second is longer
         m1 = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
@@ -132,14 +133,14 @@ class ProcrustesTests(TestCase):
             [[1, 2, 3, 0.], [4, 5, 6, 0.], [7, 8, 9, 0.], [10, 11, 12, 0.]])
         actual = pad_coords_matrices(m1, m2)
         expected = (m1_expected, m2)
-        self.assertEqual(actual, expected)
+        assert_almost_equal(actual, expected)
 
         # equal length, so no change
         m1 = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         m2 = array([[0, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         actual = pad_coords_matrices(m1, m2)
         expected = (m1, m2)
-        self.assertEqual(actual, expected)
+        assert_almost_equal(actual, expected)
 
     def test_get_procrustes_results(self):
         sample_id_map = {

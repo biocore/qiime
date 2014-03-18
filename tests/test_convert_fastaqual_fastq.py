@@ -13,11 +13,11 @@ __email__ = "adam.robbinspianka@colorado.edu"
 from os.path import sep, split, splitext, exists, join
 from shutil import rmtree
 from os import chmod
+from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from unittest import TestCase, main
+from cogent.util.misc import remove_files
 
-from qiime.util import get_tmp_filename, create_dir
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
                                            convert_fastaqual_fastq,
@@ -31,11 +31,11 @@ class MakeFastqTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        self.qual_file_path = get_tmp_filename(prefix='qual_', suffix='.qual')
-        self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')
-        self.nolabel_qual_file_path = get_tmp_filename(prefix='qual_',
+        _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
+        _, self.nolabel_qual_file_path = mkstemp(prefix='qual_',
                                                        suffix='.qual')
-        self.noseq_qual_file_path = get_tmp_filename(prefix='qual_',
+        _, self.noseq_qual_file_path = mkstemp(prefix='qual_',
                                                      suffix='.qual')
 
         qual_file = open(self.qual_file_path, 'w')
@@ -54,19 +54,17 @@ class MakeFastqTests(TestCase):
         noseq_qual_file = open(self.noseq_qual_file_path, 'w')
         noseq_qual_file.write(noseq_qual_test_string)
         noseq_qual_file.close()
-        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+        self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         # Need read only directory to test errors for files written during
         # fastq/fasta iteration.
         chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+        self.output_dir = mkdtemp(prefix='convert_fastaqual_fastq_',
                                            suffix='/')
         self.output_dir += sep
 
-        create_dir(self.output_dir)
-
+       
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)
 
@@ -184,7 +182,7 @@ class MakeFastaqualTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        self.fasta_file_path = get_tmp_filename(prefix='fastq_',
+        _,self.fasta_file_path = mkstemp(prefix='fastq_',
                                                 suffix='.fastq')
 
         fastq_file = open(self.fasta_file_path, 'w')
@@ -195,16 +193,13 @@ class MakeFastaqualTests(TestCase):
         # Error testing files
         false_fasta_file = '/'
         false_qual_file = '/'
-        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+        self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+        self.output_dir = mkdtemp(prefix='convert_fastaqual_fastq_',
                                            suffix='/')
         self.output_dir += sep
-
-        create_dir(self.output_dir)
 
         self._files_to_remove.append(self.fasta_file_path)
 
@@ -324,21 +319,19 @@ class ConvertFastaqualTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        self.qual_file_path = get_tmp_filename(prefix='qual_', suffix='.qual')
-        self.fasta_file_path = get_tmp_filename(prefix='fasta_', suffix='.fna')
+        _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
 
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
-        self.read_only_output_dir = get_tmp_filename(prefix='read_only_',
+        self.read_only_output_dir = mkdtemp(prefix='read_only_',
                                                      suffix='/')
-        create_dir(self.read_only_output_dir)
         chmod(self.read_only_output_dir, 0o555)
 
-        self.output_dir = get_tmp_filename(prefix='convert_fastaqual_fastq_',
+        self.output_dir = mkdtemp(prefix='convert_fastaqual_fastq_',
                                            suffix='/')
         self.output_dir += sep
 
-        create_dir(self.output_dir)
 
         self._files_to_remove.append(self.qual_file_path)
         self._files_to_remove.append(self.fasta_file_path)

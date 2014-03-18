@@ -15,7 +15,7 @@ from os import remove, environ
 from os.path import exists
 from time import sleep
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.util import get_tmp_filename
 
 

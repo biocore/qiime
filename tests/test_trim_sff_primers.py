@@ -19,7 +19,7 @@ import os
 import shutil
 import tempfile
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff,
 )

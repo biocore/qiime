@@ -15,7 +15,7 @@ import os
 import shutil
 from tempfile import mkdtemp, NamedTemporaryFile
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.join_paired_ends import write_synced_barcodes_fastq
 
 

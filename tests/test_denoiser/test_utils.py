@@ -15,10 +15,11 @@ from os import remove, rmdir
 from shutil import rmtree
 from os.path import exists
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
@@ -111,7 +112,7 @@ class TestUtils(TestCase):
         self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")
         store_mapping(self.mapping, "/tmp/", prefix="test_store_mapping")
         observed = list(open("/tmp/test_store_mapping_mapping.txt", "U"))
-        self.assertEqualItems(observed, expected)
+        self.assertItemsEqual(observed, expected)
 
     def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""
@@ -125,10 +126,10 @@ class TestUtils(TestCase):
         # empty map results in empty files
         store_clusters({}, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, [])
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, [])
 
         # non-empty map creates non-empty files, centroids sorted by size
@@ -146,10 +147,10 @@ class TestUtils(TestCase):
 
         store_clusters(mapping, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, centroids)
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, singletons)
 
     def test_get_representatives(self):

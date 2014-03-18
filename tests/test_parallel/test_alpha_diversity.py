@@ -13,12 +13,12 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
+from tempfile import mkstemp, mkdtemp
+
+from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.parallel.alpha_diversity import ParallelAlphaDiversity
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename,
-                        count_seqs_in_filepaths)
+from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths
 from qiime.test import initiate_timeout, disable_timeout
 
 
@@ -30,27 +30,25 @@ class ParallelAlphaDiversityTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.rt_fps = []
         for rt in [rt1, rt2, rt3, rt4]:
-            rt_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                     prefix='qiime_rt',
-                                     suffix='.biom')
+            _, rt_fp = mkstemp(dir=self.test_out,
+                               prefix='qiime_rt',
+                               suffix='.biom')
             rt_f = open(rt_fp, 'w')
             rt_f.write(rt)
             rt_f.close()
             self.rt_fps.append(rt_fp)
             self.files_to_remove.append(rt_fp)
 
-        self.tree_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                        prefix='qiime',
-                                        suffix='.tre')
+        _, self.tree_fp = mkstemp(dir=self.test_out,
+                                  prefix='qiime',
+                                  suffix='.tre')
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
         tree_f.close()

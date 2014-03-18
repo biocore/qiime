@@ -16,13 +16,15 @@ import numpy
 from shutil import rmtree
 from os import makedirs
 from os.path import exists
-from cogent.util.unit_test import TestCase, main
+from tempfile import mkstemp
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
-#from cogent.maths.stats.alpha_diversity import (observed_species, osd)
 from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)
 
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 import qiime.alpha_diversity
 from qiime.parse import parse_newick
@@ -49,10 +51,9 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=list('abcd'),
                                         constructor=DenseOTUTable)
-        self.otu_table1_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+        _, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
-                                              suffix='.biom',
-                                              result_constructor=str)
+                                              suffix='.biom')
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
@@ -62,10 +63,9 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=['a', 'b', 'c', 'd_'],
                                         constructor=DenseOTUTable)
-        self.otu_table2_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+        _, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
-                                              suffix='.biom',
-                                              result_constructor=str)
+                                              suffix='.biom')
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
@@ -75,11 +75,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             observation_ids=list(
                 'abcd'),
             constructor=DenseOTUTable)
-        self.single_sample_otu_table_fp = get_tmp_filename(
-            tmp_dir=self.tmp_dir,
+        _, self.single_sample_otu_table_fp = mkstemp(
+            dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
-            suffix='.biom',
-            result_constructor=str)
+            suffix='.biom')
         open(self.single_sample_otu_table_fp, 'w').write(
             format_biom_table(self.single_sample_otu_table))
 
@@ -113,7 +112,7 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         """AlphaDiversityCalc __call__ should call metric on data
         and return correct result"""
         c = AlphaDiversityCalc(observed_species)
-        self.assertEqual(c(data_path=self.otu_table1_fp), [2, 4, 0])
+        assert_almost_equal(c(data_path=self.otu_table1_fp), [2, 4, 0])
 
     def test_multi_return(self):
         """AlphaDiversityCalc __call__ should call metric on data
@@ -121,9 +120,9 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         """
         c = AlphaDiversityCalc(osd)
         res = c(data_path=self.otu_table1_fp)
-        self.assertEqual(res, array([[2, 1, 1],
-                                    [4, 4, 0],
-                                    [0, 0, 0]]))
+        assert_almost_equal(res, array([[2, 1, 1],
+                            [4, 4, 0],
+                            [0, 0, 0]]))
 
     def test_1sample(self):
         """ should work if only testing one sample as well"""
@@ -135,10 +134,10 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         and return correct values"""
         c = AlphaDiversityCalc(metric=PD_whole_tree,
                                is_phylogenetic=True)
-        self.assertEqual(c(data_path=self.otu_table1_fp, tree_path=self.tree1,
-                           taxon_names=self.otu_table1.ObservationIds,
-                           sample_names=self.otu_table1.SampleIds),
-                         [13, 17, 0])
+        assert_almost_equal(c(data_path=self.otu_table1_fp, tree_path=self.tree1,
+                            taxon_names=self.otu_table1.ObservationIds,
+                            sample_names=self.otu_table1.SampleIds),
+                            [13, 17, 0])
 
     def test_call_phylogenetic_escaped_names(self):
         """AlphaDiversityCalc __call__ should call metric on phylo data
@@ -157,9 +156,9 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
                            taxon_names=self.otu_table2.ObservationIds,
                            sample_names=self.otu_table2.SampleIds)
 
-        self.assertEqual(non_escaped_result, expected)
-        self.assertEqual(escaped_result, expected)
-        self.assertEqual(non_escaped_result, escaped_result)
+        assert_almost_equal(non_escaped_result, expected)
+        assert_almost_equal(escaped_result, expected)
+        assert_almost_equal(non_escaped_result, escaped_result)
 
 
 class AlphaDiversityCalcsTests(AlphaDiversitySharedSetUpTests):
