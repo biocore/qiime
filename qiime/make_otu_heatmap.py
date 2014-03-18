@@ -15,7 +15,6 @@ __email__ = "daniel.knights@colorado.edu"
 
 from numpy import array, concatenate, asarray, transpose, log, invert, asarray,\
     float32, float64, unique, fliplr
-from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.util import MissingFileError
 import os
