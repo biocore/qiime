@@ -39,10 +39,10 @@ class ParallelMultipleRarefactionsTests(TestCase):
                                 suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        _, self.input1_fp = mkstemp(dir=self.test_out,
+        fd, self.input1_fp = mkstemp(dir=self.test_out,
                                     prefix='qiime_inseqs',
                                     suffix='.fasta')
-        close(_)
+        close(fd)
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()

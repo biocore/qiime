@@ -125,8 +125,8 @@ class PlotRankAbundance(TestCase):
                                     prefix="test_plot_rank_abundance",
                                     suffix="/")
         self._dirs_to_remove.append(self.dir)
-        _, tmp_fname = mkstemp(dir=self.dir)
-        close(_)
+        fd, tmp_fname = mkstemp(dir=self.dir)
+        close(fd)
 
         # test empty sample name
         self.assertRaises(
@@ -163,8 +163,8 @@ class PlotRankAbundance(TestCase):
                            suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
-        _, tmp_fname = mkstemp(dir=self.dir)
-        close(_)
+        fd, tmp_fname = mkstemp(dir=self.dir)
+        close(fd)
 
         # test empty sample name
         self.assertRaises(

@@ -221,9 +221,9 @@ class ParallelWrapperTests(TestCase):
     def test_compute_seqs_per_file(self):
         """compute_seqs_per_file functions as expected
         """
-        _, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests', 
+        fd, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests', 
                                    suffix='.fasta')
-        close(_)
+        close(fd)
         temp_fasta = ['>seq', 'AAACCCCAAATTGG'] * 25
         open(temp_fasta_fp, 'w').write('\n'.join(temp_fasta))
 
@@ -248,10 +248,10 @@ class BufferedWriterTests(TestCase):
         """ """
         self.files_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        _, self.test_fp = mkstemp(dir=tmp_dir,
+        fd, self.test_fp = mkstemp(dir=tmp_dir,
                                   prefix='bufWriterTest',
                                   suffix='.txt')
-        close(_)
+        close(fd)
         self.files_to_remove.append(self.test_fp)
 
     def tearDown(self):

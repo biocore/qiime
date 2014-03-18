@@ -77,17 +77,17 @@ class BetaDiversityCalcTests(TestCase):
         l19_str = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                   self.l19_sample_names,
                                                   self.l19_taxon_names))
-        _, self.l19_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.l19_fp = mkstemp(dir=self.tmp_dir,
                                 prefix='test_bdiv_otu_table', suffix='.blom')
-        close(_)
+        close(fd)
         open(self.l19_fp, 'w').write(l19_str)
 
         l19_str_w_underscore = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                                self.l19_sample_names,
                                                                self.l19_taxon_names_w_underscore))
-        _, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
                                                   prefix='test_bdiv_otu_table', suffix='.blom')
-        close(_)
+        close(fd)
         open(self.l19_str_w_underscore_fp, 'w').write(l19_str_w_underscore)
 
         self.l19_tree_str = '((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4,\
@@ -126,8 +126,8 @@ class BetaDiversityCalcTests(TestCase):
         l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4,\
  (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
 
-        _, tree_fp = mkstemp(prefix='Beta_div_tests', suffix='.tre')
-        close(_)
+        fd, tree_fp = mkstemp(prefix='Beta_div_tests', suffix='.tre')
+        close(fd)
         open(tree_fp, 'w').write(l19_tree_str)
         self.files_to_remove.append(tree_fp)
         escaped_result = beta_calc(data_path=self.l19_str_w_underscore_fp,
@@ -142,14 +142,14 @@ class BetaDiversityCalcTests(TestCase):
         if missing_sams is None:
             missing_sams = []
         # setup
-        _, input_path = mkstemp(suffix='.txt')
-        close(_)
+        fd, input_path = mkstemp(suffix='.txt')
+        close(fd)
         in_fname = os.path.split(input_path)[1]
         f = open(input_path, 'w')
         f.write(otu_table_string)
         f.close()
-        _, tree_path = mkstemp(suffix='.tre')
-        close(_)
+        fd, tree_path = mkstemp(suffix='.tre')
+        close(fd)
         f = open(tree_path, 'w')
         f.write(tree_string)
         f.close()

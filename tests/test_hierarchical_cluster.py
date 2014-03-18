@@ -43,15 +43,15 @@ class FunctionTests(TestCase):
 
         titles = ['hi', 'ho']
         distdata = numpy.array([[0, .5], [.5, 0.]])
-        _, fname = mkstemp(prefix='upgma_', suffix='.txt')
-        close(_)
+        fd, fname = mkstemp(prefix='upgma_', suffix='.txt')
+        close(fd)
         f = open(fname, 'w')
         self._paths_to_clean_up.append(fname)
         f.write(format_distance_matrix(titles, distdata))
         f.close()
 
-        _, fname2 = mkstemp(prefix='upgma_', suffix='.txt')
-        close(_)
+        fd, fname2 = mkstemp(prefix='upgma_', suffix='.txt')
+        close(fd)
         self._paths_to_clean_up.append(fname2)
         single_file_upgma(fname, fname2)
         assert(os.path.exists(fname2))
@@ -61,15 +61,15 @@ class FunctionTests(TestCase):
 
         titles = ['hi', 'ho', 'yo']
         distdata = numpy.array([[0, .5, .3], [.5, 0., .9], [.3, .9, 0.]])
-        _, fname = mkstemp(prefix='nj_', suffix='.txt')
-        close(_)
+        fd, fname = mkstemp(prefix='nj_', suffix='.txt')
+        close(fd)
         f = open(fname, 'w')
         self._paths_to_clean_up.append(fname)
         f.write(format_distance_matrix(titles, distdata))
         f.close()
 
-        _, fname2 = mkstemp(prefix='nj_', suffix='.txt')
-        close(_)
+        fd, fname2 = mkstemp(prefix='nj_', suffix='.txt')
+        close(fd)
         self._paths_to_clean_up.append(fname2)
         single_file_nj(fname, fname2)
         assert(os.path.exists(fname2))

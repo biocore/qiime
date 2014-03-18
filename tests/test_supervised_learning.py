@@ -70,16 +70,16 @@ class RSupervisedLearnerTests(TestCase):
     def setUp(self):
 
         # Temporary input file
-        _, self.tmp_otu_filepath = mkstemp(prefix='R_test_otu_table_',
+        fd, self.tmp_otu_filepath = mkstemp(prefix='R_test_otu_table_',
                                            suffix='.txt')
-        close(_)
+        close(fd)
         seq_file = open(self.tmp_otu_filepath, 'w')
         seq_file.write(test_otu_table)
         seq_file.close()
 
-        _, self.tmp_map_filepath = mkstemp(prefix='R_test_map_',
+        fd, self.tmp_map_filepath = mkstemp(prefix='R_test_map_',
                                            suffix='.txt')
-        close(_)
+        close(fd)
         seq_file = open(self.tmp_map_filepath, 'w')
         seq_file.write(test_map)
         seq_file.close()

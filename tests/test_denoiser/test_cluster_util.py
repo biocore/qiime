@@ -50,10 +50,10 @@ class TestUtils(TestCase):
 
         self.home = environ['HOME']
         self.server_socket = None
-        _, self.tmp_result_file = mkstemp(dir=self.home,
+        fd, self.tmp_result_file = mkstemp(dir=self.home,
                                                 prefix="test_hello_",
                                                 suffix=".txt")
-        close(_)
+        close(fd)
         self.tmp_dir = mkdtemp(dir=self.home,
                                         prefix="test_cluster_util",
                                         suffix="/")

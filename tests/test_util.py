@@ -143,10 +143,10 @@ class TopLevelTests(TestCase):
 
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
-        _, output_fp = mkstemp(
+        fd, output_fp = mkstemp(
             prefix="qiime_util_write_seqs_to_fasta_test",
             suffix='.fasta')
-        close(_)
+        close(fd)
         self.files_to_remove.append(output_fp)
         seqs = [('s1', 'ACCGGTTGG'), ('s2', 'CCTTGG'),
                 ('S4 some comment string', 'A')]
@@ -1039,8 +1039,8 @@ class FunctionWithParamsTests(TestCase):
         self.assertEqual(biom_data, F.getBiomData(biom_data))
 
         # write biom_data to temp location
-        _, bt_path = mkstemp(suffix='.biom')
-        close(_)
+        fd, bt_path = mkstemp(suffix='.biom')
+        close(fd)
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()
@@ -1377,10 +1377,10 @@ class BlastSeqsTests(TestCase):
                                            output_dir=get_qiime_temp_dir())
         self.files_to_remove = db_files_to_remove
 
-        _, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+        fd, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
                                       prefix="BLAST_temp_db_",
                                       suffix=".fasta")
-        close(_)
+        close(fd)
         fasta_f = open(self.refseqs1_fp, 'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1467,10 +1467,10 @@ class BlastXSeqsTests(TestCase):
         """
         self.nt_inseqs1 = nt_inseqs1.split('\n')
 
-        _, self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+        fd, self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
                                         prefix="BLAST_temp_db_",
                                         suffix=".fasta")
-        close(_)
+        close(fd)
         fasta_f = open(self.pr_refseqs1_fp, 'w')
         fasta_f.write(pr_refseqs1)
         fasta_f.close()
@@ -1680,16 +1680,16 @@ class SubSampleFastaTests(TestCase):
         self.temp_dir = load_qiime_config()['temp_dir']
 
         self.fasta_lines = fasta_lines
-        _, self.fasta_filepath = mkstemp(
+        fd, self.fasta_filepath = mkstemp(
             prefix='subsample_test_', suffix='.fasta')
-        close(_)
+        close(fd)
         self.fasta_file = open(self.fasta_filepath, "w")
         self.fasta_file.write(self.fasta_lines)
         self.fasta_file.close()
 
-        _, self.output_filepath = mkstemp(prefix='subsample_output_',
+        fd, self.output_filepath = mkstemp(prefix='subsample_output_',
                                           suffix='.fasta')
-        close(_)
+        close(fd)
 
         self._files_to_remove =\
             [self.fasta_filepath]

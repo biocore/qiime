@@ -43,42 +43,42 @@ class CheckIdMapTests(TestCase):
             sample_errors_warnings_mapping_data
         self.empty_fields_mapping_data = empty_fields_mapping_data
 
-        _, self.correct_mapping_fp = mkstemp(
+        fd, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
 
-        _, self.errors_mapping_fp = mkstemp(
+        fd, self.errors_mapping_fp = mkstemp(
             prefix='errors_mapping_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.errors_mapping_fp, 'w')
         map_file.write(self.sample_errors_mapping_data)
         map_file.close()
 
-        _, self.empty_fields_fp = mkstemp(
+        fd, self.empty_fields_fp = mkstemp(
             prefix='empty_fields_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.empty_fields_fp, 'w')
         map_file.write(self.empty_fields_mapping_data)
         map_file.close()
 
-        _, self.warnings_mapping_fp = mkstemp(
+        fd, self.warnings_mapping_fp = mkstemp(
             prefix='warnings_mapping_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.warnings_mapping_fp, 'w')
         map_file.write(self.sample_warnings_mapping_data)
         map_file.close()
 
-        _, self.errors_warnings_mapping_fp = mkstemp(
+        fd, self.errors_warnings_mapping_fp = mkstemp(
             prefix='errors_warnings_mapping_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.errors_warnings_mapping_fp, 'w')
         map_file.write(self.sample_errors_warnings_mapping_data)
         map_file.close()

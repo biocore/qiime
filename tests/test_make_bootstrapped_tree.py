@@ -45,9 +45,9 @@ class FunctionTests(TestCase):
             "((tax7:0.1,tax3:0.2)node0:.98,tax8:.3, tax4:.3)node1:.4",
             PhyloNode)
         bootstraps = {'node0': .7, 'node1': .4}
-        _, f = mkstemp(prefix='make_bootstrapped_tree_test',
+        fd, f = mkstemp(prefix='make_bootstrapped_tree_test',
                        suffix='.pdf')
-        close(_)
+        close(fd)
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))
@@ -67,9 +67,9 @@ class FunctionTests(TestCase):
             PhyloNode)
 
         bootstraps = {"no__``!!:o de0": .7, 'node1': .4}
-        _, f = mkstemp(prefix='make_bootstrapped_tree_test',
+        fd, f = mkstemp(prefix='make_bootstrapped_tree_test',
                        suffix='.pdf')
-        close(_)
+        close(fd)
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))

@@ -38,21 +38,21 @@ class DenoiseWrapperTests(TestCase):
             large_example,
             header_info=self.header)
 
-        _, self.sff_path = mkstemp(
+        fd, self.sff_path = mkstemp(
             prefix='DenoiseWrapperTest_', suffix='.sff.txt')
-        close(_)
+        close(fd)
         self.large_flowgram_collection.writeToFile(self.sff_path)
 
-        _, self.sff_path2 = mkstemp(
+        fd, self.sff_path2 = mkstemp(
             prefix='fastDenoiserTest_', suffix='.sff.txt')
-        close(_)
+        close(fd)
         fh = open(self.sff_path2, "w")
         fh.write(fasting_subset_sff)
         fh.close()
 
-        _, self.seq_path = mkstemp(
+        fd, self.seq_path = mkstemp(
             prefix='fastDenoiserTest_', suffix='.fasta')
-        close(_)
+        close(fd)
         fh = open(self.seq_path, "w")
         fh.write(fasting_seqs_subset)
         fh.close()

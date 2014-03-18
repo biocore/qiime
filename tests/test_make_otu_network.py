@@ -133,9 +133,9 @@ class OtuNetworkTests(TestCase):
                                                                           "otu_425"]},
                                                             {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]))
 
-        _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
                                              prefix='test_make_otu_network_otu_table', suffix='.biom')
-        close(_)
+        close(fd)
         open(self.otu_table_fp, 'w').write(otu_table_str)
 
         self.otu_sample_file = """#Full OTU Counts

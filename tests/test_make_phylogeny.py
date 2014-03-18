@@ -58,9 +58,9 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     """Tests of the CogentTreeBuilder class"""
 
     def setUp(self):
-        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_',
+        fd, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_',
                                             suffix='.fasta')
-        close(_)
+        close(fd)
         self._paths_to_clean_up =\
             [self.input_fp]
         open(self.input_fp, 'w').write(aln_for_tree)
@@ -69,8 +69,8 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         """CogentTreeBuilder: output expected alignment file
         """
         p = CogentTreeBuilder({'Module': brokit.fasttree})
-        _, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
-        close(_)
+        fd, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
+        close(fd)
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, aln_path=self.input_fp,

@@ -56,12 +56,12 @@ class FunctionTests(TestCase):
         self.otu_table_str = format_biom_table(self.otu_table)
         self.otu_table_meta_str = format_biom_table(self.otu_table_meta)
 
-        _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
                                        prefix='test_rarefaction', suffix='.biom')
-        close(_)
-        _, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
+        close(fd)
+        fd, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
                                             prefix='test_rarefaction', suffix='.biom')
-        close(_)
+        close(fd)
 
         self.rare_dir = mkdtemp(dir=self.tmp_dir,
                                    prefix='test_rarefaction_dir', suffix='')

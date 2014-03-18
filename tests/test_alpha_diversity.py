@@ -51,10 +51,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=list('abcd'),
                                         constructor=DenseOTUTable)
-        _, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
-        close(_)
+        close(fd)
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
@@ -64,10 +64,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=['a', 'b', 'c', 'd_'],
                                         constructor=DenseOTUTable)
-        _, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
+        fd, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
-        close(_)
+        close(fd)
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
@@ -77,11 +77,11 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             observation_ids=list(
                 'abcd'),
             constructor=DenseOTUTable)
-        _, self.single_sample_otu_table_fp = mkstemp(
+        fd, self.single_sample_otu_table_fp = mkstemp(
             dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
             suffix='.biom')
-        close(_)
+        close(fd)
         open(self.single_sample_otu_table_fp, 'w').write(
             format_biom_table(self.single_sample_otu_table))
 

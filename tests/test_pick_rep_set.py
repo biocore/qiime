@@ -45,16 +45,16 @@ class SharedSetupTestCase(TestCase):
 
     def setUp(self):
         # create the temporary input files
-        _, self.tmp_seq_filepath = mkstemp(prefix='GenericRepSetPickerTest_',
+        fd, self.tmp_seq_filepath = mkstemp(prefix='GenericRepSetPickerTest_',
                                            suffix='.fasta')
-        close(_)
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(dna_seqs)
         seq_file.close()
 
-        _, self.tmp_otu_filepath = mkstemp(prefix='GenericRepSetPickerTest_',
+        fd, self.tmp_otu_filepath = mkstemp(prefix='GenericRepSetPickerTest_',
                                            suffix='.otu')
-        close(_)
+        close(fd)
         otu_file = open(self.tmp_otu_filepath, 'w')
         otu_file.write(otus)
         otu_file.close()
@@ -105,10 +105,10 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
         """GenericRepSetPicker.__call__ output to file functions as expected
         """
 
-        _, tmp_result_filepath = mkstemp(
+        fd, tmp_result_filepath = mkstemp(
             prefix='GenericRepSetPickerTest.test_call_output_to_file_',
             suffix='.txt')
-        close(_)
+        close(fd)
 
         app = GenericRepSetPicker(params=self.params)
         obs = app(self.tmp_seq_filepath, self.tmp_otu_filepath,
@@ -130,10 +130,10 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
         """GenericRepSetPicker.__call__ output to file sorts when requested
         """
 
-        _, tmp_result_filepath = mkstemp(
+        fd, tmp_result_filepath = mkstemp(
             prefix='GenericRepSetPickerTest.test_call_output_to_file_',
             suffix='.txt')
-        close(_)
+        close(fd)
 
         app = GenericRepSetPicker(params=self.params)
         obs = app(self.tmp_seq_filepath, self.tmp_otu_filepath,
@@ -155,14 +155,14 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
         """GenericRepSetPicker.__call__ writes log when expected
         """
 
-        _, tmp_log_filepath = mkstemp(
+        fd, tmp_log_filepath = mkstemp(
             prefix='GenericRepSetPickerTest.test_call_output_to_file_l_',
             suffix='.txt')
-        close(_)
-        _, tmp_result_filepath = mkstemp(
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='GenericRepSetPickerTest.test_call_output_to_file_r_',
             suffix='.txt')
-        close(_)
+        close(fd)
 
         app = GenericRepSetPicker(params=self.params)
         obs = app(self.tmp_seq_filepath, self.tmp_otu_filepath,
@@ -194,34 +194,34 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
 
     def setUp(self):
         # create the temporary input files
-        _, self.tmp_seq_filepath = mkstemp(
+        fd, self.tmp_seq_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.fasta')
-        close(_)
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(dna_seqs)
         seq_file.close()
 
-        _, self.ref_seq_filepath = mkstemp(
+        fd, self.ref_seq_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.fasta')
-        close(_)
+        close(fd)
         seq_file = open(self.ref_seq_filepath, 'w')
         seq_file.write(reference_seqs)
         seq_file.close()
 
-        _, self.tmp_otu_filepath = mkstemp(
+        fd, self.tmp_otu_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.otu')
-        close(_)
+        close(fd)
         otu_file = open(self.tmp_otu_filepath, 'w')
         otu_file.write(otus_w_ref)
         otu_file.close()
 
-        _, self.result_filepath = mkstemp(
+        fd, self.result_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.fasta')
-        close(_)
+        close(fd)
         otu_file = open(self.result_filepath, 'w')
         otu_file.write(otus_w_ref)
         otu_file.close()
@@ -267,10 +267,10 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
                '1': ('U1PLI_7889', 'TTGGACCGTG'),
                '2': ('W3Cecum_4858', 'TTGGGCCGTGTCTCAGT'),
                '3': ('R27DLI_3243', 'CTGGACCGTGTCT')}
-        _, tmp_otu_filepath = mkstemp(
+        fd, tmp_otu_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.otu')
-        close(_)
+        close(fd)
         otu_file = open(tmp_otu_filepath, 'w')
         otu_file.write(otus)
         otu_file.close()
@@ -289,10 +289,10 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
         app = ReferenceRepSetPicker(params={'Algorithm': 'first',
                                             'ChoiceF': first_id})
 
-        _, tmp_otu_filepath = mkstemp(
+        fd, tmp_otu_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.otu')
-        close(_)
+        close(fd)
         otu_file = open(tmp_otu_filepath, 'w')
         # replace a valid sequence identifier with an invalid
         # sequence identifier (i.e., one that we don't have a sequence for)
@@ -317,10 +317,10 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
     def test_call_ref_only(self):
         """ReferenceRepSetPicker.__call__ functions with no non-refseqs"""
 
-        _, tmp_otu_filepath = mkstemp(
+        fd, tmp_otu_filepath = mkstemp(
             prefix='ReferenceRepSetPickerTest_',
             suffix='.otu')
-        close(_)
+        close(fd)
         otu_file = open(tmp_otu_filepath, 'w')
         otu_file.write(otus_all_ref)
         otu_file.close()

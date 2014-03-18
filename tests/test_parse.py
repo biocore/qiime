@@ -194,9 +194,9 @@ class TopLevelTests(TestCase):
     def test_parse_mapping_file_handles_filepath(self):
         """ parse_mapping_file handles being passed a mapping filepath
         """
-        _, fp = mkstemp(prefix='test_parse_mapping_file',
+        fd, fp = mkstemp(prefix='test_parse_mapping_file',
                         suffix='.txt')
-        close(_)
+        close(fd)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',
@@ -212,9 +212,9 @@ class TopLevelTests(TestCase):
     def test_parse_mapping_file_handles_file_handle(self):
         """ parse_mapping_file handles being passed a mapping filepath
         """
-        _, fp = mkstemp(prefix='test_parse_mapping_file',
+        fd, fp = mkstemp(prefix='test_parse_mapping_file',
                         suffix='.txt')
-        close(_)
+        close(fd)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',
@@ -1064,7 +1064,7 @@ eigvals\t4.94\t1.79\t1.50
                          {'x': [5, 10, 5, 12], 'y': [30, 40], 'a': [5, 10, 5, 12], 'b': [30, 40]})
 
     def test_MinimalQualParser(self):
-        """MinimalQualParser should yield (id_, quals)"""
+        """MinimalQualParser should yield (idfd, quals)"""
         scores = ['>x', '5 10 5', '12',
                   '>y', '30 40',
                   '>a', '5 10 5', '12',

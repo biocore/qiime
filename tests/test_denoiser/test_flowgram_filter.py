@@ -82,8 +82,8 @@ class Test_flowgram_filter(TestCase):
                   'TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG',
                   'Key Sequence': 'TCAG'}
 
-        _, tmp_name = mkstemp(prefix="test_write_sff_header")
-        close(_)
+        fd, tmp_name = mkstemp(prefix="test_write_sff_header")
+        close(fd)
         fh = open(tmp_name, "w")
         write_sff_header(header, fh, num=400)
         fh.close()
@@ -105,10 +105,10 @@ class Test_flowgram_filter(TestCase):
         # With no filters all flowgram should be in out file
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = []
-        _, out_file_name = mkstemp(
+        fd, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
-        close(_)
+        close(fd)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)
@@ -119,10 +119,10 @@ class Test_flowgram_filter(TestCase):
         fh = open(self.tiny_test)
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = [lambda f:within_length(f, 100, 300)]
-        _, out_file_name = mkstemp(
+        fd, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
-        close(_)
+        close(fd)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)
@@ -133,10 +133,10 @@ class Test_flowgram_filter(TestCase):
         fh = open(self.tiny_test)
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = [lambda f:within_length(f, 0, 0)]
-        _, out_file_name = mkstemp(
+        fd, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
-        close(_)
+        close(fd)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)
