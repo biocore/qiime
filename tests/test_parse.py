@@ -1064,7 +1064,7 @@ eigvals\t4.94\t1.79\t1.50
                          {'x': [5, 10, 5, 12], 'y': [30, 40], 'a': [5, 10, 5, 12], 'b': [30, 40]})
 
     def test_MinimalQualParser(self):
-        """MinimalQualParser should yield (idfd, quals)"""
+        """MinimalQualParser should yield (id_, quals)"""
         scores = ['>x', '5 10 5', '12',
                   '>y', '30 40',
                   '>a', '5 10 5', '12',
