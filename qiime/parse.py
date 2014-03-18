@@ -21,10 +21,9 @@ from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.rarefaction import subsample
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
-from cogent.parse.record_finder import LabeledRecordFinder
-from cogent.parse.fasta import FastaFinder
+from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
-from skbio.parse.sequences import parse_fastq
+from skbio.parse.sequences import parse_fastq, FastaFinder
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
