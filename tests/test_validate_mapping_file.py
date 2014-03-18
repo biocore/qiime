@@ -9,12 +9,13 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
 from os.path import isdir, isfile, exists, join, basename
+from tempfile import mkdtemp
 from shutil import rmtree
 from collections import defaultdict
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 from skbio.util.misc import create_dir
 
 from qiime.check_id_map import (check_mapping_file, process_id_map,
@@ -104,7 +105,7 @@ class CheckIdMapTests(TestCase):
         self.expected_log_errors_warnings_output =\
             expected_log_errors_warnings_output
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)
