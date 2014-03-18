@@ -13,7 +13,7 @@ __maintainer__ = "Kyle Patnode"
 __email__ = "kpatnode1@gmail.com"
 
 from t2t import nlevel
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 
 
 def clean_output(assigned_constrings, seq_names):

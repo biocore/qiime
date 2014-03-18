@@ -19,7 +19,7 @@ added..
 """
 
 from cogent import LoadSeqs, DNA
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from qiime.util import FunctionWithParams
 # app controllers that implement align_unaligned_seqs
 import cogent.app.muscle_v38

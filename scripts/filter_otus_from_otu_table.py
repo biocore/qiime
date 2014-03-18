@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
 from numpy import inf, isinf
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from biom.parse import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.filter import filter_otus_from_otu_table
@@ -120,7 +120,7 @@ def main():
         if otu_ids_to_exclude_fp.endswith('.fasta') or \
            otu_ids_to_exclude_fp.endswith('.fna'):
             otu_ids_to_exclude = set([id_.strip().split()[0]
-                                      for id_, seq in fasta_parse(open(otu_ids_to_exclude_fp, 'U'))])
+                                      for id_, seq in parse_fasta(open(otu_ids_to_exclude_fp, 'U'))])
         else:
             otu_ids_to_exclude = set([l.strip().split('\t')[0]
                                       for l in open(otu_ids_to_exclude_fp, 'U')])

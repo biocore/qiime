@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap
@@ -324,7 +324,7 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
 def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
-        input_seqs can be the output of fasta_parse or fastq_parse
+        input_seqs can be the output of parse_fasta or parse_fastq
     """
     seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
                                        for seq_id in seqs_to_keep])
@@ -345,7 +345,7 @@ def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
 def filter_fastq(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
-        input_seqs can be the output of fasta_parse or fastq_parse
+        input_seqs can be the output of parse_fasta or parse_fastq
     """
     seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
                                        for seq_id in seqs_to_keep])
@@ -502,7 +502,7 @@ get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     """return the sequence ids within the fasta file"""
     return (
-        set([seq_id.split()[0] for seq_id, seq in fasta_parse(fasta_f)])
+        set([seq_id.split()[0] for seq_id, seq in parse_fasta(fasta_f)])
     )
 get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
 

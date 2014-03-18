@@ -12,7 +12,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from urllib2 import urlopen, URLError
 from qiime.util import split_fasta_on_sample_ids_to_files
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 import re
 import os
 from glob import glob
@@ -43,7 +43,7 @@ def parse_and_submit_params(key, project_id, seq_file, output_dir,
             "This script is having trouble connecting to the internet!")
 
     # parse and split fasta file into individual sample fastas
-    fasta_file = fasta_parse(open(seq_file))
+    fasta_file = parse_fasta(open(seq_file))
     split_fasta_on_sample_ids_to_files(fasta_file, output_dir)
 
     # set the MG-RAST link for QIIME

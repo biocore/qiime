@@ -7,7 +7,7 @@ from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
 
 from cogent.util.misc import remove_files
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.util import (CommandLineApplication, ResultPath,
                              ApplicationError, ApplicationNotFoundError)
@@ -247,7 +247,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
     def getResult(self, seq_path):
         """ """
         # Iterate over seq_id, seq pairs from seq_path
-        for seq_id, seq in fasta_parse(open(seq_path)):
+        for seq_id, seq in parse_fasta(open(seq_path)):
             # Generate a list of fragments
             fragments = self._fragment_seq(seq)
             # Assign the taxonomy for each of the fragments
@@ -622,7 +622,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None,
     else:
         if not ref_db_fasta_fp:
             # make degapped reference file
-            ref_db_fasta_fp = write_degapped_fasta_to_file(fasta_parse(
+            ref_db_fasta_fp = write_degapped_fasta_to_file(parse_fasta(
                 open(ref_db_aligned_fp)))
             files_to_remove.append(ref_db_fasta_fp)
         # use user db
@@ -739,7 +739,7 @@ def usearch61_chimera_check(input_seqs_fp,
             print "Splitting fasta according to SampleID..."
         full_seqs = open(input_seqs_fp, "U")
         sep_fastas =\
-            split_fasta_on_sample_ids_to_files(fasta_parse(full_seqs),
+            split_fasta_on_sample_ids_to_files(parse_fasta(full_seqs),
                                                output_dir)
         full_seqs.close()
 
@@ -1064,7 +1064,7 @@ def fix_abundance_labels(output_consensus_fp, filtered_consensus_fp):
 
     filtered_f = open(filtered_consensus_fp, "w")
 
-    for label, seq in fasta_parse(consensus_f):
+    for label, seq in parse_fasta(consensus_f):
         fasta_label = label.split()[0]
         size = "size=" + label.split('size=')[1].replace(';', '')
         final_label = "%s;%s" % (fasta_label, size)

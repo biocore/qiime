@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import make_option
 from itertools import chain
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import inflate_denoiser_output
 
@@ -73,11 +73,11 @@ def main():
         parse_command_line_parameters(**script_info)
 
     centroid_seqs = \
-        [fasta_parse(open(e, 'U')) for e in opts.centroid_fps]
+        [parse_fasta(open(e, 'U')) for e in opts.centroid_fps]
     singleton_seqs = \
-        [fasta_parse(open(e, 'U')) for e in opts.singleton_fps]
+        [parse_fasta(open(e, 'U')) for e in opts.singleton_fps]
     fasta_seqs = \
-        [fasta_parse(open(e, 'U')) for e in opts.fasta_fps]
+        [parse_fasta(open(e, 'U')) for e in opts.fasta_fps]
     denoiser_map_fs = \
         [open(e, 'U') for e in opts.denoiser_map_fps]
     output_fasta_fp = opts.output_fasta_fp

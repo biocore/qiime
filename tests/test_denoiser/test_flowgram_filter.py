@@ -15,7 +15,7 @@ from tempfile import mkstemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle

@@ -15,7 +15,7 @@ from math import ceil
 from os.path import split, splitext, join
 from os import makedirs, mkdir
 from random import choice
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from qiime.split import split_fasta
 from qiime.util import load_qiime_config, qiime_system_call, count_seqs
 

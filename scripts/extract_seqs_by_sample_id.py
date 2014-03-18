@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.util import extract_seqs_by_sample_id
@@ -89,7 +89,7 @@ def main():
         print "Extracting samples: %s" % ', '.join(sample_ids)
 
     try:
-        seqs = fasta_parse(open(input_fasta_fp))
+        seqs = parse_fasta(open(input_fasta_fp))
     except IOError:
         option_parser.error(
             'Cannot open %s. Does it exist? Do you have read access?' %

@@ -13,7 +13,7 @@ __email__ = "antgonza@gmail.com"
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from os.path import split, splitext
-from skbio.parse.sequences import fasta_parse
+from skbio.parse.sequences import parse_fasta
 from cogent import DNA
 from qiime.adjust_seq_orientation import rc_fasta_file, append_rc, null_seq_desc_mapper
 
