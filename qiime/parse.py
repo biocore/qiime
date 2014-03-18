@@ -157,9 +157,10 @@ def parse_mapping_file_to_dict(*args, **kwargs):
 
 def mapping_file_to_dict(mapping_data, header):
     """processes mapping data in list of lists format into a 2 deep dict"""
-    map_dict = defaultdict(dict)
+    map_dict = {}
     for i in range(len(mapping_data)):
         sam = mapping_data[i]
+        map_dict[sam[0]] = {}
         for j in range(len(header)):
             if j == 0:
                 continue  # sampleID field
