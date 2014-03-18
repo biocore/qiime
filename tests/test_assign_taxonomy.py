@@ -27,7 +27,7 @@ from cogent.app.util import ApplicationError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files, create_dir
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 from qiime.util import get_tmp_filename, get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
@@ -563,7 +563,7 @@ class BlastTaxonAssignerTests(TestCase):
         self.assertRaises(AssertionError, p)
 
         # Functions with a list of (seq_id, seq) pairs
-        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        seqs = list(parse_fasta(open(self.input_seqs_fp)))
         actual = p(seqs=seqs)
         self.assertEqual(actual, self.expected1)
 
@@ -601,7 +601,7 @@ class BlastTaxonAssignerTests(TestCase):
         self._paths_to_clean_up += files_to_remove
 
         # read the input file into (seq_id, seq) pairs
-        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        seqs = list(parse_fasta(open(self.input_seqs_fp)))
 
         actual = p._seqs_to_taxonomy(seqs, blast_db, id_to_taxonomy_map)
         self.assertEqual(actual, self.expected1)
