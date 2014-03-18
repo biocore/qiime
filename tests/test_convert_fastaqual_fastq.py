@@ -16,7 +16,7 @@ from os import chmod
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
