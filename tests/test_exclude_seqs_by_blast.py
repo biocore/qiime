@@ -15,10 +15,13 @@ Test code for exclude_seqs_by_blast.py.
 NOTE: requires BLAST to be properly installed with
 environment variable set for tests to pass
 """
-from os import remove, system, mkdir
+from os import remove, system, close
 from random import choice
+from tempfile import mkstemp
+
 from numpy import array, arange, log, log10
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\
@@ -30,7 +33,7 @@ from qiime.exclude_seqs_by_blast import blast_genome,\
     id_from_fasta_label_line,\
     seqs_from_file,\
     ids_to_seq_file
-from qiime.util import get_tmp_filename, remove_files
+from qiime.util import remove_files
 
 
 class ExcludeHumanTests(TestCase):
@@ -40,18 +43,15 @@ class ExcludeHumanTests(TestCase):
         self.blast_lines = BLAST_LINES
         self.blast_result = BlastResult(self.blast_lines)
 
-        self.subjectdb_fp = get_tmp_filename(
-            prefix='ExcludeByBlastTests_',
-            suffix='.fasta',
-            result_constructor=str)
-        self.query_fp = get_tmp_filename(
-            prefix='ExcludeByBlastTests_',
-            suffix='.fasta',
-            result_constructor=str)
-        self.query2_fp = get_tmp_filename(
-            prefix='ExcludeByBlastTests_',
-            suffix='.fasta',
-            result_constructor=str)
+        _, self.subjectdb_fp = mkstemp(prefix='ExcludeByBlastTests_',
+                                       suffix='.fasta')
+        close(_)
+        _, self.query_fp = mkstemp(prefix='ExcludeByBlastTests_',
+                                   suffix='.fasta')
+        close(_)
+        _, self.query2_fp = mkstemp(prefix='ExcludeByBlastTests_',
+                                    suffix='.fasta')
+        close(_)
 
         open(self.subjectdb_fp, "w").writelines(TEST_BLAST_DB_LINES)
         open(self.query_fp, "w").writelines(TEST_BLAST_DB_LINES)
@@ -102,7 +102,7 @@ class ExcludeHumanTests(TestCase):
                           wordsize=28, percent_aligned=0.98, DEBUG=False)
 
         self.assertEqual(hit_ids, set(["bth:BT_0001", "hsa:8355"]))
-        self.assertEqual(removed_hit_ids, set([]))
+        self.assertEqual(removed_hit_ids, set())
 
         i = 0
         for line in blast_output:
@@ -132,15 +132,14 @@ class ExcludeHumanTests(TestCase):
                           DEBUG=False)
 
         self.assertEqual(hit_ids, set(["bth:BT_0001", "hsa:8355_tweaked"]))
-        self.assertEqual(removed_hit_ids, set([]))
+        self.assertEqual(removed_hit_ids, set())
 
     def test_sequences_to_file(self):
         """sequences_to_file should write a standard format FASTA file."""
 
-        self.seq_test_fp = get_tmp_filename(
-            prefix='ExcludeByBlastTests_',
-            suffix='.fasta',
-            result_constructor=str)
+        _, self.seq_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
+                                      suffix='.fasta')
+        close(_)
         self._paths_to_clean_up.append(self.seq_test_fp)
 
         ids = ["bth:BT_0001", "hsa:8355"]
@@ -193,7 +192,7 @@ class ExcludeHumanTests(TestCase):
 
         ok_ids, removed_ids = query_ids_from_blast_result(
             self.blast_result, align_filter, DEBUG=True)
-        self.assertEqualItems(ok_ids, set([]))
+        self.assertEqual(ok_ids, set())
 
     def test_ids_from_fasta_lines(self):
         """ ids_from_fasta_lines should return ids"""
@@ -237,10 +236,9 @@ class ExcludeHumanTests(TestCase):
 
     def test_ids_to_seq_file(self):
         """ids_to_seq_file should lookup and write out seqs for given ids"""
-        self.id_test_fp = get_tmp_filename(
-            prefix='ExcludeByBlastTests_',
-            suffix='.fasta',
-            result_constructor=str)
+        _, self.id_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
+                                     suffix='.fasta')
+        close(_)
 
         self._paths_to_clean_up.append(self.id_test_fp)
 

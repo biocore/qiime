@@ -20,13 +20,15 @@ from glob import glob
 from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file, rmtree
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal, assert_allclose
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files, create_dir
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
+
+from brokit.rdp_classifier import train_rdp_classifier
+from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import get_tmp_filename, get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
@@ -562,7 +564,7 @@ class BlastTaxonAssignerTests(TestCase):
         self.assertRaises(AssertionError, p)
 
         # Functions with a list of (seq_id, seq) pairs
-        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        seqs = list(parse_fasta(open(self.input_seqs_fp)))
         actual = p(seqs=seqs)
         self.assertEqual(actual, self.expected1)
 
@@ -600,7 +602,7 @@ class BlastTaxonAssignerTests(TestCase):
         self._paths_to_clean_up += files_to_remove
 
         # read the input file into (seq_id, seq) pairs
-        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        seqs = list(parse_fasta(open(self.input_seqs_fp)))
 
         actual = p._seqs_to_taxonomy(seqs, blast_db, id_to_taxonomy_map)
         self.assertEqual(actual, self.expected1)
@@ -687,7 +689,8 @@ class BlastTaxonAssignerTests(TestCase):
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_exp)
+        
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_exp)
 
 
 class RtaxTaxonAssignerTests(TestCase):
@@ -864,7 +867,7 @@ class RtaxTaxonAssignerTests(TestCase):
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n')[0:12], log_file_exp)
+        self.assertItemsEqual(log_file_str.split('\n')[0:12], log_file_exp)
 
 
 class MothurTaxonAssignerTests(TestCase):
@@ -1167,8 +1170,8 @@ class RdpTaxonAssignerTests(TestCase):
                 # confidence is above threshold
                 self.assertTrue(actual[seq_id][1] >= min_confidence)
                 # confidence roughly matches expected
-                self.assertFloatEqual(
-                    actual[seq_id][1], expected[seq_id][1], 0.1)
+                assert_allclose(actual[seq_id][1], expected[seq_id][1], 
+                                    atol=0.1)
                 # check if the assignment is correct -- this must happen
                 # at least once per seq_id for the test to pass
                 if actual[seq_id][0] == expected[seq_id][0]:

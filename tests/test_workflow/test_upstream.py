@@ -13,13 +13,13 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, split, splitext
+from tempfile import mkdtemp
+
 from cogent import LoadTree, LoadSeqs
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
-from qiime.util import (load_qiime_config,
-                        get_qiime_temp_dir,
-                        create_dir)
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 from qiime.parse import (parse_qiime_parameters)
 from biom.parse import parse_biom_table
 from qiime.test import (initiate_timeout,
@@ -41,12 +41,10 @@ class UpstreamWorkflowTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='core_qiime_analyses_test_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='core_qiime_analyses_test_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters([])
@@ -83,7 +81,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_table_fp = join(self.test_out, 'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -95,9 +93,9 @@ class UpstreamWorkflowTests(TestCase):
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -131,7 +129,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_table_fp = join(self.test_out, 'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -143,9 +141,9 @@ class UpstreamWorkflowTests(TestCase):
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -236,9 +234,9 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -326,9 +324,9 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -415,9 +413,9 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -504,9 +502,9 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertEqualItems(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
         # expected OTUs
-        self.assertEqualItems(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()

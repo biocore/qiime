@@ -9,15 +9,19 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
+from os import close
 from os.path import exists
+from tempfile import mkstemp
+
 from numpy import array, log10, asarray, float64
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
                                     names_to_indices, get_log_transform, get_clusters,
                                     get_fontsize, plot_heatmap)
-from qiime.util import get_tmp_filename
+
 from biom.table import table_factory
 
 
@@ -63,10 +67,9 @@ class TopLevelTests(TestCase):
                           ['Sample6', 'NA', 'B']],
                          ['SampleID', 'CAT1', 'CAT2'], []]
         self.tree_text = ["('OTU3',('OTU1','OTU2'))"]
-        self.tmp_heatmap_fpath = get_tmp_filename(
-            prefix='test_heatmap_',
-            suffix='.pdf'
-        )
+        _, self.tmp_heatmap_fpath = mkstemp(prefix='test_heatmap_',
+                                            suffix='.pdf')
+        close(_)
 
     def test_extract_metadata_column(self):
         """Extracts correct column from mapping file"""
@@ -80,14 +83,14 @@ class TopLevelTests(TestCase):
         category_labels = ['A', 'B', 'A', 'B', 'A', 'B']
         obs = get_order_from_categories(self.otu_table, category_labels)
         exp = [0, 4, 2, 1, 5, 3]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_get_order_from_tree(self):
         obs = get_order_from_tree(
             self.otu_table.ObservationIds,
             self.tree_text)
         exp = [2, 0, 1]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_make_otu_labels(self):
         lineages = []
@@ -113,7 +116,7 @@ class TopLevelTests(TestCase):
                      'Sample6', 'Sample5', 'Sample1']
         obs = names_to_indices(self.otu_table.SampleIds, new_order)
         exp = [3, 1, 2, 5, 4, 0]
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_get_log_transform(self):
         eps = .01
@@ -124,7 +127,7 @@ class TopLevelTests(TestCase):
         xform[xform == 0] = eps
 
         for (i, val) in enumerate(obs.iterObservationData()):
-            self.assertEqual(val, log10(xform[i]))
+            assert_almost_equal(val, log10(xform[i]))
 
     def test_get_clusters(self):
         data = asarray([val for val in self.otu_table.iterObservationData()])

@@ -11,15 +11,18 @@ __email__ = "justinak@gmail.com"
 
 """Contains tests for producing rarefied OTU tables."""
 
-from cogent.util.unit_test import TestCase, main
+from tempfile import mkstemp, mkdtemp
+
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 import numpy
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from qiime.rarefaction import (RarefactionMaker,
                                get_rare_data,
                                remove_empty_otus)
 from qiime.format import format_biom_table
 from biom.table import table_factory, TableException
-from os import remove, rmdir
+from os import remove, rmdir, close
 import os
 from shutil import rmtree
 from biom.parse import parse_biom_table
@@ -53,14 +56,15 @@ class FunctionTests(TestCase):
         self.otu_table_str = format_biom_table(self.otu_table)
         self.otu_table_meta_str = format_biom_table(self.otu_table_meta)
 
-        self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                             prefix='test_rarefaction', suffix='.biom')
-        self.otu_table_meta_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                  prefix='test_rarefaction', suffix='.biom')
+        _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
+                                       prefix='test_rarefaction', suffix='.biom')
+        close(_)
+        _, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
+                                            prefix='test_rarefaction', suffix='.biom')
+        close(_)
 
-        self.rare_dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                         prefix='test_rarefaction_dir', suffix='', result_constructor=str)
-        os.mkdir(self.rare_dir)
+        self.rare_dir = mkdtemp(dir=self.tmp_dir,
+                                   prefix='test_rarefaction_dir', suffix='')
 
         open(self.otu_table_fp, 'w').write(self.otu_table_str)
         open(self.otu_table_meta_fp, 'w').write(self.otu_table_meta_str)
@@ -81,8 +85,8 @@ class FunctionTests(TestCase):
         """
         maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
         res = maker.rarefy_to_list(include_full=True)
-        self.assertFloatEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
-        self.assertFloatEqual(
+        self.assertItemsEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
+        self.assertItemsEqual(
             res[-1][2].ObservationIds,
             self.otu_table.ObservationIds)
         self.assertEqual(res[-1][2], self.otu_table)
@@ -90,7 +94,7 @@ class FunctionTests(TestCase):
         sample_value_sum = []
         for val in res[1][2].iterSampleData():
             sample_value_sum.append(val.sum())
-        self.assertFloatEqual(sample_value_sum, [1.0, 1.0])
+        assert_almost_equal(sample_value_sum, [1.0, 1.0])
 
     def test_rarefy_to_files(self):
         """rarefy_to_files should write valid files
@@ -105,11 +109,11 @@ class FunctionTests(TestCase):
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
         otu_table = parse_biom_table(open(fname, 'U'))
 
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.SampleIds,
             self.otu_table.SampleIds[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.ObservationIds,
             self.otu_table.ObservationIds)
 
@@ -126,11 +130,11 @@ class FunctionTests(TestCase):
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
         otu_table = parse_biom_table(open(fname, 'U'))
 
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.SampleIds,
             self.otu_table.SampleIds[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertFloatEqual(
+        self.assertItemsEqual(
             otu_table.ObservationIds,
             self.otu_table.ObservationIds)
 

@@ -13,7 +13,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir, \
     create_dir, get_options_lookup
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from sys import argv, exit, exc_info
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.parse import parse_rarefaction_data, parse_rarefaction
@@ -200,7 +200,7 @@ def main():
                 option_parser.error('Could not create output directory.')
                 exit(0)
     else:
-        output_dir = get_random_directory_name()
+        output_dir = mkdtemp('./')
 
     # Generate the plots and html text
     html_output = make_averages(prefs, data, background_color, label_color,

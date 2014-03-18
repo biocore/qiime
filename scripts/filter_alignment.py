@@ -15,7 +15,7 @@ __email__ = "wendel@colorado.edu"
 from os.path import split, exists, splitext, getsize
 from os import mkdir, remove
 
-from cogent.core.alignment import eps
+import numpy as np
 
 from qiime.util import load_qiime_config
 from qiime.filter_alignment import apply_lane_mask_and_gap_filter, \
@@ -65,7 +65,7 @@ script_info['optional_options'] = [
                 type='float', help='gap filter threshold, ' +
                 'filters positions which are gaps in > allowed_gap_frac ' +
                 'of the sequences [default: %default]',
-                default=1. - eps),
+                default=1. - np.finfo(float).eps),
     make_option('-r', '--remove_outliers', action='store_true',
                 help='remove seqs very dissimilar to the alignment consensus' +
                 ' (see --threshold).  [default: %default]',

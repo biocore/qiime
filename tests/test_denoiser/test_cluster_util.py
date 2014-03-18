@@ -12,19 +12,19 @@ __email__ = "jens.reeder@gmail.com"
 
 import signal
 import os
-from os import remove, rmdir, environ, mkdir
+from os import remove, rmdir, environ, close
 from time import sleep, time
 from os.path import exists
 from StringIO import StringIO
 from socket import error
+from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from unittest import TestCase, main
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs, setup_server,\
@@ -50,10 +50,11 @@ class TestUtils(TestCase):
 
         self.home = environ['HOME']
         self.server_socket = None
-        self.tmp_result_file = get_tmp_filename(tmp_dir=self.home,
-                                                prefix="/test_hello_",
+        _, self.tmp_result_file = mkstemp(dir=self.home,
+                                                prefix="test_hello_",
                                                 suffix=".txt")
-        self.tmp_dir = get_tmp_filename(tmp_dir=self.home,
+        close(_)
+        self.tmp_dir = mkdtemp(dir=self.home,
                                         prefix="test_cluster_util",
                                         suffix="/")
 
@@ -86,7 +87,7 @@ class TestUtils(TestCase):
     def _setup_server_and_clients(self):
 
         self.server_socket = setup_server()
-        mkdir(self.tmp_dir)
+
         workers, client_sockets = setup_workers(4, self.tmp_dir,
                                                 self.server_socket,
                                                 verbose=False)
@@ -112,7 +113,6 @@ class TestUtils(TestCase):
     def test_setup_workers(self):
         """setup_workers starts clients"""
 
-        mkdir(self.tmp_dir)
         self.server_socket = setup_server()
         workers, client_sockets = setup_workers(4, self.tmp_dir,
                                                 self.server_socket,
@@ -198,7 +198,7 @@ class TestUtils(TestCase):
         self.server_socket = setup_server()
         host, port = self.server_socket.getsockname()
         # Not much to test here, if we get something back it should work
-        self.assertGreaterThan(port, 1023)
+        self.assertGreater(port, 1023)
         # binding to a known port should fail
         self.assertRaises(error, setup_server, 80)
 

@@ -11,13 +11,15 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import os
+from os import close
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, dirname
-from cogent.util.unit_test import TestCase, main
+from tempfile import mkstemp, mkdtemp
+
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import (get_tmp_filename,
-                        load_qiime_config,
+from qiime.util import (load_qiime_config,
                         count_seqs,
                         get_qiime_temp_dir)
 from qiime.parse import (parse_qiime_parameters)
@@ -37,82 +39,92 @@ class AmpliconNoiseWorkflowTests(TestCase):
 
         self.tmp_dir = get_qiime_temp_dir()
 
-        self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                       prefix='qiime_wf_out', suffix='', result_constructor=str)
+        self.wf_out = mkdtemp(dir=self.tmp_dir,
+                              prefix='qiime_wf_out', suffix='')
         self.dirs_to_remove.append(self.wf_out)
 
-        self.fasting_mapping_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                   prefix='qiime_wf_mapping', suffix='.txt')
+        _, self.fasting_mapping_fp = mkstemp(dir=self.tmp_dir,
+                                             prefix='qiime_wf_mapping', suffix='.txt')
+        close(_)
         fasting_mapping_f = open(self.fasting_mapping_fp, 'w')
         fasting_mapping_f.write(fasting_map)
         fasting_mapping_f.close()
         self.files_to_remove.append(self.fasting_mapping_fp)
 
-        self.fasting_seqs_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                prefix='qiime_wf_seqs', suffix='.fasta')
+        _, self.fasting_seqs_fp = mkstemp(dir=self.tmp_dir,
+                                          prefix='qiime_wf_seqs', suffix='.fasta')
+        close(_)
         fasting_seqs_f = open(self.fasting_seqs_fp, 'w')
         fasting_seqs_f.write(fasting_seqs_subset)
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_fp)
 
-        self.fasting_fna_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                               prefix='qiime_wf_fna', suffix='.fasta')
+        _, self.fasting_fna_fp = mkstemp(dir=self.tmp_dir,
+                                         prefix='qiime_wf_fna', suffix='.fasta')
+        close(_)
         fasting_seqs_f = open(self.fasting_fna_fp, 'w')
         fasting_seqs_f.write(fasting_tutorial_fna)
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_fna_fp)
 
-        self.fasting_qual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                prefix='qiime_wf_qual', suffix='.qual')
+        _, self.fasting_qual_fp = mkstemp(dir=self.tmp_dir,
+                                          prefix='qiime_wf_qual', suffix='.qual')
+        close(_)
         fasting_seqs_f = open(self.fasting_qual_fp, 'w')
         fasting_seqs_f.write(fasting_tutorial_qual)
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_qual_fp)
 
-        self.fasting_seqs_denoiser_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                         prefix='qiime_wf_denoiser_seqs', suffix='.fasta')
+        _, self.fasting_seqs_denoiser_fp = mkstemp(dir=self.tmp_dir,
+                                                   prefix='qiime_wf_denoiser_seqs', suffix='.fasta')
+        close(_)
         fasting_seqs_f = open(self.fasting_seqs_denoiser_fp, 'w')
         fasting_seqs_f.write('\n'.join(fasting_seqs_subset.split('\n')[:44]))
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_denoiser_fp)
 
-        self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                     prefix='qiime_wf_otu_table', suffix='.biom')
+        _, self.fasting_otu_table_fp = mkstemp(dir=self.tmp_dir,
+                                               prefix='qiime_wf_otu_table', suffix='.biom')
+        close(_)
         fasting_otu_table_f = open(self.fasting_otu_table_fp, 'w')
         fasting_otu_table_f.write(fasting_subset_otu_table)
         fasting_otu_table_f.close()
         self.files_to_remove.append(self.fasting_otu_table_fp)
 
-        self.fasting_tree_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                prefix='qiime_wf_tree', suffix='.tre')
+        _, self.fasting_tree_fp = mkstemp(dir=self.tmp_dir,
+                                          prefix='qiime_wf_tree', suffix='.tre')
+        close(_)
         fasting_tree_f = open(self.fasting_tree_fp, 'w')
         fasting_tree_f.write(fasting_subset_tree)
         fasting_tree_f.close()
         self.files_to_remove.append(self.fasting_tree_fp)
 
-        self.template_aln_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                prefix='wf_template', suffix='.fasta')
+        _, self.template_aln_fp = mkstemp(dir=self.tmp_dir,
+                                          prefix='wf_template', suffix='.fasta')
+        close(_)
         template_aln_f = open(self.template_aln_fp, 'w')
         template_aln_f.write(template_alignment_subset)
         template_aln_f.close()
         self.files_to_remove.append(self.template_aln_fp)
 
-        self.lanemask_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                            prefix='wf_lanemask', suffix='.txt')
+        _, self.lanemask_fp = mkstemp(dir=self.tmp_dir,
+                                      prefix='wf_lanemask', suffix='.txt')
+        close(_)
         lanemask_f = open(self.lanemask_fp, 'w')
         lanemask_f.write(lanemask)
         lanemask_f.close()
         self.files_to_remove.append(self.lanemask_fp)
 
-        self.fasting_subset_fna = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                   prefix='wf_denoise_fna', suffix='.fasta')
+        _, self.fasting_subset_fna = mkstemp(dir=self.tmp_dir,
+                                             prefix='wf_denoise_fna', suffix='.fasta')
         sff_f = open(self.fasting_subset_fna, 'w')
         sff_f.write(fasting_subset_fna)
         sff_f.close()
         self.files_to_remove.append(self.fasting_subset_fna)
 
-        self.fasting_subset_qual = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                    prefix='wf_denoise_qual', suffix='.qual')
+        _, self.fasting_subset_qual = mkstemp(dir=self.tmp_dir,
+                                              prefix='wf_denoise_qual', suffix='.qual')
+        close(_)
         sff_f = open(self.fasting_subset_qual, 'w')
         sff_f.write(fasting_subset_qual)
         sff_f.close()
@@ -126,22 +138,25 @@ class AmpliconNoiseWorkflowTests(TestCase):
         self.params['align_seqs']['template_fp'] = self.template_aln_fp
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
 
-        self.pick_ref_otus_seqs1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        _, self.pick_ref_otus_seqs1 = mkstemp(
+            dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        close(_)
         f = open(self.pick_ref_otus_seqs1, 'w')
         f.write(pick_ref_otus_seqs1)
         f.close()
         self.files_to_remove.append(self.pick_ref_otus_seqs1)
 
-        self.pick_ref_otus_refseqs1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        _, self.pick_ref_otus_refseqs1 = mkstemp(
+            dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        close(_)
         f = open(self.pick_ref_otus_refseqs1, 'w')
         f.write(pick_ref_otus_refseqs1)
         f.close()
         self.files_to_remove.append(self.pick_ref_otus_refseqs1)
 
-        self.pick_ref_otus_tax1 = get_tmp_filename(
-            tmp_dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        _, self.pick_ref_otus_tax1 = mkstemp(
+            dir=self.tmp_dir, prefix='ref_otus_wf', suffix='.fna')
+        close(_)
         f = open(self.pick_ref_otus_tax1, 'w')
         f.write(pick_ref_otus_tax1)
         f.close()

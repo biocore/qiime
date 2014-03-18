@@ -8,16 +8,17 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
+from os import close
 from os.path import isdir, isfile, exists
 from shutil import rmtree
 
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files, get_random_directory_name
+from tempfile import mkdtemp, mkstemp
+from unittest import TestCase, main
+from cogent.util.misc import remove_files
+from skbio.util.misc import create_dir
 
 from qiime.quality_scores_plot import generate_histogram,\
     plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
-from qiime.util import create_dir
 
 
 class QualityScoresPlotTests(TestCase):
@@ -29,14 +30,13 @@ class QualityScoresPlotTests(TestCase):
 
         self._files_to_remove = []
 
-        self.qual_fp = get_tmp_filename(
-            prefix='qual_scores_',
-            suffix='.qual')
+        _, self.qual_fp = mkstemp(prefix='qual_scores_', suffix='.qual')
+        close(_)
         seq_file = open(self.qual_fp, 'w')
         seq_file.write(qual_scores)
         seq_file.close()
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

@@ -13,9 +13,13 @@ __email__ = "justinak@gmail.com"
 
 import numpy
 import warnings
-from cogent.util.unit_test import TestCase, main
+from os import close
+from tempfile import mkstemp, mkdtemp
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
@@ -73,15 +77,17 @@ class BetaDiversityCalcTests(TestCase):
         l19_str = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                   self.l19_sample_names,
                                                   self.l19_taxon_names))
-        self.l19_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                       prefix='test_bdiv_otu_table', suffix='.blom')
+        _, self.l19_fp = mkstemp(dir=self.tmp_dir,
+                                prefix='test_bdiv_otu_table', suffix='.blom')
+        close(_)
         open(self.l19_fp, 'w').write(l19_str)
 
         l19_str_w_underscore = format_biom_table(DenseOTUTable(self.l19_data.T,
                                                                self.l19_sample_names,
                                                                self.l19_taxon_names_w_underscore))
-        self.l19_str_w_underscore_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                                        prefix='test_bdiv_otu_table', suffix='.blom')
+        _, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
+                                                  prefix='test_bdiv_otu_table', suffix='.blom')
+        close(_)
         open(self.l19_str_w_underscore_fp, 'w').write(l19_str_w_underscore)
 
         self.l19_tree_str = '((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4,\
@@ -101,7 +107,7 @@ class BetaDiversityCalcTests(TestCase):
         beta_calc_chisq = BetaDiversityCalc(dist_chisq, 'chi square', False)
         matrix, labels = beta_calc_chisq(data_path=self.l19_fp, tree_path=None)
         self.assertEqual(labels, self.l19_sample_names)
-        self.assertFloatEqual(matrix, dist_chisq(self.l19_data))
+        assert_almost_equal(matrix, dist_chisq(self.l19_data))
 
     def test_l19_unifrac(self):
         """beta calc run should also work for phylo metric"""
@@ -120,12 +126,14 @@ class BetaDiversityCalcTests(TestCase):
         l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4,\
  (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
 
-        tree_fp = get_tmp_filename(prefix='Beta_div_tests', suffix='.tre')
+        _, tree_fp = mkstemp(prefix='Beta_div_tests', suffix='.tre')
+        close(_)
         open(tree_fp, 'w').write(l19_tree_str)
         self.files_to_remove.append(tree_fp)
         escaped_result = beta_calc(data_path=self.l19_str_w_underscore_fp,
                                    tree_path=tree_fp, result_path=None, log_path=None)
-        self.assertEqual(escaped_result, non_escaped_result)
+        assert_almost_equal(escaped_result[0], non_escaped_result[0])
+        self.assertEqual(escaped_result[1], non_escaped_result[1])
 
     def single_file_beta(
             self, otu_table_string, tree_string, missing_sams=None,
@@ -134,19 +142,20 @@ class BetaDiversityCalcTests(TestCase):
         if missing_sams is None:
             missing_sams = []
         # setup
-        input_path = get_tmp_filename()
+        _, input_path = mkstemp(suffix='.txt')
+        close(_)
         in_fname = os.path.split(input_path)[1]
         f = open(input_path, 'w')
         f.write(otu_table_string)
         f.close()
-        tree_path = get_tmp_filename()
+        _, tree_path = mkstemp(suffix='.tre')
+        close(_)
         f = open(tree_path, 'w')
         f.write(tree_string)
         f.close()
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
-        output_dir = get_tmp_filename(suffix='')
-        os.mkdir(output_dir)
+        output_dir = mkdtemp()
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
@@ -201,7 +210,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # full tree run:
             if 'full_tree' in str(metric).lower():
@@ -232,7 +241,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # do it with full tree
             if use_metric_list:
@@ -244,7 +253,7 @@ class BetaDiversityCalcTests(TestCase):
             sams_ft, dmtx_ft = parse_distmat(open(output_dir + '/ft/' +
                                                   metric + '_' + in_fname))
             self.assertEqual(sams_ft, sams)
-            self.assertFloatEqual(dmtx_ft, dmtx)
+            assert_almost_equal(dmtx_ft, dmtx)
 
     def test_single_file_beta(self):
         self.single_file_beta(l19_otu_table, l19_tree)
@@ -265,20 +274,9 @@ class BetaDiversityCalcTests(TestCase):
         """ running single_file_beta should give same result using --rows"""
         if missing_sams is None:
             missing_sams = []
-        # setup
-        #input_path = get_tmp_filename()
-        #in_fname = os.path.split(input_path)[1]
-        #f = open(input_path,'w')
-        # f.write(otu_table_string)
-        # f.close()
-        #tree_path = get_tmp_filename()
-        #f = open(tree_path,'w')
-        # f.write(tree_string)
-        # f.close()
+
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
-        #output_dir = get_tmp_filename(suffix = '')
-        # os.mkdir(output_dir)
 
         # new metrics that don't trivially parallelize must be dealt with
         # carefully
@@ -327,7 +325,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # full tree run:
             if 'full_tree' in str(metric).lower():
@@ -355,7 +353,7 @@ class BetaDiversityCalcTests(TestCase):
                         full_v1 =\
                             dmtx[sams.index(row_sams[j]),
                                  sams.index(col_sams[k])]
-                        self.assertFloatEqual(row_v1, full_v1)
+                        assert_almost_equal(row_v1, full_v1)
 
             # do it with full tree
             r_out = single_object_beta(otu_table, metric,
@@ -363,7 +361,7 @@ class BetaDiversityCalcTests(TestCase):
                                        full_tree=True)
             sams_ft, dmtx_ft = parse_distmat(r_out)
             self.assertEqual(sams_ft, sams)
-            self.assertFloatEqual(dmtx_ft, dmtx)
+            assert_almost_equal(dmtx_ft, dmtx)
 
     def test_single_object_beta(self):
         self.single_file_beta(l19_otu_table, l19_tree)

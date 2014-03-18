@@ -16,7 +16,7 @@ from itertools import imap
 from collections import defaultdict
 
 from qiime.util import get_tmp_filename, FileFormatError
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 
 from qiime.denoiser.utils import cat_sff_files, write_sff_header
@@ -188,7 +188,7 @@ def split_sff(sff_file_handles, map_file_handle, outdir="/tmp/"):
                               'produced by sffinfo. The binary .sff will not work here.')
 
     (inverse_map, map_count) = build_inverse_barcode_map(
-        MinimalFastaParser(map_file_handle))
+        parse_fasta(map_file_handle))
 
     filenames = []
     # we might have many barcodes and reach python open file limit

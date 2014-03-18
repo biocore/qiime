@@ -10,17 +10,17 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
-
-from cogent.util.unit_test import TestCase, main
+from os import close
+from unittest import TestCase, main
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree
-from os.path import splitext
-from os import getcwd, remove, rmdir, mkdir
+from os import getcwd, remove, rmdir
+from tempfile import mkstemp
+
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from StringIO import StringIO
-from qiime.util import get_tmp_filename
 
 
 class Tests(TestCase):
@@ -33,7 +33,8 @@ class Tests(TestCase):
         self._dirs_to_clean_up = []
 
         # get a tmp filename to use
-        self.basename = splitext(get_tmp_filename())[0]
+        _, self.basename = mkstemp()
+        close(_)
 
         self.align_map = {
             'seq0000005': 'Species005', 'seq0000004': 'Species004',
@@ -74,7 +75,8 @@ class insertSeqsTests(Tests):
         """Write tree out"""
 
         # create temp filename
-        new_tree_fp = splitext(get_tmp_filename())[0] + '.tre'
+        _, new_tree_fp = mkstemp(suffix='.tre')
+        close(_)
         self._paths_to_clean_up.append(new_tree_fp)
 
         # parse and load tree

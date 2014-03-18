@@ -18,7 +18,7 @@ This script generates the otu networks and statistics
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.util import make_option
 from qiime.make_otu_network import create_network_and_stats
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 import os
 import shutil
