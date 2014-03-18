@@ -45,7 +45,6 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseMetaboliteTable, SparseOTUTable,
                         SparseOrthologTable, SparsePathwayTable,
                         SparseTable, SparseTaxonTable)
-from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
@@ -1485,40 +1484,34 @@ def make_compatible_distance_matrices(dm1, dm2, lookup=None):
     dm1_data = dm1[1]
     dm2_ids = dm2[0]
     dm2_data = dm2[1]
+
     if lookup:
         try:
             dm1_ids = [lookup[e] for e in dm1_ids]
             dm2_ids = [lookup[e] for e in dm2_ids]
         except KeyError as e:
-            raise KeyError("All entries in both DMs must be in "
-                           "lookup if a lookup is provided. Missing: %s" % str(e))
+            raise KeyError("All entries in both DMs must be in lookup if a "
+                           "lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
 
-    # create Dict2D from dm1
-    d1 = {}
-    for i, r in enumerate(dm1_ids):
-        d1[r] = {}
-        for j, c in enumerate(dm1_ids):
-            d1[r][c] = dm1_data[i, j]
-    result1 = Dict2D(data=d1, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result1.purge()
-    # return 2d list in order
-    result1 = array(result1.toLists())
+    if len(order) == 0:
+        return ([], []), ([], [])
 
-    # create Dict2D from dm2
-    d2 = {}
-    for i, r in enumerate(dm2_ids):
-        d2[r] = {}
-        for j, c in enumerate(dm2_ids):
-            d2[r][c] = dm2_data[i, j]
-    result2 = Dict2D(data=d2, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result2.purge()
-    # return 2d list in order
-    result2 = array(result2.toLists())
+    # store the intersected distance matrices here
+    matrices = []
 
-    return (order, result1), (order, result2)
+    # iterate over the distance matrices and identifiers to match the data
+    # note that the order must be the same between the two matrices
+    for ids, distance_matrix in [(dm1_ids, dm1_data), (dm2_ids, dm2_data)]:
+
+        # the order is kept by getting the indices from this list
+        indices = [ids.index(element) for element in order]
+
+        # this matrix contains the matched up data
+        out = distance_matrix[indices][:, indices]
+        matrices.append(out)
+
+    return (order, matrices[0]), (order, matrices[1])
 
 
 def get_rdp_jarpath():

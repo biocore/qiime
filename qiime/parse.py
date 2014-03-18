@@ -17,7 +17,6 @@ from collections import defaultdict
 import os
 from os.path import expandvars
 import re
-from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.rarefaction import subsample
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
@@ -165,7 +164,7 @@ def mapping_file_to_dict(mapping_data, header):
             if j == 0:
                 continue  # sampleID field
             map_dict[sam[0]][header[j]] = sam[j]
-    return Dict2D(map_dict)
+    return map_dict
 
 
 def parse_prefs_file(prefs_string):
