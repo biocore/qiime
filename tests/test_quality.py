@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.quality import (ascii_to_phred33, ascii_to_phred64,
                            ascii_to_phred, phred_to_ascii,
                            phred_to_ascii33, phred_to_ascii64)

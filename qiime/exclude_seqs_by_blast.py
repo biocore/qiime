@@ -1,28 +1,26 @@
 #!/usr/bin/env python
 # file exclude_seqs_by_blast.py
 from __future__ import division
-from time import strftime, time
-from optparse import OptionParser
-from os import system, getcwd
+
+"""
+A lightweight script for BLASTing one or more sequences against a number of BLAST databases, and returning FASTA files a) of the results that did match b) of the results that didn't match c) raw blast results and also d) returning a report containing the parameters used, which sequences were excluded and why.
+"""
+
 from os.path import join
-from cogent.app.parameters import FilePath
-from cogent.util.misc import remove_files
-from cogent.parse.fasta import MinimalFastaParser
+from time import strftime, time
+
+from skbio.parse.sequences import parse_fasta
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 
 
 __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jesse Zaneveld", "Rob Knight"]
+__credits__ = ["Jesse Zaneveld", "Rob Knight", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 
-
-"""
-A lightweight script for BLASTing one or more sequences against a number of BLAST databases, and returning FASTA files a) of the results that did match b) of the results that didn't match c) raw blast results and also d) returning a report containing the parameters used, which sequences were excluded and why.
-"""
 
 FORMAT_BAR =   """------------------------------""" * 2
 
@@ -219,7 +217,7 @@ def id_from_fasta_label_line(line):
 def seqs_from_file(ids, file_lines):
     """Extract labels and seqs from file"""
 
-    for label, seq in MinimalFastaParser(file_lines):
+    for label, seq in parse_fasta(file_lines):
 
         if id_from_fasta_label_line(label) in ids:
             yield label, seq

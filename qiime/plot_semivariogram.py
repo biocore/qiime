@@ -2,9 +2,12 @@
 import sys
 import os.path
 from optparse import OptionParser
-from cogent.maths.fit_function import fit_function
+
+from scipy.optimize import curve_fit
+from numpy import (exp, cos, pi, tri, argsort, asarray, arange, mean, isnan,
+                   zeros, square)
+
 from qiime.parse import parse_distmat
-from numpy import exp, cos, pi, tri, argsort, asarray, arange, mean, isnan, zeros, square
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -31,25 +34,25 @@ class FitModel(object):
     # very difficult to test
     options = ['nugget', 'exponential', 'gaussian', 'periodic', 'linear']
 
-    def _linear(self, x, a):
-        self.text = "%f+(%f*x)" % (a[0], a[1])
-        return a[0] + (a[1] * x)
+    def _linear(self, x, a, b):
+        self.text = "%f+(%f*x)" % (a, b)
+        return a + (b * x)
 
-    def _periodic(self, x, a):
-        self.text = "%f+((1-cos(2*pi*x/%f))*%f)" % (a[0], a[1], a[2])
-        return a[0] + ((1 - cos(2 * pi * x / a[1])) * a[2])
+    def _periodic(self, x, a, b, c):
+        self.text = "%f+((1-cos(2*pi*x/%f))*%f)" % (a, b, c)
+        return a + ((1 - cos(2 * pi * x / b)) * c)
 
-    def _gaussian(self, x, a):
-        self.text = "%f+((1-exp((-3*x*x)/square(%f)))*%f)" % (a[0], a[1], a[2])
-        return a[0] + ((1 - exp((-3 * x * x) / square(a[1]))) * a[2])
+    def _gaussian(self, x, a, b, c):
+        self.text = "%f+((1-exp((-3*x*x)/square(%f)))*%f)" % (a, b, c)
+        return a + ((1 - exp((-3 * x * x) / square(b))) * c)
 
-    def _exponential(self, x, a):
-        self.text = "%f+((1-exp(-3*x/%f))*%f)" % (a[0], a[1], a[2])
-        return a[0] + ((1 - exp(-3 * x / a[1])) * a[2])
+    def _exponential(self, x, a, b, c):
+        self.text = "%f+((1-exp(-3*x/%f))*%f)" % (a, b, c)
+        return a + ((1 - exp(-3 * x / b)) * c)
 
     def _nugget(self, x, a):
-        self.text = "%f" % (a[0])
-        return a[0]
+        self.text = "%f" % (a)
+        return a
 
     def _get_model(self, model):
         if model == 'linear':
@@ -68,12 +71,12 @@ class FitModel(object):
     def __call__(self):
         if self.model_text != 'nugget':
             # what are 3 and 10? should these be parametrizable?
-            params = fit_function(self.x, self.y, self.model, 3, 10)
-            y = self.model(self.x, params)
+            params, _ = curve_fit(self.model, self.x, self.y)
+            y = self.model(self.x, *params)
         else:
             # what are 1 and 1? should these be parametrizable?
-            params = fit_function(self.x, self.y, self.model, 1, 1)
-            y = [self.model(self.x, params)] * len(self.x)
+            params, _ = curve_fit(self.model, self.x, self.y)
+            y = [self.model(self.x, *params)] * len(self.x)
 
         return y, params, self.text
 

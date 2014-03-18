@@ -13,11 +13,12 @@ __email__ = "gregcaporaso@gmail.com"
 from glob import glob
 from shutil import rmtree
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
+from tempfile import mkdtemp, mkstemp
+
+from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from biom.parse import parse_biom_table
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
+from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_distmat
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parallel.multiple_rarefactions import ParallelMultipleRarefactions
@@ -32,16 +33,14 @@ class ParallelMultipleRarefactionsTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.input1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                          prefix='qiime_inseqs',
-                                          suffix='.fasta')
+        _, self.input1_fp = mkstemp(dir=self.test_out,
+                                    prefix='qiime_inseqs',
+                                    suffix='.fasta')
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()

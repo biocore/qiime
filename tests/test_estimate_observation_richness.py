@@ -16,7 +16,8 @@ from StringIO import StringIO
 
 from biom.parse import parse_biom_table
 from biom.table import Table
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from numpy import asarray, array
 
 from qiime.estimate_observation_richness import (AbstractPointEstimator,
@@ -61,20 +62,20 @@ class ObservationRichnessEstimatorTests(TestCase):
         # Just reference.
         obs = self.estimator1(start=15, stop=15, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
-        self.assertFloatEqual(obs.getEstimates('S1'),
+        assert_almost_equal(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # start=1 and reference.
         obs = self.estimator1(start=1, stop=1, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
-        self.assertFloatEqual(obs.getEstimates('S1'),
+        assert_almost_equal(obs.getEstimates('S1'),
                               [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
                                (15, 5, 0.674199862463, 3.67859255119, 6.32140744881)])
 
         # Points in between start=1 and reference.
         obs = self.estimator1(start=1, stop=15, num_steps=3)
         self.assertEqual(obs.getSampleCount(), 1)
-        self.assertFloatEqual(obs.getEstimates('S1'),
+        assert_almost_equal(obs.getEstimates('S1'),
                               [(1, 1.0, 0.250252397843, 0.509514313183, 1.49048568682),
                                (5, 3.40326340326, 0.655024590447, 2.119438797,
                                 4.68708800953),
@@ -94,14 +95,14 @@ class ObservationRichnessEstimatorTests(TestCase):
 
         obs = self.estimator1(start=15, stop=30, num_steps=1)
         self.assertEqual(obs.getSampleCount(), 1)
-        self.assertFloatEqual(obs.getEstimates('S1'),
+        assert_almost_equal(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
                                (30, 5.4415544562981095, 1.073911829557642, 3.33672594779,
                                 7.5463829648)])
 
         obs = self.estimator1(start=20, stop=30, num_steps=2)
         self.assertEqual(obs.getSampleCount(), 1)
-        self.assertFloatEqual(obs.getEstimates('S1'),
+        assert_almost_equal(obs.getEstimates('S1'),
                               [(15, 5, 0.674199862463, 3.67859255119, 6.32140744881),
                                (20, 5.2555272427983537, 0.77331345626875192, 3.73986071975,
                                 6.77119376585),
@@ -217,7 +218,7 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         """Test returns correct Chao1 estimate of num unobserved obs."""
         # Verified with iNEXT.
         obs = self.estimator3.estimateUnobservedObservationCount()
-        self.assertFloatEqual(obs, 0.5)
+        assert_almost_equal(obs, 0.5)
 
     def test_estimateFullRichness(self):
         """Test returns correct Chao1 full observation richness estimate."""
@@ -225,11 +226,11 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # f2 > 0
         obs = self.estimator3.estimateFullRichness()
-        self.assertFloatEqual(obs, 5.5)
+        assert_almost_equal(obs, 5.5)
 
         # f2 == 0
         obs = self.estimator4.estimateFullRichness()
-        self.assertFloatEqual(obs, 4)
+        assert_almost_equal(obs, 4)
 
     def test_call_interpolate(self):
         """Test computing S(m) using data from Colwell 2012 paper."""
@@ -244,44 +245,44 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
         # have an observation count of less than one if you have exactly one
         # individual).
         obs = self.estimator1(1)
-        self.assertFloatEqual(obs, (1.0, 0.17638208235509734, 0.654297471066,
+        assert_almost_equal(obs, (1.0, 0.17638208235509734, 0.654297471066,
                                     1.34570252893))
 
         # m = 100
         obs = self.estimator1(100)
-        self.assertFloatEqual(obs, (44.295771605749465, 4.3560838094150975,
+        assert_almost_equal(obs, (44.295771605749465, 4.3560838094150975,
                                     35.7580042257, 52.8335389858))
 
         # m = 800
         obs = self.estimator1(800)
-        self.assertFloatEqual(obs, (126.7974481741264, 7.7007346056227375,
+        assert_almost_equal(obs, (126.7974481741264, 7.7007346056227375,
                                     111.704285693, 141.890610656))
 
         # m = 976 (max)
         obs = self.estimator1(976)
-        self.assertFloatEqual(obs, (140, 8.4270097160038446, 123.483364459,
+        assert_almost_equal(obs, (140, 8.4270097160038446, 123.483364459,
                                     156.516635541))
 
         # Old-growth data.
 
         # m = 1 (min)
         obs = self.estimator2(1)
-        self.assertFloatEqual(obs, (1.0, 0.20541870170521284, 0.597386742907,
+        assert_almost_equal(obs, (1.0, 0.20541870170521284, 0.597386742907,
                                     1.40261325709))
 
         # m = 20
         obs = self.estimator2(20)
-        self.assertFloatEqual(obs, (15.891665207609165, 1.9486745986194465,
+        assert_almost_equal(obs, (15.891665207609165, 1.9486745986194465,
                                     12.0723331767, 19.7109972385))
 
         # m = 200
         obs = self.estimator2(200)
-        self.assertFloatEqual(obs, (98.63181822376555, 8.147805938386115,
+        assert_almost_equal(obs, (98.63181822376555, 8.147805938386115,
                                     82.6624120315, 114.601224416))
 
         # m = 237 (max)
         obs = self.estimator2(237)
-        self.assertFloatEqual(obs, (112.00, 9.22019783913399, 93.928744305,
+        assert_almost_equal(obs, (112.00, 9.22019783913399, 93.928744305,
                                     130.071255695))
 
     def test_call_extrapolate(self):
@@ -292,34 +293,34 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # m = 1076 (n+100)
         obs = self.estimator1(1076)
-        self.assertFloatEqual(obs, (146.99829023479796, 8.8700520745653257,
+        assert_almost_equal(obs, (146.99829023479796, 8.8700520745653257,
                                     129.613307628, 164.383272842))
 
         # m = 1176 (n+200)
         obs = self.estimator1(1176)
-        self.assertFloatEqual(obs, (153.6567465407886, 9.3364370482687296,
+        assert_almost_equal(obs, (153.6567465407886, 9.3364370482687296,
                                     135.357666182, 171.955826899))
 
         # m = 1976 (n+1000)
         obs = self.estimator1(1976)
-        self.assertFloatEqual(obs, (196.51177687081162, 13.989113717395064,
+        assert_almost_equal(obs, (196.51177687081162, 13.989113717395064,
                                     169.093617809, 223.929935933))
 
         # Old-growth data.
 
         # m = 337 (n+100)
         obs = self.estimator2(337)
-        self.assertFloatEqual(obs, (145.7369598336187, 12.20489285355208,
+        assert_almost_equal(obs, (145.7369598336187, 12.20489285355208,
                                     121.815809405, 169.658110262))
 
         # m = 437 (n+200)
         obs = self.estimator2(437)
-        self.assertFloatEqual(obs, (176.24777891095846, 15.382655350552035,
+        assert_almost_equal(obs, (176.24777891095846, 15.382655350552035,
                                     146.098328437, 206.397229385))
 
         # m = 1237 (n+1000)
         obs = self.estimator2(1237)
-        self.assertFloatEqual(obs, (335.67575295919767, 48.962273606327834,
+        assert_almost_equal(obs, (335.67575295919767, 48.962273606327834,
                                     239.71146009, 431.640045829))
 
     def test_call_invalid_input(self):
@@ -339,15 +340,15 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # f2 > 0
         obs = self.estimator1._partial_derivative_f1(2, 3, 10, 42)
-        self.assertFloatEqual(obs, 1.22672908818)
+        assert_almost_equal(obs, 1.22672908818)
 
         # f2 == 0
         obs = self.estimator1._partial_derivative_f1(2, 0, 10, 42)
-        self.assertFloatEqual(obs, 1.272173492918482)
+        assert_almost_equal(obs, 1.272173492918482)
 
         # f1 == 0, f2 == 0
         obs = self.estimator1._partial_derivative_f1(0, 0, 10, 42)
-        self.assertFloatEqual(obs, 1.2961664362634027)
+        assert_almost_equal(obs, 1.2961664362634027)
 
     def test_partial_derivative_f2(self):
         """Test computes correct partial derivative wrt f2."""
@@ -355,15 +356,15 @@ class Chao1MultinomialPointEstimatorTests(TestCase):
 
         # f2 > 0
         obs = self.estimator1._partial_derivative_f2(2, 3, 10, 42)
-        self.assertFloatEqual(obs, 0.9651585982441183)
+        assert_almost_equal(obs, 0.9651585982441183)
 
         # f2 == 0
         obs = self.estimator1._partial_derivative_f2(2, 0, 10, 42)
-        self.assertFloatEqual(obs, 0.9208698803111386)
+        assert_almost_equal(obs, 0.9208698803111386)
 
         # f1 ==0, f2 == 0
         obs = self.estimator1._partial_derivative_f2(0, 0, 10, 42)
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
 
 class RichnessEstimatesResultsTests(TestCase):
@@ -413,7 +414,7 @@ class RichnessEstimatesResultsTests(TestCase):
         self.res1.addSample('S1', 42)
         self.res1.addSampleEstimate('S1', 15, 30, 4.75, 2.5, 3.5)
         self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
-        self.assertFloatEqual(self.res1.getEstimates('S1'),
+        assert_almost_equal(self.res1.getEstimates('S1'),
                               [(10, 20, 2.5, 2.5, 3.5), (15, 30, 4.75, 2.5, 3.5)])
 
     def test_addSample(self):
@@ -432,7 +433,7 @@ class RichnessEstimatesResultsTests(TestCase):
 
         self.res1.addSample('S1', 42)
         self.res1.addSampleEstimate('S1', 10, 20, 2.5, 2.5, 3.5)
-        self.assertFloatEqual(self.res1.getEstimates('S1'),
+        assert_almost_equal(self.res1.getEstimates('S1'),
                               [(10, 20, 2.5, 2.5, 3.5)])
 
         with self.assertRaises(ValueError):

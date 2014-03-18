@@ -27,8 +27,8 @@ from numpy import median
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.record import RecordError
+from skbio.parse.sequences import parse_fasta
+from skbio.core.exception import RecordError
 from skbio.app.util import ApplicationNotFoundError
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
@@ -139,7 +139,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = dict(MinimalFastaParser(open(seq_path, 'U')))
+        candidate_sequences = dict(parse_fasta(open(seq_path, 'U')))
 
         # load template sequences
         try:
@@ -237,12 +237,12 @@ class PyNastAligner(Aligner):
                  failure_path=None):
         # load candidate sequences
         seq_file = open(seq_path, 'U')
-        candidate_sequences = MinimalFastaParser(seq_file)
+        candidate_sequences = parse_fasta(seq_file)
 
         # load template sequences
         template_alignment = []
         template_alignment_fp = self.Params['template_filepath']
-        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+        for seq_id, seq in parse_fasta(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
         try:
@@ -293,7 +293,7 @@ class PyNastAligner(Aligner):
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    med_length = median([len(s) for _, s in MinimalFastaParser(seqs_f)])
+    med_length = median([len(s) for _, s in parse_fasta(seqs_f)])
     return int(med_length * fraction)
 
 

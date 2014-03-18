@@ -13,7 +13,7 @@ from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
 import numpy
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, eps
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
@@ -86,7 +86,7 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
     gapmask = slice(None)
     if allowed_gap_frac < 1:
         seq_count = 0.0
-        for seq_id, seq in MinimalFastaParser(fastalines):
+        for seq_id, seq in parse_fasta(fastalines):
             seq_count += 1
             seq = seq.replace('.', '-')
 
@@ -111,7 +111,7 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
         entropy_filter_f = prefilter_f
 
     # mask, degap, and yield
-    for seq_id, seq in MinimalFastaParser(fastalines):
+    for seq_id, seq in parse_fasta(fastalines):
         seq = seq.replace('.', '-')
 
         # The order in which the mask is applied depends on whether a mask is
@@ -217,7 +217,7 @@ def freqs_from_aln_array(seqs, existing_mask=None):
     seqs = list of lines from aligned fasta file
     """
     result = None
-    for label, seq in MinimalFastaParser(seqs):
+    for label, seq in parse_fasta(seqs):
         if existing_mask is not None:
             seq = get_masked_string(seq, existing_mask)
 

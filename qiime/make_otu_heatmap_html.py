@@ -13,7 +13,6 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from numpy import array, concatenate, asarray, transpose, log, invert, asarray,\
     float32, float64, minimum, inf
-from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.util import MissingFileError
 import os

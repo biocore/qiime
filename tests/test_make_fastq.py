@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # unit tests for make_fastq.py
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.make_fastq import make_fastq_rec, split_lib_transform, iter_fastq
 from qiime.parse import parse_qual_score
 
