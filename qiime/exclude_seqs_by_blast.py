@@ -9,8 +9,8 @@ A lightweight script for BLASTing one or more sequences against a number of BLAS
 from os.path import join
 from time import strftime, time
 
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
+from skbio.parse.sequences import parse_fasta
+from brokit.blast import blast_seqs, Blastall, BlastResult
 
 
 __author__ = "Jesse Zaneveld"
@@ -217,7 +217,7 @@ def id_from_fasta_label_line(line):
 def seqs_from_file(ids, file_lines):
     """Extract labels and seqs from file"""
 
-    for label, seq in MinimalFastaParser(file_lines):
+    for label, seq in parse_fasta(file_lines):
 
         if id_from_fasta_label_line(label) in ids:
             yield label, seq

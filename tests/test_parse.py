@@ -12,6 +12,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
 from tempfile import mkstemp
 
 from numpy import array, nan
@@ -195,6 +196,7 @@ class TopLevelTests(TestCase):
         """
         _, fp = mkstemp(prefix='test_parse_mapping_file',
                         suffix='.txt')
+        close(_)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',
@@ -212,6 +214,7 @@ class TopLevelTests(TestCase):
         """
         _, fp = mkstemp(prefix='test_parse_mapping_file',
                         suffix='.txt')
+        close(_)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',

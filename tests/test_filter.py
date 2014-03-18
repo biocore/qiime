@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from StringIO import StringIO
 from tempfile import mkstemp
+from os import close
 
 from numpy import inf
 from unittest import TestCase, main
@@ -1110,6 +1111,7 @@ o2	s1_3	s1_4	s2_5
         # write the test files
         _, in_fp = mkstemp(dir=self.tmp_dir,
                         prefix='qiime_filter_test', suffix='.txt')
+        close(_)
         fasting_seqs_f = open(in_fp, 'w')
         fasting_seqs_f.write(otu_map_in)
         fasting_seqs_f.close()
@@ -1117,6 +1119,7 @@ o2	s1_3	s1_4	s2_5
 
         _, actual_fp = mkstemp(dir=self.tmp_dir,
                             prefix='qiime_filter_test', suffix='.txt')
+        close(_)
         self.files_to_remove.append(actual_fp)
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)

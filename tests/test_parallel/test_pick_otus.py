@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from shutil import rmtree
 from glob import glob
+from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
@@ -42,6 +43,7 @@ class ParallelPickOtusTests(TestCase):
         _, self.refseqs1_fp = mkstemp(dir=self.test_out,
                                       prefix='qiime_refseqs',
                                       suffix='.fasta')
+        close(_)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
@@ -50,6 +52,7 @@ class ParallelPickOtusTests(TestCase):
         _, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
+        close(_)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
@@ -145,6 +148,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         ]
         _, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
                                          suffix='.fasta')
+        close(_)
         self.files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))

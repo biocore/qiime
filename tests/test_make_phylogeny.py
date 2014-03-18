@@ -11,12 +11,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from os import remove
+from unittest import TestCase, main
+from os import remove, close
 from tempfile import mkstemp
 
 from cogent import LoadSeqs, DNA
-from unittest import TestCase, main
-import cogent.app.fasttree
+
+import brokit.fasttree
+
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 
 
@@ -56,8 +58,9 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     """Tests of the CogentTreeBuilder class"""
 
     def setUp(self):
-        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_', 
+        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_',
                                             suffix='.fasta')
+        close(_)
         self._paths_to_clean_up =\
             [self.input_fp]
         open(self.input_fp, 'w').write(aln_for_tree)
@@ -65,8 +68,9 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     def test_call_correct_alignment(self):
         """CogentTreeBuilder: output expected alignment file
         """
-        p = CogentTreeBuilder({'Module': cogent.app.fasttree})
+        p = CogentTreeBuilder({'Module': brokit.fasttree})
         _, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
+        close(_)
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, aln_path=self.input_fp,
@@ -79,7 +83,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     # a good test
     # def test_midpoint_rooting(self):
     #     """CogentTreeBuilder: midpoint rooting should work"""
-    #     p = CogentTreeBuilder({'Module': cogent.app.fasttree})
+    #     p = CogentTreeBuilder({'Module': brokit.fasttree})
     #     log_fp = get_tmp_filename(\
     #      prefix='CogentTreeBuilderTests_',suffix='.log')
     #     self._paths_to_clean_up.append(log_fp)

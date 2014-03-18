@@ -24,20 +24,24 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
+
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
-from cogent.parse.fasta import MinimalFastaParser
-from skbio.core.exception import RecordError
-from skbio.app.util import ApplicationNotFoundError
-from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
-import cogent.app.clustalw
-import cogent.app.mafft
+
+import brokit
+from brokit.infernal import cmalign_from_alignment
+import brokit.clustalw
+import brokit.muscle_v38
+import brokit.mafft
+
+from skbio.app.util import ApplicationNotFoundError
+from skbio.core.exception import RecordError
+from skbio.parse.sequences import parse_fasta
 
 from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
-import cogent.app.muscle_v38
 
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -138,7 +142,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = dict(MinimalFastaParser(open(seq_path, 'U')))
+        candidate_sequences = dict(parse_fasta(open(seq_path, 'U')))
 
         # load template sequences
         try:
@@ -236,12 +240,12 @@ class PyNastAligner(Aligner):
                  failure_path=None):
         # load candidate sequences
         seq_file = open(seq_path, 'U')
-        candidate_sequences = MinimalFastaParser(seq_file)
+        candidate_sequences = parse_fasta(seq_file)
 
         # load template sequences
         template_alignment = []
         template_alignment_fp = self.Params['template_filepath']
-        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+        for seq_id, seq in parse_fasta(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
         try:
@@ -292,7 +296,7 @@ class PyNastAligner(Aligner):
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    med_length = median([len(s) for _, s in MinimalFastaParser(seqs_f)])
+    med_length = median([len(s) for _, s in parse_fasta(seqs_f)])
     return int(med_length * fraction)
 
 
@@ -300,8 +304,8 @@ alignment_method_constructors = {'pynast': PyNastAligner,
                                  'infernal': InfernalAligner}
 
 alignment_module_names = {
-    'muscle': cogent.app.muscle_v38,
-    'clustalw': cogent.app.clustalw,
-    'mafft': cogent.app.mafft,
-    'infernal': cogent.app.infernal,
+    'muscle': brokit.muscle_v38,
+    'clustalw': brokit.clustalw,
+    'mafft': brokit.mafft,
+    'infernal': brokit.infernal,
 }

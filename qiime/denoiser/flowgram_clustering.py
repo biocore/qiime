@@ -25,7 +25,7 @@ from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram, seq_to_flow
 from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 from qiime.format import write_Fasta_from_name_seq_pairs
 from qiime.util import get_qiime_project_dir, load_qiime_config
@@ -726,7 +726,7 @@ def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
             open(out_fp + "/denoiser_mapping.txt"))
         combined_mapping.update(this_rounds_mapping)
         result_centroids.append(
-            MinimalFastaParser(open(out_fp + "/centroids.fasta")))
+            parse_fasta(open(out_fp + "/centroids.fasta")))
         result_singletons_files.append(out_fp + "/singletons.fasta")
 
     # write the combined files
@@ -739,7 +739,7 @@ def denoise_per_sample(sff_fps, fasta_fp, tmpoutdir, cluster=False,
         fasta_fh)
     for singleton_file in result_singletons_files:
         write_Fasta_from_name_seq_pairs(
-            MinimalFastaParser(open(singleton_file, "r")),
+            parse_fasta(open(singleton_file, "r")),
             fasta_fh)
     fasta_fh.close()
 

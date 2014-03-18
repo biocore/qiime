@@ -8,6 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
+from os import close
 from os.path import isdir, isfile, exists
 from shutil import rmtree
 
@@ -30,6 +31,7 @@ class QualityScoresPlotTests(TestCase):
         self._files_to_remove = []
 
         _, self.qual_fp = mkstemp(prefix='qual_scores_', suffix='.qual')
+        close(_)
         seq_file = open(self.qual_fp, 'w')
         seq_file.write(qual_scores)
         seq_file.close()

@@ -10,12 +10,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
-from os import remove
+from os import remove, close
 from tempfile import mkstemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
@@ -83,6 +83,7 @@ class Test_flowgram_filter(TestCase):
                   'Key Sequence': 'TCAG'}
 
         _, tmp_name = mkstemp(prefix="test_write_sff_header")
+        close(_)
         fh = open(tmp_name, "w")
         write_sff_header(header, fh, num=400)
         fh.close()
@@ -107,6 +108,7 @@ class Test_flowgram_filter(TestCase):
         _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
+        close(_)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)
@@ -120,6 +122,7 @@ class Test_flowgram_filter(TestCase):
         _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
+        close(_)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)
@@ -133,6 +136,7 @@ class Test_flowgram_filter(TestCase):
         _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
+        close(_)
         out_fh = open(out_file_name, "w")
         l = filter_sff_file(flowgrams, header, filter_list, out_fh)
         remove(out_file_name)

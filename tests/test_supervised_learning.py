@@ -12,7 +12,7 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from os import remove, system, mkdir
+from os import remove, system, mkdir, close
 from shutil import rmtree
 from os.path import join, exists
 from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
@@ -72,12 +72,14 @@ class RSupervisedLearnerTests(TestCase):
         # Temporary input file
         _, self.tmp_otu_filepath = mkstemp(prefix='R_test_otu_table_',
                                            suffix='.txt')
+        close(_)
         seq_file = open(self.tmp_otu_filepath, 'w')
         seq_file.write(test_otu_table)
         seq_file.close()
 
         _, self.tmp_map_filepath = mkstemp(prefix='R_test_map_',
                                            suffix='.txt')
+        close(_)
         seq_file = open(self.tmp_map_filepath, 'w')
         seq_file.write(test_map)
         seq_file.close()
