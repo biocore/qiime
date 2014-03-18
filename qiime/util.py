@@ -25,15 +25,16 @@ from gzip import open as gz_open
 from sys import stderr
 from copy import deepcopy
 from datetime import datetime
-from subprocess import Popen 
+from subprocess import Popen
 from random import random
 from itertools import repeat, izip
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
-                   float, where, isnan, std, sqrt, ravel, mean, median, 
+                   float, where, isnan, std, sqrt, ravel, mean, median,
                    sum as np_sum, nan, sort)
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
+
 from biom.util import compute_counts_per_sample_stats
 from biom.parse import parse_biom_table
 from biom.table import (DenseFunctionTable, DenseGeneTable,
@@ -45,6 +46,7 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseMetaboliteTable, SparseOTUTable,
                         SparseOrthologTable, SparsePathwayTable,
                         SparseTable, SparseTaxonTable)
+
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
@@ -54,17 +56,19 @@ from cogent.core.moltype import (MolType, IUPAC_DNA_chars,
                                  IUPAC_DNA_ambiguities_complements,
                                  DnaStandardPairs, ModelDnaSequence)
 from cogent.data.molecular_weight import DnaMW
-from cogent.app.blast import Blastall
-from cogent.app.util import (ApplicationError, CommandLineApplication,
-                             get_tmp_filename as cogent_get_tmp_filename,
-                             FilePath)
-from cogent.parse.blast import BlastResult
-from skbio.parse.sequences import parse_fasta
 from cogent.util.misc import remove_files, create_dir, handle_error_codes
-from cogent.app.formatdb import (build_blast_db_from_fasta_path,
-                                 build_blast_db_from_fasta_file)
+from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
+
+from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
+from skbio.parse.sequences import parse_fasta
+
+from brokit.blast import Blastall, BlastResult
+from brokit.formatdb import (build_blast_db_from_fasta_path,
+                             build_blast_db_from_fasta_file)
+
+
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
 
 from qiime import __version__ as qiime_library_version

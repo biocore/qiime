@@ -7,16 +7,17 @@ from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
 
 from cogent.util.misc import remove_files
-from skbio.parse.sequences import parse_fasta
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.util import (CommandLineApplication, ResultPath,
-                             ApplicationError, ApplicationNotFoundError)
-from skbio.app.parameters import ValuedParameter
-from skbio.app.util import which
 
-from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file, 
+from skbio.app.parameters import ValuedParameter
+from skbio.app.util import (which, CommandLineApplication, ResultPath,
+                            ApplicationError, ApplicationNotFoundError)
+from skbio.parse.sequences import parse_fasta
+
+from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file,
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
+
+from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.usearch import (usearch61_smallmem_cluster,
                             usearch61_chimera_check_denovo,
                             parse_usearch61_clusters,

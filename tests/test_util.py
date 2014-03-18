@@ -10,22 +10,21 @@ from shutil import rmtree
 from StringIO import StringIO
 from tempfile import mkdtemp, mkstemp
 from collections import defaultdict
+from unittest import TestCase, main
 import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
 
-from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
-from cogent import Sequence
 from skbio.parse.sequences import parse_fasta
+
+from cogent import Sequence
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
-from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import remove_files
 
-from tempfile import mkdtemp
+from brokit.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,

@@ -11,12 +11,14 @@ __email__ = "jai.rideout@gmail.com"
 
 from os.path import split
 from shutil import copy
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+
+from brokit.formatdb import build_blast_db_from_fasta_path
+
 from skbio.parse.sequences import parse_fasta
+
 from qiime.identify_chimeric_seqs import make_cidx_file
 from qiime.parse import parse_tmp_to_final_filepath_map_file
 from qiime.util import write_degapped_fasta_to_file
-
 from qiime.parallel.util import ParallelWrapper
 
 

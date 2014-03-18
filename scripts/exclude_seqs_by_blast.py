@@ -5,7 +5,7 @@ from time import time
 from os import getcwd, makedirs
 from os.path import join, split, abspath
 
-from cogent.app.formatdb import FormatDb
+from brokit.formatdb import FormatDb
 from cogent.util.misc import remove_files
 from skbio.app.parameters import FilePath
 

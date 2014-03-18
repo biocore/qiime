@@ -18,7 +18,8 @@ from tempfile import mkstemp, mkdtemp
 from cogent import LoadSeqs, DNA
 from unittest import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.formatdb import build_blast_db_from_fasta_file
+
+from brokit.formatdb import build_blast_db_from_fasta_file
 
 from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
                                           chimeraSlayer_identify_chimeras, parse_CPS_file,

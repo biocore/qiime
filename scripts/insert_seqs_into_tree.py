@@ -10,21 +10,25 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
+from StringIO import StringIO
+from os.path import abspath, join, split, splitext
+
+from skbio.parse.sequences import parse_fasta
+
+from cogent.core.alignment import DenseAlignment
+from cogent.core.moltype import DNA
+
+import brokit.pplacer
+import brokit.parsinsert
+import brokit.raxml_v730
+
 from qiime.util import parse_command_line_parameters, make_option, \
     get_options_lookup, load_qiime_config, create_dir
-from skbio.parse.sequences import parse_fasta
-from cogent.core.alignment import DenseAlignment
 from qiime.parse import parse_qiime_parameters
-from cogent.core.moltype import DNA
 from qiime.util import get_tmp_filename
-from os.path import abspath, join, split, splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree
-import cogent.app.raxml_v730
-import cogent.app.parsinsert
-import cogent.app.pplacer
-from StringIO import StringIO
 
 options_lookup = get_options_lookup()
 
@@ -95,9 +99,9 @@ def main():
 
     # list of tree insertion methods
     tree_insertion_module_names = \
-        {'raxml_v730': cogent.app.raxml_v730,
-         'parsinsert': cogent.app.parsinsert,
-         'pplacer': cogent.app.pplacer}
+        {'raxml_v730': brokit.raxml_v730,
+         'parsinsert': brokit.parsinsert,
+         'pplacer': brokit.pplacer}
 
     # load input sequences and convert to phylip since the tools require
     # the query sequences to phylip-compliant names

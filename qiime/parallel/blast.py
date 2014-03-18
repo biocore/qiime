@@ -10,9 +10,10 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import split, splitext
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.util import load_qiime_config, get_options_lookup
 
+from brokit.formatdb import build_blast_db_from_fasta_path
+
+from qiime.util import load_qiime_config, get_options_lookup
 from qiime.parallel.util import ParallelWrapper
 
 

@@ -24,21 +24,25 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
+
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
-from skbio.parse.sequences import parse_fasta
-from skbio.core.exception import RecordError
-from skbio.app.util import ApplicationNotFoundError
-from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
-import cogent.app.clustalw
-import cogent.app.mafft
+
+import brokit
+from brokit.infernal import cmalign_from_alignment
+import brokit.clustalw
+import brokit.muscle_v38
+import brokit.mafft
+
+from skbio.app.util import ApplicationNotFoundError
+from skbio.core.exception import RecordError
+from skbio.parse.sequences import parse_fasta
 
 from qiime.util import (get_tmp_filename,
                         FunctionWithParams,
                         get_qiime_temp_dir)
-import cogent.app.muscle_v38
 
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -301,8 +305,8 @@ alignment_method_constructors = {'pynast': PyNastAligner,
                                  'infernal': InfernalAligner}
 
 alignment_module_names = {
-    'muscle': cogent.app.muscle_v38,
-    'clustalw': cogent.app.clustalw,
-    'mafft': cogent.app.mafft,
-    'infernal': cogent.app.infernal,
+    'muscle': brokit.muscle_v38,
+    'clustalw': brokit.clustalw,
+    'mafft': brokit.mafft,
+    'infernal': brokit.infernal,
 }

@@ -10,7 +10,7 @@ from os.path import join
 from time import strftime, time
 
 from skbio.parse.sequences import parse_fasta
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
+from brokit.blast import blast_seqs, Blastall, BlastResult
 
 
 __author__ = "Jesse Zaneveld"

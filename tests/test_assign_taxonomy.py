@@ -24,10 +24,11 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal, assert_allclose
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files, create_dir
 from skbio.parse.sequences import parse_fasta
+
+from brokit.rdp_classifier import train_rdp_classifier
+from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import get_tmp_filename, get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
