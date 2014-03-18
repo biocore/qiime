@@ -19,7 +19,7 @@ from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
@@ -176,7 +176,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids functions as expected
         """
         actual = list(split_fasta_on_sample_ids(
-                      MinimalFastaParser(self.fasta1)))
+                      parse_fasta(self.fasta1)))
         expected = [('Samp1', 'Samp1_42', 'ACCGGTT'),
                     ('s2_a', 's2_a_50', 'GGGCCC'),
                     ('Samp1', 'Samp1_43 some comme_nt', 'AACCG'),
@@ -187,7 +187,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids_to_dict functions as expected
         """
         actual = split_fasta_on_sample_ids_to_dict(
-            MinimalFastaParser(self.fasta1))
+            parse_fasta(self.fasta1))
         expected = {'Samp1': [('Samp1_42', 'ACCGGTT'),
                               ('Samp1_43 some comme_nt', 'AACCG')],
                     's2_a': [('s2_a_50', 'GGGCCC')],
@@ -201,7 +201,7 @@ o4	seq6	seq7""".split('\n')
         self.dirs_to_remove.append(temp_output_dir)
 
         split_fasta_on_sample_ids_to_files(
-            MinimalFastaParser(self.fasta2),
+            parse_fasta(self.fasta2),
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
@@ -434,10 +434,10 @@ o4	seq6	seq7""".split('\n')
     def test_inflate_denoiser_output(self):
         """ inflate_denoiser_output expands denoiser results as expected """
         actual = list(inflate_denoiser_output(
-            MinimalFastaParser(self.centroid_seqs1),
-            MinimalFastaParser(self.singleton_seqs1),
+            parse_fasta(self.centroid_seqs1),
+            parse_fasta(self.singleton_seqs1),
             self.denoiser_mapping1,
-            MinimalFastaParser(self.raw_seqs1)))
+            parse_fasta(self.raw_seqs1)))
         expected = [("S1_0 FXX111 some comments", "TTTT"),
                     ("S1_2 FXX113 some other comments", "TTTT"),
                     ("S3_7 FXX117", "TTTT"),
@@ -449,7 +449,7 @@ o4	seq6	seq7""".split('\n')
 
     def test_flowgram_id_to_seq_id_map(self):
         """ flowgram_id_to_seq_id_map functions as expected """
-        actual = flowgram_id_to_seq_id_map(MinimalFastaParser(self.raw_seqs1))
+        actual = flowgram_id_to_seq_id_map(parse_fasta(self.raw_seqs1))
         expected = {'FXX111': 'S1_0 FXX111 some comments',
                     'FXX112': 'S2_1 FXX112 some comments',
                     'FXX113': 'S1_2 FXX113 some other comments',
@@ -1394,7 +1394,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blast_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs=self.refseqs1)
         self.assertEqual(len(actual), 5)
 
@@ -1405,7 +1405,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_fp(self):
         """qiime_blast_seqs functions refseqs_fp
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs_fp=self.refseqs1_fp)
         self.assertEqual(len(actual), 5)
 
@@ -1417,7 +1417,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs functions with pre-existing blast_db
         """
         # pre-existing blast db
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, blast_db=self.blast_db)
         self.assertEqual(len(actual), 5)
 
@@ -1429,7 +1429,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs: functions with alt seqs_per_blast_run
         """
         for i in range(1, 20):
-            inseqs = MinimalFastaParser(self.inseqs1)
+            inseqs = parse_fasta(self.inseqs1)
             actual = qiime_blast_seqs(
                 inseqs, blast_db=self.blast_db, seqs_per_blast_run=i)
             self.assertEqual(len(actual), 5)
@@ -1441,7 +1441,7 @@ class BlastSeqsTests(TestCase):
     def test_alt_blast_param(self):
         """qiime_blast_seqs: alt blast params give alt results"""
         # Fewer blast hits with stricter e-value
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(
             inseqs,
             blast_db=self.blast_db,
@@ -1453,7 +1453,7 @@ class BlastSeqsTests(TestCase):
         self.assertFalse('s100' in actual)
 
     def test_error_on_bad_param_set(self):
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         # no blastdb or refseqs
         self.assertRaises(AssertionError, qiime_blast_seqs, inseqs)
 
@@ -1484,7 +1484,7 @@ class BlastXSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blastx_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.nt_inseqs1)
+        inseqs = parse_fasta(self.nt_inseqs1)
         actual = qiime_blastx_seqs(inseqs, refseqs_fp=self.pr_refseqs1_fp)
         self.assertEqual(len(actual), 3)
 

@@ -20,7 +20,7 @@ from socket import error
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError

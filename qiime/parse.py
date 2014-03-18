@@ -24,7 +24,7 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
-from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import parse_fastq
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
@@ -826,7 +826,7 @@ def parse_fastq_qual_score(fastq_lines):
     else:
         ascii_to_phred_f = ascii_to_phred64
 
-    for header, seq, qual in fastq_parse(fastq_lines):
+    for header, seq, qual in parse_fastq(fastq_lines):
         results[header] = asarray(qual, dtype=ascii_to_phred_f)
     return results
 
