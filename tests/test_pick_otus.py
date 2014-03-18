@@ -18,7 +18,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os import remove, close
-from os.path import abspath, join, exists
+from os.path import abspath, join, exists, split
 from shutil import rmtree
 from tempfile import mkstemp
 
@@ -2453,6 +2453,7 @@ class UclustOtuPickerTests(TestCase):
         # create the temporary input files
         self.temp_dir = load_qiime_config()['temp_dir']
         _, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
         close(_)
@@ -2672,7 +2673,9 @@ class UclustOtuPickerTests(TestCase):
                                       'output_dir': self.temp_dir})
         obs = app(self.tmp_seq_filepath1)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
+        dirname, filename = split(self.tmp_seq_filepath1)
+        filename = "_".join(filename.split('_')[0:2])
+        uc_fasta_fp = join(dirname, filename)
         uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
@@ -2951,6 +2954,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         """ """
         self.temp_dir = load_qiime_config()['temp_dir']
         _, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
         close(_)
@@ -3411,7 +3415,9 @@ class UclustReferenceOtuPickerTests(TestCase):
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
+        dirname, filename = split(self.tmp_seq_filepath1)
+        filename = "_".join(filename.split('_')[0:2])
+        uc_fasta_fp = join(dirname, filename)
         uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
