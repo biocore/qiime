@@ -12,10 +12,10 @@ from os.path import isdir, isfile, exists, join, basename
 from shutil import rmtree
 from re import compile
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
+from skbio.util.misc import create_dir
 
-from qiime.util import create_dir, get_tmp_filename
 from qiime.extract_barcodes import (extract_barcodes,
                                     process_barcode_single_end_data, process_barcode_paired_end_data,
                                     process_barcode_paired_stitched, process_barcode_in_label,

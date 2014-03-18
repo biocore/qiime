@@ -3,32 +3,29 @@
 
 from __future__ import division
 
-from os import remove, makedirs, system
-from os.path import (split, splitext, basename, isdir, abspath, isfile, exists,
-                     join)
+from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
-from datetime import datetime
 
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.parameters import ValuedParameter, FlagParameter
-from cogent.util.misc import remove_files
-from skbio.app.util import (which, CommandLineApplication, ResultPath,
-                            ApplicationError, ApplicationNotFoundError)
+from cogent.app.util import (CommandLineApplication, ResultPath,
+                             ApplicationError, ApplicationNotFoundError)
+from skbio.app.parameters import ValuedParameter
+from skbio.app.util import which
 
-from qiime.util import (FunctionWithParams, degap_fasta_aln,
-                        write_degapped_fasta_to_file, create_dir,
+from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file, 
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
-from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
-                                              usearch61_chimera_check_denovo, parse_usearch61_clusters,
-                                              usearch61_chimera_check_ref)
+from brokit.usearch import (usearch61_smallmem_cluster,
+                            usearch61_chimera_check_denovo,
+                            parse_usearch61_clusters,
+                            usearch61_chimera_check_ref)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"

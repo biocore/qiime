@@ -11,7 +11,7 @@ __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
 
 from numpy import array, median
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.add_alpha_to_mapping_file import (
     add_alpha_diversity_values_to_mapping_file,
     _get_level, mean_alpha)

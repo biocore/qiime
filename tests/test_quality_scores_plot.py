@@ -10,14 +10,14 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import isdir, isfile, exists
 from shutil import rmtree
+from tempfile import mkstemp
 
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
+from skbio.util.misc import create_dir
 
 from qiime.quality_scores_plot import generate_histogram,\
     plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
-from qiime.util import create_dir
 
 
 class QualityScoresPlotTests(TestCase):
@@ -29,9 +29,7 @@ class QualityScoresPlotTests(TestCase):
 
         self._files_to_remove = []
 
-        self.qual_fp = get_tmp_filename(
-            prefix='qual_scores_',
-            suffix='.qual')
+        _, self.qual_fp = mkstemp(prefix='qual_scores_', suffix='.qual')
         seq_file = open(self.qual_fp, 'w')
         seq_file.write(qual_scores)
         seq_file.close()

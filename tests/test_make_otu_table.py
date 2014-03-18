@@ -10,7 +10,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import json
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
                                   seqids_from_otu_to_seqid, make_otu_table)
 from biom.table import DenseOTUTable

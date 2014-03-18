@@ -9,12 +9,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import shutil
 from os import mkdir, listdir, path
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from numpy import array, arange
+from numpy.testing import assert_almost_equal
 from qiime.make_distance_histograms import between_sample_distances, \
     within_category_distances_grouped, between_category_distances_grouped, \
     within_category_distances, within_and_between_fields, \
@@ -244,7 +245,7 @@ class DistanceHistogramsTests(TestCase):
         # Iterate through each histogram file and assure it exisits.
         for k, v in label_to_histogram_filename.items():
             obs_file = open(v, 'U').read()
-            self.assertGreaterThan(len(obs_file), 0)
+            self.assertGreater(len(obs_file), 0)
 
     def test_get_histogram_scale(self):
         """get_histogram_scale should return correct result.
@@ -264,8 +265,8 @@ class DistanceHistogramsTests(TestCase):
         xscale_exp = (0.55, 0.85)
         yscale_exp = (0.0, 0.5)
         xscale_obs, yscale_obs = get_histogram_scale(distances_dict, bins)
-        self.assertFloatEqual(xscale_obs, xscale_exp)
-        self.assertFloatEqual(yscale_obs, yscale_exp)
+        assert_almost_equal(xscale_obs, xscale_exp)
+        assert_almost_equal(yscale_obs, yscale_exp)
 
     def test_draw_histogram(self):
         """draw_histogram should return correct result.
@@ -276,7 +277,7 @@ class DistanceHistogramsTests(TestCase):
         color = 'blue'
         draw_histogram(distances, color, 10, hist_outfile)
         obs_file = open(hist_outfile, 'U').read()
-        self.assertGreaterThan(len(obs_file), 0)
+        self.assertGreater(len(obs_file), 0)
 
     def test_make_nav_html(self):
         """make_nav_html should return correct result.
@@ -323,7 +324,13 @@ class DistanceHistogramsTests(TestCase):
 
         obs = distances_by_groups(self.distance_header, self.dmat,
                                   self.treatment_groups)
-        self.assertEqual(obs, exp)
+        self.assertEqual(exp[0][:2], obs[0][:2])
+        self.assertEqual(exp[1][:2], obs[1][:2])
+        self.assertEqual(exp[2][:2], obs[2][:2])
+        assert_almost_equal(exp[0][2], obs[0][2])
+        assert_almost_equal(exp[1][2], obs[1][2])
+        assert_almost_equal(exp[2][2], obs[2][2])
+
 
     def test_write_distance_files(self):
         """write_distance_files should return correct result.
@@ -367,10 +374,19 @@ class DistanceHistogramsTests(TestCase):
                             dmatrix_file=self.dmat_file,
                             fields=['Treatment'],
                             dir_prefix=self.working_dir)
-
-        self.assertEqual(single_field_exp, single_field_obs)
-        self.assertEqual(paired_field_exp, paired_field_obs)
-        self.assertEqual(self.dmat, dmat_obs)
+        self.assertEqual(single_field_exp['Treatment'][0][:2], single_field_obs['Treatment'][0][:2])
+        self.assertEqual(single_field_exp['Treatment'][1][:2], single_field_obs['Treatment'][1][:2])
+        self.assertEqual(single_field_exp['Treatment'][2][:2], single_field_obs['Treatment'][2][:2])
+        assert_almost_equal(single_field_exp['Treatment'][0][2], single_field_obs['Treatment'][0][2])
+        assert_almost_equal(single_field_exp['Treatment'][1][2], single_field_obs['Treatment'][1][2])
+        assert_almost_equal(single_field_exp['Treatment'][2][2], single_field_obs['Treatment'][2][2])
+        
+        self.assertEqual(paired_field_exp['Treatment_to_Treatment'][0][:2], paired_field_obs['Treatment_to_Treatment'][0][:2])
+        self.assertEqual(paired_field_exp['Treatment_to_Treatment'][1][:2], paired_field_obs['Treatment_to_Treatment'][1][:2])
+        self.assertEqual(paired_field_exp['Treatment_to_Treatment'][2][:2], paired_field_obs['Treatment_to_Treatment'][2][:2])
+        assert_almost_equal(paired_field_exp['Treatment_to_Treatment'][0][2], paired_field_obs['Treatment_to_Treatment'][0][2])
+        assert_almost_equal(paired_field_exp['Treatment_to_Treatment'][1][2], paired_field_obs['Treatment_to_Treatment'][1][2])
+        assert_almost_equal(paired_field_exp['Treatment_to_Treatment'][2][2], paired_field_obs['Treatment_to_Treatment'][2][2])
 
     def test_monte_carlo_group_distances(self):
         """monte_carlo_group_distances should return correct result.
@@ -404,8 +420,8 @@ class DistanceHistogramsTests(TestCase):
 
         # ensure that all permutations are as expected
         for i in xrange(len(ar)):
-            self.assertEqual(ar[i], ar_exp)
-            self.assertEqual(br[i], br_exp)
+            assert_almost_equal(ar[i], ar_exp)
+            assert_almost_equal(br[i], br_exp)
         # ensure the correct number of permutations
         self.assertEqual(len(ar), 10)
         self.assertEqual(len(br), 10)

@@ -43,12 +43,12 @@ try:
     from qiime.parse import parse_qiime_config_file
     from qiime.util import (load_qiime_config,
                             get_qiime_project_dir,
-                            parse_command_line_parameters,
                             get_qiime_library_version,
                             get_qiime_scripts_dir,
                             get_rdp_jarpath,
                             get_java_version,
                             get_pynast_version,
+                            parse_command_line_parameters,
                             make_option,
                             qiime_system_call,
                             get_qiime_temp_dir)

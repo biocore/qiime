@@ -11,7 +11,7 @@ __email__ = "kylebittinger@gmail.com"
 import os
 import tempfile
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.make_per_library_sff import (
     filter_sff_reads, parse_id_list, combine_sff_data, make_per_library_sff,
