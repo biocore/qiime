@@ -22,7 +22,7 @@ from qiime.rarefaction import (RarefactionMaker,
                                remove_empty_otus)
 from qiime.format import format_biom_table
 from biom.table import table_factory, TableException
-from os import remove, rmdir
+from os import remove, rmdir, close
 import os
 from shutil import rmtree
 from biom.parse import parse_biom_table
@@ -58,8 +58,10 @@ class FunctionTests(TestCase):
 
         _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
                                        prefix='test_rarefaction', suffix='.biom')
+        close(_)
         _, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
                                             prefix='test_rarefaction', suffix='.biom')
+        close(_)
 
         self.rare_dir = mkdtemp(dir=self.tmp_dir,
                                    prefix='test_rarefaction_dir', suffix='')

@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
+from os import close
 from os.path import exists, abspath
 from shutil import rmtree
 from numpy import array
@@ -125,6 +126,7 @@ class PlotRankAbundance(TestCase):
                                     suffix="/")
         self._dirs_to_remove.append(self.dir)
         _, tmp_fname = mkstemp(dir=self.dir)
+        close(_)
 
         # test empty sample name
         self.assertRaises(
@@ -162,6 +164,7 @@ class PlotRankAbundance(TestCase):
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
         _, tmp_fname = mkstemp(dir=self.dir)
+        close(_)
 
         # test empty sample name
         self.assertRaises(

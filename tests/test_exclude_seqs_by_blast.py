@@ -15,7 +15,7 @@ Test code for exclude_seqs_by_blast.py.
 NOTE: requires BLAST to be properly installed with
 environment variable set for tests to pass
 """
-from os import remove, system
+from os import remove, system, close
 from random import choice
 from tempfile import mkstemp
 
@@ -45,10 +45,13 @@ class ExcludeHumanTests(TestCase):
 
         _, self.subjectdb_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                        suffix='.fasta')
+        close(_)
         _, self.query_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                    suffix='.fasta')
+        close(_)
         _, self.query2_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                     suffix='.fasta')
+        close(_)
 
         open(self.subjectdb_fp, "w").writelines(TEST_BLAST_DB_LINES)
         open(self.query_fp, "w").writelines(TEST_BLAST_DB_LINES)
@@ -136,6 +139,7 @@ class ExcludeHumanTests(TestCase):
 
         _, self.seq_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                       suffix='.fasta')
+        close(_)
         self._paths_to_clean_up.append(self.seq_test_fp)
 
         ids = ["bth:BT_0001", "hsa:8355"]
@@ -234,6 +238,7 @@ class ExcludeHumanTests(TestCase):
         """ids_to_seq_file should lookup and write out seqs for given ids"""
         _, self.id_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                      suffix='.fasta')
+        close(_)
 
         self._paths_to_clean_up.append(self.id_test_fp)
 

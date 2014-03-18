@@ -11,6 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Anton Walters"
 __email__ = "william.a.walters@gmail.com"
 
+from os import close
 from unittest import TestCase, main
 from shutil import rmtree
 from os.path import exists, join, split
@@ -33,18 +34,21 @@ class ValidateDemultiplexedFastaTests(TestCase):
 
         _, self.sample_fasta_fp = mkstemp(prefix="sample_fasta_",
                                           suffix=".fna")
+        close(_)
         seq_file = open(self.sample_fasta_fp, 'w')
         seq_file.write(sample_fasta_file)
         seq_file.close()
 
         _, self.sample_fasta_invalid_fp = mkstemp(prefix="sample_fasta_",
                                                   suffix=".fna")
+        close(_)
         seq_file = open(self.sample_fasta_invalid_fp, 'w')
         seq_file.write(sample_fasta_file_invalid)
         seq_file.close()
 
         _, self.sample_mapping_fp = mkstemp(prefix="sample_mapping_",
                                             suffix=".txt")
+        close(_)
         map_file = open(self.sample_mapping_fp, "w")
         map_file.write(sample_mapping_file)
         map_file.close()
@@ -52,6 +56,7 @@ class ValidateDemultiplexedFastaTests(TestCase):
         _, self.sample_tree_3tips_fp = mkstemp(
             prefix="sample_tree3tips_",
             suffix=".tre")
+        close(_)
         tree_file = open(self.sample_tree_3tips_fp, "w")
         tree_file.write(sample_tree_file_3tips)
         tree_file.close()
@@ -59,12 +64,14 @@ class ValidateDemultiplexedFastaTests(TestCase):
         _, self.sample_tree_5tips_fp = mkstemp(
             prefix="sample_tree3tips_",
             suffix=".tre")
+        close(_)
         tree_file = open(self.sample_tree_5tips_fp, "w")
         tree_file.write(sample_tree_file_5tips)
         tree_file.close()
 
         _, self.sample_mapping_file_errors_fp =\
             mkstemp(prefix="error_mapping_", suffix=".txt")
+        close(_)
         map_file = open(self.sample_mapping_file_errors_fp, "w")
         map_file.write(sample_mapping_file_errors)
         map_file.close()

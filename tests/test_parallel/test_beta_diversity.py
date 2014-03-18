@@ -13,6 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from glob import glob
 from shutil import rmtree
+from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
@@ -44,6 +45,7 @@ class ParallelBetaDiversityTests(TestCase):
         _, self.input1_fp = mkstemp(dir=self.test_out,
                                     prefix='qiime_inseqs',
                                     suffix='.biom')
+        close(_)
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()
@@ -52,6 +54,7 @@ class ParallelBetaDiversityTests(TestCase):
         _, self.input2_fp = mkstemp(dir=self.test_out,
                                     prefix='qiime_inseqs',
                                     suffix='.biom')
+        close(_)
         input2_f = open(self.input2_fp, 'w')
         input2_f.write(input2)
         input2_f.close()
@@ -62,6 +65,7 @@ class ParallelBetaDiversityTests(TestCase):
         _, self.tree_fp = mkstemp(dir=self.test_out,
                                   prefix='qiime',
                                   suffix='.tre')
+        close(_)
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
         tree_f.close()

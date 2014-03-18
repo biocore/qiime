@@ -11,7 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from os import remove
+from os import remove, close
 from tempfile import mkstemp
 
 from cogent import LoadSeqs, DNA
@@ -56,8 +56,9 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     """Tests of the CogentTreeBuilder class"""
 
     def setUp(self):
-        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_', 
+        _, self.input_fp = mkstemp(prefix='CogentTreeBuilderTests_',
                                             suffix='.fasta')
+        close(_)
         self._paths_to_clean_up =\
             [self.input_fp]
         open(self.input_fp, 'w').write(aln_for_tree)
@@ -67,6 +68,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         """
         p = CogentTreeBuilder({'Module': cogent.app.fasttree})
         _, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
+        close(_)
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, aln_path=self.input_fp,
