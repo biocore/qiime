@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
 from tempfile import mkstemp
 
 from unittest import TestCase, main
@@ -86,6 +87,7 @@ class SplitTests(TestCase):
         _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                      prefix='split_fasta_tests',
                                      suffix='')
+        close(_)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -108,6 +110,7 @@ class SplitTests(TestCase):
         _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                      prefix='split_fasta_tests',
                                      suffix='')
+        close(_)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -140,6 +143,7 @@ class SplitTests(TestCase):
             _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                          prefix='split_fasta_tests',
                                          suffix='')
+            close(_)
 
             actual = split_fasta(infile, i, filename_prefix)
 

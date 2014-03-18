@@ -14,7 +14,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import json
-from os import remove
+from os import remove, close
 from string import digits
 from tempfile import mkstemp
 
@@ -51,7 +51,9 @@ class TopLevelTests(TestCase):
                          ('1', ['seq3', 'seq4']),
                          ('2', ['seq6', 'seq7', 'seq8'])]
         _, self.tmp_fp1 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(_)
         _, self.tmp_fp2 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(_)
         self.files_to_remove = []
 
         self.taxa_summary = [[('a', 'b', 'c'), 0, 1, 2],
@@ -540,6 +542,7 @@ y\t5\t6\tsample y""")
 
         _, tmp_filename = mkstemp(prefix="test_write_Fasta",
                                   suffix=".fna")
+        close(_)
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()

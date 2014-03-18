@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from shutil import rmtree
 from glob import glob
-from os import getenv
+from os import getenv, close
 from os.path import basename, exists, join
 from tempfile import NamedTemporaryFile, mkstemp, mkdtemp
 from cogent import LoadSeqs
@@ -40,6 +40,7 @@ class ParallelBlasterTests(TestCase):
         _, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
                                            prefix='qiime_parallel_blaster_tests_input',
                                            suffix='.fasta')
+        close(_)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(blast_test_seqs)
         seq_file.close()

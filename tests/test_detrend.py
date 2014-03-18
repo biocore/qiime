@@ -12,7 +12,7 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from os import remove, system
+from os import remove, system, close
 from shutil import rmtree
 from os.path import join, exists
 from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
@@ -43,12 +43,14 @@ class DetrendTests(TestCase):
         # Temporary input file
         _, self.tmp_pc_fp = mkstemp(prefix='R_test_pcoa',
                                     suffix='.txt')
+        close(_)
         seq_file = open(self.tmp_pc_fp, 'w')
         seq_file.write(test_pc)
         seq_file.close()
 
         _, self.tmp_map_fp = mkstemp(prefix='R_test_map_',
                                      suffix='.txt')
+        close(_)
         map_file = open(self.tmp_map_fp, 'w')
         map_file.write(test_map)
         map_file.close()

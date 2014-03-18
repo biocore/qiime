@@ -2,7 +2,7 @@
 from __future__ import division
 # unit tests for util.py
 
-from os import chdir, getcwd, mkdir, rmdir, remove
+from os import chdir, getcwd, mkdir, rmdir, remove, close
 from os.path import split, abspath, dirname, exists, isdir, join
 from glob import glob
 from random import seed
@@ -147,6 +147,7 @@ class TopLevelTests(TestCase):
         _, output_fp = mkstemp(
             prefix="qiime_util_write_seqs_to_fasta_test",
             suffix='.fasta')
+        close(_)
         self.files_to_remove.append(output_fp)
         seqs = [('s1', 'ACCGGTTGG'), ('s2', 'CCTTGG'),
                 ('S4 some comment string', 'A')]
@@ -697,7 +698,7 @@ o4	seq6	seq7""".split('\n')
         actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1, dm2)
         self.assertItemsEqual(actual_dm1[0], expected_dm1[0])
         assert_almost_equal(actual_dm1[1], expected_dm1[1])
-        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])        
+        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])
         assert_almost_equal(actual_dm2[1], expected_dm2[1])
 
     def test_make_compatible_distance_matrices_w_lookup(self):
@@ -1040,6 +1041,7 @@ class FunctionWithParamsTests(TestCase):
 
         # write biom_data to temp location
         _, bt_path = mkstemp(suffix='.biom')
+        close(_)
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()
@@ -1379,6 +1381,7 @@ class BlastSeqsTests(TestCase):
         _, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
                                       prefix="BLAST_temp_db_",
                                       suffix=".fasta")
+        close(_)
         fasta_f = open(self.refseqs1_fp, 'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1465,9 +1468,10 @@ class BlastXSeqsTests(TestCase):
         """
         self.nt_inseqs1 = nt_inseqs1.split('\n')
 
-        _,self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+        _, self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
                                         prefix="BLAST_temp_db_",
                                         suffix=".fasta")
+        close(_)
         fasta_f = open(self.pr_refseqs1_fp, 'w')
         fasta_f.write(pr_refseqs1)
         fasta_f.close()
@@ -1679,12 +1683,14 @@ class SubSampleFastaTests(TestCase):
         self.fasta_lines = fasta_lines
         _, self.fasta_filepath = mkstemp(
             prefix='subsample_test_', suffix='.fasta')
+        close(_)
         self.fasta_file = open(self.fasta_filepath, "w")
         self.fasta_file.write(self.fasta_lines)
         self.fasta_file.close()
 
         _, self.output_filepath = mkstemp(prefix='subsample_output_',
                                           suffix='.fasta')
+        close(_)
 
         self._files_to_remove =\
             [self.fasta_filepath]

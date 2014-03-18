@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
 from os.path import exists
 from tempfile import mkstemp
 
@@ -222,6 +223,7 @@ class ParallelWrapperTests(TestCase):
         """
         _, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests', 
                                    suffix='.fasta')
+        close(_)
         temp_fasta = ['>seq', 'AAACCCCAAATTGG'] * 25
         open(temp_fasta_fp, 'w').write('\n'.join(temp_fasta))
 
@@ -249,6 +251,7 @@ class BufferedWriterTests(TestCase):
         _, self.test_fp = mkstemp(dir=tmp_dir,
                                   prefix='bufWriterTest',
                                   suffix='.txt')
+        close(_)
         self.files_to_remove.append(self.test_fp)
 
     def tearDown(self):

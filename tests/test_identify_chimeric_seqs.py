@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
 from os.path import exists, split, splitext, join
 from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
@@ -34,10 +35,13 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
         """ """
         _, self.id_to_taxonomy_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.txt')
+        close(_)
         _, self.input_seqs_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
+        close(_)
         _, self.reference_seqs_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
+        close(_)
 
         self._paths_to_clean_up =\
             [self.id_to_taxonomy_fp,
@@ -252,6 +256,7 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
 
         self.files_to_remove = []
         _, test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
         fh.write(chimeras)
@@ -274,12 +279,14 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
 
         # set up DB
         _, ref_db_fp = mkstemp(prefix="test_chimera_slayer_ref_db_")
+        close(_)
         fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
         _, ref_db_nast_fp = mkstemp(
             prefix="test_chimera_slayer_nast_db_")
+        close(_)
         fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
@@ -324,6 +331,7 @@ class ChimeraSlayer_app_tests(TestCase):
         # empty input gives empty output
         seqs = ""
         _, test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
         fh.write(seqs)
@@ -337,6 +345,7 @@ class ChimeraSlayer_app_tests(TestCase):
 GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTCTTTCAGCAGGGACGAAGCGTAAGTGACGGTACCTGCAGAAGAAGCGCCGGCCAACTACGTGCCAGCAGCCGCGGTAAGAC
 """
         _, test_seqs_fp2 = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp2)
         fh = open(test_seqs_fp2, "w")
         fh.write(seqs)
@@ -346,6 +355,7 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         # Real chimeras are identified as such
         _, test_seqs_fp3 = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp3)
         fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
@@ -360,11 +370,13 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         # set up DB
         _, ref_db_fp = mkstemp(prefix="test_chimera_slayer_ref_db_")
+        close(_)
         fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
         _, ref_db_nast_fp = mkstemp(prefix="test_chimera_slayer_nast_db_")
+        close(_)
         fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
@@ -375,6 +387,7 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         # empty input gives empty output
         seqs = ""
         _,test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(_)
 
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
@@ -393,6 +406,7 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 """
 
         _, test_seqs_fp2 = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp2)
         fh = open(test_seqs_fp2, "w")
         fh.write(seqs)
@@ -405,6 +419,7 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         # Real chimeras are identified as such
         _, test_seqs_fp3 = mkstemp(prefix="test_chimera_slayer")
+        close(_)
         self.files_to_remove.append(test_seqs_fp3)
         fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
@@ -440,24 +455,28 @@ class Usearch61Tests(TestCase):
 
         _, self.raw_dna_seqs_fp = mkstemp(prefix='Usearch61QuerySeqs_',
                                           suffix='.fasta')
+        close(_)
         seq_file = open(self.raw_dna_seqs_fp, 'w')
         seq_file.write(self.dna_seqs)
         seq_file.close()
 
         _, self.ref_seqs_fp = mkstemp(prefix="Usearch61RefSeqs_",
                                       suffix=".fasta")
+        close(_)
         seq_file = open(self.ref_seqs_fp, "w")
         seq_file.write(self.ref_seqs)
         seq_file.close()
 
         _, self.abundance_seqs_fp = mkstemp(prefix="Usearch61AbundanceSeqs_",
                                     suffix=".fasta")
+        close(_)
         seq_file = open(self.abundance_seqs_fp, "w")
         seq_file.write(self.abundance_seqs)
         seq_file.close()
 
         _, self.uchime_fp = mkstemp(prefix="UsearchUchimeData_",
                                     suffix=".uchime")
+        close(_)
         seq_file = open(self.uchime_fp, "w")
         seq_file.write(self.uchime_data)
         seq_file.close()

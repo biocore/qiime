@@ -9,6 +9,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from tempfile import mkstemp
+from os import close
 
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from unittest import TestCase, main
@@ -46,6 +47,7 @@ class FunctionTests(TestCase):
         bootstraps = {'node0': .7, 'node1': .4}
         _, f = mkstemp(prefix='make_bootstrapped_tree_test',
                        suffix='.pdf')
+        close(_)
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))
@@ -67,6 +69,7 @@ class FunctionTests(TestCase):
         bootstraps = {"no__``!!:o de0": .7, 'node1': .4}
         _, f = mkstemp(prefix='make_bootstrapped_tree_test',
                        suffix='.pdf')
+        close(_)
         self._paths_to_clean_up.append(f)
         write_pdf_bootstrap_tree(tree, f, bootstraps)
         assert(os.path.exists(f))

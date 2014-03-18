@@ -14,7 +14,7 @@ __email__ = "justinak@gmail.com"
 from numpy import array
 import numpy
 from shutil import rmtree
-from os import makedirs
+from os import makedirs, close
 from os.path import exists
 from tempfile import mkstemp
 from unittest import TestCase, main
@@ -54,6 +54,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         _, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
+        close(_)
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
@@ -66,6 +67,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         _, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
+        close(_)
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
@@ -79,6 +81,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
             suffix='.biom')
+        close(_)
         open(self.single_sample_otu_table_fp, 'w').write(
             format_biom_table(self.single_sample_otu_table))
 

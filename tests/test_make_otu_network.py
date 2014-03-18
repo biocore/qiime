@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 
-from os import remove
+from os import remove, close
 from os.path import exists
 import os
 import shutil
@@ -135,6 +135,7 @@ class OtuNetworkTests(TestCase):
 
         _, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
                                              prefix='test_make_otu_network_otu_table', suffix='.biom')
+        close(_)
         open(self.otu_table_fp, 'w').write(otu_table_str)
 
         self.otu_sample_file = """#Full OTU Counts

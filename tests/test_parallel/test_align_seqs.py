@@ -13,6 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os.path import exists, join
+from os import close
 from tempfile import mkstemp, mkdtemp
 
 from cogent.util.misc import remove_files
@@ -38,6 +39,7 @@ class ParallelAlignSeqsTests(TestCase):
         _, self.template_fp = mkstemp(dir=self.test_out,
                                       prefix='qiime_template',
                                       suffix='.fasta')
+        close(_)
         template_f = open(self.template_fp, 'w')
         template_f.write(pynast_test1_template_fasta)
         template_f.close()
@@ -46,6 +48,7 @@ class ParallelAlignSeqsTests(TestCase):
         _, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
+        close(_)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()

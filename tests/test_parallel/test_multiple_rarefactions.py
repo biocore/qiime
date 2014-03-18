@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from glob import glob
 from shutil import rmtree
+from os import close
 from os.path import exists, join
 from tempfile import mkdtemp, mkstemp
 
@@ -41,6 +42,7 @@ class ParallelMultipleRarefactionsTests(TestCase):
         _, self.input1_fp = mkstemp(dir=self.test_out,
                                     prefix='qiime_inseqs',
                                     suffix='.fasta')
+        close(_)
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()
