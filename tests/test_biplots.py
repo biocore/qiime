@@ -14,9 +14,9 @@ import qiime.biplots as bp
 import numpy as np
 
 from os import system
+from tempfile import mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.util.misc import get_random_directory_name
 
 
 class BiplotTests(TestCase):
@@ -28,7 +28,7 @@ class BiplotTests(TestCase):
         pass
 
     def test_get_taxa(self):
-        rand_fname = get_random_directory_name(suppress_mkdir=True)
+        rand_fname = mkdtemp('./')
         rand_fname += '_tmp.txt'
         fout = open(rand_fname, 'w')
         lines = ['#Full OTU Counts',

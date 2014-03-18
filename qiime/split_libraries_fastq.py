@@ -15,7 +15,7 @@ from os.path import split, splitext
 from os import makedirs
 from numpy import log10, arange, histogram
 from cogent import DNA
-from skbio.parse.sequences import fastq_parse
+from skbio.parse.sequences import parse_fastq
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log,
                           )
@@ -295,8 +295,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
     sequence_lengths = []
     seqs_per_sample_counts = {}
     for bc_data, read_data in izip(
-            fastq_parse(fastq_barcode_f, strict=False),
-            fastq_parse(fastq_read_f, strict=False)):
+            parse_fastq(fastq_barcode_f, strict=False),
+            parse_fastq(fastq_read_f, strict=False)):
         input_sequence_count += 1
         # Confirm match between barcode and read headers
         if strict_header_match and \

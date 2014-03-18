@@ -14,12 +14,13 @@ from glob import glob
 from os import chdir, getcwd
 from os.path import exists
 from shutil import rmtree
+from tempfile import mkdtemp
+
 from cogent import LoadTree, LoadSeqs
 from unittest import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import (load_qiime_config,
                         count_seqs,
-                        get_tmp_filename,
                         get_qiime_temp_dir)
 from qiime.workflow.util import (call_commands_serially,
                                  no_status_updates,
@@ -65,8 +66,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "align_seqs:template_fp	%s" % self.test_data['refseqs_aligned'][0],
             "filter_alignment:lane_mask_fp	%s" % self.test_data['refseqs_aligned_lanemask'][0]])
 
-        self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                       prefix='qiime_wf_out', suffix='', result_constructor=str)
+        self.wf_out = mkdtemp(dir=self.tmp_dir,
+                              prefix='qiime_wf_out', suffix='')
         self.dirs_to_remove.append(self.wf_out)
 
         initiate_timeout(allowed_seconds_per_test)

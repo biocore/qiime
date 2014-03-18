@@ -12,7 +12,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import basename
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 from qiime.parse import parse_qual_score
 
@@ -27,7 +27,7 @@ def parse_fasta_file(fasta_lines):
     fasta_seqs = {}
     seq_order = []
 
-    for label, seq in MinimalFastaParser(fasta_lines):
+    for label, seq in parse_fasta(fasta_lines):
         fasta_seqs[label.split()[0].strip()] = seq
         seq_order.append(label)
 

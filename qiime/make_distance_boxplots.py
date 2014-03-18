@@ -16,7 +16,7 @@ from numpy import argsort, array, median
 from qiime.colors import data_colors, data_color_order
 from qiime.format import format_mapping_file
 from qiime.group import get_all_grouped_distances, get_grouped_distances
-from qiime.color import matplotlib_rgb_color
+from qiime.colors import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file
 from skbio.draw.distributions import boxplots
 from qiime.util import MetadataMap

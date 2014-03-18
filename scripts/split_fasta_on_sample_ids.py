@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from qiime.util import (parse_command_line_parameters,
                         make_option,
                         split_fasta_on_sample_ids_to_files)
@@ -52,7 +52,7 @@ def main():
         parse_command_line_parameters(**script_info)
 
     split_fasta_on_sample_ids_to_files(
-        MinimalFastaParser(open(opts.input_fasta_fp, 'U')),
+        parse_fasta(open(opts.input_fasta_fp, 'U')),
         opts.output_dir,
         opts.buffer_size)
 

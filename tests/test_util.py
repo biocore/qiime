@@ -8,7 +8,7 @@ from glob import glob
 from random import seed
 from shutil import rmtree
 from StringIO import StringIO
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 from collections import defaultdict
 import gzip
 
@@ -19,11 +19,13 @@ from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import get_random_directory_name, remove_files
+from cogent.util.misc import remove_files
+
+from tempfile import mkdtemp
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -46,7 +48,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         iseq_to_qseq_fields, get_top_fastq_two_lines,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
-                        get_tmp_filename, load_qiime_config, MetadataMap,
+                        load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
@@ -142,7 +144,7 @@ class TopLevelTests(TestCase):
 
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
-        output_fp = get_tmp_filename(
+        _, output_fp = mkstemp(
             prefix="qiime_util_write_seqs_to_fasta_test",
             suffix='.fasta')
         self.files_to_remove.append(output_fp)
@@ -173,7 +175,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids functions as expected
         """
         actual = list(split_fasta_on_sample_ids(
-                      MinimalFastaParser(self.fasta1)))
+                      parse_fasta(self.fasta1)))
         expected = [('Samp1', 'Samp1_42', 'ACCGGTT'),
                     ('s2_a', 's2_a_50', 'GGGCCC'),
                     ('Samp1', 'Samp1_43 some comme_nt', 'AACCG'),
@@ -184,7 +186,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids_to_dict functions as expected
         """
         actual = split_fasta_on_sample_ids_to_dict(
-            MinimalFastaParser(self.fasta1))
+            parse_fasta(self.fasta1))
         expected = {'Samp1': [('Samp1_42', 'ACCGGTT'),
                               ('Samp1_43 some comme_nt', 'AACCG')],
                     's2_a': [('s2_a_50', 'GGGCCC')],
@@ -194,11 +196,11 @@ o4	seq6	seq7""".split('\n')
     def test_split_fasta_on_sample_ids_to_files(self):
         """ split_fasta_on_sample_ids_to_files functions as expected
         """
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         split_fasta_on_sample_ids_to_files(
-            MinimalFastaParser(self.fasta2),
+            parse_fasta(self.fasta2),
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
@@ -431,10 +433,10 @@ o4	seq6	seq7""".split('\n')
     def test_inflate_denoiser_output(self):
         """ inflate_denoiser_output expands denoiser results as expected """
         actual = list(inflate_denoiser_output(
-            MinimalFastaParser(self.centroid_seqs1),
-            MinimalFastaParser(self.singleton_seqs1),
+            parse_fasta(self.centroid_seqs1),
+            parse_fasta(self.singleton_seqs1),
             self.denoiser_mapping1,
-            MinimalFastaParser(self.raw_seqs1)))
+            parse_fasta(self.raw_seqs1)))
         expected = [("S1_0 FXX111 some comments", "TTTT"),
                     ("S1_2 FXX113 some other comments", "TTTT"),
                     ("S3_7 FXX117", "TTTT"),
@@ -446,7 +448,7 @@ o4	seq6	seq7""".split('\n')
 
     def test_flowgram_id_to_seq_id_map(self):
         """ flowgram_id_to_seq_id_map functions as expected """
-        actual = flowgram_id_to_seq_id_map(MinimalFastaParser(self.raw_seqs1))
+        actual = flowgram_id_to_seq_id_map(parse_fasta(self.raw_seqs1))
         expected = {'FXX111': 'S1_0 FXX111 some comments',
                     'FXX112': 'S2_1 FXX112 some comments',
                     'FXX113': 'S1_2 FXX113 some other comments',
@@ -514,7 +516,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using reverse
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -555,7 +557,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using forward
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -595,7 +597,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using gzipped files
            and forward barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -636,7 +638,7 @@ o4	seq6	seq7""".split('\n')
             the open fastq file
         """
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         fastq_files = []
@@ -1037,7 +1039,7 @@ class FunctionWithParamsTests(TestCase):
         self.assertEqual(biom_data, F.getBiomData(biom_data))
 
         # write biom_data to temp location
-        bt_path = get_tmp_filename()
+        _, bt_path = mkstemp(suffix='.biom')
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()
@@ -1374,9 +1376,9 @@ class BlastSeqsTests(TestCase):
                                            output_dir=get_qiime_temp_dir())
         self.files_to_remove = db_files_to_remove
 
-        self.refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                            prefix="BLAST_temp_db_",
-                                            suffix=".fasta")
+        _, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                      prefix="BLAST_temp_db_",
+                                      suffix=".fasta")
         fasta_f = open(self.refseqs1_fp, 'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1389,7 +1391,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blast_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs=self.refseqs1)
         self.assertEqual(len(actual), 5)
 
@@ -1400,7 +1402,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_fp(self):
         """qiime_blast_seqs functions refseqs_fp
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs_fp=self.refseqs1_fp)
         self.assertEqual(len(actual), 5)
 
@@ -1412,7 +1414,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs functions with pre-existing blast_db
         """
         # pre-existing blast db
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, blast_db=self.blast_db)
         self.assertEqual(len(actual), 5)
 
@@ -1424,7 +1426,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs: functions with alt seqs_per_blast_run
         """
         for i in range(1, 20):
-            inseqs = MinimalFastaParser(self.inseqs1)
+            inseqs = parse_fasta(self.inseqs1)
             actual = qiime_blast_seqs(
                 inseqs, blast_db=self.blast_db, seqs_per_blast_run=i)
             self.assertEqual(len(actual), 5)
@@ -1436,7 +1438,7 @@ class BlastSeqsTests(TestCase):
     def test_alt_blast_param(self):
         """qiime_blast_seqs: alt blast params give alt results"""
         # Fewer blast hits with stricter e-value
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(
             inseqs,
             blast_db=self.blast_db,
@@ -1448,7 +1450,7 @@ class BlastSeqsTests(TestCase):
         self.assertFalse('s100' in actual)
 
     def test_error_on_bad_param_set(self):
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         # no blastdb or refseqs
         self.assertRaises(AssertionError, qiime_blast_seqs, inseqs)
 
@@ -1463,9 +1465,9 @@ class BlastXSeqsTests(TestCase):
         """
         self.nt_inseqs1 = nt_inseqs1.split('\n')
 
-        self.pr_refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix="BLAST_temp_db_",
-                                               suffix=".fasta")
+        _,self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                        prefix="BLAST_temp_db_",
+                                        suffix=".fasta")
         fasta_f = open(self.pr_refseqs1_fp, 'w')
         fasta_f.write(pr_refseqs1)
         fasta_f.close()
@@ -1478,7 +1480,7 @@ class BlastXSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blastx_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.nt_inseqs1)
+        inseqs = parse_fasta(self.nt_inseqs1)
         actual = qiime_blastx_seqs(inseqs, refseqs_fp=self.pr_refseqs1_fp)
         self.assertEqual(len(actual), 3)
 
@@ -1675,14 +1677,14 @@ class SubSampleFastaTests(TestCase):
         self.temp_dir = load_qiime_config()['temp_dir']
 
         self.fasta_lines = fasta_lines
-        self.fasta_filepath = get_tmp_filename(
+        _, self.fasta_filepath = mkstemp(
             prefix='subsample_test_', suffix='.fasta')
         self.fasta_file = open(self.fasta_filepath, "w")
         self.fasta_file.write(self.fasta_lines)
         self.fasta_file.close()
 
-        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
-                                                suffix='.fasta')
+        _, self.output_filepath = mkstemp(prefix='subsample_output_',
+                                          suffix='.fasta')
 
         self._files_to_remove =\
             [self.fasta_filepath]
