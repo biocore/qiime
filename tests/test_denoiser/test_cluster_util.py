@@ -12,11 +12,12 @@ __email__ = "jens.reeder@gmail.com"
 
 import signal
 import os
-from os import remove, rmdir, environ, mkdir
+from os import remove, rmdir, environ
 from time import sleep, time
 from os.path import exists
 from StringIO import StringIO
 from socket import error
+from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
 from skbio.parse.sequences import fasta_parse
@@ -24,7 +25,6 @@ from cogent.parse.flowgram import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs, setup_server,\
@@ -50,10 +50,10 @@ class TestUtils(TestCase):
 
         self.home = environ['HOME']
         self.server_socket = None
-        self.tmp_result_file = get_tmp_filename(tmp_dir=self.home,
-                                                prefix="/test_hello_",
+        _, self.tmp_result_file = mkstemp(dir=self.home,
+                                                prefix="test_hello_",
                                                 suffix=".txt")
-        self.tmp_dir = get_tmp_filename(tmp_dir=self.home,
+        self.tmp_dir = mkdtemp(dir=self.home,
                                         prefix="test_cluster_util",
                                         suffix="/")
 
@@ -86,7 +86,7 @@ class TestUtils(TestCase):
     def _setup_server_and_clients(self):
 
         self.server_socket = setup_server()
-        mkdir(self.tmp_dir)
+        
         workers, client_sockets = setup_workers(4, self.tmp_dir,
                                                 self.server_socket,
                                                 verbose=False)
@@ -112,7 +112,6 @@ class TestUtils(TestCase):
     def test_setup_workers(self):
         """setup_workers starts clients"""
 
-        mkdir(self.tmp_dir)
         self.server_socket = setup_server()
         workers, client_sockets = setup_workers(4, self.tmp_dir,
                                                 self.server_socket,

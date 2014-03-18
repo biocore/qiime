@@ -11,6 +11,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from os import remove
+from tempfile import mkstemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -18,7 +19,6 @@ from skbio.parse.sequences import fasta_parse
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from qiime.util import get_tmp_filename
 
 from qiime.denoiser.flowgram_filter import (extract_barcodes_from_mapping,
                                             build_inverse_barcode_map, write_sff_header, filter_sff_file, within_length,
@@ -82,7 +82,7 @@ class Test_flowgram_filter(TestCase):
                   'TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG',
                   'Key Sequence': 'TCAG'}
 
-        tmp_name = get_tmp_filename(prefix="test_write_sff_header")
+        _, tmp_name = mkstemp(prefix="test_write_sff_header")
         fh = open(tmp_name, "w")
         write_sff_header(header, fh, num=400)
         fh.close()
@@ -104,7 +104,7 @@ class Test_flowgram_filter(TestCase):
         # With no filters all flowgram should be in out file
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = []
-        out_file_name = get_tmp_filename(
+        _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
         out_fh = open(out_file_name, "w")
@@ -117,7 +117,7 @@ class Test_flowgram_filter(TestCase):
         fh = open(self.tiny_test)
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = [lambda f:within_length(f, 100, 300)]
-        out_file_name = get_tmp_filename(
+        _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
         out_fh = open(out_file_name, "w")
@@ -130,7 +130,7 @@ class Test_flowgram_filter(TestCase):
         fh = open(self.tiny_test)
         flowgrams, header = lazy_parse_sff_handle(fh)
         filter_list = [lambda f:within_length(f, 0, 0)]
-        out_file_name = get_tmp_filename(
+        _, out_file_name = mkstemp(
             prefix="test_filter_sff_file",
             suffix=".sff.txt")
         out_fh = open(out_file_name, "w")

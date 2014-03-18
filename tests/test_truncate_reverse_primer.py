@@ -12,10 +12,11 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import exists, join, basename
 from shutil import rmtree
+from tempfile import mkdtemp
 
 from unittest import TestCase, main
 from qiime.util import get_tmp_filename, create_dir
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
 from qiime.truncate_reverse_primer import get_rev_primer_seqs,\
     get_output_filepaths, truncate_rev_primers, truncate_reverse_primer
@@ -90,7 +91,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
         mapping_file.write(self.sample_mapping_file_bad_revprimer)
         mapping_file.close()
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)

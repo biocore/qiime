@@ -8,7 +8,7 @@ from glob import glob
 from random import seed
 from shutil import rmtree
 from StringIO import StringIO
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 from collections import defaultdict
 import gzip
 
@@ -23,7 +23,9 @@ from skbio.parse.sequences import fasta_parse
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import get_random_directory_name, remove_files
+from cogent.util.misc import remove_files
+
+from tempfile import mkdtemp
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -46,7 +48,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         iseq_to_qseq_fields, get_top_fastq_two_lines,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
-                        get_tmp_filename, load_qiime_config, MetadataMap,
+                        load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
@@ -142,7 +144,7 @@ class TopLevelTests(TestCase):
 
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
-        output_fp = get_tmp_filename(
+        _, output_fp = mkstemp(
             prefix="qiime_util_write_seqs_to_fasta_test",
             suffix='.fasta')
         self.files_to_remove.append(output_fp)
@@ -194,7 +196,7 @@ o4	seq6	seq7""".split('\n')
     def test_split_fasta_on_sample_ids_to_files(self):
         """ split_fasta_on_sample_ids_to_files functions as expected
         """
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         split_fasta_on_sample_ids_to_files(
@@ -514,7 +516,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using reverse
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -555,7 +557,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using forward
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -595,7 +597,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using gzipped files
            and forward barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -636,7 +638,7 @@ o4	seq6	seq7""".split('\n')
             the open fastq file
         """
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         fastq_files = []
@@ -1037,7 +1039,7 @@ class FunctionWithParamsTests(TestCase):
         self.assertEqual(biom_data, F.getBiomData(biom_data))
 
         # write biom_data to temp location
-        bt_path = get_tmp_filename()
+        _, bt_path = mkstemp(suffix='.biom')
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()
@@ -1374,9 +1376,9 @@ class BlastSeqsTests(TestCase):
                                            output_dir=get_qiime_temp_dir())
         self.files_to_remove = db_files_to_remove
 
-        self.refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                            prefix="BLAST_temp_db_",
-                                            suffix=".fasta")
+        _, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                      prefix="BLAST_temp_db_",
+                                      suffix=".fasta")
         fasta_f = open(self.refseqs1_fp, 'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1463,9 +1465,9 @@ class BlastXSeqsTests(TestCase):
         """
         self.nt_inseqs1 = nt_inseqs1.split('\n')
 
-        self.pr_refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix="BLAST_temp_db_",
-                                               suffix=".fasta")
+        _,self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                        prefix="BLAST_temp_db_",
+                                        suffix=".fasta")
         fasta_f = open(self.pr_refseqs1_fp, 'w')
         fasta_f.write(pr_refseqs1)
         fasta_f.close()
@@ -1675,14 +1677,14 @@ class SubSampleFastaTests(TestCase):
         self.temp_dir = load_qiime_config()['temp_dir']
 
         self.fasta_lines = fasta_lines
-        self.fasta_filepath = get_tmp_filename(
+        _, self.fasta_filepath = mkstemp(
             prefix='subsample_test_', suffix='.fasta')
         self.fasta_file = open(self.fasta_filepath, "w")
         self.fasta_file.write(self.fasta_lines)
         self.fasta_file.close()
 
-        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
-                                                suffix='.fasta')
+        _, self.output_filepath = mkstemp(prefix='subsample_output_',
+                                          suffix='.fasta')
 
         self._files_to_remove =\
             [self.fasta_filepath]

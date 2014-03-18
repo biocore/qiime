@@ -11,11 +11,12 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import exists
+from tempfile import mkstemp
+
 from unittest import TestCase, main
 from cogent import LoadSeqs
 from cogent.util.misc import remove_files
-from qiime.util import (get_tmp_filename,
-                        get_qiime_temp_dir)
+from qiime.util import get_qiime_temp_dir
 from qiime.parallel.util import (ParallelWrapper,
                                  BufferedWriter)
 
@@ -219,8 +220,8 @@ class ParallelWrapperTests(TestCase):
     def test_compute_seqs_per_file(self):
         """compute_seqs_per_file functions as expected
         """
-        temp_fasta_fp = get_tmp_filename(
-            prefix='QiimeScriptUtilTests', suffix='.fasta')
+        _, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests', 
+                                   suffix='.fasta')
         temp_fasta = ['>seq', 'AAACCCCAAATTGG'] * 25
         open(temp_fasta_fp, 'w').write('\n'.join(temp_fasta))
 
@@ -245,9 +246,9 @@ class BufferedWriterTests(TestCase):
         """ """
         self.files_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_fp = get_tmp_filename(tmp_dir=tmp_dir,
-                                        prefix='bufWriterTest',
-                                        suffix='.txt')
+        _, self.test_fp = mkstemp(dir=tmp_dir,
+                                  prefix='bufWriterTest',
+                                  suffix='.txt')
         self.files_to_remove.append(self.test_fp)
 
     def tearDown(self):
