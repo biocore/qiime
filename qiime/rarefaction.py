@@ -3,10 +3,8 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski",
-               "Jose Carlos Clemente Litran",
-               "Rob Knight",
-               "Greg Caporaso"]  # remember to add yourself
+__credits__ = ["Justin Kuczynski", "Jose Carlos Clemente Litran", "Rob Knight",
+               "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -18,12 +16,14 @@ this takes an otu table and generates a series of subsampled (without
 replacement) otu tables.
 """
 import os.path
+
 import numpy
 from numpy import inf
-from cogent.maths.stats.rarefaction import (subsample,
-                                            subsample_freq_dist_nonzero,
+from cogent.maths.stats.rarefaction import (subsample_freq_dist_nonzero,
                                             subsample_random,
                                             subsample_multinomial)
+from skbio.maths.subsample import subsample
+
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.format import format_biom_table
@@ -188,32 +188,8 @@ def get_rare_data(otu_table,
         if x.sum() < seqs_per_sample:
             return x
         else:
-            return subsample_f(x, seqs_per_sample)
+            return subsample_f(x.astype(int), seqs_per_sample)
 
     subsampled_otu_table = otu_table.transformSamples(func)
 
-    # remove small samples if required
-
     return subsampled_otu_table
-
-# Not necessary anymore; tagged for removal
-
-
-def remove_empty_otus(otu_mtx, otu_ids, otu_lineages=None):
-    """ return matrix and otu_ids with otus of all 0's removed
-
-    otu_mtx (in and out) is otus (rows) by samples (cols)"""
-    nonempty_otu_idxs = []
-    res_otu_ids = []
-    for i in range(len(otu_ids)):
-        if otu_mtx[i].sum() != 0:
-            nonempty_otu_idxs.append(i)
-            res_otu_ids.append(otu_ids[i])
-    res_otu_mtx = otu_mtx[nonempty_otu_idxs, :]
-
-    if otu_lineages is None or otu_lineages == []:
-        res_otu_lineages = []
-    else:
-        res_otu_lineages = [otu_lineages[i] for i in nonempty_otu_idxs]
-
-    return res_otu_mtx, res_otu_ids, res_otu_lineages

@@ -17,7 +17,8 @@ from collections import defaultdict
 import os
 from os.path import expandvars
 import re
-from cogent.maths.stats.rarefaction import subsample
+from types import GeneratorType
+
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 from skbio.parse.record_finder import LabeledRecordFinder
@@ -25,8 +26,8 @@ from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq, FastaFinder
 from cogent.core.tree import PhyloNode
 from cogent import DNA
+
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
-from types import GeneratorType
 
 
 def is_casava_v180_or_later(header_line):
@@ -594,36 +595,6 @@ parse_otu_table = parse_classic_otu_table
 def parse_taxa_summary_table(lines):
     result = parse_classic_otu_table(lines, count_map_f=float)
     return result[0], result[1], result[2]
-
-
-def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages,
-                           wanted_lineage, max_seqs_per_sample, min_seqs_per_sample):
-    """Filter OTU table to keep only desired lineages and sample sizes."""
-    # first step: figure out which OTUs we want to keep
-    if wanted_lineage is not None:  # None = keep all
-        if '&&' in wanted_lineage:
-            wanted_lineage = set(wanted_lineage.split('&&'))
-        else:
-            wanted_lineage = set([wanted_lineage])
-        good_indices = []
-        for i, l in enumerate(lineages):
-            if set(l).intersection(wanted_lineage):
-                good_indices.append(i)
-        otu_table = otu_table[good_indices]
-        otu_ids = map(otu_ids.__getitem__, good_indices)
-        lineages = map(lineages.__getitem__, good_indices)
-    # now have reduced collection of OTUs filtered by lineage.
-    # figure out which samples will be dropped because too small
-    big_enough_samples = (otu_table.sum(0) >= min_seqs_per_sample).nonzero()
-    otu_table = otu_table[:, big_enough_samples[0]]
-    sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
-    # figure out which samples will be reduced because too big
-    too_big_samples = (otu_table.sum(0) > max_seqs_per_sample).nonzero()[0]
-    if too_big_samples.shape[0]:  # means that there were some
-        for i in too_big_samples:
-            otu_table[:, i] = subsample(otu_table[:, i].ravel(),
-                                        max_seqs_per_sample)
-    return sample_ids, otu_ids, otu_table, lineages
 
 
 def make_envs_dict(abund_mtx, sample_names, taxon_names):
