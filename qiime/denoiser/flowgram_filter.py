@@ -169,9 +169,9 @@ def cleanup_sff(flowgrams, header, outhandle=None, outdir="/tmp",
 
     clean_filename = ""
     if not outhandle:
-        _, clean_filename = mkstemp(dir=outdir, prefix="cleanup_sff",
+        fd, clean_filename = mkstemp(dir=outdir, prefix="cleanup_sff",
                                     suffix=".sff.txt")
-        close(_)
+        close(fd)
         outhandle = open(clean_filename, "w")
 
     l = filter_sff_file(

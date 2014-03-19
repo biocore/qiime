@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, splitext, exists
 from cogent.parse.blast import MinimalBlatParser9
+
 from brokit.blat import (assign_dna_reads_to_protein_database
                          as blat_assign_dna_reads_to_protein_database,
                          assign_dna_reads_to_dna_database
@@ -21,6 +22,7 @@ from brokit.usearch import (clusters_from_blast_uc_file,
                             as usearch_assign_dna_reads_to_database)
 from brokit.bwa import (assign_dna_reads_to_dna_database
                         as bwa_assign_dna_reads_to_dna_database)
+
 from qiime.format import format_observation_map
 from qiime.parse import parse_taxonomy, MinimalSamParser
 from qiime.make_otu_table import make_otu_table
