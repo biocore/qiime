@@ -10,10 +10,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from cogent.maths.stats.rarefaction import subsample, subsample_multinomial
+import os.path
+
+from cogent.maths.stats.rarefaction import subsample_multinomial
+from skbio.maths.subsample import subsample
+
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.util import make_option
-import os.path
 from qiime.rarefaction import RarefactionMaker
 
 script_info = {}
