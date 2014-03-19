@@ -13,12 +13,13 @@ __email__ = "gregcaporaso@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os.path import exists, join
+from os import close
+from tempfile import mkstemp, mkdtemp
+
+from cogent.util.misc import remove_files
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, create_dir
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename,
-                        count_seqs_in_filepaths)
+from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths
 from qiime.test import initiate_timeout, disable_timeout
 
 
@@ -30,24 +31,24 @@ class ParallelAlignSeqsTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.template_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                            prefix='qiime_template',
-                                            suffix='.fasta')
+        _, self.template_fp = mkstemp(dir=self.test_out,
+                                      prefix='qiime_template',
+                                      suffix='.fasta')
+        close(_)
         template_f = open(self.template_fp, 'w')
         template_f.write(pynast_test1_template_fasta)
         template_f.close()
         self.files_to_remove.append(self.template_fp)
 
-        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                           prefix='qiime_inseqs',
-                                           suffix='.fasta')
+        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
+                                     prefix='qiime_inseqs',
+                                     suffix='.fasta')
+        close(_)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()

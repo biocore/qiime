@@ -9,7 +9,10 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
+from os import close
 from os.path import exists
+from tempfile import mkstemp
+
 from numpy import array, log10, asarray, float64
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -18,7 +21,7 @@ from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
                                     names_to_indices, get_log_transform, get_clusters,
                                     get_fontsize, plot_heatmap)
-from qiime.util import get_tmp_filename
+
 from biom.table import table_factory
 
 
@@ -64,10 +67,9 @@ class TopLevelTests(TestCase):
                           ['Sample6', 'NA', 'B']],
                          ['SampleID', 'CAT1', 'CAT2'], []]
         self.tree_text = ["('OTU3',('OTU1','OTU2'))"]
-        self.tmp_heatmap_fpath = get_tmp_filename(
-            prefix='test_heatmap_',
-            suffix='.pdf'
-        )
+        _, self.tmp_heatmap_fpath = mkstemp(prefix='test_heatmap_',
+                                            suffix='.pdf')
+        close(_)
 
     def test_extract_metadata_column(self):
         """Extracts correct column from mapping file"""

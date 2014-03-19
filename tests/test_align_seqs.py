@@ -10,13 +10,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os import remove
+from os import remove, close
 from os.path import getsize
+from tempfile import mkstemp
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from qiime.util import get_tmp_filename
 from qiime.align_seqs import (compute_min_alignment_length,
                               Aligner, CogentAligner, PyNastAligner, InfernalAligner,
                               alignment_module_names,
@@ -66,8 +66,9 @@ class CogentAlignerTests(SharedSetupTestCase):
     """Tests of the CogentAligner class"""
 
     def setUp(self):
-        self.input_fp = get_tmp_filename(
+        _, self.input_fp = mkstemp(
             prefix='CogentAlignerTests_', suffix='.fasta')
+        close(_)
         open(self.input_fp, 'w').write(seqs_for_muscle)
 
         self._paths_to_clean_up =\
@@ -78,8 +79,9 @@ class CogentAlignerTests(SharedSetupTestCase):
         """CogentAligner: output expected alignment file
         """
         p = CogentAligner({'Module': self.muscle_module})
-        log_fp = get_tmp_filename(
+        _, log_fp = mkstemp(
             prefix='CogentAlignerTests_', suffix='.log')
+        close(_)
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, seq_path=self.input_fp,
@@ -97,8 +99,9 @@ class CogentAlignerTests(SharedSetupTestCase):
         })
         self.assertEqual(p.Params["-maxmb"], "200")
 
-        log_fp = get_tmp_filename(
+        _, log_fp = mkstemp(
             prefix='CogentAlignerTests_', suffix='.log')
+        close(_)
         self._paths_to_clean_up.append(log_fp)
 
         actual = p(result_path=None, seq_path=self.input_fp,
@@ -113,26 +116,30 @@ class InfernalAlignerTests(SharedSetupTestCase):
     """Tests of the InfernalAligner class"""
 
     def setUp(self):
-        self.infernal_test1_input_fp = get_tmp_filename(
+        _, self.infernal_test1_input_fp = mkstemp(
             prefix='InfernalAlignerTests_', suffix='.fasta')
+        close(_)
         open(
             self.infernal_test1_input_fp,
             'w').write(
             infernal_test1_input_fasta)
 
-        self.infernal_test1_template_fp = get_tmp_filename(
+        _, self.infernal_test1_template_fp = mkstemp(
             prefix='InfernalAlignerTests_', suffix='template.sto')
+        close(_)
         open(self.infernal_test1_template_fp, 'w').\
             write(infernal_test1_template_stockholm)
 
         # create temp file names (and touch them so we can reliably
         # clean them up)
-        self.result_fp = get_tmp_filename(
+        _, self.result_fp = mkstemp(
             prefix='InfernalAlignerTests_', suffix='.fasta')
+        close(_)
         open(self.result_fp, 'w').close()
 
-        self.log_fp = get_tmp_filename(
+        _, self.log_fp = mkstemp(
             prefix='InfernalAlignerTests_', suffix='.log')
+        close(_)
         open(self.log_fp, 'w').close()
 
         self._paths_to_clean_up = [
@@ -180,40 +187,48 @@ class PyNastAlignerTests(SharedSetupTestCase):
     """Tests of the PyNastAligner class"""
 
     def setUp(self):
-        self.pynast_test1_input_fp = get_tmp_filename(
+        _, self.pynast_test1_input_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='.fasta')
+        close(_)
         open(self.pynast_test1_input_fp, 'w').write(pynast_test1_input_fasta)
 
-        self.pynast_test1_template_fp = get_tmp_filename(
+        _, self.pynast_test1_template_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='template.fasta')
+        close(_)
         open(self.pynast_test1_template_fp, 'w').\
             write(pynast_test1_template_fasta)
 
-        self.pynast_test_template_w_dots_fp = get_tmp_filename(
+        _, self.pynast_test_template_w_dots_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='template.fasta')
+        close(_)
         open(self.pynast_test_template_w_dots_fp, 'w').\
             write(pynast_test1_template_fasta.replace('-', '.'))
 
-        self.pynast_test_template_w_u_fp = get_tmp_filename(
+        _, self.pynast_test_template_w_u_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='template.fasta')
+        close(_)
         open(self.pynast_test_template_w_u_fp, 'w').\
             write(pynast_test1_template_fasta.replace('T', 'U'))
 
-        self.pynast_test_template_w_lower_fp = get_tmp_filename(
+        _, self.pynast_test_template_w_lower_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='template.fasta')
+        close(_)
         open(self.pynast_test_template_w_lower_fp, 'w').\
             write(pynast_test1_template_fasta.lower())
 
         # create temp file names (and touch them so we can reliably
         # clean them up)
-        self.result_fp = get_tmp_filename(
+        _, self.result_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='.fasta')
+        close(_)
         open(self.result_fp, 'w').close()
-        self.failure_fp = get_tmp_filename(
+        _, self.failure_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='.fasta')
+        close(_)
         open(self.failure_fp, 'w').close()
-        self.log_fp = get_tmp_filename(
+        _, self.log_fp = mkstemp(
             prefix='PyNastAlignerTests_', suffix='.log')
+        close(_)
         open(self.log_fp, 'w').close()
 
         self._paths_to_clean_up = [

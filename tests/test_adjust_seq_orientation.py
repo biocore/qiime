@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 
 from unittest import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from qiime.adjust_seq_orientation import rc_fasta_lines, null_seq_desc_mapper,\
     append_rc
 
@@ -26,11 +26,11 @@ class AdjustSeqOrientationTests(TestCase):
         self.fasta_lines1 = fasta_lines1.split('\n')
         self.fasta_lines1_mixed_case = fasta_lines1_mixed_case.split('\n')
 
-        self.fasta_lines1_exp = list(MinimalFastaParser(
+        self.fasta_lines1_exp = list(parse_fasta(
             fasta_lines1_exp.split('\n')))
-        self.fasta_lines1_mixed_case_exp = list(MinimalFastaParser(
+        self.fasta_lines1_mixed_case_exp = list(parse_fasta(
             fasta_lines1_mixed_case_exp.split('\n')))
-        self.fasta_lines1_exp_null_desc_mapper = list(MinimalFastaParser(
+        self.fasta_lines1_exp_null_desc_mapper = list(parse_fasta(
             fasta_lines1_exp_null_desc_mapper.split('\n')))
 
     def test_rc_fasta_lines(self):

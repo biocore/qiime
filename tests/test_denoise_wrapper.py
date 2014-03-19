@@ -11,14 +11,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from os import remove, mkdir
+from os import remove, mkdir, close
 from shutil import rmtree
-
+from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from qiime.util import get_tmp_filename
+
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram_parser import get_header_info
@@ -39,25 +38,27 @@ class DenoiseWrapperTests(TestCase):
             large_example,
             header_info=self.header)
 
-        self.sff_path = get_tmp_filename(
+        _, self.sff_path = mkstemp(
             prefix='DenoiseWrapperTest_', suffix='.sff.txt')
+        close(_)
         self.large_flowgram_collection.writeToFile(self.sff_path)
 
-        self.sff_path2 = get_tmp_filename(
+        _, self.sff_path2 = mkstemp(
             prefix='fastDenoiserTest_', suffix='.sff.txt')
+        close(_)
         fh = open(self.sff_path2, "w")
         fh.write(fasting_subset_sff)
         fh.close()
 
-        self.seq_path = get_tmp_filename(
+        _, self.seq_path = mkstemp(
             prefix='fastDenoiserTest_', suffix='.fasta')
+        close(_)
         fh = open(self.seq_path, "w")
         fh.write(fasting_seqs_subset)
         fh.close()
 
-        self.tmp_out_dir = get_tmp_filename(
+        self.tmp_out_dir = mkdtemp(
             prefix='fastDenoiserTest_', suffix='/')
-        mkdir(self.tmp_out_dir)
 
     def tearDown(self):
         """remove tmp files"""

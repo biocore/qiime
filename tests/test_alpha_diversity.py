@@ -14,15 +14,17 @@ __email__ = "justinak@gmail.com"
 from numpy import array
 import numpy
 from shutil import rmtree
-from os import makedirs
+from os import makedirs, close
 from os.path import exists
+from tempfile import mkstemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
+
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)
 
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import load_qiime_config
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 import qiime.alpha_diversity
 from qiime.parse import parse_newick
@@ -49,10 +51,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=list('abcd'),
                                         constructor=DenseOTUTable)
-        self.otu_table1_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+        _, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
-                                              suffix='.biom',
-                                              result_constructor=str)
+                                              suffix='.biom')
+        close(_)
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
@@ -62,10 +64,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                         sample_ids=list('XYZ'),
                                         observation_ids=['a', 'b', 'c', 'd_'],
                                         constructor=DenseOTUTable)
-        self.otu_table2_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+        _, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
-                                              suffix='.biom',
-                                              result_constructor=str)
+                                              suffix='.biom')
+        close(_)
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
@@ -75,11 +77,11 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             observation_ids=list(
                 'abcd'),
             constructor=DenseOTUTable)
-        self.single_sample_otu_table_fp = get_tmp_filename(
-            tmp_dir=self.tmp_dir,
+        _, self.single_sample_otu_table_fp = mkstemp(
+            dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
-            suffix='.biom',
-            result_constructor=str)
+            suffix='.biom')
+        close(_)
         open(self.single_sample_otu_table_fp, 'w').write(
             format_biom_table(self.single_sample_otu_table))
 

@@ -18,59 +18,61 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
-from StringIO import StringIO
-from os import getenv, makedirs
-from operator import itemgetter
-from os.path import abspath, basename, exists, dirname, join, isdir, splitext
+from os import getenv, listdir
+from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
-import gzip
-import sys
-import os
+from gzip import open as gz_open
+from sys import stderr
 from copy import deepcopy
 from datetime import datetime
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen
 from random import random
 from itertools import repeat, izip
 
-from biom.util import compute_counts_per_sample_stats
-from numpy import min, max, median, mean
-import numpy
+from numpy import (array, zeros, shape, vstack, ndarray, asarray,
+                   float, where, isnan, std, sqrt, ravel, mean, median,
+                   sum as np_sum, nan, sort)
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
-from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
-    float, where, isnan, mean, std, sqrt, ravel
+
+from biom.util import compute_counts_per_sample_stats
 from biom.parse import parse_biom_table
-import biom
-from cogent.util.dict2d import Dict2D
+from biom.table import (DenseFunctionTable, DenseGeneTable,
+                        DenseMetaboliteTable, DenseOTUTable,
+                        DenseOrthologTable, DensePathwayTable, DenseTable,
+                        DenseTaxonTable, FunctionTable, GeneTable,
+                        MetaboliteTable, OTUTable, OrthologTable,
+                        PathwayTable, SparseFunctionTable, SparseGeneTable,
+                        SparseMetaboliteTable, SparseOTUTable,
+                        SparseOrthologTable, SparsePathwayTable,
+                        SparseTable, SparseTaxonTable)
+
 from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
-from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
+from cogent.core.moltype import (MolType, IUPAC_DNA_chars,
+                                 IUPAC_DNA_ambiguities,
+                                 IUPAC_DNA_ambiguities_complements,
+                                 DnaStandardPairs, ModelDnaSequence)
 from cogent.data.molecular_weight import DnaMW
-from cogent.app.blast import Blastall
-from skbio.app.util import ApplicationError, CommandLineApplication
-from cogent.app.util import (FilePath,
-                             get_tmp_filename as cogent_get_tmp_filename)
-from cogent.parse.blast import BlastResult
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files
-from cogent.util.dict2d import Dict2D
-from cogent.app.formatdb import build_blast_db_from_fasta_path,\
-    build_blast_db_from_fasta_file
-from cogent import LoadSeqs
-from cogent.util.misc import (create_dir,
-                              handle_error_codes)
+from cogent.util.misc import remove_files, create_dir, handle_error_codes
+from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
+
+from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
-from qcli import (parse_command_line_parameters,
-                  make_option,
-                  qcli_system_call)
+from skbio.parse.sequences import parse_fasta
 
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+from brokit.blast import Blastall, BlastResult
+from brokit.formatdb import (build_blast_db_from_fasta_path,
+                             build_blast_db_from_fasta_file)
+
+
+from qcli import make_option, qcli_system_call, parse_command_line_parameters
+
 from qiime import __version__ as qiime_library_version
-from qiime.parse import (parse_distmat,
-                         parse_mapping_file_to_dict,
+from qiime.parse import (parse_mapping_file_to_dict,
                          parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
@@ -78,8 +80,7 @@ from qiime.parse import (parse_distmat,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
-                         MinimalFastqParser)
-
+                         parse_fastq)
 
 # for backward compatibility - compute_seqs_per_library_stats has
 # been removed in favor of biom.util.compute_counts_per_sample_stats,
@@ -235,33 +236,33 @@ class FunctionWithParams(object):
     def getBiomData(self, data):
         """returns a biom object regardless of whether path or object given"""
         try:
-            if os.path.isfile(data):
+            if isfile(data):
                 otu_table = parse_biom_table(qiime_open(data, 'U'))
                 return otu_table
         except TypeError:
             if any([type(data) in
-                    [biom.table.DenseFunctionTable,
-                     biom.table.DenseGeneTable,
-                     biom.table.DenseMetaboliteTable,
-                     biom.table.DenseOTUTable,
-                     biom.table.DenseOrthologTable,
-                     biom.table.DensePathwayTable,
-                     biom.table.DenseTable,
-                     biom.table.DenseTaxonTable,
-                     biom.table.FunctionTable,
-                     biom.table.GeneTable,
-                     biom.table.MetaboliteTable,
-                     biom.table.OTUTable,
-                     biom.table.OrthologTable,
-                     biom.table.PathwayTable,
-                     biom.table.SparseFunctionTable,
-                     biom.table.SparseGeneTable,
-                     biom.table.SparseMetaboliteTable,
-                     biom.table.SparseOTUTable,
-                     biom.table.SparseOrthologTable,
-                     biom.table.SparsePathwayTable,
-                     biom.table.SparseTable,
-                     biom.table.SparseTaxonTable]]):
+                    [DenseFunctionTable,
+                     DenseGeneTable,
+                     DenseMetaboliteTable,
+                     DenseOTUTable,
+                     DenseOrthologTable,
+                     DensePathwayTable,
+                     DenseTable,
+                     DenseTaxonTable,
+                     FunctionTable,
+                     GeneTable,
+                     MetaboliteTable,
+                     OTUTable,
+                     OrthologTable,
+                     PathwayTable,
+                     SparseFunctionTable,
+                     SparseGeneTable,
+                     SparseMetaboliteTable,
+                     SparseOTUTable,
+                     SparseOrthologTable,
+                     SparsePathwayTable,
+                     SparseTable,
+                     SparseTaxonTable]]):
                 otu_table = data
                 return otu_table
             else:
@@ -302,14 +303,14 @@ class FunctionWithParams(object):
 
 def trim_fastq(fastq_lines, output_length):
     """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in MinimalFastqParser(fastq_lines, strict=False):
+    for seq_id, seq, qual in parse_fastq(fastq_lines, strict=False):
         yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
                                     qual[:output_length])
 
 
 def trim_fasta(fasta_lines, output_length):
     """trim fasta seqs to output_length bases """
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in parse_fasta(fasta_lines):
         yield '>%s\n%s\n' % (seq_id, seq[:output_length])
 
 
@@ -346,7 +347,7 @@ def get_qiime_scripts_dir():
                               "Installation Guide: "
                               "http://qiime.org/install/install.html).")
 
-    return os.path.dirname(script_fp)
+    return dirname(script_fp)
 
 
 def get_qiime_temp_dir():
@@ -413,7 +414,7 @@ def qiime_blast_seqs(seqs,
     """Blast list of sequences.
 
     seqs: a list (or object with list-like interace) of (seq_id, seq)
-     tuples (e.g., the output of MinimalFastaParser)
+     tuples (e.g., the output of parse_fasta)
 
     """
 
@@ -481,7 +482,7 @@ def qiime_blastx_seqs(seqs,
     """Blast list of sequences.
 
     seqs: a list (or object with list-like interace) of (seq_id, seq)
-     tuples (e.g., the output of MinimalFastaParser)
+     tuples (e.g., the output of parse_fasta)
 
     """
     return qiime_blast_seqs(seqs,
@@ -518,7 +519,7 @@ def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
 def split_fasta_on_sample_ids(seqs):
     """ yields (sample_id, seq_id, seq) for each entry in seqs
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
 
     """
     for seq_id, seq in seqs:
@@ -529,7 +530,7 @@ def split_fasta_on_sample_ids(seqs):
 def split_fasta_on_sample_ids_to_dict(seqs):
     """ return split_fasta_on_sample_ids as {sample_id: [(seq_id, seq), ], }
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
 
     """
     result = {}
@@ -545,7 +546,7 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     """Write seqs to fp with specified write mode ('a' or 'w')
 
         seqs: list of (seq_id,seq) tuples, as obtained from
-         MinimalFastaParser
+         parse_fasta
     """
     f = open(fp, write_mode)
     for s in seqs:
@@ -558,7 +559,7 @@ def split_fasta_on_sample_ids_to_files(seqs,
                                        per_sample_buffer_size=500):
     """ output of split_fasta_on_sample_ids to fasta in specified output_dir
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
         output_dir: string defining directory where output should be
          written, will be created if it doesn't exist
 
@@ -733,10 +734,10 @@ def matrix_stats(headers_list, distmats):
         raise ValueError("error, not all input matrices have" +
                          " identical column/row headers")
 
-    all_mats = numpy.array(distmats)  # 3d numpy array: mtx, row, col
-    means = numpy.mean(all_mats, axis=0)
-    medians = numpy.median(all_mats, axis=0)
-    stdevs = numpy.std(all_mats, axis=0)
+    all_mats = array(distmats)  # 3d numpy array: mtx, row, col
+    means = mean(all_mats, axis=0)
+    medians = median(all_mats, axis=0)
+    stdevs = std(all_mats, axis=0)
 
     return deepcopy(headers_list[0]), means, medians, stdevs
 
@@ -797,20 +798,20 @@ def load_pcoa_files(pcoa_dir):
     """loads PCoA files from filepaths
     """
     support_pcoas = []
-    pcoa_filenames = os.listdir(pcoa_dir)
+    pcoa_filenames = listdir(pcoa_dir)
     # ignore invisible files like .DS_Store
     pcoa_filenames = [fname for fname in pcoa_filenames if not
                       fname.startswith('.')]
-    master_pcoa = open(os.path.join(pcoa_dir, pcoa_filenames[0]), 'U')
+    master_pcoa = open(join(pcoa_dir, pcoa_filenames[0]), 'U')
     master_pcoa = parse_coords(master_pcoa)
     for fname in pcoa_filenames:
         try:
-            f = open(os.path.join(pcoa_dir, fname), 'U')
+            f = open(join(pcoa_dir, fname), 'U')
             pcoa_res = parse_coords(f)
             support_pcoas.append(pcoa_res)
             f.close()
         except IOError as err:
-            sys.stderr.write('error loading support pcoa ' + fname + '\n')
+            stderr.write('error loading support pcoa ' + fname + '\n')
             exit(1)
     return master_pcoa, support_pcoas
 
@@ -848,7 +849,7 @@ def summarize_pcoas(master_pcoa, support_pcoas,
         jn_flipped_matrices, method)
     # compute average eigvals
     all_eigvals_stack = vstack(all_eigvals)
-    eigval_sum = numpy.sum(all_eigvals_stack, axis=0)
+    eigval_sum = np_sum(all_eigvals_stack, axis=0)
     eigval_average = eigval_sum / float(len(all_eigvals))
     return matrix_average, matrix_low, matrix_high, eigval_average, m_names
 
@@ -867,7 +868,7 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     x, y = shape(jn_flipped_matrices[0])
     all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
     summary_matrix = vstack(all_flat_matrices)
-    matrix_sum = numpy.sum(summary_matrix, axis=0)
+    matrix_sum = np_sum(summary_matrix, axis=0)
     matrix_average = matrix_sum / float(len(jn_flipped_matrices))
     matrix_average = matrix_average.reshape(x, y)
     if method == 'IQR':
@@ -954,13 +955,13 @@ def idealfourths(data, axis=None):
         x = data.compressed()
         n = len(x)
         if n < 3:
-            return [numpy.nan, numpy.nan]
+            return [nan, nan]
         (j, h) = divmod(n / 4. + 5 / 12., 1)
         qlo = (1 - h) * x[j - 1] + h * x[j]
         k = n - j
         qup = (1 - h) * x[k] + h * x[k - 1]
         return [qlo, qup]
-    data = numpy.sort(data, axis=axis).view(MaskedArray)
+    data = sort(data, axis=axis).view(MaskedArray)
     if (axis is None):
         return _idf(data)
     else:
@@ -1235,7 +1236,7 @@ def inflate_denoiser_output(
          out map back to original sequence identifiers.
 
         The seqs objects passed in are lists of (seq_id, seq) tuples,
-         as returned from MinimalFastaParser.
+         as returned from parse_fasta.
 
 
     """
@@ -1257,7 +1258,7 @@ def inflate_denoiser_output(
 # Functions for counting sequences in fasta files
 
 
-def count_seqs(fasta_filepath, parser=MinimalFastaParser):
+def count_seqs(fasta_filepath, parser=parse_fasta):
     """ Count the sequences in fasta_filepath
 
         fasta_filepath: string indicating the full path to the file
@@ -1267,7 +1268,7 @@ def count_seqs(fasta_filepath, parser=MinimalFastaParser):
     return count_seqs_from_file(open(fasta_filepath, 'U'), parser=parser)
 
 
-def count_seqs_from_file(fasta_file, parser=MinimalFastaParser):
+def count_seqs_from_file(fasta_file, parser=parse_fasta):
     """Return number of sequences in fasta_file (no format checking performed)
 
         fasta_file: an open file object
@@ -1301,7 +1302,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = MinimalFastqParser
+            parser = parse_fastq
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1311,7 +1312,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
                 t = DndParser(f, constructor=PhyloNode)
                 return zip(t.iterTips(), repeat(''))
         else:
-            parser = MinimalFastaParser
+            parser = parse_fasta
 
         try:
             # get the count of sequences in the current file
@@ -1376,7 +1377,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
             fastq_fp = open(fastq_file, 'U')
 
         file_lines = get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq = MinimalFastqParser(file_lines, strict=False)
+        parsed_fastq = parse_fastq(file_lines, strict=False)
         for i, seq_data in enumerate(parsed_fastq):
             if i == 0:
                 get_file_type_info[fastq_file] = len(seq_data[1])
@@ -1407,7 +1408,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
         else:
             fastq_fp = open(bfile, 'U')
 
-        parsed_fastq = MinimalFastqParser(fastq_fp, strict=False)
+        parsed_fastq = parse_fastq(fastq_fp, strict=False)
         for bdata in parsed_fastq:
             if bdata[1][:barcode_len] in barcode_mapping_column:
                 fwd_count += 1
@@ -1460,7 +1461,7 @@ def is_gzip(fp):
 
 
 def gzip_open(fp):
-    return gzip.open(fp, 'rb')
+    return gz_open(fp, 'rb')
 
 
 def qiime_open(fp, permission='U'):
@@ -1487,40 +1488,34 @@ def make_compatible_distance_matrices(dm1, dm2, lookup=None):
     dm1_data = dm1[1]
     dm2_ids = dm2[0]
     dm2_data = dm2[1]
+
     if lookup:
         try:
             dm1_ids = [lookup[e] for e in dm1_ids]
             dm2_ids = [lookup[e] for e in dm2_ids]
         except KeyError as e:
-            raise KeyError("All entries in both DMs must be in "
-                           "lookup if a lookup is provided. Missing: %s" % str(e))
+            raise KeyError("All entries in both DMs must be in lookup if a "
+                           "lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
 
-    # create Dict2D from dm1
-    d1 = {}
-    for i, r in enumerate(dm1_ids):
-        d1[r] = {}
-        for j, c in enumerate(dm1_ids):
-            d1[r][c] = dm1_data[i, j]
-    result1 = Dict2D(data=d1, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result1.purge()
-    # return 2d list in order
-    result1 = array(result1.toLists())
+    if len(order) == 0:
+        return ([], []), ([], [])
 
-    # create Dict2D from dm2
-    d2 = {}
-    for i, r in enumerate(dm2_ids):
-        d2[r] = {}
-        for j, c in enumerate(dm2_ids):
-            d2[r][c] = dm2_data[i, j]
-    result2 = Dict2D(data=d2, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result2.purge()
-    # return 2d list in order
-    result2 = array(result2.toLists())
+    # store the intersected distance matrices here
+    matrices = []
 
-    return (order, result1), (order, result2)
+    # iterate over the distance matrices and identifiers to match the data
+    # note that the order must be the same between the two matrices
+    for ids, distance_matrix in [(dm1_ids, dm1_data), (dm2_ids, dm2_data)]:
+
+        # the order is kept by getting the indices from this list
+        indices = [ids.index(element) for element in order]
+
+        # this matrix contains the matched up data
+        out = distance_matrix[indices][:, indices]
+        matrices.append(out)
+
+    return (order, matrices[0]), (order, matrices[1])
 
 
 def get_rdp_jarpath():
@@ -1585,7 +1580,7 @@ def subsample_fasta(input_fasta_fp,
 
     output_fasta = open(output_fp, "w")
 
-    for label, seq in MinimalFastaParser(input_fasta):
+    for label, seq in parse_fasta(input_fasta):
         if random() < percent_subsample:
             output_fasta.write('>%s\n%s\n' % (label, seq))
 
@@ -1606,7 +1601,7 @@ def subsample_fastq(input_fastq_fp,
     input_fastq = open(input_fastq_fp, "U")
     output_fastq = open(output_fp, "w")
 
-    for label, seq, qual in MinimalFastqParser(input_fastq, strict=False):
+    for label, seq, qual in parse_fastq(input_fastq, strict=False):
         if random() < percent_subsample:
             output_fastq.write(
                 '@%s\n%s\n+%s\n%s\n' %
@@ -1629,8 +1624,8 @@ def subsample_fastqs(input_fastq1_fp,
     input_fastq2 = open(input_fastq2_fp, "U")
     output_fastq2 = open(output_fastq2_fp, "w")
 
-    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1, strict=False),
-                               MinimalFastqParser(input_fastq2, strict=False)):
+    for fastq1, fastq2 in izip(parse_fastq(input_fastq1, strict=False),
+                               parse_fastq(input_fastq2, strict=False)):
         label1, seq1, qual1 = fastq1
         label2, seq2, qual2 = fastq2
         if random() < percent_subsample:

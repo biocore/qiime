@@ -12,12 +12,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
+from tempfile import mkstemp
+
 from numpy import array, nan
 from StringIO import StringIO
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields,
                          parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords,
                          parse_classic_otu_table, make_envs_dict, fields_to_dict,
@@ -192,8 +194,9 @@ class TopLevelTests(TestCase):
     def test_parse_mapping_file_handles_filepath(self):
         """ parse_mapping_file handles being passed a mapping filepath
         """
-        fp = get_tmp_filename(prefix='test_parse_mapping_file',
-                              suffix='.txt')
+        _, fp = mkstemp(prefix='test_parse_mapping_file',
+                        suffix='.txt')
+        close(_)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',
@@ -209,8 +212,9 @@ class TopLevelTests(TestCase):
     def test_parse_mapping_file_handles_file_handle(self):
         """ parse_mapping_file handles being passed a mapping filepath
         """
-        fp = get_tmp_filename(prefix='test_parse_mapping_file',
-                              suffix='.txt')
+        _, fp = mkstemp(prefix='test_parse_mapping_file',
+                        suffix='.txt')
+        close(_)
         self.files_to_remove.append(fp)
         open(fp, 'w').write('\n'.join(['#sample\ta\tb',
                                       '#comment line to skip',

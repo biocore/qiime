@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.sequences import parse_fastq
 from brokit.fastq_join import FastqJoin, join_paired_end_reads_fastqjoin
 from brokit.seqprep import SeqPrep, join_paired_end_reads_seqprep
 from qiime.util import qiime_open
@@ -47,8 +47,8 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     fbc_fh = open(filtered_bc_outfile_path, 'w')
 
     # Set up iterators
-    index_fastq_iter = MinimalFastqParser(ih, strict=False)
-    joined_fastq_iter = MinimalFastqParser(jh, strict=False)
+    index_fastq_iter = parse_fastq(ih, strict=False)
+    joined_fastq_iter = parse_fastq(jh, strict=False)
     # Write barcodes / index reads that we observed within
     # the joined paired-ends. Warn if index and joined data
     # are not in order.

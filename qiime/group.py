@@ -322,7 +322,7 @@ def _get_indices(input_items, wanted_items):
     as a scalar, not an iterable.
     """
     # Note: Some of this code is taken from Jeremy Widmann's
-    # get_valid_indices() function, part of make_distance_histograms.py.
+    # get_valid_indices() function, part of make_distance_histograms.py from QIIME 1.8.0.
     try:
         iter(input_items)
     except:
@@ -369,7 +369,7 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
     omitted.
     """
     # Note: Much of this code is taken from Jeremy Widmann's
-    # distances_by_groups() function, part of make_distance_histograms.py.
+    # distances_by_groups() function, part of make_distance_histograms.py from QIIME 1.8.0.
     if not suppress_symmetry_and_hollowness_check:
         if not is_symmetric_and_hollow(dist_matrix):
             raise ValueError("The distance matrix must be symmetric and "

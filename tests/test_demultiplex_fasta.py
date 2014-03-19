@@ -9,13 +9,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
+from os import close
 from os.path import exists, join
 from shutil import rmtree
+from tempfile import mkdtemp, mkstemp
 
+from skbio.util.misc import create_dir
 from unittest import TestCase, main
-from cogent.util.misc import remove_files, get_random_directory_name
+from cogent.util.misc import remove_files
 
-from qiime.util import get_tmp_filename, create_dir
 from qiime.parse import parse_qual_score
 from qiime.demultiplex_fasta import (
     demultiplex_sequences, assign_seqs, check_map, get_ids_bcs_added_field,
@@ -78,27 +80,30 @@ class TopLevelTests(TestCase):
         self.sample_fasta_file = sample_fasta_file
         self.sample_qual_file = sample_qual_file
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
         create_dir(self.output_dir)
 
-        self.correct_mapping_fp = get_tmp_filename(
+        _, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
+        close(_)
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
 
-        self.sample_fasta_fp = get_tmp_filename(
+        _, self.sample_fasta_fp = mkstemp(
             prefix='sample_fasta_',
             suffix='.fna')
+        close(_)
         sample_fasta = open(self.sample_fasta_fp, 'w')
         sample_fasta.write(self.sample_fasta_file)
         sample_fasta.close()
 
-        self.sample_qual_fp = get_tmp_filename(
+        _, self.sample_qual_fp = mkstemp(
             prefix='sample_qual_',
             suffix='.qual')
+        close(_)
         sample_qual = open(self.sample_qual_fp, 'w')
         sample_qual.write(self.sample_qual_file)
         sample_qual.close()

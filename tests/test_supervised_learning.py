@@ -12,13 +12,13 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from os import remove, system, mkdir
+from os import remove, system, mkdir, close
 from shutil import rmtree
 from os.path import join, exists
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
+
 from unittest import TestCase, main
 from skbio.app.util import ApplicationError
-from qiime.util import get_tmp_filename
 
 from cogent.util.misc import remove_files
 from qiime.supervised_learning import (
@@ -70,18 +70,16 @@ class RSupervisedLearnerTests(TestCase):
     def setUp(self):
 
         # Temporary input file
-        self.tmp_otu_filepath = get_tmp_filename(
-            prefix='R_test_otu_table_',
-            suffix='.txt'
-        )
+        _, self.tmp_otu_filepath = mkstemp(prefix='R_test_otu_table_',
+                                           suffix='.txt')
+        close(_)
         seq_file = open(self.tmp_otu_filepath, 'w')
         seq_file.write(test_otu_table)
         seq_file.close()
 
-        self.tmp_map_filepath = get_tmp_filename(
-            prefix='R_test_map_',
-            suffix='.txt'
-        )
+        _, self.tmp_map_filepath = mkstemp(prefix='R_test_map_',
+                                           suffix='.txt')
+        close(_)
         seq_file = open(self.tmp_map_filepath, 'w')
         seq_file.write(test_map)
         seq_file.close()

@@ -19,23 +19,15 @@ from os.path import expandvars
 import re
 from types import GeneratorType
 
-from cogent.util.dict2d import Dict2D
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
-from cogent.parse.record_finder import LabeledRecordFinder
-from cogent.parse.fasta import FastaFinder
+from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
-from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
+from skbio.parse.sequences import parse_fastq, FastaFinder
 from cogent.core.tree import PhyloNode
 from cogent import DNA
 
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
-
-
-def MinimalFastqParser(data, strict=False):
-    return MinimalFastqParserCogent(data, strict=strict)
-
-# this has to be here to avoid circular import
 
 
 def is_casava_v180_or_later(header_line):
@@ -173,7 +165,7 @@ def mapping_file_to_dict(mapping_data, header):
             if j == 0:
                 continue  # sampleID field
             map_dict[sam[0]][header[j]] = sam[j]
-    return Dict2D(map_dict)
+    return map_dict
 
 
 def parse_prefs_file(prefs_string):
@@ -803,7 +795,7 @@ def parse_fastq_qual_score(fastq_lines):
     else:
         ascii_to_phred_f = ascii_to_phred64
 
-    for header, seq, qual in MinimalFastqParser(fastq_lines):
+    for header, seq, qual in parse_fastq(fastq_lines):
         results[header] = asarray(qual, dtype=ascii_to_phred_f)
     return results
 
