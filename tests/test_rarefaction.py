@@ -15,9 +15,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 import numpy
 from qiime.util import get_tmp_filename, load_qiime_config
-from qiime.rarefaction import (RarefactionMaker,
-                               get_rare_data,
-                               remove_empty_otus)
+from qiime.rarefaction import RarefactionMaker, get_rare_data
 from qiime.format import format_biom_table
 from biom.table import table_factory, TableException
 from os import remove, rmdir
