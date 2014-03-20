@@ -18,8 +18,10 @@ from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
-                                first, random_id, longest_id, unique_id_map, label_to_name,
-                                make_most_abundant, parse_fasta, ReferenceRepSetPicker)
+                                first, random_id, longest_id, invert_dict,
+                                unique_id_map, label_to_name,
+                                make_most_abundant, parse_fasta,
+                                ReferenceRepSetPicker)
 
 
 class RepSetPickerTests(TestCase):
@@ -400,6 +402,30 @@ class TopLevelTests(SharedSetupTestCase):
         seqs = dict(parse_fasta(dna_seqs.splitlines(),
                                        label_to_name=label_to_name))
         self.assertEqual(longest_id(ids, seqs), 'U1PLI_403')
+
+    def test_invert_dict(self):
+        """invert_dict should invert keys and values, keeping all keys
+
+        Ported from PyCogent's cogent.util.misc.InverseDictMulti unit tests.
+        """
+        self.assertEqual(invert_dict({}), {})
+        self.assertEqual(invert_dict({'3':4}), {4:['3']})
+        self.assertEqual(invert_dict(\
+            {'a':'x','b':1,'c':None,'d':('a','b')}), \
+            {'x':['a'],1:['b'],None:['c'],('a','b'):['d']})
+        self.assertRaises(TypeError, invert_dict, {'a':['a','b','c']})
+        d = invert_dict({'a':3, 'b':3, 'c':3, 'd':'3', 'e':'3'})
+        self.assertEqual(len(d), 2)
+        assert 3 in d
+        d3_items = d[3][:]
+        self.assertEqual(len(d3_items), 3)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'abc')
+        assert '3' in d
+        d3_items = d['3'][:]
+        self.assertEqual(len(d3_items), 2)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'de')
 
     def test_unique_id_map(self):
         """unique_id_map should return map of seqs:unique representatives"""

@@ -23,7 +23,6 @@ from qiime.util import FunctionWithParams
 from qiime.parse import fields_to_dict
 from random import choice
 from numpy import argmax
-from cogent.util.misc import InverseDictMulti  # inverts dict
 from skbio.parse.sequences import parse_fasta
 
 label_to_name = lambda x: x.split()[0]
@@ -49,12 +48,38 @@ def longest_id(ids, seqs):
     return ids[argmax(lengths)]
 
 
+def invert_dict(d):
+    """Returns inverse of d, setting keys to values and values to list of keys.
+
+    Note that each value will _always_ be a list, even if one item.
+
+    Can be invoked with anything that can be an argument for dict(), including
+    an existing dict or a list of tuples. However, keys are always appended in
+    arbitrary order, not the input order.
+
+    WARNING: will fail if any values are unhashable, e.g. if they are dicts or
+    lists.
+
+    Ported from PyCogent's cogent.util.misc.InverseDictMulti.
+    """
+    if isinstance(d, dict):
+        temp = d
+    else:
+        temp = dict(d)
+    result = {}
+    for key, val in temp.iteritems():
+        if val not in result:
+            result[val] = []
+        result[val].append(key)
+    return result
+
+
 def unique_id_map(seqs):
     """Returns map of seqs:unique representatives.
 
     Result is {orig_id:unique_rep_id}.
     """
-    groups = InverseDictMulti(seqs)
+    groups = invert_dict(seqs)
     result = {}
     for v in groups.values():
         for i in v:
@@ -69,7 +94,7 @@ def unique_id_map(seqs):
 def make_most_abundant(seqs):
     """Makes function that chooses the most abundant seq from group"""
     seq_to_group = unique_id_map(seqs)
-    groups = InverseDictMulti(seq_to_group)
+    groups = invert_dict(seq_to_group)
 
     def most_abundant(ids, seqs='ignored'):
         """Returns most abundant seq from ids"""
