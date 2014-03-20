@@ -15,10 +15,11 @@ from os import system, listdir, remove, rmdir
 from os.path import exists, split
 from re import search
 from itertools import chain
-from qiime.util import get_tmp_filename
+
 from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from skbio.app.util import ApplicationNotFoundError, ApplicationError
+
 from qiime.util import load_qiime_config
 from qiime.denoiser.flowgram_clustering import denoise_seqs
 

@@ -40,8 +40,7 @@ from skbio.app.util import ApplicationNotFoundError
 from skbio.core.exception import RecordError
 from skbio.parse.sequences import parse_fasta
 
-from qiime.util import (get_tmp_filename,
-                        FunctionWithParams,
+from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 
 

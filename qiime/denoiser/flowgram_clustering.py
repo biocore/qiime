@@ -11,7 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
-from os import remove, popen, makedirs, rename
+from os import remove, popen, makedirs, rename, close
 from os.path import exists
 from collections import defaultdict
 from itertools import izip, imap, ifilter, chain
@@ -19,9 +19,9 @@ from asyncore import loop
 import datetime
 from time import time
 from math import fsum, trunc
+from tempfile import mkstemp
 
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from qiime.util import get_tmp_filename
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram, seq_to_flow
 from cogent.parse.flowgram_collection import FlowgramCollection
@@ -552,8 +552,9 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
 
     # write all remaining flowgrams into file for next step
     # TODO: might use abstract FlowgramContainer here as well
-    non_clustered_filename = get_tmp_filename(tmp_dir=outdir, prefix="ff",
-                                              suffix=".sff.txt")
+    fd, non_clustered_filename = mkstemp(dir=outdir, prefix="ff",
+                                        suffix=".sff.txt")
+    close(fd)
     non_clustered_fh = open(non_clustered_filename, "w")
     write_sff_header(header, non_clustered_fh)
     for f in flowgrams:

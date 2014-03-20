@@ -25,7 +25,10 @@ import brokit.raxml_v730
 from qiime.util import parse_command_line_parameters, make_option, \
     get_options_lookup, load_qiime_config, create_dir
 from qiime.parse import parse_qiime_parameters
-from qiime.util import get_tmp_filename
+from cogent.core.moltype import DNA
+from tempfile import mkstemp
+from os import close
+from os.path import abspath, join, split, splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree
@@ -138,7 +141,8 @@ def main():
 
         # set the primary parameters for raxml
         parameters['-w'] = abspath(output_dir) + '/'
-        parameters["-n"] = split(splitext(get_tmp_filename())[0])[-1]
+        fd, parameters["-n"] = mkstemp()
+        close(fd)
         parameters["-t"] = updated_tree_fp
 
         if "-f" not in parameters:

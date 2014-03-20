@@ -9,9 +9,10 @@ __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 
 from os import remove
+
+from skbio.app.util import CommandLineApplication, ResultPath 
 from os.path import join
 
-from cogent.app.util import CommandLineApplication, ResultPath 
 from skbio.app.parameters import ValuedParameter, FlagParameter, FilePath
 
 from qiime.util import get_qiime_project_dir

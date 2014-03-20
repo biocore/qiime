@@ -13,7 +13,6 @@ __email__ = "justinak@gmail.com"
 
 from qiime.util import make_option
 
-from qiime.util import get_tmp_filename
 
 from qiime.plot_rank_abundance_graph import plot_rank_abundance_graphs
 from qiime.util import parse_command_line_parameters, get_options_lookup, \

@@ -15,7 +15,6 @@ from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
                                   list_known_metrics)
 import os
 from sys import stderr
-from qiime.util import get_tmp_filename
 
 script_info = {}
 script_info['brief_description'] = """Calculate beta diversity (pairwise sample\

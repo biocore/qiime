@@ -19,8 +19,6 @@ from cogent.core.profile import Profile
 
 from skbio.parse.sequences import parse_fasta
 
-from qiime.util import get_tmp_filename
-
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
