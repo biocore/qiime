@@ -49,10 +49,10 @@ class TopLevelTests(TestCase):
         self.otu_map1 = [('0', ['seq1', 'seq2', 'seq5']),
                          ('1', ['seq3', 'seq4']),
                          ('2', ['seq6', 'seq7', 'seq8'])]
-        _, self.tmp_fp1 = mkstemp(prefix='FormatTests_', suffix='.txt')
-        close(_)
-        _, self.tmp_fp2 = mkstemp(prefix='FormatTests_', suffix='.txt')
-        close(_)
+        fd, self.tmp_fp1 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(fd)
+        fd, self.tmp_fp2 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(fd)
         self.files_to_remove = []
 
         self.taxa_summary = [[('a', 'b', 'c'), 0, 1, 2],
@@ -539,9 +539,9 @@ y\t5\t6\tsample y""")
             seqs,
             None)
 
-        _, tmp_filename = mkstemp(prefix="test_write_Fasta",
+        fd, tmp_filename = mkstemp(prefix="test_write_Fasta",
                                   suffix=".fna")
-        close(_)
+        close(fd)
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()

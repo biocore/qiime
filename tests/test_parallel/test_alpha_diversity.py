@@ -38,20 +38,20 @@ class ParallelAlphaDiversityTests(TestCase):
 
         self.rt_fps = []
         for rt in [rt1, rt2, rt3, rt4]:
-            _, rt_fp = mkstemp(dir=self.test_out,
+            fd, rt_fp = mkstemp(dir=self.test_out,
                                prefix='qiime_rt',
                                suffix='.biom')
-            close(_)
+            close(fd)
             rt_f = open(rt_fp, 'w')
             rt_f.write(rt)
             rt_f.close()
             self.rt_fps.append(rt_fp)
             self.files_to_remove.append(rt_fp)
 
-        _, self.tree_fp = mkstemp(dir=self.test_out,
+        fd, self.tree_fp = mkstemp(dir=self.test_out,
                                   prefix='qiime',
                                   suffix='.tre')
-        close(_)
+        close(fd)
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
         tree_f.close()

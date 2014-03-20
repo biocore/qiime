@@ -37,10 +37,10 @@ class ParallelBlasterTests(TestCase):
                                 suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        _, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
+        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
                                            prefix='qiime_parallel_blaster_tests_input',
                                            suffix='.fasta')
-        close(_)
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(blast_test_seqs)
         seq_file.close()

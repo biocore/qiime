@@ -84,10 +84,10 @@ class SplitTests(TestCase):
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
-        _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                      prefix='split_fasta_tests',
                                      suffix='')
-        close(_)
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -107,10 +107,10 @@ class SplitTests(TestCase):
     def test_split_fasta_diff_num_seqs_per_file(self):
         """split_fasta funcs as expected when diff num seqs go to each file
         """
-        _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                      prefix='split_fasta_tests',
                                      suffix='')
-        close(_)
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -140,10 +140,10 @@ class SplitTests(TestCase):
 
         # test seqs_per_file from 1 to 1000
         for i in range(1, 1000):
-            _, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+            fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
                                          prefix='split_fasta_tests',
                                          suffix='')
-            close(_)
+            close(fd)
 
             actual = split_fasta(infile, i, filename_prefix)
 

@@ -106,56 +106,56 @@ class TopLevelTests(TestCase):
             sample_mapping_bad_char_datafield
         self.in_seqs_ambi_chars = in_seqs_ambi_chars
 
-        _, self.sample_fasta_file = mkstemp(prefix="sample_seqs_",
+        fd, self.sample_fasta_file = mkstemp(prefix="sample_seqs_",
                                             suffix=".fasta")
-        close(_)
+        close(fd)
         seq_file = open(self.sample_fasta_file, 'w')
         seq_file.write("\n".join(self.in_seqs_fixed_len_extra_bc))
         seq_file.close()
 
-        _, self.sample_qual_file = mkstemp(prefix="sample_qual_",
+        fd, self.sample_qual_file = mkstemp(prefix="sample_qual_",
                                            suffix=".qual")
-        close(_)
+        close(fd)
         qual_file = open(self.sample_qual_file, "w")
         qual_file.write("\n".join(self.in_seqs_fixed_len_bc1_qual_scores))
         qual_file.close()
 
-        _, self.sample_mapping_file = mkstemp(prefix="sample_mapping_",
+        fd, self.sample_mapping_file = mkstemp(prefix="sample_mapping_",
                                               suffix=".txt")
-        close(_)
+        close(fd)
         map_file = open(self.sample_mapping_file, "w")
         map_file.write(self.sample_mapping)
         map_file.close()
 
-        _, self.sample_mapping_file_var_length =\
+        fd, self.sample_mapping_file_var_length =\
             mkstemp(
                 prefix="sample_mapping_var_len",
                 suffix=".txt")
-        close(_)
+        close(fd)
         map_file = open(self.sample_mapping_file_var_length, "w")
         map_file.write(self.sample_mapping_var_length)
         map_file.close()
 
-        _, self.sample_mapping_bad_char_sampleid_f =\
+        fd, self.sample_mapping_bad_char_sampleid_f =\
             mkstemp(prefix="sample_mapping_bad_char_sampleid_",
                     suffix=".txt")
-        close(_)
+        close(fd)
         map_file = open(self.sample_mapping_bad_char_sampleid_f, "w")
         map_file.write(self.sample_mapping_bad_char_sampleid)
         map_file.close()
 
-        _, self.sample_mapping_bad_char_datafield_f =\
+        fd, self.sample_mapping_bad_char_datafield_f =\
             mkstemp(prefix="sample_mapping_bad_char_sampleid_",
                     suffix=".txt")
-        close(_)
+        close(fd)
         map_file = open(self.sample_mapping_bad_char_datafield_f, "w")
         map_file.write(self.sample_mapping_bad_char_datafield)
         map_file.close()
 
-        _, self.sample_fasta_ambi_chars_f =\
+        fd, self.sample_fasta_ambi_chars_f =\
             mkstemp(prefix="sample_fasta_ambi_chars_",
                     suffix=".fna")
-        close(_)
+        close(fd)
         fna_file = open(self.sample_fasta_ambi_chars_f, "w")
         fna_file.write("\n".join(self.in_seqs_ambi_chars))
         fna_file.close()
@@ -463,8 +463,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_len_bc1_sliding_window
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -510,8 +510,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc1
         expected = self.expected_fasta_variable_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -550,8 +550,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc2
         expected = self.expected_fasta_variable_len_bc2
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -593,8 +593,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -632,8 +632,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc2
         expected = self.expected_fasta_fixed_len_bc2
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -675,8 +675,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = {}
         expected = self.expected_fasta_fixed_len_bc1_no_primers
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -718,8 +718,8 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -760,8 +760,8 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -801,8 +801,8 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch_allowed
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -843,8 +843,8 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_full_remove
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -884,8 +884,8 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch_allowed
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -926,8 +926,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = expected_qual_fixed_len_bc1
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -967,8 +967,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_extra_bc
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -1008,8 +1008,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_mad
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -1051,8 +1051,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_added_demultiplex
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
@@ -1091,8 +1091,8 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_added_demultiplex_group
 
-        _, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
-        close(_)
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
         out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 

@@ -67,9 +67,9 @@ class TopLevelTests(TestCase):
                           ['Sample6', 'NA', 'B']],
                          ['SampleID', 'CAT1', 'CAT2'], []]
         self.tree_text = ["('OTU3',('OTU1','OTU2'))"]
-        _, self.tmp_heatmap_fpath = mkstemp(prefix='test_heatmap_',
+        fh, self.tmp_heatmap_fpath = mkstemp(prefix='test_heatmap_',
                                             suffix='.pdf')
-        close(_)
+        close(fh)
 
     def test_extract_metadata_column(self):
         """Extracts correct column from mapping file"""

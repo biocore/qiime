@@ -33,8 +33,8 @@ class Tests(TestCase):
         self._dirs_to_clean_up = []
 
         # get a tmp filename to use
-        _, self.basename = mkstemp()
-        close(_)
+        fd, self.basename = mkstemp()
+        close(fd)
 
         self.align_map = {
             'seq0000005': 'Species005', 'seq0000004': 'Species004',
@@ -75,8 +75,8 @@ class insertSeqsTests(Tests):
         """Write tree out"""
 
         # create temp filename
-        _, new_tree_fp = mkstemp(suffix='.tre')
-        close(_)
+        fd, new_tree_fp = mkstemp(suffix='.tre')
+        close(fd)
         self._paths_to_clean_up.append(new_tree_fp)
 
         # parse and load tree

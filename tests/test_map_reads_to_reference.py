@@ -50,36 +50,36 @@ class DatabaseAssignmentTests(TestCase):
         self.files_to_remove = [self.output_fp, self.failure_fp,
                                 self.usearch_fp, self.log_fp, self.bl6_fp]
 
-        _, self.refseqs1_fp = mkstemp(dir=self.test_out,
+        fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
                                       prefix='qiime_refseqs',
                                       suffix='.fasta')
-        close(_)
+        close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
 
-        _, self.refseqs2_fp = mkstemp(dir=self.test_out,
+        fd, self.refseqs2_fp = mkstemp(dir=self.test_out,
                                       prefix='qiime_refseqs',
                                       suffix='.fasta')
-        close(_)
+        close(fd)
         refseqs2_f = open(self.refseqs2_fp, 'w')
         refseqs2_f.write(refseqs2)
         refseqs2_f.close()
         self.files_to_remove.append(self.refseqs2_fp)
 
-        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
+        fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
-        close(_)
+        close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
-        _, self.inseqs2_fp = mkstemp(dir=self.test_out,
+        fd, self.inseqs2_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
-        close(_)
+        close(fd)
         inseqs2_f = open(self.inseqs2_fp, 'w')
         inseqs2_f.write(inseqs2)
         inseqs2_f.close()

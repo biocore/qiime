@@ -43,15 +43,15 @@ class ExcludeHumanTests(TestCase):
         self.blast_lines = BLAST_LINES
         self.blast_result = BlastResult(self.blast_lines)
 
-        _, self.subjectdb_fp = mkstemp(prefix='ExcludeByBlastTests_',
+        fd, self.subjectdb_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                        suffix='.fasta')
-        close(_)
-        _, self.query_fp = mkstemp(prefix='ExcludeByBlastTests_',
+        close(fd)
+        fd, self.query_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                    suffix='.fasta')
-        close(_)
-        _, self.query2_fp = mkstemp(prefix='ExcludeByBlastTests_',
+        close(fd)
+        fd, self.query2_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                     suffix='.fasta')
-        close(_)
+        close(fd)
 
         open(self.subjectdb_fp, "w").writelines(TEST_BLAST_DB_LINES)
         open(self.query_fp, "w").writelines(TEST_BLAST_DB_LINES)
@@ -137,9 +137,9 @@ class ExcludeHumanTests(TestCase):
     def test_sequences_to_file(self):
         """sequences_to_file should write a standard format FASTA file."""
 
-        _, self.seq_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
+        fd, self.seq_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                       suffix='.fasta')
-        close(_)
+        close(fd)
         self._paths_to_clean_up.append(self.seq_test_fp)
 
         ids = ["bth:BT_0001", "hsa:8355"]
@@ -236,9 +236,9 @@ class ExcludeHumanTests(TestCase):
 
     def test_ids_to_seq_file(self):
         """ids_to_seq_file should lookup and write out seqs for given ids"""
-        _, self.id_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
+        fd, self.id_test_fp = mkstemp(prefix='ExcludeByBlastTests_',
                                      suffix='.fasta')
-        close(_)
+        close(fd)
 
         self._paths_to_clean_up.append(self.id_test_fp)
 

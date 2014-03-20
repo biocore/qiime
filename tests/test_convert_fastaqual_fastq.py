@@ -31,16 +31,16 @@ class MakeFastqTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
-        close(_)
-        _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
-        close(_)
-        _, self.nolabel_qual_file_path = mkstemp(prefix='qual_',
+        fd, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        close(fd)
+        fd, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
+        close(fd)
+        fd, self.nolabel_qual_file_path = mkstemp(prefix='qual_',
                                                        suffix='.qual')
-        close(_)
-        _, self.noseq_qual_file_path = mkstemp(prefix='qual_',
+        close(fd)
+        fd, self.noseq_qual_file_path = mkstemp(prefix='qual_',
                                                      suffix='.qual')
-        close(_)
+        close(fd)
 
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')
@@ -186,9 +186,9 @@ class MakeFastaqualTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        _,self.fasta_file_path = mkstemp(prefix='fastq_',
+        fd,self.fasta_file_path = mkstemp(prefix='fastq_',
                                                 suffix='.fastq')
-        close(_)
+        close(fd)
 
         fastq_file = open(self.fasta_file_path, 'w')
 
@@ -324,10 +324,10 @@ class ConvertFastaqualTests(TestCase):
     def setUp(self):
         self._files_to_remove = []
 
-        _, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
-        close(_)
-        _, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
-        close(_)
+        fd, self.qual_file_path = mkstemp(prefix='qual_', suffix='.qual')
+        close(fd)
+        fd, self.fasta_file_path = mkstemp(prefix='fasta_', suffix='.fna')
+        close(fd)
 
         qual_file = open(self.qual_file_path, 'w')
         fasta_file = open(self.fasta_file_path, 'w')

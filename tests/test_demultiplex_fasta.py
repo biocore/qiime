@@ -84,26 +84,26 @@ class TopLevelTests(TestCase):
         self.output_dir += '/'
         create_dir(self.output_dir)
 
-        _, self.correct_mapping_fp = mkstemp(
+        fd, self.correct_mapping_fp = mkstemp(
             prefix='correct_mapping_',
             suffix='.txt')
-        close(_)
+        close(fd)
         map_file = open(self.correct_mapping_fp, 'w')
         map_file.write(self.sample_correct_mapping_data)
         map_file.close()
 
-        _, self.sample_fasta_fp = mkstemp(
+        fd, self.sample_fasta_fp = mkstemp(
             prefix='sample_fasta_',
             suffix='.fna')
-        close(_)
+        close(fd)
         sample_fasta = open(self.sample_fasta_fp, 'w')
         sample_fasta.write(self.sample_fasta_file)
         sample_fasta.close()
 
-        _, self.sample_qual_fp = mkstemp(
+        fd, self.sample_qual_fp = mkstemp(
             prefix='sample_qual_',
             suffix='.qual')
-        close(_)
+        close(fd)
         sample_qual = open(self.sample_qual_fp, 'w')
         sample_qual.write(self.sample_qual_file)
         sample_qual.close()

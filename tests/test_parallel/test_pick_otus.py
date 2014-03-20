@@ -40,19 +40,19 @@ class ParallelPickOtusTests(TestCase):
                                 suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        _, self.refseqs1_fp = mkstemp(dir=self.test_out,
+        fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
                                       prefix='qiime_refseqs',
                                       suffix='.fasta')
-        close(_)
+        close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
 
-        _, self.inseqs1_fp = mkstemp(dir=self.test_out,
+        fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
                                      prefix='qiime_inseqs',
                                      suffix='.fasta')
-        close(_)
+        close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
@@ -146,9 +146,9 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
             ('s6', 'ATTTAAT'),
             ('s7', 'AAATAAAAA')
         ]
-        _, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
+        fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
                                          suffix='.fasta')
-        close(_)
+        close(fd)
         self.files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
