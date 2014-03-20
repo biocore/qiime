@@ -10,8 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from cogent.maths.stats.rarefaction import subsample_multinomial
-from skbio.maths.subsample import subsample
+from skbio.maths.subsample import subsample, subsample_multinomial
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option

@@ -19,9 +19,6 @@ import os.path
 
 import numpy
 from numpy import inf
-from cogent.maths.stats.rarefaction import (subsample_freq_dist_nonzero,
-                                            subsample_random,
-                                            subsample_multinomial)
 from skbio.maths.subsample import subsample
 
 from qiime.util import FunctionWithParams

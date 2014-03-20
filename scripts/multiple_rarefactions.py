@@ -12,8 +12,7 @@ __email__ = "justinak@gmail.com"
 
 import os.path
 
-from cogent.maths.stats.rarefaction import subsample_multinomial
-from skbio.maths.subsample import subsample
+from skbio.maths.subsample import subsample, subsample_multinomial
 
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.util import make_option
