@@ -50,7 +50,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-                        is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
+                        is_valid_git_sha1, sync_biom_and_mf,
+                        biom_taxonomy_formatter, invert_dict)
 
 import numpy
 from numpy import array, asarray
@@ -877,6 +878,30 @@ GTCTGA
             'fb5dy0f85a8b11f199c4f3a75474a2das8138373'))
         self.assertFalse(is_valid_git_sha1(
             '0x5dcc816fbc1c2e8eX087d7d2ed8d2950a7c16b'))
+
+    def test_invert_dict(self):
+        """invert_dict should invert keys and values, keeping all keys
+
+        Ported from PyCogent's cogent.util.misc.InverseDictMulti unit tests.
+        """
+        self.assertEqual(invert_dict({}), {})
+        self.assertEqual(invert_dict({'3':4}), {4:['3']})
+        self.assertEqual(invert_dict(\
+            {'a':'x','b':1,'c':None,'d':('a','b')}), \
+            {'x':['a'],1:['b'],None:['c'],('a','b'):['d']})
+        self.assertRaises(TypeError, invert_dict, {'a':['a','b','c']})
+        d = invert_dict({'a':3, 'b':3, 'c':3, 'd':'3', 'e':'3'})
+        self.assertEqual(len(d), 2)
+        assert 3 in d
+        d3_items = d[3][:]
+        self.assertEqual(len(d3_items), 3)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'abc')
+        assert '3' in d
+        d3_items = d['3'][:]
+        self.assertEqual(len(d3_items), 2)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'de')
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
