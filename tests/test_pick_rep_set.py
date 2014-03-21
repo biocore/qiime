@@ -18,10 +18,8 @@ from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
-                                first, random_id, longest_id, invert_dict,
-                                unique_id_map, label_to_name,
-                                make_most_abundant, parse_fasta,
-                                ReferenceRepSetPicker)
+                                first, random_id, longest_id, unique_id_map, label_to_name,
+                                make_most_abundant, parse_fasta, ReferenceRepSetPicker)
 
 
 class RepSetPickerTests(TestCase):
