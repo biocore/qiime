@@ -1867,7 +1867,6 @@ class MetadataMap():
                     merged_data[sample_id][header]
 
         # and create a MetadataMap object from it; concatenate comments
-        normal_dict = Dict2D(normal_dict)
         return self.__class__(normal_dict, self.Comments + other.Comments)
 
     def getSampleMetadata(self, sample_id):
