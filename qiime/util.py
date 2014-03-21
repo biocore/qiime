@@ -2111,3 +2111,29 @@ def biom_taxonomy_formatter(bt, md_key):
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key
         return None
+
+
+def invert_dict(d):
+    """Returns inverse of d, setting keys to values and values to list of keys.
+
+    Note that each value will _always_ be a list, even if one item.
+
+    Can be invoked with anything that can be an argument for dict(), including
+    an existing dict or a list of tuples. However, keys are always appended in
+    arbitrary order, not the input order.
+
+    WARNING: will fail if any values are unhashable, e.g. if they are dicts or
+    lists.
+
+    Ported from PyCogent's cogent.util.misc.InverseDictMulti.
+    """
+    if isinstance(d, dict):
+        temp = d
+    else:
+        temp = dict(d)
+    result = {}
+    for key, val in temp.iteritems():
+        if val not in result:
+            result[val] = []
+        result[val].append(key)
+    return result

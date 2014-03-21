@@ -2,7 +2,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -19,7 +20,7 @@ This is heavily based on pick_otus.py.
 """
 
 from optparse import OptionParser
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, invert_dict
 from qiime.parse import fields_to_dict
 from random import choice
 from numpy import argmax
@@ -46,32 +47,6 @@ def longest_id(ids, seqs):
     """Chooses the longest seq from all seqs, uses first if ties."""
     lengths = map(len, [seqs.get(id_, '') for id_ in ids])
     return ids[argmax(lengths)]
-
-
-def invert_dict(d):
-    """Returns inverse of d, setting keys to values and values to list of keys.
-
-    Note that each value will _always_ be a list, even if one item.
-
-    Can be invoked with anything that can be an argument for dict(), including
-    an existing dict or a list of tuples. However, keys are always appended in
-    arbitrary order, not the input order.
-
-    WARNING: will fail if any values are unhashable, e.g. if they are dicts or
-    lists.
-
-    Ported from PyCogent's cogent.util.misc.InverseDictMulti.
-    """
-    if isinstance(d, dict):
-        temp = d
-    else:
-        temp = dict(d)
-    result = {}
-    for key, val in temp.iteritems():
-        if val not in result:
-            result[val] = []
-        result[val].append(key)
-    return result
 
 
 def unique_id_map(seqs):
