@@ -377,9 +377,7 @@ def check_dna_chars_primers(header,
     disable_primer_check:  If True, disables tests for valid primer sequences.
     """
 
-    valid_dna_chars = DNASequence.iupac_characters
-    valid_dna_chars.update(lower("".join([chr for chr in\
-        DNASequence.iupac_characters])))
+    valid_dna_chars = DNASequence.iupac_characters()
     valid_dna_chars.update([','])
 
     # Detect fields directly, in case user does not have fields in proper
