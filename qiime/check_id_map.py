@@ -430,9 +430,7 @@ def check_dna_chars_bcs(header,
      uniqueness, valid IUPAC DNA chars).
     """
 
-    valid_dna_chars = DNASequence.iupac_standard_characters
-    valid_dna_chars.update(lower("".join([chr for chr in\
-        DNASequence.iupac_standard_characters])))
+    valid_dna_chars = DNASequence.iupac_standard_characters()
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
     header_fields_to_check = []
