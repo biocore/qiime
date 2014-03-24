@@ -19,8 +19,6 @@ def compute_manifold(file_name,algorithm):
 
     otu_table = parse_biom_table(open(file_name,"U"))
 
-    print("test")
-
     samples = otu_table.SampleIds
 
     if isinstance(otu_table, DenseTable):
@@ -29,7 +27,6 @@ def compute_manifold(file_name,algorithm):
         otumtx = asarray([v for v in otu_table.iterSampleData()])
 
     if algorithm=="isomap":
-        print otumtx
         fit = manifold.Isomap(n_components=1).fit_transform(otumtx)
     else:
         print("arg in error, unknown algorithm")
